@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="@@LOCALE@@" class="notranslate" translate="no">
+    <head>
+      <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
+      <meta name="google" content="notranslate">
+      <title>Phabrico</title>
+      <link rel="stylesheet" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="shortcut icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <script src="/scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+
+      <style>
+        .container {
+            width: 100vw;
+            height: calc(100vh - 40px);
+            position: relative;
+        }
+
+        .vertical-center {
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+            width: 100%;
+            text-align: center;
+            font-size: 2em;
+        }
+      </style>
+    </head>
+    <body>
+        <script>
+            document.body.dataset.theme = '@@THEME@@';
+            document.body.dataset.themestyle = '@@THEME-STYLE@@';
+            document.body.dataset.locale = '@@LOCALE@@';
+        </script>
+        <div id="headerBar">
+            <a href="/" style="text-decoration: none;">
+                <span class="phabrico-logo" style=""></span>
+                <span class="phabrico-wordmark">Phabrico</span>
+            </a>
+        </div>
+
+        <div class="container">
+            <div class="vertical-center">
+                <p style="font-size: 10em">404</p>
+                <p>Url not found:</p>
+                <pre style="max-width: unset">@@INVALID-LOCAL-URL@@</pre>
+                <p><a href="@@PHABRICATOR-URL@@">Show content in Phabricator instead</a></p>
+            </div>
+        </div>
+    </body>
+</html>

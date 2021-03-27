@@ -1,0 +1,23 @@
+here is a diff
+
+  lang=diff
+  @@ derp derp @@
+  x
+  y
+
+  - x
+  - y
+  + z
+
+derp derp
+~~~~~~~~~~
+here is a diff<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='diff '>@@ derp derp @@
+x
+y
+
+- x
+- y
++ z</code></pre></div>
+derp derp
+~~~~~~~~~~

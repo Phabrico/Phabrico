@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <ComponentGroup Id="PluginGitanosComponents" Directory="INSTALLDIR">
+        <Component Id="gitanos_Phabrico_Plugin_Gitanos_dll" Guid="$(var.PluginGitanosGUID)"
+                   Win64="yes">
+            <File Id="file_gitanos_Phabrico_Plugin_Gitanos_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)Phabrico.Plugin.Gitanos.dll"
+                  KeyPath="yes" />
+            <ServiceControl Id="StartServiceForGitanos"
+                            Name="Phabrico"
+                            Start="install"
+                            Stop="install"
+                            Wait="yes" />
+        </Component>
+        <Component Id="gitanos_Phabrico_Plugin_Gitanos_pdb" Guid="b6068bf9-a148-4ef6-b629-c7cc987fcdab"
+                   Win64="yes">
+            <File Id="file_gitanos_Phabrico_Plugin_Gitanos_pdb"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)Phabrico.Plugin.Gitanos.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="gitanos_LibGit2Sharp_dll" Guid="2e8d9bc7-5ada-4176-995a-24cc8861fcf6"
+                   Win64="yes">
+            <File Id="file_gitanos_LibGit2Sharp_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)LibGit2Sharp.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_CredentialManagement_dll" Guid="5f12383e-b428-442c-ada0-abf8bd801211"
+                   Win64="yes">
+            <File Id="file_gitanos_CredentialManagement_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)CredentialManagement.dll"
+                  KeyPath="yes" />
+        </Component>
+
+        <ComponentRef Id="gitanos_git2_dll" />
+    </ComponentGroup>
+
+    <DirectoryRef Id="INSTALLDIR">
+        <Directory Id="GitanosDirectory_Lib" Name="lib">
+            <Directory Id="GitanosDirectory_Win32" Name="win32">
+                <Directory Id="GitanosDirectory_x64" Name="x64">
+                    <Component Id="gitanos_git2_dll" Guid="39b4a9df-4e0e-4986-8d0c-4188c62142ca"
+                       Win64="yes">
+                        <File Id="file_gitanos_git2_dll"
+                              Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)\lib\win32\x64\git2-6777db8.dll"
+                              KeyPath="yes"
+                              ProcessorArchitecture="x64" />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+    </DirectoryRef>
+</Include>

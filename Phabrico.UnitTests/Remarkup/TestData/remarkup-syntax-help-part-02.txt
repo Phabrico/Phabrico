@@ -1,0 +1,44 @@
+These are block styles, and must be separated from surrounding text by
+empty lines:
+```
+= Large Header =
+
+== Smaller Header ==
+
+## This is a Header As Well
+
+Also a Large Header
+===================
+
+Also a Smaller Header
+---------------------
+
+> Quoted Text
+
+Use `-` or `*` for bulleted lists, and `#` for numbered lists.
+Use ``` or indent two spaces for code.
+Use %%% for a literal block.
+Use | ... | ... for tables.
+```
+~~~~~~~~~~
+These are block styles, and must be separated from surrounding text by<br>
+empty lines:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>= Large Header =
+
+== Smaller Header ==
+
+## This is a Header As Well
+
+Also a Large Header
+===================
+
+Also a Smaller Header
+---------------------
+
+&gt; Quoted Text
+
+Use `-` or `*` for bulleted lists, and `#` for numbered lists.
+Use ``` or indent two spaces for code.
+Use %%% for a literal block.
+Use | ... | ... for tables.</code></pre></div>
+~~~~~~~~~~

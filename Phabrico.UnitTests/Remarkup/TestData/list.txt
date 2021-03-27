@@ -1,0 +1,10 @@
+  - < > & "
+
+text block
+~~~~~~~~~~
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>&lt; &gt; &amp; &quot;</li>
+</ul>
+
+text block
+~~~~~~~~~~

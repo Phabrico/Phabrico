@@ -1,0 +1,22 @@
+{
+    "execute": {
+        "method": [
+            "ProgressMethod_DownloadPhrictionDocuments",
+            "ProgressMethod_DownloadFileObjects",
+            "ProgressMethod_DownloadMacros"
+        ]
+    },
+
+    "validate": {
+        "storage": {
+            "file":  [{
+                    "token": "PHID-FILE-5amliyv5bk2g4oeinj3s",
+                    "macroname": "water"
+                },{
+                    "token": "PHID-FILE-yezt4hwodadiyydp2yje",
+                    "macroname": "logo"
+                }
+            ]
+        }
+    }
+}

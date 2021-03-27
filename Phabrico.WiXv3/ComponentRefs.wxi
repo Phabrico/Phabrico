@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include>
+    <ComponentRef Id="File1" />
+    <ComponentRef Id="File2" />
+    <ComponentRef Id="File3" />
+    <ComponentRef Id="File4" />
+    <ComponentRef Id="File5" />
+    <ComponentRef Id="File6" />
+    <ComponentRef Id="File7" />
+    <ComponentRef Id="File8" />
+    <ComponentRef Id="File9" />
+</Include>

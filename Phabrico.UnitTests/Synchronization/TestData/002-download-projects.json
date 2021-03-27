@@ -1,0 +1,41 @@
+{
+    "execute": {
+        "method": ["ProgressMethod_DownloadProjects"]
+    },
+
+    "validate": {
+        "storage": {
+            "project": [{
+                    "token": "PHID-PROJ-NONE"
+                }, {
+                    "token": "PHID-PROJ-44nbqssqu7ksg2hjp6pj"
+                }, {
+                    "token": "PHID-PROJ-dccnqculyjzbyovxbxmn"
+                }, {
+                    "token": "PHID-PROJ-yqvwcsb2buehnpi45eax"
+                }, {
+                    "token": "PHID-PROJ-zvoibhq3626262w5y54s"
+                }, {
+                    "token": "PHID-PROJ-h6j6zjzoupwzgzcbzs2q"
+                }, {
+                    "token": "PHID-PROJ-euqlpojripryd2van63w"
+                }, {
+                    "token": "PHID-PROJ-4bz6zgag2k6rcnuwc6eg"
+                }, {
+                    "token": "PHID-PROJ-akp7sskyydzhgie5vc4e"
+                }, {
+                    "token": "PHID-PROJ-ng7g726hku6aaew3cm4v"
+                }, {
+                    "token": "PHID-PROJ-4s72ad7bzxafhw5dsvxb"
+                }, {
+                    "token": "PHID-PROJ-x4zjupkeylm4bkfiuk3n"
+                }, {
+                    "token": "PHID-PROJ-7zkd3ytchqdkt6rjsuya"
+                }, {
+                    "token": "PHID-PROJ-tggzkylev44i7lx27kjm"
+                }, {
+                    "token": "PHID-PROJ-ipphlthsawcr73setoa4"
+            }]
+        }
+    }
+}

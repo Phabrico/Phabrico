@@ -1,0 +1,216 @@
+Links to pages which do not exist are shown in red. Links to pages which exist
+but which the viewer does not have permission to see are shown with a lock
+icon, and the link will not disclose the page title.
+
+If you begin a link path with `./` or `../`, the remainder of the path will be
+evaluated relative to the current wiki page. For example, if you are writing
+content for the document `fruit/` a link to `[[./guava]]` is the same as a link
+to `[[fruit/guava]]` from elsewhere.
+
+Relative links may use `../` to transverse up the document tree. From the
+`produce/vegetables/` page, you can use `[[../fruit/guava]]` to link to the
+`produce/fruit/guava` page.
+
+Relative links do not work when used outside of wiki pages. For example,
+you can't use a relative link in a comment on a task, because there is no
+reasonable place for the link to start resolving from.
+
+When documents are moved, relative links are not automatically updated: they
+are preserved as currently written. After moving a document, you may need to
+review and adjust any relative links it contains.
+
+
+= Literal Blocks =
+
+To place text in a literal block use `%%%`:
+
+%%%Text that won't be processed by remarkup
+[[http://www.example.com | example]]
+%%%
+
+Remarkup will not process the text inside of literal blocks (other than to
+escape HTML and preserve line breaks).
+
+= Tables =
+
+Remarkup supports simple table syntax. For example, this:
+
+```
+| Fruit  | Color  | Price   | Peel?
+| -----  | -----  | -----   | -----
+| Apple  | red    | `$0.93` | no
+| Banana | yellow | `$0.19` | **YES**
+```
+
+...produces this:
+
+| Fruit  | Color  | Price   | Peel?
+| -----  | -----  | -----   | -----
+| Apple  | red    | `$0.93` | no
+| Banana | yellow | `$0.19` | **YES**
+
+Remarkup also supports a simplified HTML table syntax. For example, this:
+
+```
+<table>
+    <tr>
+        <th>Fruit</th>
+        <th>Color</th>
+        <th>Price</th>
+        <th>Peel?</th>
+    </tr>
+    <tr>
+        <td>Apple</td>
+        <td>red</td>
+        <td>`$0.93`</td>
+        <td>no</td>
+    </tr>
+    <tr>
+        <td>Banana</td>
+        <td>yellow</td>
+        <td>`$0.19`</td>
+        <td>**YES**</td>
+    </tr>
+</table>
+```
+
+...produces this:
+
+<table>
+    <tr>
+        <th>Fruit</th>
+        <th>Color</th>
+        <th>Price</th>
+        <th>Peel?</th>
+    </tr>
+    <tr>
+        <td>Apple</td>
+        <td>red</td>
+        <td>`$0.93`</td>
+        <td>no</td>
+    </tr>
+    <tr>
+        <td>Banana</td>
+        <td>yellow</td>
+        <td>`$0.19`</td>
+        <td>**YES**</td>
+    </tr>
+</table>
+
+Some general notes about this syntax:
+
+- your tags must all be properly balanced;
+- your tags must NOT include attributes (`<td>` is OK, `<td style="...">` is not);
+  - you can use other Remarkup rules (like **bold**, //italics//, etc.) inside
+    table cells.
+
+~~~~~~~~~~
+Links to pages which do not exist are shown in red. Links to pages which exist<br>
+but which the viewer does not have permission to see are shown with a lock<br>
+icon, and the link will not disclose the page title.<br>
+If you begin a link path with <tt class='remarkup-monospaced'>./</tt> or <tt class='remarkup-monospaced'>../</tt>, the remainder of the path will be<br>
+evaluated relative to the current wiki page. For example, if you are writing<br>
+content for the document <tt class='remarkup-monospaced'>fruit/</tt> a link to <tt class='remarkup-monospaced'>[[./guava]]</tt> is the same as a link<br>
+to <tt class='remarkup-monospaced'>[[fruit/guava]]</tt> from elsewhere.<br>
+Relative links may use <tt class='remarkup-monospaced'>../</tt> to transverse up the document tree. From the<br>
+<tt class='remarkup-monospaced'>produce/vegetables/</tt> page, you can use <tt class='remarkup-monospaced'>[[../fruit/guava]]</tt> to link to the<br>
+<tt class='remarkup-monospaced'>produce/fruit/guava</tt> page.<br>
+Relative links do not work when used outside of wiki pages. For example,<br>
+you can&#39;t use a relative link in a comment on a task, because there is no<br>
+reasonable place for the link to start resolving from.<br>
+When documents are moved, relative links are not automatically updated: they<br>
+are preserved as currently written. After moving a document, you may need to<br>
+review and adjust any relative links it contains.<br>
+<h1 class='remarkup-header'><a name='hdrLiteral_Blocks' style='padding-top: 80px;'></a>Literal Blocks </h1>
+To place text in a literal block use <tt class='remarkup-monospaced'>%%%</tt>:<br>
+<p class='remarkup-literal'>Text that won&#39;t be processed by remarkup<br>
+[[http://www.example.com | example]]<br>
+</p>
+<br>
+Remarkup will not process the text inside of literal blocks (other than to<br>
+escape HTML and preserve line breaks).<br>
+<h1 class='remarkup-header'><a name='hdrTables' style='padding-top: 80px;'></a>Tables </h1>
+Remarkup supports simple table syntax. For example, this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>| Fruit  | Color  | Price   | Peel?
+| -----  | -----  | -----   | -----
+| Apple  | red    | `$0.93` | no
+| Banana | yellow | `$0.19` | **YES**</code></pre></div>
+<br>
+...produces this:<br>
+<table class='remarkup-table'>
+  <tr>
+    <th>Fruit</th>
+    <th>Color</th>
+    <th>Price</th>
+    <th>Peel?</th>
+  </tr>
+  <tr>
+    <td>Apple</td>
+    <td>red</td>
+    <td><tt class='remarkup-monospaced'>$0.93</tt></td>
+    <td>no</td>
+  </tr>
+  <tr>
+    <td>Banana</td>
+    <td>yellow</td>
+    <td><tt class='remarkup-monospaced'>$0.19</tt></td>
+    <td><strong>YES</strong></td>
+  </tr>
+</table>
+
+<br>
+Remarkup also supports a simplified HTML table syntax. For example, this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>&lt;table&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Fruit&lt;/th&gt;
+        &lt;th&gt;Color&lt;/th&gt;
+        &lt;th&gt;Price&lt;/th&gt;
+        &lt;th&gt;Peel?&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;Apple&lt;/td&gt;
+        &lt;td&gt;red&lt;/td&gt;
+        &lt;td&gt;`$0.93`&lt;/td&gt;
+        &lt;td&gt;no&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;Banana&lt;/td&gt;
+        &lt;td&gt;yellow&lt;/td&gt;
+        &lt;td&gt;`$0.19`&lt;/td&gt;
+        &lt;td&gt;**YES**&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;</code></pre></div>
+<br>
+...produces this:<br>
+<table class='remarkup-table'>
+  <tr>
+    <th>Fruit</th>
+    <th>Color</th>
+    <th>Price</th>
+    <th>Peel?</th>
+  </tr>
+  <tr>
+    <td>Apple</td>
+    <td>red</td>
+    <td><tt class='remarkup-monospaced'>$0.93</tt></td>
+    <td>no</td>
+  </tr>
+  <tr>
+    <td>Banana</td>
+    <td>yellow</td>
+    <td><tt class='remarkup-monospaced'>$0.19</tt></td>
+    <td><strong>YES</strong></td>
+  </tr>
+</table>
+
+<br>
+Some general notes about this syntax:<br>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>your tags must all be properly balanced;</li>
+  <li class='remarkup-list-item'>your tags must NOT include attributes (<tt class='remarkup-monospaced'>&lt;td&gt;</tt> is OK, <tt class='remarkup-monospaced'>&lt;td style=&quot;...&quot;&gt;</tt> is not);
+    <ul class='remarkup-list'>
+      <li class='remarkup-list-item'>you can use other Remarkup rules (like <strong>bold</strong>, <em>italics</em>, etc.) inside table cells.</li>
+    </ul>
+  </li>
+</ul>
+~~~~~~~~~~

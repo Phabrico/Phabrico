@@ -1,0 +1,62 @@
+{
+    "execute": {
+        "method": ["ProgressMethod_DownloadManiphestTasks"]
+    },
+
+    "validate": {
+        "storage": {
+            "maniphest":  [{
+                    "token": "PHID-TASK-rautvihmikbicw4wo255",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "owner":"PHID-USER-3qb44av27tsayks7ivf3",
+                    "description":"# Boil water in a kettle.\n# Grind coffee beans\n# Add 1 to 2 teaspoons of coffee grind into a mug\n# Pour the hot water into the mug\n# Add 2 teaspoons of sugar\n# Stir your coffee and serve it.\n",
+                    "name":"Make coffee",
+                    "priority":"100",
+                    "projects": "",
+                    "status":"open",
+                    "subscribers":"PHID-USER-avflgkkgmrvd526jk522"
+                },{
+                    "token": "PHID-TASK-tygjiuv4sqnfbuei6lf3",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "owner":"PHID-USER-avflgkkgmrvd526jk522",
+                    "description":"# Melt some butter in a cooking pot\n# When the butter is completely melted, put some water in the pot\n# Cut some carrots, broccoli and paprika into small pieces and put this in the pot\n# Put some salt, pepper, cumin and turmeric in pot\n# Let everything boil for a few minutes",
+                    "name":"Make vegetable soup",
+                    "priority":"90",
+                    "projects": "",
+                    "status":"resolved",
+                    "subscribers":"PHID-USER-avflgkkgmrvd526jk522"
+                },{
+                    "token": "PHID-TASK-eb6udx4d3joofog4mtge",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "owner":"PHID-USER-avflgkkgmrvd526jk522",
+                    "description":"# Buy a DeLorean\n# Implement flux capacitor in DeLorean\n# Drive to 1955\n# Break fingers of band's lead guitar player\n# Take guitar player's guitar\n# Play Johnny Be Goode\n",
+                    "name":"Create new sound",
+                    "priority":"90",
+                    "projects": "",
+                    "status":"resolved",
+                    "subscribers":"PHID-USER-avflgkkgmrvd526jk522"
+                },{
+                    "token": "PHID-TASK-uqyp3jpdc4aiyh2s6pfx",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "owner":"PHID-USER-3qb44av27tsayks7ivf3",
+                    "description":"# Take out the trash\n# Scrub the kitchen floor\n# Clean up your room\n# Bring in the dog\n# Put out the cat\n",
+                    "name":"Finish the day",
+                    "priority":"80",
+                    "projects": "",
+                    "status":"open",
+                    "subscribers":"PHID-USER-avflgkkgmrvd526jk522"
+                },{
+                    "token": "PHID-TASK-7rbxgd5yrzv5qcatsh5o",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "owner":"PHID-USER-avflgkkgmrvd526jk522",
+                    "description":"# Write down what need to be bought\n# Take wallet\n  # Check if there's enough money in wallet\n    # If not enough money, then go back to work\n# Walk or drive to store\n# Buy everything what's written on list\n# Walk or drive home\n# Use all bought stuff\n",
+                    "name":"Go shopping",
+                    "priority":"90",
+                    "projects": "",
+                    "status":"resolved",
+                    "subscribers":"PHID-USER-avflgkkgmrvd526jk522"
+                }
+            ]
+        }
+    }
+}

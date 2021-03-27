@@ -1,0 +1,240 @@
+<style>
+    tbody {
+        background-image: repeating-linear-gradient( var(--table-aphront-table-view-tr-alternate-nth-child-2n1-td-background-color)  0 36px, 
+                                                     var(--table-aphront-table-view-tr-alternate-nth-child-2n-td-background-color) 0 70px
+                                                   );
+    }
+
+    .show-all-repositories tr@@CSS-NOTIFICATIONS@@ {
+        display: table-row;
+    }
+
+    tr@@CSS-NOTIFICATIONS@@ {
+        display: none;
+    }
+
+    td.added, td.modified, td.removed, td.renamed, td.untracked {
+        text-align: center;
+    }
+
+    #tblGitanosRepositories .phui-font-fa {
+        margin-right: 5px;
+    }
+
+    #tblGitanosRepositories tbody tr:hover td {
+        padding-right: 2pt !important;
+    }
+
+    [data-theme="dark"] #tblGitanosRepositories .fa-exclamation-triangle {
+        color: yellow;
+    }
+
+    [data-theme="light"] #tblGitanosRepositories .fa-exclamation-triangle {
+        color: red;
+    }
+</style>
+
+<div class="app-window">
+    <form id="frmGitanosRepositories" action="" method="POST">
+        <div class="aphront-form-input" style="display:flex;">
+            <input id="filter" type="text" class="full-width" placeholder="Type some text to filter the list of git repositories..." oninput="populateTable(this.value)" />
+            <button class="button-gray" id="btnShowHideCleanRepositories" type="button" style="margin: 3px 3px 7px 3px;" onclick="showHideCleanRepositories()"></button>
+        </div>
+        <div class="scrollableTable" style="height:calc(100vh - 140px);">
+            <table id="tblGitanosRepositories" class="aphront-table-view show-all-repositories">
+                <thead>
+                    <tr>
+                        <th id="tblGitanosRepositories#Repository" class="sortableColumn wide repository sortedColumn ascending">Repository</th>
+                        <th id="tblGitanosRepositories#Branch" class="sortableColumn wide branch">Branch</th>
+                        <th id="tblGitanosRepositories#Added" class="sortableColumn wide added">Gitanos::Added</th>
+                        <th id="tblGitanosRepositories#Modified" class="sortableColumn wide modified">Gitanos::Modified</th>
+                        <th id="tblGitanosRepositories#Removed" class="sortableColumn wide removed">Gitanos::Removed</th>
+                        <th id="tblGitanosRepositories#Renamed" class="sortableColumn wide renamed">Gitanos::Renamed</th>
+                        <th id="tblGitanosRepositories#Untracked" class="sortableColumn wide untracked">Gitanos::Untracked</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script>
+var sortedColumn = "Repository";
+
+initializeTable();
+
+showHideCleanRepositories();
+
+// set page title
+document.title = Locale.Translate("Phabrico") + " - " + Locale.Translate("Local git repositories");
+
+
+var webSocket = new WebSocket("ws://" + document.location.host + "/gitanos/notification");
+webSocket.onmessage = function(event) {
+    // notification received: refresh table data
+    populateTable(filter.value);
+};
+
+
+function showHideCleanRepositories() {
+    var showCleanRepositories = btnShowHideCleanRepositories.classList.contains('button-gray');
+    if (showCleanRepositories) {
+        btnShowHideCleanRepositories.classList.remove('button-gray');
+        btnShowHideCleanRepositories.classList.add('button-green');
+        btnShowHideCleanRepositories.innerText = Locale.Translate('Show clean repositories');
+
+        tblGitanosRepositories.classList.remove('show-all-repositories');
+    } else {
+        btnShowHideCleanRepositories.classList.remove('button-green');
+        btnShowHideCleanRepositories.classList.add('button-gray');
+        btnShowHideCleanRepositories.innerText = Locale.Translate('Hide clean repositories');
+
+        tblGitanosRepositories.classList.add('show-all-repositories');
+    }
+}
+
+function initializeTable()
+{
+    var sortableColumns = document.querySelectorAll('#tblGitanosRepositories thead tr th.sortableColumn');
+    sortableColumns.forEach(function (sortableColumn) {
+        sortableColumn.onclick = function(clickedColumnHeader) {
+             var newSortedColumn = clickedColumnHeader.target.id.split('#')[1];
+
+             var previouslySortedColumn = document.querySelector('#tblGitanosRepositories thead tr th.sortedColumn');
+             if (previouslySortedColumn != null) {
+                 previouslySortedColumn.classList.remove('sortedColumn');
+                 previouslySortedColumn.classList.remove('ascending');
+                 previouslySortedColumn.classList.remove('descending');
+             }
+
+             if (sortedColumn == newSortedColumn) {
+                sortedColumn = sortedColumn + "-";
+                clickedColumnHeader.target.classList.add('sortedColumn');
+                clickedColumnHeader.target.classList.remove('ascending');
+                clickedColumnHeader.target.classList.add('descending');
+             } else {
+                sortedColumn = newSortedColumn;
+                clickedColumnHeader.target.classList.add('sortedColumn');
+                clickedColumnHeader.target.classList.add('ascending');
+                clickedColumnHeader.target.classList.remove('descending');
+             }
+
+             populateTable(filter.value)
+        };
+    });
+}
+
+function populateTable(firstCharacters)
+{
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.overrideMimeType("application/json");
+    xmlhttp.open('GET', "/gitanos/query/" + sortedColumn + "/" + firstCharacters, true);
+    xmlhttp.onload  = function() {
+        document.querySelector('#tblGitanosRepositories tbody').innerHTML = "";
+
+        try
+        {
+            var jsonResponse = JSON.parse(xmlhttp.responseText);
+            jsonResponse.forEach(function(record) { 
+                var tbody = document.querySelector('#tblGitanosRepositories tbody');
+                var row = tbody.insertRow();
+                row.classList.add('added');
+                row.classList.add('modified');
+                row.classList.add('removed');
+                row.classList.add('renamed');
+                row.classList.add('untracked');
+
+                if (record.Selected) {
+                    row.classList.add('selected');
+                }
+
+                var cell = row.insertCell();
+                cell.classList.add('directory');
+                var anchorRepository = document.createElement('a');
+                anchorRepository.href = "/gitanos/data/" + record.Directory + "/";
+                anchorRepository.style.minWidth = "70px";
+
+                var fontAwesome = document.createElement('i');
+                fontAwesome.classList.add('phui-font-fa');
+                if (record.HasUnpushedCommits)
+                {
+                    fontAwesome.classList.add('fa-exclamation-triangle');
+                    fontAwesome.classList.add('fa-blink');
+                    fontAwesome.title = Locale.Translate("There are some local commits which haven't been pushed yet");
+                }
+                else
+                {
+                    fontAwesome.classList.add('fa-database');
+                    fontAwesome.title = "";
+                    row.classList.add("no-unpushed-commits");
+                }
+                anchorRepository.appendChild(fontAwesome);
+
+                var text = document.createTextNode(record.Repository);
+                anchorRepository.appendChild(text);
+
+                cell.appendChild(anchorRepository);
+
+                var cell = row.insertCell();
+                cell.classList.add('wide');
+                cell.classList.add('branch');
+                var text = document.createTextNode(record.Branch);
+                cell.appendChild(text);
+
+                var cell = row.insertCell();
+                cell.classList.add('wide');
+                cell.classList.add('added');
+                var text = document.createTextNode(record.Added);
+                if (text.data != "0") {
+                    row.classList.remove('added');
+                }
+                cell.appendChild(text);
+
+                var cell = row.insertCell();
+                cell.classList.add('wide');
+                cell.classList.add('modified');
+                var text = document.createTextNode(record.Modified);
+                if (text.data != "0") {
+                    row.classList.remove('modified');
+                }
+                cell.appendChild(text);
+
+                var cell = row.insertCell();
+                cell.classList.add('wide');
+                cell.classList.add('removed');
+                var text = document.createTextNode(record.Removed);
+                if (text.data != "0") {
+                    row.classList.remove('removed');
+                }
+                cell.appendChild(text);
+
+                var cell = row.insertCell();
+                cell.classList.add('wide');
+                cell.classList.add('renamed');
+                var text = document.createTextNode(record.Renamed);
+                if (text.data != "0") {
+                    row.classList.remove('renamed');
+                }
+                cell.appendChild(text);
+
+                var cell = row.insertCell();
+                cell.classList.add('wide');
+                cell.classList.add('untracked');
+                var text = document.createTextNode(record.Untracked);
+                if (text.data != "0") {
+                    row.classList.remove('untracked');
+                }
+                cell.appendChild(text);
+            });
+        }
+        catch(exc)
+        {
+            // show logon dialog
+            document.location.reload();
+        }
+    };
+    xmlhttp.send(null);
+}
+</script>

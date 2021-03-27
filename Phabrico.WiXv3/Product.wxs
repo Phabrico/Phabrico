@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+    <?include "Generated/VersionNumber.wxi" ?>
+    <?define UpgradeCode="28297b0c-9bcf-453f-bd83-89ef2f3eb214" ?>
+
+    <?define PluginGitanosGUID = 5ea4dc71-b13a-4bb0-8a4c-bcdc7615da4c ?>
+    <?define PluginPhrictionToPDFGUID = b1279c42-def1-456b-8db4-bbb77982d948 ?>
+    <?define PluginDiagramsNetGUID = 6352675d-5d6c-4336-aea0-1555814598f2 ?>
+
+    <Product Id="*"
+             Name="Phabrico"
+             Version="$(var.ProductVersion)"
+             Manufacturer="G. Jacobs"
+             Language="1033"
+             UpgradeCode="$(var.UpgradeCode)">
+        
+        <Package Compressed="yes"
+                 Platform="x64"
+                 InstallerVersion="200"
+                 InstallScope="perMachine"
+                 Manufacturer="G. Jacobs"
+                 Description="Phabrico $(var.ProductVersion)"
+                 Comments="(c) 2021 G. Jacobs" />
+
+        <!-- Make sure the installing user has administrative rights -->
+        <Condition Message="You need local administrator rights to install Phabrico">Privileged</Condition>
+
+        <MajorUpgrade Schedule="afterInstallExecute"
+                      DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."/>
+
+        <!-- keep cabinets in msi file -->
+        <MediaTemplate EmbedCab="yes"/>
+
+        <!-- some conditional properties for customizing the setup process -->
+        <Property Id="ADD_DESKTOP_SHORTCUT" Secure="yes" Value="1" />
+        <Property Id="ADD_STARTMENU_SHORTCUT" Secure="yes" />
+        <Property Id="APPCONFIG_ALLOWREMOTEACCESS" Secure="yes" Value="No" />
+        <Property Id="APPCONFIG_TCPLISTENPORT" Secure="yes" Value="13467" />
+        <Property Id="APPCONFIG_DATABASEDIRECTORY" Secure="yes" />
+        <Property Id="PLUGIN_GITANOS" Secure="yes" Value="No" />
+        <Property Id="PLUGIN_PHRICTIONTOPDF" Secure="yes" Value="No" />
+        <Property Id="PLUGIN_DIAGRAMSNET" Secure="yes" Value="No" />
+
+        <SetDirectory Id="APPCONFIG_DATABASEDIRECTORY" Value="[PersonalFolder]" Sequence="both"/>
+        
+        <!-- Dialog set up -->
+        <UI>
+            <UIRef Id="WixUI_FeatureTree" />
+
+            <TextStyle Id="BoldFont" FaceName="Verdana" Size="13" Bold="yes" />
+
+            <!-- Dialog to set up some initialization variables -->
+            <Dialog Id="InitializationParametersDialog" Width="400" Height="270" Title="Initialization Parameters">
+                <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Initialization Parameters" />
+                <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Configure initialization parameters. Click Next to continue." />
+                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+                <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+
+                <Control Id="LabelAllowRemoteAccess" Type="Text" X="25" Y="70" Width="90" Height="13" RightAligned="yes" Text="Remote access:" />
+                <Control Id="ComboBoxAllowRemoteAccess" Type="ComboBox" X="120" Y="67" Width="56" Height="17" ComboList="yes" Property="APPCONFIG_ALLOWREMOTEACCESS">
+                    <ComboBox Property="APPCONFIG_ALLOWREMOTEACCESS">
+                        <ListItem Text="No" Value="No" />
+                        <ListItem Text="Yes" Value="Yes" />
+                    </ComboBox>
+                </Control>
+                <Control Id="LabelAllowRemoteAccessWarning1" Type="Text" X="180" Y="70" Width="200" Height="13" RightAligned="no" Text="WARNING: Phabrico uses HTTP." >
+                    <Condition Action="show">APPCONFIG_ALLOWREMOTEACCESS = "Yes"</Condition>
+                    <Condition Action="hide">APPCONFIG_ALLOWREMOTEACCESS = "No"</Condition>
+                </Control>
+                <Control Id="LabelAllowRemoteAccessWarning2" Type="Text" X="180" Y="80" Width="200" Height="13" RightAligned="no" Text="Passwords are sent unencrypted over the network!">
+                    <Condition Action="show">APPCONFIG_ALLOWREMOTEACCESS = "Yes"</Condition>
+                    <Condition Action="hide">APPCONFIG_ALLOWREMOTEACCESS = "No"</Condition>
+                </Control>
+
+                <Control Id="LabelTcpPortWebServer" Type="Text" X="25" Y="100" Width="90" Height="13" RightAligned="yes" Text="Web Server Listen Port:" />
+                <Control Id ="EditTcpPortWebServer"   Type="Edit" X="120" Y="97" Width="40" Height="18"  Property="APPCONFIG_TCPLISTENPORT" />
+
+                <Control Id="LabelDatabaseDirectory" Type="Text" X="25" Y="130" Width="90" Height="13" RightAligned="yes" Text="Database file directory:" />
+                <Control Id ="EditDatabaseDirectory"   Type="Edit" X="120" Y="127" Width="200" Height="18"  Property="APPCONFIG_DATABASEDIRECTORY" />
+
+                <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+                <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next" >
+                    <Publish Event="AddLocal" Value="ALL">1</Publish>
+                </Control>
+                <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&amp;Back" />
+                <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="&amp;Cancel">
+                    <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+                </Control>
+            </Dialog>
+
+            <!-- Dialog to confirm update process -->
+            <Dialog Id="UpdateDlg" Width="370" Height="270" Title="[ProductName] [Setup]" NoMinimize="yes">
+                <Control Id="Bitmap" Type="Bitmap" X="0" Y="0" Width="366" Height="231" TabSkip="no" Text="!(loc.WelcomeDlgBitmap)" />
+                <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="374" Height="0" />
+                <Control Id="Description" Type="Text" X="135" Y="70" Width="220" Height="30" Transparent="yes" NoPrefix="yes" Text="This installer will upgrade [ProductName] on your computer to version [ProductVersion]." />
+                <Control Id="Description2" Type="Text" X="135" Y="110" Width="220" Height="30" Transparent="yes" NoPrefix="yes" Text="Click Upgrade to continue or Cancel to exit the installer." />
+                <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
+                    <Text>{\WixUI_Font_Bigger}Welcome to the [ProductName] Setup Wizard</Text>
+                </Control>
+                <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Upgrade">
+                    <Publish Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+                </Control>
+                <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="&amp;Cancel">
+                    <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+                </Control>
+            </Dialog>
+
+
+            <!-- Dialog to create shortcuts -->
+            <Dialog Id="ShortcutDialog" Width="370" Height="270" Title="Configure Shortcuts">
+                <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Configure Shortcuts" />
+                <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15" Transparent="yes" NoPrefix="yes" Text="Create program shortcuts. Click Next to continue." />
+                <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.InstallDirDlgBannerBitmap)" />
+                <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
+
+                <Control Id="LabelSelectShortcuts" Type="Text" X="25" Y="70" Width="290" Height="13" Text="Select which shortcuts to install:" />
+                <Control Id ="ShortcutStartMenu"   Type="CheckBox" X="40" Y="100" Width="320" Height="18"  CheckBoxValue="1" Property="ADD_STARTMENU_SHORTCUT" Text="Start Menu" />
+                <Control Id ="ShortcutDesktop"     Type="CheckBox" X="40" Y="130" Width="320" Height="18"  CheckBoxValue="1" Property="ADD_DESKTOP_SHORTCUT" Text="Desktop" />
+
+                <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
+                <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next" >
+                    <Publish Event="AddLocal" Value="ALL">1</Publish>
+                </Control>
+                <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&amp;Back" />
+                <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="&amp;Cancel">
+                    <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+                </Control>
+            </Dialog>
+
+
+            <!-- setup order dialogs -->
+            <Publish Dialog="WelcomeDlg"
+                  Control="Next"
+                  Event="NewDialog"
+                  Value="InstallDirDlg"
+                  Order="2">1</Publish>
+
+            <Publish Dialog="InstallDirDlg"
+                  Control="Back"
+                  Event="NewDialog"
+                  Value="WelcomeDlg">1</Publish>
+            <Publish Dialog="InstallDirDlg"
+                  Control="Next"
+                  Event="SetTargetPath"
+                  Value="[WIXUI_INSTALLDIR]"
+                  Order="1">1</Publish>
+            <Publish Dialog="InstallDirDlg"
+                  Control="Next"
+                  Event="NewDialog"
+                  Value="FeaturesDlg"
+                  Order="2">1</Publish>
+            <Publish Dialog="InstallDirDlg"
+                  Control="ChangeFolder"
+                  Property="_BrowseProperty"
+                  Value="[WIXUI_INSTALLDIR]"
+                  Order="1">1</Publish>
+            <Publish Dialog="InstallDirDlg"
+                  Control="ChangeFolder"
+                  Event="SpawnDialog"
+                  Value="BrowseDlg"
+                  Order="2">1</Publish>
+
+            <Publish Dialog="FeaturesDlg"
+                     Control="Back"
+                     Event="NewDialog"
+                     Value="InstallDirDlg"
+                     Order="2">1</Publish>
+            <Publish Dialog="FeaturesDlg"
+                     Control="Install"
+                     Event="NewDialog"
+                     Value="InitializationParametersDialog"
+                     Order="2">1</Publish>
+            
+            <Publish Dialog="InitializationParametersDialog"
+                  Control="Back"
+                  Event="NewDialog"
+                  Value="InstallDirDlg"
+                  Order="2">1</Publish>
+            <Publish Dialog="InitializationParametersDialog"
+                  Control="Next"
+                  Event="NewDialog"
+                  Value="ShortcutDialog"
+                  Order="2">1</Publish>
+
+            <Publish Dialog="ShortcutDialog"
+                  Control="Back"
+                  Event="NewDialog"
+                  Value="InitializationParametersDialog"
+                  Order="2">1</Publish>
+            <Publish Dialog="ShortcutDialog"
+                  Control="Next"
+                  Event="NewDialog"
+                  Value="VerifyReadyDlg"
+                  Order="2">1</Publish>
+
+            <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchFile" Order="1">1</Publish>
+
+            <InstallUISequence>
+                <Show Dialog="WelcomeDlg" Before="ProgressDlg" Overridable="no">NOT Installed AND NOT PREVFOUND AND NOT WIX_UPGRADE_DETECTED</Show>
+                <Show Dialog="UpdateDlg" Before="ProgressDlg" Overridable="no">WIX_UPGRADE_DETECTED AND NOT UPGRADINGPRODUCTCODE AND NOT REMOVE~="ALL"</Show>
+            </InstallUISequence>
+        </UI>
+
+        <!-- User can decide where the application should be stored -->
+        <Property Id="WIXUI_INSTALLDIR" Value ="INSTALLDIR"/>
+
+        <!-- setup icon and logo's -->
+        <Property Id="ARPPRODUCTICON" Value="logo" />
+        <Icon Id="logo" SourceFile="Images\logo.ico" />
+        <WixVariable Id="WixUIBannerBmp" Value="Images\WixUIBannerBmp.png" />
+        <WixVariable Id="WixUIDialogBmp" Value="Images\WixUIDialogBmp.png" />
+
+        <!--Features-->
+        <Feature Id="PhabricoApplication" Title="Phabrico" Level="1" ConfigurableDirectory="INSTALLDIR" Absent="disallow" Display="expand" Description="Offline Reader and Editor for Phabricator tasks and documents">
+            <ComponentGroupRef Id="PhabricoApplicationComponents" />
+
+            <Feature Id="Plugins" Title="Plugins" Level="1000" ConfigurableDirectory="INSTALLDIR" Description="Plugins to extend Phabrico">
+                <Feature Id="PluginGitanos" Title="Gitanos" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Overview of local git repositories">
+                    <ComponentGroupRef Id="PluginGitanosComponents" />
+                </Feature>
+                <Feature Id="PluginPhrictionToPDF" Title="PDF Export" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Exports Phriction documents to PDF">
+                    <ComponentGroupRef Id="PluginPhrictionToPDFComponents" />
+                </Feature>
+                <Feature Id="PluginDiagramsNet" Title="Diagrams" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams. (Diagrams.Net)">
+                    <ComponentGroupRef Id="PluginDiagramsNetComponents" />
+                </Feature>
+            </Feature>
+        </Feature>
+
+        <Property Id="IEXPLORE" Value="Explorer.exe"/>
+        <CustomAction Id="LaunchFile" Property="IEXPLORE" ExeCommand="http://localhost:13467" Return="asyncNoWait" />
+    </Product>
+
+    <Fragment>
+        <?include "Components.wxi" ?>
+
+        <!--Directory structure-->
+        <Directory Id="TARGETDIR"
+                   Name="SourceDir">
+            <Directory Id="ProgramFiles64Folder">
+                <Directory Id="INSTALLDIR"
+                           Name="Phabrico">
+                </Directory>
+            </Directory>
+
+            <Directory Id="APPCONFIG_DATABASEDIRECTORY" Name=".">
+                <Component Id="CreateEmptyDatabase"
+                           NeverOverwrite="yes"
+                           Guid="be8dffc1-7d87-40f6-ab3d-d3cbcee12e15"
+                           Win64="yes">
+                    <File Id="PhabricoDatabase" Source="Phabrico.data" KeyPath="yes"  />
+                </Component>
+                <Component Id="RemovePhabricoDatabase"
+                            Guid="c17578ab-e796-25e1-9157-a6c78e6b4110"
+                            Win64="yes">
+                    <RemoveFile Id="RemoveFilePhabricoData" Name="Phabrico.data" On="uninstall" />
+                </Component>
+            </Directory>
+        </Directory>
+    </Fragment>
+
+    <Fragment>
+        <?include "Plugin.Gitanos.wxi" ?>
+    </Fragment>
+
+    <Fragment>
+        <?include "Plugin.PhrictionToPDF.wxi" ?>
+    </Fragment>
+
+    <Fragment>
+        <?include "Plugin.DiagramsNet.wxi" ?>
+    </Fragment>
+</Wix>

@@ -1,0 +1,247 @@
+<style>
+    #tblGitanosNotificationStates input {
+        width: auto;
+    }
+    
+    #tblGitanosNotificationStates td {
+        width: auto;
+    }
+
+    .gitStates {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gitStates label {
+        position: relative;
+        padding: 15px 0 15px 45px;
+        cursor: pointer;
+    }
+
+    .gitStates label::before {
+        content: '\f096';
+        position: absolute;
+        left: 20px;
+        font: 1.5em 'FontAwesome';
+    }
+ 
+    .gitStates input:checked + label::before {
+        content: '\f14a';
+    }
+ 
+    .gitStates input {
+        display: none;
+    }
+</style>
+
+<table>
+    <tr class="setting RootDirectories">
+        <td class="aphront-form-label">
+            <label class="aphront-form-label">Local root directories</label>
+        </td>
+        <td>
+            <p class="instructions">Enter the directories where all your Git repository directories are located in:</p>
+            <div class="config-tables-header" style="width:auto; min-width: 100ch; margin-bottom: 25px;">
+                <div class="config-tables-body">
+                    <a id="btnGitanosAddRootDirectory" class="button button-gray" style="float:right; padding: 4px 30px 4px 10px;margin-right: 4px;">
+                        <span class="phui-list-item-icon phui-font-fa fa-plus" style="float:left; margin-top:2px;"></span>
+                        <div>Add root directory</div>
+                    </a>
+                </div>
+                <table id="tblGitanosRootDirectories" class="aphront-table-view">
+                    <tbody>
+                        <tr>
+                            <th class="wide">Local root directories</th>
+                            <th class="action">Remove</th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </td>
+    </tr>
+    <tr class="setting Notification">
+        <td class="aphront-form-label">
+            <label class="aphront-form-label">Gitanos::Notification</label>
+        </td>
+        <td>
+            <p class="instructions">Summarize the following states for all repositories and show the result as a notification:</p>
+            <div class="config-tables-header" style="width:auto; min-width: 100ch;">
+                <div class="gitStates">
+                    <input id="gitStateAdded" type="checkbox" @@ADDED@@>
+                    <label for="gitStateAdded">Gitanos::Added</label>
+
+                    <input id="gitStateModified" type="checkbox" @@MODIFIED@@>
+                    <label for="gitStateModified">Gitanos::Modified</label>
+
+                    <input id="gitStateRemoved" type="checkbox" @@REMOVED@@>
+                    <label for="gitStateRemoved">Gitanos::Removed</label>
+
+                    <input id="gitStateRenamed" type="checkbox" @@RENAMED@@>
+                    <label for="gitStateRenamed">Gitanos::Renamed</label>
+
+                    <input id="gitStateUntracked" type="checkbox" @@UNTRACKED@@>
+                    <label for="gitStateUntracked">Gitanos::Untracked</label>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<div id="gitanosErrorMessage" style="display:none">
+    <div class="aphront-dialog-overlay"></div>
+    <div class="aphront-dialog-head">
+        <span class="phui-header-header">ERROR</span>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup">
+            <div class="phabrico-remarkup">
+                <p class="message"></p>
+            </div>
+            <br />
+    </div>
+    <div class="aphront-dialog-tail grouped">
+        <button type="button" onclick="hideGitanosErrorMessage()">OK</button>
+    </div>
+</div>
+
+<script>
+    function addRootDirectoryToTable(rootDirectory) {
+        var newrow = document.createElement('tr');
+        var tdRootDirectory = document.createElement('td');
+        var tdAction = document.createElement('td');
+        var aAction = document.createElement('a');
+
+        newrow.appendChild(tdRootDirectory);
+        newrow.appendChild(tdAction);
+        tdAction.appendChild(aAction);
+
+        newrow.classList.add('alternate');
+        tdRootDirectory.classList.add('wide');
+        if (typeof rootDirectory.tagName === "undefined") {
+            tdRootDirectory.innerText = rootDirectory;
+        } else {
+            rootDirectory.style.width = "100%";
+            tdRootDirectory.appendChild(rootDirectory);
+            tdRootDirectory.colSpan = 2;
+            tdAction.style.display = 'none';
+
+            setTimeout(function() { 
+                    rootDirectory.focus()
+                }, 250);
+
+            rootDirectory.onblur = function(item) {
+                if (item.target.value == "") {
+                    var tr = item.target.closest('tr');
+                    tr.parentElement.removeChild(tr);
+                } else {
+                    tdRootDirectory = item.target.parentElement;
+                    tdAction = tdRootDirectory.nextSibling;
+
+                    tdRootDirectory.removeChild(item.target);
+                    tdRootDirectory.innerText = item.target.value;
+                    tdRootDirectory.colSpan = 1;
+                    tdAction.style.display = 'table-cell';
+
+                    sendGitanosConfigurationToServer();
+                }
+            };
+        }
+
+        tdAction.classList.add('action');
+        aAction.classList.add('button');
+        aAction.classList.add('small');
+        aAction.classList.add('button-gray');
+        aAction.href='/';
+        aAction.style.minWidth = '50px';
+        aAction.style.position = 'relative';
+        aAction.style.top = '-2px';
+        aAction.innerText = 'Remove';
+        aAction.onclick = function(item) {
+            var button = item.target;
+            var tr = button.closest('tr');
+            tblGitanosRootDirectories.removeChild(tr);
+            sendGitanosConfigurationToServer();
+            return false; 
+        };
+
+        tblGitanosRootDirectories.appendChild(newrow);
+    }
+
+    function sendGitanosConfigurationToServer() {
+        // collect all root-directories from configuration-table
+        var allRootDirectories =  Array.from( document.querySelectorAll('#tblGitanosRootDirectories td.wide') )
+                                .map(function(td) { 
+                                    return td.innerText; 
+                                });
+
+        // root-directories configuration
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () 
+        {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                var jsonData = JSON.parse(xmlhttp.responseText);
+                if (jsonData.status == "ERROR") {
+                    showGitanosErrorMessage(jsonData.message);
+                }
+            }
+        };
+        var configuration = new FormData();
+        configuration.append('rootDirectories',  JSON.stringify(allRootDirectories));
+
+        // notification configuration
+        var checkedGitStates = Array.prototype.slice.call( document.querySelectorAll('.gitStates input:checked'), 0 )
+                                              .map( function(input) { 
+                                                  return input.id.substring("gitState".length); 
+                                              });
+        configuration.append('gitStates', checkedGitStates);
+
+        // send to HTTP server
+        xmlhttp.open('POST', "/gitanos/configuration/save/", true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(configuration);
+    }
+
+    function hideGitanosErrorMessage() {
+        gitanosErrorMessage.style.display = 'none';
+
+        // refresh screen and open Gitanos tab again
+        document.location = '/configure/#Gitanos';
+        document.location.reload();
+    }
+
+    function showGitanosErrorMessage(message) {
+        gitanosErrorMessage.querySelector('p.message')
+                           .innerText = message;
+        gitanosErrorMessage.style.display = 'block';
+
+        gitanosErrorMessage.querySelector('button')
+                           .focus();
+    }
+
+    // initialize screen
+@{LOCAL-GIT-REPOSITORIES
+    addRootDirectoryToTable("@@ROOT-DIRECTORY@@");
+}@
+
+    btnGitanosAddRootDirectory.onclick = function(e) {
+        e.preventDefault();
+
+        // create text input field
+        var textInputField = document.createElement('input');
+        textInputField.addEventListener("keypress", function(e) {
+            var ch = (e.which) ? e.which : event.keyCode;
+            if (ch == 13) {
+                e.preventDefault();
+                e.target.blur();
+            }
+        });
+
+        addRootDirectoryToTable( textInputField );
+    };
+
+    document.querySelectorAll('.gitStates input').forEach(function(checkbox) {
+        checkbox.addEventListener('change', (event) => {
+            sendGitanosConfigurationToServer();
+        })
+    });
+
+</script>

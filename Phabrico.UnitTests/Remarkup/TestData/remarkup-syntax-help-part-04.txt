@@ -1,0 +1,50 @@
+= Layout =
+
+Make **headers** like this:
+```
+= Large Header =
+
+== Smaller Header ==
+
+===== Very Small Header =====
+
+Alternate Large Header
+======================
+
+Alternate Smaller Header
+------------------------
+```
+
+You can optionally omit the trailing `=` signs -- that is, these are the same:
+
+```
+== Smaller Header ==
+
+== Smaller Header
+```
+
+This produces headers like the ones in this document. Make sure you have an
+empty line before and after the header.
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='hdrLayout' style='padding-top: 80px;'></a>Layout </h1>
+Make <strong>headers</strong> like this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>= Large Header =
+
+== Smaller Header ==
+
+===== Very Small Header =====
+
+Alternate Large Header
+======================
+
+Alternate Smaller Header
+------------------------</code></pre></div>
+<br>
+You can optionally omit the trailing <tt class='remarkup-monospaced'>=</tt> signs -- that is, these are the same:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>== Smaller Header ==
+
+== Smaller Header</code></pre></div>
+<br>
+This produces headers like the ones in this document. Make sure you have an<br>
+empty line before and after the header.
+~~~~~~~~~~

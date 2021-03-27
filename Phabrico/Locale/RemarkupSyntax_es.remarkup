@@ -1,0 +1,637 @@
+﻿= Referencia de sintaxis de Remarkup =
+
+Phabrico utiliza un lenguaje de marcado ligero llamado "Remarkup", similar
+a otros lenguajes de marcado ligero como Markdown y Wiki markup.
+
+Este documento describe cómo dar formato a un texto mediante el uso de Remarkup.
+
+= Referencia rápida =
+
+A continuación se explica con más detalle toda la sintaxis, pero este es un breve
+tutorial para dar formato al texto en Remarkup.
+
+Estos son estilos en línea, y pueden aplicarse a la mayoría de los textos:
+```
+**En negrita** //En cursiva// ``monoespacio## ##monoespacio## ~~remocionado~~~ __subrayado__
+!!marcado!!
+T123                      # Enlace a una tarea
+{T123}                    # Enlace a una tarea (con título)
+{F123}                    # Insertar imágenes
+@username                 # Nombrar un usuario
+#project                  # Nombrar un proyecto
+[[wiki page]]             # Enlace a un documento wiki
+[[wiki page | name]]      # Enlace a un documento wiki (con título)
+http://xyz/               # Enlace a un sitio web
+[[http://xyz/ | name]]    # Enlace a un sitio web (con título)
+[name](http://xyz/)       # Enlace a un sitio web (con título)
+```
+Estos son estilos de bloque, y deben ser separados del texto circundante por líneas vacías:
+```
+= Un gran encabezado =
+
+== Un encabezado más pequeño ==
+
+## Esto también es un encabezado
+
+También un gran encabezado
+==========================
+
+También un encabezado más pequeño
+---------------------------------
+
+> Texto citado
+
+Use `-` o `*` para las balas, y `#` para las listas numeradas.
+Usar ``` o empezar la línea con dos espacios para crear bloques de código.
+Use %%% para crear un bloque de texto.
+Usar | ... | ... para crear tablas.
+```
+
+= Estilo básico =
+
+Formatee **los estilos de texto básicos** como se muestra aquí:
+```
+**Texto en negrita**
+//Texto en cursiva///
+`Texto a monoespacio`
+##Texto a monoespacio##
+~~Texto tachado~~
+__Texto subrayado__
+!!Texto marcado!!
+```
+
+Esto genera lo siguiente: **Texto en negrita**, //Texto en cursiva///
+`Texto a monoespacio`, ##Texto a monoespacio##, ~~Texto tachado~~
+__Texto subrayado__, !!Texto marcado!!
+
+= Diseño =
+
+Haz **los titulares** de esta manera:
+```
+= Un gran encabezado =
+
+== Un encabezado más pequeño ==
+
+===== Un encabezado muy pequeño =====
+
+Un gran encabezado alternativo
+==============================
+
+Un encabezado más pequeño alternativo
+-------------------------------------
+```
+
+Puedes dejar fuera los caracteres `=` y `-` al final.
+Estos dos encabezados generan la misma salida:
+
+```
+== Un encabezado más pequeño ==
+
+== Un encabezado más pequeño
+```
+
+Esto genera encabezados como los que se encuentran en este documento.
+Asegúrate de que haya una línea vacía antes y después del encabezamiento.
+
+Listas
+======
+
+Crear **listas** comenzando cada ítem con un `-` o un `-`:
+```
+lang=text
+- leche
+- huevos
+- pan
+
+* pato
+* pato
+* ganso
+```
+
+Esto genera la siguiente salida:
+
+- leche
+- huevos
+- pan
+
+* pato
+* pato
+* ganso
+
+(Nota: debes añadir un espacio después de cada carácter `-` o `-`)
+
+Puedes crear una lista numérica usando `#` en lugar de `-` o `-`:
+
+# Comprar el producto
+# Expandir el producto
+# Vender el producto de nuevo con un gran beneficio
+
+Las listas numéricas también pueden ser creadas con `1.` o `1)`.
+Si usas un número diferente a `1`, la lista comenzará a partir de ese número.
+Por ejemplo:
+
+```
+200) OK
+201) Creado
+202) Aprobado
+```
+
+Esto genera la siguiente salida:
+
+200) OK
+201) Creado
+202) Aprobado
+
+Puedes hacer listas anidadas:
+
+```
+- Cuerpo
+  - Cabeza
+  - Brazo
+    - Codo
+    - Mano
+      # Pulgar
+      # Dedo índice
+      # Dedo medio
+      # Dedo anular
+      # Pink
+  - Pierna
+    - Rodilla
+    - Pie
+```
+
+Esto genera la siguiente salida:
+
+- Cuerpo
+  - Cabeza
+  - Brazo
+    - Codo
+    - Mano
+      # Pulgar
+      # Dedo índice
+      # Dedo medio
+      # Dedo anular
+      # Pink
+  - Pierna
+    - Rodilla
+    - Pie
+
+Si se desea, la lista se puede sangrar repitiendo los mismos caracteres para mostrar
+la profundidad de la sangría:
+Por ejemplo:
+
+```
+- Árbol
+-- Rama
+--- Ramita
+```
+
+Esto produce lo siguiente:
+
+- Árbol
+-- Rama
+--- Ramita
+
+Puede añadir las casillas de verificación a los elementos de la lista anteponiéndoles el
+prefijo `[ ]` o `[X]`, como, por ejemplo:
+
+```
+- [X] Precaliente el horno a 450 grados.
+- [ ] Pelar 35 limones.
+```
+
+Esto genera el siguiente resultado:
+
+- [X] Precaliente el horno a 450 grados.
+- [ ] Pelar 35 limones.
+
+Puedes crear bloques de código precediendo cada línea con 2 espacios:
+
+  f(x, y);
+
+Pero también puedes añadir 3 tumbas de acento al principio y al final del bloque de código:
+
+```
+f(x, y);
+g(f);
+```
+
+Puedes especificar un idioma para mostrar la sintaxis con `lang=xxx`:
+  lang=text
+  lang=html
+  <a href="#">...</a>
+
+Esto coloreará el bloque de código de acuerdo con la sintaxis del lenguaje especificado, si está disponible:
+  lang=html
+  <a href="#">...</a>
+
+También puedes añadir un encabezado de `COUNTEREXAMPLE` para indicar que el bloque de código es
+incorrecto y no debe ser copiado:
+
+  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Esto genera lo siguiente:
+
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Con "lines=N" puedes determinar la altura del bloque de código.
+Con `name=nombre_de_alguien.ext` puedes darle un nombre al bloque de código:
+
+  lang=text
+  lang=html, name=ejemplo.html, lines=4, counterexample
+  <p>Manzana</p>
+  <p>Albaricoque</p>
+  <p>vocado</p>
+  <p>Plátano</p>
+  <p>Arándano</p>
+  <p>Druff</p>
+
+...generar esto:
+
+  lang=html, name=ejemplo.html, lines=4, counterexample
+  <p>Manzana</p>
+  <p>Albaricoque</p>
+  <p>vocado</p>
+  <p>Plátano</p>
+  <p>Arándano</p>
+  <p>Druff</p>
+
+
+Puedes usar los elementos `NOTE:`, `WARNING:` o `IMPORTANT:` para llamar la
+atención sobre una idea importante.
+Por ejemplo:
+
+```
+NOTE: Haga reuniones regulares para mantener a sus empleados despiertos.
+```
+
+...genera lo siguiente:
+
+NOTE: Haga reuniones regulares para mantener a sus empleados despiertos.
+
+Usar "WARNING" o "IMPORTANT" cambia el color de la llamada:
+
+WARNING: Demasiadas reuniones pueden volverse soporíferas.
+
+IMPORTANT: No vayas a muchas reuniones.
+
+
+Además, puedes usar `(NOTA)`, `(ADVERTENCIA)`, o `(IMPORTANTE)` para obtener el
+mismo efecto, pero sin mostrar `(NOTA)`, `(ADVERTENCIA)`, o `(IMPORTANTE)` en
+el resultado mostrado. Por ejemplo, esta llamada usa `(NOTA)`:
+
+(NOTA) No asista a muy pocas reuniones.
+
+
+Líneas horizontales
+===================
+
+Puedes dividir las secciones poniendo tres o más guiones en una línea por ti mismo.
+Esto crea un divisor o una línea horizontal que se asemeja a una etiqueta "<hr />",
+como esto:
+
+---
+
+Los guiones deben estar en su propia línea y separados del resto del contenido.
+Como aquí por ejemplo
+
+```
+Este segmento será separado visualmente.
+
+---
+
+Hablando de algo completamente diferente...
+```
+
+= Hipervínculos =
+
+Las URIs se muestran automáticamente: http://phabricator.org/
+
+Si tienes una URI con caracteres problemáticos en ella, como
+"http://comma.org/,", puedes rodearlo con personajes más pequeños y más grandes:
+```
+<http://comma.org/,>
+```
+
+Esto obligará al analizador a consumir toda la URI: <http://comma.org/,>
+
+También puede crear hipervínculos con nombre, donde usted determina el texto que se muestra:
+```
+[http://www.boring-legal-documents.com/ | emocionantes documentos legales]]
+```
+
+También se admiten hipervínculos de estilo Markdown:
+```
+[Toil](http://www.trouble.com)
+```
+
+= Referencias de objetos =
+
+Puedes crear enlaces a los objetos de Phabricator, como una tarea de Maniphest, mencionando su nombre:
+```
+T123 # Enlace con la tarea de Maniphest T123
+```
+
+= Integrar objetos
+
+También puedes referirte a algunos objetos (como las tareas de Maniphest) por sus nombres usando llaves:
+```
+{T123} # Enlace a la tarea de Maniphest T123 mostrando el título de la tarea
+```
+
+Estas referencias también indican cuando un objeto cambia de estado (por ejemplo, cuando se ha completado una tarea o una revisión). 
+
+== Referencias a proyectos
+
+Los proyectos pueden ser referidos usando un hashtag `#`. 
+Esto funciona por defecto con el nombre del proyecto (en minúsculas, subrayado).
+Además, puedes establecer múltiples hashtags adicionales editando los detalles del proyecto en Phabricator.
+```
+#qa, #quality_assurance
+```
+
+== Integrar imágenes o archivos
+
+Puedes añadir una imagen o un archivo colocando tirantes rizados alrededor del nombre:
+```
+{F123}
+```
+
+También puede arrastrar una imagen al área de texto (arrastrar y soltar).
+
+La mayoría de los navegadores también soportan la carga de una imagen simplemente pegándola en el área de texto.
+
+Por ejemplo, se puede parametrizar un archivo de la siguiente manera:
+```
+{F123, layout=izquierda, flotación, size=lleno, alt="un pato"}
+```
+
+Los siguientes parámetros están disponibles para todos los tipos de archivos:
+
+- **layout**
+  - left : Coloca la imagen a la izquierda (=estándar)
+  - center : Coloca la imagen en el centro
+  - right: Imagen de la derecha
+  - inline: Coloca la imagen a la izquierda, pero más cerca de la línea anterior y siguiente
+  - link: muestra un enlace en lugar de la imagen misma
+- **name** : Si "layout" es igual a "link", o si el archivo no es una imagen, este nombre se mostrará como texto de enlace.
+- **alt** : Proporciona un texto alternativo para los sistemas de asistencia.
+
+La imagen también tiene los siguientes parámetros:
+
+- **float**: Si el "layout" está en "izquierda" o "derecha" entonces el texto corre alrededor de la imagen.
+- **size**: pulgar (por defecto), completo
+- **width** Escala la imagen a un ancho específico.
+- **height**: Escala la imagen a una altura específica.
+
+Los archivos de audio y video también tienen los siguientes parámetros:
+
+- **media**: Especifica el tipo de medio como "audio" o "video". Esto permite especificar cómo debe mostrarse el archivo.
+- **loop**: Continúa reproduciendo el archivo multimedia.
+- **autoplay**: Reproduce el archivo multimedia inmediatamente.
+
+= Citar texto =
+
+Para citar el texto debe precederlo con `>`:
+```
+  > Este es el texto que se cita
+```
+
+Esto se muestra de la siguiente manera
+
+> Este es el texto que se cita
+
+= Memes =
+
+También puedes usar macros de imágenes en el contexto de los memes. Por ejemplo, si tienes una macro de imagen
+llamada "irritado", puedes crear un meme haciendo lo siguiente:
+```
+{meme, src=irritado, above=textoarriba, below=textoabajo}
+```
+
+= Referirse a los usuarios =
+
+En Maniphest puedes referirte a los usuarios de la siguiente manera:
+```
+@usuario
+```
+
+Iconos
+======
+
+Puedes añadir iconos usando la sintaxis `{icon ...}``.
+Por ejemplo:
+```
+  {icon camera}
+```
+
+Esto genera lo siguiente: {icon camera}
+
+También puedes colorear los iconos:
+```
+  {icon camera color=blue}
+```
+
+Esto genera lo siguiente: {icon camera color=blue}
+
+El [[ https://fontawesome.com/v4.7.0/icons/ || sitio web de FontAwesome]] contiene una lista de todos los iconos posibles.
+Estos colores están disponibles:
+  - dark              {icon phabrico-square, color=dark}
+  - bluegrey          {icon phabrico-square, color=bluegrey}
+  - white             {icon phabrico-square, color=white}
+  - red               {icon phabrico-square, color=red}
+  - orange            {icon phabrico-square, color=orange}
+  - yellow            {icon phabrico-square, color=yellow}
+  - green             {icon phabrico-square, color=green}
+  - blue              {icon phabrico-square, color=blue}
+  - sky               {icon phabrico-square, color=sky}
+  - indigo            {icon phabrico-square, color=indigo}
+  - pink              {icon phabrico-square, color=pink}
+  - fire              {icon phabrico-square, color=fire}
+  - violet            {icon phabrico-square, color=violet}
+  - lightbluetext     {icon phabrico-square, color=lightbluetext}
+  - lightgreytext     {icon phabrico-square, color=lightgreytext}
+  - grey              {icon phabrico-square, color=grey}
+
+Por medio del parámetro `spin`, puedes girar un icono:
+```
+  {icon cog spin}
+```
+
+Esto genera lo siguiente: {icon cog spin}
+
+
+= Documentos de Phriction (WIki) =
+
+Puede enlazar con documentos de Phriction utilizando su dirección:
+```
+  ¡Asegúrate de firmar y poner la fecha en tu [[legal/boletín]]!
+```
+
+Por defecto, el enlace se muestra con el título del documento como nombre del enlace.
+Con el pleca (`|`) puedes renombrar el enlace.  Usa esto, para engañar a tus oponentes:
+```
+  ¡Mira estos [[legal/boring_documents/ | emocionantes documentos legales]]!
+```
+
+Si inicias un hipervínculo con `./` o `../`, el resto de la dirección será evaluada desde
+la página wiki actual.
+Por ejemplo, si creas un enlace a `[[./guava]]` en el documento `fruta/`, apuntará al mismo
+enlace que `[[fruta/guava]] de otra parte.
+
+Los enlaces relativos pueden usar `../` para referirse más arriba en el árbol de documentos.
+Desde la página de "alimentación/vegetales" puedes usar `[[../fruta/guayaba]]" para navegar a la
+página de `[[alimentación/fruta/guayaba]]`. referencia de la página.
+
+Los enlaces relativos no funcionan si se usan fuera de las páginas del wiki.
+Por ejemplo, no se puede utilizar un enlace relativo en un comentario sobre una tarea porque
+no hay un lugar para determinar el origen del vínculo.
+
+Cuando se mueven documentos, los enlaces relativos no se actualizan automáticamente:
+se mantienen tal como están escritas actualmente. Después de mover un documento, puede ser necesario
+son para ver y modificar los enlaces relativos contenidos en el documento.
+
+= Bloques de texto =
+Para colocar el texto en un llamado bloque de texto, en el cual el texto debe mostrarse como
+escrito, el texto se coloca entre el `%%%`:
+```
+%%%Este texto no está formateado por Remarkup
+[[http://www.example.com | ejemplo]]
+%%%
+```
+
+El comentario no formateará el contenido de un bloque de texto.
+
+= Tablas =
+
+Remarkup apoya la sintaxis simple de la tabla:
+
+```
+| Fruta   | Color    | Precio   | ¿Cáscara?
+| ------- | -----    | -------- | ---------
+| manzana | rojo     | 0,76 EUR | no
+| plátano | amarillo | 0,16 EUR | SI
+```
+
+...genera lo siguiente:
+
+| Fruta   | Color    | Precio   | ¿Cáscara?
+| ------- | -----    | -------- | ---------
+| manzana | rojo     | 0,76 EUR | no
+| plátano | amarillo | 0,16 EUR | SI
+
+Remarkup también soporta la sintaxis simple de las tablas HTML:
+
+```
+<table>
+    <tr>
+        <th>Fruta</th>
+        <th>Color</th>
+        <th>Precio</th>
+        <th>¿Cáscara?</th>
+    </tr>
+    <tr>
+        <td>manzana</td>
+        <td>rojo</td>
+        <td>`0.76 EUR`</td>
+        <td>no</td>
+    </tr>
+    <tr>
+        <td>plátano</td>
+        <td>amarillo</td>
+        <td>`0.16 EUR`</td>
+        <td>**NO**</td>
+    </tr>
+</table>
+```
+
+...produce esto:
+
+<table>
+    <tr>
+        <th>Fruta</th>
+        <th>Color</th>
+        <th>Precio</th>
+        <th>¿Cáscara?</th>
+    </tr>
+    <tr>
+        <td>manzana</td>
+        <td>rojo</td>
+        <td>`0.76 EUR`</td>
+        <td>no</td>
+    </tr>
+    <tr>
+        <td>plátano</td>
+        <td>amarillo</td>
+        <td>`0.16 EUR`</td>
+        <td>**NO**</td>
+    </tr>
+</table>
+
+Algunos comentarios sobre esta sintaxis:
+
+- las etiquetas HTML tienen que estar en el orden correcto;
+- las etiquetas HTML no deben contener ningún atributo (`<td>` está bien, `<td style="...">` está mal);
+  - Puedes usar otro formato de Remarkup en estas celdas (por ejemplo, **negrita**, //cursiva//, etc.).
+
+Navegación
+==========
+
+Puedes usar una navegación para explicar cómo lograr algo.
+Esto puede ser útil al describir alguna documentación.
+El siguiente ejemplo explica cómo comprar limones:
+
+```
+{nav icon=home, name=Home >
+Supermercado >
+Departamento de frutas >
+icon=lemon-o, name=Limones}
+```
+
+Esto genera lo siguiente:
+
+{nav icon=home, name=Home >
+Supermercado >
+Departamento de frutas >
+icon=lemon-o, name=Limones}
+
+Tan general:
+
+  - Las secciones están separadas por medio de `>`.
+  - Cada sección puede tener un nombre y parámetros diferentes.
+  - Los parámetros disponibles son "icono", "nombre", "tipo" y "href".
+  - Si el "tipo" se equipara con las "instrucciones", entonces se indica que el usuario tiene
+    que hacer una elección o seguir instrucciones específicas.
+
+Pulsaciones de teclas
+==============
+
+Puedes visualizar las pulsaciones de las teclas.
+Por ejemplo:
+
+```
+Presiona {key M} para ver el mapa estelar.
+```
+
+...genera lo siguiente:
+
+> Presiona {key M} para ver el mapa de las estrellas.
+
+También puedes visualizar combinaciones de teclas:
+
+```
+Presione {key command option shift 3} para tomar una foto de la pantalla.
+Presione {key down down-right right LP} para realizar la técnica Hadoken.
+```
+
+...genera la siguiente salida:
+
+Presione {key command option shift 3} para tomar una foto de la pantalla.
+Presione {key down down-right right LP} para realizar la técnica Hadoken.

@@ -1,0 +1,108 @@
+Navigation Sequences
+====================
+
+You can use `{nav ...}` to render a stylized navigation sequence when helping
+someone to locate something. This can be useful when writing documentation.
+For example, you could give someone directions to purchase lemons:
+
+{nav icon=home, name=Home >
+Grocery Store >
+Produce Section >
+icon=lemon-o, name=Lemons}
+
+To render this example, use this markup:
+
+```
+{nav icon=home, name=Home >
+Grocery Store >
+Produce Section >
+icon=lemon-o, name=Lemons}
+```
+
+In general:
+
+  - Separate sections with `>`.
+  - Each section can just have a name to add an element to the navigation
+    sequence, or a list of key-value pairs.
+  - Supported keys are `icon`, `name`, `type` and `href`.
+  - The `type` option can be set to `instructions` to indicate that an element
+    is asking the user to make a choice or follow specific instructions.
+
+Keystrokes
+==========
+
+You can use `{key ...}` to render a stylized keystroke. For example, this:
+
+```
+Press {key M} to view the starmap.
+```
+
+...renders this:
+
+> Press {key M} to view the starmap.
+
+You can also render sequences with modifier keys. This:
+
+```
+Use {key command option shift 3} to take a screenshot.
+Press {key down down-right right LP} to activate the hadoken technique.
+```
+
+...renders this:
+
+> Use {key command option shift 3} to take a screenshot.
+> Press {key down down-right right LP} to activate the hadoken technique.
+
+
+= Fullscreen Mode =
+
+Remarkup editors provide a fullscreen composition mode. This can make it easier
+to edit large blocks of text, or improve focus by removing distractions. You can
+exit **Fullscreen** mode by clicking the button again or by pressing escape.
+
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='hdrNavigation_Sequences' style='padding-top: 80px;'></a>Navigation Sequences </h1>
+<br>
+You can use <tt class='remarkup-monospaced'>{nav ...}</tt> to render a stylized navigation sequence when helping<br>
+someone to locate something. This can be useful when writing documentation.<br>
+For example, you could give someone directions to purchase lemons:<br>
+<div class='remarkup-nav-sequence'><span class='remarkup-nav-sequence-item '><span class='phui-icon-view phui-font-fa fa-home'></span>Home</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '>Grocery Store</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '>Produce Section</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '><span class='phui-icon-view phui-font-fa fa-lemon-o'></span>Lemons</span></div>
+<br>
+To render this example, use this markup:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>{nav icon=home, name=Home &gt;
+Grocery Store &gt;
+Produce Section &gt;
+icon=lemon-o, name=Lemons}</code></pre></div>
+<br>
+In general:<br>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>Separate sections with <tt class='remarkup-monospaced'>&gt;</tt>.</li>
+  <li class='remarkup-list-item'>Each section can just have a name to add an element to the navigation sequence, or a list of key-value pairs.</li>
+  <li class='remarkup-list-item'>Supported keys are <tt class='remarkup-monospaced'>icon</tt>, <tt class='remarkup-monospaced'>name</tt>, <tt class='remarkup-monospaced'>type</tt> and <tt class='remarkup-monospaced'>href</tt>.</li>
+  <li class='remarkup-list-item'>The <tt class='remarkup-monospaced'>type</tt> option can be set to <tt class='remarkup-monospaced'>instructions</tt> to indicate that an element is asking the user to make a choice or follow specific instructions.</li>
+</ul>
+
+<h1 class='remarkup-header'><a name='hdrKeystrokes' style='padding-top: 80px;'></a>Keystrokes </h1>
+<br>
+You can use <tt class='remarkup-monospaced'>{key ...}</tt> to render a stylized keystroke. For example, this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>Press {key M} to view the starmap.</code></pre></div>
+<br>
+...renders this:<br>
+<blockquote><p>Press <kbd>M</kbd>
+ to view the starmap.</p></blockquote>
+<br>
+You can also render sequences with modifier keys. This:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>Use {key command option shift 3} to take a screenshot.
+Press {key down down-right right LP} to activate the hadoken technique.</code></pre></div>
+<br>
+...renders this:<br>
+<blockquote><p>Use <kbd>&#8984;</kbd><span class='kbd-join'>+</span><kbd>&#8997;</kbd><span class='kbd-join'>+</span><kbd>&#8679;</kbd><span class='kbd-join'>+</span><kbd>3</kbd>
+ to take a screenshot.<br>
+Press <kbd>&#x2B63;</kbd><span class='kbd-join'>+</span><kbd>&#x2B68;</kbd><span class='kbd-join'>+</span><kbd>&#x2B62;</kbd><span class='kbd-join'>+</span><kbd>LP</kbd>
+ to activate the hadoken technique.</p></blockquote>
+<br>
+<h1 class='remarkup-header'><a name='hdrFullscreen_Mode' style='padding-top: 80px;'></a>Fullscreen Mode </h1>
+Remarkup editors provide a fullscreen composition mode. This can make it easier<br>
+to edit large blocks of text, or improve focus by removing distractions. You can<br>
+exit <strong>Fullscreen</strong> mode by clicking the button again or by pressing escape.
+~~~~~~~~~~

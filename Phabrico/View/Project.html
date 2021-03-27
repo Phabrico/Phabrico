@@ -1,0 +1,449 @@
+<style>
+tr.disallowed a.disallow {
+    display: none;
+}
+
+.fa-spinner.fa-pulse {
+    width: 13px;
+    height: 13px;
+    top: 13px;
+    position: relative;
+    text-align: center;
+    display: none;
+}
+</style>
+
+<div class="app-window">
+    <form id="frmProjectSelection" action="" method="POST">
+        <input type="hidden" id="item" name="item">
+        <input type="hidden" id="showprojects" name="showprojects" value="all">
+
+        <div class="aphront-form-input" style="display: flex;">
+            <i class="phui-font-fa fa-spinner fa-pulse" id="spinShowAll"></i>
+            <a id="btnShowAll" href="#" onclick="showGlobalSpinner(this, '/project/showAll/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: none;">
+                <i class="phui-font-fa fa-eye"></i>Show all projects
+            </a>
+            <a id="btnShowSelectedOnly" href="#" onclick="showGlobalSpinner(this, '/project/showSelected/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: inline-block;">
+                <i class="phui-font-fa fa-eye"></i>Show selected projects
+            </a>
+            <i class="phui-font-fa fa-spinner fa-pulse" id="spinSelectAll"></i>
+            <a id="btnSelectAll" href="#" onclick="showGlobalSpinner(this, '/project/selectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: inline-block">
+                <i class="phui-font-fa fa-check"></i>Select all projects
+            </a>
+            <a id="btnUnselectAll" href="#" onclick="showGlobalSpinner(this, '/project/unselectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: none;">
+                <i class="phui-font-fa fa-check"></i>Unselect all projects
+            </a>
+            <i class="phui-font-fa fa-spinner fa-pulse" id="spinDisallowAll"></i>
+            <a id="btnDisallowAll" href="#" onclick="showGlobalSpinner(this, '/project/disallowAll/')" class="button small button-red" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px;">
+                <i class="phui-font-fa fa-ban"></i>Disallow all projects
+            </a>
+
+            <input id="filterProject" name="filterProject" type="text" class="full-width" placeholder="Type a project name..." oninput="populateTable(this.value)">
+            <input id="colorForAll" name="colorForAll" type="hidden" />
+        </div>
+        <div class="scrollableTable" style="height:calc(100vh - 140px);">
+            <table id="tblProjects" class="aphront-table-view">
+                <thead>
+                    <tr>
+                        <th class="action" style="text-align:center; min-width:88px;">Select</th>
+                        <th class="action" style="text-align:center; min-width:88px;">Disallow</th>
+                        <th class="action" style="text-align:center; min-width:88px;">Set color</th>
+                        <th class="wide">Project</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script>
+// set button widths/visibility
+btnShowAll.style.display = 'inline-block';
+var maxWidth = Math.max(16 + parseInt(btnShowAll.getBoundingClientRect().width), 16 + parseInt(btnShowSelectedOnly.getBoundingClientRect().width));
+btnShowAll.style.display = 'none';
+btnShowAll.style.minWidth = maxWidth + "px";
+btnShowSelectedOnly.style.minWidth = maxWidth + "px";
+spinShowAll.style.minWidth = (maxWidth + 18) + "px";
+btnShowAll.style.maxWidth = btnShowAll.style.minWidth;
+btnShowSelectedOnly.style.maxWidth = btnShowSelectedOnly.style.minWidth;
+spinShowAll.style.maxWidth = spinShowAll.style.minWidth;
+
+btnSelectAll.style.display = 'inline-block';
+var maxWidth = Math.max(16 + parseInt(btnSelectAll.getBoundingClientRect().width), 16 + parseInt(btnUnselectAll.getBoundingClientRect().width));
+btnSelectAll.style.display = 'none';
+btnSelectAll.style.minWidth = maxWidth + "px";
+btnUnselectAll.style.minWidth = maxWidth + "px";
+spinSelectAll.style.minWidth = (maxWidth + 21) + "px";
+btnSelectAll.style.maxWidth = btnSelectAll.style.minWidth;
+btnUnselectAll.style.maxWidth = btnUnselectAll.style.minWidth;
+spinSelectAll.style.maxWidth = spinSelectAll.style.minWidth;
+
+var maxWidth = 3 + parseInt(btnDisallowAll.getBoundingClientRect().width);
+spinDisallowAll.style.minWidth = maxWidth + "px";
+spinDisallowAll.style.maxWidth = spinDisallowAll.style.minWidth;
+
+// fill table
+populateTable("");
+document.getElementById('filterProject').focus();
+
+// set page title
+document.title = "Phabrico - Projects";
+
+function showGlobalSpinner(allButton, url)
+{
+    if (allButton == btnShowAll) {
+        showprojects.value = 'all';
+        spinShowAll.style.display = 'inline-block';
+    }
+
+    if (allButton == btnShowSelectedOnly) {
+        showprojects.value = 'selected';
+        spinShowAll.style.display = 'inline-block';
+    }
+
+    if (allButton == btnSelectAll || allButton == btnUnselectAll) {
+        spinSelectAll.style.display = 'inline-block';
+    }
+
+    if (allButton == btnDisallowAll) {
+        spinDisallowAll.style.display = 'inline-block';
+    }
+
+    if (typeof allButton.colorRectangle !== 'undefined') {
+        colorForAll.value = allButton.colorRectangle.style.backgroundColor;
+    }
+
+    allButton.style.display = 'none';
+
+
+    var data = new FormData(frmProjectSelection);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if(xmlhttp.readyState == 4)
+        {
+            populateTable(filterProject.value);
+        }
+    }
+    xmlhttp.open('POST', url, true);
+    xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+    xmlhttp.send(data);
+}
+
+function submitItem(id, url)
+{
+    setTimeout(function() {
+        var elem = document.getElementById('item');
+        elem.value = id.hash.substring(1);
+
+        var data = new FormData(frmProjectSelection);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if(xmlhttp.readyState == 4)
+            {
+                populateTable(filterProject.value);
+            }
+        }
+        xmlhttp.open('POST', url, true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }, 250);
+}
+
+function disallowProject(ev)
+{
+    var anchor = ev.target;
+    if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
+    anchor.style.display = 'none';
+    anchor.inprogress.style.display = 'inline-block';
+    submitItem(anchor, "/project/disallow");
+}
+
+function selectProject(ev)
+{
+    var anchor = ev.target;
+    if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
+    anchor.style.display = 'none';
+    anchor.inprogress.style.display = 'inline-block';
+    submitItem(anchor, "/project/select");
+}
+
+function unselectProject(ev)
+{
+    var anchor = ev.target;
+    if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
+    anchor.style.display = 'none';
+    anchor.inprogress.style.display = 'inline-block';
+    submitItem(anchor, "/project/unselect");
+}
+
+function populateTable(firstCharacters)
+{
+    if (typeof tblProjects.xmlhttp !== 'undefined')
+    {
+        tblProjects.xmlhttp.abort();
+    }
+
+    var url = "/project/query/" + encodeURI(firstCharacters).split('/').join('%2F');  // encode characters in URL and make sure that all '/' characters are also encoded
+    if (url.endsWith('/') == false) url += '/';
+
+    var data = new FormData();
+    data.append('showprojects', showprojects.value);
+
+    tblProjects.xmlhttp = new XMLHttpRequest();
+    var xmlhttp = tblProjects.xmlhttp;
+    xmlhttp.overrideMimeType("application/json");
+    xmlhttp.open('POST', url, true);
+    xmlhttp.onload = function() {
+        document.querySelector('#tblProjects tbody').innerHTML = "";
+
+        try
+        {
+            var jsonResponse = JSON.parse(xmlhttp.responseText);
+            jsonResponse.records.forEach(function(record) {
+                var tbody = document.querySelector('#tblProjects tbody');
+
+                // create new row
+                var row = tbody.insertRow();
+                row.classList.add('alternate');
+                switch (record.Selected) {
+                    case 'Disallowed':
+                        row.classList.add('disallowed');
+                        break;
+
+                    case 'Selected':
+                        row.classList.add('selected');
+                        break;
+                }
+
+                // add Select/Unselect button to row
+                var text = null;
+                var cell = row.insertCell();
+                cell.classList.add('action');
+                var anchorSelect = document.createElement('a');
+                anchorSelect.href = "#" + record.Token;
+                anchorSelect.classList.add("button");
+                anchorSelect.classList.add("small");
+                anchorSelect.classList.add(record.Token);
+                anchorSelect.style.minWidth = "70px";
+                var fontAwesome = document.createElement('i');
+                fontAwesome.classList.add('phui-font-fa');
+                fontAwesome.classList.add('fa-check');
+                anchorSelect.appendChild(fontAwesome);
+                if (record.Selected == 'Selected') {
+                    text = document.createTextNode(Locale.Translate("Unselect"));
+                    anchorSelect.classList.add("button-gray");
+                    anchorSelect.addEventListener("click", unselectProject, false);
+                }
+                else {
+                    text = document.createTextNode(Locale.Translate("Select"));
+                    anchorSelect.classList.add("button-blue");
+                    anchorSelect.addEventListener("click", selectProject, false);
+                }
+
+                // set text for Select/Unselect button
+                anchorSelect.appendChild(text);
+                cell.appendChild(anchorSelect);
+
+                // set spinner icon for Select/Unselect button
+                var inprogress = document.createElement('i');
+                inprogress.classList.add('phui-font-fa');
+                inprogress.classList.add('fa-spinner');
+                inprogress.classList.add('fa-pulse');
+                inprogress.style.display = 'none';
+                inprogress.style.marginLeft = '40px';
+                inprogress.style.top = '0px';
+                cell.appendChild(inprogress);
+
+                anchorSelect.inprogress = inprogress;
+
+                // add Disallow button to row
+                var text = null;
+                var cell = row.insertCell();
+                cell.classList.add('action');
+                var anchorDisallow = document.createElement('a');
+                anchorDisallow.href = "#" + record.Token;
+                anchorDisallow.classList.add("button");
+                anchorDisallow.classList.add("disallow");
+                anchorDisallow.classList.add("small");
+                anchorDisallow.classList.add(record.Token);
+                anchorDisallow.style.minWidth = "70px";
+                var fontAwesome = document.createElement('i');
+                fontAwesome.classList.add('phui-font-fa');
+                fontAwesome.classList.add('fa-ban');
+                anchorDisallow.appendChild(fontAwesome);
+                text = document.createTextNode(Locale.Translate("Disallow"));
+                anchorDisallow.classList.add("button-red");
+                anchorDisallow.addEventListener("click", disallowProject, false);
+
+                // set text for Disallow button
+                anchorDisallow.appendChild(text);
+                cell.appendChild(anchorDisallow);
+
+                // set spinner icon for Disallow button
+                inprogress = document.createElement('i');
+                inprogress.classList.add('phui-font-fa');
+                inprogress.classList.add('fa-spinner');
+                inprogress.classList.add('fa-pulse');
+                inprogress.style.display = 'none';
+                inprogress.style.marginLeft = '40px';
+                cell.appendChild(inprogress);
+
+                anchorDisallow.inprogress = inprogress;
+
+                // add SetColor button to row
+                var cell = row.insertCell();
+                cell.classList.add('action');
+                var colorSelector = document.createElement('div');
+                colorSelector.classList.add('color-selector');
+                colorSelector.classList.add(record.Token);
+                var colorRectangle = document.createElement('div');
+                colorRectangle.classList.add('color');
+                if (record.Color == '') record.Color = '#0080ff';
+                colorRectangle.style.backgroundColor = record.Color;
+                colorSelector.appendChild(colorRectangle);
+                var text = document.createElement('span');
+                text.innerText = Locale.Translate('Set color');
+                colorSelector.appendChild(text);
+                cell.appendChild(colorSelector);
+
+                var picker = new Picker({
+                    parent: colorSelector,
+                    template: `<div class="picker_wrapper layout_default no_alpha no_cancel popup popup_right" style="width: min-content;min-width: 300px;" tabindex="-1">
+                                    <div class="picker_arrow"></div>
+                                    <div class="picker_hue picker_slider" style="color: rgb(0, 128, 255);">
+                                        <div class="picker_selector" style="left: 58.3007%;"></div>
+                                    </div>
+                                    <div class="picker_sl" style="background-color: rgb(0, 128, 255); color: rgb(0, 128, 255); height: 150px;">
+                                        <div class="picker_selector" style="left: 100%; top: 50%;"></div>
+                                    </div>
+                                    <div class ="picker_alpha picker_slider"
+                                         style="background-image: linear-gradient(rgb(0, 128, 255), rgba(0, 128, 255, 0)), url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2'%3E%3Cpath d='M1,0H0V1H2V2H1' fill='lightgrey'/%3E%3C/svg%3E&quot;);">
+                                        <div class="picker_selector" style="top: 0%;"></div>
+                                    </div>
+                                    <table>
+                                       <tr>
+                                          <td style="width: 100%;">
+                                             <div class ="picker_editor">
+                                                 <input aria-label="Type a color name or hex value">
+                                             </div>
+                                          </td>
+                                          <td>
+                                             <div class ="picker_doneforall">
+                                                <button class ="btnSetColorForAll button button-gray" href="#" onclick="showGlobalSpinner(this, '/project/setColorForAll/')" class ="button button-gray">Set color for all shown project tags</button>
+                                             </div>
+                                          </td>
+                                          <td>
+                                             <div class ="picker_done">
+                                                 <button class="button">Set project tag color</button>
+                                             </div>
+                                          </td>
+                                          <td class="hidden">
+                                             <div class ="picker_sample" style="color: rgb(0, 128, 255);"></div>
+                                          </td>
+                                          <td class ="hidden">
+                                             <div class ="picker_cancel" style="display:none">
+                                                 <button>Cancel</button>
+                                             </div>
+                                          </td>
+                                       </tr>
+                                    </table>
+                                </div>`,
+                    alpha: false,
+                });
+                picker.settings.defaultColor = colorRectangle.style.backgroundColor;
+
+                picker.onChange = function (color) {
+                    colorRectangle.style.backgroundColor = color.rgbaString;
+                };
+
+                picker.onClose = function (color) {
+                    colorRectangle.style.backgroundColor = colorRectangle.originalBackgroundColor;
+                };
+
+                picker.onDone = function (color) {
+                    saveColorForToken(colorRectangle, record.Token, color.rgbaString);
+                };
+
+                picker.onOpen = function (color) {
+                    this._domOkay.innerText = Locale.Translate('Set project tag color');
+                    this.setColor(colorRectangle.style.backgroundColor, { silent: true });
+                    colorRectangle.originalBackgroundColor = colorRectangle.style.backgroundColor;
+
+                    var btnSetColorForAll = colorSelector.querySelector('.picker_doneforall button');
+                    btnSetColorForAll.innerText = Locale.Translate('Set color for all shown project tags');
+                    btnSetColorForAll.colorRectangle = colorRectangle;
+                };
+
+                // add project text to row
+                cell = row.insertCell();
+                cell.classList.add('wide');
+                var anchorProjectTasks = document.createElement('a');
+                anchorProjectTasks.href = "/project/info/" + record.Token;
+                text = document.createTextNode("  " + record.ProjectName);
+                anchorProjectTasks.appendChild(text);
+                cell.appendChild(anchorProjectTasks);
+            });
+
+            if (tblProjects.querySelectorAll('tbody tr:not(.selected)').length > 0) {
+                btnSelectAll.style.display = 'inline-block';
+                btnUnselectAll.style.display = 'none';
+            } else {
+                btnSelectAll.style.display = 'none';
+                btnUnselectAll.style.display = 'inline-block';
+            }
+
+            spinShowAll.style.display = 'none';
+            spinSelectAll.style.display = 'none';
+            spinDisallowAll.style.display = 'none';
+
+            if (showprojects.value == 'all') {
+                btnShowSelectedOnly.style.display = 'inline-block';
+                btnShowAll.style.display = 'none';
+            } else  {
+                btnShowAll.style.display = 'inline-block';
+                btnShowSelectedOnly.style.display = 'none';
+            }
+
+            btnDisallowAll.style.display = 'inline-block';
+
+            if (jsonResponse.nbrSelected == 1  &&  jsonResponse.noneProjectSelected == 'true') {
+                var btnUnselectNone = document.querySelector('.button.PHID-PROJ-NONE.button-gray');
+                if (btnUnselectNone != null && document.querySelector('tr.selected').contains(btnUnselectNone)) {
+                    btnUnselectNone.style.pointerEvents = 'none';
+                    btnUnselectNone.parentNode.style.cursor = 'no-drop';
+                }
+            }
+        }
+        catch(exc)
+        {
+            // show logon dialog
+            document.location = "/";
+        }
+    };
+    xmlhttp.send(data);
+}
+
+function saveColorForToken(colorRectangle, token, rgbaString) {
+    var data = new FormData();
+    data.append('token', token);
+    data.append('color', rgbaString);
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.overrideMimeType("application/json");
+    xmlhttp.open('POST', '/project/setcolor/', true);
+    xmlhttp.onload = function () {
+        if (xmlhttp.readyState == 4) {
+            try {
+                var jsonResponse = JSON.parse(xmlhttp.responseText);
+                if (jsonResponse.status == "OK") {
+                    colorRectangle.style.backgroundColor = rgbaString;
+                }
+            }
+            catch (exc) {
+            }
+        }
+    }
+    xmlhttp.send(data);
+}
+</script>

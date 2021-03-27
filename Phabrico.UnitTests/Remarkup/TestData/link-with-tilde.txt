@@ -1,0 +1,4 @@
+http://www.example.com/~~
+~~~~~~~~~~
+<a class='phriction-link' href='http://www.example.com/~~'>http://www.example.com/~~</a>
+~~~~~~~~~~

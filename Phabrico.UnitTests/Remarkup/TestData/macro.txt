@@ -1,0 +1,15 @@
+:mymacro
+  :mymacro
+- :mymacro
+:mymacro :mymacro
+~~~~~~~~~~
+<img alt='small.png' src='/file/data/1234/'>
+<br>
+<img alt='small.png' src='/file/data/1234/'>
+<br>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>:mymacro</li>
+</ul>
+
+:mymacro :mymacro
+~~~~~~~~~~

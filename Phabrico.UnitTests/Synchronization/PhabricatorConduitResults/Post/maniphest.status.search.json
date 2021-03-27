@@ -1,0 +1,35 @@
+{
+    "result": {
+        "data": [{
+                "name": "Open",
+                "value": "open",
+                "closed": false,
+                "special": "default"
+            }, {
+                "name": "Resolved",
+                "value": "resolved",
+                "closed": true,
+                "special": "closed"
+            }, {
+                "name": "Wontfix",
+                "value": "wontfix",
+                "closed": true
+            }, {
+                "name": "Invalid",
+                "value": "invalid",
+                "closed": true
+            }, {
+                "name": "Duplicate",
+                "value": "duplicate",
+                "closed": true,
+                "special": "duplicate"
+            }, {
+                "name": "Spite",
+                "value": "spite",
+                "closed": true
+            }
+        ]
+    },
+    "error_code": null,
+    "error_info": null
+}

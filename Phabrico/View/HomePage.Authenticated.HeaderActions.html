@@ -1,0 +1,229 @@
+<div style="float:right;display: table; position: absolute; top: 0; right: 0; height: 100%;">
+    <div style="display: table-cell; vertical-align: middle;">
+        <div style="margin-left: auto; margin-right: auto;padding-right: 10px;">
+
+            <div class="user-menu" tabindex="-1">
+                <div class="link">
+                    <div class="icon">
+                        @{IF @@PUBLIC-ACCESS@@=False@
+                        <span>@@ICON-USERNAME@@</span>
+                        }@
+                        @{IF @@PUBLIC-ACCESS@@=True@
+                        <span><img alt="configuration" src="/images/cogwheel.png?version=@@PHABRICO-VERSION@@" width="17" height="17" style="margin-top:3px"></span>
+                        }@
+                    </div>
+                    <span class="caret"></span>
+                </div>
+                <div class="content">
+                    <ul>
+                        <li>
+                            <a href="#" style="margin-top:15px;" onclick="showChangeLanguageDialog();">
+                                <span>Change language</span>
+                            </a>
+                        </li>
+                        @{IF @@PUBLIC-ACCESS@@=False@
+                        <li>
+                            <a href="#" style="margin-top:15px;" onclick="showChangePasswordDialog();">
+                                <span>Change password</span>
+                            </a>
+                        </li>
+                        }@
+                        <li>
+                            <a href="/logout" style="margin-top:15px;">
+                                <span>Log out</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <input id="searchPhabrico" aria-label="Search" autocomplete="off" type="text" placeholder="Search" class="form-control search-box" min-length="4" oninput="phabrico.search.Show(this.value);" onfocus="select();" onmouseup="return false;" onblur="phabrico.search.Hide();" />
+
+            <span style="position: absolute; top: 50%; right: 25px; margin-top: -12px; text-decoration:none;">
+                <i class="phui-font-fa fa fa-search"></i>
+            </span>
+
+            <span>&nbsp;</span>                
+
+        </div>
+    </div>
+</div>
+
+@{IF @@PUBLIC-ACCESS@@=False@
+<form class="dlgChangePassword aphront-dialog-view modalview" action="" method="POST" onsubmit="submitNewPassword(this); return false;" style="display:none;position: absolute; width: 600px; left: calc(50vw - 300px);">
+    <div class="aphront-dialog-overlay"></div>
+    <div class="aphront-dialog-head">
+        <span class="phui-header-header">Change password</span>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup">
+        <div class="aphront-dialog-full-width">
+            <div id="errorMessage" class="phui-info-severity-error grouped" style="display:none;">
+                <div class="phui-info-view-icon" style="display:flex;">
+                    <span class="phui-font-fa fa-exclamation-circle phui-info-icon">
+                    </span>
+                </div>
+                <div class="phui-info-view-body">Password is incorrect.</div>
+            </div>
+            <div class="aphront-form-control aphront-form-control-oldPassword">
+                <label class="aphront-form-label" for="oldPassword" style="width:100%;">Current password</label>
+                <div class="aphront-form-input">
+                    <input type="password" name="oldPassword" id="oldPassword" oninput="inputChanged()">
+                </div>
+            </div>
+            <div class="aphront-form-control aphront-form-control-newPassword1">
+                <label class="aphront-form-label" for="newPassword1" style="width:100%;">New password</label>
+                <label id="invalidPasswordReason" class="aphront-form-label" style="position: absolute;right: 30px;width: unset;color: red;"></label>
+                <div class="aphront-form-input">
+                    <input type="password" name="newPassword1" id="newPassword1" oninput="inputChanged()">
+                </div>
+            </div>
+            <div class="aphront-form-control aphront-form-control-newPassword2">
+                <label class="aphront-form-label" for="newPassword2" style="width:100%;">Verify new password</label>
+                <label id="passwordVerificationReason" class="aphront-form-label" style="position: absolute;right: 30px;width: unset;color: red;"></label>
+                <div class="aphront-form-input">
+                    <input type="password" name="newPassword2" id="newPassword2" oninput="inputChanged()">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="aphront-dialog-tail">
+        <button class="button-gray" id="btnChangePaswordCancel" type="button" style="width:140px; cursor: pointer;" onclick="hideChangePasswordDialog()">Cancel</button>
+        <button class="button-blue" id="btnChangePaswordConfirm" type="submit" style=":140px; cursor: not-allowed;" disabled="">Change password</button>
+    </div>
+</form>
+}@
+
+<form class="dlgChangeLanguage aphront-dialog-view modalview" action="" method="POST" onsubmit="submitNewLanguage(this); return false;" style="display:none;position: absolute; width: 600px; left: calc(50vw - 300px);">
+    <div class="aphront-dialog-overlay"></div>
+    <div class="aphront-dialog-head">
+        <span class="phui-header-header">Change language</span>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup">
+        <div class="aphront-dialog-full-width">
+            <div class="aphront-form-control aphront-form-control-newLanguage" style="display:flex; max-height: 40px;">
+                <label class="aphront-form-label" for="newLanguage" style="width:max-content;min-width: 30px;">Language</label>
+                <label class="select" style="width:100%; margin: 4px 10px 0px;">
+                    <select id="newLanguage" name="newLanguage" class="language">
+                        @@LANGUAGE-OPTIONS@@
+                    </select>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="aphront-dialog-tail">
+        <button class="button-gray" id="btnChangeLanguageCancel" type="button" style="width:140px; cursor: pointer;" onclick="hideChangeLanguageDialog()">Cancel</button>
+        <button class="button-blue" id="btnChangeLanguageConfirm" type="submit" style=":140px; cursor: not-allowed;" disabled="">Change language</button>
+    </div>
+</form>
+
+<script>
+    function showChangeLanguageDialog()
+    {
+        var dlgChangeLanguage = document.querySelector(".dlgChangeLanguage");
+        dlgChangeLanguage.style.display = 'block';
+    }
+
+    function hideChangeLanguageDialog()
+    {
+        var dlgChangeLanguage = document.querySelector(".dlgChangeLanguage");
+        dlgChangeLanguage.style.display = 'none';
+    }
+
+    function newLanguageInputChanged()
+    {
+        btnChangeLanguageConfirm.disabled = false;
+        btnChangeLanguageConfirm.style.cursor = 'pointer';
+    }
+
+    function submitNewLanguage(form) {
+        var data = new FormData(form);
+        var http = new XMLHttpRequest();
+        http.open('POST', "/auth/language/", true);
+        http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        http.onload = function () {
+            console.log(this);
+            if (this.responseText.length > 0) {
+                var jsonResponse = JSON.parse(this.responseText);
+                if (jsonResponse.Status === "OK") {
+                    window.location = window.location.pathname;  // reload page but without any parameters (e.g. ?action=save)
+                    return;
+                }
+
+                errorMessage.style.display = 'flex';
+            }
+        }
+
+        http.send(data);
+    }
+
+    newLanguage.addEventListener('input', newLanguageInputChanged);
+
+@{IF @@PUBLIC-ACCESS@@=False@
+    function showChangePasswordDialog()
+    {
+        errorMessage.style.display = 'none';
+        oldPassword.value = "";
+        newPassword1.value = "";
+        newPassword2.value = "";
+
+        var dlgChangePassword = document.querySelector(".dlgChangePassword");
+        dlgChangePassword.style.display = 'block';
+
+        oldPassword.focus();
+    }
+
+    function hideChangePasswordDialog()
+    {
+        var dlgChangePassword = document.querySelector(".dlgChangePassword");
+        dlgChangePassword.style.display = 'none';
+    }
+
+    function inputChanged(e) {
+        var invalidPassword = {};
+        var paswwordIsValid = isValidPassword(newPassword1.value, invalidPassword);
+
+        invalidPasswordReason.innerText = invalidPassword.reason;
+        passwordVerificationReason.innerText = "";
+
+        if (paswwordIsValid) {
+            if (newPassword1.value != newPassword2.value) {
+                passwordVerificationReason.innerText = Locale.Translate("The passwords entered do not match");
+            }
+        }
+
+        if (oldPassword.value != '' && 
+            paswwordIsValid && 
+            newPassword1.value == newPassword2.value)
+        {
+            btnChangePaswordConfirm.disabled = false;
+            btnChangePaswordConfirm.style.cursor = 'pointer';
+        }
+        else
+        {
+            btnChangePaswordConfirm.disabled = true;
+            btnChangePaswordConfirm.style.cursor = 'not-allowed';
+        }
+    }
+
+    function submitNewPassword(form) {
+        var data = new FormData(form);
+        var http = new XMLHttpRequest();
+        http.open('POST', "/auth/password/", true);
+        http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        http.onload = function () {
+            console.log(this);
+            if (this.responseText.length > 0) {
+                var jsonResponse = JSON.parse(this.responseText);
+                if (jsonResponse.Status === "OK") {
+                    window.location = "/logout";
+                    return;
+                }
+
+                errorMessage.style.display = 'flex';
+            }
+        }
+
+        http.send(data);
+    }
+}@
+</script>

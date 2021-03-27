@@ -1,0 +1,146 @@
+<div class="maniphest-list @@SHOW-TOC@@">
+    <div class="toc">
+        <div>
+            <ul id="phui-navigator" class="no-print">
+                <li>Queries</li>
+                <li>
+                    <ul class="no-print">
+                        <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/assigned/">Assigned</a></li>
+                        <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/authored/">Authored</a></li>
+                        <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/subscribed/">Subscribed</a></li>
+                        <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/opentasks/">Open Tasks</a></li>
+                        <li>
+                            <ul class="no-print">
+                                <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/opentasks/perproject/">Per Project</a></li>
+                                <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/opentasks/peruser/">Per User</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div>
+        <div class="crumbs">
+            <a href="/maniphest">
+                <span class="phui-font-fa fa-anchor" style="padding-right: 5px"><b>Maniphest</b></span>
+            </a>
+            <a class="crumbsAction" href="/maniphest/?action=new" style="text-align: right;">
+                <span class="visual-only phui-icon-view phui-font-fa fa-plus-square"></span>
+                <span class="phui-crumbs-action-name">Create Task</span>
+            </a>
+        </div>
+    </div>
+
+    @{IF @@TASKS-AVAILABLE@@=yes@
+        <div class="maniphest-list-overview">
+          @{TASK-GROUP
+            @{IF @@TASK-GROUP-NAME@@=@
+            <div class="app-window">
+            }@
+            @{IFNOT @@TASK-GROUP-NAME@@=@
+            <div class="app-window collapsable">
+            }@
+                <div class="app-window-head">
+                    <span>@@TASK-GROUP-NAME@@</span>
+                </div>
+                <div class="app-window-body">
+                @{TASK
+                    <div class="maniphest-list-view">
+                        <div class="maniphest-list-head">
+                            <span>@@PRIORITY-HEADER@@</span>
+                        </div>
+
+                        @{TASKDETAIL
+                        <div class="maniphest-list-item @@PROJECT-TOKENS@@">
+                            <table class="maniphest-list-item-table">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="maniphest-list-icon phui-font-fa fa-exclamation-circle @@PRIORITY-COLOR@@" title="@@PRIORITY-HEADER@@"></span>
+                                        </td>
+                                        <td style="width: 100%;">
+                                            <span class="maniphest-list-item-title">T@@TASK-ID@@
+                                                <a href="/maniphest/T@@TASK-ID@@/" title="@@TASK-TITLE@@">@@TASK-TITLE@@</a>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="maniphest-list-item-timestamp">@@TASK-TIMESTAMP@@</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <span class="maniphest-list-item-state @@TASK-UNSYNCED@@" title="This modified task hasn't been uploaded yet to the Phabricator server"></span>
+                                            <span style="display:inline-block; margin-top: 5px;">
+                                                <ul class="maniphest-list-item-projects">
+                                                    @{TASKDETAIL-PROJECTS
+                                                    <li class="maniphest-list-item-project">
+                                                        <a class="project-reference phui-font-fa fa-briefcase" href="/project/info/@@PROJECT-TOKEN@@/"/ style="@@PROJECT-STYLE@@">@@PROJECT-NAME@@</a>
+                                                    </li>
+                                                    }@
+                                                </ul>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="maniphest-list-item-assigned">
+                                                Assigned<span>:</span>
+                                                <a href="/user/info/@@TASK-USER-TOKEN@@/">@@TASK-USER@@</a>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- end detail -->
+                        }@
+                    </div>
+                <!-- end task -->
+                }@
+                </div>
+            </div>
+          }@
+        </div>
+        <div style="margin-left: 50%; display:flex;">
+            <button id="maniphest-navigation-first" class="button maniphest-navigation @@NAVIGATION-POSITION@@" type="button" onclick="navigate(0)">
+                <span class="phui-font-fa fa-fast-backward"></span>&nbsp;<span>First</span>
+            </button>
+            <button id="maniphest-navigation-previous" class="button maniphest-navigation @@NAVIGATION-POSITION@@" type="button" onclick="navigate(@@NAVIGATION-PREVIOUS-POSITION@@)">
+                <span class="phui-font-fa fa-backward"></span>&nbsp;<span>Previous</span>
+            </button>
+            <button id="maniphest-navigation-next" class="button maniphest-navigation @@NAVIGATION-POSITION@@" type="button" onclick="navigate(@@NAVIGATION-NEXT-POSITION@@)"><span>Next</span>&nbsp;
+                <span class="phui-font-fa fa-forward"></span>
+            </button>
+        </div>
+    }@
+
+    @{IF @@TASKS-AVAILABLE@@=no@
+        <div style="margin-left: 150px;">
+            <span><i>No tasks found</i></span>
+        </div>
+    }@
+</div>
+
+<script>
+    function navigate(position) {
+        if (position == 0) {
+            document.location = ".";
+        } else  {
+            document.location = "?after=" + position;
+        }
+    }
+
+    var italicMenuItems = [].slice.call(document.querySelectorAll('#phui-navigator a')).filter(function(o) { return getComputedStyle(o)["font-style"] == "italic"; });
+    if (italicMenuItems.length == 1) {
+        var lastCrumbObject = document.querySelector('.crumbs a');
+
+        var span = document.createElement('span');
+        span.innerText = '  >  ';
+        lastCrumbObject.insertAdjacentElement('afterEnd', span);
+        lastCrumbObject = span;
+
+        a = document.createElement('a');
+        a.href = italicMenuItems[0].href;
+        a.innerText = italicMenuItems[0].innerText;
+        lastCrumbObject.insertAdjacentElement('afterEnd', a)
+    }
+</script>

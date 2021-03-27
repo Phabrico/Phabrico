@@ -1,0 +1,31 @@
+= Basic Styling =
+
+Format **basic text styles** like this:
+```
+**bold text**
+//italic text//
+`monospaced text`
+##monospaced text##
+~~deleted text~~
+__underlined text__
+!!highlighted text!!
+```
+
+Those produce **bold text**, //italic text//, `monospaced text`, ##monospaced
+text##, ~~deleted text~~, __underlined text__, and !!highlighted text!!
+respectively.
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='hdrBasic_Styling' style='padding-top: 80px;'></a>Basic Styling </h1>
+Format <strong>basic text styles</strong> like this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>**bold text**
+//italic text//
+`monospaced text`
+##monospaced text##
+~~deleted text~~
+__underlined text__
+!!highlighted text!!</code></pre></div>
+<br>
+Those produce <strong>bold text</strong>, <em>italic text</em>, <tt class='remarkup-monospaced'>monospaced text</tt>, <tt class='remarkup-monospaced'>monospaced
+text</tt>, <del>deleted text</del>, <u>underlined text</u>, and <span class='remarkup-highlight'>highlighted text</span><br>
+respectively.
+~~~~~~~~~~

@@ -1,0 +1,46 @@
+﻿<style>
+    .container {
+        width: 100vw;
+        position: relative;
+        margin: 15px;
+    }
+
+    .stacktrace {
+        background-color: var(--stacktrace-background-color);
+        color: var(--stacktrace-color);
+        display: inline-table;
+        font-size: 0.75em;
+        left: -150px;
+        padding: 10px 10px 10px 0px;
+        text-align: left;
+        top: 200px;
+    }
+
+    .vertical-center {
+        margin: 0;
+        position: absolute;
+        left: 150px;
+        top: 50%;
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+        width: 100%;
+        text-align: center;
+        font-size: 2em;
+    }
+
+    .vertical-center p,
+    .vertical-center pre {
+        position: absolute;
+    }
+</style>
+
+<div class="container">
+    <span class="fa fa-exclamation-triangle" style="position: absolute;top: 10px;font-size: 9em;color: red;"></span>
+    <div class="vertical-center">
+        <p style="font-size: 2em;font-weight: bold;">Page unavailable</p>
+        <p style="top: 80px;width: 900px;text-align: left; font-size:.75em;">
+            This phriction document or maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users.<br><br>
+            Check the <a href="/project">Projects</a> and/or <a href="/user">Users</a> screen in which this configuration can be adjusted.
+        </p>
+    </div>
+</div>

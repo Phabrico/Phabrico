@@ -1,0 +1,11 @@
+query ##SELECT * FROM `table`##
+
+`SELECT * FROM ##table##`
+
+`**x**`
+
+~~~~~~~~~~
+query <tt class='remarkup-monospaced'>SELECT * FROM `table`</tt><br>
+<tt class='remarkup-monospaced'>SELECT * FROM ##table##</tt><br>
+<tt class='remarkup-monospaced'>**x**</tt>
+~~~~~~~~~~

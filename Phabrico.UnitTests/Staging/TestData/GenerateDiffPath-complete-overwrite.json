@@ -1,0 +1,27 @@
+{
+    "execute": {
+        "method": ["GenerateDiffPath"],
+        "arguments": [ 
+            "{F24180}", 
+            "blabla
+{F24784}
+bleble
+1 blibli
+bloblo
+{F24782, width=450}
+blublu", 
+
+        ]
+    },
+
+    "validate": {
+        "methodResult": "<{<F<2<4<1<8<0<}>b>l>a>b>l>a=
+>{>F>2>4>7>8>4>}>
+>b>l>e>b>l>e>
+>1> >b>l>i>b>l>i>
+>b>l>o>b>l>o>
+>{>F>2>4>7>8>2>,> >w>i>d>t>h>=>4>5>0>}>
+>b>l>u>b>l>u"
+    }
+}
+

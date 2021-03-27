@@ -1,0 +1,8 @@
+﻿# Dutch translations
+
+# General
+msgid "PluginName.PhrictionToPDF"
+msgstr "Exporteer naar PDF"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to export these as well ?"
+msgstr "Er zijn @@NBR-CHILD-DOCUMENTS@@ onderliggende documenten. Wilt u deze ook exporteren ?"

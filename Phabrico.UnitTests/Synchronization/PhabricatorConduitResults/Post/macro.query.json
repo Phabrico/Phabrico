@@ -1,0 +1,27 @@
+{
+    "result": {
+        "water": {
+            "uri": "http:\/\/192.168.178.26:80\/file\/data\/mffzjsejeuxdug37husl\/PHID-FILE-5amliyv5bk2g4oeinj3s\/water.png",
+            "phid": "PHID-MCRO-gfbbj3zim3ygt3nux2po",
+            "authorPHID": "PHID-USER-avflgkkgmrvd526jk522",
+            "dateCreated": "1578227394",
+            "filePHID": "PHID-FILE-5amliyv5bk2g4oeinj3s"
+        },
+        "logo": {
+            "uri": "http:\/\/192.168.178.26:80\/file\/data\/eu6lb554bru2ob6zvswq\/PHID-FILE-yezt4hwodadiyydp2yje\/logo.png",
+            "phid": "PHID-MCRO-gkjdrt363mwwmj4sacvo",
+            "authorPHID": "PHID-USER-avflgkkgmrvd526jk522",
+            "dateCreated": "1578223885",
+            "filePHID": "PHID-FILE-yezt4hwodadiyydp2yje"
+        },
+        "favicon": {
+            "uri": "http:\/\/192.168.178.26:80\/file\/data\/tbr7lm5csxnb6an2f2cs\/PHID-FILE-l5tnrt6x2njesuubeajj\/favicon",
+            "phid": "PHID-MCRO-v7gnbarszijbydondxhy",
+            "authorPHID": "PHID-USER-avflgkkgmrvd526jk522",
+            "dateCreated": "1577873630",
+            "filePHID": "PHID-FILE-l5tnrt6x2njesuubeajj"
+        }
+    },
+    "error_code": null,
+    "error_info": null
+}

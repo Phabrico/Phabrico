@@ -1,0 +1,135 @@
+<form action="" method="POST" onsubmit="postForm(this, '/auth/login'); return false;" class="aphront-dialog-view ">
+    <div class="aphront-dialog-head" style="display: flex;flex-direction: row;justify-content: space-between;">
+        <span class="phui-header-header">Create New User</span>
+        <select id="newLanguage" style="min-width:0px; width: auto; border-width: 0px 0px 1px 1px; border-color: #ccc; border-style: solid;">
+            @@LANGUAGE-OPTIONS@@
+        </select>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup">
+        <div class="aphront-dialog-full-width">
+            <div class="phui-info-severity-error grouped" style="display:@@STYLE.DISPLAY.ERROR@@;">
+                <div class="phui-info-view-icon" style="display:@@STYLE.DISPLAY.ERROR@@">
+                    <span class="phui-font-fa fa-exclamation-circle phui-info-icon">
+                    </span>
+                </div>
+                <div class="phui-info-view-body">@@ERRORMESSAGE@@</div>
+            </div>
+            <div class="aphront-form-control aphront-form-control-text" style="padding-top: 10px;">
+                <label class="aphront-form-label" for="username">Username</label>
+                <div class="aphront-form-input">
+                    <input type="text" name="username" id="username" value="@@USERNAME@@" autofocus>
+                </div>
+            </div>
+            <div class="aphront-form-control aphront-form-control-password">
+                <label class="aphront-form-label" for="password">Password</label>
+                <label id="invalidPasswordReason" class="aphront-form-label" style="position: absolute;right: 30px;width: unset;color: red;"></label>
+                <div class="aphront-form-input">
+                    <input type="password" name="password" id="password" value="@@PASSWORD@@">
+                </div>
+            </div>
+            <div id="verifyPassword" class="aphront-form-control aphront-form-control-password">
+                <label class="aphront-form-label" for="password2">Verify Password</label>
+                <label id="passwordVerificationReason" class="aphront-form-label" style="position: absolute;right: 30px;width: unset;color: red;"></label>
+                <div class="aphront-form-input">
+                    <input type="password" name="password2" id="password2" value="">
+                </div>
+            </div>
+            <div id="phabricatorUrlInputField" class="aphront-form-control aphront-form-control-text">
+                <label class="aphront-form-label" for="phabricatorUrl">Phabricator URL</label>
+                <div class="aphront-form-input">
+                    <input type="text" name="phabricatorUrl" id="phabricatorUrl" value="@@PHABRICATORURL@@">
+                </div>
+            </div>
+            <div id="conduitInputField" class="aphront-form-control aphront-form-control-text">
+                <label class="aphront-form-label" for="conduitApiToken">Conduit API Token</label>
+                <div class="aphront-form-input">
+                    <input type="text" name="conduitApiToken" id="conduitApiToken" value="@@CONDUITAPITOKEN@@">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="aphront-dialog-tail">
+        <button class="button-green" id="btnCreateUser" type="submit">Create User</button>
+    </div>
+</form>
+
+<script>
+
+const inputChanged = function(e) {
+    var invalidPassword = {};
+    var paswwordIsValid = isValidPassword(password.value, invalidPassword);
+
+    if (document.activeElement != document.body && document.activeElement != username) {  // do not show error immediately during startup
+        invalidPasswordReason.innerText = invalidPassword.reason;
+    }
+
+    passwordVerificationReason.innerText = "";
+
+    if (paswwordIsValid) {
+        if (password.value != password2.value) {
+            passwordVerificationReason.innerText = "The passwords entered do not match";
+        }
+    }
+
+    if (username.value != '' && 
+        paswwordIsValid && 
+        phabricatorUrl.value.match(/^https?:\/\/.+/) != null && 
+        conduitApiToken.value.match(/^api-[a-zA-Z0-9]{28}$/) != null &&
+        password.value == password2.value)
+    {
+        btnCreateUser.disabled = false;
+        btnCreateUser.style.cursor = 'pointer';
+    }
+    else
+    {
+        btnCreateUser.disabled = true;
+        btnCreateUser.style.cursor = 'not-allowed';
+    }
+}
+
+const newLanguageInputChanged = function (e) {
+    var language = newLanguage.options[newLanguage.selectedIndex].value;
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open('POST', "/auth/setLanguage/" + language + "/", true);
+    xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4) {
+            document.cookie = 'language=' + language;
+            window.location.reload();
+        };
+    };
+
+    xmlhttp.send();
+}
+
+const urlEntered = function(e) {
+    if (phabricatorUrl.value.match("https?://") == null) 
+    {
+        var m = phabricatorUrl.value.match("[^?&]*:/*");
+        if (!m && phabricatorUrl.value != "")
+        {
+            phabricatorUrl.value = "http://" + phabricatorUrl.value;
+        }
+        else
+        {
+            phabricatorUrl.value = "http://" + phabricatorUrl.value.substring(m.index);
+        }
+
+        inputChanged();
+    }
+}
+
+username.addEventListener('input', inputChanged);
+password.addEventListener('input', inputChanged);
+password2.addEventListener('input', inputChanged);
+conduitApiToken.addEventListener('input', inputChanged);
+phabricatorUrl.addEventListener('input', inputChanged);
+phabricatorUrl.addEventListener('blur', urlEntered);
+
+newLanguage.addEventListener('input', newLanguageInputChanged);
+
+document.addEventListener('DOMContentLoaded', function () {
+    inputChanged();
+});
+
+</script>

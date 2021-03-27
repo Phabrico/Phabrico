@@ -1,0 +1,65 @@
+{
+    "result": {
+        "data": [{
+                "id": 445,
+                "type": "FILE",
+                "phid": "PHID-FILE-5amliyv5bk2g4oeinj3s",
+                "fields": {
+                    "name": "water.png",
+                    "dataURI": "http:\/\/127.0.0.2:46975\/file\/data\/qewktwwt4g2gvd2dfut4\/PHID-FILE-5amliyv5bk2g4oeinj3s\/water.png",
+                    "size": 6731,
+                    "dateCreated": 1578755814,
+                    "dateModified": 1578755814,
+                    "policy": {
+                        "view": "users",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 403,
+                "type": "FILE",
+                "phid": "PHID-FILE-yezt4hwodadiyydp2yje",
+                "fields": {
+                    "name": "logo.png",
+                    "dataURI": "http:\/\/127.0.0.2:46975\/file\/data\/mffzjsejeuxdug37husl\/PHID-FILE-yezt4hwodadiyydp2yje\/logo.png",
+                    "size": 6854,
+                    "dateCreated": 1578227394,
+                    "dateModified": 1578227394,
+                    "policy": {
+                        "view": "no-one",
+                        "edit": "no-one"
+                    }
+                },
+            }, {
+                "id": 2,
+                "type": "FILE",
+                "phid": "PHID-FILE-l5tnrt6x2njesuubeajj",
+                "fields": {
+                    "name": "favicon",
+                    "dataURI": "http:\/\/127.0.0.2:46975\/file\/data\/a4zxi2cuhegp2pfq2kwq\/PHID-FILE-l5tnrt6x2njesuubeajj\/favicon",
+                    "size": 5135,
+                    "dateCreated": 1563288228,
+                    "dateModified": 1563288228,
+                    "policy": {
+                        "view": "users",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }
+        ],
+        "maps": {},
+        "query": {
+            "queryKey": null
+        },
+        "cursor": {
+            "limit": 100,
+            "after": null,
+            "before": null,
+            "order": null
+        }
+    },
+    "error_code": null,
+    "error_info": null
+}

@@ -1,0 +1,10 @@
+[[http://www.example.com/ | Example]](http://www.alternate.org/)
+
+(http://www.alternate.org/)[[http://www.example.com/ | Example]]
+
+<http://www.example.com/ [[http://www.example.net/ | Example]]>
+~~~~~~~~~~
+<a class='phriction-link' href='http://www.example.com/'>Example</a>(<a class='phriction-link' href='http://www.alternate.org/'>http://www.alternate.org/</a>)<br>
+(<a class='phriction-link' href='http://www.alternate.org/'>http://www.alternate.org/</a>)<a class='phriction-link' href='http://www.example.com/'>Example</a><br>
+&lt;<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a> <a class='phriction-link' href='http://www.example.net/'>Example</a>&gt;
+~~~~~~~~~~

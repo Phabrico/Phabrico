@@ -1,0 +1,12 @@
+This should be a list:
+
+  - apple
+  - banana
+
+~~~~~~~~~~
+This should be a list:<br>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>apple</li>
+  <li class='remarkup-list-item'>banana</li>
+</ul>
+~~~~~~~~~~

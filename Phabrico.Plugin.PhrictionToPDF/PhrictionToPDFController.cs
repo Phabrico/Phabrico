@@ -1,0 +1,415 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Web;
+
+using Phabrico.Controllers;
+using Phabrico.Http;
+using Phabrico.Http.Response;
+using Phabrico.Miscellaneous;
+using Phabrico.Storage;
+
+using Newtonsoft.Json;
+using NReco.PdfGenerator;
+
+namespace Phabrico.Plugin
+{
+    /// <summary>
+    /// Represents the controller for all the PhrictionToPDF functionalities
+    /// </summary>
+    public class PhrictionToPDFController : PluginController
+    {
+        /// <summary>
+        /// internal counter for creating a unique cache key (see cachedFileData)
+        /// </summary>
+        static int cacheCounter = 0;
+
+        /// <summary>
+        /// The NReco PDFGenerator will convert HTML to PDF.
+        /// For linked images in the HTML, new HTTP requests are made from the NReco library itself.
+        /// Because all data in the Phabrico database is encrypted, all linked images need to be temporary decoded and cached into this dictionary.
+        /// When the NReco library creates a HTTP request to an image, the image data will be retrieved from this dictionary (see HttpGetCachedDecodedFile)
+        /// </summary>
+        static Dictionary<string,Http.Response.File> cachedFileData = new Dictionary<string, Http.Response.File>();
+
+        /// <summary>
+        /// Retrieves the decoded data of a referenced image in the Phriction document to be exported to PDF
+        /// See also cachedFileData
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="fileObject"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/PhrictionToPDF/file/data", Unsecure = true)]
+        public void HttpGetCachedDecodedFile(Http.Server httpServer, Browser browser, ref Http.Response.File fileObject, string[] parameters, string parameterActions)
+        {
+            string cacheKey = parameters.LastOrDefault();
+
+            Http.Response.File result;
+            if (cachedFileData.TryGetValue(cacheKey, out result))
+            {
+                fileObject = result;
+            }
+            else
+            {
+                fileObject = null;
+            }
+        }
+
+        /// <summary>
+        /// This method is fired when the user clicks on the 'Export to PDF' in the Phriction action pane.
+        /// It will convert to Remarkup first to HTML.
+        /// Afterwards it will modify some CSS stylesheets in the resulting HTML to hide some data or presenting it
+        /// better for PDF.
+        /// The modified generated HTML will then be exported to PDF by means of the NReco PDFGenerator library.
+        /// 
+        /// This method will also check if there are any underlying Phriction documents under the current Phriction document.
+        /// If so, a 'Confirm' JSON request will be sent instead representing a question to the user if the underlying documents
+        /// should also be exported to PDF.
+        /// The response for this 'Confirm' JSON request is handled by the HttpPostExportToPDFConfirmation method
+        /// After this HttpPostExportToPDFConfirmation reponse is handled in the browser, this method is executed again
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        [UrlController(URL = "/PhrictionToPDF")]
+        public JsonMessage HttpPostExportToPDF(Http.Server httpServer, Browser browser, string[] parameters)
+        {
+            string title = PhrictionData.Crumbs.Split('>').LastOrDefault().Trim();
+
+            cacheCounter++;
+
+            Storage.Account accountStorage = new Storage.Account();
+            Storage.Phriction phrictionStorage = new Storage.Phriction();
+
+            using (Storage.Database database = new Storage.Database(null))
+            {
+                SessionManager.Token token = SessionManager.GetToken(browser);
+                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
+
+                // unmask encryption key
+                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
+            }
+
+            List<string> underlyingPhrictionTokens = new List<string>();
+            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            {
+                string jsonData;
+                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, PhrictionData.Path);
+
+                if (phrictionDocument != null)
+                {
+                    RetrieveUnderlyingPhrictionDocuments(database, phrictionDocument.Token, ref underlyingPhrictionTokens);
+                }
+
+
+                if (underlyingPhrictionTokens.Any() && PhrictionData.ConfirmState == ConfirmResponse.None)
+                {
+                    jsonData = JsonConvert.SerializeObject(new
+                    {
+                        Status = "Confirm",
+                        Message = Locale.TranslateText("There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to export these as well ?", browser.Session.Locale)
+                                        .Replace("@@NBR-CHILD-DOCUMENTS@@", underlyingPhrictionTokens.Count.ToString())
+                    });
+
+                    return new JsonMessage(jsonData);
+                }
+                else
+                {
+                    HtmlToPdfConverter htmlToPdf = new HtmlToPdfConverter();
+
+                    // overwrite content again because we need to know the linked objects
+                    Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
+                    PhrictionData.Content = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+
+                    // move headers 1 level lower
+                    PhrictionData.Content = LowerHeaderLevels(PhrictionData.Content);
+
+                    // add title
+                    PhrictionData.Content = "<h1>" + HttpUtility.HtmlEncode(phrictionDocument.Name) + "</h1>" + PhrictionData.Content;
+
+                    // read content of all linked files and store them temporary in cache dictionary
+                    Storage.File fileStorage = new Storage.File();
+                    Storage.Stage stageStorage = new Stage();
+                    foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
+                    {
+                        string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
+                        if (cachedFileData.ContainsKey(cacheKey)) continue;
+                        
+                        Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token);
+                        if (linkedFileWithContent == null)
+                        {
+                            linkedFileWithContent = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, linkedFile.ID, true);
+                            if (linkedFileWithContent == null)
+                            {
+                                // file not found in database ?!?
+                                continue;
+                            }
+                        }
+
+                        cachedFileData[cacheKey] = new Http.Response.File(linkedFileWithContent.DataStream, linkedFileWithContent.ContentType, linkedFileWithContent.FileName, true);
+                        PhrictionData.Content = PhrictionData.Content.Replace("/file/data/" + linkedFileWithContent.ID.ToString() + "/", 
+                                                  httpServer.Address + "PhrictionToPDF/file/data/" + cacheKey.ToString() + "/");
+                    }
+
+                    // do we also need to export the underlying documents ?
+                    if (PhrictionData.ConfirmState == ConfirmResponse.Yes)
+                    {
+                        foreach (string underlyingPhrictionToken in underlyingPhrictionTokens)
+                        {
+                            phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken);
+                            if (phrictionDocument != null)
+                            {
+                                if (string.IsNullOrWhiteSpace(phrictionDocument.Content)) continue;
+
+                                string html = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+                                foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
+                                {
+                                    string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
+                                    if (cachedFileData.ContainsKey(cacheKey)) continue;
+
+                                    Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token);
+                                    if (linkedFileWithContent == null)
+                                    {
+                                        linkedFileWithContent = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, linkedFile.ID, true);
+                                        if (linkedFileWithContent == null)
+                                        {
+                                            // file not found in database ?!?
+                                            continue;
+                                        }
+                                    }
+
+                                    cachedFileData[cacheKey] = new Http.Response.File(linkedFileWithContent.DataStream, linkedFileWithContent.ContentType, linkedFileWithContent.FileName, true);
+                                    html = html.Replace("/file/data/" + linkedFileWithContent.ID.ToString() + "/",
+                                                        httpServer.Address + "PhrictionToPDF/file/data/" + cacheKey.ToString() + "/");
+                                }
+
+                                // move headers 1 level lower
+                                html = LowerHeaderLevels(html);
+
+                                // add title
+                                html = "<h1>" + HttpUtility.HtmlEncode(phrictionDocument.Name) + "</h1>" + html;
+
+                                PhrictionData.Content += "<div class='page-break'></div>";
+                                PhrictionData.Content += string.Format("<div class='underlying-document-title'>{0}</div>", HttpUtility.HtmlEncode(phrictionDocument.Name));
+                                PhrictionData.Content += html;
+                            }
+                        }
+                    }
+
+                    // remove maximum auto-size parameters for images
+                    PhrictionData.Content = PhrictionData.Content.Replace("width: 100%;max-width: max-content;", "");
+
+                    // add a <br> tag before each image
+                    PhrictionData.Content = PhrictionData.Content.Replace("<img ", "<br><img ");
+
+                    // convert HTML to PDF
+                    PhrictionData.Content = MergeStyleSheets(title, PhrictionData.Content);
+                    byte[] pdfBytes = htmlToPdf.GeneratePdf(PhrictionData.Content);
+                    string pdfBase64 = Convert.ToBase64String(pdfBytes);
+
+                    // clear cache
+                    string cacheKeyPrefix = string.Format("{0}-", cacheCounter);
+                    foreach (string cacheKey in cachedFileData.Keys.ToArray())
+                    {
+                        if (cacheKey.StartsWith(cacheKeyPrefix) == false) continue;
+                        cachedFileData.Remove(cacheKey);
+                    }
+
+                    // return result
+                    jsonData = JsonConvert.SerializeObject(new
+                    {
+                        Status = "Finished",
+                        Base64Data = pdfBase64,
+                        FileName = title + ".pdf",
+                        ContentType = "application/pdf"
+                    });
+
+                    return new JsonMessage(jsonData);
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method is fired when the user confirms or declines to export underlying Phriction documents to PDF
+        /// See also HttpPostExportToPDF
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        [UrlController(URL = "/PhrictionToPDF/confirm")]
+        public JsonMessage HttpPostExportToPDFConfirmation(Http.Server httpServer, Browser browser, string[] parameters)
+        {
+            string content = browser.Session.FormVariables["content"];
+            string toc = browser.Session.FormVariables["toc"];
+            string crumbs = browser.Session.FormVariables["crumbs"];
+            string path = browser.Session.FormVariables["path"];
+
+            Storage.Account accountStorage = new Storage.Account();
+            Storage.Phriction phrictionStorage = new Storage.Phriction();
+
+            using (Storage.Database database = new Storage.Database(null))
+            {
+                SessionManager.Token token = SessionManager.GetToken(browser);
+                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
+
+                // unmask encryption key
+                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
+            }
+
+            List<string> underlyingPhrictionTokens = new List<string>();
+            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            {
+                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, path);
+
+                if (phrictionDocument != null)
+                {
+                    RetrieveUnderlyingPhrictionDocuments(database, phrictionDocument.Token, ref underlyingPhrictionTokens);
+                }
+
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.Append(content);
+
+                foreach (string underlyingPhrictionToken in underlyingPhrictionTokens)
+                {
+                    Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
+                    phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken);
+                    string html = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+                }
+            }
+
+            string jsonData;
+            if (underlyingPhrictionTokens.Any())
+            {
+                jsonData = JsonConvert.SerializeObject(new
+                {
+                    Status = "Confirm",
+                    Message = Locale.TranslateText("There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to export these as well ?", browser.Session.Locale)
+                });
+            }
+            else
+            {
+                jsonData = JsonConvert.SerializeObject(new
+                {
+                    Status = "Finished"
+                });
+            }
+
+            return new JsonMessage(jsonData);
+        }
+
+        /// <summary>
+        /// This method will increase all H HTML tags
+        /// E.g. H1 becomes H2
+        /// </summary>
+        /// <param name="originalHTML"></param>
+        /// <returns></returns>
+        private string LowerHeaderLevels(string originalHTML)
+        {
+            string result = originalHTML;
+
+            Match[] headerTags = RegexSafe.Matches(originalHTML, "</?h([1-6])").OfType<Match>().ToArray();
+            foreach (Match headerTag in headerTags)
+            {
+                int headerLevel = Int32.Parse(headerTag.Groups[1].Value);
+                result = result.Substring(0, headerTag.Groups[1].Index)
+                       + (headerLevel + 1).ToString()
+                       + result.Substring(headerTag.Groups[1].Index + 1);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Merges some PDF-friendly CSS with some HTML content
+        /// </summary>
+        /// <param name="title">Title to be shown in PDF document</param>
+        /// <param name="content">HTML content to be restyled</param>
+        /// <returns>PDF-friendly HTML</returns>
+        private string MergeStyleSheets(string title, string content)
+        {
+            title = HttpUtility.HtmlEncode(title);
+
+            return string.Format(@"<html lang='en'>
+                        <head>
+                            <meta content='text/html;charset=utf-8' http-equiv='Content-Type'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1'>
+                            <meta name='google' content='notranslate'>
+                            <title>{0}</title>
+                            <style>
+                                .phui-font-fa::before {{
+                                    content: '\200B';
+                                }}
+
+                                .page-break {{
+                                    display: block;
+                                    page-break-before: always;
+                                }}
+
+                                .underlying-document-title {{
+                                    font-weight: bold;
+                                    text-decoration: underline;
+                                    font-size: 2.5em;
+                                    margin-bottom: .5em;
+                                }}
+
+                                body {{
+                                    border-collapse: collapse;
+                                    font-family: sans-serif;
+                                    font-size: 14px;
+                                    direction: ltr;
+                                    text-align: left;
+                                    unicode-bidi: embed;
+                                    -webkit-text-size-adjust: none;
+                                }}
+
+                                table {{
+                                    border-collapse: collapse;
+                                }}
+
+                                th, td {{
+                                    border: solid 1px black;
+                                    padding: 3px 6px;
+                                }}
+
+                                th {{
+                                    background: #ddd;
+                                }}
+
+                                a {{
+                                    color: #04f;
+                                }}
+
+                                button {{
+                                    display: none;
+                                }}
+                            </style>
+                        </head>
+                        <body class='phriction' data-theme='light'>{1}</body></html>",
+                        title,
+                        content);
+        }
+
+        /// <summary>
+        /// Downloads recursively all underlying Phriction documents for a given Phriction document
+        /// </summary>
+        /// <param name="database">Phabrico database</param>
+        /// <param name="phrictionToken">Token of Phriction document to be analyzed</param>
+        /// <param name="underlyingPhrictionTokens">Collection of tokens of all underlying Phriction documents</param>
+        private void RetrieveUnderlyingPhrictionDocuments(Database database, string phrictionToken, ref List<string> underlyingPhrictionTokens)
+        {
+            foreach (string childToken in database.GetUnderlyingTokens(phrictionToken, "WIKI"))
+            {
+                if (underlyingPhrictionTokens.Contains(childToken)) continue;
+                underlyingPhrictionTokens.Add(childToken);
+
+                RetrieveUnderlyingPhrictionDocuments(database, childToken, ref underlyingPhrictionTokens);
+            }
+        }
+    }
+}

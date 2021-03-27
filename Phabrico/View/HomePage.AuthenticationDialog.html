@@ -1,0 +1,72 @@
+<form action="" method="POST" onsubmit="postForm(this, '/auth/login@@REDIRECT@@'); return false;" class="aphront-dialog-view" style="display:block">
+    <div class="aphront-dialog-head">
+        <span class="phui-header-header">Log In</span>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup">
+        <div class="aphront-dialog-full-width">
+            <div class="phui-info-severity-error grouped" style="display:@@STYLE.DISPLAY.ERROR@@;">
+                <div class="phui-info-view-icon" style="display:@@STYLE.DISPLAY.ERROR@@">
+                    <span class="phui-font-fa fa-exclamation-circle phui-info-icon">
+                    </span>
+                </div>
+                <div class="phui-info-view-body">@@ERRORMESSAGE@@</div>
+            </div>
+            <div class="aphront-form-control aphront-form-control-text">
+                <label class="aphront-form-label" for="username" style="width:100%;">Username<span style="display:@@STYLE.DISPLAY.ERROR@@;" class="aphront-form-error">Invalid</span>
+                </label>
+                <div class="aphront-form-input">
+                    <input type="text" name="username" id="username" value="@@USERNAME@@" autofocus="" oninput="inputChanged()">
+                </div>
+            </div>
+            <div class="aphront-form-control aphront-form-control-password">
+                <label class="aphront-form-label" for="password" style="width:100%;">Password<span style="display:@@STYLE.DISPLAY.ERROR@@;" class="aphront-form-error">Invalid</span>
+                </label>
+                <div class="aphront-form-input">
+                    <input type="password" name="password" id="password" value="@@PASSWORD@@" oninput="inputChanged()">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="aphront-dialog-tail">
+        <div class="phui-font-fa fa-sign-in" style="height: 1px;overflow: hidden;"></div> <!-- stupid hack to preload font-awesome font for Firefox -->
+        <button class="button-blue" id="btnLogIn" type="submit" style="cursor: not-allowed;" disabled="">Log In</button>
+        @{IF @@PUBLIC-ACCESS@@=True@
+        <a href="/" class="button button-blue" style="float: right">Cancel</a>
+        }@
+    </div>
+
+
+<script>
+function generateString(length) {
+   var result           = '';
+   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+   var charactersLength = characters.length;
+   for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
+}
+
+const inputChanged = function(e) {
+    if (username.value != '' && 
+        isValidPassword(password.value))
+    {
+        btnLogIn.disabled = false;
+        btnLogIn.style.cursor = 'pointer';
+    }
+    else
+    {
+        btnLogIn.disabled = true;
+        btnLogIn.style.cursor = 'not-allowed';
+    }
+}
+
+inputChanged();
+
+// disable autosave for password input field
+ Array.prototype.slice.call(document.querySelectorAll('input[type=password]'))
+                .map( function(e) { 
+                    e.autocomplete = generateString(32); 
+                });
+</script>
+</form>

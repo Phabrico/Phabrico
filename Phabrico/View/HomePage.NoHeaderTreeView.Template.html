@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="@@LOCALE@@" class="notranslate" translate="no">
+    <head>
+      <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
+      <meta name="google" content="notranslate">
+      <title>Phabrico</title>
+      <link rel="stylesheet" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="shortcut icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <script src="/scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+      <script src="/scripts/highlight.min.js?version=@@PHABRICO-VERSION@@"></script>
+      <script>
+          var hljsCssFile = 'vs-modified.css';
+          if ('@@THEME@@' == 'dark') hljsCssFile = 'vs2015-modified.css';
+          var link = document.createElement( "link" );
+          link.href = '/css/highlight.js/' + hljsCssFile;
+          link.type = "text/css";
+          link.rel = "stylesheet";
+          link.media = "screen,print";
+          document.getElementsByTagName( "head" )[0].appendChild( link );
+
+          hljs.initHighlightingOnLoad();
+      </script>
+    </head>
+    <body style="padding:20px">
+        <script>
+            document.body.dataset.theme = '@@THEME@@';
+            document.body.dataset.themestyle = '@@THEME-STYLE@@';
+            document.body.dataset.locale = '@@LOCALE@@';
+        </script>
+
+        @@CONTENT@@
+    </body>
+</html>

@@ -1,0 +1,4 @@
+javascript://www.example.com/
+~~~~~~~~~~
+javascript://www.example.com/
+~~~~~~~~~~

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="@@LOCALE@@" class="notranslate" translate="no">
+    <head>
+      <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
+      <meta name="google" content="notranslate">
+      <title>Phabrico</title>
+      <link rel="preload" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css">
+      <link rel="preload" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="/css/theme.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="stylesheet" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="shortcut icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <script src="/scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+      <script defer src="/scripts/highlight.min.js?version=@@PHABRICO-VERSION@@"></script>
+      <script>
+          window.addEventListener('load', function() {
+                 var hljsCssFile = 'vs-modified.css';
+                 if ('@@THEME@@' == 'dark') hljsCssFile = 'vs2015-modified.css';
+                 var link = document.createElement( "link" );
+                 link.href = '/css/highlight.js/' + hljsCssFile;
+                 link.type = "text/css";
+                 link.rel = "stylesheet";
+                 link.media = "screen,print";
+                 document.getElementsByTagName( "head" )[0].appendChild( link );
+             
+                 hljs.initHighlightingOnLoad();
+              },
+              false
+          );
+      </script>
+    </head>
+    <body style="padding:20px">
+        <script>
+            document.body.dataset.theme = '@@THEME@@';
+            document.body.dataset.themestyle = '@@THEME-STYLE@@';
+            document.body.dataset.locale = '@@LOCALE@@';
+        </script>
+
+        <div class="phui-document" style="top:-15px;">
+            <div id="documentContent" class="content">@@CONTENT@@</div>
+            <div class="toc" style="top:0px;">
+                <a class="phui-document-toc-header" href="#top">Contents</a>
+                <div>
+                    <ul id="phui-navigator" class="no-print">
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // create navigation-tree based on header tags
+            var navigationTree = Array.prototype.slice.call( 
+                                      document.querySelector('#documentContent')
+                                              .querySelectorAll("h1, h2, h3")
+                                      , 0 
+                                 )
+                                 .map( function(item) {
+                                     var anchor = '#' + item.children[0].name;
+                                     switch (item.tagName)
+                                     {
+                                         case "H1":
+                                             return "<h1><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h1>";
+                                         case "H2":
+                                             return "<h2><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h2>";
+                                         case "H3":
+                                             return "<h3><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h3>";
+                                         default:
+                                             return "";
+                                     }
+                                 })
+                                 .join()
+                                 .replace(/<\/h1>,<h[23]>/g, '<ul>')
+                                 .replace(/<\/h2>,<h3>/g, '<ul>')
+                                 .replace(/<\/h[23]>,<h1>/g, '</ul>')
+                                 .replace(/<\/h2>,<h1>/g, '</ul>')
+                                 .replace(/<\/h.>,<h.>/g, '')
+                                 .replace(/<\/?h.>/g, '')
+                                 .replace(/<ul>/g, '<li><ul>')
+                                 .replace(/<\/ul>/g, '</ul></li>');
+            document.getElementById('phui-navigator').innerHTML = navigationTree;
+    
+            // hide 'Contents' label if there's no navigation tree
+            if (navigationTree == "") {
+                document.querySelector('.phui-document-toc-header').style.display = 'none';
+            }
+        </script>
+    </body>
+</html>

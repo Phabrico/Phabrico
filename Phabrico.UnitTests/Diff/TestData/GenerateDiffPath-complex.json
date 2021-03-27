@@ -1,0 +1,25 @@
+{
+    "execute": {
+        "method": ["GenerateDiffPath"],
+        "arguments": [ 
+            "Webcam
+Webpage
+Webcam
+
+Weeble", 
+            "Webcam
+Webpages
+Weeble", 
+
+        ]
+    },
+
+    "validate": {
+        "methodResult": "=W=e=b=c=a=m=
+=W=e=b=p=a=g=e>s=
+<W<e<b<c<a<m<
+<
+=W=e=e=b=l=e"
+    }
+}
+

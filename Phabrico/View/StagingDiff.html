@@ -1,0 +1,417 @@
+<form id="frmStagingDiff" style="height: calc(100vh - 140px);" action="" method="POST" onsubmit="return saveLocalVersion();">
+    <input type="hidden" id="newVersion" name="newVersion">
+    <div class="app-window">
+        <div class="staging-diff-view">
+            <div class="staging-diff-head">
+                <span class="title"></span>
+                <span style="float: right;">
+                    <a href="/offline/changes/" class="button button-blue" style="min-width: 50px;">Overview offline changes</a>
+                    <button id="btnDismissLocalChanges" class="button-red" type="button" onclick="showUndoConfirmation(this);">Dismiss local version</button>
+                    <button id="btnSaveLocalChanges" class="button-green" type="submit" disabled="disabled">Save local version</button>
+                </span>
+            </div>
+
+            <div class="diff">
+                <div id="locationPane" style="width: 10px"></div>
+
+                <div class="diff-left ">
+                    <div class="header">Phabricator version</div>
+                    <div id="fileLeft" class="scrollableTable">
+                        <table>
+                            @@CONTENT-LEFT@@
+                        </table>
+                    </div>
+                </div>
+
+
+                <div class="diff-right">
+                    <div class="header">Local version</div>
+                    <div id="fileRight" class="scrollableTable">
+                        <table>
+                            @@CONTENT-RIGHT@@
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                var title = Locale.Translate('Offline changes for @@STAGED-ITEM@@')
+                                  .replace("@@STAGED-ITEM@@", "<a style=\"margin-left:5px;\" href=\"@@URL@@\">@@ITEM@@</a>");
+                document.querySelector('.staging-diff-head .title')
+                        .innerHTML = title;
+            </script>
+
+        </div>
+    </div>
+</form>
+
+<div id="dlgConfirmUndo" class="aphront-dialog-view modal" style="display:none">
+    <div class="aphront-dialog-overlay"></div>
+    <div class="aphront-dialog-head">
+        <span class="phui-header-header">Undo</span>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup">
+        <div class="phabrico-remarkup">
+            <p>Are you sure you want to dismiss all your local changes for this document ?</p>
+        </div>
+        <br />
+    </div>
+    <div class="aphront-dialog-tail grouped">
+        <form id="frmConfirmUndo" action="" method="POST">
+            <button type="button" data-accesskey="Button-AccessKey-No" class="button-gray" onclick="cancelUndo()">No</button>
+            <button type="button" data-accesskey="Button-AccessKey-Yes" onclick="confirmUndo()">Yes</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // set page title
+    document.title = "Phabrico - Offline changes for @@ITEM@@";
+
+    function cancelUndo()
+    {
+        dlgConfirmUndo.style.display = 'none';
+    }
+
+    function confirmUndo()
+    {
+        dlgConfirmUndo.style.display = 'none';
+
+        var token = document.location.pathname.split('/')[4];
+        token = token + "[]";
+
+        var xmlhttp = new XMLHttpRequest();
+        var data = new FormData();
+        data.append('item',  token);
+
+        xmlhttp.open('POST', "/offline/changes/undo", true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4)
+            {
+                // go back to the previous url
+                document.location = document.referrer;
+            }
+        };
+        
+        xmlhttp.send(data);
+    }
+
+    function completeInsertButtons(isBlockAction) {
+        // set tooltips
+        document.querySelectorAll('.insert-after').forEach(function(btnInsertBefore) {
+            setTooltip(btnInsertBefore, Locale.Translate("Append left line after right line"));
+        });
+
+        document.querySelectorAll('.insert-block-after').forEach(function(btnInsertBefore) {
+            setTooltip(btnInsertBefore, Locale.Translate("Append left block after right block"));
+        });
+
+        document.querySelectorAll('.insert-before').forEach(function(btnInsertAfter) {
+            setTooltip(btnInsertAfter, Locale.Translate("Insert left line before right line"));
+        });
+
+        document.querySelectorAll('.insert-block-before').forEach(function(btnInsertAfter) {
+            setTooltip(btnInsertAfter, Locale.Translate("Insert left block before right block"));
+        });
+
+        document.querySelectorAll('.insert-replace').forEach(function(btnInsertReplace) {
+            setTooltip(btnInsertReplace, Locale.Translate("Replace right line with left line"));
+        });
+
+        document.querySelectorAll('.insert-block-replace').forEach(function(btnInsertReplace) {
+            setTooltip(btnInsertReplace, Locale.Translate("Replace right block with left block"));
+        });
+
+        // hide/show buttons whether in blockmode or not
+        var actionButtonAreas = [...new Set(Array.prototype
+                                                 .slice.call(document.querySelectorAll('.diff-right th.insert span'), 0)
+                                                                     .map(function(r) {
+                                                                         return document.querySelector('.diff-right tr[data-leftline="'
+                                                                                                       + r.parentElement.parentElement.dataset.leftline
+                                                                                                       + '"] th.insert span');
+                                                                         })
+                                                                     .concat( Array.prototype.slice.call(document.querySelectorAll('.diff-right th.insert span'), 0) )
+                                )];
+        if (isBlockAction) {
+            actionButtonAreas.forEach(function(buttonArea) {
+                if (buttonArea.parentElement.parentElement.previousSibling != null &&
+                    actionButtonAreas.indexOf(buttonArea.parentElement.parentElement.previousSibling.querySelector('span')) >= 0) {
+                    buttonArea.style.display = 'none';
+                }
+            })
+        } else {
+            actionButtonAreas.forEach(function(buttonArea) {
+                if (buttonArea.parentElement.parentElement.previousSibling != null &&
+                    actionButtonAreas.indexOf(buttonArea.parentElement.parentElement.previousSibling.querySelector('span')) >= 0) {
+                    buttonArea.style.display = 'flex';
+                }
+            })
+        }
+    }
+
+    function localKeyDown(e){
+        var evtobj=window.event? event : e
+        if (evtobj.key == 'Control') {
+            var doCompleteInsertButtons = false;
+
+            document.querySelectorAll('.insert-after').forEach(function(btnInsertAfter) {
+                btnInsertAfter.classList.add('insert-block-after');
+                btnInsertAfter.classList.remove('insert-after');
+                doCompleteInsertButtons = true;
+            });
+
+            document.querySelectorAll('.insert-before').forEach(function(btnInsertBefore) {
+                btnInsertBefore.classList.add('insert-block-before');
+                btnInsertBefore.classList.remove('insert-before');
+                doCompleteInsertButtons = true;
+            });
+
+            document.querySelectorAll('.insert-replace').forEach(function(btnInsertReplace) {
+                btnInsertReplace.classList.add('insert-block-replace');
+                btnInsertReplace.classList.remove('insert-replace');
+                doCompleteInsertButtons = true;
+            });
+
+            if (doCompleteInsertButtons) {
+                completeInsertButtons(true);
+            }
+        }
+    }
+
+    function localKeyUp(e){
+        var evtobj=window.event? event : e
+        if (evtobj.key == 'Control') {
+            var doCompleteInsertButtons = false;
+
+            document.querySelectorAll('.insert-block-after').forEach(function(btnInsertAfter) {
+                btnInsertAfter.classList.add('insert-after');
+                btnInsertAfter.classList.remove('insert-block-after');
+                doCompleteInsertButtons = true;
+            });
+
+            document.querySelectorAll('.insert-block-before').forEach(function(btnInsertBefore) {
+                btnInsertBefore.classList.add('insert-before');
+                btnInsertBefore.classList.remove('insert-block-before');
+                doCompleteInsertButtons = true;
+            });
+
+            document.querySelectorAll('.insert-block-replace').forEach(function(btnInsertReplace) {
+                btnInsertReplace.classList.add('insert-replace');
+                btnInsertReplace.classList.remove('insert-block-replace');
+                doCompleteInsertButtons = true;
+            });
+
+            if (doCompleteInsertButtons) {
+                completeInsertButtons(false);
+            }
+        }
+    }
+
+    function insertButtonClicked(buttonSpan, leftLineNumber, rightLineNumber, action) {
+        console.log(leftLineNumber);
+        console.log(rightLineNumber);
+        console.log(action);
+
+        var firstGlobalRowIndex = Array.prototype.slice.call( buttonSpan.parentElement.parentElement.parentElement.children, 0 ).indexOf( buttonSpan.parentElement.parentElement);
+        var lastGlobalRowIndex = firstGlobalRowIndex;
+
+        if (action == 'insert-block-after' ||
+            action == 'insert-block-before' ||
+            action == 'insert-block-replace')
+        {
+            // block mode: recalculate lastGlobalRowIndex
+            var blockRows = Array.prototype.slice.call( buttonSpan.parentElement.parentElement.parentElement.children, firstGlobalRowIndex);
+            for (lastGlobalRowIndex = 0; lastGlobalRowIndex < blockRows.length; lastGlobalRowIndex++) {
+                if (blockRows[lastGlobalRowIndex].querySelector('span') == null) {
+                    break;
+                }                
+            }
+
+            lastGlobalRowIndex = firstGlobalRowIndex + lastGlobalRowIndex - 1;
+        }
+
+        var leftBlock = Array.prototype.slice.call( document.querySelectorAll('.diff-left tr'), firstGlobalRowIndex, lastGlobalRowIndex + 1 );
+        var rightBlock = Array.prototype.slice.call( document.querySelectorAll('.diff-right tr'), firstGlobalRowIndex, lastGlobalRowIndex + 1 );
+
+        var nbrExtraRowsInserted = 0;
+        for (var globalRowIndex = firstGlobalRowIndex; globalRowIndex <= lastGlobalRowIndex; globalRowIndex++)
+        {
+            var leftRow = document.querySelectorAll('.diff-left tr')[globalRowIndex + nbrExtraRowsInserted];
+            var leftContent = leftRow.querySelector('td');
+            var rightRow = document.querySelectorAll('.diff-right tr')[globalRowIndex + nbrExtraRowsInserted];
+            var rightContent = rightRow.querySelector('td');
+            var nextButtonSpan = null;
+            if (buttonSpan.parentElement.parentElement.nextElementSibling != null) {
+                nextButtonSpan = buttonSpan.parentElement.parentElement.nextElementSibling.querySelector('span');
+            }
+
+            var newRightRow = document.createElement('tr');
+            var th1NewRightRow = document.createElement('th');
+            th1NewRightRow.classList.add('insert');
+            var th2NewRightRow = document.createElement('th');
+            var tdNewRightRow = document.createElement('td');
+            newRightRow.appendChild(th1NewRightRow);
+            newRightRow.appendChild(th2NewRightRow);
+            newRightRow.appendChild(tdNewRightRow);
+
+            tdNewRightRow.innerText = leftContent.innerText;
+            tdNewRightRow.classList.add('merge');
+
+            var newEmptyRow = document.createElement('tr');
+            var th1NewEmptyRow = document.createElement('th');
+            th1NewEmptyRow.classList.add('insert');
+            var th2NewEmptyRow = document.createElement('th');
+            var tdNewEmptyRow = document.createElement('td');
+            newEmptyRow.appendChild(th1NewEmptyRow);
+            newEmptyRow.appendChild(th2NewEmptyRow);
+            newEmptyRow.appendChild(tdNewEmptyRow);
+            tdNewEmptyRow.classList.add('empty');
+
+            if (leftContent.classList.contains('empty') == false) {
+                leftContent.classList.remove('delete');
+                leftContent.classList.remove('insert');
+                leftContent.classList.remove('replace');
+                leftContent.classList.add('merge');
+            }
+
+            switch (action) {
+                case 'insert-after':
+                case 'insert-block-after':
+                    leftRow.parentElement.insertBefore(newEmptyRow, leftBlock[0]);
+                    rightRow.parentElement.insertBefore(newRightRow, rightBlock[rightBlock.length - 1].nextSibling);
+                    rightBlock.push(newRightRow);
+                    nbrExtraRowsInserted++;
+                    break;
+
+                case 'insert-before':
+                case 'insert-block-before':
+                    leftRow.parentElement.insertBefore(newEmptyRow, leftBlock[leftBlock.length - 1].nextSibling);
+                    rightRow.parentElement.insertBefore(newRightRow, rightBlock[0]);
+                    break;
+
+                case 'insert-replace':
+                case 'insert-block-replace':
+                    if (leftContent.classList.contains('empty')) {
+                        rightRow.innerHTML = leftRow.innerHTML;
+                    } else
+                    if (rightContent.classList.contains('empty')) {
+                        rightRow.parentElement.insertBefore(newRightRow, rightRow);
+                        newRightRow.parentElement.removeChild(rightRow);
+                    } else {
+                        rightContent.innerText = leftContent.innerText;
+                        rightContent.classList.remove('delete');
+                        rightContent.classList.remove('insert');
+                        rightContent.classList.remove('replace');
+                        rightContent.classList.add('merge')
+                    }
+                    break;
+            }
+            
+            buttonSpan.classList.add('merged');
+            
+            buttonSpan = nextButtonSpan;
+        }
+
+        var leftRowData = Array.prototype.slice.call( document.querySelectorAll('.diff-left td') , 0 );
+        var rightRowData = Array.prototype.slice.call( document.querySelectorAll('.diff-right td'), 0 );
+        for (var r = leftRowData.length - 1; r >= 0; r--) {
+            if (leftRowData[r].classList.contains('empty')) {
+                if (rightRowData[r].classList.contains('empty')) {
+                    var leftRow = leftRowData[r].parentElement;
+                    var leftTable = leftRow.parentElement;
+                    leftTable.removeChild(leftRow);
+
+                    var rightRow = rightRowData[r].parentElement;
+                    var rightTable = rightRow.parentElement;
+                    rightTable.removeChild(rightRow);
+                }
+            }
+        }
+    }
+
+    function saveLocalVersion() {
+        var result = "";
+
+        Array.prototype.slice.call(document.querySelectorAll('.diff-right td:not(.empty)'), 0)
+                             .map(function(r) { 
+                                result += r.innerText + "\n";
+                             });
+
+        newVersion.value = result;
+
+        var data = new FormData(frmStagingDiff);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open('POST', '?action=save', true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.onload = function () {
+            if (xmlhttp.readyState == 4) {
+                document.location = '/offline/changes/';
+            }
+        };
+        xmlhttp.send(data);
+
+        return false;
+    }
+    
+    function setTooltip(elem, text) {
+        elem.removeAttribute('title');
+        elem.style.pointerEvents = 'none';
+        elem.title = text;
+        setTimeout(function() { elem.style.pointerEvents = 'all'; }, 10);  // make sure old tooltip is not visible anymore
+    }
+
+    function showUndoConfirmation(elem)
+    {
+        dlgConfirmUndo.tagElement = elem;
+        dlgConfirmUndo.style.display = 'block';
+    }
+
+    // set global keys
+    document.onkeydown=localKeyDown;
+    document.onkeyup=localKeyUp;
+
+    // set insert-button keys
+    document.querySelectorAll('.insert-before, .insert-block-before, .insert-after, .insert-block-after, .insert-replace, .insert-block-replace')
+            .forEach(function(btn) { 
+                btn.onclick = function(e) {
+                    var action = "";
+                    if (btn.classList.contains('insert-after')) action = 'insert-after';
+                    if (btn.classList.contains('insert-before')) action = 'insert-before';
+                    if (btn.classList.contains('insert-replace')) action = 'insert-replace';
+                    if (btn.classList.contains('insert-block-after')) action = 'insert-block-after';
+                    if (btn.classList.contains('insert-block-before')) action = 'insert-block-before';
+                    if (btn.classList.contains('insert-block-replace')) action = 'insert-block-replace';
+
+                    insertButtonClicked(btn.closest('span'), parseInt(btn.closest('tr').dataset.leftline), parseInt(btn.closest('tr').dataset.rightline), action); 
+
+                    btnSaveLocalChanges.disabled = false;
+                }; 
+            });
+
+    // correct widths of table cells
+    var widthLeft = fileLeft.scrollWidth;
+    document.querySelectorAll('.diff-left table').forEach(function(table) {
+        table.style.width = widthLeft + "px";
+    })
+    document.querySelectorAll('.diff-left td').forEach(function(td) {
+        td.style.width = widthLeft + "px";
+    })
+
+    var widthRight = fileRight.scrollWidth;
+    document.querySelectorAll('.diff-right table').forEach(function(table) {
+        table.style.width = widthRight + "px";
+    })
+    document.querySelectorAll('.diff-right td').forEach(function(td) { 
+        td.style.width = widthRight + "px";
+    })
+
+    // scroll to the first modification
+    var firstModification = document.querySelector('td.replace, td.insert, td.empty').closest('tr');
+    if (typeof firstModification != 'undefined') {
+       firstModification = firstModification.closest('tr');
+       var position = Array.prototype.slice.call( firstModification.closest('table').querySelectorAll('tr') ).indexOf(firstModification);
+       fileLeft.scrollTop = (position - 5) * 24;
+       fileRight.scrollTop = (position - 5) * 24;
+    }
+</script>

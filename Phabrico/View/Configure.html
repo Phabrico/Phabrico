@@ -1,0 +1,719 @@
+<div id="tabConfigure" class="tab">
+    <div class="tab-head">
+        <button data-tab-page-id="General" onclick="tabChanged(this)">General</button>
+        <button data-tab-page-id="Maniphest" onclick="tabChanged(this)">Maniphest</button>
+        <button data-tab-page-id="Phriction" onclick="tabChanged(this)">Phriction</button>
+        @{CONFIGURABLE-PLUGIN-TAB-HEADER
+        <button data-tab-page-id="@@PLUGIN-NAME@@" onclick="tabChanged(this)">@@PLUGIN-NAME@@</button>
+        }@
+        <button data-tab-page-id="UI Controls" onclick="tabChanged(this)">UI Controls</button>
+        <button data-tab-page-id="Phabricator" onclick="tabChanged(this)">Phabricator</button>
+    </div>
+    <form action="/configure?action=save" method="POST">
+        <div class="tab-page" id="General">
+            <table>
+                <tr class="setting AutoLogon">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="autoLogon">Auto log on</label>
+                    </td>
+                    <td colspan="3">
+                        <p class="instructions">Allow to log on automatically but disable synchronization and configuration</p>
+                        <label class="select" style="width: 90px;">
+                            <select id="autoLogon" name="autoLogon">
+                                <option value="True">Yes</option>
+                                <option selected="selected" value="False">No</option>
+                            </select>
+                        </label>
+                        <span id="warningAutoLogon" class="phui-info-error" style="position: absolute;margin: 10px;">
+                            <span style="float:left; margin-top:2px;" class="phui-list-item-icon phui-font-fa fa-exclamation-triangle fa-blink"></span>
+                            <span>WARNING: this will create a security risk by storing the encryption key in the Phabrico database</span>
+                        </span>
+                    </td>
+                </tr>
+                <tr class="setting AutoLogOutAfterMinutesOfInactivity">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="autoLogOutAfterMinutesOfInactivity">Maximum Duration of Inactivity</label>
+                    </td>
+                    <td colspan="3">
+                        <p class="instructions">Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)</p>
+                        <input id="autoLogOutAfterMinutesOfInactivity" name="autoLogOutAfterMinutesOfInactivity" class="input-integer-only" type="number" autofocus="" style="width: 100px">
+                    </td>
+                </tr>
+                <tr class="setting Theme">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="theme">Theme</label>
+                    </td>
+                    <td>
+                        <p class="instructions">Choose the color theme you want to use:</p>
+                        <label class="select">
+                            <select id="theme" name="theme">
+                                <option value="dark">Dark</option>
+                                <option selected="selected" value="light">Light</option>
+                            </select>
+                        </label>
+                    </td>
+                    <td class="aphront-form-label">
+                        <label id="lblDarkenImages" class="aphront-form-label" for="darkenImages" style="display:inline-block; float:unset; width:max-content; text-align:right;vertical-align: top;padding-left: 20px;">Darken light images</label>
+                    </td>
+                    <td>
+                        <p class="instructions">&nbsp;</p>
+                        <label id="cmbDarkenImages" class="select">
+                            <select id="darkenImages" name="darkenImages">
+                                <option selected="selected" value="Disabled">Disabled</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="Extreme">Extreme</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="tab-page" id="Maniphest">
+            <table>
+                <tr class="setting SyncMethodManiphest">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="syncMethodManiphest">Synchronize Maniphest tasks for</label>
+                    </td>
+                    <td>
+                        <p class="instructions" style="top:10px;">Choose the synchronization method for Maniphest tasks:</p>
+                        <label class="select">
+                            <select id="syncMethodManiphest" name="syncMethodManiphest">
+                                <option value="ManiphestSelectedProjectsOnly">Selected projects only</option>
+                                <option selected="selected" value="ManiphestSelectedUsersOnly">Selected users only</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+                <tr class="setting DefaultStateModifiedManiphest">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="defaultStateModifiedManiphest">Mark new/modified Maniphest tasks as</label>
+                    </td>
+                    <td>
+                        <p class="instructions" style="top:10px;">Choose the default state for new or modified Maniphest tasks:</p>
+                        <label class="select">
+                            <select id="defaultStateModifiedManiphest" name="defaultStateModifiedManiphest">
+                                <option value="Frozen">Frozen: local modifications will not be uploaded during synchronization</option>
+                                <option selected="selected" value="Unfrozen">Unfrozen: local modifications will be uploaded during synchronization</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+                <tr class="setting RemovalPeriodClosedManiphests">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="removalPeriodClosedManiphests">Maximum lifetime closed Maniphest tasks</label>
+                    </td>
+                    <td>
+                        <p class="instructions" style="top:10px;">Delete closed Maniphest tasks from Phabrico older than:</p>
+                        <label class="select">
+                            <select id="removalPeriodClosedManiphests" name="removalPeriodClosedManiphests">
+                                <option selected="selected" value="RemovalPeriod1Day">1 day</option>
+                                <option value="RemovalPeriod1Week">1 week</option>
+                                <option value="RemovalPeriod2Weeks">2 weeks</option>
+                                <option value="RemovalPeriod1Month">1 month</option>
+                                <option value="RemovalPeriod3Months">3 months</option>
+                                <option value="RemovalPeriod6Months">6 months</option>
+                                <option value="RemovalPeriod1Year">1 year</option>
+                                <option value="RemovalPeriod1Year">10 years</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="tab-page" id="Phriction">
+            <table>
+                <tr class="setting SyncMethodPhriction">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="syncMethodPhriction">Synchronize Phriction documents for</label>
+                    </td>
+                    <td>
+                        <p class="instructions" style="top:10px;">Choose the synchronization method for Phriction documents:</p>
+                        <label class="select">
+                            <select id="syncMethodPhriction" name="syncMethodPhriction">
+                                <option value="PhrictionSelectedProjectsOnly">Selected projects only</option>
+                                <option value="PhrictionSelectedProjectsOnlyIncludingDocumentTree">Selected projects only including document tree</option>
+                                <option value="PhrictionAllSelectedProjectsOnly">Selected projects combined</option>
+                                <option value="PhrictionAllSelectedProjectsOnlyIncludingDocumentTree">Selected projects combined including document tree</option>
+                                <option selected="selected" value="PhrictionAllProjects">All projects</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+                <tr class="setting DefaultStateModifiedPhriction">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="defaultStateModifiedPhriction">Mark new/modified Phriction documents as</label>
+                    </td>
+                    <td>
+                        <p class="instructions" style="top:10px;">Choose the default state for new or modified Phriction documents:</p>
+                        <label class="select">
+                            <select id="defaultStateModifiedPhriction" name="defaultStateModifiedPhriction">
+                                <option value="Frozen">Frozen: local modifications will not be uploaded during synchronization</option>
+                                <option selected="selected" value="Unfrozen">Unfrozen: local modifications will be uploaded during synchronization</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+                <tr class="setting ShowPhrictionMetadata">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="showPhrictionMetadata">Show Phriction metadata</label>
+                    </td>
+                    <td>
+                        <p class="instructions" style="top:10px;">Add information about the Phriction document in the action menu on the right</p>
+                        <label class="select">
+                            <select id="showPhrictionMetadata" name="showPhrictionMetadata">
+                                <option selected="selected" value="True">Yes</option>
+                                <option value="False">No</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+                <tr class="setting ForceDownloadAllPhrictionMetadata">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="forceDownloadAllPhrictionMetadata">Force download all Phriction metadata</label>
+                    </td>
+                    <td>
+                        <p class="instructions" style="top:10px;">Download project tags and subcribers for all Phriction documents</p>
+                        <label class="select">
+                            <select id="forceDownloadAllPhrictionMetadata" name="forceDownloadAllPhrictionMetadata">
+                                <option selected="selected" value="True">Yes</option>
+                                <option value="False">No</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        @{CONFIGURABLE-PLUGIN-TAB-CONTENT
+        <div class="tab-page" id="@@PLUGIN-NAME@@">
+            @@PLUGIN-SCREEN-CONTENT@@
+        </div>
+        }@
+
+        <div class="tab-page" id="UI Controls">
+            <table>
+                <tr class="setting ClipboardCopyForCodeBlock">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="clipboardCopyForCodeBlock">Add Copy button:</label>
+                    </td>
+                    <td>
+                        <p class="instructions">Add Copy-to-clipboard button to code blocks:</p>
+                        <label class="select">
+                            <select id="clipboardCopyForCodeBlock" name="clipboardCopyForCodeBlock">
+                                <option selected="selected" value="True">Yes</option>
+                                <option value="False">No</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+                <tr class="setting UITranslation">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="uiTranslation">Translate notification block titles:</label>
+                    </td>
+                    <td>
+                        <p class="instructions">Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:</p>
+                        <label class="select">
+                            <select id="uiTranslation" name="uiTranslation">
+                                <option value="True">Yes</option>
+                                <option selected="selected" value="False">No</option>
+                            </select>
+                        </label>
+                    </td>
+                </tr>
+                <tr class="setting ConfidentialTableHeaders">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label">Confidential Table Headers</label>
+                    </td>
+                    <td>
+                        <p class="instructions">Enter the text of table row/column headers which should only be visible when you move the mouse over it:</p>
+                        <div class="config-tables-header">
+                            <div class="config-tables-body">
+                                <a id="btnAddConfidentialWord" class="button button-gray" style="float:right; padding: 4px 30px 4px 10px;margin-right: 4px;">
+                                    <span class="phui-list-item-icon phui-font-fa fa-plus" style="float:left; margin-top:2px;"></span>
+                                    <div>Add Confidential Table Header</div>
+                                </a>
+                            </div>
+                            <div class="scrollableTable" style="height:calc(100vh - 430px);">
+                                <table id="tblConfidentialHeaders" class="aphront-table-view">
+                                    <tbody>
+                                        <tr>
+                                            <th class="wide">Confidential Table Header</th>
+                                            <th class="action">Remove</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="tab-page" id="Phabricator">
+            <table>
+                <tr class="setting PhabricatorUrl">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="phabricatorUrl">Phabricator URL</label>
+                    </td>
+                    <td>
+                        <p class="instructions">Enter the URL of your Phabricator server:</p>
+                        <input id="phabricatorUrl" name="phabricatorUrl" type="text" autofocus="">
+                    </td>
+                </tr>
+                <tr class="setting ConduitApiToken">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label" for="conduitApiToken">Conduit API Token</label>
+                    </td>
+                    <td>
+                        <p class="instructions">Enter the Conduit API Token for your Phabricator account:</p>
+                        <input id="conduitApiToken" name="conduitApiToken" type="text" autofocus="">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</div>
+
+@{IF @@SHOW-FIRSTTIME-HELP@@=Yes@
+<style>
+    .firsttime-help {
+        background: #fec;
+        color: #000;
+        max-width: 60vw;
+        width: 620px;
+        max-height: 50vh;
+        height: 180px;
+        transform: translate(-50%,-50%);
+        left: 50%;
+        top: 30%;
+        position: absolute;
+        border: solid 5px #872;
+        border-radius: 8px;
+        display: flex;
+    }
+
+    .firsttime-help div {
+        width: 100%;
+        margin: -6px 5px;
+        z-index: 2;
+    }
+
+    .firsttime-help div div.help-footer div.help-paging {
+        width: 100%;
+        height: 20px;
+        margin: 10px 0px;
+        left: 0px;
+        text-align: center;
+    }
+
+    .firsttime-help div div.help-footer div.help-paging a {
+        padding: 2px;
+        color: #ccc;
+    }
+
+    .firsttime-help div div.help-footer div.help-paging a.selected {
+        color: #08f;
+    }
+
+    .firsttime-help .overlay {
+        pointer-events: all;
+        position: absolute;
+        width: 200vw;
+        height: 200vh;
+        left: 0px;
+        transform: translate(-50%,-50%);
+        z-index: 1;
+        background: #fff;
+        opacity: .1;
+    }
+
+    div.help {
+        display: none;
+        flex-flow: column;
+    }
+
+    div.help-footer {
+        position: absolute;
+        bottom: 0px;
+    }
+
+    @-webkit-keyframes animated-background {
+        to {
+            background-color: #0cf;
+            border: 5px solid #0cf;
+            color: #000;
+        }
+    }
+
+    li.phui-list-item-view a.phui-list-item-href.animated-focus,
+    li.phui-list-item-view a.phui-list-item-href.animated-focus span.phui-list-item-icon,
+    li.phui-list-item-view button.animated-focus {
+        border: 5px solid transparent;
+        animation: animated-background 1.2s infinite;
+    }
+
+    .phui-font-fa.fa-briefcase.phui-list-item-icon,
+    .phui-font-fa.fa-users.phui-list-item-icon,
+    .phui-font-fa.fa-sliders.phui-list-item-icon {
+        background: transparent !important;
+        border-color: transparent !important;
+    }
+</style>
+<div class="firsttime-help">
+    <div class="overlay" onclick="hideHelp()"></div>
+    <div>
+        <div class="help help-1" style="display: flex;height: calc(100% - 60px);">
+            <h2>Getting started with Phabrico</h2>
+            <span>In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator.</span>
+        </div>
+        <div class="help help-2">
+            <h2>Which Phabricator accounts should be monitored ?</h2>
+            <span>In this Users screen, you can select for which Phabricator users you want to have your data always available.</span>
+            <span>Currently, only your Phabricator account is selected.</span>
+        </div>
+        <div class="help help-3">
+            <h2>Which Phabricator projects should be monitored ?</h2>
+            <span>In this Projects screen, you can select for which Phabricator projects you want to have your data always available.</span>
+            <span>You can here also change the colors of the project tags.</span>
+        </div>
+        <div class="help help-4" style="padding: 20px;width: calc(100% - 50px);">
+            <span>In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...).</span>
+            <span>&nbsp;</span>
+            <span>Click on the Synchronize button to download all requested data from Phabricator</span>
+        </div>
+
+        <div class="help-footer">
+            <div style="text-align: center;width: calc(100% - 10px);">
+                <button class="button-blue" onclick="goToNextHelp()">Next</button>
+            </div>
+
+            <div class="help-paging" style="text-align: center;">
+                <a class="fa fa-circle a1 selected" anchor="#" style="padding:2px;" onclick="javascript:showHelp(1)"></a>
+                <a class="fa fa-circle a2" anchor="#" style="padding:2px;" onclick="javascript:showHelp(2)"></a>
+                <a class="fa fa-circle a3" anchor="#" style="padding:2px;" onclick="javascript:showHelp(3)"></a>
+                <a class="fa fa-circle a4" anchor="#" style="padding:2px;" onclick="javascript:showHelp(4)"></a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var currentHelpPage = 0;
+
+    function clearSelectionSynchronizationButton(e) {
+        hideHelp();
+    }
+
+    function goToNextHelp() {
+        currentHelpPage++;
+        if (currentHelpPage > 4) currentHelpPage = 1;
+
+        showHelp(currentHelpPage);
+    }
+
+    function hideHelp() {
+        document.querySelector('.firsttime-help').style.display = 'none';
+
+        var configure = document.querySelector('.phui-list-item-href[href="/configure/"]');
+        var project = document.querySelector('.phui-list-item-href[href="/project/"]');
+        var user = document.querySelector('.phui-list-item-href[href="/user/"]');
+        var synchronizationButton = document.querySelector('button[name="__synchronize__"]');
+
+        configure.classList.remove('animated-focus');
+        project.classList.remove('animated-focus');
+        user.classList.remove('animated-focus');
+        synchronizationButton.classList.remove('animated-focus');
+
+        document.querySelector('div.phabrico-page-content.phabrico-standard-treeitem-body').style.overflow = null;
+
+        sessionStorage["showHelp"] = false;
+    }
+
+    function showHelp(i) {
+        currentHelpPage = i;
+        document.querySelector('div.phabrico-page-content.phabrico-standard-treeitem-body').style.overflow = 'hidden';
+
+        var configure = document.querySelector('.phui-list-item-href[href="/configure/"]');
+        var project = document.querySelector('.phui-list-item-href[href="/project/"]');
+        var user = document.querySelector('.phui-list-item-href[href="/user/"]');
+        var synchronizationButton = document.querySelector('button[name="__synchronize__"]');
+        var a1 = document.querySelector('a.a1');
+        var a2 = document.querySelector('a.a2');
+        var a3 = document.querySelector('a.a3');
+        var a4 = document.querySelector('a.a4');
+        var help1 = document.querySelector('.help-1');
+        var help2 = document.querySelector('.help-2');
+        var help3 = document.querySelector('.help-3');
+        var help4 = document.querySelector('.help-4');
+        
+        synchronizationButton.removeEventListener('click', clearSelectionSynchronizationButton);
+        synchronizationButton.addEventListener('click', clearSelectionSynchronizationButton);
+
+        configure.classList.remove('animated-focus');
+        project.classList.remove('animated-focus');
+        user.classList.remove('animated-focus');
+        synchronizationButton.classList.remove('animated-focus');
+        
+        help1.style.display = null;
+        help2.style.display = null;
+        help3.style.display = null;
+        help4.style.display = null;
+
+        a1.classList.remove('selected');
+        a2.classList.remove('selected');
+        a3.classList.remove('selected');
+        a4.classList.remove('selected');
+
+        if (i == 1) {
+            a1.classList.add('selected');
+            configure.classList.add('animated-focus');
+            help1.style.display = 'flex';
+        }
+
+        if (i == 2) {
+            a2.classList.add('selected');
+            user.classList.add('animated-focus');
+            help2.style.display = 'flex';
+        }
+
+        if (i == 3) {
+            a3.classList.add('selected');
+            project.classList.add('animated-focus');
+            help3.style.display = 'flex';
+        }
+
+        if (i == 4) {
+            a4.classList.add('selected');
+            help4.style.display = 'flex';
+            synchronizationButton.classList.add('animated-focus');
+        }
+    }
+
+    if (typeof sessionStorage["showHelp"] == "undefined") {
+        showHelp(1);
+    } else {
+        hideHelp();
+    }
+</script>
+}@
+<script>
+    // set page title
+    document.title = "Phabrico - Configuration";
+
+    function addConfidentialWordToTable(confidentialWord) {
+        var newrow = document.createElement('tr');
+        var tdWord = document.createElement('td');
+        var tdAction = document.createElement('td');
+        var aAction = document.createElement('a');
+
+        newrow.appendChild(tdWord);
+        newrow.appendChild(tdAction);
+        tdAction.appendChild(aAction);
+
+        newrow.classList.add('alternate');
+        tdWord.classList.add('wide');
+        if (typeof confidentialWord.tagName === "undefined") {
+            tdWord.innerText = confidentialWord;
+        } else {
+            confidentialWord.style.width = "100%";
+            tdWord.appendChild(confidentialWord);
+            tdAction.style.display = 'none';
+
+            setTimeout(function() {
+                    confidentialWord.focus()
+                }, 250);
+
+            confidentialWord.onblur = function(item) {
+                if (item.target.value == "") {
+                    var tr = item.target.closest('tr');
+                    tr.parentElement.removeChild(tr);
+                } else {
+                    tdWord = item.target.parentElement;
+                    tdAction = tdWord.nextSibling;
+
+                    tdWord.removeChild(item.target);
+                    tdWord.innerText = item.target.value;
+                    tdAction.style.display = 'table-cell';
+
+                    sendConfidentialHeadersToServer();
+                }
+            };
+        }
+
+        tdAction.classList.add('action');
+        aAction.classList.add('button');
+        aAction.classList.add('small');
+        aAction.classList.add('button-gray');
+        aAction.href='/';
+        aAction.style.minWidth = '50px';
+        aAction.style.position = 'relative';
+        aAction.style.top = '-2px';
+        aAction.innerText = 'Remove';
+        aAction.onclick = function(item) {
+            var button = item.target;
+            var tr = button.closest('tr');
+            tblConfidentialHeaders.removeChild(tr);
+            sendConfidentialHeadersToServer();
+            return false;
+        };
+
+        tblConfidentialHeaders.appendChild(newrow);
+    }
+
+    function sendConfidentialHeadersToServer() {
+        // collect all words from configuration-table
+        var allWords =  Array.from( document.querySelectorAll('#tblConfidentialHeaders td.wide') )
+                                .map(function(td) {
+                                    return td.innerText;
+                                });
+
+        // send all words to HTTP server
+        var xmlhttp = new XMLHttpRequest();
+        var data = new FormData();
+        data.append('data',  JSON.stringify(allWords));
+
+        xmlhttp.open('POST', "/configure/table-headers/", true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }
+
+    function inputFieldModified(item) {
+        item.target.isModified = true;
+    }
+
+    function inputFieldFocusLost(item) {
+        if (item.target.isModified === true) {
+            var form = tabConfigure.getElementsByTagName('form')[0];
+            var data = new FormData(form);
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open('POST', form.action, true);
+            xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            xmlhttp.send(data);
+            Array.prototype.slice.call( document.querySelectorAll('input[type=number], input[type=text], select'), 0)
+                 .map( function(item) {
+                    item.isModified = false;
+                 }
+            );
+        }
+    }
+
+    function initializeSecuritySpecificComponents() {
+        var autoLogon = document.querySelector('select[name=autoLogon]');
+        if (autoLogon != null) {
+            if (autoLogon.value == "True") {
+                warningAutoLogon.style.display = "inline-block";
+            } else {
+                warningAutoLogon.style.display = "none";
+            }
+        }
+    }
+
+    function initializeThemeSpecificComponents() {
+        if (document.body.dataset.theme === 'dark') {
+            document.querySelector('#lblDarkenImages').style.display = 'inline-block';
+            document.querySelector('#cmbDarkenImages').style.display = 'inline-block';
+        } else {
+            document.querySelector('#lblDarkenImages').style.display = 'none';
+            document.querySelector('#cmbDarkenImages').style.display = 'none';
+        }
+    }
+
+    Array.prototype.slice.call( tabConfigure.querySelectorAll('input[type=text], select'), 0)
+         .map( function(item) {
+            item.isModified = false;
+             item.addEventListener("input", inputFieldModified);
+             item.addEventListener("blur", inputFieldFocusLost);
+         }
+    );
+
+    Array.prototype.slice.call( tabConfigure.querySelectorAll('input[type=number]'), 0)
+         .map( function(item) {
+             item.addEventListener("input", function(e) {
+                item.isModified = true;
+                inputFieldFocusLost({ target: item});   // input event linked to focusLost because changes by means of arrow buttons won't invoke a focus event
+             });
+         }
+    );
+
+    window.onload = function(e) {
+        initializeTab(tabConfigure);
+        initializeSecuritySpecificComponents();
+        initializeThemeSpecificComponents();
+
+        // add all available theme links in header
+        var themes = ['light', 'dark'];
+        var currentThemeRef = Array.prototype.slice.call( document.querySelectorAll('link[rel=stylesheet]'), 0)
+                                   .filter(function(css) {
+                                        return css.attributes['href']
+                                                  .value
+                                                  .startsWith("/css/theme-");
+                                    })
+                                   .map(function(css) {
+                                        return css.attributes['href']
+                                                  .value
+                                                  .split('?')[0];
+                                   })[0];
+        for (var t in themes) {
+            var themeRef = '/css/theme-' + themes[t] + '.css';
+            if (themeRef == currentThemeRef) continue;
+
+            var fileref = document.createElement("link");
+            fileref.rel = "stylesheet";
+            fileref.type = "text/css";
+            fileref.href = themeRef;
+            document.getElementsByTagName("head")[0].appendChild(fileref)
+        }
+
+        Array.prototype.slice.call( document.querySelectorAll('select'), 0)
+             .map( function(item) {
+                 item.oninput = function() {
+                    initializeSecuritySpecificComponents();
+                 }
+             }
+        );
+        Array.prototype.slice.call( document.querySelectorAll('select[name=theme]'), 0)
+             .map( function(item) {
+                 item.value = document.body.dataset.theme;
+
+                 item.oninput = function() {
+                    initializeSecuritySpecificComponents();
+
+                    document.body.dataset.theme = item.value;
+
+                    initializeThemeSpecificComponents();
+
+                    item.isModified = true;
+                    inputFieldFocusLost( { target: item } );
+                 }
+             }
+        );
+
+        if (document.location.hash !== "") {
+            var tabName = document.location.hash.substring(1);
+            var tab = document.querySelector("button[data-tab-page-id=" + tabName + "]");
+            if (tab != null) tab.click();
+        }
+    };
+
+    var confidentialWords = [@@CONFIG-CONFIDENTIAL-TABLE-HEADERS@@];
+    for (var w in confidentialWords) {
+        addConfidentialWordToTable(confidentialWords[w]);
+    }
+
+    btnAddConfidentialWord.onclick = function(e) {
+        e.preventDefault();
+
+        // create text input field
+        var textInputField = document.createElement('input');
+        textInputField.addEventListener("keypress", function(e) {
+            var ch = (e.which) ? e.which : event.keyCode;
+            if (ch == 13) {
+                e.preventDefault();
+                e.target.blur();
+            }
+        });
+
+        addConfidentialWordToTable( textInputField );
+    };
+</script>

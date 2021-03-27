@@ -1,0 +1,11 @@
+= header 1
+   2-spaces-indented-code
+
+= header 2
+Some text
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='hdrheader_1' style='padding-top: 80px;'></a>header 1 </h1>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '> 2-spaces-indented-code</code></pre></div>
+<h1 class='remarkup-header'><a name='hdrheader_2' style='padding-top: 80px;'></a>header 2 </h1>
+Some text
+~~~~~~~~~~

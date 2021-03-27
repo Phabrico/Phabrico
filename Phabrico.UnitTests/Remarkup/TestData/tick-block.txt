@@ -1,0 +1,4 @@
+```code```
+~~~~~~~~~~
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>code</code></pre></div>
+~~~~~~~~~~

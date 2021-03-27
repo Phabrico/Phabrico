@@ -1,0 +1,8 @@
+ <table><tr><td>cell</td></tr></table>
+~~~~~~~~~~
+<table class='remarkup-table'>
+  <tr>
+    <td>cell</td>
+  </tr>
+</table>
+~~~~~~~~~~

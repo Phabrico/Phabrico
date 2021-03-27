@@ -1,0 +1,5 @@
+@johnny I don't think this will work
+~~~~~~~~~~
+<a class='user-reference' href='/user/info/johnny/'>@johnny</a>
+I don&#39;t think this will work
+~~~~~~~~~~

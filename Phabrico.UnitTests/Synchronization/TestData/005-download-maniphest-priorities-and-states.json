@@ -1,0 +1,76 @@
+{
+    "execute": {
+        "method": ["ProgressMethod_DownloadManiphestPrioritiesAndStates"]
+    },
+
+    "validate": {
+        "storage": {
+            "maniphestpriority":  [{
+                "name": "Unbreak Now!",
+                "identifier": "unbreak",
+                "color": "pink",
+                "value": 100
+            }, {
+                "name": "Needs Triage",
+                "identifier": "triage",
+                "color": "violet",
+                "value": 90
+            }, {
+                "name": "High",
+                "identifier": "high",
+                "color": "red",
+                "value": 80
+            }, {
+                "name": "Normal",
+                "identifier": "normal",
+                "color": "orange",
+                "value": 50
+            }, {
+                "name": "Low",
+                "identifier": "low",
+                "color": "yellow",
+                "value": 25
+            }, {
+                "name": "Wishlist",
+                "identifier": "wish",
+                "color": "sky",
+                "value": 0
+            }],
+
+            "manipheststatus":  [{
+                "name": "Open",
+                "value": "open",
+                "closed": false,
+                "icon": "fa-exclamation-circle",
+                "special": "default"
+            }, {
+                "name": "Resolved",
+                "value": "resolved",
+                "closed": true,
+                "icon": "fa-check-circle",
+                "special": "closed"
+            }, {
+                "name": "Wontfix",
+                "value": "wontfix",
+                "icon": "fa-ban",
+                "closed": true
+            }, {
+                "name": "Invalid",
+                "value": "invalid",
+                "icon": "fa-minus-circle",
+                "closed": true
+            }, {
+                "name": "Duplicate",
+                "value": "duplicate",
+                "icon": "fa-files-o",
+                "closed": true,
+                "special": "duplicate"
+            }, {
+                "name": "Spite",
+                "value": "spite",
+                "icon": "fa-thumbs-down",
+                "closed": true
+            }]
+        }
+    }
+}

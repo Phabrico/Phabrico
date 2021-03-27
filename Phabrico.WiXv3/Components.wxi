@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+    <ComponentGroup Id="PhabricoApplicationComponents" Directory="INSTALLDIR">
+        <Component Id="Newtonsoft_Json_dll" Guid="243097c7-42d5-44e8-9f31-512f987d9100" Win64="yes">
+            <File Id="file_Newtonsoft_Json_dll"
+                  Source="$(var.Phabrico.TargetDir)Newtonsoft.Json.dll"
+                  KeyPath="yes"
+                   ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="Phabrico_exe"
+                   Guid="0cdb2972-0ba5-4817-85a8-579f6ce69d02"
+                   Win64="yes">
+            <File Id="APPLICATION" Source="$(var.Phabrico.TargetDir)Phabrico.exe" KeyPath="yes" ProcessorArchitecture="x64" />
+            <ServiceInstall Id="Phabrico.exeInstaller"
+                            Name="Phabrico"
+                            Type="ownProcess"
+                            Vital="yes"
+                            DisplayName="Phabrico"
+                            Description="Offline Reader and Editor for Phabricator tasks and documents"
+                            Start="auto"
+                            Account="LocalSystem"
+                            ErrorControl="normal"
+                            Interactive="no" />
+            <ServiceControl Id="StartService"
+                            Name="Phabrico"
+                            Start="install"
+                            Stop="both"
+                            Remove="uninstall"
+                            Wait="yes" />
+        </Component>
+        <Component Id="Phabrico_exe_config" Guid="8940fbe5-f115-4373-a40f-67f5424e5703"
+                   NeverOverwrite="yes"
+                   Win64="yes">
+            <File Id="file_Phabrico_exe_config" Source="$(var.Phabrico.TargetDir)Phabrico.exe.config" KeyPath="yes" />
+            <util:XmlFile Id="RemoteAccess"
+                          Action="setValue"
+                          File="[#file_Phabrico_exe_config]"
+                          SelectionLanguage="XPath"
+                          Permanent="yes"
+                          ElementPath="//appSettings/add[\[]@key='RemoteAccess'[\]]"
+                          Name="value"
+                          Value="[APPCONFIG_ALLOWREMOTEACCESS]" />
+            <util:XmlFile Id="TcpListenPort"
+                          Action="setValue"
+                          File="[#file_Phabrico_exe_config]"
+                          SelectionLanguage="XPath"
+                          Permanent="yes"
+                          ElementPath="//appSettings/add[\[]@key='TcpListenPort'[\]]"
+                          Name="value"
+                          Value="[APPCONFIG_TCPLISTENPORT]" />
+            <util:XmlFile Id="DatabaseDirectory"
+                          Action="setValue"
+                          File="[#file_Phabrico_exe_config]"
+                          SelectionLanguage="XPath"
+                          Permanent="yes"
+                          ElementPath="//appSettings/add[\[]@key='DatabaseDirectory'[\]]"
+                          Name="value"
+                          Value="[APPCONFIG_DATABASEDIRECTORY]" />
+        </Component>
+
+        <Component Id="Phabrico_pdb" Guid="ce4d1ae5-c10f-4719-9ad9-d2246ebc1304"
+                   Win64="yes">
+            <File Id="file_Phabrico_pdb"
+                  Source="$(var.Phabrico.TargetDir)Phabrico.pdb"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="System_Data_SQLite_dll" Guid="cca41fc3-2951-4152-9c58-8cd00ab51005"
+                   Win64="yes">
+            <File Id="file_System_Data_SQLite_dll"
+                  Source="$(var.Phabrico.TargetDir)System.Data.SQLite.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+
+        <ComponentRef Id="SQLite_Interop_dll" />
+        <ComponentRef Id="CreateEmptyDatabase" />
+        <ComponentRef Id="RemovePhabricoDatabase" />
+    </ComponentGroup>
+
+    <DirectoryRef Id="INSTALLDIR">
+        <Directory Id="PhabricoApplicationDirectory_x64" Name="x64">
+            <Component Id="SQLite_Interop_dll" Guid="807807bc-d127-4b69-b15a-b984682ead00"
+               Win64="yes">
+                <File Id="file_SQLite_Interop_dll"
+                      Source="$(var.Phabrico.TargetDir)\x64\SQLite.Interop.dll"
+                      KeyPath="yes"
+                      ProcessorArchitecture="x64" />
+            </Component>
+        </Directory>
+    </DirectoryRef>
+</Include>

@@ -1,0 +1,19 @@
+http://www.example.com/
+
+(http://www.example.com/)
+
+<http://www.example.com/>
+
+http://www.example.com/wiki/example_(disambiguation)
+
+(example http://www.example.com/)
+
+Quick! http://www.example.com/!
+~~~~~~~~~~
+<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a><br>
+(<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a>)<br>
+<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a><br>
+<a class='phriction-link' href='http://www.example.com/wiki/example_(disambiguation)'>http://www.example.com/wiki/example_(disambiguation)</a><br>
+(example <a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a>)<br>
+Quick! <a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a>!
+~~~~~~~~~~

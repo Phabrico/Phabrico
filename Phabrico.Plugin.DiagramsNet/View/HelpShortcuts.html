@@ -1,0 +1,588 @@
+﻿<style>
+    body {
+        background-color: var(--aphront-table-view-th-background-color);
+    }
+
+    .flex-container {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        display: flex;
+    }
+
+    .wrap {
+        -webkit-flex-wrap: wrap;
+        flex-wrap: wrap;
+    }
+
+    .flex-item {
+        padding: 5px;
+        margin: 10px;
+        text-align: center;
+        min-width: 20%;
+    }
+
+    .flex-container table {
+        background-color: var(--aphront-table-view-th-background-color);
+        table-layout: fixed;
+    }
+
+        .flex-container table tbody tr {
+            line-height: 30px;
+        }
+
+    div.inner-table {
+        margin-left: -14px;
+    }
+
+    .flex-container table tbody tr th,
+    .flex-container table tbody tr td,
+    .flex-container table tbody tr td.inner-table table tbody tr th {
+        background-color: var(--phui-document-background);
+    }
+
+    .flex-container table tbody tr.header th {
+        font-weight: bold;
+        text-transform: uppercase;
+        background-color: var(--aphront-table-view-th-background-color);
+        padding-left: 0px;
+    }
+
+    .flex-container table tbody tr th,
+    .flex-container table tbody tr td,
+    .flex-container table tbody tr th .inner-table table tbody tr th,
+    .flex-container table tbody tr th .inner-table table tbody tr td {
+        font-size: 12px;
+        font-family: Helvetica;
+        text-align: left;
+        border-bottom: solid 2px var(--aphront-table-view-th-background-color);
+        padding: 0px 20px;
+        vertical-align: top;
+    }
+
+        .flex-container table tbody tr th table.extra-help {
+            margin-top: 5px;
+        }
+
+            .flex-container table tbody tr th table.extra-help tbody tr,
+            .flex-container table tbody tr th .inner-table table tbody tr th,
+            .flex-container table tbody tr th .inner-table table tbody tr td {
+                background-color: var(--phui-document-background);
+                text-transform: none;
+            }
+
+                .flex-container table tbody tr th table.extra-help tbody tr td:first-child {
+                    background-color: var(--aphront-table-view-th-background-color);
+                    padding-right: 5px;
+                }
+
+                .flex-container table tbody tr th table.extra-help tbody tr td:nth-child(2) {
+                    background-color: var(--aphront-table-view-th-background-color);
+                    padding-left: 0px;
+                    max-width: 260px;
+                }
+
+                .flex-container table tbody tr th table.extra-help tbody tr td img {
+                    margin-top: 5px;
+                }
+
+        .flex-container table tbody tr th .inner-table {
+            display: flex;
+        }
+</style>
+
+<div class="flex-container wrap">
+    <!-- Labels -->
+    <table class="flex-item" cellspacing="0" cellpadding="0">
+        <tr class="header">
+            <th colspan="2">Labels</th>
+        </tr>
+        <tr>
+            <th>Double click</th>
+            <td>Insert text or add an edge label</td>
+        </tr>
+        <tr>
+            <th>Shift+Enter<sup>1</sup></th>
+            <td>New Line in Formatted Labels</td>
+        </tr>
+        <tr>
+            <th>Enter</th>
+            <td>New Paragraph in Formatted Labels</td>
+        </tr>
+        <tr>
+            <th>F2 / Enter</th>
+            <td>Start Editing Label of Selected Cell</td>
+        </tr>
+        <tr>
+            <th>F2 / Tab / Esc <sup>1</sup></th>
+            <td>Stop Editing and Apply Value</td>
+        </tr>
+        <tr>
+            <th>Ctrl+B / I</th>
+            <td>Toggle Bold/Italic on Selected Text</td>
+        </tr>
+        <tr>
+            <th>Ctrl+U</th>
+            <td>Toggle Underline on Selected Text</td>
+        </tr>
+        <tr>
+            <th>Ctrl+. / ,</th>
+            <td>Superscript/Subscript on Selected Text</td>
+        </tr>
+    </table>
+
+    <!-- Selection -->
+    <table class="flex-item" cellspacing="0" cellpadding="0">
+        <tr class="header">
+            <th colspan="2">Selection</th>
+        </tr>
+        <tr>
+            <th>(Shift+)Tab</th>
+            <td>Select Next / Previous</td>
+        </tr>
+        <tr>
+            <th>Alt+(Shift+)Tab</th>
+            <td>Select Child / Parent</td>
+        </tr>
+        <tr>
+            <th>Shift+Drag</th>
+            <td>Add to Selection</td>
+        </tr>
+        <tr>
+            <th>Alt+Shift+Drag</th>
+            <td>Remove from Selection</td>
+        </tr>
+        <tr>
+            <th>Ctrl+(Shift+)A</th>
+            <td>Select All / None</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+I / E</th>
+            <td>Select Vertices / Edges</td>
+        </tr>
+        <tr>
+            <th>Ctrl / Shift+Click</th>
+            <td>Toggle Selection State</td>
+        </tr>
+        <tr>
+            <th>Alt+Click</th>
+            <td>Select Cell Below</td>
+        </tr>
+    </table>
+
+    <!-- Tools -->
+    <table class="flex-item" cellspacing="0" cellpadding="0">
+        <tr class="header">
+            <th colspan="2">Tools</th>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+L</th>
+            <td>Toggle Layers Window</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+O</th>
+            <td>Toggle Outline Window</td>
+        </tr>
+        <tr>
+            <th>Ctrl+M</th>
+            <td>Edit Metadata</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+P</th>
+            <td>Toggle Format Panel</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+M</th>
+            <td>Edit Vertex Geometry</td>
+        </tr>
+        <tr>
+            <th>Rightclick</th>
+            <td>Context Menu</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Click</th>
+            <td>Context Menu</td>
+        </tr>
+        <tr>
+            <th>F1</th>
+            <td>About</td>
+        </tr>
+    </table>
+
+    <!-- Cursor / Page keys -->
+    <table class="flex-item" cellspacing="0" cellpadding="0">
+        <tr class="header">
+            <th colspan="2">Cursor / Page keys</th>
+        </tr>
+        <tr>
+            <th>Cursor</th>
+            <td>Scroll / Move cell (pt)</td>
+        </tr>
+        <tr>
+            <th>Shift+Cursor</th>
+            <td>Move cell (grid) or page</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Cursor</th>
+            <td>Resize cell (pt) or select page</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+Cursor</th>
+            <td>Resize cell (grid size)</td>
+        </tr>
+        <tr>
+            <th>Alt+Shift+Cursor</th>
+            <td>Clone and connect</td>
+        </tr>
+        <tr>
+            <th>Alt+Cursor</th>
+            <td>Scroll Page</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+Pg Up</th>
+            <td>Previous Page</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+Pg Down</th>
+            <td>Next Page</td>
+        </tr>
+    </table>
+
+    <!-- Canvas -->
+    <table class="flex-item" cellspacing="0" cellpadding="0">
+        <tr class="header">
+            <th colspan="2">Canvas</th>
+        </tr>
+        <tr>
+            <th>Ctrl+X</th>
+            <td>Cut</td>
+        </tr>
+        <tr>
+            <th>Ctrl+C</th>
+            <td>Copy</td>
+        </tr>
+        <tr>
+            <th>Ctrl+V</th>
+            <td>Paste</td>
+        </tr>
+        <tr>
+            <th>Ctrl+G</th>
+            <td>Group</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+U</th>
+            <td>Ungroup</td>
+        </tr>
+        <tr>
+            <th>Ctrl+L / Alt+Shift+L</th>
+            <td>Lock/Unlock / Edit Link</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Enter / D</th>
+            <td>Duplicate</td>
+        </tr>
+        <tr>
+            <th>Backspace or Delete</th>
+            <td>Delete Selected Cells</td>
+        </tr>
+        <tr>
+            <th>Ctrl / Shift+Delete</th>
+            <td>Delete Selected Cells with Connections / Labels</td>
+        </tr>
+        <tr>
+            <th>Ctrl+R</th>
+            <td>Turn / Rotate 90° Clockwise</td>
+        </tr>
+        <tr>
+            <th>Shift+Resize</th>
+            <td>Maintain Proportions</td>
+        </tr>
+        <tr>
+            <th>Ctrl / Meta+Resize<sup>2</sup></th>
+            <td>Centered / Group Resize</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Home</th>
+            <td>Collapse Container</td>
+        </tr>
+        <tr>
+            <th>Ctrl+End</th>
+            <td>Expand Container</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+Home</th>
+            <td>Exit Group</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+End</th>
+            <td>Enter Group</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+B</th>
+            <td>Send to Back</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+F</th>
+            <td>Bring to Front</td>
+        </tr>
+        <tr>
+            <th>Alt+Shift+C/T</th>
+            <td>Clear Waypoints / Edit Tooltip</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+Y</th>
+            <td>Autosize</td>
+        </tr>
+        <tr>
+            <th>Ctrl / Shift+Drag</th>
+            <td>Clone cell/Disconnect edge</td>
+        </tr>
+        <tr>
+            <th>Alt+Connect</th>
+            <td>Connect to a Fixed Point</td>
+        </tr>
+    </table>
+
+    <!-- View -->
+    <table class="flex-item" cellspacing="0" cellpadding="0">
+        <tr class="header">
+            <th colspan="2">View</th>
+        </tr>
+        <tr>
+            <th>Alt+Mouse wheel</th>
+            <td>Canvas Zoom In/Out</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+Mouse wheel</th>
+            <td>Canvas Zoom In/Out</td>
+        </tr>
+        <tr>
+            <th>Mouse wheel</th>
+            <td>Canvas Vertical Scroll</td>
+        </tr>
+        <tr>
+            <th>Shift+Mouse wheel</th>
+            <td>Canvas Horizontal Scroll</td>
+        </tr>
+        <tr>
+            <th>Space / Right mouse Drag</th>
+            <td>Pan Canvas</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+Drag</th>
+            <td>Create / Remove Space</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+Connect</th>
+            <td>Disable Connections</td>
+        </tr>
+        <tr>
+            <th>Shift+Home</th>
+            <td>Home</td>
+        </tr>
+        <tr>
+            <th>End</th>
+            <td>Refresh</td>
+        </tr>
+        <tr>
+            <th>Home</th>
+            <td>Reset View</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+H</th>
+            <td>Fit Window</td>
+        </tr>
+        <tr>
+            <th>Ctrl+J</th>
+            <td>Fit Page</td>
+        </tr>
+        <tr>
+            <th>Ctrl+Shift+J</th>
+            <td>Fit Two Pages</td>
+        </tr>
+        <tr>
+            <th>Ctrl+0</th>
+            <td>Custom Zoom</td>
+        </tr>
+        <tr>
+            <th>Ctrl + (Numpad)</th>
+            <td>Zoom In</td>
+        </tr>
+        <tr>
+            <th>Ctrl - (Numpad)</th>
+            <td>Zoom Out</td>
+        </tr>
+
+        <tr class="header">
+            <th colspan="2" style="background-color: var(--aphront-table-view-th-background-color)">
+                <table class="extra-help" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td>
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMjZweCIgaGVpZ2h0PSIxOHB4IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAyNiAxOCI+PHBhdGggZD0ibSAxIDYgTCAxNCA2IEwgMTQgMSBMIDI2IDkgTCAxNCAxOCBMIDE0IDEyIEwgMSAxMiB6IiBzdHJva2U9IiNmZmYiIGZpbGw9IiMyOWI2ZjIiLz48L3N2Zz4=" />
+                        </td>
+                        <td>Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone).</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTZweCIgaGVpZ2h0PSIxNnB4IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHZlcnNpb249IjEuMSI+PHBhdGggc3Ryb2tlPSIjMjliNmYyIiBmaWxsPSIjMjliNmYyIiBkPSJNMTUuNTUgNS41NUwxMSAxdjMuMDdDNy4wNiA0LjU2IDQgNy45MiA0IDEyczMuMDUgNy40NCA3IDcuOTN2LTIuMDJjLTIuODQtLjQ4LTUtMi45NC01LTUuOTFzMi4xNi01LjQzIDUtNS45MVYxMGw0LjU1LTQuNDV6TTE5LjkzIDExYy0uMTctMS4zOS0uNzItMi43My0xLjYyLTMuODlsLTEuNDIgMS40MmMuNTQuNzUuODggMS42IDEuMDIgMi40N2gyLjAyek0xMyAxNy45djIuMDJjMS4zOS0uMTcgMi43NC0uNzEgMy45LTEuNjFsLTEuNDQtMS40NGMtLjc1LjU0LTEuNTkuODktMi40NiAxLjAzem0zLjg5LTIuNDJsMS40MiAxLjQxYy45LTEuMTYgMS40NS0yLjUgMS42Mi0zLjg5aC0yLjAyYy0uMTQuODctLjQ4IDEuNzItMS4wMiAyLjQ4eiIvPjwvc3ZnPg==" />
+                        </td>
+                        <td>Click to rotate 90° clockwise. Drag to rotate.</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAZAgMAAACTN5xfAAAACVBMVEX///////8AAACO9MPsAAAAAXRSTlMAQObYZgAAAFRJREFUeF5VyjEKgDAQRNGPRSA38AB6JEWsUkggt9hLGDbdlh5Tp7R5DPzBAEK46OI2UcQhdrGZKB/nA13B9Q5hqwEij+akVi/yFDMJFjL8VlUdw1+gHxbW+YsglAAAAABJRU5ErkJggg==" />
+                        </td>
+                        <td>Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML</td>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+    </table>
+
+    <!-- Sidebar / Connect -->
+    <table class="flex-item" cellspacing="0" cellpadding="0">
+        <tr class="header">
+            <th colspan="2">Sidebar / Connect</th>
+        </tr>
+        <tr>
+            <th>Alt+(Shift+)Drag from sidebar</th>
+            <td>Disable replace, connect on drop (drop targets), Shift ignores current style</td>
+        </tr>
+        <tr>
+            <th>Alt+(Shift / Ctrl)+Click on a sidebar item</th>
+            <td>Inserts and connects the selected item (Shift ignores current style)</td>
+        </tr>
+        <tr>
+            <th>Shift+Click on a sidebar item</th>
+            <td>Replaces the selected item with the clicked one</td>
+        </tr>
+        <tr>
+            <th>Click on a sidebar item</th>
+            <td>Connects unconnected side of selected edge</td>
+        </tr>
+        <tr>
+            <th>Shift+Connect</th>
+            <td>Connect to shape outline (ignore connection points)</td>
+        </tr>
+
+        <tr class="header">
+            <th colspan="2">
+                <div class="inner-table">
+                    <!-- Document -->
+                    <table class="flex-item" cellspacing="0" cellpadding="0">
+                        <tr class="header">
+                            <th colspan="2">Document</th>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+S</th>
+                            <td>Save</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Shift+S</th>
+                            <td>Save as</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Z</th>
+                            <td>Undo</td>
+                        </tr>
+                        <tr>
+                            <th>Alt+Shift+A</th>
+                            <td>Connection Arrows</td>
+                        </tr>
+                        <tr>
+                            <th>Alt+Shift+P</th>
+                            <td>Connection Points</td>
+                        </tr>
+                        <tr>
+                            <th>Hold Alt</th>
+                            <td>Ignores handles under the mouse</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Shift+G</th>
+                            <td>Toggle grid</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+P</th>
+                            <td>Print</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Y</th>
+                            <td>Redo</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Shift+X</th>
+                            <td>Insert Text</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+K</th>
+                            <td>Insert Rectangle</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Shift+K</th>
+                            <td>Insert Ellipse</td>
+                        </tr>
+                        <tr>
+                            <th>Esc</th>
+                            <td>Cancel Action</td>
+                        </tr>
+                    </table>
+
+
+                    <!-- Styles -->
+                    <table class="flex-item" cellspacing="0" cellpadding="0">
+                        <tr class="header">
+                            <th colspan="2">Styles</th>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Shift+R</th>
+                            <td>Clear Default Style</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+E</th>
+                            <td>Edit Style</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Shift+D</th>
+                            <td>Set as Default Style</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Shift+C</th>
+                            <td>Copy Style</td>
+                        </tr>
+                        <tr>
+                            <th>Ctrl+Shift+V</th>
+                            <td>Paste Style</td>
+                        </tr>
+                        <tr>
+                            <th>Alt+Shift+X</th>
+                            <td>Copy Size</td>
+                        </tr>
+                        <tr>
+                            <th>Alt+Shift+V</th>
+                            <td>Paste Size</td>
+                        </tr>
+
+                        <tr class="header">
+                            <th colspan="2" style="background-color: var(--aphront-table-view-th-background-color)">
+                                <table class="extra-help" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <td>
+                                            <sup>1</sup>
+                                        </td>
+                                        <td>Ctrl / Shift+Enter: New Line<br />Ctrl / Shift+Esc: Cancel Editing</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <sup>2</sup>
+                                        </td>
+                                        <td>Ctrl+Resize for non-recursive group resize<br />Ctrl+Meta+Resize for centered group resize</td>
+                                    </tr>
+                                </table>
+                            </th>
+                        </tr>
+                    </table>
+                </div>
+            </th>
+        </tr>
+    </table>
+</div>

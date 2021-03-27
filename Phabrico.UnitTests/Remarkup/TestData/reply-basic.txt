@@ -1,0 +1,8 @@
+>>! In comment #123, alincoln wrote:
+> Four score and twenty years ago...
+~~~~~~~~~~
+<blockquote>
+<div class='remarkup-reply-head'>In comment #123, alincoln wrote:</div>
+<div class='remarkup-reply-body'><p>Four score and twenty years ago...</p></div>
+</blockquote>
+~~~~~~~~~~

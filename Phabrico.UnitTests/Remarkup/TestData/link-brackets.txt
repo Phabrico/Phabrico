@@ -1,0 +1,4 @@
+<http://www.zany.com/omg/weird_url,,,>
+~~~~~~~~~~
+<a class='phriction-link' href='http://www.zany.com/omg/weird_url,,,'>http://www.zany.com/omg/weird_url,,,</a>
+~~~~~~~~~~

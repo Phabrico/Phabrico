@@ -1,0 +1,13 @@
+{
+    "execute": {
+        "method": ["GenerateDiffPath"],
+        "arguments": [ 
+            "Hello", 
+            "How low"
+        ]
+    },
+
+    "validate": {
+        "methodResult": "=H<e>o>w> =l<l=o>w"
+    }
+}

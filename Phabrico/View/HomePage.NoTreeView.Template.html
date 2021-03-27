@@ -1,0 +1,20 @@
+<script>
+    window.addEventListener('load', function() {
+        Object.defineProperty( phabrico, "autoLogOff", {
+            value: new AutoLogOff(@@AUTOLOGOUTAFTERMINUTESOFINACTIVITY@@),
+            writable: false,
+            enumerable: true,
+            configurable: false
+        });
+
+        @{IF @@PUBLIC-ACCESS@@=True@
+            phabrico.autoLogOff.disable();
+        }@
+    }, false);
+</script>
+
+<main style="height: calc(100vh - 45px);">
+    <div class="phabrico-page-content phabrico-standard-page-body right-collapsed">
+    @@CONTENT@@
+    </div>
+</main>

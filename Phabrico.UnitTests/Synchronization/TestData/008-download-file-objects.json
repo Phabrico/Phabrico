@@ -1,0 +1,27 @@
+{
+    "execute": {
+        "method": [
+            "ProgressMethod_DownloadPhrictionDocuments",
+            "ProgressMethod_DownloadFileObjects"
+        ]
+    },
+
+    "validate": {
+        "storage": {
+            "file":  [{
+                    "token": "PHID-FILE-5amliyv5bk2g4oeinj3s",
+                    "id": 445,
+                    "filename": "water.png",
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAAEIAAAAzCAYAAAAjKt6MAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFUSURBVGhD7ZchTgNRFEWHBIlAIBAVCAQSiatFICtYAJIl4FgEQSORSASy7AISFlBRgUDAuQmTTCYT5g29ouKe5KRJ03/+z7SdzGtCCCGEEMJm7Py+VjnEK5zjLr7iPb7jFFwd4WyNog1ucIXfAz7iEY7h6ghnq8QxLrHd4AnP8Qzv8BP1/hqvUQccwtURzlaJC1RM0Q/UZn1mqKvfHkoHPMEuro5wtkbRFbzFNqToPv6FDviG+nz3m3B0hLNV4gCfUYu/UP/DKnv4gO1hXZ0XdLZKnKKunm5CQz+7Cpeo9a6O/vPOVhn9pDa942q9q7NAZyuEEMJ/yNA1EW3gGHBcHeFslcjQBXqIUUzRDF2oaIYurJKhq0eGrg5a7+pk6AohhLBFZPqciDZwTHqujnC2SmT6BD3NKaZopk9UNNMnVsn02SPTZwetd3UyfYYQQgjbRtP8AOyIhy3DjvcYAAAAAElFTkSuQmCC",
+                    "size": "6731"
+                },{
+                    "token": "PHID-FILE-yezt4hwodadiyydp2yje",
+                    "id": 403,
+                    "filename": "logo.png",
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAAEIAAAAzCAYAAAAjKt6MAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFUSURBVGhD7ZchTgNRFEWHBIlAIBAVCAQSiatFICtYAJIl4FgEQSORSASy7AISFlBRgUDAuQmTTCYT5g29ouKe5KRJ03/+z7SdzGtCCCGEEMJm7Py+VjnEK5zjLr7iPb7jFFwd4WyNog1ucIXfAz7iEY7h6ghnq8QxLrHd4AnP8Qzv8BP1/hqvUQccwtURzlaJC1RM0Q/UZn1mqKvfHkoHPMEuro5wtkbRFbzFNqToPv6FDviG+nz3m3B0hLNV4gCfUYu/UP/DKnv4gO1hXZ0XdLZKnKKunm5CQz+7Cpeo9a6O/vPOVhn9pDa942q9q7NAZyuEEMJ/yNA1EW3gGHBcHeFslcjQBXqIUUzRDF2oaIYurJKhq0eGrg5a7+pk6AohhLBFZPqciDZwTHqujnC2SmT6BD3NKaZopk9UNNMnVsn02SPTZwetd3UyfYYQQgjbRtP8AOyIhy3DjvcYAAAAAElFTkSuQmCC",
+                    "size": "6854"
+                }
+            ]
+        }
+    }
+}

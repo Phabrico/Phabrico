@@ -1,0 +1,22 @@
+{
+    "execute": {
+        "method": ["GenerateDiffPath"],
+        "arguments": [ 
+            "Purple haze all in my brain               
+Lately things, they don't seem the same
+Acting funny, but I don't know why
+'Scuse me while I kiss this guy", 
+            "Purple haze all in my brain
+Lately things, they don't seem the same
+Acting funny, but I don't know why
+'Scuse me while I kiss the sky"
+        ]
+    },
+
+    "validate": {
+        "methodResult": "=P=u=r=p=l=e= =h=a=z=e= =a=l=l= =i=n= =m=y= =b=r=a=i=n< < < < < < < < < < < < < < < =
+=L=a=t=e=l=y= =t=h=i=n=g=s=,= =t=h=e=y= =d=o=n='=t= =s=e=e=m= =t=h=e= =s=a=m=e=
+=A=c=t=i=n=g= =f=u=n=n=y=,= =b=u=t= =I= =d=o=n='=t= =k=n=o=w= =w=h=y=
+='=S=c=u=s=e= =m=e= =w=h=i=l=e= =I= =k=i=s=s= =t=h<i>e<s= <g>s<u>k=y"
+    }
+}

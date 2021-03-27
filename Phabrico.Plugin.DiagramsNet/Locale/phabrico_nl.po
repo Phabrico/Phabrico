@@ -1,0 +1,618 @@
+﻿# Dutch translations
+
+# General
+msgid "Diagrams"
+msgstr "Diagrammen"
+
+msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
+msgstr "Editor voor stroomdiagrammen, procesdiagrammen, organigrammen, UML, ER en netwerkdiagrammen."
+
+# Help shortcuts
+msgid "Styles"
+msgstr "Stijlen"
+
+msgid "Document"
+msgstr "Document"
+
+msgid "Sidebar / Connect"
+msgstr "Zijbalk / Verbinden"
+
+msgid "View"
+msgstr "View"
+
+msgid "Canvas"
+msgstr "Canvas"
+
+msgid "Cursor / Page keys"
+msgstr "Cursor- of Paginatoetsen"
+
+msgid "Tools"
+msgstr "Gereedschap"
+
+msgid "Selection"
+msgstr "Selectie"
+
+msgid "Labels"
+msgstr "Labels"
+
+msgid "(Shift+)Tab"
+msgstr "(Shift+)Tab"
+
+msgid "Alt+(Shift / Ctrl)+Click on a sidebar item"
+msgstr "Alt+(Shift / Ctrl)+Klik op een item in de zijbalk"
+
+msgid "Alt+(Shift+)Drag from sidebar"
+msgstr "Alt+(Shift+)Slepen vanuit zijbalk"
+
+msgid "Alt+(Shift+)Tab"
+msgstr "Alt+(Shift+)Tab"
+
+msgid "Alt+Click"
+msgstr "Alt+klik"
+
+msgid "Alt+Connect"
+msgstr "Alt+Verbinden"
+
+msgid "Alt+Cursor"
+msgstr "Alt+Cursor"
+
+msgid "Alt+Mouse wheel"
+msgstr "Alt+Muiswiel"
+
+msgid "Alt+Shift+A"
+msgstr "Alt+Shift+A"
+
+msgid "Alt+Shift+C/T"
+msgstr "Alt+Shift+C/T"
+
+msgid "Alt+Shift+Cursor"
+msgstr "Alt+Shift+Cursor"
+
+msgid "Alt+Shift+Drag"
+msgstr "Alt+Shift+Slepen"
+
+msgid "Alt+Shift+P"
+msgstr "Alt+Shift+P"
+
+msgid "Alt+Shift+V"
+msgstr "Alt+Shift+V"
+
+msgid "Alt+Shift+X"
+msgstr "Alt+Shift+X"
+
+msgid "Backspace or Delete"
+msgstr "Backspace of Del"
+
+msgid "Click on a sidebar item"
+msgstr "Klik op een item in de zijbalk"
+
+msgid "Ctrl - (Numpad)"
+msgstr "Ctrl - (Numpad)"
+
+msgid "Ctrl / Meta+Resize"
+msgstr "Ctrl / Meta+Resize"
+
+msgid "Ctrl / Shift+Click"
+msgstr "Ctrl / Shift+klik"
+
+msgid "Ctrl / Shift+Delete"
+msgstr "Ctrl / Shift+Delete"
+
+msgid "Ctrl / Shift+Drag"
+msgstr "Ctrl / Shift+Slepen"
+
+msgid "Ctrl + (Numpad)"
+msgstr "Ctrl + (Numpad)"
+
+msgid "Ctrl+(Shift+)A"
+msgstr "Ctrl+(Shift+)A"
+
+msgid "Ctrl+. / ,"
+msgstr "Ctrl+. / ,"
+
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+msgid "Ctrl+B / I"
+msgstr "Ctrl+B / I"
+
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+msgid "Ctrl+Click"
+msgstr "Ctrl+klik"
+
+msgid "Ctrl+Cursor"
+msgstr "Ctrl+Cursor"
+
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+msgid "Ctrl+End"
+msgstr "Ctrl+End"
+
+msgid "Ctrl+Enter / D"
+msgstr "Ctrl+Enter / D"
+
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+msgid "Ctrl+Home"
+msgstr "Ctrl+Home"
+
+msgid "Ctrl+J"
+msgstr "Ctrl+J"
+
+msgid "Ctrl+K"
+msgstr "Ctrl+K"
+
+msgid "Ctrl+L / Alt+Shift+L"
+msgstr "Ctrl+L / Alt+Shift+L"
+
+msgid "Ctrl+M"
+msgstr "Ctrl+M"
+
+msgid "Ctrl+P"
+msgstr "Ctrl+P"
+
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+msgid "Ctrl+Shift+B"
+msgstr "Ctrl+Shift+B"
+
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+msgid "Ctrl+Shift+Connect"
+msgstr "Ctrl+Shift+Verbinden"
+
+msgid "Ctrl+Shift+Cursor"
+msgstr "Ctrl+Shift+Cursor"
+
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+msgid "Ctrl+Shift+Drag"
+msgstr "Ctrl+Shift+Slepen"
+
+msgid "Ctrl+Shift+End"
+msgstr "Ctrl+Shift+End"
+
+msgid "Ctrl+Shift+F"
+msgstr "Ctrl+Shift+F"
+
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+msgid "Ctrl+Shift+H"
+msgstr "Ctrl+Shift+H"
+
+msgid "Ctrl+Shift+Home"
+msgstr "Ctrl+Shift+Home"
+
+msgid "Ctrl+Shift+I / E"
+msgstr "Ctrl+Shift+I / E"
+
+msgid "Ctrl+Shift+J"
+msgstr "Ctrl+Shift+J"
+
+msgid "Ctrl+Shift+K"
+msgstr "Ctrl+Shift+K"
+
+msgid "Ctrl+Shift+L"
+msgstr "Ctrl+Shift+L"
+
+msgid "Ctrl+Shift+M"
+msgstr "Ctrl+Shift+M"
+
+msgid "Ctrl+Shift+Mouse wheel"
+msgstr "Ctrl+Shift+Muiswiel"
+
+msgid "Ctrl+Shift+O"
+msgstr "Ctrl+Shift+O"
+
+msgid "Ctrl+Shift+P"
+msgstr "Ctrl+Shift+P"
+
+msgid "Ctrl+Shift+Pg Down"
+msgstr "Ctrl+Shift+Pg Down"
+
+msgid "Ctrl+Shift+Pg Up"
+msgstr "Ctrl+Shift+Pg Up"
+
+msgid "Ctrl+Shift+R"
+msgstr "Ctrl+Shift+R"
+
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+msgid "Ctrl+Shift+U"
+msgstr "Ctrl+Shift+U"
+
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+msgid "Ctrl+Shift+X"
+msgstr "Ctrl+Shift+X"
+
+msgid "Ctrl+Shift+Y"
+msgstr "Ctrl+Shift+Y"
+
+msgid "Ctrl+U"
+msgstr "Ctrl+U"
+
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Double click"
+msgstr "Dubbelklik"
+
+msgid "End"
+msgstr "End"
+
+msgid "Enter"
+msgstr "Enter"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "F1"
+msgstr "F1"
+
+msgid "F2 / Enter"
+msgstr "F2 / Enter"
+
+msgid "F2 / Tab / Esc"
+msgstr "F2 / Tab / Esc"
+
+msgid "Hold Alt"
+msgstr "Houd Alt"
+
+msgid "Mouse wheel"
+msgstr "Muiswiel"
+
+msgid "Rightclick"
+msgstr "Rechtermuisknop"
+
+msgid "Shift+Click on a sidebar item"
+msgstr "Shift+Klik op een item in de zijbalk"
+
+msgid "Shift+Connect"
+msgstr "Shift+Verbinden"
+
+msgid "Shift+Cursor"
+msgstr "Shift+Cursor"
+
+msgid "Shift+Drag"
+msgstr "Shift+Slepen"
+
+msgid "Shift+Enter"
+msgstr "Shift+Enter"
+
+msgid "Shift+Home"
+msgstr "Shift+Home"
+
+msgid "Shift+Mouse wheel"
+msgstr "Shift+Muiswiel"
+
+msgid "Shift+Resize"
+msgstr "Shift+Resize"
+
+msgid "Space / Right mouse Drag"
+msgstr "Space / Slepen met de rechtermuisknop"
+
+msgid "About"
+msgstr "Over"
+
+msgid "Add to Selection"
+msgstr "Toevoegen aan selectie"
+
+msgid "Autosize"
+msgstr "Autosize"
+
+msgid "Bring to Front"
+msgstr "Naar de voorgrond"
+
+msgid "Cancel Action"
+msgstr "Actie annuleren"
+
+msgid "Canvas Horizontal Scroll"
+msgstr "Horizontaal scrollen"
+
+msgid "Canvas Vertical Scroll"
+msgstr "Verticaal scrollen"
+
+msgid "Canvas Zoom In/Out"
+msgstr "Canvas vergroten/verkleinen"
+
+msgid "Centered / Group Resize"
+msgstr "Gecentreerd / Verander groepsgrootte"
+
+msgid "Clear Default Style"
+msgstr "Standaardstijl wissen"
+
+msgid "Clear Waypoints / Edit Tooltip"
+msgstr "Waypoints verwijderen / Tooltip bewerken"
+
+msgid "Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone)."
+msgstr "Klik om te verbinden en te klonen (Ctrl+klik om te klonen, Shift+klik om te verbinden). Sleep om te verbinden (Ctrl+slepen om te klonen)."
+
+msgid "Click to rotate 90° clockwise. Drag to rotate."
+msgstr "Klik om 90° met de klok mee te draaien. Slepen om te draaien."
+
+msgid "Clone and connect"
+msgstr "Klonen en verbinden"
+
+msgid "Clone cell/Disconnect edge"
+msgstr "Cel klonen / rand afsnijden"
+
+msgid "Collapse Container"
+msgstr "Container samenvouwen"
+
+msgid "Connect to a Fixed Point"
+msgstr "Aansluiten op een vast punt"
+
+msgid "Connect to shape outline (ignore connection points)"
+msgstr "Verbinden met de omtrek van de vorm (verbindingspunten negeren)"
+
+msgid "Connection Arrows"
+msgstr "Verbinden met pijlen"
+
+msgid "Connection Points"
+msgstr "Punten verbinden"
+
+msgid "Connects unconnected side of selected edge"
+msgstr "Verbindt de niet verbonden zijde van de geselecteerde rand"
+
+msgid "Context Menu"
+msgstr "Contextmenu"
+
+msgid "Copy"
+msgstr "Kopiëren"
+
+msgid "Copy Size"
+msgstr "Grootte kopiëren"
+
+msgid "Copy Style"
+msgstr "Stijl kopiëren"
+
+msgid "Create / Remove Space"
+msgstr "Ruimte maken / verwijderen"
+
+msgid "Ctrl / Shift+Enter: New Line"
+msgstr "Ctrl / Shift+Enter: Nieuwe regel"
+
+msgid "Ctrl / Shift+Esc: Cancel Editing"
+msgstr "Ctrl / Shift+Esc: Bewerking annuleren"
+
+msgid "Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML"
+msgstr "Ctrl: dialoogvenster tonen, Alt: oorsprong, Shift: XML negeren"
+
+msgid "Ctrl+Resize for non-recursive group resize"
+msgstr "Ctrl+Resize voor niet-recursieve groep resizing"
+
+msgid "Ctrl+Meta+Resize for centered group resize"
+msgstr "Ctrl+Meta+Resize voor gecentreerde groep resizing."
+
+msgid "Custom Zoom"
+msgstr "Aangepast zoomen"
+
+msgid "Cut"
+msgstr "Knippen"
+
+msgid "Delete Selected Cells"
+msgstr "Geselecteerde cellen wissen"
+
+msgid "Delete Selected Cells with Connections / Labels"
+msgstr "Geselecteerde cellen met verbindingen / labels verwijderen"
+
+msgid "Disable Connections"
+msgstr "Verbindingen verbreken"
+
+msgid "Disable replace, connect on drop (drop targets), Shift ignores current style"
+msgstr "Vervanging uitschakelen, verbinding maken bij drop, Shift negeert huidige stijl"
+
+msgid "Duplicate"
+msgstr "Dupliceren"
+
+msgid "Edit Metadata"
+msgstr "Metadata bewerken"
+
+msgid "Edit Style"
+msgstr "Stijl bewerken"
+
+msgid "Edit Vertex Geometry"
+msgstr "Vertex-geometrie bewerken"
+
+msgid "Enter Group"
+msgstr "Groep invoeren"
+
+msgid "Exit Group"
+msgstr "Groep verlaten"
+
+msgid "Expand Container"
+msgstr "Container uitvouwen"
+
+msgid "Fit Page"
+msgstr "Passend op 1 pagina"
+
+msgid "Fit Two Pages"
+msgstr "Passend op 2 paginas"
+
+msgid "Fit Window"
+msgstr "Passend in venster"
+
+msgid "Group"
+msgstr "Groeperen"
+
+msgid "Home"
+msgstr "Basispositie"
+
+msgid "Ignores handles under the mouse"
+msgstr "Negeert handgrepen onder de muis"
+
+msgid "Insert Ellipse"
+msgstr "Ellips invoegen"
+
+msgid "Insert Rectangle"
+msgstr "Rechthoek invoegen"
+
+msgid "Insert Text"
+msgstr "Tekst invoegen"
+
+msgid "Insert text or add an edge label"
+msgstr "Tekst invoegen of een margelabel toevoegen"
+
+msgid "Inserts and connects the selected item (Shift ignores current style)"
+msgstr "Voegt het geselecteerde element in en voegt het samen (Shift negeert de huidige stijl)"
+
+msgid "Lock/Unlock / Edit Link"
+msgstr "Link Vergrendelen/Ontgrendelen / Bewerken"
+
+msgid "Maintain Proportions"
+msgstr "Verhoudingen behouden"
+
+msgid "Move cell (grid) or page"
+msgstr "Verplaats cel (raster) of pagina"
+
+msgid "New Line in Formatted Labels"
+msgstr "Nieuwe regel invoegen in labels"
+
+msgid "New Paragraph in Formatted Labels"
+msgstr "Nieuwe paragraaf invoegen in labels"
+
+msgid "Next Page"
+msgstr "Volgende pagina"
+
+msgid "Pan Canvas"
+msgstr "Pan Leinwand"
+
+msgid "Paste"
+msgstr "Plakken"
+
+msgid "Paste Size"
+msgstr "Grootte plakken"
+
+msgid "Paste Style"
+msgstr "Stijl plakken"
+
+msgid "Previous Page"
+msgstr "Vorige pagina"
+
+msgid "Print"
+msgstr "Afdrukken"
+
+msgid "Redo"
+msgstr "Opnieuw"
+
+msgid "Refresh"
+msgstr "Vernieuwen"
+
+msgid "Remove from Selection"
+msgstr "Uit selectie verwijderen"
+
+msgid "Replaces the selected item with the clicked one"
+msgstr "Vervangt het geselecteerde element door het aangeklikte element"
+
+msgid "Reset View"
+msgstr "Weergave terugzetten"
+
+msgid "Resize cell (grid size)"
+msgstr "Grootte van de cel wijzigen (rastergrootte)"
+
+msgid "Resize cell (pt) or select page"
+msgstr "Wijzig celgrootte (pt) of selecteer pagina"
+
+msgid "Save"
+msgstr "Opslaan"
+
+msgid "Save as"
+msgstr "Opslaan als"
+
+msgid "Scroll / Move cell (pt)"
+msgstr "Scrollen / verplaatsen cel (pt)"
+
+msgid "Scroll Page"
+msgstr "Scroll pagina"
+
+msgid "Select All / None"
+msgstr "Selecteer Alles / Niets"
+
+msgid "Select Cell Below"
+msgstr "Selecteer onderstaande cel"
+
+msgid "Select Child / Parent"
+msgstr "Selecteer kind / ouder"
+
+msgid "Select Next / Previous"
+msgstr "Kies Volgende / Vorige"
+
+msgid "Select Vertices / Edges"
+msgstr "Selecteer Vertices / Randen"
+
+msgid "Send to Back"
+msgstr "Naar de achtergrond"
+
+msgid "Set as Default Style"
+msgstr "Als standaardstijl instellen"
+
+msgid "Start Editing Label of Selected Cell"
+msgstr "Start bewerken van label van de geselecteerde cel"
+
+msgid "Stop Editing and Apply Value"
+msgstr "Stop bewerking en accepteer waarde"
+
+msgid "Superscript/Subscript on Selected Text"
+msgstr "Superscript/Subscript op geselecteerde tekst"
+
+msgid "Toggle Bold/Italic on Selected Text"
+msgstr "Vet / Cursief omkeren op geselecteerde tekst"
+
+msgid "Toggle Format Panel"
+msgstr "Opmaken tonen/verbergen"
+
+msgid "Toggle grid"
+msgstr "Grid tonen/verbergen"
+
+msgid "Toggle Layers Window"
+msgstr "Lagen tonen/verbergen"
+
+msgid "Toggle Outline Window"
+msgstr "Overzicht tonen/verbergen"
+
+msgid "Toggle Selection State"
+msgstr "Toevoegen aan/verwijderen uit selectie"
+
+msgid "Toggle Underline on Selected Text"
+msgstr "Onderstreping van geselecteerde tekst toevoegen/verwijderen"
+
+msgid "Turn / Rotate 90° Clockwise"
+msgstr "90° rechtsom draaien"
+
+msgid "Undo"
+msgstr "Ongedaan maken"
+
+msgid "Ungroup"
+msgstr "Groepering ongedaan maken"
+
+msgid "Zoom In"
+msgstr "Zoom in"
+
+msgid "Zoom Out"
+msgstr "Zoom uit"

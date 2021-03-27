@@ -1,0 +1,20 @@
+%%%a%%%
+%%%b%%%
+
+%%%a
+b%%%
+
+%%%a%%%
+
+%%%b%%%
+~~~~~~~~~~
+<p class='remarkup-literal'>a</p>
+<p class='remarkup-literal'>b</p>
+<br>
+<p class='remarkup-literal'>a<br>
+b</p>
+<br>
+<p class='remarkup-literal'>a</p>
+<br>
+<p class='remarkup-literal'>b</p>
+~~~~~~~~~~

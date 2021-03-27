@@ -1,0 +1,22 @@
+Phabrico
+Copyright 2021 G. Jacobs
+
+This product includes software developed at
+- https://system.data.sqlite.org (sqlite database functionality)
+- https://www.newtonsoft.com/json (json functionality)
+- https://github.com/clariuslabs/TransformOnBuild (T4 functionality, as used in auto-versioning)
+- https://github.com/lingtalfi/simpledrag (splitter functionality in Phriction/Maniphest edit screens)
+- https://github.com/Sphinxxxx/vanilla-picker (color-selector in Projects screen)
+- https://highlightjs.org/ (syntax highlighting)
+- https://github.com/jgraph/drawio (Phabrico.Plugin.DiagramsNet)
+- http://spin.js.org/ (Phabrico.Plugin.DiagramsNet)
+- https://github.com/libgit2/libgit2sharp/  (Phabrico.Plugin.Gitanos)
+- https://archive.codeplex.com/?p=credentialmanagement  (Phabrico.Plugin.Gitanos)
+- https://github.com/antonmedv/codejar  (Phabrico.Plugin.Gitanos)
+- https://www.nrecosite.com/pdf_generator_net.aspx  (Phabrico.Plugin.PhrictionToPDF)
+
+This software contains data derived from:
+- https://www.phacility.com  (unit tests + remarkup help)
+- https://fontawesome.com/v4.7.0/  (icons)
+- https://icomoon.io/ (icons)
+- https://fonts.google.com/ (fonts)

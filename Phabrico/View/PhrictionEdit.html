@@ -1,0 +1,220 @@
+<div id="crumbsContainer" class="crumbs">
+    <a href="/w/">
+        <span class="phui-font-fa fa-book" style="padding-right: 5px;"></span>
+    </a>
+</div>
+
+<div class="edit-container phriction-edit-container
+            @{IF @@SHOW-PHRICTION-METADATA@@=yes@
+                phriction-with-metadata
+            }@ ">
+    <div class="edit-left" id="left" style="width:50%;">
+        <div>
+            <form method="POST">
+                <div>
+                    <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="title">Title</label>
+                    <input id="title" name="title" placeholder="Type a title..." style="margin-top: 4px; width: calc(90% - 8px);" type="text" autofocus="" value="@@DOCUMENT-TITLE@@" oninput="titleChanged()" onblur="verifyTitle()" />
+                    <input id="path" name="path" type="hidden" />
+                </div>
+                <label id="titleAlreadyExists" class="phriction-edit-error" style="display:none">Title already exists</label>
+            @{IF @@SHOW-PHRICTION-METADATA@@=yes@
+                <div>
+                    <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="tags">Tags</label>
+                    <input id="tags" name="tags" class="input-tag" data-url="/tag" placeholder="Type a project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-TAGS@@" />
+                </div>
+                <div>
+                    <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="subscribers">Subscribers</label>
+                    <input id="subscribers" name="subscribers" class="input-tag" data-url="/subscriber" placeholder="Type a user or project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-SUBSCRIBERS@@" />
+                </div>
+            }@
+                <div id="edit" class="app-window-body edit">
+                    <div class="app-edit-window-head">
+                        <span class="phui-font-fa fa-bold tooltip-top"><span class="tooltiptext">Bold</span></span>
+                        <span class="phui-font-fa fa-italic tooltip-top"><span class="tooltiptext">Italic</span></span>
+                        <span class="phui-font-fa fa-text-width tooltip-top"><span class="tooltiptext">Monospaced</span></span>
+                        <span class="phui-font-fa fa-list-ul tooltip-top"><span class="tooltiptext">Bulleted List</span></span>
+                        <span class="phui-font-fa fa-list-ol tooltip-top"><span class="tooltiptext">Numbered List</span></span>
+                        <span class="phui-font-fa fa-code tooltip-top"><span class="tooltiptext">Code Block</span></span>
+                        <span class="phui-font-fa fa-quote-right tooltip-top"><span class="tooltiptext">Quote</span></span>
+                        <span class="phui-font-fa fa-table tooltip-top"><span class="tooltiptext">Table</span></span>
+                        <a href="/remarkup/syntax" target="_blank">
+                            <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
+                        </a>
+                    </div>
+                    <textarea id="textarea" name="textarea" class="dropzone" oninput="inputChanged(this.value, right)">@@DOCUMENT-RAW-CONTENT@@</textarea>
+                    <input name="operation" id="operation" type="hidden" value="@@OPERATION@@" />
+                    <input name="token" type="hidden" value="@@DOCUMENT-TOKEN@@" />
+                    <div id="editStatusBar"></div>
+                </div>
+                <div style="height: calc(100vh - 239px);">
+                    <div style="float: right;margin-right: 6px;">
+                        <button class="button-blue" id="btnSave" type="button" onclick="saveInputData(this)">Save Changes</button>
+                        <button class="button-gray" id="btnCancel" type="button" onclick="cancelInputData(this)">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="edit-slider" id="slider">&nbsp;</div>
+    <div class="edit-right remarkupContent" id="right" style="width:50%;">
+        @@DOCUMENT-CONTENT@@
+    </div>
+
+    <script src="/scripts/simpledrag.js?version=@@PHABRICO-VERSION@@"></script>
+    <script>
+        var remarkup = null;
+
+        window.addEventListener('load', function() {
+            var textAreaUserContextMenu = new TextAreaContextMenu(textarea, "@", "user", "/user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
+            var textAreaProjectContextMenu = new TextAreaContextMenu(textarea, "#", "project", "/project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
+            remarkup = new Remarkup(() => { updateProjectTagColors(); });
+        }, false);
+
+        var inputHasBeenChanged = false;
+        var tmrVerificationDocumentExists = null;
+
+        function cancelInputData(button) {
+            inputHasBeenChanged = false;
+            remarkup.Cancel(button);
+        }
+
+        function getPath() {
+            return title.value
+                        .replace(/[ <>&#%+={}\[\]"'?/]/g, "_")  // replace all invalid characters by _
+                        .replace(/__+/g, "_")                   // no duplicated _ allowed
+                        .toLowerCase();                         // all characters in lowercase
+        }
+
+        function ignoreNoProject(item) {
+            return item.Token != "PHID-PROJ-NONE";
+        }
+
+
+        function ignoreNoUser(item) {
+            return item.Token != "PHID-USER-NONE";
+        }
+        function init() {
+            phabrico.autoLogOff.disable();
+            phabrico.crumbsHeader = new CrumbsHeader(crumbsContainer, 'Phriction', @@DOCUMENT-CRUMBS@@);
+        }
+
+        function inputChanged(value, right) {
+            inputHasBeenChanged = true;
+            remarkup.Decode(value, right);
+        }
+
+        function saveInputData(button) {
+            inputHasBeenChanged = false;
+            remarkup.Save(button);
+        }
+
+        function titleChanged() {
+            btnSave.disabled = true;
+
+            if (title.value != "") {
+                if (tmrVerificationDocumentExists != null) {
+                    clearTimeout(tmrVerificationDocumentExists);
+                }
+
+                tmrVerificationDocumentExists = setTimeout(verifyTitle, 500);
+            }
+        }
+
+        function verifyTitle() {
+            if (title.value == "") return;
+            if (operation.value !== "new") return;
+
+            path.value = getPath();
+
+            var url = document.location.pathname + path.value;
+            url = url.replace(/\/\//g, "/");
+
+            var http = new XMLHttpRequest();
+            http.open('GET', url, true);
+            http.onreadystatechange = function () {
+               if (http.status == 202) {
+                   // phriction document doesn't exist yet -> OK
+                   btnSave.disabled = false;
+                   titleAlreadyExists.style.display = 'none';
+                   document.querySelector('.phriction-edit-container').classList.remove('error');
+               } else {
+                   // phriction document already exists -> Not OK
+                   btnSave.disabled = true;
+                   titleAlreadyExists.style.display = 'inline-block';
+                   document.querySelector('.phriction-edit-container').classList.add('error');
+               }
+            };
+            http.send();
+        }
+
+        window.addEventListener('load', init, false);
+
+        // show a messagebox when navigating to another webpage
+        window.onbeforeunload = function (e) {
+            if (inputHasBeenChanged) {
+                var e = e || window.event;
+                if (e) e.returnValue = "";
+                return "";
+            }
+        };
+
+
+        // set page title
+        window.addEventListener('load', function() {
+            document.title = "Phabrico - Editing " + fromHTML("@@DOCUMENT-TITLE@@");
+        }, false);
+
+        // if title was available during creation, the document was created by a ref-link
+        if ("@@DOCUMENT-TITLE@@" !== "" && operation.value !== "new") {
+            // make title uneditable
+            title.readOnly = true;
+
+            // move focus to textarea
+            document.getElementsByName('textarea')[0].focus();
+        }
+
+        var leftPane = document.getElementById('left');
+        var rightPane = document.getElementById('right');
+        var paneSep = document.getElementById('slider');
+
+        // The script below constrains the target to move horizontally between a left and a right virtual boundaries.
+        // - the left limit is positioned at 10% of the screen width
+        // - the right limit is positioned at 90% of the screen width
+        var leftLimit = 10;
+        var rightLimit = 90;
+
+        paneSep.sdrag(function (el, pageX, startX, pageY, startY, fix) {
+
+        fix.skipX = true;
+
+        if (pageX < window.innerWidth * leftLimit / 100) {
+                pageX = window.innerWidth * leftLimit / 100;
+                fix.pageX = pageX;
+            }
+            if (pageX > window.innerWidth * rightLimit / 100) {
+                pageX = window.innerWidth * rightLimit / 100;
+                fix.pageX = pageX;
+            }
+
+            var cur = pageX / window.innerWidth * 100;
+            if (cur < 0) {
+                cur = 0;
+            }
+            if (cur > window.innerWidth) {
+                cur = window.innerWidth;
+            }
+
+            var right = (100-cur-2);
+            leftPane.style.width = cur + '%';
+            rightPane.style.width = right + '%';
+
+        }, null, 'horizontal');
+
+        // disable btnSave in case there's no task title
+        if (title.value == "") {
+            btnSave.disabled = true;
+        } else {
+            path.value = getPath();
+        }
+    </script>
+</div>

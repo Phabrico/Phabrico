@@ -1,0 +1,136 @@
+﻿# Chinese translations
+
+# General
+msgid "Gitanos"
+msgstr "吉塔诺斯"
+
+msgid "Shows the status of all local git repositories"
+msgstr "这显示了所有本地git仓库的状态"
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "输入所有 git 仓库文件夹所在的目录:"
+
+msgid "Local root directories"
+msgstr "本地根目录"
+
+msgid "Add root directory"
+msgstr "增加一个新的根目录"
+
+msgid "Gitanos::Notification"
+msgstr "通知"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "将所有存储库的以下状态相加，并将结果显示为通知:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "本地git仓库"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "输入文本以过滤git仓库列表..."
+
+msgid "Show clean repositories"
+msgstr "显示更新的git仓库"
+
+msgid "Hide clean repositories"
+msgstr "隐藏更新的git仓库"
+
+msgid "Repository"
+msgstr "仓库"
+
+msgid "Branch"
+msgstr "分支"
+
+msgid "Gitanos::Added"
+msgstr "新增"
+
+msgid "Gitanos::Removed"
+msgstr "移除"
+
+msgid "Gitanos::Modified"
+msgstr "修改"
+
+msgid "Gitanos::Renamed"
+msgstr "改称"
+
+msgid "Gitanos::Untracked"
+msgstr "未跟踪"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "有一些本地的提交还没有被推送"
+
+# Repository modifications overview
+msgid "File"
+msgstr "文件"
+
+msgid "Modification Type"
+msgstr "修改类型"
+
+msgid "Timestamp"
+msgstr "时间"
+
+msgid "Unpushed commit"
+msgstr "未推送的提交"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "输入文本以过滤更改列表..."
+
+msgid "COMMIT"
+msgstr "提交更改"
+
+msgid "PUSH"
+msgstr "推送"
+
+msgid "Actions"
+msgstr "行动"
+
+msgid "Select all files"
+msgstr "选择所有文件"
+
+msgid "Unselect all files"
+msgstr "不要选择任何文件"
+
+msgid "Commit selected files"
+msgstr "为选定的文件创建一个提交"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "你确定你要撤销'@@MODIFICATION@@'？"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "这是一个被修改过的二进制文件。"
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "你确定要放弃对@@FILENAME@的本地修改吗？"
+
+msgid "Undo modification"
+msgstr "撤消更改"
+
+msgid "File was successfully saved"
+msgstr "文件已保存"
+
+msgid "File could not be saved"
+msgstr "无法保存文件"
+
+msgid "Diff"
+msgstr "差异"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Line number:"
+msgstr "线:"
+
+msgid "This git repository is clean"
+msgstr "这个git仓库没有变化"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "@@DIRECTORY@目录不存在"
+
+msgid "Error git push"
+msgstr "git推送的问题"

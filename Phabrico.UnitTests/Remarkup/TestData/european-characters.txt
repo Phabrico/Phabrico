@@ -1,0 +1,12 @@
+﻿Straße ist dasselbe wie Strasse
+Que viva España
+L'élève n'a pas besoin d'être fort pour casser des œufs, mais ça peut être utile
+Snöskottning i blåsväder
+Pondělí, úterý, středa, čtvrtek a pátek
+~~~~~~~~~~
+Stra&#223;e ist dasselbe wie Strasse<br>
+Que viva Espa&#241;a<br>
+L&#39;&#233;l&#232;ve n&#39;a pas besoin d&#39;&#234;tre fort pour casser des œufs, mais &#231;a peut &#234;tre utile<br>
+Sn&#246;skottning i bl&#229;sv&#228;der<br>
+Ponděl&#237;, &#250;ter&#253;, středa, čtvrtek a p&#225;tek
+~~~~~~~~~~

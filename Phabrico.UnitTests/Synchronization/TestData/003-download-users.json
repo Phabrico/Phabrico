@@ -1,0 +1,33 @@
+{
+    "execute": {
+        "method": ["ProgressMethod_DownloadUsers"]
+    },
+
+    "validate": {
+        "storage": {
+            "user": [{
+                    "token": "PHID-USER-NONE"
+                }, {
+                   "token": "PHID-USER-e807f1fcf82d132f9bb0"
+                }, {
+                   "token": "PHID-USER-kanr5d3yhp32trj7u25u"
+                }, {
+                   "token": "PHID-USER-pq3yaapgo4mz5o3pqek2"
+                }, {
+                   "token": "PHID-USER-oj7a3ujksafag6ehaqdj"
+                }, {
+                   "token": "PHID-USER-2mlb4uyaam5673yd3dho"
+                }, {
+                   "token": "PHID-USER-kh6a7hlttexdktozazqa"
+                }, {
+                   "token": "PHID-USER-lddunoeriaw4kn6s7y7t"
+                }, {
+                   "token": "PHID-USER-wrd4t7xspbqhcbrbwocc"
+                }, {
+                   "token": "PHID-USER-3qb44av27tsayks7ivf3"
+                }, {
+                   "token": "PHID-USER-avflgkkgmrvd526jk522"
+            }]
+        }
+    }
+}

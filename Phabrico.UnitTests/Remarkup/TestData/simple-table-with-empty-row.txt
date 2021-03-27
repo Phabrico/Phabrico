@@ -1,0 +1,16 @@
+| Alpaca |
+| |
+| Zebra  |
+~~~~~~~~~~
+<table class='remarkup-table'>
+  <tr>
+    <td>Alpaca</td>
+  </tr>
+  <tr>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Zebra</td>
+  </tr>
+</table>
+~~~~~~~~~~

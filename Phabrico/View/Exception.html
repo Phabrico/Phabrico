@@ -1,0 +1,47 @@
+﻿<style>
+    .container {
+        width: 100vw;
+        position: relative;
+        margin: 15px;
+    }
+
+    .stacktrace {
+        background-color: var(--stacktrace-background-color);
+        color: var(--stacktrace-color);
+        display: inline-table;
+        font-size: 0.75em;
+        left: -150px;
+        padding: 10px 10px 10px 0px;
+        text-align: left;
+        top: 200px;
+    }
+
+    .vertical-top {
+        margin: 0;
+        position: absolute;
+        left: 150px;
+        top: 0;
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+        width: 100%;
+        text-align: center;
+        font-size: 2em;
+    }
+
+    .vertical-top p,
+    .vertical-top pre {
+        position: absolute;
+    }
+</style>
+
+<div class="container">
+    <span class="fa fa-exclamation-triangle" style="position: absolute;top: 10px;font-size: 9em;color: red;"></span>
+    <div class="vertical-top">
+        <p style="font-size: 2em;font-weight: bold;">@@EXCEPTION-NAME@@</p>
+        <p style="top: 80px; width: calc(100% - 350px); text-align: start">@@EXCEPTION-MESSAGE@@</p>
+        <pre class="stacktrace">&nbsp;Stacktrace:
+
+@@EXCEPTION-STACKTRACE@@
+        </pre>
+    </div>
+</div>

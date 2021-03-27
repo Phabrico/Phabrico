@@ -1,0 +1,690 @@
+<div class="wait">
+    <svg height="100" width="180">
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(20) rotate(180,0,50)">
+            <animate attributeName="height" attributeType="XML" dur="1s" values="30; 100; 30" repeatCount="indefinite"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(40) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.5s" values="30; 100; 30" repeatCount="indefinite" begin="0.1s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(60) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1s" values="30; 100; 30" repeatCount="indefinite" begin="0.2s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(80) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.2s" values="30; 100; 30" repeatCount="indefinite" begin="0.3s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(100) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.1s" values="30; 100; 30" repeatCount="indefinite" begin="0.1s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(120) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.4s" values="30; 100; 30" repeatCount="indefinite" begin="0.2s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(140) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.2s" values="30; 100; 30" repeatCount="indefinite" begin="0.3s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(160) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.0s" values="30; 100; 30" repeatCount="indefinite" begin="0.4s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(180) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="0.8s" values="30; 100; 30" repeatCount="indefinite" begin="0.5s"></animate>
+        </rect>
+    </svg>
+    <span class="message" style="display:block;">One moment please...</span>
+</div>
+
+<div id="crumbsContainer" class="crumbs">
+    <a href="/w/">
+        <span class="phui-font-fa fa-book" style="padding-right: 5px;"></span>
+    </a>
+@{IF @@HIDE-NEW-DOCUMENT-ACTION@@=no@
+    <a class="crumbsAction" href="?action=new">
+        <span class="visual-only phui-icon-view phui-font-fa fa-plus-square"></span>
+        <span class="phui-crumbs-action-name">New Document</span>
+    </a>
+}@
+</div>
+
+@{IF @@SHOW-SIDE-WINDOW@@=yes@
+    <div id="disablePrintableView" style="display:none;" class="fa fa-undo no-print" title="Return to web view" onclick="printable(false);">
+    </div>
+}@
+
+<script>
+    window.addEventListener('load', function() {
+        phabrico.crumbsHeader = new CrumbsHeader(crumbsContainer, 'Phriction', @@DOCUMENT-CRUMBS@@);
+    }, false);
+</script>
+
+<div class="phui-document">
+    <h1><span id="documentState" class="@@DOCUMENT-STATE@@"></span>@@DOCUMENT-TITLE@@</h1>
+    <div id="remarkupContent" class="content remarkupContent">@@DOCUMENT-CONTENT@@</div>
+    <div class="toc">
+        <a class="phui-document-toc-header" href="#top">Contents</a>
+@{IF @@SHOW-SIDE-WINDOW@@=yes@
+        <div>
+            <ul id="phui-navigator" class="no-print">
+            </ul>
+        </div>
+}@
+    </div>
+
+    <div id="dlgYesNoCancel" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 90px; left: calc(50vw - 300px); z-index: 5;">
+        <div class="aphront-dialog-overlay"></div>
+        <div class="aphront-dialog-head">
+            <span class="phui-header-header title"></span>
+        </div>
+        <div class="aphront-dialog-body phabrico-remarkup">
+            <div class="phabrico-remarkup">
+                <p class="message"></p>
+            </div>
+            <br>
+        </div>
+        <div class="aphront-dialog-tail grouped" style="text-align: right;">
+            <a data-accesskey="Button-AccessKey-Yes" href="#" class="button button-blue yes">Yes</a>
+            <a data-accesskey="Button-AccessKey-No" href="#" class="button button-gray no">No</a>
+            <a href="#" class="button button-gray cancel">Cancel</a>
+        </div>
+    </div>
+</div>
+
+@{IF @@SHOW-SIDE-WINDOW@@=yes@
+    <div class="expandcollapse">
+        <span onclick="phabrico.appSideWindow.Collapse();" class="phui-font-fa fa-chevron-right">&nbsp;</span>
+        <span onclick="phabrico.appSideWindow.Expand();" class="phui-font-fa fa-chevron-left">&nbsp;</span>
+    </div>
+
+    <div class="app-side-window phriction">
+        <div class="app-window-body">
+            <ul class="list-view">
+                <li class="list-item-view">
+                    <a href="?action=edit" class="list-item-href">
+                        <span class="phui-font-fa fa-pencil phui-list-item-icon">
+                            <span class="phui-list-item-name">Edit Document</span>
+                        </span>
+                    </a>
+                </li>
+                <li id="actionViewLocalChanges" data-document-state="@@DOCUMENT-STATE@@" class="list-item-view">
+                    <a href="/offline/changes/view/@@DOCUMENT-TOKEN@@/" class="list-item-href">
+                        <span class="compare phui-list-item-icon">
+                            <span class="phui-list-item-name">View local changes</span>
+                        </span>
+                    </a>
+                </li>
+                <li id="actionUndoLocalChanges" data-document-state="@@DOCUMENT-STATE@@" class="list-item-view">
+                    <a href="#@@DOCUMENT-TOKEN@@[edit]" class="list-item-href" onclick="showUndoConfirmation(this);">
+                        <span class="phui-font-fa fa-times phui-list-item-icon">
+                            <span class="phui-list-item-name">Dismiss local changes</span>
+                        </span>
+                    </a>
+                </li>
+                <li class="list-item-view">
+                    <a href="javascript:printable(true)" class="list-item-href">
+                        <span class="phui-font-fa fa-print phui-list-item-icon">
+                            <span class="phui-list-item-name">Printable Page</span>
+                        </span>
+                    </a>
+                </li>
+@{IF @@IS-MEMBER-OF-FAVORITES@@=no@
+                <li class="list-item-view">
+                    <a href="#" class="list-item-href" onclick="addToFavorites();">
+                        <span class="phui-font-fa fa-heart phui-list-item-icon">
+                            <span class="phui-list-item-name">Add to favorites</span>
+                        </span>
+                    </a>
+                </li>
+}@                
+@{IF @@IS-MEMBER-OF-FAVORITES@@=yes@
+                <li class="list-item-view" style="height:20px; margin: 2px 0.5px;">
+                    <a href="#" class="list-item-href" onclick="removeFromFavorites();">
+                        <span class="phui-font-fa fa-heart fa-stack-2x phui-list-item-icon" style="font-size: 100%;"></span>
+                        <span class="phui-font-fa fa-flash fa-stack-1x phui-list-item-icon" style="color:var(--aphront-dialog-view-background-color);"></span>
+                        <span class="phui-list-item-name" style="font-size: 1em; margin: -2px 13px;">Remove from favorites</span>
+                    </a>
+                </li>
+}@
+@{IF @@HAS-REFERENCES@@=yes@
+                <li class="list-item-view">
+                    <a href="#" class="list-item-href" onclick="showReferences();">
+                        <span class="phui-font-fa fa-external-link phui-list-item-icon">
+                            <span class="phui-list-item-name">Show references</span>
+                        </span>
+                    </a>
+                </li>
+}@
+
+@{PHRICTION-PLUGINS
+                <li class="plugin-action list-item-separator"></li>
+                <li class="plugin-action list-item-view" style="height:20px; margin: 2px 0.5px;">
+                    <a href="#" class="list-item-href" onclick='executePhrictionPlugin("@@PHRICTION-PLUGIN-NAME@@", "@@PHRICTION-PLUGIN-URL@@");'>
+                        <span class="phui-font-fa @@PHRICTION-PLUGIN-ICON@@ phui-list-item-icon">
+                            <span class="phui-list-item-name" style="font-size: 1em;">@@PHRICTION-PLUGIN-NAME@@</span>
+                        </span>
+                    </a>
+                </li>
+}@
+
+<!-- 
+commented out because of shortcoming in phriction.content.search Conduit API
+dateModified won't change when a subscription is added or removed
+                <li class="list-item-view">
+                    <a href="#" class="list-item-href" onclick="subscribe();">
+                        <span class="phui-font-fa fa-plus-circle phui-list-item-icon">
+                            <span class="phui-list-item-name">Subscribe</span>
+                        </span>
+                    </a>
+                </li>
+-->                
+@{IF @@SHOW-PHRICTION-METADATA@@=yes@
+                <li class="list-item-separator"></li>
+                <li class="list-item-view no-hover">
+                    <span class="list-item-head">Last modified at</span>
+                </li>
+                <li class="list-item-view list-item-link" style="white-space: normal;">
+                    @@DOCUMENT-DATE@@
+                </li>
+
+                <li class="list-item-separator"></li>
+                <li class="list-item-view no-hover">
+                    <span class="list-item-head">Last modified by</span>
+                </li>
+                <li class="list-item-view list-item-link" style="white-space: normal;">
+                    @@DOCUMENT-LAST-MODIFIED-BY@@
+                </li>
+
+                <li class="list-item-separator"></li>
+            
+                <li class="list-item-view no-hover">
+                    <span class="list-item-head">Tags</span>
+                </li>
+                @{IF @@PROJECTS-ASSIGNED@@=yes@
+                    @{PROJECTS
+                    <li class="list-item-view maniphest-list-item-project">
+                        <a class="project-reference phui-font-fa fa-briefcase" href="/project/info/@@DOCUMENT-PROJECT-TOKEN@@/" style="@@DOCUMENT-PROJECT-STYLE@@">@@DOCUMENT-PROJECT-NAME@@</a>
+                    </li>
+                    }@
+                }@
+                @{IF @@PROJECTS-ASSIGNED@@=no@
+                    <li class="list-item-view maniphest-list-item-project">No projects assigned</li>
+                }@
+
+                <li class="list-item-separator"></li>
+                
+                <li class="list-item-view no-hover">
+                    <span class="list-item-head">Subscribers</span>
+                </li>
+                @{SUBSCRIBERS
+                <li class="list-item-view list-item-link">
+                    <a href="/user/info/@@DOCUMENT-SUBSCRIBER-TOKEN@@/">@@DOCUMENT-SUBSCRIBER-NAME@@</a>
+                </li>
+                }@
+}@
+            </ul>
+        </div>
+    </div>
+
+    <div class="phriction-references" style="top: 30px;position:  absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 999; display:none;">
+        <div class="aphront-dialog-overlay" style="transform: scale(200%,200%);"></div>
+        <div class="aphront-dialog-head">
+            <span class="phui-header-header" style="margin-right: 15px;">References</span>
+        </div>
+        <div class="aphront-dialog-body phabrico-remarkup" style="min-height: 100px;">
+            <div class="aphront-dialog-full-width" style="display: flex;flex-flow: column;">
+                @{REFERENCES
+                <a href="@@REFERENCE-URL@@">@@REFERENCE-TEXT@@</a>
+                }@
+            </div>
+        </div>
+        <div class="aphront-dialog-tail">
+            <button class="button-blue" id="btnReferencesClose" type="button" style="cursor: pointer;" onclick="hideReferences()">OK</button>
+        </div>
+    </div>
+
+    <form id="frmPhriction" action="" method="POST">
+        <input name="item" type="hidden" value="@@DOCUMENT-TOKEN@@" />
+        <div id="dlgConfirmUndo" class="aphront-dialog-view modal" style="display:none">
+            <div class="aphront-dialog-overlay"></div>
+            <div class="aphront-dialog-head">
+                <span class="phui-header-header">Undo</span>
+            </div>
+            <div class="aphront-dialog-body phabrico-remarkup">
+                <div class="phabrico-remarkup">
+                    <p>@@DOCUMENT-CONFIRMATION-UNDO-LOCAL-CHANGES@@</p>
+                    <p>&nbsp;</p>
+                    <p id="dlgConfirmUndoDetail" style="text-align: center;font-weight:bold;">@@DOCUMENT-TITLE@@</p>
+                </div>
+                <br />
+            </div>
+            <div class="aphront-dialog-tail grouped">
+                <button type="button" data-accesskey="Button-AccessKey-No" class="button-gray" onclick="cancelUndo()">No</button>
+                <button type="button" data-accesskey="Button-AccessKey-Yes" onclick="confirmUndo()">Yes</button>
+            </div>
+        </div>
+    </form>
+}@
+
+<script>
+        function addToFavorites()
+        {
+            doAddToFavorites(true);
+        }
+
+        function removeFromFavorites()
+        {
+            doAddToFavorites(false);
+        }
+
+        function doAddToFavorites(yes)
+        {
+            var data = new FormData();
+            data.append('token', '@@DOCUMENT-TOKEN@@');
+            
+            var addToFavoritesRequest = new XMLHttpRequest();
+            addToFavoritesRequest.onreadystatechange = function() {
+                if (addToFavoritesRequest.readyState == 4 && addToFavoritesRequest.status == 200) {
+                    document.location.reload();
+                }
+            };
+            
+            if (yes)
+            {
+               addToFavoritesRequest.open('POST', '/phriction/addToFavorites', true);
+            }
+            else
+            {
+                addToFavoritesRequest.open('POST', '/phriction/removeFromFavorites', true);
+            }
+            addToFavoritesRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            addToFavoritesRequest.send(data);
+        }
+
+        function initializePhrictionPluginFormData() {
+            var data = new FormData();
+
+            // get content
+            var div = document.createElement('div');
+            div.innerHTML = remarkupContent.innerHTML;
+            var hierarchy = div.querySelector('.phui-document-hierarchy-border');
+            if (hierarchy != null) hierarchy.parentElement.removeChild(hierarchy)
+            data.append('content', div.innerHTML);
+            data.append('confirm', 'None');
+
+            // get toc
+            var toc = document.querySelector('.toc');
+            if (toc != null) {
+                toc = toc.innerHTML;
+            }
+            data.append('toc', toc);
+
+            // get crumbs
+            var crumbs = Array.prototype.slice.call( 
+                                    document.querySelectorAll('#crumbsContainer a:not(.crumbsAction)'), 1 
+                               );
+            var crumbAddress = crumbs.map(function(a) { 
+                return a.innerText; 
+            })
+                               .join(' > ');
+            data.append('crumbs', crumbAddress);
+
+            // get path
+            var path = crumbs[crumbs.length - 1].pathname;
+            path = path.replace('//', '/');
+            data.append('path', path.substring('/w/'.length));
+
+            return data;
+        }
+
+        function executePhrictionPlugin(pluginName, pluginURL) {
+            var data = initializePhrictionPluginFormData();
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if(xmlhttp.readyState == 4)
+                {
+                    var jsonResponse = JSON.parse(xmlhttp.responseText);
+                    if (jsonResponse.Status == 'Confirm') {
+                        showHideConfirmationMessage( true, pluginName, jsonResponse.Message,
+                                                        function() {
+                                                            showHideConfirmationMessage(false);
+                                                            executePhrictionPluginConfirmed('/' + pluginURL, data, true);
+                                                        },
+                                                        function() {
+                                                            showHideConfirmationMessage(false);
+                                                            executePhrictionPluginConfirmed('/' + pluginURL, data, false);
+                                                        },
+                                                        function() {
+                                                            showHideConfirmationMessage(false);
+                                                        }
+                                                    );
+                    }
+
+                    if (jsonResponse.Status == 'Finished') {
+                        showHideConfirmationMessage(false);
+                        executePhrictionPluginConfirmed('/' + pluginURL, data, false);
+                    }
+                }
+            }
+            xmlhttp.open('POST', '/' + pluginURL, true);
+            xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            xmlhttp.send(data);
+        }
+
+        function executePhrictionPluginConfirmed(url, data, confirmed) {
+            var data = initializePhrictionPluginFormData();
+            if (confirmed) {
+                data.set('confirm', 'Yes');
+            } else {
+                data.set('confirm', 'No');
+            }
+
+            document.querySelector('div.wait').style.display = 'block';
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if(xmlhttp.readyState == 4)
+                {
+                    var jsonResponse = JSON.parse(xmlhttp.responseText);
+                    if (jsonResponse.Status == 'Finished') {
+                        if (typeof jsonResponse.Base64Data !== 'undefined'  &&  typeof jsonResponse.ContentType !== 'undefined'  &&  typeof jsonResponse.FileName !== 'undefined') {
+                            var a = document.createElement('a');
+                            a.download = jsonResponse.FileName;
+                            a.href = "data:" + jsonResponse.ContentType + ";base64," + jsonResponse.Base64Data;
+
+                            document.body.appendChild(a);
+                            a.style.display = "none";
+                            a.click();
+
+                            document.body.removeChild(a);
+
+                            document.querySelector('div.wait').style.display = 'none';
+                        }
+                    }
+                }
+            };
+
+            xmlhttp.open('POST', url, true);
+            xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            xmlhttp.send(data);
+        }
+
+        function showHideConfirmationMessage(show, title, text, fnYes, fnNo, fnCancel)
+        {
+            if (show) {
+                dlgYesNoCancel.style.display = 'block';
+                document.querySelector('html').style.overflow = 'hidden';
+
+                var btnNo = dlgYesNoCancel.querySelector('.no');
+                var btnYes = dlgYesNoCancel.querySelector('.yes');
+                var btnCancel = dlgYesNoCancel.querySelector('.cancel');
+
+                // set title and text
+                dlgYesNoCancel.querySelector('.title').innerText = title;
+                dlgYesNoCancel.querySelector('.message').innerHTML = text;
+
+                // disable all TABs
+                document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
+                  input.setAttribute('tabindex', '-1');
+                });
+
+                // fix TABs for dialog
+                btnNo.setAttribute('tabindex', '1');
+                btnYes.setAttribute('tabindex', '2')
+                btnCancel.setAttribute('tabindex', '3');
+
+                // set functions to buttons
+                btnNo.onclick = function() { fnNo(); return false; }
+                btnYes.onclick = function() { fnYes(); return false; }
+                btnCancel.onclick = function() { fnCancel(); return false; }
+
+                // set focus
+                btnNo.focus();
+            } else {
+                dlgYesNoCancel.style.display = 'none';
+                document.querySelector('html').style.overflow = 'unset';
+
+                // restore all TABs
+                document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
+                  input.removeAttribute('tabindex');
+                });
+            }
+        }
+
+        function subscribe()
+        {
+            doSubscribe(true);
+        }
+        
+        function unsubscribe()
+        {
+            doSubscribe(false);
+        }
+        
+        function doSubscribe(yes)
+        {
+            var data = new FormData();
+            data.append('token', '@@DOCUMENT-TOKEN@@');
+            
+            var subscribeRequest = new XMLHttpRequest();
+            subscribeRequest.onreadystatechange = function() {
+                if (subscribeRequest.readyState == 4 && subscribeRequest.status == 200) {
+                    try
+                    {
+                        var jsonResponse = JSON.parse(subscribeRequest.responseText);
+                    }
+                    catch(exc)
+                    {
+                        // response should be JSON; if it's something else (e.g. HTML), load homepage
+                        document.location = "/";
+                    }
+                }
+            };
+            
+            if (yes)
+            {
+               subscribeRequest.open('POST', '/phriction/subscribe', true);
+            }
+            else
+            {
+                subscribeRequest.open('POST', '/phriction/unsubscribe', true);
+            }
+            subscribeRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            subscribeRequest.send(data);
+        }
+        
+@{IF @@SHOW-SIDE-WINDOW@@=yes@
+        function cancelUndo()
+        {
+           dlgConfirmUndo.style.display = 'none';
+        }
+
+        function confirmUndo()
+        {
+           dlgConfirmUndo.style.display = 'none';
+
+           var elem = dlgConfirmUndo.tagElement;
+           submitItem(elem, "/offline/changes/undo");
+        }
+    
+        function hideReferences()
+        {
+            document.querySelector('.phriction-references').style.display = 'none';
+        }
+
+        function printable(usePrinter)
+        {
+            headerBar.style.display = usePrinter ? 'none' : 'block';
+            disablePrintableView.style.display = usePrinter ? 'block' : 'none';
+            popSearchResults.style.display = usePrinter ? 'none' : 'block';
+            crumbsContainer.style.display = usePrinter ? 'none' : 'block';
+            documentState.style.display = usePrinter ? 'none' : 'block';
+
+            Array.prototype.slice.call( document.getElementsByClassName('expandcollapse'), 0)
+                 .map( function(item) { 
+                    item.style.display = usePrinter ? 'none' : 'block';
+                 }
+            );
+            Array.prototype.slice.call( document.getElementsByClassName('app-side-window'), 0)
+                 .map( function(item) { 
+                    item.style.display = usePrinter ? 'none' : 'block';
+                 }
+            );
+            Array.prototype.slice.call( document.getElementsByClassName('phui-document'), 0)
+                 .map( function(item) {
+                    if (usePrinter) {
+                        item.style.left = '0px';
+                        item.style.top = '0px';
+                        item.style.width = 'calc(100% - 40px)';
+                        item.style.padding = '20px';
+                    } else {
+                        item.style.left = null;
+                        item.style.top = null;
+                        item.style.width = null;
+                        item.style.padding = null;
+                    }
+                 }
+            );
+            Array.prototype.slice.call( document.getElementsByClassName('toc'), 0)
+                 .map( function(item) { 
+                    item.style.display = usePrinter ? 'none' : item.dataset.display;
+                    if (usePrinter == false && item.dataset.display == 'none') {
+                        var doc = document.querySelector('.phui-document');
+                        doc.classList.add('no-side-window');
+                    }
+                 }
+            );
+        }
+
+        function showReferences()
+        {
+            document.querySelector('.phriction-references').style.display = 'block';
+        }
+
+        function showUndoConfirmation(elem)
+        {
+           dlgConfirmUndo.tagElement = elem;
+           dlgConfirmUndo.style.display = 'block';
+        }
+
+        function submitItem(item, url)
+        {
+            setTimeout(function() {
+                var elem = frmPhriction.getElementsByTagName('input');
+                if (elem.length > 0)
+                {
+                    elem = elem[0];
+                }
+                else
+                {
+                    elem = document.createElement('input');
+                    elem.type = "hidden";
+                    elem.name = "item";
+                    frmPhriction.appendChild(elem);
+                }
+
+                elem.value = item.closest('a').hash.substring(1);
+        
+                var data = new FormData(frmPhriction);
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if(xmlhttp.readyState == 4)
+                    {
+                        if ('@@DOCUMENT-STATE@@' === 'created')
+                        {
+                            // document does not exist anynore -> go to parent document
+                            document.location.href = document.location.pathname + "..";
+                        }
+                        else
+                        {
+                            document.location.href = document.location.pathname;
+                        }
+                    }
+                }
+                xmlhttp.open('POST', url, true);
+                xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+                xmlhttp.send(data);
+            }, 250);
+        }
+
+        function viewLocalChanges(elem)
+        {
+           submitItem(elem, "/offline/changes/view");
+        }
+
+        if ('@@DOCUMENT-STATE@@' === 'created')
+        {
+            documentState.title = Locale.Translate("This newly created page hasn't been uploaded yet to the Phabricator server");
+        }
+        if ('@@DOCUMENT-STATE@@' === 'frozen' || '@@DOCUMENT-STATE@@' === 'unfrozen')
+        {
+            documentState.title = Locale.Translate("This modified page hasn't been uploaded yet to the Phabricator server");
+        }
+
+        // create navigation-tree based on header tags
+        var navigationTree = Array.prototype.slice.call( 
+                                    document.querySelector('.phui-document .content')
+                                            .querySelectorAll("h1, h2, h3")
+                                    , 0 
+                                )
+                                .map( function(item) {
+                                    var anchor = '#' + item.children[0].name;
+                                    switch (item.tagName)
+                                    {
+                                        case "H1":
+                                            return "<h1><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h1>";
+                                        case "H2":
+                                            return "<h2><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h2>";
+                                        case "H3":
+                                            return "<h3><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h3>";
+                                        default:
+                                            return "";
+                                    }
+                                })
+                                .join()
+                                .replace(/<\/h1>,<h[23]>/g, '<ul>')
+                                .replace(/<\/h2>,<h3>/g, '<ul>')
+                                .replace(/<\/h3>,<h2>/g, '</ul>')
+                                .replace(/<\/h[23]>,<h1>/g, '</ul>')
+                                .replace(/<\/h2>,<h1>/g, '</ul>')
+                                .replace(/<\/h.>,<h.>/g, '')
+                                .replace(/<\/?h.>/g, '')
+                                .replace(/<ul>/g, '<li><ul>')
+                                .replace(/<\/ul>/g, '</ul></li>');
+                                
+        document.getElementById('phui-navigator').innerHTML = navigationTree;
+    
+        // hide 'Contents' label if there's no navigation tree
+        var toc = document.querySelector('.toc');
+        toc.dataset.display = 'block';
+        if (navigationTree == "") {
+            toc.style.display = 'none';
+            toc.dataset.display = 'none';
+        
+            var doc = document.querySelector('.phui-document');
+            doc.classList.add('no-side-window');
+        }
+}@
+
+@{IFNOT @@SHOW-SIDE-WINDOW@@=yes@
+    var toc = document.querySelector('.toc');
+    toc.style.display = 'none';
+    toc.dataset.display = 'none';
+        
+    var doc = document.querySelector('.phui-document');
+    doc.classList.add('no-side-window');
+
+    var hierarchyWindow = document.querySelector('.phui-document-hierarchy-border');
+    hierarchyWindow.style.width = '100%';
+}@    
+
+    window.addEventListener('load', function() {
+        // set page title
+        document.title = "Phabrico - " + fromHTML("@@DOCUMENT-TITLE@@");
+
+        // make sure all images fit on the page during after they have been loaded
+        document.querySelectorAll('img')
+                .forEach(function(img) { 
+                    if(img.style.width != '100%' && 
+                       parseInt(getComputedStyle(img).width) > parseInt(getComputedStyle(document.body).width) - parseInt(getComputedStyle(toc).width)
+                      ) {
+                        img.style.maxWidth = '100%'; 
+                    }
+                });
+    }, false);
+</script>

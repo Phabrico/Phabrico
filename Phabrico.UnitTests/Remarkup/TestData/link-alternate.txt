@@ -1,0 +1,8 @@
+[Example](http://www.example.com/)
+
+x[0][1](**ptr);
+
+~~~~~~~~~~
+<a class='phriction-link' href='http://www.example.com/'>Example</a><br>
+x[0][1](**ptr);
+~~~~~~~~~~

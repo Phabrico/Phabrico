@@ -1,0 +1,81 @@
+<style>
+    .diff-right th.insert {
+        width: 0px;
+    }
+
+    .diff-right th.line-nr {
+        left: 0px;
+    }
+</style>
+
+<div class="app-window">
+    <div class="sync-diff-view">
+        <div class="sync-diff-head">
+            <span class="title"></span>
+            <span style="float: right;">
+                <a href="/synchronization/logging/" class="button button-blue" style="min-width: 50px;">Overview latest synchronization</a>
+            </span>
+        </div>
+        
+        <div class="diff">
+            <div id="locationPane" style="width: 10px"></div>
+
+            <div class="diff-left">
+                <div class="header">Previous version</div>
+                <div id="fileLeft" class="scrollableTable">
+                    <table>
+                        @@CONTENT-LEFT@@
+                    </table>
+                </div>
+            </div>
+
+
+            <div class="diff-right">
+                <div class="header">Current version</div>
+                <div id="fileRight" class="scrollableTable">
+                    <table>
+                        @@CONTENT-RIGHT@@
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            var title = Locale.Translate('Difference between previous and current version of @@SYNCHRONIZED-ITEM@@')
+                              .replace("@@SYNCHRONIZED-ITEM@@", "<a style=\"margin-left:5px;\" href=\"@@URL@@\">@@ITEM@@</a>");
+            document.querySelector('.sync-diff-head .title')
+                    .innerHTML = title;
+        </script>
+    </div>
+</div>
+
+<script>
+    // set page title
+    document.title = "Phabrico - Offline changes for @@ITEM@@";
+
+    // correct widths of table cells
+    var widthLeft = fileLeft.scrollWidth;
+    document.querySelectorAll('.diff-left table').forEach(function(table) {
+        table.style.width = widthLeft + "px";
+    })
+    document.querySelectorAll('.diff-left td').forEach(function(td) {
+        td.style.width = widthLeft + "px";
+    })
+
+    var widthRight = fileRight.scrollWidth;
+    document.querySelectorAll('.diff-right table').forEach(function(table) {
+        table.style.width = widthRight + "px";
+    })
+    document.querySelectorAll('.diff-right td').forEach(function(td) { 
+        td.style.width = widthRight + "px";
+    })
+
+    // scroll to the first modification
+    var firstModification = document.querySelector('td.replace, td.insert, td.empty').closest('tr');
+    if (typeof firstModification != 'undefined') {
+       firstModification = firstModification.closest('tr');
+       var position = Array.prototype.slice.call( firstModification.closest('table').querySelectorAll('tr') ).indexOf(firstModification);
+       fileLeft.scrollTop = (position - 5) * 24;
+       fileRight.scrollTop = (position - 5) * 24;
+    }
+</script>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <ComponentGroup Id="PluginDiagramsNetComponents" Directory="INSTALLDIR">
+        <Component Id="diagramsnet_Phabrico_Plugin_DiagramsNet_dll" Guid="$(var.PluginDiagramsNetGUID)"
+                   Win64="yes">
+            <File Id="file_diagramsnet_Phabrico_Plugin_DiagramsNet_dll"
+                  Source="$(var.Phabrico.Plugin.DiagramsNet.TargetDir)Phabrico.Plugin.DiagramsNet.dll"
+                  KeyPath="yes" />
+            <ServiceControl Id="StartServiceForDiagramsNet"
+                            Name="Phabrico"
+                            Start="install"
+                            Stop="install"
+                            Wait="yes" />
+        </Component>
+        <Component Id="diagramsnet_Phabrico_Plugin_DiagramsNet_pdb" Guid="75b7e346-9dca-4430-9c91-59c1fb88b1ee"
+                   Win64="yes">
+            <File Id="file_diagramsnet_Phabrico_Plugin_DiagramsNet_pdb"
+                  Source="$(var.Phabrico.Plugin.DiagramsNet.TargetDir)Phabrico.Plugin.DiagramsNet.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+    </ComponentGroup>
+</Include>

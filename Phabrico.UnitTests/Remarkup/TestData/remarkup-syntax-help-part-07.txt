@@ -1,0 +1,168 @@
+This will highlight the block using a highlighter for that language, if one is
+available (in most cases, this means you need to configure Pygments):
+  lang=html
+  <a href="#">...</a>
+
+You can also use a `COUNTEREXAMPLE` header to show that a block of code is
+bad and shouldn't be copied:
+  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+This produces a block like this:
+
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+You can use `lines=N` to limit the vertical size of a chunk of code, and
+`name=some_name.ext` to give it a name. For example, this:
+
+lang=text
+lang=html, name=example.html, lines=12, counterexample
+...
+
+...produces this:
+
+  lang=html, name=example.html, lines=12, counterexample
+  <p>Apple</p>
+  <p>Apricot</p>
+  <p>Avocado</p>
+  <p>Banana</p>
+  <p>Bilberry</p>
+  <p>Blackberry</p>
+  <p>Blackcurrant</p>
+  <p>Blueberry</p>
+  <p>Currant</p>
+  <p>Cherry</p>
+  <p>Cherimoya</p>
+  <p>Clementine</p>
+  <p>Date</p>
+  <p>Damson</p>
+  <p>Durian</p>
+  <p>Eggplant</p>
+  <p>Elderberry</p>
+  <p>Feijoa</p>
+  <p>Gooseberry</p>
+  <p>Grape</p>
+  <p>Grapefruit</p>
+  <p>Guava</p>
+  <p>Huckleberry</p>
+  <p>Jackfruit</p>
+  <p>Jambul</p>
+  <p>Kiwi fruit</p>
+  <p>Kumquat</p>
+  <p>Legume</p>
+  <p>Lemon</p>
+  <p>Lime</p>
+  <p>Lychee</p>
+  <p>Mandarine</p>
+  <p>Mango</p>
+  <p>Mangostine</p>
+  <p>Melon</p>
+
+
+You can use the `NOTE:`, `WARNING:` or `IMPORTANT:` elements to call attention
+to an important idea.
+
+For example, write this:
+
+```
+NOTE: Hold regular meetings to keep your employees awake.
+```
+
+...to produce this:
+
+NOTE: Hold regular meetings to keep your employees awake.
+
+Using `WARNING:` or `IMPORTANT:` at the beginning of the line changes the
+color of the callout:
+
+WARNING: Too many meetings can become sleep-inducing
+
+IMPORTANT: Don't attend too many meetings
+
+In addition, you can use `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` to get the
+same effect but without `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` appearing in
+the rendered result. For example, this callout uses `(NOTE)`:
+
+(NOTE) Do not attend too few meetings.
+
+
+~~~~~~~~~~
+This will highlight the block using a highlighter for that language, if one is<br>
+available (in most cases, this means you need to configure Pygments):<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='xml '>&lt;a href=&quot;#&quot;&gt;...&lt;/a&gt;</code></pre></div>
+You can also use a <tt class='remarkup-monospaced'>COUNTEREXAMPLE</tt> header to show that a block of code is<br>
+bad and shouldn&#39;t be copied:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>COUNTEREXAMPLE
+function f() {
+   global $$variable_variable;
+}</code></pre></div>
+This produces a block like this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext counterexample'>function f() {
+   global $$variable_variable;
+}</code></pre></div>
+You can use <tt class='remarkup-monospaced'>lines=N</tt> to limit the vertical size of a chunk of code, and<br>
+<tt class='remarkup-monospaced'>name=some_name.ext</tt> to give it a name. For example, this:<br>
+lang=text<br>
+lang=html, name=example.html, lines=12, counterexample<br>
+...<br>
+...produces this:<br>
+<div class='remarkup-code-header counterexample'>example.html</div><div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='xml counterexample'>&lt;p&gt;Apple&lt;/p&gt;
+&lt;p&gt;Apricot&lt;/p&gt;
+&lt;p&gt;Avocado&lt;/p&gt;
+&lt;p&gt;Banana&lt;/p&gt;
+&lt;p&gt;Bilberry&lt;/p&gt;
+&lt;p&gt;Blackberry&lt;/p&gt;
+&lt;p&gt;Blackcurrant&lt;/p&gt;
+&lt;p&gt;Blueberry&lt;/p&gt;
+&lt;p&gt;Currant&lt;/p&gt;
+&lt;p&gt;Cherry&lt;/p&gt;
+&lt;p&gt;Cherimoya&lt;/p&gt;
+&lt;p&gt;Clementine&lt;/p&gt;
+&lt;p&gt;Date&lt;/p&gt;
+&lt;p&gt;Damson&lt;/p&gt;
+&lt;p&gt;Durian&lt;/p&gt;
+&lt;p&gt;Eggplant&lt;/p&gt;
+&lt;p&gt;Elderberry&lt;/p&gt;
+&lt;p&gt;Feijoa&lt;/p&gt;
+&lt;p&gt;Gooseberry&lt;/p&gt;
+&lt;p&gt;Grape&lt;/p&gt;
+&lt;p&gt;Grapefruit&lt;/p&gt;
+&lt;p&gt;Guava&lt;/p&gt;
+&lt;p&gt;Huckleberry&lt;/p&gt;
+&lt;p&gt;Jackfruit&lt;/p&gt;
+&lt;p&gt;Jambul&lt;/p&gt;
+&lt;p&gt;Kiwi fruit&lt;/p&gt;
+&lt;p&gt;Kumquat&lt;/p&gt;
+&lt;p&gt;Legume&lt;/p&gt;
+&lt;p&gt;Lemon&lt;/p&gt;
+&lt;p&gt;Lime&lt;/p&gt;
+&lt;p&gt;Lychee&lt;/p&gt;
+&lt;p&gt;Mandarine&lt;/p&gt;
+&lt;p&gt;Mango&lt;/p&gt;
+&lt;p&gt;Mangostine&lt;/p&gt;
+&lt;p&gt;Melon&lt;/p&gt;</code></pre></div>
+You can use the <tt class='remarkup-monospaced'>NOTE:</tt>, <tt class='remarkup-monospaced'>WARNING:</tt> or <tt class='remarkup-monospaced'>IMPORTANT:</tt> elements to call attention<br>
+to an important idea.<br>
+For example, write this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>NOTE: Hold regular meetings to keep your employees awake.</code></pre></div>
+<br>
+...to produce this:<br>
+<div class='remarkup-note'><span class='remarkup-note-word'>NOTE:</span> Hold regular meetings to keep your employees awake.</div>
+<br>
+Using <tt class='remarkup-monospaced'>WARNING:</tt> or <tt class='remarkup-monospaced'>IMPORTANT:</tt> at the beginning of the line changes the<br>
+color of the callout:<br>
+<div class='remarkup-warning'><span class='remarkup-note-word'>WARNING:</span> Too many meetings can become sleep-inducing</div>
+<br>
+<div class='remarkup-important'><span class='remarkup-note-word'>IMPORTANT:</span> Don&#39;t attend too many meetings</div>
+<br>
+In addition, you can use <tt class='remarkup-monospaced'>(NOTE)</tt>, <tt class='remarkup-monospaced'>(WARNING)</tt>, or <tt class='remarkup-monospaced'>(IMPORTANT)</tt> to get the<br>
+same effect but without <tt class='remarkup-monospaced'>(NOTE)</tt>, <tt class='remarkup-monospaced'>(WARNING)</tt>, or <tt class='remarkup-monospaced'>(IMPORTANT)</tt> appearing in<br>
+the rendered result. For example, this callout uses <tt class='remarkup-monospaced'>(NOTE)</tt>:<br>
+<div class='remarkup-note'>Do not attend too few meetings.</div>
+~~~~~~~~~~

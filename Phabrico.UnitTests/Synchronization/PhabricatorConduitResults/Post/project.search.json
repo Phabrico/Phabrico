@@ -1,0 +1,454 @@
+{
+    "result": {
+        "data": [{
+                "id": 14,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-ipphlthsawcr73setoa4",
+                "fields": {
+                    "name": "Alpha",
+                    "slug": "alpha",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "red",
+                        "name": "Red"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1577750882,
+                    "dateModified": 1578235664,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": "Some description would be nice"
+                },
+                "attachments": {}
+            }, {
+                "id": 1,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-tggzkylev44i7lx27kjm",
+                "fields": {
+                    "name": "Beta",
+                    "slug": "beta",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255254,
+                    "dateModified": 1567935625,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 2,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-44nbqssqu7ksg2hjp6pj",
+                "fields": {
+                    "name": "Gamma",
+                    "slug": "gamma",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255263,
+                    "dateModified": 1567255263,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 4,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-yqvwcsb2buehnpi45eax",
+                "fields": {
+                    "name": "Delta",
+                    "slug": "delta",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255273,
+                    "dateModified": 1567255273,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 7,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-euqlpojripryd2van63w",
+                "fields": {
+                    "name": "Epsilon",
+                    "slug": "epsilon",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255304,
+                    "dateModified": 1567255304,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 6,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-h6j6zjzoupwzgzcbzs2q",
+                "fields": {
+                    "name": "Zeta",
+                    "slug": "zeta",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255292,
+                    "dateModified": 1567255292,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 5,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-zvoibhq3626262w5y54s",
+                "fields": {
+                    "name": "Eta",
+                    "slug": "eta",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255286,
+                    "dateModified": 1567255286,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 9,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-akp7sskyydzhgie5vc4e",
+                "fields": {
+                    "name": "Theta",
+                    "slug": "theta",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255316,
+                    "dateModified": 1567255316,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 8,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-4bz6zgag2k6rcnuwc6eg",
+                "fields": {
+                    "name": "Iota",
+                    "slug": "iota",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255309,
+                    "dateModified": 1567255309,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 12,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-x4zjupkeylm4bkfiuk3n",
+                "fields": {
+                    "name": "Kappa",
+                    "slug": "kappa",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255349,
+                    "dateModified": 1567255349,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 13,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-7zkd3ytchqdkt6rjsuya",
+                "fields": {
+                    "name": "Lambda",
+                    "slug": "lambda",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255355,
+                    "dateModified": 1567255355,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 10,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-ng7g726hku6aaew3cm4v",
+                "fields": {
+                    "name": "Mu",
+                    "slug": "mu",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255335,
+                    "dateModified": 1567255335,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 11,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-4s72ad7bzxafhw5dsvxb",
+                "fields": {
+                    "name": "Nu",
+                    "slug": "nu",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255341,
+                    "dateModified": 1567255341,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }, {
+                "id": 3,
+                "type": "PROJ",
+                "phid": "PHID-PROJ-dccnqculyjzbyovxbxmn",
+                "fields": {
+                    "name": "Xi",
+                    "slug": "xi",
+                    "subtype": "default",
+                    "milestone": null,
+                    "depth": 0,
+                    "parent": null,
+                    "icon": {
+                        "key": "project",
+                        "name": "Project",
+                        "icon": "fa-briefcase"
+                    },
+                    "color": {
+                        "key": "blue",
+                        "name": "Blue"
+                    },
+                    "spacePHID": null,
+                    "dateCreated": 1567255268,
+                    "dateModified": 1567255268,
+                    "policy": {
+                        "view": "users",
+                        "edit": "users",
+                        "join": "users"
+                    },
+                    "description": null
+                },
+                "attachments": {}
+            }
+        ],
+        "maps": {
+            "slugMap": {}
+        },
+        "query": {
+            "queryKey": null
+        },
+        "cursor": {
+            "limit": 100,
+            "after": null,
+            "before": null,
+            "order": null
+        }
+    },
+    "error_code": null,
+    "error_info": null
+}

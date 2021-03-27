@@ -1,0 +1,7 @@
+## Small Header
+
+This should be a small header.
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='hdrSmall_Header' style='padding-top: 80px;'></a>Small Header </h1>
+This should be a small header.
+~~~~~~~~~~

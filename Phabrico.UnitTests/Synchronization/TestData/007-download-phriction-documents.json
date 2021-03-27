@@ -1,0 +1,44 @@
+{
+    "execute": {
+        "method": ["ProgressMethod_DownloadPhrictionDocuments"]
+    },
+
+    "validate": {
+        "storage": {
+            "phriction":  [{
+                    "token": "PHID-WIKI-g2hder2p3ghquaze3fh7",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "content": "I'm a grandchild",
+                    "name": "Grandchild",
+                    "path": "child/grandchild/",
+                    "projects": "",
+                    "subscribers": "",
+                },{
+                    "token": "PHID-WIKI-cyh2xeuh35z5n624rdhu",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "content": "It's a fact",
+                    "name": "Better a day off than a hand off",
+                    "path": "better_a_day_off_than_a_hand_off/",
+                    "projects": "PHID-PROJ-ipphlthsawcr73setoa4",
+                    "subscribers": "",
+                },{
+                    "token": "PHID-WIKI-jdjkupvbtoaro5sz3wqf",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "content": "Snoozing is my life {F403}",
+                    "name": "I love snoozing",
+                    "path": "snoozing/",
+                    "projects": "",
+                    "subscribers": "",
+                },{
+                    "token": "PHID-WIKI-eg2frb6mtmmq6xcnw5co",
+                    "author": "PHID-USER-avflgkkgmrvd526jk522",
+                    "content": "In time {F445}",
+                    "name": "Child",
+                    "path": "child/",
+                    "projects": "PHID-PROJ-ipphlthsawcr73setoa4",
+                    "subscribers": "PHID-USER-avflgkkgmrvd526jk522",
+                }
+            ]
+        }
+    }
+}

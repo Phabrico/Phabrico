@@ -1,0 +1,85 @@
+If you prefer, you can indent lists using multiple characters to show indent
+depth, like this:
+
+```
+- Tree
+-- Branch
+--- Twig
+```
+
+As expected, this produces:
+
+- Tree
+-- Branch
+--- Twig
+
+You can add checkboxes to items by prefacing them with `[ ]` or `[X]`, like
+this:
+
+```
+- [X] Preheat oven to 450 degrees.
+- [ ] Zest 35 lemons.
+```
+
+When rendered, this produces:
+
+- [X] Preheat oven to 450 degrees.
+- [ ] Zest 35 lemons.
+
+Make **code blocks** by indenting two spaces:
+
+  f(x, y);
+
+You can also use three backticks to enclose the code block:
+
+```
+f(x, y);
+g(f);
+```
+
+You can specify a language for syntax highlighting with `lang=xxx`:
+  lang=text
+  lang=html
+  <a href="#">...</a>
+
+~~~~~~~~~~
+If you prefer, you can indent lists using multiple characters to show indent<br>
+depth, like this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>- Tree
+-- Branch
+--- Twig</code></pre></div>
+<br>
+As expected, this produces:<br>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>Tree
+    <ul class='remarkup-list'>
+      <li class='remarkup-list-item'>Branch
+        <ul class='remarkup-list'>
+          <li class='remarkup-list-item'>Twig</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+You can add checkboxes to items by prefacing them with <tt class='remarkup-monospaced'>[ ]</tt> or <tt class='remarkup-monospaced'>[X]</tt>, like<br>
+this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>- [X] Preheat oven to 450 degrees.
+- [ ] Zest 35 lemons.</code></pre></div>
+<br>
+When rendered, this produces:<br>
+<ul class='remarkup-list remarkup-list-with-checkmarks'>
+  <li class='remarkup-list-item remarkup-checked-item'><input type='checkbox' checked='checked' disabled='disabled'> Preheat oven to 450 degrees.</li>
+  <li class='remarkup-list-item remarkup-unchecked-item'><input type='checkbox' disabled='disabled'> Zest 35 lemons.</li>
+</ul>
+
+Make <strong>code blocks</strong> by indenting two spaces:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>f(x, y);</code></pre></div>
+You can also use three backticks to enclose the code block:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>f(x, y);
+g(f);</code></pre></div>
+<br>
+You can specify a language for syntax highlighting with <tt class='remarkup-monospaced'>lang=xxx</tt>:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>lang=html
+&lt;a href=&quot;#&quot;&gt;...&lt;/a&gt;</code></pre></div>
+~~~~~~~~~~

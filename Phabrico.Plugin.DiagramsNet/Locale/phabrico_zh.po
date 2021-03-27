@@ -1,0 +1,618 @@
+﻿# Chinese translations
+
+# General
+msgid "Diagrams"
+msgstr "图表"
+
+msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
+msgstr "流程图、过程图、组织结构图、统一建模语言、ER和网络图的编辑器"
+
+# Help shortcuts
+msgid "Styles"
+msgstr "种作风"
+
+msgid "Document"
+msgstr "文件"
+
+msgid "Sidebar / Connect"
+msgstr "侧栏/连接"
+
+msgid "View"
+msgstr "视图"
+
+msgid "Canvas"
+msgstr "帆布"
+
+msgid "Cursor / Page keys"
+msgstr "光标或页面键"
+
+msgid "Tools"
+msgstr "工具 "
+
+msgid "Selection"
+msgstr "选择 "
+
+msgid "Labels"
+msgstr "标签 "
+
+msgid "(Shift+)Tab"
+msgstr "(Shift+)Tab"
+
+msgid "Alt+(Shift / Ctrl)+Click on a sidebar item"
+msgstr "Alt+(Shift / Ctrl)+点击一个侧栏项目"
+
+msgid "Alt+(Shift+)Drag from sidebar"
+msgstr "Alt+(Shift+)从侧栏拖动"
+
+msgid "Alt+(Shift+)Tab"
+msgstr "Alt+(Shift+)Tab"
+
+msgid "Alt+Click"
+msgstr "Alt+点击"
+
+msgid "Alt+Connect"
+msgstr "Alt+连接"
+
+msgid "Alt+Cursor"
+msgstr "Alt+光标"
+
+msgid "Alt+Mouse wheel"
+msgstr "Alt+鼠标滚轮"
+
+msgid "Alt+Shift+A"
+msgstr "Alt+Shift+A"
+
+msgid "Alt+Shift+C/T"
+msgstr "Alt+Shift+C/T"
+
+msgid "Alt+Shift+Cursor"
+msgstr "Alt+Shift+光标"
+
+msgid "Alt+Shift+Drag"
+msgstr "Alt+Shift+拖拽"
+
+msgid "Alt+Shift+P"
+msgstr "Alt+Shift+P"
+
+msgid "Alt+Shift+V"
+msgstr "Alt+Shift+V"
+
+msgid "Alt+Shift+X"
+msgstr "Alt+Shift+X"
+
+msgid "Backspace or Delete"
+msgstr "退格键或删除键"
+
+msgid "Click on a sidebar item"
+msgstr "点击一个侧栏项目"
+
+msgid "Ctrl - (Numpad)"
+msgstr "Ctrl - (Numpad)"
+
+msgid "Ctrl / Meta+Resize"
+msgstr "Ctrl / Meta+调整大小"
+
+msgid "Ctrl / Shift+Click"
+msgstr "Ctrl / Shift+点击"
+
+msgid "Ctrl / Shift+Delete"
+msgstr "Ctrl / Shift+Delete"
+
+msgid "Ctrl / Shift+Drag"
+msgstr "Ctrl / Shift+拖拽"
+
+msgid "Ctrl + (Numpad)"
+msgstr "Ctrl + (Numpad)"
+
+msgid "Ctrl+(Shift+)A"
+msgstr "Ctrl+(Shift+)A"
+
+msgid "Ctrl+. / ,"
+msgstr "Ctrl+. / ,"
+
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+msgid "Ctrl+B / I"
+msgstr "Ctrl+B / I"
+
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+msgid "Ctrl+Click"
+msgstr "Ctrl+点击"
+
+msgid "Ctrl+Cursor"
+msgstr "Ctrl+光标"
+
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+msgid "Ctrl+End"
+msgstr "Ctrl+End"
+
+msgid "Ctrl+Enter / D"
+msgstr "Ctrl+Enter / D"
+
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+msgid "Ctrl+Home"
+msgstr "Ctrl+Home"
+
+msgid "Ctrl+J"
+msgstr "Ctrl+J"
+
+msgid "Ctrl+K"
+msgstr "Ctrl+K"
+
+msgid "Ctrl+L / Alt+Shift+L"
+msgstr "Ctrl+L / Alt+Shift+L"
+
+msgid "Ctrl+M"
+msgstr "Ctrl+M"
+
+msgid "Ctrl+P"
+msgstr "Ctrl+P"
+
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+msgid "Ctrl+Shift+B"
+msgstr "Ctrl+Shift+B"
+
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+msgid "Ctrl+Shift+Connect"
+msgstr "Ctrl+Shift+连接"
+
+msgid "Ctrl+Shift+Cursor"
+msgstr "Ctrl+Shift+光标"
+
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+msgid "Ctrl+Shift+Drag"
+msgstr "Ctrl+Shift+拖拽"
+
+msgid "Ctrl+Shift+End"
+msgstr "Ctrl+Shift+End"
+
+msgid "Ctrl+Shift+F"
+msgstr "Ctrl+Shift+F"
+
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+msgid "Ctrl+Shift+H"
+msgstr "Ctrl+Shift+H"
+
+msgid "Ctrl+Shift+Home"
+msgstr "Ctrl+Shift+Home"
+
+msgid "Ctrl+Shift+I / E"
+msgstr "Ctrl+Shift+I / E"
+
+msgid "Ctrl+Shift+J"
+msgstr "Ctrl+Shift+J"
+
+msgid "Ctrl+Shift+K"
+msgstr "Ctrl+Shift+K"
+
+msgid "Ctrl+Shift+L"
+msgstr "Ctrl+Shift+L"
+
+msgid "Ctrl+Shift+M"
+msgstr "Ctrl+Shift+M"
+
+msgid "Ctrl+Shift+Mouse wheel"
+msgstr "Ctrl+Shift+鼠标滚轮"
+
+msgid "Ctrl+Shift+O"
+msgstr "Ctrl+Shift+O"
+
+msgid "Ctrl+Shift+P"
+msgstr "Ctrl+Shift+P"
+
+msgid "Ctrl+Shift+Pg Down"
+msgstr "Ctrl+Shift+Pg Down"
+
+msgid "Ctrl+Shift+Pg Up"
+msgstr "Ctrl+Shift+Pg Up"
+
+msgid "Ctrl+Shift+R"
+msgstr "Ctrl+Shift+R"
+
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+msgid "Ctrl+Shift+U"
+msgstr "Ctrl+Shift+U"
+
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+msgid "Ctrl+Shift+X"
+msgstr "Ctrl+Shift+X"
+
+msgid "Ctrl+Shift+Y"
+msgstr "Ctrl+Shift+Y"
+
+msgid "Ctrl+U"
+msgstr "Ctrl+U"
+
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+msgid "Cursor"
+msgstr "光标"
+
+msgid "Double click"
+msgstr "双击"
+
+msgid "End"
+msgstr "End"
+
+msgid "Enter"
+msgstr "Enter"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "F1"
+msgstr "F1"
+
+msgid "F2 / Enter"
+msgstr "F2 / Enter"
+
+msgid "F2 / Tab / Esc"
+msgstr "F2 / Tab / Esc"
+
+msgid "Hold Alt"
+msgstr "按住Alt"
+
+msgid "Mouse wheel"
+msgstr "鼠标滚轮"
+
+msgid "Rightclick"
+msgstr "右键"
+
+msgid "Shift+Click on a sidebar item"
+msgstr "Shift+点击一个侧栏项目"
+
+msgid "Shift+Connect"
+msgstr "Shift+连接"
+
+msgid "Shift+Cursor"
+msgstr "Shift+光标"
+
+msgid "Shift+Drag"
+msgstr "Shift+拖拽"
+
+msgid "Shift+Enter"
+msgstr "Shift+Enter"
+
+msgid "Shift+Home"
+msgstr "Shift+Home"
+
+msgid "Shift+Mouse wheel"
+msgstr "Shift+鼠标滚轮"
+
+msgid "Shift+Resize"
+msgstr "Shift+调整大小"
+
+msgid "Space / Right mouse Drag"
+msgstr "Space / 用鼠标右键拖动"
+
+msgid "About"
+msgstr "关于"
+
+msgid "Add to Selection"
+msgstr "添加到选择"
+
+msgid "Autosize"
+msgstr "自动尺寸"
+
+msgid "Bring to Front"
+msgstr "拉到最前"
+
+msgid "Cancel Action"
+msgstr "取消行动"
+
+msgid "Canvas Horizontal Scroll"
+msgstr "屏幕上的水平滚动"
+
+msgid "Canvas Vertical Scroll"
+msgstr "画布上的垂直滚动"
+
+msgid "Canvas Zoom In/Out"
+msgstr "放大/缩小画布"
+
+msgid "Centered / Group Resize"
+msgstr "中心化/改变组别大小"
+
+msgid "Clear Default Style"
+msgstr "删除默认样式"
+
+msgid "Clear Waypoints / Edit Tooltip"
+msgstr "删除航点/编辑工具提示"
+
+msgid "Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone)."
+msgstr "点击连接和克隆（Ctrl+点击克隆，Shift+点击连接）。拖动连接（Ctrl+拖动克隆）"
+
+msgid "Click to rotate 90° clockwise. Drag to rotate."
+msgstr "点击可顺时针旋转90°。拖动旋转"
+
+msgid "Clone and connect"
+msgstr "克隆和连接"
+
+msgid "Clone cell/Disconnect edge"
+msgstr "细胞克隆/边缘修剪"
+
+msgid "Collapse Container"
+msgstr "折叠容器"
+
+msgid "Connect to a Fixed Point"
+msgstr "连接到一个固定点"
+
+msgid "Connect to shape outline (ignore connection points)"
+msgstr "连接到形状的轮廓(忽略连接点)"
+
+msgid "Connection Arrows"
+msgstr "用箭头连接"
+
+msgid "Connection Points"
+msgstr "连接点"
+
+msgid "Connects unconnected side of selected edge"
+msgstr "连接所选边缘的未连接面"
+
+msgid "Context Menu"
+msgstr "上下文菜单"
+
+msgid "Copy"
+msgstr "复制"
+
+msgid "Copy Size"
+msgstr "复制大小"
+
+msgid "Copy Style"
+msgstr "复制样式"
+
+msgid "Create / Remove Space"
+msgstr "创建/删除空间"
+
+msgid "Ctrl / Shift+Enter: New Line"
+msgstr "Ctrl / Shift+Enter: 新建行"
+
+msgid "Ctrl / Shift+Esc: Cancel Editing"
+msgstr "Ctrl / Shift+Esc: 取消编辑"
+
+msgid "Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML"
+msgstr "Ctrl：显示对话框，Alt：原点，Shift：忽略XML"
+
+msgid "Ctrl+Resize for non-recursive group resize"
+msgstr "Ctrl+调整非递归组的大小"
+
+msgid "Ctrl+Meta+Resize for centered group resize"
+msgstr "Ctrl+Meta+调整中心组的大小"
+
+msgid "Custom Zoom"
+msgstr "自定义缩放"
+
+msgid "Cut"
+msgstr "剪切"
+
+msgid "Delete Selected Cells"
+msgstr "删除所选单元格"
+
+msgid "Delete Selected Cells with Connections / Labels"
+msgstr "删除所选的带有连接或标签的单元格"
+
+msgid "Disable Connections"
+msgstr "禁用连接"
+
+msgid "Disable replace, connect on drop (drop targets), Shift ignores current style"
+msgstr "禁用替换，鼠标点击时连接，Shift忽略当前样式"
+
+msgid "Duplicate"
+msgstr "复制"
+
+msgid "Edit Metadata"
+msgstr "编辑元数据"
+
+msgid "Edit Style"
+msgstr "编辑风格"
+
+msgid "Edit Vertex Geometry"
+msgstr "编辑顶点几何体"
+
+msgid "Enter Group"
+msgstr "进入组"
+
+msgid "Exit Group"
+msgstr "退组"
+
+msgid "Expand Container"
+msgstr "展开容器"
+
+msgid "Fit Page"
+msgstr "适用于1页"
+
+msgid "Fit Two Pages"
+msgstr "适用于2页"
+
+msgid "Fit Window"
+msgstr "适合窗口"
+
+msgid "Group"
+msgstr "分组"
+
+msgid "Home"
+msgstr "基本职位"
+
+msgid "Ignores handles under the mouse"
+msgstr "忽略鼠标下的手柄"
+
+msgid "Insert Ellipse"
+msgstr "插入椭圆"
+
+msgid "Insert Rectangle"
+msgstr "插入矩形"
+
+msgid "Insert Text"
+msgstr "插入文字"
+
+msgid "Insert text or add an edge label"
+msgstr "插入文字或添加边距标签"
+
+msgid "Inserts and connects the selected item (Shift ignores current style)"
+msgstr "插入选定的元素并将其合并（Shift会忽略当前的样式）"
+
+msgid "Lock/Unlock / Edit Link"
+msgstr "锁定/解锁/编辑链接"
+
+msgid "Maintain Proportions"
+msgstr "维持比例"
+
+msgid "Move cell (grid) or page"
+msgstr "移动单元格（网格）或页面"
+
+msgid "New Line in Formatted Labels"
+msgstr "在标签中插入新行"
+
+msgid "New Paragraph in Formatted Labels"
+msgstr "在标签中插入新的段落"
+
+msgid "Next Page"
+msgstr "下一页"
+
+msgid "Pan Canvas"
+msgstr "平移画布"
+
+msgid "Paste"
+msgstr "粘贴"
+
+msgid "Paste Size"
+msgstr "粘贴大小"
+
+msgid "Paste Style"
+msgstr "粘贴样式"
+
+msgid "Previous Page"
+msgstr "上一页"
+
+msgid "Print"
+msgstr "打印"
+
+msgid "Redo"
+msgstr "重做"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Remove from Selection"
+msgstr "从选择中移除"
+
+msgid "Replaces the selected item with the clicked one"
+msgstr "将选中的元素替换为点击的元素"
+
+msgid "Reset View"
+msgstr "重置视图"
+
+msgid "Resize cell (grid size)"
+msgstr "改变单元格的大小（网格大小）"
+
+msgid "Resize cell (pt) or select page"
+msgstr "改变单元格大小（pt）或选择页面"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Save as"
+msgstr "保存为"
+
+msgid "Scroll / Move cell (pt)"
+msgstr "滚动/移动单元格(pt)"
+
+msgid "Scroll Page"
+msgstr "滚动页面"
+
+msgid "Select All / None"
+msgstr "选择全部/无"
+
+msgid "Select Cell Below"
+msgstr "选择下面的单元格"
+
+msgid "Select Child / Parent"
+msgstr "选择子女/父母"
+
+msgid "Select Next / Previous"
+msgstr "选择下一个/上一个"
+
+msgid "Select Vertices / Edges"
+msgstr "选择顶点/边缘"
+
+msgid "Send to Back"
+msgstr "推到最後"
+
+msgid "Set as Default Style"
+msgstr "设置为默认样式"
+
+msgid "Start Editing Label of Selected Cell"
+msgstr "开始编辑所选单元格的标签"
+
+msgid "Stop Editing and Apply Value"
+msgstr "停止编辑，接受价值"
+
+msgid "Superscript/Subscript on Selected Text"
+msgstr "上标/选定文本的下标"
+
+msgid "Toggle Bold/Italic on Selected Text"
+msgstr "在选定的文本上反转粗体/斜体"
+
+msgid "Toggle Format Panel"
+msgstr "显示/隐藏格式化"
+
+msgid "Toggle grid"
+msgstr "显示/隐藏网格"
+
+msgid "Toggle Layers Window"
+msgstr "显示/隐藏图层窗口"
+
+msgid "Toggle Outline Window"
+msgstr "显示/隐藏缩略图窗口"
+
+msgid "Toggle Selection State"
+msgstr "添加到/从选择中删除"
+
+msgid "Toggle Underline on Selected Text"
+msgstr "在选定的文本上添加/删除下划线"
+
+msgid "Turn / Rotate 90° Clockwise"
+msgstr "顺时针旋转90度"
+
+msgid "Undo"
+msgstr "撤销"
+
+msgid "Ungroup"
+msgstr "解组"
+
+msgid "Zoom In"
+msgstr "放大"
+
+msgid "Zoom Out"
+msgstr "缩小"

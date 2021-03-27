@@ -1,0 +1,618 @@
+﻿# German translations
+
+# General
+msgid "Diagrams"
+msgstr "Diagramme"
+
+msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
+msgstr "Editor für Flussdiagramme, Prozessdiagramme, Organigramme, UML-, ER- und Netzwerkdiagramme."
+
+# Help shortcuts
+msgid "Styles"
+msgstr "Styles"
+
+msgid "Document"
+msgstr "Dokument"
+
+msgid "Sidebar / Connect"
+msgstr "Seitenleiste / Verbinden"
+
+msgid "View"
+msgstr "Ansicht"
+
+msgid "Canvas"
+msgstr "Leinwand"
+
+msgid "Cursor / Page keys"
+msgstr "Cursor- oder Seitentasten"
+
+msgid "Tools"
+msgstr "Werkzeuge"
+
+msgid "Selection"
+msgstr "Auswahl"
+
+msgid "Labels"
+msgstr "Etiketten"
+
+msgid "(Shift+)Tab"
+msgstr "(Shift+)Tab"
+
+msgid "Alt+(Shift / Ctrl)+Click on a sidebar item"
+msgstr "Alt+(Shift / Strg)+Klick auf ein Element in der Seitenleiste"
+
+msgid "Alt+(Shift+)Drag from sidebar"
+msgstr "Alt+(Shift+)Aus der Seitenleiste ziehen"
+
+msgid "Alt+(Shift+)Tab"
+msgstr "Alt+(Shift+)Tab"
+
+msgid "Alt+Click"
+msgstr "Alt+Klick"
+
+msgid "Alt+Connect"
+msgstr "Alt+Verbinden"
+
+msgid "Alt+Cursor"
+msgstr "Alt+Cursor"
+
+msgid "Alt+Mouse wheel"
+msgstr "Alt+Mausrad"
+
+msgid "Alt+Shift+A"
+msgstr "Alt+Shift+A"
+
+msgid "Alt+Shift+C/T"
+msgstr "Alt+Shift+C/T"
+
+msgid "Alt+Shift+Cursor"
+msgstr "Alt+Shift+Cursor"
+
+msgid "Alt+Shift+Drag"
+msgstr "Alt+Shift+Ziehen"
+
+msgid "Alt+Shift+P"
+msgstr "Alt+Shift+P"
+
+msgid "Alt+Shift+V"
+msgstr "Alt+Shift+V"
+
+msgid "Alt+Shift+X"
+msgstr "Alt+Shift+X"
+
+msgid "Backspace or Delete"
+msgstr "Rücktaste oder Entf"
+
+msgid "Click on a sidebar item"
+msgstr "Klick auf ein Element in der Seitenleiste"
+
+msgid "Ctrl - (Numpad)"
+msgstr "Strg - (Numpad)"
+
+msgid "Ctrl / Meta+Resize"
+msgstr "Strg / Meta+Resize"
+
+msgid "Ctrl / Shift+Click"
+msgstr "Strg / Shift+Klick"
+
+msgid "Ctrl / Shift+Delete"
+msgstr "Strg / Shift+Delete"
+
+msgid "Ctrl / Shift+Drag"
+msgstr "Strg / Shift+Ziehen"
+
+msgid "Ctrl + (Numpad)"
+msgstr "Strg + (Numpad)"
+
+msgid "Ctrl+(Shift+)A"
+msgstr "Strg+(Shift+)A"
+
+msgid "Ctrl+. / ,"
+msgstr "Strg+. / ,"
+
+msgid "Ctrl+0"
+msgstr "Strg+0"
+
+msgid "Ctrl+B / I"
+msgstr "Strg+B / I"
+
+msgid "Ctrl+C"
+msgstr "Strg+C"
+
+msgid "Ctrl+Click"
+msgstr "Strg+Klick"
+
+msgid "Ctrl+Cursor"
+msgstr "Strg+Cursor"
+
+msgid "Ctrl+E"
+msgstr "Strg+E"
+
+msgid "Ctrl+End"
+msgstr "Strg+End"
+
+msgid "Ctrl+Enter / D"
+msgstr "Strg+Enter / D"
+
+msgid "Ctrl+G"
+msgstr "Strg+G"
+
+msgid "Ctrl+Home"
+msgstr "Strg+Home"
+
+msgid "Ctrl+J"
+msgstr "Strg+J"
+
+msgid "Ctrl+K"
+msgstr "Strg+K"
+
+msgid "Ctrl+L / Alt+Shift+L"
+msgstr "Strg+L / Alt+Shift+L"
+
+msgid "Ctrl+M"
+msgstr "Strg+M"
+
+msgid "Ctrl+P"
+msgstr "Strg+P"
+
+msgid "Ctrl+R"
+msgstr "Strg+R"
+
+msgid "Ctrl+S"
+msgstr "Strg+S"
+
+msgid "Ctrl+Shift+B"
+msgstr "Strg+Shift+B"
+
+msgid "Ctrl+Shift+C"
+msgstr "Strg+Shift+C"
+
+msgid "Ctrl+Shift+Connect"
+msgstr "Strg+Shift+Verbinden"
+
+msgid "Ctrl+Shift+Cursor"
+msgstr "Strg+Shift+Cursor"
+
+msgid "Ctrl+Shift+D"
+msgstr "Strg+Shift+D"
+
+msgid "Ctrl+Shift+Drag"
+msgstr "Strg+Shift+Ziehen"
+
+msgid "Ctrl+Shift+End"
+msgstr "Strg+Shift+End"
+
+msgid "Ctrl+Shift+F"
+msgstr "Strg+Shift+F"
+
+msgid "Ctrl+Shift+G"
+msgstr "Strg+Shift+G"
+
+msgid "Ctrl+Shift+H"
+msgstr "Strg+Shift+H"
+
+msgid "Ctrl+Shift+Home"
+msgstr "Strg+Shift+Home"
+
+msgid "Ctrl+Shift+I / E"
+msgstr "Strg+Shift+I / E"
+
+msgid "Ctrl+Shift+J"
+msgstr "Strg+Shift+J"
+
+msgid "Ctrl+Shift+K"
+msgstr "Strg+Shift+K"
+
+msgid "Ctrl+Shift+L"
+msgstr "Strg+Shift+L"
+
+msgid "Ctrl+Shift+M"
+msgstr "Strg+Shift+M"
+
+msgid "Ctrl+Shift+Mouse wheel"
+msgstr "Strg+Shift+Mausrad"
+
+msgid "Ctrl+Shift+O"
+msgstr "Strg+Shift+O"
+
+msgid "Ctrl+Shift+P"
+msgstr "Strg+Shift+P"
+
+msgid "Ctrl+Shift+Pg Down"
+msgstr "Strg+Shift+Pg Down"
+
+msgid "Ctrl+Shift+Pg Up"
+msgstr "Strg+Shift+Pg Up"
+
+msgid "Ctrl+Shift+R"
+msgstr "Strg+Shift+R"
+
+msgid "Ctrl+Shift+S"
+msgstr "Strg+Shift+S"
+
+msgid "Ctrl+Shift+U"
+msgstr "Strg+Shift+U"
+
+msgid "Ctrl+Shift+V"
+msgstr "Strg+Shift+V"
+
+msgid "Ctrl+Shift+X"
+msgstr "Strg+Shift+X"
+
+msgid "Ctrl+Shift+Y"
+msgstr "Strg+Shift+Y"
+
+msgid "Ctrl+U"
+msgstr "Strg+U"
+
+msgid "Ctrl+V"
+msgstr "Strg+V"
+
+msgid "Ctrl+X"
+msgstr "Strg+X"
+
+msgid "Ctrl+Y"
+msgstr "Strg+Y"
+
+msgid "Ctrl+Z"
+msgstr "Strg+Z"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Double click"
+msgstr "Doppelklick"
+
+msgid "End"
+msgstr "End"
+
+msgid "Enter"
+msgstr "Enter"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "F1"
+msgstr "F1"
+
+msgid "F2 / Enter"
+msgstr "F2 / Enter"
+
+msgid "F2 / Tab / Esc"
+msgstr "F2 / Tab / Esc"
+
+msgid "Hold Alt"
+msgstr "Alt halten"
+
+msgid "Mouse wheel"
+msgstr "Mausrad"
+
+msgid "Rightclick"
+msgstr "Rechtsklick"
+
+msgid "Shift+Click on a sidebar item"
+msgstr "Shift+Klick auf ein Element in der Seitenleiste"
+
+msgid "Shift+Connect"
+msgstr "Shift+Verbinden"
+
+msgid "Shift+Cursor"
+msgstr "Shift+Cursor"
+
+msgid "Shift+Drag"
+msgstr "Shift+Ziehen"
+
+msgid "Shift+Enter"
+msgstr "Shift+Enter"
+
+msgid "Shift+Home"
+msgstr "Shift+Home"
+
+msgid "Shift+Mouse wheel"
+msgstr "Shift+Mausrad"
+
+msgid "Shift+Resize"
+msgstr "Shift+Resize"
+
+msgid "Space / Right mouse Drag"
+msgstr "Space / Ziehen mit der<br />rechten Maustaste"
+
+msgid "About"
+msgstr "Über"
+
+msgid "Add to Selection"
+msgstr "Zur Auswahl hinzufügen"
+
+msgid "Autosize"
+msgstr "Autosize"
+
+msgid "Bring to Front"
+msgstr "Nach vorne bringen"
+
+msgid "Cancel Action"
+msgstr "Aktion abbrechen"
+
+msgid "Canvas Horizontal Scroll"
+msgstr "Horizontaler Bildlauf auf der Leinwand"
+
+msgid "Canvas Vertical Scroll"
+msgstr "Vertikales Blättern auf der Leinwand"
+
+msgid "Canvas Zoom In/Out"
+msgstr "Leinwand Vergrößern/Verkleinern"
+
+msgid "Centered / Group Resize"
+msgstr "Zentriert / Gruppengröße ändern"
+
+msgid "Clear Default Style"
+msgstr "Standardstil löschen"
+
+msgid "Clear Waypoints / Edit Tooltip"
+msgstr "Wegpunkte löschen / Tooltip bearbeiten"
+
+msgid "Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone)."
+msgstr "Klicken Sie zum Verbinden und Klonen (Strg+Klicken zum Klonen, Umschalt+Klicken zum Verbinden). Ziehen Sie zum Verbinden (Strg+Ziehen zum Klonen)."
+
+msgid "Click to rotate 90° clockwise. Drag to rotate."
+msgstr "Klicken Sie, um um 90° im Uhrzeigersinn zu drehen. Ziehen Sie zum Drehen."
+
+msgid "Clone and connect"
+msgstr "Klonen und Verbinden"
+
+msgid "Clone cell/Disconnect edge"
+msgstr "Zelle klonen/Kante abtrennen"
+
+msgid "Collapse Container"
+msgstr "Container zusammenklappen"
+
+msgid "Connect to a Fixed Point"
+msgstr "Verbinden mit einem Festpunkt"
+
+msgid "Connect to shape outline (ignore connection points)"
+msgstr "Mit dem Umriss der Form verbinden (Verbindungspunkte ignorieren)"
+
+msgid "Connection Arrows"
+msgstr "Verbinden mit Pfeilen"
+
+msgid "Connection Points"
+msgstr "Punkte verbinden"
+
+msgid "Connects unconnected side of selected edge"
+msgstr "Verbindet die nicht angeschlossene Seite der ausgewählten Kante"
+
+msgid "Context Menu"
+msgstr "Kontextmenü"
+
+msgid "Copy"
+msgstr "Kopieren"
+
+msgid "Copy Size"
+msgstr "Größe kopieren"
+
+msgid "Copy Style"
+msgstr "Stil kopieren"
+
+msgid "Create / Remove Space"
+msgstr "Platz erstellen / entfernen"
+
+msgid "Ctrl / Shift+Enter: New Line"
+msgstr "Strg / Umschalt+Eingabe: Neue Zeile"
+
+msgid "Ctrl / Shift+Esc: Cancel Editing"
+msgstr "Strg / Umschalt+Esc: Editieren abbrechen"
+
+msgid "Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML"
+msgstr "Strg: Dialog anzeigen, Alt: Ursprung, Shift: XML ignorieren"
+
+msgid "Ctrl+Resize for non-recursive group resize"
+msgstr "Strg+Resize für nicht-rekursive Gruppengrößenänderung"
+
+msgid "Ctrl+Meta+Resize for centered group resize"
+msgstr "Strg+Meta+Größe ändern für zentrierte Gruppengrößenänderung"
+
+msgid "Custom Zoom"
+msgstr "Benutzerdefinierter Zoom"
+
+msgid "Cut"
+msgstr "Ausschneiden"
+
+msgid "Delete Selected Cells"
+msgstr "Ausgewählte Zellen löschen"
+
+msgid "Delete Selected Cells with Connections / Labels"
+msgstr "Ausgewählte Zellen mit Verbindungen<br />oder Beschriftungen löschen"
+
+msgid "Disable Connections"
+msgstr "Verbindungen deaktivieren"
+
+msgid "Disable replace, connect on drop (drop targets), Shift ignores current style"
+msgstr "Ersetzen deaktivieren, Verbinden bei Drop, Shift ignoriert aktuellen Stil"
+
+msgid "Duplicate"
+msgstr "Duplizieren"
+
+msgid "Edit Metadata"
+msgstr "Metadaten bearbeiten"
+
+msgid "Edit Style"
+msgstr "Stil bearbeiten"
+
+msgid "Edit Vertex Geometry"
+msgstr "Scheitelpunktgeometrie bearbeiten"
+
+msgid "Enter Group"
+msgstr "Gruppe eingeben"
+
+msgid "Exit Group"
+msgstr "Gruppe verlassen"
+
+msgid "Expand Container"
+msgstr "Container aufklappen"
+
+msgid "Fit Page"
+msgstr "Auf 1 Seite passen"
+
+msgid "Fit Two Pages"
+msgstr "Auf 2 Seiten passen"
+
+msgid "Fit Window"
+msgstr "An Fenster anpassen"
+
+msgid "Group"
+msgstr "Gruppieren"
+
+msgid "Home"
+msgstr "Grundstellung"
+
+msgid "Ignores handles under the mouse"
+msgstr "Ignoriert Griffe unter der Maus"
+
+msgid "Insert Ellipse"
+msgstr "Ellipse einfügen"
+
+msgid "Insert Rectangle"
+msgstr "Rechteck einfügen"
+
+msgid "Insert Text"
+msgstr "Text einfügen"
+
+msgid "Insert text or add an edge label"
+msgstr "Text einfügen oder Randbeschriftung hinzufügen"
+
+msgid "Inserts and connects the selected item (Shift ignores current style)"
+msgstr "Fügt das ausgewählte Element ein und verbindet es (Umschalttaste ignoriert den aktuellen Stil)"
+
+msgid "Lock/Unlock / Edit Link"
+msgstr "Link sperren / entsperren / bearbeiten"
+
+msgid "Maintain Proportions"
+msgstr "Proportionen beibehalten"
+
+msgid "Move cell (grid) or page"
+msgstr "Zelle (Gitter) oder Seite verschieben"
+
+msgid "New Line in Formatted Labels"
+msgstr "Neue Zeile in formatierten Beschriftungen"
+
+msgid "New Paragraph in Formatted Labels"
+msgstr "Neuer Absatz in formatierten Beschriftungen"
+
+msgid "Next Page"
+msgstr "Nächste Seite"
+
+msgid "Pan Canvas"
+msgstr "Pan Leinwand"
+
+msgid "Paste"
+msgstr "Einfügen"
+
+msgid "Paste Size"
+msgstr "Größe einfügen"
+
+msgid "Paste Style"
+msgstr "Stil einfügen"
+
+msgid "Previous Page"
+msgstr "Vorherige Seite"
+
+msgid "Print"
+msgstr "Drucken"
+
+msgid "Redo"
+msgstr "Wiederherstellen"
+
+msgid "Refresh"
+msgstr "Aktualisieren"
+
+msgid "Remove from Selection"
+msgstr "Aus Auswahl entfernen"
+
+msgid "Replaces the selected item with the clicked one"
+msgstr "Ersetzt das ausgewählte Element durch das angeklickte"
+
+msgid "Reset View"
+msgstr "Ansicht zurücksetzen"
+
+msgid "Resize cell (grid size)"
+msgstr "Größe der Zelle ändern (Gittergröße)"
+
+msgid "Resize cell (pt) or select page"
+msgstr "Größe der Zelle ändern (pt) oder Seite auswählen"
+
+msgid "Save"
+msgstr "Speichern"
+
+msgid "Save as"
+msgstr "Speichern als"
+
+msgid "Scroll / Move cell (pt)"
+msgstr "Zelle blättern / verschieben (pt)"
+
+msgid "Scroll Page"
+msgstr "Seite blättern"
+
+msgid "Select All / None"
+msgstr "Alle / Keine auswählen"
+
+msgid "Select Cell Below"
+msgstr "Zelle unten auswählen"
+
+msgid "Select Child / Parent"
+msgstr "Kind / Elternteil auswählen"
+
+msgid "Select Next / Previous"
+msgstr "Nächste / Vorherige auswählen"
+
+msgid "Select Vertices / Edges"
+msgstr "Vertices / Edges auswählen"
+
+msgid "Send to Back"
+msgstr "Senden nach hinten"
+
+msgid "Set as Default Style"
+msgstr "Als Standardstil festlegen"
+
+msgid "Start Editing Label of Selected Cell"
+msgstr "Editieren der Beschriftung der ausgewählten Zelle"
+
+msgid "Stop Editing and Apply Value"
+msgstr "Editieren stoppen und Wert übernehmen"
+
+msgid "Superscript/Subscript on Selected Text"
+msgstr "Hochgestellt/Tiefgestellt auf markiertem Text"
+
+msgid "Toggle Bold/Italic on Selected Text"
+msgstr "Fett / kursiv für markierten Text umschalten"
+
+msgid "Toggle Format Panel"
+msgstr "Formatierung ein-/ausblenden"
+
+msgid "Toggle grid"
+msgstr "Gitter umschalten"
+
+msgid "Toggle Layers Window"
+msgstr "Ebenen ein-/ausblenden"
+
+msgid "Toggle Outline Window"
+msgstr "Übersicht ein-/ausblenden"
+
+msgid "Toggle Selection State"
+msgstr "Zur Auswahl hinzufügen oder<br />aus der Auswahl entfernen"
+
+msgid "Toggle Underline on Selected Text"
+msgstr "Hinzufügen/Entfernen von Unterstreichungen"
+
+msgid "Turn / Rotate 90° Clockwise"
+msgstr "Drehen um 90° im Uhrzeigersinn"
+
+msgid "Undo"
+msgstr "Rückgängig machen"
+
+msgid "Ungroup"
+msgstr "Gruppierung aufheben"
+
+msgid "Zoom In"
+msgstr "Vergrößern"
+
+msgid "Zoom Out"
+msgstr "Verkleinern"

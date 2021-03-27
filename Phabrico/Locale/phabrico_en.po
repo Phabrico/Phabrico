@@ -1,0 +1,1024 @@
+﻿# English translations
+
+# general
+msgid "Phabrico"
+msgstr "Phabrico"
+
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"
+
+msgid "Button-AccessKey-Yes"
+msgstr "Y"
+
+msgid "Button-AccessKey-No"
+msgstr "N"
+
+msgid "Undo"
+msgstr "Undo"
+
+msgid "EmptyParameter"
+msgstr "(none)"
+
+msgid "No projects assigned"
+msgstr "(none)"
+
+msgid "No users assigned"
+msgstr "(none)"
+
+msgid "ERROR"
+msgstr "ERROR"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+# login dialog
+msgid "Username"
+msgstr "Username"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Log In"
+msgstr "Log In"
+
+msgid "Invalid"
+msgstr "Invalid"
+
+msgid "Search"
+msgstr "Search"
+
+msgid "Username or password are incorrect."
+msgstr "Username or password are incorrect."
+
+msgid "Create New User"
+msgstr "Create New User"
+
+msgid "Verify Password"
+msgstr "Verify Password"
+
+msgid "Create User"
+msgstr "Create User"
+
+# home page
+msgid "Change language"
+msgstr "Change language"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Change password"
+msgstr "Change password"
+
+msgid "Current password"
+msgstr "Current password"
+
+msgid "New password"
+msgstr "New password"
+
+msgid "Verify new password"
+msgstr "Verify new password"
+
+msgid "Password is incorrect."
+msgstr "Password is incorrect."
+
+msgid "Password should contain at least 1 punctuation character"
+msgstr "Password should contain at least 1 punctuation character"
+
+msgid "The passwords entered do not match"
+msgstr "The passwords entered do not match"
+
+msgid "Password should contain at least 1 number"
+msgstr "Password should contain at least 1 number"
+
+msgid "Password should contain at least 1 lowercase letter"
+msgstr "Password should contain at least 1 lowercase letter"
+
+msgid "Password should contain at least 1 capital letter"
+msgstr "Password should contain at least 1 capital letter"
+
+msgid "Password should be at least 12 characters long"
+msgstr "Password should be at least 12 characters long"
+
+msgid "Log out"
+msgstr "Log out"
+
+msgid "Synchronizing"
+msgstr "Synchronizing"
+
+msgid "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
+msgstr "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
+
+msgid "There are local [b]@@NBR-CHANGES@@ modifications[/b] ready to be uploaded the Phabricator server."
+msgstr "There are local [b]@@NBR-CHANGES@@ modifications[/b] ready to be uploaded the Phabricator server."
+
+msgid "@@FILE@@ uploaded..."
+msgstr "@@FILE@@ uploaded..."
+
+msgid "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
+msgstr "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
+
+msgid "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
+msgstr "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
+
+msgid "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
+msgstr "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
+
+msgid "Favorites"
+msgstr "Favorites"
+
+msgid "General Overview"
+msgstr "General Overview"
+
+msgid "Phabrico Version:"
+msgstr "Phabrico Version:"
+
+msgid "Phabrico Build date:"
+msgstr "Phabrico Build date:"
+
+msgid "Last synchronized with Phabricator at:"
+msgstr "Last synchronized with Phabricator at:"
+
+msgid "Phabrico Database Location:"
+msgstr "Phabrico Database Location:"
+
+msgid "Phabrico Database size:"
+msgstr "Phabrico Database size:"
+
+msgid "Remote access:"
+msgstr "Remote access:"
+
+msgid "Enabled"
+msgstr "Enabled"
+
+msgid "Disabled"
+msgstr "Disabled"
+
+msgid "Number of Phriction documents:"
+msgstr "Number of Phriction documents:"
+
+msgid "Number of Maniphest tasks:"
+msgstr "Number of Maniphest tasks:"
+
+msgid "Number of Projects:"
+msgstr "Number of Projects:"
+
+msgid "Number of Users:"
+msgstr "Number of Users:"
+
+msgid "Number of File objects:"
+msgstr "Number of File objects:"
+
+msgid "Number of uncommitted objects:"
+msgstr "Number of uncommitted objects:"
+
+msgid "Number of frozen objects:"
+msgstr "Number of frozen objects:"
+
+msgid "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+msgstr "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+
+# main menu navigator
+msgid "Maniphest"
+msgstr "Maniphest"
+
+msgid "Tasks and Bugs"
+msgstr "Tasks and Bugs"
+
+msgid "Phriction"
+msgstr "Phriction"
+
+msgid "Wiki Documents"
+msgstr "Wiki Documents"
+
+msgid "Projects"
+msgstr "Projects"
+
+msgid "Projects to be synchronized"
+msgstr "Projects to be synchronized"
+
+msgid "Users"
+msgstr "Users"
+
+msgid "User accounts to be synchronized"
+msgstr "User accounts to be synchronized"
+
+msgid "File objects"
+msgstr "File objects"
+
+msgid "Referenced file objects"
+msgstr "Referenced file objects"
+
+msgid "Config"
+msgstr "Config"
+
+msgid "Configure Phabrico"
+msgstr "Configure Phabrico"
+
+msgid "Offline changes"
+msgstr "Offline changes"
+
+msgid "View local changes"
+msgstr "View local changes"
+
+msgid "Synchronize"
+msgstr "Synchronize"
+
+# Synchronization
+msgid "No new data dowloaded from Phabricator"
+msgstr "No new data dowloaded from Phabricator"
+
+msgid "Latest synchronized data"
+msgstr "Latest synchronized data"
+
+msgid "View changes"
+msgstr "View changes"
+
+msgid "Current version"
+msgstr "Current version"
+
+msgid "Previous version"
+msgstr "Previous version"
+
+msgid "Overview latest synchronization"
+msgstr "Overview latest synchronization"
+
+msgid "Difference between previous and current version of @@SYNCHRONIZED-ITEM@@"
+msgstr "Difference between previous and current version of @@SYNCHRONIZED-ITEM@@"
+
+msgid "Synchronization.Status.NotYetSynchronized"
+msgstr "Not yet"
+
+msgid "Synchronization.Status.Initializing"
+msgstr "Initializing...";
+
+msgid "Synchronization.Status.ConnectingToPhabricatorServer"
+msgstr "Connecting to @@PHABRICATOR-SERVER@@...";
+
+msgid "Synchronization.Status.PreparingDownloadManiphestData"
+msgstr "Preparing download Maniphest data..."
+
+msgid "Synchronization.Status.DownloadingManiphestData"
+msgstr "Downloading Maniphest data..."
+
+msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
+msgstr "Loading Maniphest priority and state info..."
+
+msgid "Synchronization.Status.DownloadingPhrictionData"
+msgstr "Downloading Phriction data..."
+
+msgid "Synchronization.Status.DownloadingProjects"
+msgstr "Downloading Projects..."
+
+msgid "Synchronization.Status.DownloadingUsers"
+msgstr "Downloading Users..."
+
+msgid "Synchronization.Status.LoadingAccountInfo"
+msgstr "Loading account info..."
+
+msgid "Synchronization.Status.LoadingMacroData"
+msgstr "Loading Macro data..."
+
+msgid "Synchronization.Status.LoadingFileObjects"
+msgstr "Loading File objects..."
+
+msgid "Synchronization.Status.UploadingManiphestData"
+msgstr "Uploading Maniphest tasks..."
+
+msgid "Synchronization.Status.UploadingPhrictionData"
+msgstr "Uploading Phriction documents..."
+
+msgid "Synchronization.Status.UploadingCommentsAndTransactions"
+msgstr "Uploading comments and transactions..."
+
+msgid "Synchronization.Status.CleaningUp"
+msgstr "Cleaning up old data..."
+
+msgid "Synchronization.Status.CleaningUp.Phriction"
+msgstr "Deleting old Phriction Documents"
+
+msgid "Synchronization.Status.CleaningUp.Maniphest"
+msgstr "Deleting old Maniphest tasks"
+
+msgid "Synchronization.Status.CleaningUp.UnreferencedFiles"
+msgstr "Deleting unreferenced file objects"
+
+msgid "Synchronization.Status.Finishing"
+msgstr "Finishing...";
+
+msgid "Synchronization.Status.Failed"
+msgstr "Failed";
+
+# Maniphest
+msgid "Create Task"
+msgstr "Create Task"
+
+msgid "Assigned"
+msgstr "Assigned"
+
+msgid "Open Tasks"
+msgstr "Open Tasks"
+
+msgid "Per User"
+msgstr "Per User"
+
+msgid "Per Project"
+msgstr "Per Project"
+
+msgid "Authored"
+msgstr "Authored"
+
+msgid "Subscribed"
+msgstr "Subscribed"
+
+msgid "Queries"
+msgstr "Queries"
+
+msgid "No tasks found"
+msgstr "No tasks found"
+
+msgid "Change Subscribers"
+msgstr "Change Subscribers"
+
+msgid "Change Status"
+msgstr "Change Status"
+
+msgid "Change Project Tags"
+msgstr "Change Project Tags"
+
+msgid "Change Priority"
+msgstr "Change Priority"
+
+msgid "Assign / Claim"
+msgstr "Assign / Claim"
+
+msgid "Authored By"
+msgstr "Authored By"
+
+msgid "Assigned To"
+msgstr "Assigned To"
+
+msgid "Edit Task"
+msgstr "Edit Task"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Priority"
+msgstr "Priority"
+
+msgid "First"
+msgstr "First"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Next"
+msgstr "Next"
+
+msgid "Type a user or project name..."
+msgstr "Type a user or project name..."
+
+msgid "Type a project name..."
+msgstr "Type a project name..."
+
+msgid "Type a username..."
+msgstr "Type a username..."
+
+msgid "@@COMMENT-AUTHOR@@ added a comment."
+msgstr "@@COMMENT-AUTHOR@@ added a comment."
+
+msgid "@@PERSON@@ marked this task as @@STATE@@"
+msgstr "@@PERSON@@ marked this task as @@STATE@@"
+
+msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
+msgstr "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
+
+msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
+msgstr "@@PERSON@@ ha añadido a @@PERSONS@@ como supervisores"
+
+msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
+msgstr "@@PERSON1@@ assigned the task to @@PERSON2@@"
+
+msgid "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
+msgstr "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
+
+msgid "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
+msgstr "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
+
+msgid "@@PERSON@@ changed the task priority to @@PRIORITY@@"
+msgstr "@@PERSON@@ changed the task priority to @@PRIORITY@@"
+
+msgid "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
+msgstr "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
+
+msgid "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
+msgstr "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
+
+msgid "and"
+msgstr "and"
+
+msgid "ManiphestPriority.Unbreak Now!"
+msgstr "Unbreak Now!"
+
+msgid "ManiphestPriority.Needs Triage"
+msgstr "Needs Triage"
+
+msgid "ManiphestPriority.High"
+msgstr "High"
+
+msgid "ManiphestPriority.Normal"
+msgstr "Normal"
+
+msgid "ManiphestPriority.Low"
+msgstr "Low"
+
+msgid "ManiphestPriority.Wishlist"
+msgstr "Wishlist"
+
+msgid "ManiphestStatus.Closed"
+msgstr "Closed"
+
+msgid "ManiphestStatus.Duplicate"
+msgstr "Duplicate"
+
+msgid "ManiphestStatus.Invalid"
+msgstr "Invalid"
+
+msgid "ManiphestStatus.On hold"
+msgstr "On hold"
+
+msgid "ManiphestStatus.Ongoing"
+msgstr "Ongoing"
+
+msgid "ManiphestStatus.Open"
+msgstr "Open"
+
+msgid "ManiphestStatus.Planned"
+msgstr "Planned"
+
+msgid "ManiphestStatus.Programmed"
+msgstr "Programmed"
+
+msgid "ManiphestStatus.Resolved"
+msgstr "Resolved"
+
+msgid "ManiphestStatus.Spite"
+msgstr "Spite"
+
+msgid "ManiphestStatus.To be QAd"
+msgstr "To be QAd"
+
+msgid "ManiphestStatus.Wontfix"
+msgstr "Wontfix"
+
+# Phriction
+msgid "Subscribers"
+msgstr "Subscribers"
+
+msgid "Subscribe"
+msgstr "Subscribe"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "Last modified at"
+msgstr "Last modified at"
+
+msgid "Last modified by"
+msgstr "Last modified by"
+
+msgid "Printable Page"
+msgstr "Printable Page"
+
+msgid "Add to favorites"
+msgstr "Add to favorites"
+
+msgid "Remove from favorites"
+msgstr "Remove from favorites"
+
+msgid "Dismiss local changes"
+msgstr "Dismiss local changes"
+
+msgid "Contents"
+msgstr "Contents"
+
+msgid "New Document"
+msgstr "New Document"
+
+msgid "Document Hierarchy"
+msgstr "Document Hierarchy"
+
+msgid "Edit Document"
+msgstr "Edit Document"
+
+msgid "Save Changes"
+msgstr "Save Changes"
+
+msgid "Title"
+msgstr "Title"
+
+msgid "Title already exists"
+msgstr "Title already exists"
+
+msgid "Type a title..."
+msgstr "Type a title..."
+
+msgid "Create this Document"
+msgstr "Create this Document"
+
+msgid "There is no document here, but you may create it."
+msgstr "There is no document here, but you may create it."
+
+msgid "No Document Here"
+msgstr "No Document Here"
+
+msgid "Page Not Found"
+msgstr "Page Not Found"
+
+msgid "This newly created page hasn't been uploaded yet to the Phabricator server"
+msgstr "This newly created page hasn't been uploaded yet to the Phabricator server"
+
+msgid "This modified page hasn't been uploaded yet to the Phabricator server"
+msgstr "This modified page hasn't been uploaded yet to the Phabricator server"
+
+msgid "One moment please..."
+msgstr "One moment please..."
+
+msgid "References"
+msgstr "References"
+
+msgid "Show references"
+msgstr "Show references"
+
+# Projects & Users
+msgid "Project"
+msgstr "Project"
+
+msgid "User"
+msgstr "User"
+
+msgid "Disallow"
+msgstr "Disallow"
+
+msgid "Select"
+msgstr "Select"
+
+msgid "Unselect"
+msgstr "Unselect"
+
+msgid "Show all projects"
+msgstr "Show all projects"
+
+msgid "Show selected projects"
+msgstr "Show selected projects"
+
+msgid "Disallow all projects"
+msgstr "Disallow all projects"
+
+msgid "Unselect all projects"
+msgstr "Unselect all projects"
+
+msgid "Select all projects"
+msgstr "Select all projects"
+
+msgid "Unselect all users"
+msgstr "Unselect all users"
+
+msgid "Select all users"
+msgstr "Select all users"
+
+msgid "Show all users"
+msgstr "Show all users"
+
+msgid "Show selected users"
+msgstr "Show selected users"
+
+msgid "Set color"
+msgstr "Set color"
+
+msgid "Set project tag color"
+msgstr "Set project tag color"
+
+msgid "Set color for all shown project tags"
+msgstr "Set color for all shown project tags"
+
+# File objects
+msgid "Type"
+msgstr "Type"
+
+msgid "Size"
+msgstr "Size"
+
+msgid "Number of references"
+msgstr "Number of references"
+
+msgid "File name"
+msgstr "File name"
+
+msgid "File object"
+msgstr "File object"
+
+msgid "Type some text to filter the list of file objects..."
+msgstr "Type some text to filter the list of file objects..."
+
+# Config
+msgid "Phabricator"
+msgstr "Phabricator"
+
+msgid "UI Controls"
+msgstr "UI Controls"
+
+msgid "General"
+msgstr "General"
+
+msgid "Enter the URL of your Phabricator server:"
+msgstr "Enter the URL of your Phabricator server:"
+
+msgid "Phabricator URL"
+msgstr "Phabricator URL"
+
+msgid "Enter the Conduit API Token for your Phabricator account:"
+msgstr "Enter the Conduit API Token for your Phabricator account:"
+
+msgid "Conduit API Token"
+msgstr "Conduit API Token"
+
+msgid "Choose the synchronization method for Maniphest tasks:"
+msgstr "Choose the synchronization method for Maniphest tasks:"
+
+msgid "Synchronize Maniphest tasks for"
+msgstr "Synchronize Maniphest tasks for"
+
+msgid "Selected users only"
+msgstr "Selected users only"
+
+msgid "Choose the default state for new or modified Maniphest tasks:"
+msgstr "Choose the default state for new or modified Maniphest tasks:"
+
+msgid "Mark new/modified Maniphest tasks as"
+msgstr "Mark new/modified Maniphest tasks as"
+
+msgid "Delete closed Maniphest tasks from Phabrico older than:"
+msgstr "Delete closed Maniphest tasks from Phabrico older than:"
+
+msgid "Maximum lifetime closed Maniphest tasks"
+msgstr "Maximum lifetime closed Maniphest tasks"
+
+msgid "1 day"
+msgstr "1 day"
+
+msgid "1 week"
+msgstr "1 week"
+
+msgid "2 weeks"
+msgstr "2 weeks"
+
+msgid "1 month"
+msgstr "1 month"
+
+msgid "3 months"
+msgstr "3 months"
+
+msgid "6 months"
+msgstr "6 months"
+
+msgid "1 year"
+msgstr "1 year"
+
+msgid "10 years"
+msgstr "10 years"
+
+msgid "Choose the synchronization method for Phriction documents:"
+msgstr "Choose the synchronization method for Phriction documents:"
+
+msgid "Synchronize Phriction documents for"
+msgstr "Synchronize Phriction documents for"
+
+msgid "All projects"
+msgstr "All projects"
+
+msgid "Selected projects only"
+msgstr "Selected projects only"
+
+msgid "Selected projects only including document tree"
+msgstr "Selected projects only including document tree"
+
+msgid "Selected projects combined"
+msgstr "Selected projects combined"
+
+msgid "Selected projects combined including document tree"
+msgstr "Selected projects combined including document tree"
+
+msgid "Choose the default state for new or modified Phriction documents:"
+msgstr "Choose the default state for new or modified Phriction documents:"
+
+msgid "Mark new/modified Phriction documents as"
+msgstr "Mark new/modified Phriction documents as"
+
+msgid "Add information about the Phriction document in the action menu on the right"
+msgstr "Add information about the Phriction document in the action menu on the right"
+
+msgid "Show Phriction metadata"
+msgstr "Show Phriction metadata"
+
+msgid "Download project tags and subcribers for all Phriction documents"
+msgstr "Download project tags and subcribers for all Phriction documents"
+
+msgid "Force download all Phriction metadata"
+msgstr "Force download all Phriction metadata"
+
+msgid "Frozen: local modifications will not be uploaded during synchronization"
+msgstr "Frozen: local modifications will not be uploaded during synchronization"
+
+msgid "Unfrozen: local modifications will be uploaded during synchronization"
+msgstr "Unfrozen: local modifications will be uploaded during synchronization"
+
+msgid "Add Copy button:"
+msgstr "Add Copy button:"
+
+msgid "Add Copy-to-clipboard button to code blocks:"
+msgstr "Add Copy-to-clipboard button to code blocks:"
+
+msgid "Use dynamic coloring for project tags:"
+msgstr "Use dynamic coloring for project tags:"
+
+msgid "Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:"
+msgstr "Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:"
+
+msgid "Translate notification block titles:"
+msgstr "Translate notification block titles:"
+
+msgid "Generate a separate color for each project tag shown:"
+msgstr "Generate a separate color for each project tag shown:"
+
+msgid "Confidential Table Headers"
+msgstr "Confidential Table Headers"
+
+msgid "Confidential Table Header"
+msgstr "Confidential Table Header"
+
+msgid "Enter the text of table row/column headers which should only be visible when you move the mouse over it:"
+msgstr "Enter the text of table row/column headers which should only be visible when you move the mouse over it:"
+
+msgid "Add Confidential Table Header"
+msgstr "Add Confidential Table Header"
+
+msgid "Auto log on"
+msgstr "Auto log on"
+
+msgid "Allow to log on automatically but disable synchronization and configuration"
+msgstr "Allow to log on automatically but disable synchronization and configuration"
+
+msgid "Remove"
+msgstr "Remove"
+
+msgid "WARNING: this will create a security risk by storing the encryption key in the Phabrico database"
+msgstr "WARNING: this will create a security risk by storing the encryption key in the Phabrico database"
+
+msgid "Maximum Duration of Inactivity"
+msgstr "Maximum Duration of Inactivity"
+
+msgid "Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)"
+msgstr "Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)"
+
+msgid "Theme"
+msgstr "Theme"
+
+msgid "Choose the color theme you want to use:"
+msgstr "Choose the color theme you want to use:"
+
+msgid "Light"
+msgstr "Light"
+
+msgid "Dark"
+msgstr "Dark"
+
+msgid "Darken light images"
+msgstr "Darken light images"
+
+msgid "Moderate"
+msgstr "Moderate"
+
+msgid "Extreme"
+msgstr "Extreme"
+
+msgid "Getting started with Phabrico"
+msgstr "Getting started with Phabrico"
+
+msgid "In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator."
+msgstr "In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator."
+
+msgid "Which Phabricator accounts should be monitored ?"
+msgstr "Which Phabricator accounts should be monitored ?"
+
+msgid "In this Users screen, you can select for which Phabricator users you want to have your data always available."
+msgstr "In this Users screen, you can select for which Phabricator users you want to have your data always available."
+
+msgid "Currently, only your Phabricator account is selected."
+msgstr "Currently, only your Phabricator account is selected."
+
+msgid "Which Phabricator projects should be monitored ?"
+msgstr "Which Phabricator projects should be monitored ?"
+
+msgid "In this Projects screen, you can select for which Phabricator projects you want to have your data always available."
+msgstr "In this Projects screen, you can select for which Phabricator projects you want to have your data always available."
+
+msgid "You can here also change the colors of the project tags."
+msgstr "You can here also change the colors of the project tags."
+
+msgid "In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...)."
+msgstr "In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...)."
+
+msgid "Click on the Synchronize button to download all requested data from Phabricator"
+msgstr "Click on the Synchronize button to download all requested data from Phabricator"
+
+# Offline changes
+msgid "Offline changes for @@STAGED-ITEM@@"
+msgstr "Local changes for @@STAGED-ITEM@@"
+
+msgid "Overview offline changes"
+msgstr "Overview local changes"
+
+msgid "Dismiss local version"
+msgstr "Dismiss local version"
+
+msgid "Save local version"
+msgstr "Save local version"
+
+msgid "Phabricator version"
+msgstr "Phabricator version"
+
+msgid "Local version"
+msgstr "Local version"
+
+msgid "Are you sure you want to dismiss all your local changes for this document ?"
+msgstr "Are you sure you want to dismiss all your local changes for this document ?"
+
+msgid "Modification"
+msgstr "Modification"
+
+msgid "Content"
+msgstr "Content"
+
+msgid "Freeze"
+msgstr "Freeze"
+
+msgid "Unfreeze"
+msgstr "Unfreeze"
+
+msgid "No offline changes found"
+msgstr "No offline changes found"
+
+msgid "Are you sure you want to undo this local change ?"
+msgstr "Are you sure you want to undo this local change ?"
+
+msgid "(New)"
+msgstr "(New)"
+
+msgid "(Metadata modified)"
+msgstr "(Metadata modified)"
+
+msgid "(Priority modified)"
+msgstr "(Priority modified)"
+
+msgid "(Owner modified)"
+msgstr "(Owner modified)"
+
+msgid "(Status modified)"
+msgstr "(Status modified)"
+
+msgid "Project @@PROJECT@@ tagged"
+msgstr "Project @@PROJECT@@ tagged"
+
+msgid "Subscriber @@SUBSCRIBER@@ added"
+msgstr "Subscriber @@SUBSCRIBER@@ added"
+
+msgid "Append left line after right line"
+msgstr "Append left line after right line"
+
+msgid "Append left block after right block"
+msgstr "Append left block after right block"
+
+msgid "Insert left line before right line"
+msgstr "Insert left line before right line"
+
+msgid "Insert left block before right block"
+msgstr "Insert left block before right block"
+
+msgid "Replace right line with left line"
+msgstr "Replace right line with left line"
+
+msgid "Replace right block with left block"
+msgstr "Replace right block with left block"
+
+msgid "The Phabricator server contains a newer version"
+msgstr "The Phabricator server contains a newer version"
+
+msgid "Frozen"
+msgstr "Frozen"
+
+msgid "Modified"
+msgstr "Modified"
+
+# Remarkup editor
+msgid "Bold"
+msgstr "Bold"
+
+msgid "Bold text"
+msgstr "Bold text"
+
+msgid "Italic"
+msgstr "Italic"
+
+msgid "Italic text"
+msgstr "Italic text"
+
+msgid "Monospaced"
+msgstr "Monospaced"
+
+msgid "Monospaced text"
+msgstr "Monospaced text"
+
+msgid "Bulleted List"
+msgstr "Bulleted List"
+
+msgid "Numbered List"
+msgstr "Numbered List"
+
+msgid "Code Block"
+msgstr "Code Block"
+
+msgid "Quote"
+msgstr "Quote"
+
+msgid "Table"
+msgstr "Table"
+
+msgid "Help"
+msgstr "Help"
+
+msgid "Set Sail for Adventure"
+msgstr "Set Sail for Adventure"
+
+msgid "Add Action..."
+msgstr "Add Action..."
+
+msgid "CodeBlock.Copy"
+msgstr "Copy"
+
+msgid "Notification.IMPORTANT"
+msgstr "IMPORTANT"
+
+msgid "Notification.NOTE"
+msgstr "NOTE"
+
+msgid "Notification.WARNING"
+msgstr "WARNING"
+
+msgid "FileReference.Download"
+msgstr "Download"
+
+# Browser not supported
+msgid "Browser not supported"
+msgstr "Browser not supported"
+
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access Phabrico"
+msgstr "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access Phabrico"
+
+# URL Not Found
+msgid "404"
+msgstr "404"
+
+msgid "Url not found:"
+msgstr "Url not found:"
+
+msgid "Show content in Phabricator instead"
+msgstr "Show content in Phabricator instead"
+
+# Access denied
+msgid "ACCESS DENIED"
+msgstr "ACCESS DENIED"
+
+msgid "Details:"
+msgstr "Details:"
+
+msgid "URL:"
+msgstr "URL:"
+
+msgid "Comment:"
+msgstr "Comment:"
+
+msgid "You don't have sufficient rights to configure Phabrico"
+msgstr "You don't have sufficient rights to configure Phabrico"
+
+msgid "You don't have sufficient rights to synchronize Phabrico with Phabricator"
+msgstr "You don't have sufficient rights to synchronize Phabrico with Phabricator"
+
+msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
+msgstr "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."

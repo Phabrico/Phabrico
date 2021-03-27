@@ -1,0 +1,636 @@
+﻿= Remarkup Syntax-Referenz =
+
+Phabrico verwendet eine leichtgewichtige Auszeichnungssprache namens "Remarkup", ähnlich wie andere leichtgewichtige Auszeichnungssprachen wie Markdown und Wiki-Markup.
+
+Dieses Dokument beschreibt, wie Sie Text mit Remarkup formatieren können.
+
+= Schnellreferenz =
+
+Die gesamte Syntax wird weiter unten ausführlicher erklärt, aber dies ist eine kurze Anleitung zum Formatieren von Text in Remarkup.
+
+Dies sind Inline-Stile, die auf den meisten Text angewendet werden können:
+```
+**Fettdruck** //Kursiv// `einzeilig` ##einzeilig## ~~durchgestrichen~~ __unterstrichen__
+!!markiert!!
+T123                    # Link zu einer Aufgabe
+{T123}                  # Link zu einer Aufgabe (mit Titel)
+{F123}                  # Bilder einfügen
+@Benutzername           # Benennen eines Benutzers
+# Projekt               # Eind Projekt benennen
+[[Wikiseite]]           # Link zu einem Wiki-Dokument
+[[Wikiseite | Name]]    # Link zu einem Wiki-Dokument (mit Titel)
+http://xyz/             # Link zu einer Website
+[[http://xyz/ | name]]  # Link zu einer Website (mit Titel)
+[Name](http://xyz/)     # Link zu einer Website (mit Titel)
+```
+Es handelt sich dabei um Blockstile, die vom umgebenden Text getrennt werden müssen durch Leerzeilen:
+```
+= Große Kopfzeile =
+
+== Kleinere Kopfzeile ==
+
+## Dies ist auch eine Kopfzeile
+
+Auch eine große Kopfzeile
+=========================
+
+Auch eine kleinere Kopfzeile
+----------------------------
+
+> Zitierter Text
+
+Verwenden Sie `-` oder `*` für Aufzählungszeichen und `#` für nummerierte Listen.
+Verwenden Sie ``` oder beginnen Sie die Zeile mit zwei Leerzeichen, um Codeblocks zu erzeugen.
+Verwenden Sie %%% für einen Textblock.
+Verwendung | ... | ... für Tabellen.
+```
+
+= Basic Styling =
+
+im Format **Basistextstile** wie folgt:
+```
+**Fettgedruckter Text**
+//Kursiver Text//
+`Text mit einseitigem Abstand`
+##Text mit einseitigem Abstand##
+~~entfernter Text~~
+__Text unterstreichen__
+!!Markierter  Text!!
+```
+
+Dies führt zu folgendem Ergebnis: **Fettgedruckter Text**, //Kursiver Text//
+`Text mit einseitigem Abstand`, ##Text mit einseitigem Abstand##, ~~entfernter Text~~
+__Text unterstreichen__, !!Markierter  Text!!
+
+
+= Layout =
+
+Machen Sie **Überschriften** wie diese:
+```
+= Großer Titel =
+
+== Kleinerer Titel ==
+
+===== Sehr kleiner Titel =====
+
+Alternativ großer Titel
+=======================
+
+Alternativ kleinerer Titel
+--------------------------
+```
+
+Sie können die Zeichen `=` und `-` weglassen.
+Diese 2 Header erzeugen die gleiche Ausgabe:
+
+```
+== Kleinere Kopfzeile ==
+
+== Kleinere Kopfzeile
+```
+
+Dies erzeugt Kopfzeilen wie die in diesem Dokument.
+Achten Sie darauf, dass vor und hinter der Kopfzeile eine Leerzeile steht.
+
+Listen
+=======
+
+Erstellen Sie **Listen**, indem Sie jedes Element mit einem `-` oder einem `*` beginnen:
+```
+lang=text
+- Milch
+- Eier
+- Brot
+
+* Ente
+* Ente
+* Gans
+```
+
+Dies erzeugt die folgende Ausgabe:
+
+- Milch
+- Eier
+- Brot
+
+* Ente
+* Ente
+* Gans
+
+(Beachten Sie, dass Sie nach jedem `-` oder `*` Zeichen ein Leerzeichen einfügen müssen)
+
+Sie können eine numerische Liste erstellen, indem Sie `#` anstelle von `-` oder `*` verwenden:
+
+# Kaufen Sie das Produkt
+# Erweitern Sie das Produkt
+# Verkaufen Sie das Produkt mit großem Gewinn zurück
+
+Numerische Listen können auch mit `1.` oder `1)` erstellt werden. Wenn Sie eine
+Nummer ungleich `1` wählt, dann beginnt die Liste ab dieser Nummer.
+Zum Beispiel:
+
+```
+200) OK
+201) Erstellt
+202) Genehmigt
+```
+
+...erzeugt den nächsten Ausgang:
+
+200) OK
+201) Erstellt
+202) Genehmigt
+
+Sie können verschachtelte Listen erstellen:
+
+```
+- Körper
+  - Kopf
+  - Arm
+    - Ellbogen
+    - Hand
+      # Daumen
+      # Zeigefinger
+      # Mittelfinger
+      # Ringfinger
+      # Kleine Finger
+  - Bein
+    - Knie
+    - Fuß
+```
+
+...erzeugt folgendes:
+
+- Körper
+  - Kopf
+  - Arm
+    - Ellbogen
+    - Hand
+      # Daumen
+      # Zeigefinger
+      # Mittelfinger
+      # Ringfinger
+      # Kleine Finger
+  - Bein
+    - Knie
+    - Fuß
+
+Falls gewünscht, kann die Liste durch Wiederholung der gleichen Zeichen
+eingerückt werden, um die Einrücktiefe anzuzeigen:
+Zum Beispiel:
+
+```
+- Baum
+-- Ast
+--- Twig
+```
+
+Dies führt zu folgendem Ergebnis:
+
+- Baum
+-- Ast
+--- Twig
+
+Sie können die Kontrollkästchen zu den Elementen hinzufügen, indem Sie ihnen
+z. B. `[ ]` oder `[X]` voranstellen:
+
+```
+- [X] Heizen Sie den Ofen auf 450 Grad vor.
+- [ ] Schälen Sie 35 Zitronen.
+```
+
+Dies erzeugt das folgende Ergebnis:
+
+- [X] Heizen Sie den Ofen auf 450 Grad vor.
+- [ ] Schälen Sie 35 Zitronen.
+
+Sie können **Codeblöcke** erstellen, indem Sie jeder Zeile 2 Leerzeichen voranstellen:
+
+  f(x, y);
+
+Sie können aber auch 3 Backticks (oder Gravis-Akzent) am Anfang und am Ende des Codeblocks hinzufügen:
+
+```
+f(x, y);
+g(f);
+```
+
+Sie können eine Sprache angeben, um die Syntax mit `lang=xxx` anzuzeigen:
+  lang=text
+  lang=html
+  <a href="#">...</a>
+
+Dadurch wird der Codeblock entsprechend der Syntax der angegebenen Sprache eingefärbt, sofern vorhanden:
+  lang=html
+  <a href="#">...</a>
+
+Sie können auch einen `COUNTEREXAMPLE`-Header hinzufügen, um darauf hinzuweisen, dass der Codeblock
+nicht korrekt ist und nicht kopiert werden sollte:
+  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Dies führt zu folgendem Ergebnis:
+
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Mit Hilfe von `lines=N` können Sie die Höhe des Codeblocks bestimmen.
+Mit `name=some_name.ext` können Sie dem Codeblock einen Namen geben:
+
+  lang=text
+  lang=html, name=Beispiel.html, lines=4, counterexample
+  <p>Apfel</p>
+  <p>Abricoos</p>
+  <p>Avocado</p>
+  <p>Banane</p>
+  <p>Bosse</p>
+  <p>Weintraube</p>
+
+...produziert dies:
+
+  lang=html, name=voorbeeld.html, lines=4, counterexample
+  <p>Apfel</p>
+  <p>Abricoos</p>
+  <p>Avocado</p>
+  <p>Banane</p>
+  <p>Bosse</p>
+  <p>Weintraube</p>
+
+
+Sie können die Elemente `NOTE:`, `WARNING:` oder `IMPORTANT:` verwenden, um
+die Aufmerksamkeit auf einen wichtigen Gedanken zu lenken.
+
+Zum Beispiel:
+
+```
+NOTE: Halten Sie regelmäßige Meetings ab, um Ihre Mitarbeiter wach zu halten.
+```
+
+...erzeugt folgendes:
+
+NOTE: Halten Sie regelmäßige Meetings ab, um Ihre Mitarbeiter wach zu halten.
+
+Die Verwendung von `WARNING:` oder `IMPORTANT:` ändert die Farbe des Hinweises:
+
+WARNING: Zu viele Meetings können einschläfernd wirken
+
+IMPORTANT: Nehmen Sie nicht an zu vielen Meetings teil.
+
+
+Sie können auch `(NOTE)`, `(WARNING)`, oder `(IMPORTANT)` verwenden.
+um den gleichen Effekt zu erzielen, aber ohne `(NOTE)`, `(WARNING)` oder
+`(IMPORTANT)` im angezeigten Ergebnis anzuzeigen. In diesem Aufruf wird zum
+Beispiel `(NOTE)` verwendet:
+
+(NOTE) Nehmen Sie nicht an zu wenigen Meetings teil.
+
+
+Horizontale Linien
+==================
+
+Sie können Abschnitte unterteilen, indem Sie selbst drei oder mehr Striche in eine
+Zeile setzen. Dies erzeugt eine Trennlinie oder eine horizontale Linie, die wie eine
+`<hr />`-Beschriftung aussieht, wie diese hier:
+
+---
+
+Die Bindestriche müssen in einer eigenen Zeile stehen und von anderen Inhalten getrennt sein.
+Wie zum Beispiel hier
+
+```
+Dieses Segment wird visuell getrennt.
+
+---
+
+Wo wir gerade von etwas ganz anderem sprechen...
+```
+
+= Hyperlinks =
+
+URIs werden automatisch angezeigt: http://phabricator.org/
+
+Wenn Sie einen URI mit problematischen Zeichen darin haben, wie z. B. "http://comma.org/,`"
+können Sie mit kleineren als und größeren als Zeichen umgeben:
+```
+<http://comma.org/,>
+```
+
+Dadurch wird der Parser gezwungen, den gesamten URI zu verbrauchen: <http://comma.org/,>
+
+Sie können auch die Erstellung von benannten Hyperlinks verwenden, indem Sie die Text bestimmt:
+```
+[http://www.boring-legal-documents.com/ | Spannende Rechtsdokumente]]
+```
+
+Hyperlinks im Markdown-Stil werden ebenfalls unterstützt:
+```
+[Toil](http://www.trouble.com)
+```
+
+= Objektreferenzen =
+
+Sie können Verknüpfungen zu Phabricator-Objekten, wie z. B. einer Maniphest-Aufgabe, erstellen, indem Sie deren Namen erwähnen:
+```
+T123 # Link zur Maniphest-Aufgabe T123
+```
+
+= Objekte integrieren
+
+Auf einige Objekte (z. B. Maniphest-Aufgaben) können Sie auch mit Hilfe von geschweiften Klammern durch ihren Namen verweisen:
+```
+{T123} # Link zur Maniphest-Aufgabe T123 mit dem Titel der Aufgabe
+```
+
+Diese Referenzen zeigen auch an, wenn ein Objekt seinen Status ändert (z. B. wenn ein Task oder eine Revision abgeschlossen wurde). 
+
+== Referenzen zu Projekten
+
+Auf Projekte kann mit einem Hashtag `#` verwiesen werden. 
+Dies funktioniert standardmäßig mit dem Namen des Projekts (Kleinbuchstaben, unterstrichen).
+Darüber hinaus können Sie mehrere zusätzliche Hashtags setzen, indem Sie die Projektdetails in Phabricator bearbeiten.
+```
+#qa, #qualitätssicherung
+```
+
+== Bilder oder Dateien einbinden
+
+Sie können ein Bild oder eine Datei hinzufügen, indem Sie geschweifte Klammern um den Namen setzen:
+```
+{F123}
+```
+
+Sie können auch ein Bild in den Textbereich ziehen (drag-and-drop).
+
+Die meisten Browser unterstützen auch das Hochladen eines Bildes, indem Sie es einfach in den Textbereich einfügen.
+
+Sie können eine Datei zum Beispiel wie folgt parametrieren:
+```
+{F123, layout=left, float, size=full, alt="eine Ente"}
+```
+
+Die folgenden Parameter sind für alle Dateitypen verfügbar:
+
+- **layout**
+  - left : Platziert das Bild nach links (=Standard)
+  - center : Platziert das Bild in der Mitte
+  - right : Platziert das Bild auf der rechten Seite
+  - inline : Platziert das Bild nach links, aber näher an der vorherigen und nächsten Zeile
+  - link : Zeigt einen Link anstelle des Bildes selbst an
+- **name** : Wenn `layout` gleich `link` ist, oder wenn die Datei kein Bild ist, wird sie als Linktext angezeigt.
+- **alt** : Bietet alternativen Text für unterstützende Systeme.
+
+Bilder haben außerdem die folgenden Parameter:
+
+- **float**: Wenn `layout` auf `left` oder `right` eingestellt ist, läuft der Text um das Bild herum.
+- **size** : thumb (Standard), full
+- **width**" : Skaliert das Bild auf eine bestimmte Breite.
+- **height**: Skaliert das Bild auf eine bestimmte Höhe.
+
+Audio- und Videodateien haben außerdem die folgenden Parameter:
+
+- **media**: Gibt den Medientyp an, z. B. `Audio` oder `Video`. Hier können Sie festlegen, wie die Datei angezeigt werden soll.
+- **loop**: Setzt die Wiedergabe der Mediendatei fort.
+- **autoplay**: Spielt die Mediendatei sofort ab.
+
+= Zitattext =
+
+Um Text zu zitieren, müssen Sie dem Text ein `>` voranstellen:
+```
+  > Dieser Text wird zitiert
+```
+
+Dies wird wie folgt dargestellt
+
+> Dieser Text wird zitiert
+
+= Memes =
+
+Sie können Bildmakros auch im Kontext von Memes verwenden. Wenn Sie z. B. ein Bildmakro mit dem Namen "verärgert"
+haben, können Sie ein Meme erstellen, indem Sie Folgendes tun:
+```
+{meme, src=verärgert, above=textoben, below=textunten}
+```
+
+= Verweis auf Benutzer =
+
+In Maniphest können Sie sich wie folgt auf Benutzer beziehen:
+```
+@benutzername
+```
+
+Icons
+=====
+
+Sie können Symbole mit der Syntax `{icon ...}`` hinzufügen.
+Zum Beispiel:
+```
+  {icon camera}
+```
+
+Dadurch wird Folgendes erzeugt: {icon camera}
+
+Sie können die Symbole auch einfärben:
+```
+  {icon camera color=blue}
+```
+
+Dadurch wird Folgendes erzeugt: {icon camera color=blue}
+
+Die [[ https://fontawesome.com/v4.7.0/icons/ | FontAwesome-Website]] enthält eine Liste aller möglichen Icons.
+Diese Farben sind verfügbar:
+  - dark              {icon phabrico-square, color=dark}
+  - bluegrey          {icon phabrico-square, color=bluegrey}
+  - white             {icon phabrico-square, color=white}
+  - red               {icon phabrico-square, color=red}
+  - orange            {icon phabrico-square, color=orange}
+  - yellow            {icon phabrico-square, color=yellow}
+  - green             {icon phabrico-square, color=green}
+  - blue              {icon phabrico-square, color=blue}
+  - sky               {icon phabrico-square, color=sky}
+  - indigo            {icon phabrico-square, color=indigo}
+  - pink              {icon phabrico-square, color=pink}
+  - fire              {icon phabrico-square, color=fire}
+  - violet            {icon phabrico-square, color=violet}
+  - lightbluetext     {icon phabrico-square, color=lightbluetext}
+  - lightgreytext     {icon phabrico-square, color=lightgreytext}
+  - grey              {icon phabrico-square, color=grey}
+
+Mit Hilfe des Parameters `spin` können Sie ein Symbol drehen:
+```
+  {icon cog spin}
+```
+
+Dadurch wird Folgendes erzeugt: {icon cog spin}
+
+
+= Phriction-Dokumente (Wiki) =
+
+Sie können auf Phriction-Dokumente über deren Adresse verweisen:
+```
+  Achten Sie darauf, dass Sie Ihren [[legal/Kaperbrief und Repressalien]]  unterschreiben und datieren!
+```
+
+Standardmäßig wird die Verknüpfung mit dem Titel des Dokuments als Name der Verknüpfung angezeigt.
+Mit einem senkrechten Strich (`|`) können Sie den Link umbenennen.  Verwenden Sie dies, um Ihre Gegner zu täuschen:
+```
+  Schauen Sie sich diese [[legal/boring_documents/ | spannende juristische Dokumente]] an!
+```
+
+Wenn Sie einen Linkpfad mit `./` oder `../` beginnen, wird der Rest des Pfades relativ zur aktuellen Wikiseite ausgewertet.
+Wenn Sie zum Beispiel Inhalte für das Dokument `fruit/` schreiben, ist ein Link zu `[[./guava]]` dasselbe wie ein Link zu
+`[[fruit/guava]]` von anderswo.
+
+Relative Links können `../` verwenden, um sich im Dokumentbaum nach oben zu bewegen. Vom Seite `Produkte/Gemüse/` können
+Sie mit `[[../Frucht/Guave]]` auf die Seite Seite `Produkt/Obst/Guave` zu verlinken.
+
+Relative Links funktionieren nicht, wenn sie außerhalb von Wikiseiten verwendet werden. 
+Sie können zum Beispiel keinen relativen Link in einem Kommentar zu einer Aufgabe verwenden, weil es keine sinnvolle Stelle
+gibt, von der aus der Link aufgelöst werden kann.
+
+Wenn Dokumente verschoben werden, werden relative Links nicht automatisch aktualisiert:
+Sie werden so beibehalten, wie sie aktuell geschrieben sind. Nach dem Verschieben eines Dokuments müssen Sie möglicherweise
+alle darin enthaltenen relativen Verknüpfungen überprüfen und anpassen.
+
+
+= Literale Blöcke =
+
+Um Text in einem literalen Block zu platzieren, verwenden Sie `%%%`:
+```
+%%%Text, der nicht von remarkup verarbeitet werden soll
+[[http://www.example.com | Beispiel]]
+%%%
+```
+
+Remarkup verarbeitet den Text innerhalb von literalen Blöcken nicht (außer um HTML zu entschlüsseln und Zeilenumbrüche zu erhalten).
+
+= Tabellen =
+
+Remarkup unterstützt eine einfache Tabellensyntax. Zum Beispiel dies:
+
+```
+| Frucht | Farbe | Preis      | Schale?
+| ------ | ----- | ------     | -----
+| Apfel  | rot   | `0.76 EUR` | nein
+| Banane | gelb  | `0.16 EUR` | **JA**
+```
+
+...produziert dies:
+
+| Frucht | Farbe | Preis      | Schale?
+| ------ | ----- | ------     | -----
+| Apfel  | rot   | `0.76 EUR` | nein
+| Banane | gelb  | `0.16 EUR` | **JA**
+
+Remarkup unterstützt auch eine vereinfachte HTML-Tabellensyntax. Zum Beispiel dies:
+
+```
+<table>
+    <tr>
+        <th>Frucht</th>
+        <th>Farbe</th>
+        <th>Preis</th>
+        <th>PellSchaleen?</th>
+    </tr>
+    <tr>
+        <td>Apfel</td>
+        <td>rot</td>
+        <td>`0.76 EUR`</td>
+        <td>nein</td>
+    </tr>
+    <tr>
+        <td>Banane</td>
+        <td>gelb</td>
+        <td>`0.16 EUR`</td>
+        <td>**JA**</td>
+    </tr>
+</table>
+```
+
+...produziert dies:
+
+<table>
+    <tr>
+        <th>Frucht</th>
+        <th>Farbe</th>
+        <th>Preis</th>
+        <th>PellSchaleen?</th>
+    </tr>
+    <tr>
+        <td>Apfel</td>
+        <td>rot</td>
+        <td>`0.76 EUR`</td>
+        <td>nein</td>
+    </tr>
+    <tr>
+        <td>Banane</td>
+        <td>gelb</td>
+        <td>`0.16 EUR`</td>
+        <td>**JA**</td>
+    </tr>
+</table>
+
+Einige Anmerkungen zu dieser Syntax:
+
+- die HTML-Tags müssen in der richtigen Reihenfolge sein;
+- die HTML-Tags dürfen keine Attribute enthalten (`<td>` ist OK, `<td style="...">` ist falsch);
+  - Sie können in diesen Zellen auch andere Remarkup-Formatierungen verwenden (z. B. **fett**, //kursiv//, etc.).
+
+Navigation
+==========
+
+Sie können mit `{nav ...}`` eine Navigation verwenden, um zu erklären, wie man etwas erreicht.
+Dies kann bei der Beschreibung einiger Dokumentationen nützlich sein.
+Das folgende Beispiel erklärt, wie Sie Zitronen kaufen:
+
+```
+{nav icon=home, name=Heim>
+Supermarkt >
+Abteilung Obst >
+icon=lemon-o, name=Zitronen}
+```
+
+Dadurch wird Folgendes erzeugt:
+
+{nav icon=home, name=Heim>
+Supermarkt >
+Abteilung Obst >
+icon=lemon-o, name=Zitronen}
+
+Generell:
+
+  - Abschnitte werden durch `>` getrennt.
+  - Jeder Abschnitt kann einen Namen und verschiedene Parameter haben.
+  - Verfügbare Parameter sind `icon`, `name`, `type` und `href`.
+  - Wenn der `Typ` mit `Anweisungen` gleichgesetzt wird, dann wird angezeigt, dass der Benutzer
+    eine Auswahl treffen oder bestimmte Anweisungen befolgen muss.
+
+Tastenanschläge
+==============
+
+Sie können `{key ...}`Tastenanschläge visualisieren.
+Zum Beispiel:
+
+```
+Drücken Sie {key M}, um die Sternenkarte anzuzeigen.
+```
+
+...erzeugt folgendes:
+
+> Drücken Sie {key M}, um die Sternenkarte anzuzeigen.
+
+Sie können auch Zehenkombinationen visualisieren:
+
+```
+Drücken Sie {key command option shift 3}, um einen Screenshot zu erstellen.
+Drücken Sie {key down down-right right LP}, um die Hadoken-Technik auszuführen.
+```
+
+...erzeugt den nächsten Ausgang:
+
+> Drücken Sie {key command option shift 3}, um einen Screenshot zu erstellen.
+> Drücken Sie {key down down-right right LP}, um die Hadoken-Technik auszuführen.

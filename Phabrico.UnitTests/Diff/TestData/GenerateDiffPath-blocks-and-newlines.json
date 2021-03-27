@@ -1,0 +1,63 @@
+{
+    "execute": {
+        "method": ["GenerateDiffPath"],
+        "arguments": [ 
+            "**Overview**
+* [[ classical_pathway/ | Classical pathway ]]
+* [[ alternative_pathway/ | Alternative pathway ]]
+
+**Functions**
+* [[ membrane_attack/ | Membrane attack ]]
+* [[ phagocytosis/ | Phagocytosis ]]
+* [[ inflammation/ | Inflammation ]]
+
+**Antibodies**
+* [[ c1/ | C1 ]]
+* [[ c2/ | C2 ]]
+* [[ c3/ | C3 ]]
+* [[ c4/ | C4 ]]
+* [[ c5/ | C5 ]]
+* [[ c6_9 | C6-9 ]]
+",
+
+            "**Overview**
+* [[ classical_pathway/ | Classical pathway ]]
+* [[ alternative_pathway/ | Alternative pathway ]]
+
+**Functions**
+* [[ membrane_attack/ | Membrane attack ]]
+* [[ phagocytosis/ | Phagocytosis ]]
+* [[ inflammation/ | Inflammation ]]
+
+**Antibodies**
+* [[ c1/ | C1 ]]
+* [[ c2/ | C2 ]]
+* [[ c3/ | C3 ]]
+* [[ c4/ | C4 ]]
+* [[ c5/ | C5 ]]
+* [[ c5b_9 | C5b-9 ]]
+", 
+        ]
+    },
+
+    "validate": {
+        "methodResult": "=*=*=O=v=e=r=v=i=e=w=*=*=
+=*= =[=[= =c=l=a=s=s=i=c=a=l=_=p=a=t=h=w=a=y=/= =|= =C=l=a=s=s=i=c=a=l= =p=a=t=h=w=a=y= =]=]=
+=*= =[=[= =a=l=t=e=r=n=a=t=i=v=e=_=p=a=t=h=w=a=y=/= =|= =A=l=t=e=r=n=a=t=i=v=e= =p=a=t=h=w=a=y= =]=]=
+=
+=*=*=F=u=n=c=t=i=o=n=s=*=*=
+=*= =[=[= =m=e=m=b=r=a=n=e=_=a=t=t=a=c=k=/= =|= =M=e=m=b=r=a=n=e= =a=t=t=a=c=k= =]=]=
+=*= =[=[= =p=h=a=g=o=c=y=t=o=s=i=s=/= =|= =P=h=a=g=o=c=y=t=o=s=i=s= =]=]=
+=*= =[=[= =i=n=f=l=a=m=m=a=t=i=o=n=/= =|= =I=n=f=l=a=m=m=a=t=i=o=n= =]=]=
+=
+=*=*=A=n=t=i=b=o=d=i=e=s=*=*=
+=*= =[=[= =c=1=/= =|= =C=1= =]=]=
+=*= =[=[= =c=2=/= =|= =C=2= =]=]=
+=*= =[=[= =c=3=/= =|= =C=3= =]=]=
+=*= =[=[= =c=4=/= =|= =C=4= =]=]=
+=*= =[=[= =c=5=/= =|= =C=5= =]=]=
+=*= =[=[= =c<6>5>b=_=9= =|= =C<6>5>b=-=9= =]=]=
+"
+    }
+}
+

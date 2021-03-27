@@ -1,0 +1,32 @@
+phutil_test_block_interpreter (foo=bar) {{{
+content
+}}}
+
+phutil_test_block_interpreter {{{ content
+content }}}
+
+phutil_test_block_interpreter {{{ content }}}
+
+phutil_test_block_interpreter(x=y){{{content}}}
+
+phutil_fake_test_block_interpreter {{{ content }}}
+~~~~~~~~~~
+Content: (content)
+Argv: (foo=bar)
+
+<br>
+Content: ( content
+content )
+Argv: ()
+
+<br>
+Content: ( content )
+Argv: ()
+
+<br>
+Content: (content)
+Argv: (x=y)
+
+<br>
+<div class='remarkup-warning'>No interpreter found: phutil_fake_test_block_interpreter</div>
+~~~~~~~~~~

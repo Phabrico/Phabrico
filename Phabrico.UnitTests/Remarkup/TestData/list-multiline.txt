@@ -1,0 +1,12 @@
+- a
+  a
+- b
+b
+~~~~~~~~~~
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>a a</li>
+  <li class='remarkup-list-item'>b</li>
+</ul>
+
+b
+~~~~~~~~~~

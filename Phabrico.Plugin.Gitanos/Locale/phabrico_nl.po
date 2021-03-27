@@ -1,0 +1,136 @@
+﻿# Dutch translations
+
+# General
+msgid "Gitanos"
+msgstr "Gitanos"
+
+msgid "Shows the status of all local git repositories"
+msgstr "Toont de status van alle lokale git repositories"
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "Voer de directories in waar al uw git repository directories zich in bevinden:"
+
+msgid "Local root directories"
+msgstr "Lokale root directories"
+
+msgid "Add root directory"
+msgstr "Voeg root directory toe"
+
+msgid "Gitanos::Notification"
+msgstr "Notificatie"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "Tel de volgende statussen op voor alle repositories en toon het resultaat als een notificatie:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "Lokale git repositories"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "Voer tekst in om de lijst met git repositories te filteren..."
+
+msgid "Show clean repositories"
+msgstr "Toon bijgewerkte repositories"
+
+msgid "Hide clean repositories"
+msgstr "Verberg bijgewerkte repositories"
+
+msgid "Repository"
+msgstr "Repository"
+
+msgid "Branch"
+msgstr "Branch"
+
+msgid "Gitanos::Added"
+msgstr "Nieuw"
+
+msgid "Gitanos::Removed"
+msgstr "Verwijderd"
+
+msgid "Gitanos::Modified"
+msgstr "Gewijzigd"
+
+msgid "Gitanos::Renamed"
+msgstr "Hernoemd"
+
+msgid "Gitanos::Untracked"
+msgstr "Untracked"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "Er zijn enkele lokale commits die nog niet gepushed zijn"
+
+# Repository modifications overview
+msgid "File"
+msgstr "Bestand"
+
+msgid "Modification Type"
+msgstr "Type wijziging"
+
+msgid "Timestamp"
+msgstr "Tijdstip"
+
+msgid "Unpushed commit"
+msgstr "Unpushed commit"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "Voer tekst in om de lijst met wijzigingen te filteren..."
+
+msgid "COMMIT"
+msgstr "COMMIT"
+
+msgid "PUSH"
+msgstr "PUSH"
+
+msgid "Actions"
+msgstr "Acties"
+
+msgid "Select all files"
+msgstr "Selecteer alle bestanden"
+
+msgid "Unselect all files"
+msgstr "Selecteer geen bestanden"
+
+msgid "Commit selected files"
+msgstr "Commit geselecteerde bestanden"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "Bent u zeker dat u '@@MODIFICATION@@' ongedaan wil maken ?"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "Dit is een binair bestand dat gewijzigd is."
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "Bent u zeker dat u uw lokale wijzigingen voor @@FILENAME@@ ongedaan wil maken ?"
+
+msgid "Undo modification"
+msgstr "Wijziging ongedaan maken"
+
+msgid "File was successfully saved"
+msgstr "Bestand is opgeslagen"
+
+msgid "File could not be saved"
+msgstr "Bestand kon niet worden opgeslagen"
+
+msgid "Diff"
+msgstr "Wijzigingen"
+
+msgid "Save"
+msgstr "Opslaan"
+
+msgid "Edit"
+msgstr "Bewerken"
+
+msgid "Line number:"
+msgstr "Lijn:"
+
+msgid "This git repository is clean"
+msgstr "Deze git repository is ongewijzigd"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "Directory @@DIRECTORY@@ bestaat niet"
+
+msgid "Error git push"
+msgstr "Probleem bij git push"

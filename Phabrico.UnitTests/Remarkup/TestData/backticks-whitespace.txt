@@ -1,0 +1,10 @@
+```x```
+
+```
+y
+```
+~~~~~~~~~~
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>x</code></pre></div>
+<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>y</code></pre></div>
+~~~~~~~~~~

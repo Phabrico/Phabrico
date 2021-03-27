@@ -1,0 +1,453 @@
+<div class="wait">
+    <svg height="100" width="180">
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(20) rotate(180,0,50)">
+            <animate attributeName="height" attributeType="XML" dur="1s" values="30; 100; 30" repeatCount="indefinite"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(40) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.5s" values="30; 100; 30" repeatCount="indefinite" begin="0.1s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(60) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1s" values="30; 100; 30" repeatCount="indefinite" begin="0.2s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(80) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.2s" values="30; 100; 30" repeatCount="indefinite" begin="0.3s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(100) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.1s" values="30; 100; 30" repeatCount="indefinite" begin="0.1s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(120) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.4s" values="30; 100; 30" repeatCount="indefinite" begin="0.2s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(140) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.2s" values="30; 100; 30" repeatCount="indefinite" begin="0.3s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(160) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="1.0s" values="30; 100; 30" repeatCount="indefinite" begin="0.4s"></animate>
+        </rect>
+        <rect x="0" fill="#00a" width="18" height="100" transform="translate(180) rotate(180 0 50)">
+            <animate attributeName="height" attributeType="XML" dur="0.8s" values="30; 100; 30" repeatCount="indefinite" begin="0.5s"></animate>
+        </rect>
+    </svg>
+    <span class="message" style="display:block;">One moment please...</span>
+</div>
+
+<div class="crumbs">
+    <a href="/maniphest/">
+        <span class="phui-font-fa fa-anchor" style="padding-right: 5px;"></span>
+    </a><a href="/maniphest/">Maniphest</a><span>  &gt;  </span><a>T@@TASK-ID@@</a>
+    <a class="crumbsAction" href="/maniphest/?action=new" style="text-align: right;">
+        <span class="visual-only phui-icon-view phui-font-fa fa-plus-square"></span>
+        <span class="phui-crumbs-action-name" style="margin-right: 18px;">Create Task</span>
+    </a>
+</div>
+
+<div class="app-window" style="margin-top: 20px;">
+    <div class="maniphest-task-header">
+        <span class="maniphest-task-syncstate @@TASK-UNSYNCED@@" title="This modified task hasn't been uploaded yet to the Phabricator server"></span>
+        <span class="maniphest-list-icon phui-font-fa fa-exclamation-circle @@TASK-PRIORITY-COLOR@@" title="@@TASK-PRIORITY-DESCRIPTION@@"></span>
+        <span>@@TASK-HEADER@@</span>
+        <div class="maniphest-task-state"><span class="phui-font-fa @@TASK-STATUS-ICON@@">@@TASK-STATUS-DESCRIPTION@@</span></div>
+    </div>
+</div>
+
+<div style="margin-top:-10px">
+    <div class="app-main-window">
+        <div class="app-window-head">
+            <span>Description</span>
+        </div>
+        <div class="app-window-body">
+            <span id="remarkupContent" class="remarkupContent">@@TASK-DESCRIPTION@@</span>
+        </div>
+    </div>
+    <div class="expandcollapse maniphesttask">
+        <span onclick="phabrico.appSideWindow.Collapse();" class="phui-font-fa fa-chevron-right">&nbsp;</span>
+        <span onclick="phabrico.appSideWindow.Expand();" class="phui-font-fa fa-chevron-left">&nbsp;</span>
+    </div>
+    <div class="app-side-window maniphest-task">
+        <div class="app-window-body">
+            <ul class="list-view">
+                <li class="list-item-view">
+                    <a href="?action=edit" class="list-item-href">
+                        <span class="phui-font-fa fa-pencil phui-list-item-icon">
+                            <span class="phui-list-item-name">Edit Task</span>
+                        </span>
+                    </a>
+                </li>
+                <li id="actionViewLocalChanges" data-task-state="@@TASK-UNSYNCED@@" class="list-item-view">
+                    <a href="/offline/changes/view/@@TASK-TOKEN@@/" class="list-item-href">
+                        <span class="compare phui-list-item-icon">
+                            <span class="phui-list-item-name">View local changes</span>
+                        </span>
+                    </a>
+                </li>
+                <li id="actionUndoLocalChanges" data-task-state="@@TASK-UNSYNCED@@" class="list-item-view">
+                    <a href="#@@TASK-TOKEN@@[edit]" class="list-item-href" onclick="showUndoConfirmation(this);">
+                        <span class="phui-font-fa fa-times phui-list-item-icon">
+                            <span class="phui-list-item-name">Dismiss local changes</span>
+                        </span>
+                    </a>
+                </li>
+
+                @{MANIPHEST-TASK-PLUGINS
+                <li class="plugin-action list-item-separator"></li>
+                <li class="plugin-action list-item-view" style="height:20px; margin: 2px 0.5px;">
+                    <a href="#" class="list-item-href" onclick='executeManiphestTaskPlugin("@@MANIPHEST-TASK-PLUGIN-NAME@@", "@@MANIPHEST-TASK-PLUGIN-URL@@");'>
+                        <span class="phui-font-fa @@MANIPHEST-TASK-PLUGIN-ICON@@ phui-list-item-icon">
+                            <span class="phui-list-item-name" style="font-size: 1em;">@@MANIPHEST-TASK-PLUGIN-NAME@@</span>
+                        </span>
+                    </a>
+                </li>
+                }@
+
+                <li class="list-item-separator"></li>
+                <li class="list-item-view">
+                    <span class="list-item-head">Tags</span>
+                </li>
+                @{PROJECTS
+                <li class="list-item-view maniphest-list-item-project">
+                    <a class="project-reference phui-font-fa fa-briefcase" href="/project/info/@@TASK-PROJECT-TOKEN@@/" style="@@TASK-PROJECT-STYLE@@">@@TASK-PROJECT-NAME@@</a>
+                </li>
+                }@
+                <li class="list-item-separator"></li>
+                <li class="list-item-view">
+                    <span class="list-item-head">Subscribers</span>
+                </li>
+                @{SUBSCRIBERS
+                @{IF @@TASK-SUBSCRIBER-TOKEN-TYPE@@=user@
+                <li class="list-item-view list-item-link">
+                    <a href="/user/info/@@TASK-SUBSCRIBER-TOKEN@@/">@@TASK-SUBSCRIBER-NAME@@</a>
+                </li>
+                }@
+                @{IF @@TASK-SUBSCRIBER-TOKEN-TYPE@@=proj@
+                <li class="list-item-view maniphest-list-item-project">
+                    <a class="project-reference phui-font-fa fa-briefcase" href="/project/info/@@TASK-SUBSCRIBER-TOKEN@@/" style="@@TASK-SUBSCRIBER-STYLE@@">@@TASK-SUBSCRIBER-NAME@@</a>
+                </li>
+                }@
+                }@
+                <li class="list-item-separator"></li>
+                <li class="list-item-view">
+                    <span class="list-item-head">Assigned To</span>
+                </li>
+                <li class="list-item-view list-item-link">
+                    <a href="/user/info/@@TASK-ASSIGNED-TOKEN@@/">@@TASK-ASSIGNED-NAME@@</a>
+                </li>
+                <li class="list-item-separator"></li>
+                <li class="list-item-view">
+                    <span class="list-item-head">Authored By</span>
+                </li>
+                <li class="list-item-view list-item-link">
+                    <a href="/user/info/@@TASK-AUTHOR-TOKEN@@/">@@TASK-AUTHOR-NAME@@</a>
+                    @@TASK-DATE@@
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div>
+    <div class="timeline">
+        @{TRANSACTIONS
+        <div class="timeline-item @@TASK-TRANSACTION-TYPE@@">
+            <div class="timeline-item-title">
+                @@TASK-TRANSACTION-TEXT@@
+                <span class="timestamp">@@TASK-TRANSACTION-DATE@@<span>
+            </div>
+            <div class="timeline-item-content">@@TASK-TRANSACTION-DETAIL@@</div>
+        </div>
+        }@
+    </div>
+    <form action="?action=transaction" method="POST">
+        <input name="operation" type="hidden" value="comment" />
+        <input name="token" type="hidden" value="@@TASK-TOKEN@@" />
+        <div class="app-main-window">
+            <div class="app-window-head">
+                <label class="select">
+                    <select class="transaction">
+                        <option value="+">Add Action...</option>
+                        <option value="owner">Assign / Claim</option>
+                        <option value="status">Change Status</option>
+                        <option value="priority">Change Priority</option>
+                        <option value="projectPHIDs">Change Project Tags</option>
+                        <option value="subscriberPHIDs">Change Subscribers</option>
+                    </select>
+                </label>
+            </div>
+            <div id="edit" class="app-window-body edit">
+                <label id="status" class="select" style="display: none; left: 8px; top: -3px;">
+                    <select>
+                        @{TASK-STATUSES
+                        <option value="@@TASK-STATUSES-STATUS-TOKEN@@" @@TASK-STATUSES-STATUS-SELECTED@@>@@TASK-STATUSES-STATUS-NAME@@</option>
+                        }@
+                    </select>
+                </label>
+                <label id="priority" class="select" style="display: none; left: 8px; top: -3px;">
+                    <select>
+                        @{TASK-PRIORITIES
+                        <option value="@@TASK-PRIORITIES-PRIORITY-TOKEN@@" @@TASK-PRIORITIES-PRIORITY-SELECTED@@>@@TASK-PRIORITIES-PRIORITY-NAME@@</option>
+                        }@
+                    </select>
+                </label>
+                <div class="app-edit-window-head @@TASK-NEW-TOKEN@@">
+                    <span class="phui-font-fa fa-bold tooltip-top"><span class="tooltiptext">Bold</span></span>
+                    <span class="phui-font-fa fa-italic tooltip-top"><span class="tooltiptext">Italic</span></span>
+                    <span class="phui-font-fa fa-text-width tooltip-top"><span class="tooltiptext">Monospaced</span></span>
+                    <span class="phui-font-fa fa-list-ul tooltip-top"><span class="tooltiptext">Bulleted List</span></span>
+                    <span class="phui-font-fa fa-list-ol tooltip-top"><span class="tooltiptext">Numbered List</span></span>
+                    <span class="phui-font-fa fa-code tooltip-top"><span class="tooltiptext">Code Block</span></span>
+                    <span class="phui-font-fa fa-quote-right tooltip-top"><span class="tooltiptext">Quote</span></span>
+                    <span class="phui-font-fa fa-table tooltip-top"><span class="tooltiptext">Table</span></span>
+                    <a href="/remarkup/syntax" target="_blank">
+                        <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
+                    </a>
+                </div>
+                <textarea class="@@TASK-NEW-TOKEN@@ dropzone" name="comment" style="min-height: 12em;" oninput="inputChanged(this.value, previewNewComment)">@@TASK-STAGED-COMMENT@@</textarea>
+                <div id="editStatusBar"></div>
+                <div style="margin-top: 17px;float: right;">
+                    <button type="submit" style="margin-bottom: 10px;">Set Sail for Adventure</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="timeline" style="display:none">
+        <div class="timeline-item comment">
+            <div class="timeline-item-title">
+                @@COMMENT-AUTHOR@@ added a comment.
+                <span class="timestamp"><span>
+            </div>
+            <div id="previewNewComment" class="timeline-item-content"></div>
+        </div>
+    </div>
+</div>
+
+<form id="frmManiphestTask" action="" method="POST">
+    <input name="item" type="hidden" value="@@TASK-TOKEN@@" />
+    <div id="dlgConfirmUndo" class="aphront-dialog-view modal" style="display:none">
+        <div class="aphront-dialog-overlay"></div>
+        <div class="aphront-dialog-head">
+            <span class="phui-header-header">Undo</span>
+        </div>
+        <div class="aphront-dialog-body phabrico-remarkup">
+            <div class="phabrico-remarkup">
+                <p>@@TASK-CONFIRMATION-UNDO-LOCAL-CHANGES@@</p>
+                <p>&nbsp;</p>
+                <p id="dlgConfirmUndoDetail" style="text-align: center;font-weight:bold;">@@TASK-HEADER@@</p>
+            </div>
+            <br />
+        </div>
+        <div class="aphront-dialog-tail grouped">
+            <button type="button" data-accesskey="Button-AccessKey-No" class="button-gray" onclick="cancelUndo()">No</button>
+            <button type="button" data-accesskey="Button-AccessKey-Yes" onclick="confirmUndo()">Yes</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    var remarkup = null;
+
+    function cancelUndo()
+    {
+        dlgConfirmUndo.style.display = 'none';
+    }
+
+    function confirmUndo()
+    {
+        dlgConfirmUndo.style.display = 'none';
+
+        var elem = dlgConfirmUndo.tagElement;
+        submitItem(elem, "/offline/changes/undo");
+    }
+
+    function inputChanged(value, right) {
+        // if no content, hide preview
+        var trimmedValue = value.replace(/^[ \t\r\n]*/g, "").replace(/[ \t\r\n]*$/g, "");
+        if (trimmedValue.length == 0) {
+            previewNewComment.closest('.timeline').style.display = 'none';
+        }
+        else {
+            previewNewComment.closest('.timeline').style.display = 'block';
+        }
+
+        // translate remarkup
+        inputHasBeenChanged = true;
+        remarkup.Decode(value, right);
+    }
+
+    function showUndoConfirmation(elem)
+    {
+        dlgConfirmUndo.tagElement = elem;
+        dlgConfirmUndo.style.display = 'block';
+    }
+
+    function submitItem(item, url)
+    {
+        setTimeout(function() {
+            var elem = frmManiphestTask.getElementsByTagName('input');
+            if (elem.length > 0)
+            {
+                elem = elem[0];
+            }
+            else
+            {
+                elem = document.createElement('input');
+                elem.type = "hidden";
+                elem.name = "item";
+                frmManiphestTask.appendChild(elem);
+            }
+
+            elem.value = item.closest('a').hash.substring(1);
+
+            var data = new FormData(frmManiphestTask);
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if(xmlhttp.readyState == 4)
+                {
+                    var taskID = parseInt(document.location.pathname.split('/')[2].substring(1));
+                    if (taskID < 0) {
+                        // task does not exist anymore -> go to maniphest tasks overview
+                        document.location.href = "/maniphest/";
+                    } else {
+                        document.location.href = document.location.pathname;
+                    }
+                }
+            }
+            xmlhttp.open('POST', url, true);
+            xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            xmlhttp.send(data);
+        }, 250);
+    }
+
+    function initializeManiphestTaskPluginFormData() {
+        var data = new FormData();
+
+        // get ID
+        data.append('taskID', '@@TASK-ID@@');
+        data.append('confirm', 'None');
+
+        return data;
+    }
+
+    function executeManiphestTaskPlugin(pluginName, pluginURL) {
+        var data = initializeManiphestTaskPluginFormData();
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if(xmlhttp.readyState == 4)
+            {
+                var jsonResponse = JSON.parse(xmlhttp.responseText);
+                if (jsonResponse.Status == 'Confirm') {
+                    showHideConfirmationMessage( true, pluginName, jsonResponse.Message,
+                                                    function() {
+                                                        showHideConfirmationMessage(false);
+                                                        executeManiphestTaskPluginConfirmed('/' + pluginURL, data, true);
+                                                    },
+                                                    function() {
+                                                        showHideConfirmationMessage(false);
+                                                        executeManiphestTaskPluginConfirmed('/' + pluginURL, data, false);
+                                                    },
+                                                    function() {
+                                                        showHideConfirmationMessage(false);
+                                                    }
+                                                );
+                }
+
+                if (jsonResponse.Status == 'Finished') {
+                    showHideConfirmationMessage(false);
+                    executeManiphestTaskPluginConfirmed('/' + pluginURL, data, false);
+                }
+            }
+        }
+        xmlhttp.open('POST', '/' + pluginURL, true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }
+
+    function executeManiphestTaskPluginConfirmed(url, data, confirmed) {
+        var data = initializeManiphestTaskPluginFormData();
+        if (confirmed) {
+            data.set('confirm', 'Yes');
+        } else {
+            data.set('confirm', 'No');
+        }
+
+        document.querySelector('div.wait').style.display = 'block';
+
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if(xmlhttp.readyState == 4)
+            {
+                var jsonResponse = JSON.parse(xmlhttp.responseText);
+                if (jsonResponse.Status == 'Finished') {
+                    if (typeof jsonResponse.Base64Data !== 'undefined'  &&  typeof jsonResponse.ContentType !== 'undefined'  &&  typeof jsonResponse.FileName !== 'undefined') {
+                        var a = document.createElement('a');
+                        a.download = jsonResponse.FileName;
+                        a.href = "data:" + jsonResponse.ContentType + ";base64," + jsonResponse.Base64Data;
+
+                        document.body.appendChild(a);
+                        a.style.display = "none";
+                        a.click();
+
+                        document.body.removeChild(a);
+
+                        document.querySelector('div.wait').style.display = 'none';
+                    }
+                }
+            }
+        };
+
+        xmlhttp.open('POST', url, true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }
+
+    function showHideConfirmationMessage(show, title, text, fnYes, fnNo, fnCancel)
+    {
+        if (show) {
+            dlgYesNoCancel.style.display = 'block';
+            document.querySelector('html').style.overflow = 'hidden';
+
+            var btnNo = dlgYesNoCancel.querySelector('.no');
+            var btnYes = dlgYesNoCancel.querySelector('.yes');
+            var btnCancel = dlgYesNoCancel.querySelector('.cancel');
+
+            // set title and text
+            dlgYesNoCancel.querySelector('.title').innerText = title;
+            dlgYesNoCancel.querySelector('.message').innerHTML = text;
+
+            // disable all TABs
+            document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
+                input.setAttribute('tabindex', '-1');
+            });
+
+            // fix TABs for dialog
+            btnNo.setAttribute('tabindex', '1');
+            btnYes.setAttribute('tabindex', '2')
+            btnCancel.setAttribute('tabindex', '3');
+
+            // set functions to buttons
+            btnNo.onclick = function() { fnNo(); return false; }
+            btnYes.onclick = function() { fnYes(); return false; }
+            btnCancel.onclick = function() { fnCancel(); return false; }
+
+            // set focus
+            btnNo.focus();
+        } else {
+            dlgYesNoCancel.style.display = 'none';
+            document.querySelector('html').style.overflow = 'unset';
+
+            // restore all TABs
+            document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
+                input.removeAttribute('tabindex');
+            });
+        }
+    }
+
+    // set page title
+    window.addEventListener('load', function() {
+        document.title = "Phabrico - " + fromHTML("@@TASK-HEADER@@");
+        remarkup = new Remarkup(() => { updateProjectTagColors(); });
+    }, false);
+
+    const taskInputTagValues = [];
+    taskInputTagValues["owner"] = { "Name": "@@TASK-ASSIGNED-NAME@@", "Token": "@@TASK-ASSIGNED-TOKEN@@" };
+    taskInputTagValues["projectPHIDs"] = @@TASK-TAGS-JSON@@;
+    taskInputTagValues["subscriberPHIDs"] = @@TASK-SUBSCRIBERS-JSON@@;
+</script>

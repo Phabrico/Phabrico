@@ -1,0 +1,11 @@
+[[ tel:18005555555 | call me ]]
+
+[ call me ]( tel:18005555555 )
+
+[[tel:18005555555]]
+
+~~~~~~~~~~
+<a class='phone-link' href='tel:18005555555'>call me</a><br>
+<a class='phone-link' href='tel:18005555555'>call me</a><br>
+<a class='phone-link' href='tel:18005555555'>18005555555</a>
+~~~~~~~~~~

@@ -1,0 +1,24 @@
+- This is a list item
+  with several paragraphs.
+
+  This is the second paragraph
+  of the first list item.
+- This is the second item
+  in the list.
+  - This is a sublist.
+- This is the third item in the list.
+
+~~~~~~~~~~
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>
+    <p>This is a list item with several paragraphs.<br></p>
+    <p>This is the second paragraph of the first list item.</p>
+  </li>
+  <li class='remarkup-list-item'>This is the second item in the list.
+    <ul class='remarkup-list'>
+      <li class='remarkup-list-item'>This is a sublist.</li>
+    </ul>
+  </li>
+  <li class='remarkup-list-item'>This is the third item in the list.</li>
+</ul>
+~~~~~~~~~~

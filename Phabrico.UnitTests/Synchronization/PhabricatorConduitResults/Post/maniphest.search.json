@@ -1,0 +1,238 @@
+{
+    "result": {
+        "data": [{
+                "id": 5,
+                "type": "TASK",
+                "phid": "PHID-TASK-rautvihmikbicw4wo255",
+                "fields": {
+                    "name": "Make coffee",
+                    "description": {
+                        "raw": "# Boil water in a kettle.\n# Grind coffee beans\n# Add 1 to 2 teaspoons of coffee grind into a mug\n# Pour the hot water into the mug\n# Add 2 teaspoons of sugar\n# Stir your coffee and serve it.\n"
+                    },
+                    "authorPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "ownerPHID": "PHID-USER-3qb44av27tsayks7ivf3",
+                    "status": {
+                        "value": "open",
+                        "name": "Open",
+                        "color": null
+                    },
+                    "priority": {
+                        "value": 100,
+                        "name": "Unbreak Now!",
+                        "color": "pink"
+                    },
+                    "points": null,
+                    "subtype": "default",
+                    "closerPHID": null,
+                    "dateClosed": null,
+                    "spacePHID": null,
+                    "dateCreated": 1578831304,
+                    "dateModified": 1578831320,
+                    "policy": {
+                        "view": "users",
+                        "interact": "users",
+                        "edit": "users"
+                    }
+                },
+                "attachments": {
+                    "projects": {
+                        "projectPHIDs": []
+                    },
+                    "subscribers": {
+                        "subscriberPHIDs": ["PHID-USER-avflgkkgmrvd526jk522"],
+                        "subscriberCount": 1,
+                        "viewerIsSubscribed": true
+                    }
+                }
+            }, {
+                "id": 4,
+                "type": "TASK",
+                "phid": "PHID-TASK-uqyp3jpdc4aiyh2s6pfx",
+                "fields": {
+                    "name": "Finish the day",
+                    "description": {
+                        "raw": "# Take out the trash\n# Scrub the kitchen floor\n# Clean up your room\n# Bring in the dog\n# Put out the cat\n"
+                    },
+                    "authorPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "ownerPHID": "PHID-USER-3qb44av27tsayks7ivf3",
+                    "status": {
+                        "value": "open",
+                        "name": "Open",
+                        "color": null
+                    },
+                    "priority": {
+                        "value": 80,
+                        "name": "High",
+                        "color": "red"
+                    },
+                    "points": null,
+                    "subtype": "default",
+                    "closerPHID": null,
+                    "dateClosed": null,
+                    "spacePHID": null,
+                    "dateCreated": 1577553710,
+                    "dateModified": 1577716134,
+                    "policy": {
+                        "view": "users",
+                        "interact": "users",
+                        "edit": "users"
+                    }
+                },
+                "attachments": {
+                    "projects": {
+                        "projectPHIDs": []
+                    },
+                    "subscribers": {
+                        "subscriberPHIDs": ["PHID-USER-avflgkkgmrvd526jk522"],
+                        "subscriberCount": 1,
+                        "viewerIsSubscribed": true
+                    }
+                }
+            }, {
+                "id": 3,
+                "type": "TASK",
+                "phid": "PHID-TASK-7rbxgd5yrzv5qcatsh5o",
+                "fields": {
+                    "name": "Go shopping",
+                    "description": {
+                        "raw": "# Write down what need to be bought\n# Take wallet\n  # Check if there's enough money in wallet\n    # If not enough money, then go back to work\n# Walk or drive to store\n# Buy everything what's written on list\n# Walk or drive home\n# Use all bought stuff\n"
+                    },
+                    "authorPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "ownerPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "status": {
+                        "value": "resolved",
+                        "name": "Resolved",
+                        "color": null
+                    },
+                    "priority": {
+                        "value": 90,
+                        "name": "Needs Triage",
+                        "color": "violet"
+                    },
+                    "points": null,
+                    "subtype": "default",
+                    "closerPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "dateClosed": 1577660437,
+                    "spacePHID": null,
+                    "dateCreated": 1577549638,
+                    "dateModified": 1577660437,
+                    "policy": {
+                        "view": "users",
+                        "interact": "users",
+                        "edit": "users"
+                    }
+                },
+                "attachments": {
+                    "projects": {
+                        "projectPHIDs": []
+                    },
+                    "subscribers": {
+                        "subscriberPHIDs": ["PHID-USER-avflgkkgmrvd526jk522"],
+                        "subscriberCount": 1,
+                        "viewerIsSubscribed": true
+                    }
+                }
+            }, {
+                "id": 2,
+                "type": "TASK",
+                "phid": "PHID-TASK-tygjiuv4sqnfbuei6lf3",
+                "fields": {
+                    "name": "Make vegetable soup",
+                    "description": {
+                        "raw": "# Melt some butter in a cooking pot\n# When the butter is completely melted, put some water in the pot\n# Cut some carrots, broccoli and paprika into small pieces and put this in the pot\n# Put some salt, pepper, cumin and turmeric in pot\n# Let everything boil for a few minutes"
+                    },
+                    "authorPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "ownerPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "status": {
+                        "value": "resolved",
+                        "name": "Resolved",
+                        "color": null
+                    },
+                    "priority": {
+                        "value": 90,
+                        "name": "Needs Triage",
+                        "color": "violet"
+                    },
+                    "points": null,
+                    "subtype": "default",
+                    "closerPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "dateClosed": 1577660537,
+                    "spacePHID": null,
+                    "dateCreated": 1577549637,
+                    "dateModified": 1577893502,
+                    "policy": {
+                        "view": "users",
+                        "interact": "users",
+                        "edit": "users"
+                    }
+                },
+                "attachments": {
+                    "projects": {
+                        "projectPHIDs": []
+                    },
+                    "subscribers": {
+                        "subscriberPHIDs": ["PHID-USER-avflgkkgmrvd526jk522"],
+                        "subscriberCount": 1,
+                        "viewerIsSubscribed": true
+                    }
+                }
+            }, {
+                "id": 1,
+                "type": "TASK",
+                "phid": "PHID-TASK-eb6udx4d3joofog4mtge",
+                "fields": {
+                    "name": "Create new sound",
+                    "description": {
+                        "raw": "# Buy a DeLorean\n# Implement flux capacitor in DeLorean\n# Drive to 1955\n# Break fingers of band's lead guitar player\n# Take guitar player's guitar\n# Play Johnny Be Goode\n"
+                    },
+                    "authorPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "ownerPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "status": {
+                        "value": "resolved",
+                        "name": "Resolved",
+                        "color": null
+                    },
+                    "priority": {
+                        "value": 90,
+                        "name": "Needs Triage",
+                        "color": "violet"
+                    },
+                    "points": null,
+                    "subtype": "default",
+                    "closerPHID": "PHID-USER-avflgkkgmrvd526jk522",
+                    "dateClosed": 1577660715,
+                    "spacePHID": null,
+                    "dateCreated": 1577549637,
+                    "dateModified": 1577893502,
+                    "policy": {
+                        "view": "users",
+                        "interact": "users",
+                        "edit": "users"
+                    }
+                },
+                "attachments": {
+                    "projects": {
+                        "projectPHIDs": []
+                    },
+                    "subscribers": {
+                        "subscriberPHIDs": ["PHID-USER-avflgkkgmrvd526jk522"],
+                        "subscriberCount": 1,
+                        "viewerIsSubscribed": true
+                    }
+                }
+            }
+        ],
+        "maps": {},
+        "query": {
+            "queryKey": null
+        },
+        "cursor": {
+            "limit": 100,
+            "after": "1",
+            "before": null,
+            "order": "newest"
+        }
+    },
+    "error_code": null,
+    "error_info": null
+}

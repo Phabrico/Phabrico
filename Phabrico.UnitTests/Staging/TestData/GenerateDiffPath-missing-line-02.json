@@ -1,0 +1,22 @@
+{
+    "execute": {
+        "method": ["GenerateDiffPath"],
+        "arguments": [ 
+            "Straﬂe
+Strasse
+Straﬂe
+Strasse", 
+            "Straﬂe
+Straﬂes
+Strasses", 
+
+        ]
+    },
+
+    "validate": {
+        "methodResult": "=S=t=r=a=ﬂ=e=
+=S=t=r=a<s>ﬂ<s=e>s=
+=S=t=r=a<ﬂ>s>s=e>s=
+<S<t<r<a<s<s<e"
+    }
+}

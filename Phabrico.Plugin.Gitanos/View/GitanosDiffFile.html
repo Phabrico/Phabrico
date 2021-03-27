@@ -1,0 +1,485 @@
+<style>
+    .title {
+        display: flex;
+        padding: 8px 0px;
+        font-weight: bold;
+    }
+
+        .title .full-path {
+            width: auto;
+            padding-right: 5px;
+        }
+
+    #statusMessage {
+        margin-left: auto;
+        margin-right: 20px;
+        margin-top: 5px;
+        opacity: 0;
+    }
+
+    .editor,
+    .scrollableTable {
+        height: calc(100vh - 120px);
+        width: 100%;
+    }
+
+        .scrollableTable table {
+            min-height: 12px;
+            width: inherit;
+            padding-left: 30px;
+        }
+
+    .diff {
+        font-family: "Courier New";
+        white-space: pre-wrap;
+    }
+
+    .diff.added, .diff.removed {
+        margin-bottom: -2px;
+    }
+
+    [data-theme="dark"] .diff.added {
+        background: #050;
+        color: #0f0;
+    }
+
+    [data-theme="dark"] .diff.removed {
+        background: #200;
+        color: #f88;
+    }
+
+    [data-theme="light"] .diff.added {
+        background: #dfd;
+        color: #080;
+    }
+
+    [data-theme="light"] .diff.removed {
+        background: #fee;
+        color: #f00;
+    }
+
+    .editor {
+        border-radius: 6px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        font-family: 'Source Code Pro', monospace;
+        font-size: 14px;
+        font-weight: 400;
+        letter-spacing: normal;
+        line-height: 20px;
+        padding: 10px;
+        tab-size: 4;
+        display: none;
+    }
+
+    .edit .editor {
+        display: block;
+    }
+
+    .edit .scrollableTable {
+        display: none;
+    }
+
+    .codejar-wrap {
+        width: inherit;
+        margin-bottom: 10px;
+    }
+
+    .codejar-wrap div {
+        max-height: calc(100vh - 160px);
+    }
+
+    .codejar-linenumbers div br {
+        line-height: unset;
+    }
+
+    div.codejar-linenumbers {
+        mix-blend-mode: unset !important;
+        background-color: #555 !important;
+        color: rgb(220, 220, 220) !important;
+    }
+
+    .gitanos-diff.app-window.edit {
+        width: calc(100% - 50px);
+    }
+
+    #btnDiff,
+    #btnSave {
+        display: none;
+    }
+
+    #btnEdit,
+    #btnUndo,
+    #btnSelect {
+        display: block;
+    }
+
+    .edit #btnDiff,
+    .edit #btnSave {
+        display: block;
+    }
+
+    .edit #btnEdit,
+    .edit #btnUndo,
+    .edit #btnSelect {
+        display: none;
+    } 
+</style>
+
+<script defer src="/scripts/codejar.js?version=@@PHABRICO-VERSION@@">
+    /***************************************************************************************************************
+        MIT License
+
+        Copyright (c) 2020 Anton Medvedev
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+    ***************************************************************************************************************/
+</script>
+<script defer src="/scripts/linenumbers.js?version=@@PHABRICO-VERSION@@">
+    /***************************************************************************************************************
+        MIT License
+
+        Copyright (c) 2020 Anton Medvedev
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+    ***************************************************************************************************************/
+</script>
+
+
+<div class="gitanos-diff app-window">
+    <div class="title">
+        <span class="full-path"><a href="@@REPO-URL@@">@@REPO-PATH@@</a><span>\</span><span>@@FILE-PATH@@</span></span>
+        <span id="statusMessage"></span>
+        @{IF @@BINARY-MODIFICATION@@=False@
+            <a id="btnDiff" class="button button-gray" onclick="return diffFile()">Diff</a>
+            <a id="btnSave" class="button button-red" onclick="return saveFile()">Save</a>
+            <a id="btnEdit" class="button button-gray" onclick="return editFile()">Edit</a>
+        }@
+        <a id="btnUndo" class="button button-red" onclick="return undoModification('@@FILE-ID@@')">Undo</a>
+        <a id="btnSelect" class="button button-blue" onclick="return selectForCommit('@@FILE-ID@@')">Select</a>
+    </div>
+    <div class="scrollableTable">
+        <table id="tblDiffFile">
+            <tbody>
+                @{DIFF-LINES
+                <tr>
+                    <td class="@@DIFF-LINE-STATE@@">@@DIFF-LINE-CONTENT@@@@DIFF-LINE-SPACE-ENDINGS@@</td>
+                </tr>
+                }@
+            </tbody>
+        </table>
+
+        @{IF @@BINARY-MODIFICATION@@=True@
+            <i style="width: 100%; top: calc(40% - 40px); text-align: center; display: inline-block; vertical-align: text-bottom; position: relative;">This is a binary file which has been modified.</i>
+        }@
+    </div>
+
+    <div class="editor" spellcheck="false" contenteditable="true">
+
+    </div>
+
+    <div id="dlgYesNo" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 0px; left: calc(50vw - 300px);">
+        <div class="aphront-dialog-overlay"></div>
+        <div class="aphront-dialog-head">
+            <span class="phui-header-header title"></span>
+        </div>
+        <div class="aphront-dialog-body phabrico-remarkup">
+            <div class="phabrico-remarkup">
+                <p class="message"></p>
+            </div>
+            <br>
+        </div>
+        <div class="aphront-dialog-tail grouped" style="text-align: right;">
+            <a data-accesskey="Button-AccessKey-Yes" href="#" class="button button-blue yes">Yes</a>
+            <a data-accesskey="Button-AccessKey-No" href="#" class="button button-gray no">No</a>
+        </div>
+    </div>
+
+
+    <div id="dlgGoToLine" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 0px; left: calc(50vw - 300px);">
+        <div class="aphront-dialog-overlay"></div>
+        <div class="aphront-dialog-head">
+            <span class="phui-header-header title"></span>
+        </div>
+        <div class="aphront-dialog-body phabrico-remarkup">
+            <div class="phabrico-remarkup">
+                <p class="message">Line number:</p>
+                <input id="lineNumber" type="text" />
+            </div>
+            <br>
+        </div>
+        <div class="aphront-dialog-tail grouped" style="text-align: right;">
+            <a href="#" class="button button-blue ok">OK</a>
+            <a href="#" class="button button-gray cancel">Cancel</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    var codeJar = null;
+    var selectedModifications = [];
+    if (typeof localStorage["selectedModifications"] !== 'undefined') {
+        selectedModifications = localStorage["selectedModifications"].split(',');
+    } else {
+        localStorage["selectedModifications"] = selectedModifications;
+    }
+
+    // remove old selections from localStorage (we can't use sessionStorage because we also want to
+    // keep the selection when opening this screen in new browser tabs)
+    var currentTimestamp = (new Date()).getTime();
+    if (typeof localStorage["clearSelectedModifications"] === 'undefined') {
+        localStorage["clearSelectedModifications"] = currentTimestamp + 2 * 3600000;
+    } else {
+        if (currentTimestamp >= parseInt(localStorage["clearSelectedModifications"])) {
+            selectedModifications = [];
+            localStorage["selectedModifications"] = selectedModifications;
+        }
+    }
+
+    if (selectedModifications.indexOf("@@FILE-ID@@") >= 0) {
+        btnSelect.innerText = Locale.Translate("Unselect");
+        btnSelect.classList.add("button-gray");
+        btnSelect.classList.remove("button-blue");
+    }
+
+    // detect CTRL-G for 'Go To Line dialog' in Edit mode
+    document.addEventListener("keydown", function (event) {
+        if (event.ctrlKey && event.code == "KeyG" && document.querySelector('.gitanos-diff.app-window.edit') != null) {
+            dlgGoToLine.style.display = 'block';
+            lineNumber.focus();
+            lineNumber.selectionStart = 0;
+            lineNumber.selectionEnd = 999;
+
+            var btnOK = dlgGoToLine.querySelector('.ok');
+            var btnCancel = dlgGoToLine.querySelector('.cancel');
+
+            btnOK.onclick = function (e) {
+                var line = parseInt(lineNumber.value);
+                if (isNaN(line) == false) {
+                    gotoLineNumber(line);
+                }
+
+                dlgGoToLine.style.display = 'none';
+            }
+
+            btnCancel.onclick = function (e) {
+                dlgGoToLine.style.display = 'none';
+            }
+
+            lineNumber.onkeypress = function (e) {
+                if (e.key == "Enter") {
+                    btnOK.click();
+                }
+            }
+
+            event.stopPropagation();
+            event.preventDefault();
+        }
+    });
+
+    function diffFile() {
+        document.querySelector('.gitanos-diff.app-window').classList.remove('edit');
+    }
+
+    function editFile() {
+        document.querySelector('.gitanos-diff.app-window').classList.add('edit');
+
+        var data = new FormData();
+        data.append('filepath', document.querySelector('.full-path').innerText);
+
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.overrideMimeType("application/json");
+        xmlhttp.open('POST', "/gitanos/repository/editfile/", true);
+        xmlhttp.onload = function () {
+            if (xmlhttp.readyState == 4) {
+                var editor = document.querySelector(".editor");
+                editor.textContent = xmlhttp.responseText;
+
+                var highlight = editor => {
+                    // highlight.js does not trim old tags,
+                    // let's do it by this hack.
+                    editor.textContent = editor.textContent
+                    hljs.highlightBlock(editor)
+                }
+
+                codeJar = new CodeJar(editor, withLineNumbers(highlight));
+            }
+        };
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }
+
+    function gotoLineNumber(line) {
+        var lines = document.querySelector('.codejar-linenumbers').querySelectorAll('br');
+        if (line >= lines.length) line = lines.length - 1;
+
+        document.querySelector('.editor').scrollTop = lines[line].offsetTop - 14;
+    }
+
+    function saveFile() {
+        var editor = document.querySelector(".editor");
+        var data = new FormData();
+        data.append('filepath', document.querySelector('.full-path').innerText);
+        data.append('content', '[' + editor.textContent + ']');
+        
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.overrideMimeType("application/json");
+        xmlhttp.open('POST', "/gitanos/repository/savefile/", true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.onload = function () {
+            if (xmlhttp.readyState == 4) {
+                var success = false;
+                try {
+                    var jsonResponse = JSON.parse(xmlhttp.responseText);
+                    success = (jsonResponse.Status == 'OK');
+                } catch(except) {
+                }
+
+                if (success) {
+                    statusMessage.innerText = Locale.Translate('File was successfully saved');
+                } else {
+                    statusMessage.innerText = Locale.Translate('File could not be saved');
+                }
+
+                statusMessage.style.opacity = 1;
+
+                setTimeout(function () {
+                    statusMessage.style.opacity = 0;
+                }, 2000);
+
+                window.location.reload();
+            }
+        };
+        xmlhttp.send(data);
+    }
+
+    function selectForCommit(fileID) {
+        selectedModifications = localStorage["selectedModifications"].split(',');
+
+        if (selectedModifications.indexOf(fileID) >= 0) {
+            // remove current fileID from selectedModifications session object (which is used in GitanosRepositoryModifications.html)
+            selectedModifications = selectedModifications.filter(item => item !== fileID);
+        } else  {
+            // add current fileID to selectedModifications session object (which is used in GitanosRepositoryModifications.html)
+            selectedModifications.push(fileID);
+        }
+
+        localStorage["selectedModifications"] = selectedModifications;
+        localStorage["clearSelectedModifications"] = currentTimestamp + 2 * 3600000;
+
+        // go to repository overview screen
+        window.location = "@@REPO-URL@@";
+    }
+
+    function showHideConfirmationMessage(show, title, text, fnYes, fnNo) {
+        if (show) {
+            dlgYesNo.style.display = 'block';
+            document.querySelector('html').style.overflow = 'hidden';
+
+            var btnNo = dlgYesNo.querySelector('.no');
+            var btnYes = dlgYesNo.querySelector('.yes');
+
+            // set title and text
+            dlgYesNo.querySelector('.title').innerText = title;
+            dlgYesNo.querySelector('.message').innerHTML = text;
+
+            // disable all TABs
+            document.querySelectorAll('input, button, a, textarea').forEach(function (input) {
+                input.setAttribute('tabindex', '-1');
+            });
+
+            // fix TABs for dialog
+            btnNo.setAttribute('tabindex', '1');
+            btnYes.setAttribute('tabindex', '2');
+
+            // set functions to buttons
+            btnNo.onclick = function () { fnNo(); return false; }
+            btnYes.onclick = function () { fnYes(); return false; }
+
+            // set focus
+            btnNo.focus();
+        } else {
+            dlgYesNo.style.display = 'none';
+            document.querySelector('html').style.overflow = 'unset';
+
+            // restore all TABs
+            document.querySelectorAll('input, button, a, textarea').forEach(function (input) {
+                input.removeAttribute('tabindex');
+            });
+        }
+    }
+
+    function gitRestoreModification(modificationID) {
+        var data = new FormData();
+        data.append('repositoryIndex', "@@REPOSITORY-INDEX@@");
+        data.append('modificationID', modificationID);
+
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.overrideMimeType("application/json");
+        xmlhttp.open('POST', "/gitanos/repository/undo/", true);
+        xmlhttp.onload = function () {
+            if (xmlhttp.readyState == 4) {
+                showHideConfirmationMessage(false);
+
+                try {
+                    var jsonResponse = JSON.parse(xmlhttp.responseText);
+                    if (jsonResponse.Status == 'Error') {
+                        showHideMessageDialog(true, Locale.Translate('ERROR'), jsonResponse.Description);
+                    } else {
+                        window.location = "@@REPO-URL@@";
+                    }
+                }
+                catch (except) {
+                    showHideMessageDialog(true, Locale.Translate('ERROR'), except.message);
+                }
+            }
+        };
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }
+
+    function undoModification(fileID)
+    {
+        var title = Locale.Translate("Undo modification");
+        var message = toHTML( Locale.Translate("Are you sure you want to discard your local changes for @@FILENAME@@ ?") );
+        message = message.replace(/@@FILENAME@@/, "<span style='white-space: nowrap;'>" + "@@FILE-PATH@@" + "</span>");
+        showHideConfirmationMessage(true, title, message,
+                                    function() {
+                                        gitRestoreModification(fileID);
+                                    },
+                                    function() {
+                                        showHideConfirmationMessage(false);
+                                    });
+    }
+</script>

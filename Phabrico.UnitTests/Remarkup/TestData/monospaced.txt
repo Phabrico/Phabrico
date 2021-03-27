@@ -1,0 +1,4 @@
+cmd ##ls --color > /dev/null##
+~~~~~~~~~~
+cmd <tt class='remarkup-monospaced'>ls --color &gt; /dev/null</tt>
+~~~~~~~~~~

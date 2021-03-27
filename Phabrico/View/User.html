@@ -1,0 +1,270 @@
+<style>
+    tr.disallowed a.disallow {
+        display: none;
+    }
+
+    .fa-spinner.fa-pulse {
+        width: 13px;
+        height: 13px;
+        top: 13px;
+        position: relative;
+        text-align: center;
+        display: none;
+    }
+</style>
+
+<div class="app-window">
+    <form id="frmUserSelection" action="" method="POST">
+        <input type="hidden" id="item" name="item">
+        <input type="hidden" id="showusers" name="showusers" value="all">
+
+        <div class="aphront-form-input" style="display: flex;">
+            <i class="phui-font-fa fa-spinner fa-pulse" id="spinShowAll" style="display: none; min-width: 13px; position: relative;"></i>
+            <a id="btnShowAll" href="#" onclick="showGlobalSpinner(this, '/user/showAll/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: none;">
+                <i class="phui-font-fa fa-eye"></i>Show all users
+            </a>
+            <a id="btnShowSelectedOnly" href="#" onclick="showGlobalSpinner(this, '/user/showSelected/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: inline-block;">
+                <i class="phui-font-fa fa-eye"></i>Show selected users
+            </a>
+            <i class="phui-font-fa fa-spinner fa-pulse" id="spinSelectAll" style="display: none; width: 13px; position: relative;"></i>
+            <a id="btnSelectAll" href="#" onclick="showGlobalSpinner(this, '/user/selectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: inline-block;">
+                <i class="phui-font-fa fa-check"></i>Select all users
+            </a>
+            <a id="btnUnselectAll" href="#" onclick="showGlobalSpinner(this, '/user/unselectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: none;">
+                <i class="phui-font-fa fa-check"></i>Unselect all users
+            </a>
+
+            <input id="filterUser" name="filterUser" type="text" class="full-width" placeholder="Type a username..." oninput="populateTable(this.value)">
+        </div>
+        <div class="scrollableTable" style="height:calc(100vh - 140px);">
+            <table id="tblUsers" class="aphront-table-view">
+                <thead>
+                    <tr>
+                        <th class="action" style="text-align:center; min-width:88px;">Select</th>
+                        <th class="wide">User</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script>
+// set button widths/visibility
+btnShowAll.style.display = 'inline-block';
+var maxWidth = Math.max(16 + parseInt(btnShowAll.getBoundingClientRect().width), 16 + parseInt(btnShowSelectedOnly.getBoundingClientRect().width));
+btnShowAll.style.display = 'none';
+btnShowAll.style.minWidth = maxWidth + "px";
+btnShowSelectedOnly.style.minWidth = maxWidth + "px";
+spinShowAll.style.minWidth = (maxWidth + 18) + "px";
+btnShowAll.style.maxWidth = btnShowAll.style.minWidth;
+btnShowSelectedOnly.style.maxWidth = btnShowSelectedOnly.style.minWidth;
+spinShowAll.style.maxWidth = spinShowAll.style.minWidth;
+
+btnSelectAll.style.display = 'inline-block';
+var maxWidth = Math.max(16 + parseInt(btnSelectAll.getBoundingClientRect().width), 16 + parseInt(btnUnselectAll.getBoundingClientRect().width));
+btnSelectAll.style.display = 'none';
+btnSelectAll.style.minWidth = maxWidth + "px";
+btnUnselectAll.style.minWidth = maxWidth + "px";
+spinSelectAll.style.minWidth = (maxWidth + 21) + "px";
+btnSelectAll.style.maxWidth = btnSelectAll.style.minWidth;
+btnUnselectAll.style.maxWidth = btnUnselectAll.style.minWidth;
+spinSelectAll.style.maxWidth = spinSelectAll.style.minWidth;
+
+// fill table
+populateTable("");
+document.getElementById('filterUser').focus();
+
+// set page title
+document.title = "Phabrico - Users";
+
+function showGlobalSpinner(allButton, url)
+{
+    if (allButton == btnShowAll) {
+        showusers.value = 'all';
+        spinShowAll.style.display = 'inline-block';
+    }
+
+    if (allButton == btnShowSelectedOnly) {
+        showusers.value = 'selected';
+        spinShowAll.style.display = 'inline-block';
+    }
+
+    if (allButton == btnSelectAll || allButton == btnUnselectAll) {
+        spinSelectAll.style.display = 'inline-block';
+    }
+
+    allButton.style.display = 'none';
+
+
+    var data = new FormData(frmUserSelection);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if(xmlhttp.readyState == 4)
+        {
+            populateTable(filterUser.value);
+        }
+    }
+    xmlhttp.open('POST', url, true);
+    xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+    xmlhttp.send(data);
+}
+
+function submitItem(id, url)
+{
+    setTimeout(function() {
+        var elem = document.getElementById('item');
+        elem.value = id.hash.substring(1);
+
+        var data = new FormData(frmUserSelection);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if(xmlhttp.readyState == 4)
+            {
+                populateTable(filterUser.value);
+            }
+        }
+        xmlhttp.open('POST', url, true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }, 250);
+}
+
+function selectUser(ev)
+{
+    var anchor = ev.target;
+    if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
+    anchor.style.display = 'none';
+    anchor.inprogress.style.display = 'inline-block';
+    submitItem(anchor, "/user/select");
+}
+
+function unselectUser(ev)
+{
+    var anchor = ev.target;
+    if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
+    anchor.style.display = 'none';
+    anchor.inprogress.style.display = 'inline-block';
+    submitItem(anchor, "/user/unselect");
+}
+
+function populateTable(firstCharacters)
+{
+    if (typeof tblUsers.xmlhttp !== 'undefined')
+    {
+        tblUsers.xmlhttp.abort();
+    }
+
+    var url = "/user/query/" + encodeURI(firstCharacters).split('/').join('%2F');  // encode characters in URL and make sure that all '/' characters are also encoded
+    if (url.endsWith('/') == false) url += '/';
+
+    var data = new FormData();
+    data.append('showusers', showusers.value);
+
+    tblUsers.xmlhttp = new XMLHttpRequest();
+    var xmlhttp = tblUsers.xmlhttp;
+    xmlhttp.overrideMimeType("application/json");
+    xmlhttp.open('POST', url, true);
+    xmlhttp.onload  = function() {
+        document.querySelector('#tblUsers tbody').innerHTML = "";
+
+        try
+        {
+            var jsonResponse = JSON.parse(xmlhttp.responseText);
+            jsonResponse.records.forEach(function(record) {
+                var tbody = document.querySelector('#tblUsers tbody');
+
+                // create new row
+                var row = tbody.insertRow();
+                row.classList.add('alternate');
+                if (record.Selected) {
+                    row.classList.add('selected');
+                }
+
+                var text = null;
+                var cell = row.insertCell();
+                cell.classList.add('action');
+                var anchorSelect = document.createElement('a');
+                anchorSelect.href = "#" + record.Token;
+                anchorSelect.classList.add("button");
+                anchorSelect.classList.add("small");
+                anchorSelect.classList.add(record.Token);
+                anchorSelect.style.minWidth = "70px";
+                var fontAwesome = document.createElement('i');
+                fontAwesome.classList.add('phui-font-fa');
+                fontAwesome.classList.add('fa-check');
+                anchorSelect.appendChild(fontAwesome);
+                if (record.Selected) {
+                    text = document.createTextNode(Locale.Translate("Unselect"));
+                    anchorSelect.classList.add("button-gray");
+                    anchorSelect.addEventListener("click", unselectUser, false);
+                }
+                else {
+                    text = document.createTextNode(Locale.Translate("Select"));
+                    anchorSelect.classList.add("button-blue");
+                    anchorSelect.addEventListener("click", selectUser, false);
+                }
+
+                // set text for Select/Unselect button
+                anchorSelect.appendChild(text);
+                cell.appendChild(anchorSelect);
+
+                // set spinner icon for Select/Unselect button
+                var inprogress = document.createElement('i');
+                inprogress.classList.add('phui-font-fa');
+                inprogress.classList.add('fa-spinner');
+                inprogress.classList.add('fa-pulse');
+                inprogress.style.display = 'none';
+                inprogress.style.marginLeft = '40px';
+                inprogress.style.top = '0px';
+                cell.appendChild(inprogress);
+
+                anchorSelect.inprogress = inprogress;
+
+                // add username to row
+                cell = row.insertCell();
+                cell.classList.add('wide');
+                var anchorUserTasks = document.createElement('a');
+                anchorUserTasks.href = "/user/info/" + record.Token;
+                text = document.createTextNode("  " + record.RealName);
+                anchorUserTasks.appendChild(text);
+                cell.appendChild(anchorUserTasks);
+            });
+
+            if (tblUsers.querySelectorAll('tbody tr:not(.selected)').length > 0) {
+                btnSelectAll.style.display = 'inline-block';
+                btnUnselectAll.style.display = 'none';
+            } else {
+                btnSelectAll.style.display = 'none';
+                btnUnselectAll.style.display = 'inline-block';
+            }
+
+            spinShowAll.style.display = 'none';
+            spinSelectAll.style.display = 'none';
+
+            if (showusers.value == 'all') {
+                btnShowSelectedOnly.style.display = 'inline-block';
+                btnShowAll.style.display = 'none';
+            } else  {
+                btnShowAll.style.display = 'inline-block';
+                btnShowSelectedOnly.style.display = 'none';
+            }
+
+            if (jsonResponse.nbrSelected == 1  &&  jsonResponse.noneUserSelected == 'true') {
+                var btnUnselectNone = document.querySelector('.button.PHID-USER-NONE.button-gray');
+                if (btnUnselectNone != null && document.querySelector('tr.selected').contains(btnUnselectNone)) {
+                    btnUnselectNone.style.pointerEvents = 'none';
+                    btnUnselectNone.parentNode.style.cursor = 'no-drop';
+                }
+            }
+        }
+        catch(exc)
+        {
+            // show logon dialog
+            document.location = "/";
+        }
+    };
+    xmlhttp.send(data);
+}
+</script>

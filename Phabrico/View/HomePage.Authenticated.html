@@ -1,0 +1,308 @@
+@{IF @@HAS-FAVORITES@@=True@
+    <div class="app-main-window" style="width:calc(100% - 50px);">
+        <div class="app-window-head">
+            <span>Favorites</span>
+        </div>
+        <div class="app-window-body favorites">
+            <div class="favorites-list">
+                @@FAVORITES@@
+            </div>
+        </div>
+    </div>
+}@
+
+<div class="app-main-window" style="width:calc(100% - 50px);">
+    <div class="app-window-head">
+        <span>General Overview</span>
+    </div>
+    <div class="app-window-body homepage">
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Phabrico Version:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-VERSION@@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Phabrico Build date:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-BUILD-DATE@@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Last synchronized with Phabricator at:</label>
+                    </td>
+                    <td>
+                        @{IF @@PUBLIC-ACCESS@@=True@
+                        @@LAST-SYNCHRONIZATION-TIME@@
+                        }@
+                        @{IF @@PUBLIC-ACCESS@@=False@
+                        <a href="/synchronization/logging/">@@LAST-SYNCHRONIZATION-TIME@@</a>
+                        }@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Phabrico Database Location:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-DATABASE-LOCATION@@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Phabrico Database size:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-DATABASE-SIZE@@
+                    </td>
+                </tr>
+                @{IF @@PHABRICO-REMOTE-ACCESS@@=RemoteAccess@
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Remote access:</label>
+                    </td>
+                    <td>
+                        Enabled
+                    </td>
+                </tr>
+                }@
+                <tr>
+                    <td colspan="2">
+                        <hr>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Number of Phriction documents:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-NUMBER-PHRICTION-DOCUMENTS@@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Number of Maniphest tasks:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-NUMBER-MANIPHEST-TASKS@@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Number of Projects:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-NUMBER-PROJECTS@@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Number of Users:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-NUMBER-USERS@@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Number of File objects:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <hr>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Number of uncommitted objects:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-NUMBER-UNCOMMITTED-OBJECTS@@
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="aphront-form-label">Number of frozen objects:</label>
+                    </td>
+                    <td>
+                        @@PHABRICO-NUMBER-FROZEN-OBJECTS@@
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    var draggingFavoriteItem = null;
+    var hoveredFavoriteItem = null;
+    var sequenceOrderFavoriteItemsStored = true;
+
+    function removeFavoriteItemsSplitter(splitterRow) {
+        if (splitterRow.nextElementSibling != null) {
+            splitterRow.nextElementSibling.classList.remove('first-of-fav-group');
+        }
+
+        splitterRow.parentElement.removeChild(splitterRow);
+        storeSequenceOrderFavoriteItems();
+    }
+
+    function storeSequenceOrderFavoriteItems() {
+        var data = new FormData();
+
+        var favoriteItems = Array.prototype.slice.call( document.querySelectorAll('.favorite-item'), 0);
+
+        // in case splitter is at start -> remove it
+        while (favoriteItems.length > 0  &&  favoriteItems[0].classList.contains('splitter')) {
+            favoriteItems[0].parentElement.removeChild(favoriteItems[0]);
+            favoriteItems.splice(0, 1);
+        }
+
+        // in case splitter is at start or at end of list of favorites -> remove it
+        while (favoriteItems.length > 0  &&  favoriteItems[favoriteItems.length - 1].classList.contains('splitter')) {
+            favoriteItems[favoriteItems.length - 1].parentElement.removeChild(favoriteItems[favoriteItems.length - 1]);
+            favoriteItems.splice(favoriteItems.length - 1, 1);
+        }
+
+        var tokens = favoriteItems.map(function(div) { 
+                                      return div.dataset['token']
+                                      })
+                                  .join(',');
+
+        data.append('tokens', tokens);
+        var changeOrderFavoritesRequest = new XMLHttpRequest();
+        changeOrderFavoritesRequest.onreadystatechange = function() {
+            if (changeOrderFavoritesRequest.readyState == 4 && changeOrderFavoritesRequest.status == 200) {
+                sequenceOrderFavoriteItemsStored = true;
+            }
+        };
+
+        changeOrderFavoritesRequest.open('POST', '/phriction/changeOrderFavorites', true);
+        changeOrderFavoritesRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        changeOrderFavoritesRequest.send(data);
+    }
+
+    function doDragFavoriteItem(favoriteItem) {
+        if (draggingFavoriteItem == null) {
+            draggingFavoriteItem = favoriteItem;
+            draggingFavoriteItem.classList.add('dragging');
+        } 
+        else if (hoveredFavoriteItem != draggingFavoriteItem) {
+            hoveredFavoriteItem = favoriteItem;
+        } 
+        else {
+            hoveredFavoriteItem = null;
+        }
+    }
+
+    function doDragOverFavoriteItem() {
+        var indexHoveredFavoriteItem = Array.from(hoveredFavoriteItem.parentNode.children).indexOf(hoveredFavoriteItem);
+        var indexDraggingFavoriteItem = Array.from(draggingFavoriteItem.parentNode.children).indexOf(draggingFavoriteItem);
+
+        sequenceOrderFavoriteItemsStored = false;
+
+        if (indexHoveredFavoriteItem < indexDraggingFavoriteItem) {
+            hoveredFavoriteItem.parentElement.insertBefore(draggingFavoriteItem, hoveredFavoriteItem);
+        } else  {
+            hoveredFavoriteItem.parentElement.insertBefore(draggingFavoriteItem, hoveredFavoriteItem.nextElementSibling);
+        }
+    }
+
+    function doSplitFavoriteItems(favoriteItemToBeSplitted) {
+        // split 2 favorite item rows by means of a splitter
+        var row = favoriteItemToBeSplitted.parentElement.parentElement;
+
+        var splitterRow = document.createElement('div');
+        splitterRow.className = "favorite-item splitter";
+        var splitterCombiner = document.createElement('span');
+        splitterRow.appendChild(splitterCombiner);
+        splitterCombiner.className = "combine-favorite-items fa fa-arrows-v";
+        splitterCombiner.addEventListener('click', function(event) {
+                // remove favorite items splitter
+                removeFavoriteItemsSplitter(event.target.parentElement);
+        }, true);
+
+        var splitterLine = document.createElement('hr');
+        splitterRow.appendChild(splitterLine);
+
+        splitterRow.addEventListener('mousemove', function(event) {
+            if (event.buttons == 1 && event.button == 0) {
+                doDragFavoriteItem(splitterRow);
+            }
+        }, true);
+
+        row.parentElement.insertBefore(splitterRow, row);
+
+        // make sure that the first favorite item of split group can not be splitted again (user should not be able to create to subsequent splitters)
+        var favoriteItems = Array.prototype.slice.call( document.querySelectorAll('.favorite-item'), 0 );
+        var splitters = Array.prototype.slice.call( document.querySelectorAll('.favorite-item.splitter'), 0 );
+        splitters.map(function(fav) {
+                     return 1 + favoriteItems.indexOf(fav);
+                 })
+                 .forEach(function(indexFirstFavoriteItemInGroup) {
+                     favoriteItems[indexFirstFavoriteItemInGroup].classList.add('first-of-fav-group');
+                 });
+
+        storeSequenceOrderFavoriteItems();
+    }
+
+    function stopDraggingFavoriteItem() {
+        draggingFavoriteItem.classList.remove('dragging');
+        draggingFavoriteItem = null;
+        hoveredFavoriteItem = null;
+
+        if (sequenceOrderFavoriteItemsStored == false) {
+            storeSequenceOrderFavoriteItems();
+        }
+    }
+
+    var favoritesList = document.body.querySelector('.favorites-list');
+    if (favoritesList != null && favoritesList.children.length > 0) {
+        favoritesList.addEventListener('mousemove', function(event) {
+            if (draggingFavoriteItem != null && hoveredFavoriteItem != null && draggingFavoriteItem != hoveredFavoriteItem) {
+                 doDragOverFavoriteItem();                   
+            }
+        });
+
+        favoritesList.addEventListener('mouseup', function(e) {
+            if (draggingFavoriteItem != null) {
+                stopDraggingFavoriteItem();
+            }
+        }, true);
+
+        document.body.querySelectorAll('.favorites-list .favorite-item')
+                .forEach(function(div) {
+                   div.addEventListener('mousemove', function(event) {
+                       if (event.buttons == 1 && event.button == 0) {
+                          doDragFavoriteItem(div);
+                       }
+                   }, true);
+                });
+
+        document.body.querySelectorAll('.favorites-list .favorite-items-cutter')
+                .forEach(function(div) {
+                   div.addEventListener('click', function(event) {
+                      doSplitFavoriteItems(event.target);
+                   }, true);
+                });
+
+        document.body.querySelectorAll('.favorites-list .combine-favorite-items')
+                .forEach(function(div) {
+                   div.addEventListener('click', function(event) {
+                        // remove favorite items splitter
+                        removeFavoriteItemsSplitter(event.target.parentElement);
+                   }, true);
+                });
+    }
+</script>

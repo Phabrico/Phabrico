@@ -1,0 +1,25 @@
+This is a paragraph.
+
+
+  lang=txt
+  First line of code block.
+  Second line of code block.
+
+
+<table>
+  <tr>
+    <td>Cell 1</td>
+    <td>Cell 2</td>
+  </tr>
+</table>
+~~~~~~~~~~
+This is a paragraph.<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>First line of code block.
+Second line of code block.</code></pre></div>
+<table class='remarkup-table'>
+  <tr>
+    <td>Cell 1</td>
+    <td>Cell 2</td>
+  </tr>
+</table>
+~~~~~~~~~~

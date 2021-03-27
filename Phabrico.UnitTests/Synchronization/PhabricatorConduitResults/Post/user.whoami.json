@@ -1,0 +1,13 @@
+{
+    "result": {
+        "phid": "PHID-USER-avflgkkgmrvd526jk522",
+        "username": "jeanie",
+        "realName": "Jeanie Cochran",
+        "image": "http:\/\/127.0.0.2:46975\/file\/data\/xxv226jlchd3k33tyz2k\/PHID-FILE-jpl3acd5fkotjapmlksb\/3f674d-alphanumeric_aleo-white_U.png-255%2C255%2C255%2C0.7.png",
+        "uri": "http:\/\/127.0.0.2:46975\/p\/user\/",
+        "roles": ["admin", "verified", "approved", "activated"],
+        "primaryEmail": "jeanie@localhost.local"
+    },
+    "error_code": null,
+    "error_info": null
+}

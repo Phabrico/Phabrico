@@ -1,0 +1,8 @@
+%%%[[http://hello | world]] **bold**%%%
+
+  %%%[[http://hello | world]] **bold**%%%
+~~~~~~~~~~
+<p class='remarkup-literal'>[[http://hello | world]] **bold**</p>
+<br>
+<p class='remarkup-literal'>[[http://hello | world]] **bold**</p>
+~~~~~~~~~~

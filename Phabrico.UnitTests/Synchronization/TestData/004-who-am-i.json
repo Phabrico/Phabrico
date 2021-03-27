@@ -1,0 +1,13 @@
+{
+    "execute": {
+        "method": ["ProgressMethod_WhoAmI"]
+    },
+
+    "validate": {
+        "storage": {
+            "account":  [{
+                "token":    "0123456789abcdef"
+            }]
+        }
+    }
+}

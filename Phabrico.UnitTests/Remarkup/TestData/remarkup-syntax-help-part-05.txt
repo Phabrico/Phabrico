@@ -1,0 +1,161 @@
+Lists
+=====
+
+Make **lists** by beginning each item with a `-` or a `*`:
+```
+lang=text
+- milk
+- eggs
+- bread
+
+* duck
+* duck
+* goose
+```
+
+This produces a list like this:
+
+- milk
+- eggs
+- bread
+
+(Note that you need to put a space after the `-` or `*`.)
+
+You can make numbered lists with a `#` instead of `-` or `*`:
+
+# Articuno
+# Zapdos
+# Moltres
+
+Numbered lists can also be started with `1.` or `1)`. If you use a number other
+than `1`, the list will start at that number instead. For example, this:
+
+```
+200) OK
+201) Created
+202) Accepted
+```
+
+...produces this:
+
+200) OK
+201) Created
+202) Accepted
+
+You can also nest lists:
+
+```
+- Body
+  - Head
+  - Arm
+    - Elbow
+    - Hand
+      # Thumb
+      # Index
+      # Middle
+      # Ring
+      # Pinkie
+  - Leg
+    - Knee
+    - Foot
+```
+
+...which produces:
+
+- Body
+  - Head
+  - Arm
+    - Elbow
+    - Hand
+      # Thumb
+      # Index
+      # Middle
+      # Ring
+      # Pinkie
+  - Leg
+    - Knee
+    - Foot
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='hdrLists' style='padding-top: 80px;'></a>Lists </h1>
+<br>
+Make <strong>lists</strong> by beginning each item with a <tt class='remarkup-monospaced'>-</tt> or a <tt class='remarkup-monospaced'>*</tt>:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>- milk
+- eggs
+- bread
+
+* duck
+* duck
+* goose</code></pre></div>
+<br>
+This produces a list like this:<br>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>milk</li>
+  <li class='remarkup-list-item'>eggs</li>
+  <li class='remarkup-list-item'>bread</li>
+</ul>
+
+(Note that you need to put a space after the <tt class='remarkup-monospaced'>-</tt> or <tt class='remarkup-monospaced'>*</tt>.)<br>
+You can make numbered lists with a <tt class='remarkup-monospaced'>#</tt> instead of <tt class='remarkup-monospaced'>-</tt> or <tt class='remarkup-monospaced'>*</tt>:<br>
+<ol class='remarkup-list'>
+  <li class='remarkup-list-item'>Articuno</li>
+  <li class='remarkup-list-item'>Zapdos</li>
+  <li class='remarkup-list-item'>Moltres</li>
+</ol>
+
+Numbered lists can also be started with <tt class='remarkup-monospaced'>1.</tt> or <tt class='remarkup-monospaced'>1)</tt>. If you use a number other<br>
+than <tt class='remarkup-monospaced'>1</tt>, the list will start at that number instead. For example, this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>200) OK
+201) Created
+202) Accepted</code></pre></div>
+<br>
+...produces this:<br>
+<ol start='200' class='remarkup-list'>
+  <li class='remarkup-list-item'>OK</li>
+  <li class='remarkup-list-item'>Created</li>
+  <li class='remarkup-list-item'>Accepted</li>
+</ol>
+
+You can also nest lists:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>- Body
+  - Head
+  - Arm
+    - Elbow
+    - Hand
+      # Thumb
+      # Index
+      # Middle
+      # Ring
+      # Pinkie
+  - Leg
+    - Knee
+    - Foot</code></pre></div>
+<br>
+...which produces:<br>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>Body
+    <ul class='remarkup-list'>
+      <li class='remarkup-list-item'>Head</li>
+      <li class='remarkup-list-item'>Arm
+        <ul class='remarkup-list'>
+          <li class='remarkup-list-item'>Elbow</li>
+          <li class='remarkup-list-item'>Hand
+            <ol class='remarkup-list'>
+              <li class='remarkup-list-item'>Thumb</li>
+              <li class='remarkup-list-item'>Index</li>
+              <li class='remarkup-list-item'>Middle</li>
+              <li class='remarkup-list-item'>Ring</li>
+              <li class='remarkup-list-item'>Pinkie</li>
+            </ol>
+          </li>
+        </ul>
+      </li>
+      <li class='remarkup-list-item'>Leg
+        <ul class='remarkup-list'>
+          <li class='remarkup-list-item'>Knee</li>
+          <li class='remarkup-list-item'>Foot</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+~~~~~~~~~~

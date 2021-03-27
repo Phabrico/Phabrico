@@ -1,0 +1,25 @@
+{
+    "execute": {
+        "method": ["GenerateDiffPath"],
+        "arguments": [ 
+            "Abra
+Cad
+Abra
+AbraCadAbra
+", 
+            "Abra
+Cad
+AbraCadAbra
+", 
+
+        ]
+    },
+
+    "validate": {
+        "methodResult": "=A=b=r=a=
+=C=a=d=
+<A<b<r<a<
+=A=b=r=a=C=a=d=A=b=r=a=
+"
+    }
+}

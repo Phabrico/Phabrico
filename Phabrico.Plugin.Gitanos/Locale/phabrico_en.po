@@ -1,0 +1,136 @@
+﻿# English translations
+
+# General
+msgid "Gitanos"
+msgstr "Gitanos"
+
+msgid "Shows the status of all local git repositories"
+msgstr "Shows the status of all local git repositories"
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "Enter the directories where all your git repository directories are located in:"
+
+msgid "Local root directories"
+msgstr "Local root directories"
+
+msgid "Add root directory"
+msgstr "Add root directory"
+
+msgid "Gitanos::Notification"
+msgstr "Notification"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "Summarize the following states for all repositories and show the result as a notification:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "Local git repositories"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "Type some text to filter the list of git repositories..."
+
+msgid "Show clean repositories"
+msgstr "Show clean repositories"
+
+msgid "Hide clean repositories"
+msgstr "Hide clean repositories"
+
+msgid "Repository"
+msgstr "Repository"
+
+msgid "Branch"
+msgstr "Branch"
+
+msgid "Gitanos::Added"
+msgstr "Added"
+
+msgid "Gitanos::Removed"
+msgstr "Removed"
+
+msgid "Gitanos::Modified"
+msgstr "Modified"
+
+msgid "Gitanos::Renamed"
+msgstr "Renamed"
+
+msgid "Gitanos::Untracked"
+msgstr "Untracked"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "There are some local commits which haven't been pushed yet"
+
+# Repository modifications overview
+msgid "File"
+msgstr "File"
+
+msgid "Modification Type"
+msgstr "Modification Type"
+
+msgid "Timestamp"
+msgstr "Timestamp"
+
+msgid "Unpushed commit"
+msgstr "Unpushed commit"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "Type some text to filter the list of modifications..."
+
+msgid "COMMIT"
+msgstr "COMMIT"
+
+msgid "PUSH"
+msgstr "PUSH"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Select all files"
+msgstr "Select all files"
+
+msgid "Unselect all files"
+msgstr "Unselect all files"
+
+msgid "Commit selected files"
+msgstr "Commit selected files"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "Are you sure you want to discard '@@MODIFICATION@@' ?"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "This is a binary file which has been modified."
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+
+msgid "Undo modification"
+msgstr "Undo modification"
+
+msgid "File was successfully saved"
+msgstr "File was successfully saved"
+
+msgid "File could not be saved"
+msgstr "File could not be saved"
+
+msgid "Diff"
+msgstr "Diff"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Line number:"
+msgstr "Line number:"
+
+msgid "This git repository is clean"
+msgstr "This git repository is clean"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "Directory @@DIRECTORY@@ does not exist"
+
+msgid "Error git push"
+msgstr "Error git push"

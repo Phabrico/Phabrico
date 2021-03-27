@@ -1,0 +1,136 @@
+﻿# German translations
+
+# General
+msgid "Gitanos"
+msgstr "Gitanos"
+
+msgid "Shows the status of all local git repositories"
+msgstr "Zeigt den Status aller lokalen Git-Repositories an"
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "Geben Sie die Verzeichnisse an, in denen sich alle Ihre Git-Repository-Verzeichnisse befinden:"
+
+msgid "Local root directories"
+msgstr "Lokale Root-Verzeichnisse"
+
+msgid "Add root directory"
+msgstr "Root-Verzeichnis hinzufügen"
+
+msgid "Gitanos::Notification"
+msgstr "Benachrichtigung"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "Addieren Sie die folgenden Zustände für alle Repositories und zeigen Sie die Ergebnisse als Benachrichtigungen an:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "Lokale Git-Repositories"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "Geben Sie einen Text ein, um die Liste der Git-Repositories zu filtern..."
+
+msgid "Show clean repositories"
+msgstr "Mostrar los repositorios actualizados"
+
+msgid "Hide clean repositories"
+msgstr "Ocultar los repositorios actualizados"
+
+msgid "Repository"
+msgstr "Repository"
+
+msgid "Branch"
+msgstr "Branch"
+
+msgid "Gitanos::Added"
+msgstr "Neu"
+
+msgid "Gitanos::Removed"
+msgstr "Entfernt"
+
+msgid "Gitanos::Modified"
+msgstr "Geändert"
+
+msgid "Gitanos::Renamed"
+msgstr "Umbenannt"
+
+msgid "Gitanos::Untracked"
+msgstr "Unverfolgt"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "Es gibt einige lokale Commits, die noch nicht gepusht worden sind"
+
+# Repository modifications overview
+msgid "File"
+msgstr "Datei"
+
+msgid "Modification Type"
+msgstr "Art der Änderung"
+
+msgid "Timestamp"
+msgstr "Zeitpunkt"
+
+msgid "Unpushed commit"
+msgstr "Unpushed commit"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "Geben Sie einen Text ein, um die Liste der Änderungen zu filtern..."
+
+msgid "COMMIT"
+msgstr "COMMIT"
+
+msgid "PUSH"
+msgstr "PUSH"
+
+msgid "Actions"
+msgstr "Aktionen"
+
+msgid "Select all files"
+msgstr "Alle Dateien auswählen"
+
+msgid "Unselect all files"
+msgstr "Keine Dateien auswählen"
+
+msgid "Commit selected files"
+msgstr "Commit erstellen für ausgewählten Dateien"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "Sind Sie sicher, dass Sie '@@MODIFICATION@@' rückgängig machen wollen?"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "Dies ist eine Binärdatei, die geändert wurde."
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "Sind Sie sicher, dass Sie Ihre lokalen Änderungen für @@FILENAME@@ rückgängig machen wollen?"
+
+msgid "Undo modification"
+msgstr "Änderung rückgängig machen"
+
+msgid "File was successfully saved"
+msgstr "Datei gespeichert"
+
+msgid "File could not be saved"
+msgstr "Datei konnte nicht gespeichert werden"
+
+msgid "Diff"
+msgstr "Differenzen"
+
+msgid "Save"
+msgstr "Speichern"
+
+msgid "Edit"
+msgstr "Bearbeiten"
+
+msgid "Line number:"
+msgstr "Zeile:"
+
+msgid "This git repository is clean"
+msgstr "Dieses Git-Repository ist unverändert"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "Verzeichnis @@DIRECTORY@ existiert nicht"
+
+msgid "Error git push"
+msgstr "Problem mit Git-Push"

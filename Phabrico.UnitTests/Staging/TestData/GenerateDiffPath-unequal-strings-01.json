@@ -1,0 +1,13 @@
+{
+    "execute": {
+        "method": ["GenerateDiffPath"],
+        "arguments": [ 
+            "** born to be wild **", 
+            "** born to be weld **"
+        ]
+    },
+
+    "validate": {
+        "methodResult": "=*=*= =b=o=r=n= =t=o= =b=e= =w<i>e=l=d= =*=*"
+    }
+}

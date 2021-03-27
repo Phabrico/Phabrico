@@ -1,0 +1,11 @@
+> This should be a code block:
+>
+> ```lang=php
+> <?php
+> $foo = 'bar';
+> ```
+~~~~~~~~~~
+<blockquote>This should be a code block:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='php '>&lt;?php
+$foo = &#39;bar&#39;;</code></pre></div></blockquote>
+~~~~~~~~~~

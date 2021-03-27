@@ -1,0 +1,309 @@
+<div class="app-window">
+    <div class="staging-view">
+        <div class="staging-head">
+            <span>Offline changes</span>
+        </div>
+
+        @{DATA-VIEWPAGE
+        <form id="frmStaging" action="" method="POST">
+            <div class="scrollableTable" style="height:calc(100vh - 135px);">
+                <table id="tblOfflineChanges" class="aphront-table-view">
+                    <thead>
+                        <tr>
+                            <th class=""></th>
+                            <th class="wide">Content</th>
+                            <th class="wide">Last modified at</th>
+                            <th class="action" style="text-align:center">Undo</th>
+                            <th class="action" style="text-align:center">Freeze</th>
+                            <th class="action" style="text-align:center">Modification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+        }@
+        <div id="no-data-found" style="display:none; margin-left:50%; line-height:50px;">
+            <span><i>No offline changes found</i></span>
+        </div>
+    </div>
+</div>
+
+<div id="dlgConfirmUndo" class="aphront-dialog-view modal" style="display:none">
+    <div class="aphront-dialog-overlay"></div>
+    <div class="aphront-dialog-head">
+        <span class="phui-header-header">Undo</span>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup">
+        <div class="phabrico-remarkup">
+            <p>Are you sure you want to undo this local change ?</p>
+            <p>&nbsp;</p>
+            <p id="dlgConfirmUndoDetail" style="text-align: center;font-weight:bold;"></p>
+        </div>
+        <br />
+    </div>
+    <div class="aphront-dialog-tail grouped">
+        <button type="button" data-accesskey="Button-AccessKey-No" class="button-gray" onclick="cancelUndo()">No</button>
+        <button type="button" data-accesskey="Button-AccessKey-Yes" onclick="confirmUndo()">Yes</button>
+    </div>
+</div>
+
+<script>
+populateTable();
+
+// set page title
+document.title = "Phabrico - Offline Changes";
+
+function cancelUndo()
+{
+   dlgConfirmUndo.style.display = 'none';
+}
+
+function confirmUndo()
+{
+   dlgConfirmUndo.style.display = 'none';
+
+   var elem = dlgConfirmUndo.tagElement;
+   submitItem(elem, "/offline/changes/undo");
+}
+
+function populateTable()
+{
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.overrideMimeType("application/json");
+    xmlhttp.open('GET', "/offline/changes/data/", true);
+    xmlhttp.onload  = function() {
+        var tbody = document.querySelector('#tblOfflineChanges tbody');
+
+        frmStaging.style.maxHeight = '40px';
+        document.getElementById('no-data-found').style.display = 'block';
+
+        if (tbody == null) return;
+        tbody.innerHTML = "";
+
+        var jsonResponse = JSON.parse(xmlhttp.responseText);
+        jsonResponse.forEach(function(record) {
+            var tbody = document.querySelector('#tblOfflineChanges tbody');
+
+            // create new row
+            var row = tbody.insertRow();
+            row.classList.add('alternate');
+            if (record.Frozen)
+            {
+                row.classList.add('frozen');
+            }
+            document.getElementById('no-data-found').style.display = 'none';
+            frmStaging.style.maxHeight = 'unset';
+
+            // add merge-conflict/frozen/unfrozen icon
+            var cell = row.insertCell();
+            cell.style.verticalAlign = 'top';
+            var fontAwesomeWrapper = document.createElement('span');
+            var fontAwesome = document.createElement('i');
+            fontAwesome.classList.add('phui-font-fa');
+            if (record.MergeConflict)
+            {
+                fontAwesome.classList.add('fa-exclamation-triangle');
+                fontAwesomeWrapper.title = Locale.Translate("The Phabricator server contains a newer version");
+            }
+            else
+            if (record.Frozen)
+            {
+                fontAwesome.classList.add('fa-snowflake-o');
+                fontAwesomeWrapper.title = Locale.Translate("Frozen");
+            }
+            else
+            {
+                fontAwesome.classList.add('fa-fire');
+                fontAwesomeWrapper.title = Locale.Translate("Modified");
+            }
+            fontAwesomeWrapper.appendChild(fontAwesome);
+            cell.appendChild(fontAwesomeWrapper);
+
+            // add object-icon (maniphest or phriction icon)
+            cell = row.insertCell();
+            cell.classList.add('wide');
+            var anchorURL = document.createElement('a');
+            anchorURL.href = record.URL;
+            anchorURL.className = "url";
+            anchorURL.style.whiteSpace = 'pre-wrap';
+            anchorURL.style.textIndent = '-.85em';
+            anchorURL.style.paddingLeft = '1.7em';
+            anchorURL.style.float = 'left';
+            anchorURL.style.width = '95%';
+            fontAwesome = document.createElement('i');
+            fontAwesome.classList.add('phui-font-fa');
+            if (record.Type) {
+                fontAwesome.classList.add(record.Type);
+            }
+            anchorURL.appendChild(fontAwesome);
+
+            // add object title
+            var text = document.createTextNode("  " + record.Title);
+            anchorURL.appendChild(text);
+            cell.appendChild(anchorURL);
+
+            // add modification timestamp
+            cell = row.insertCell();
+            cell.classList.add('wide');
+            text = document.createElement('span');
+            text.innerHTML = record.Timestamp;
+            cell.appendChild(text);
+
+            // add undo button
+            cell = row.insertCell();
+            cell.classList.add('action');
+            if (record.URL.startsWith('/file/data/') == false)
+            {
+                anchorUndo = document.createElement('a');
+                anchorUndo.href = "#" + record.Token + "[" + record.TransactionModifier + "]";
+                anchorUndo.classList.add("button");
+                anchorUndo.classList.add("button-gray");
+                anchorUndo.classList.add("small");
+                anchorUndo.style.minWidth = "50px";
+                anchorUndo.addEventListener("click", undo, false);
+                fontAwesome = document.createElement('i');
+                fontAwesome.classList.add('phui-font-fa');
+                fontAwesome.classList.add('fa-undo');
+                anchorUndo.appendChild(fontAwesome);
+                text = document.createTextNode(Locale.Translate("Undo"));
+                anchorUndo.appendChild(text);
+                cell.appendChild(anchorUndo);
+            }
+
+            // add Freeze/Unfreeze button
+            cell = row.insertCell();
+            cell.classList.add('action');
+            if (record.URL.startsWith('/file/data/') == false)
+            {
+                anchorFreeze = document.createElement('a');
+                anchorFreeze.href = "#" + record.Token + "[" + record.TransactionModifier + "]";
+                anchorFreeze.classList.add("button");
+                anchorFreeze.classList.add("button-gray");
+                anchorFreeze.classList.add("small");
+                anchorFreeze.style.minWidth = "60px";
+                fontAwesome = document.createElement('i');
+                fontAwesome.classList.add('phui-font-fa');
+                if (record.Frozen)
+                {
+                    fontAwesome.classList.add('fa-fire');
+                    text = document.createTextNode(Locale.Translate("Unfreeze"));
+                    anchorFreeze.addEventListener("click", unfreeze, false);
+                }
+                else
+                {
+                    fontAwesome.classList.add('fa-snowflake-o');
+                    text = document.createTextNode(Locale.Translate("Freeze"));
+                    anchorFreeze.addEventListener("click", freeze, false);
+                }
+                anchorFreeze.appendChild(fontAwesome);
+                anchorFreeze.appendChild(text);
+                cell.appendChild(anchorFreeze);
+            }
+
+            // add modification action (can be a 'View changes' button or some text)
+            cell = row.insertCell();
+            cell.classList.add('action');
+            if (record.URL.startsWith('/file/data/') == false)
+            {
+                cell.style.textAlign = 'center';
+
+                if (record.TransactionText != "") {
+                    var textNewObject = document.createElement('div');
+                    var textItalic = document.createElement('i');
+                    textNewObject.appendChild(textItalic);
+                    textItalic.innerText = record.TransactionText;
+                    textNewObject.style.fontWeight = 'normal';
+                    cell.appendChild(textNewObject);
+                } else
+                if (record.Token.startsWith('PHID-NEWTOKEN')) {
+                    var textNewObject = document.createElement('div');
+                    var textItalic = document.createElement('i');
+                    textNewObject.appendChild(textItalic);
+                    textItalic.innerText = Locale.Translate('(New)');
+                    textNewObject.style.fontWeight = 'normal';
+                    cell.appendChild(textNewObject);
+                } else {
+                    var anchorViewChanges = document.createElement('a');
+                    anchorViewChanges.href = "/offline/changes/view/" + record.Token + "/";
+                    anchorViewChanges.classList.add("button");
+                    anchorViewChanges.classList.add("button-gray");
+                    anchorViewChanges.classList.add("small");
+                    anchorViewChanges.style.minWidth = "50px";
+                    fontAwesome = document.createElement('i');
+                    fontAwesome.classList.add('phui-font-fa');
+                    fontAwesome.classList.add('fa-eye');
+                    anchorViewChanges.appendChild(fontAwesome);
+                    text = document.createTextNode(Locale.Translate("View changes"));
+                    anchorViewChanges.appendChild(text);
+                    cell.appendChild(anchorViewChanges);
+                }
+            }
+        });
+    };
+    xmlhttp.send(null);
+}
+
+function showUndoConfirmation(elem)
+{
+   dlgConfirmUndoDetail.innerText = elem.closest('tr').querySelector('td a').innerText;
+
+   var modificationDetails = elem.closest('tr').querySelectorAll('td')[3].querySelector('div');
+   if (modificationDetails != null) {
+      dlgConfirmUndoDetail.innerHTML += " &nbsp; &nbsp; <i>" + modificationDetails.innerText + "<i>";
+   }
+
+   dlgConfirmUndo.tagElement = elem;
+   dlgConfirmUndo.style.display = 'block';
+}
+
+function submitItem(item, url)
+{
+    setTimeout(function() {
+        var elem = frmStaging.getElementsByTagName('input');
+        if (elem.length > 0)
+        {
+            elem = elem[0];
+        }
+        else
+        {
+            elem = document.createElement('input');
+            elem.type = "hidden";
+            elem.name = "item";
+            frmStaging.appendChild(elem);
+        }
+
+        elem.value = item.closest('a').hash.substring(1);
+
+        var data = new FormData(frmStaging);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if(xmlhttp.readyState == 4)
+            {
+                populateTable();
+
+                updateManiphestTaskCount();
+            }
+        }
+        xmlhttp.open('POST', url, true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }, 250);
+}
+
+function freeze(ev)
+{
+    submitItem(ev.target, "/offline/changes/freeze");
+}
+
+function undo(ev)
+{
+    showUndoConfirmation(ev.target);
+}
+
+function unfreeze(ev)
+{
+    submitItem(ev.target, "/offline/changes/unfreeze");
+}
+</script>

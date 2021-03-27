@@ -1,0 +1,6 @@
+**duck
+quack**
+~~~~~~~~~~
+<strong>duck<br>
+quack</strong>
+~~~~~~~~~~

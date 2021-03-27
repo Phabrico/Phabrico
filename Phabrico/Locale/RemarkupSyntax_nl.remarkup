@@ -1,0 +1,639 @@
+﻿= Remarkup Syntaxis Referentie =
+
+Phabrico gebruikt een lightweight opmaaktaal genaamd "Remarkup", vergelijkbaar met
+andere lightweight markup talen zoals Markdown en Wiki markup.
+
+Dit document beschrijft hoe je tekst opmaakt met behulp van Remarkup.
+
+= Quick Reference =
+
+Hieronder wordt de hele syntaxis in meer detail uitgelegd, maar dit is een korte handleiding voor
+opmaak tekst in Remarkup.
+
+Dit zijn inline stijlen, en kunnen worden toegepast op de meeste tekst:
+```
+**vetgedrukt** //cursief// `monospaced` ##monospaced## ~~verwijderd~~ __onderlijnd__
+!!gemarkeerd!!
+T123                      # Link naar een taak
+{T123}                    # Link naar een taak (met titel)
+{F123}                    # Afbeeldingen plaatsen
+@username                 # Een gebruiker vernoemen
+#project                  # Een project vernoemen
+[[wiki page]]             # Link naar een wiki document
+[[wiki page | name]]      # Link naar een wiki document (met titel)
+http://xyz/               # Link naar een website
+[[http://xyz/ | name]]    # Link naar een website (met titel)
+[name](http://xyz/)       # Link naar een website (met titel)
+```
+Dit zijn blokstijlen, en moeten worden gescheiden van de omringende tekst door
+lege regels:
+```
+= Grote titel =
+
+== Kleinere titel ==
+
+## Dit is ook een titel
+
+Ook een grote titel
+===================
+
+Ook een kleinere titel
+----------------------
+
+> Geciteerde tekst
+
+Gebruik `-` of `*` voor opsommingstekens, en `#` voor genummerde lijsten.
+Gebruik ``` of begin de lijn met twee spaties om codeblocks te maken
+Gebruik %%% voor een tekstblok.
+Gebruik | ... | ... voor tabellen.
+```
+
+= Basis Styling =
+
+Formatteer **basis tekststijlen** zoals deze:
+```
+**Vetgedrukte tekst**
+//cursieve tekst///
+`Monogespatieerde tekst`
+##Monogespatieerde tekst##
+~~verwijderde tekst~~
+__onderstreepte tekst__
+!!Gemarkeerde tekst!!
+```
+
+Dit produceert het volgende: **Vetgedrukte tekst**, //cursieve tekst///, `Monogespatieerde tekst`
+##monospaced text##, ~~verwijderde tekst~~, __onderstreepte tekst__, !!Gemarkeerde tekst!!
+
+= Layout =
+
+Maak **kopteksten** zoals deze:
+```
+= Grote titel =
+
+== Kleinere titel ==
+
+===== Heel kleine titel =====
+
+Alternatieve grote titel
+========================
+
+Alternatieve kleinere titel
+---------------------------
+```
+
+Je kan de `=` en `-` karakters eventueel weglaten.
+Deze 2 kopteksten genereren dezelfde output:
+
+```
+== Kleinere koptekst ==
+
+== Kleinere koptekst
+```
+
+Dit genereert kopteksten zoals degene die in dit document terug te vinden zijn.
+Zorg ervoor dat er voor en achter de koptekst een lege lijn is.
+
+Lijsten
+=======
+
+Maak **lijsten** door elk item te beginnen met een `-` of een `*`:
+```
+lang=text
+- melk
+- eieren
+- brood
+
+* eend
+* eend
+* gans
+```
+
+Dit genereert volgende output:
+
+- melk
+- eieren
+- brood
+
+* eend
+* eend
+* gans
+
+(Merk op dat je een spatie na elk `-` of `*` karakter moet toevoegen)
+
+Je kan een numerieke lijst maken door `#` te gebruiken ipv `-` of `*`:
+
+# Koop het produkt
+# Breid het produkt uit
+# Verkoop het produkt terug met grote winst
+
+Numerieke lijsten kunnen ook gemaakt worden met `1.` of `1)`. Indien je een
+nummer kiest verschillend van `1`, dan begint de lijst vanaf dat nummer.
+Bijvoorbeeld:
+
+```
+200) OK
+201) Aangemaakt
+202) Goedgekeurd
+```
+
+...genereert volgende output:
+
+200) OK
+201) Aangemaakt
+202) Goedgekeurd
+
+Je kan geneste lijsten maken:
+
+```
+- Lichaam
+  - Hoofd
+  - Arm
+    - Elleboog
+    - Hand
+      # Duim
+      # Indexvinger
+      # Middelvinger
+      # Ringvinger
+      # Pink
+  - Been
+    - Knie
+    - Voet
+```
+
+...genereert volgende output:
+
+- Lichaam
+  - Hoofd
+  - Arm
+    - Elleboog
+    - Hand
+      # Duim
+      # Indexvinger
+      # Middelvinger
+      # Ringvinger
+      # Pink
+  - Been
+    - Knie
+    - Voet
+
+Indien gewenst, dan kan men de lijst inspringen door dezelfde karakters te
+herhalen om de inspring-diepte te tonen:
+Bijvoorbeeld:
+
+```
+- Boom
+-- Tak
+--- Twijg
+```
+
+Dit produceert het volgende:
+
+- Boom
+-- Tak
+--- Twijg
+
+U kunt de checkboxen aan de items toevoegen door ze vooraf aan te duiden met `[ ]` of `[X]`, zoals bv:
+
+```
+- [X] Verwarm de oven voor op 450 graden.
+- [ ] Pel 35 citroenen.
+```
+
+Dit genereert het volgende resultaat:
+
+- [X] Verwarm de oven voor op 450 graden.
+- [ ] Pel 35 citroenen.
+
+Je kan **code blocks** aanmaken door elke lijn voor af te gaan door 2 spaties:
+
+  f(x, y);
+
+Maar je kan ook 3 backticks (of accent grave) toevoegen aan het begin en aan het
+einde van de codeblock:
+
+```
+f(x, y);
+g(f);
+```
+
+U kunt een taal opgeven voor het weergeven van de syntaxis met `lang=xxx`:
+  lang=text
+  lang=html
+  <a href="#">...</a>
+
+Dit zal het codeblok kleuren volgens de syntaxis van de opgegeven taal, indien deze beschikbaar is:
+  lang=html
+  <a href="#">...</a>
+
+Je kan ook een `COUNTEREXAMPLE` header toevoegen, om aan te geven dat het blok code foutief is
+en niet gekopieerd mag worden:
+  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Dit produceert het volgende:
+
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Met behulp van `lines=N` kan je de hoogte van het codeblock bepalen.
+Met `name=some_name.ext` kan je het codeblock een naam geven:
+
+  lang=text
+  lang=html, name=voorbeeld.html, lines=4, counterexample
+  <p>Appel</p>
+  <p>Abricoos</p>
+  <p>Avocado</p>
+  <p>Banaan</p>
+  <p>Bosbes</p>
+  <p>Druif</p>
+
+...produces this:
+
+  lang=html, name=voorbeeld.html, lines=4, counterexample
+  <p>Appel</p>
+  <p>Abricoos</p>
+  <p>Avocado</p>
+  <p>Banaan</p>
+  <p>Bosbes</p>
+  <p>Druif</p>
+
+
+U kunt de `NOTE:`, `WARNING:` of `IMPORTANT:` elementen gebruiken om de aandacht te
+vestigen op een belangrijk idee.
+
+Bijvoorbeeld:
+
+```
+NOTE: Houd regelmatig vergaderingen om uw medewerkers wakker te houden.
+```
+
+...genereert het volgende:
+
+NOTE: Houd regelmatig vergaderingen om uw medewerkers wakker te houden.
+
+Door `WARNING:` of `IMPORTANT:` te gebruiken, wijzigt de kleur van de call-out:
+
+WARNING: Te veel vergaderingen kunnen slaapverwekkend worden
+
+IMPORTANT: Ga niet te veel vergaderingen bijwonen.
+
+Daarnaast kunt u gebruik maken van `(NOTE)`, `(WARNING)`, of `(IMPORTANT)`
+om hetzelfde effect te krijgen, maar zonder `(NOTE)`, `(WARNING)`, of `(IMPORTANT)`
+in het weergegeven resultaat te verschijnen. Deze callout maakt bijvoorbeeld gebruik
+van `(NOTE)`:
+
+(NOTE) Woon niet te weinig vergaderingen bij.
+
+
+Horizontale lijnen
+==================
+
+U kunt secties verdelen door drie of meer streepjes op een lijn te zetten door zelf.
+Hierdoor ontstaat een verdeler of horizontale regel die lijkt op een `<hr />` label,
+zoals deze:
+
+---
+
+De streepjes moeten op hun eigen regel staan en gescheiden zijn van andere inhoud.
+Zoals hier bv:
+
+```
+Dit segment zal visueel worden gescheiden.
+
+---
+
+Over iets helemaal anders gesproken, ...
+```
+
+= Hyperlinks =
+
+URI's worden automatisch getoond: http://phabricator.org/
+
+Als je een URI hebt met problematische karakters erin, zoals
+"http://comma.org/,`", je kunt het omringen met kleiner-dan en groter-dan karakters:
+```
+<http://comma.org/,>
+```
+
+Dit zal de parser dwingen om de hele URI te consumeren: <http://comma.org/,>
+
+U kunt ook gebruik maken van het aanmaken van benoemde hyperlinks, waarbij u de weergegeven
+tekst bepaalt:
+```
+[http://www.boring-legal-documents.com/ | opwindende juridische documenten]]
+```
+
+Markdown-style hyperlinks worden ook ondersteund:
+```
+[Toil](http://www.trouble.com)
+```
+
+= Object-referenties =
+
+Je kan links maken naar Phabricator objects, zoals bv een Maniphest taak, door diens naam te vernoemen:
+```
+T123          # Link naar Maniphest taak T123
+```
+
+= Objecten integreren
+
+U kunt ook naar sommige objecten (zoals Maniphest taken) verwijzen dmv hun naam door gebruik te maken van accolades:
+```
+{T123}        # Link naar Maniphest task T123 die de titel van de taak toont
+```
+
+Deze referenties geven ook aan wanneer een object van status verandert (bijvoorbeeld wanneer een taak of revisie is afgesloten). 
+
+== Verwijzingen naar projecten
+
+Er kan aan projecten worden gerefereerd met behulp van een hashtag `#`. 
+Dit werkt standaard met de naam van het project (kleine letters, onderstreept).
+Daarnaast kunt u meerdere extra hashtags instellen door de projectdetails in Phabricator te bewerken.
+```
+#qa, #quality_assurance
+```
+
+== Afbeeldingen of bestanden integreren
+
+Je kan een afbeelding of een bestand toevoegen door accolades rond de naam te plaatsen:
+```
+{F123}
+```
+
+Je kan ook een afbeelding in het tekstgedeelte verslepen (drag-and-drop).
+
+De meeste browsers ondersteunen ook het uploaden van een afbeelding door het gewoon in het tekstgedeelte te plakken.
+
+Je kan een bestand als volgt bv parameteriseren:
+```
+{F123, layout=left, float, size=full, alt="een eendje"}
+```
+
+Volgende parameters zijn beschikbaar voor alle bestandstypes:
+
+- **layout**
+  - left : Plaatst de afbeelding links (=standaard)
+  - center : Plaatst de afbeelding in het midden
+  - right : Plaatst de afbeelding rechts
+  - inline : Plaatst de afbeelding links, maar dichter bij de vorige en de volgende lijn
+  - link : toont een link ipv de afbeelding zelf
+- **name** : Indien `layout` gelijk is aan `link`, of indien het bestand geen afbeelding is, dan wordt deze name als link tekst getoond.
+- **alt** : Zorgt voor een alternatieve tekst voor assisterende systemen.
+
+Afbeeldingen hebben ook nog volgende parameters:
+
+- **float**: Als `layout` is ingesteld op `left` of `right` dan loopt de tekst rond de afbeelding.
+- **size**: thumb (default), full
+- **width**" Schaalt de afbeelding naar een specifieke breedte.
+- **height**: Schaalt de afbeelding naar een specifieke hoogte.
+
+Audio en video bestanden hebben ook nog volgende parameters:
+
+- **media**: Specifieert het media type zoals `audio` of `video`. Dit laat toe om aan te geven hoe het bestand getoond moet worden.
+- **loop**: Blijft het media bestand opnieuw afspelen.
+- **autoplay**: Speelt het media bestand onmiddellijk af.
+
+= Tekst citeren =
+
+Om tekst te citeren moet je de tekst voorafgaan met `>`:
+```
+  > Dit is tekst die geciteerd wordt
+```
+
+Dit wordt als volgt getoond
+
+> Dit is tekst die geciteerd wordt
+
+= Memes =
+
+U kunt ook afbeeldingsmacro's gebruiken in de context van memes. Als je bijvoorbeeld een afbeeldingsmacro
+met de naam `chagrijnig` hebt, kun je een meme maken door het volgende te doen:
+```
+{meme, src=chagrijnig, above=tekstbovenaan, below=tekstonderaan}
+```
+
+= Verwijzen naar gebruikers =
+
+In Maniphest kan je naar gebruikers verwijzen als volgt:
+```
+@gebruikersnaam
+```
+
+Icons
+=====
+
+Je kan icons toevoegen dmv de `{icon ...}` syntax.
+Bijvoorbeeld:
+```
+  {icon camera}
+```
+
+Dit genereert het volgende: {icon camera}
+
+Je kan ook de icons ook een kleur geven:
+```
+  {icon camera color=blue}
+```
+
+Dit genereert het volgende: {icon camera color=blue}
+
+De [[ https://fontawesome.com/v4.7.0/icons/ | FontAwesome website]] bevat een lijst van alle mogelijke icons.
+Deze kleuren zijn beschikbaar:
+  - dark              {icon phabrico-square, color=dark}
+  - bluegrey          {icon phabrico-square, color=bluegrey}
+  - white             {icon phabrico-square, color=white}
+  - red               {icon phabrico-square, color=red}
+  - orange            {icon phabrico-square, color=orange}
+  - yellow            {icon phabrico-square, color=yellow}
+  - green             {icon phabrico-square, color=green}
+  - blue              {icon phabrico-square, color=blue}
+  - sky               {icon phabrico-square, color=sky}
+  - indigo            {icon phabrico-square, color=indigo}
+  - pink              {icon phabrico-square, color=pink}
+  - fire              {icon phabrico-square, color=fire}
+  - violet            {icon phabrico-square, color=violet}
+  - lightbluetext     {icon phabrico-square, color=lightbluetext}
+  - lightgreytext     {icon phabrico-square, color=lightgreytext}
+  - grey              {icon phabrico-square, color=grey}
+
+Door middel van de `spin` parameter, kan je een icon laten draaien:
+```
+  {icon cog spin}
+```
+
+Dit genereert het volgende: {icon cog spin}
+
+
+= Phriction Documenten =
+
+Je kan naar Phriction documenten refereren dmv hun adres:
+```
+  Zorg ervoor dat u uw [[legal/Kapersbrief]] ondertekent en dateert!
+```
+
+Standaard wordt de link weergegeven met de titel van het document als de naam van de link.
+Met een pipe (`|`) kunt u de link hernoemen. Gebruik dit, om je tegenstanders te misleiden:
+```
+  Bekijk deze [[legal/boring_documents/ | spannende juridische documenten]]!
+```
+
+Als je een hyperlink begint met `./` of `../`, zal de rest van het adres zijn geëvalueerd
+ten opzichte van de huidige wikipagina.
+Bijvoorbeeld, als u in het document `fruit/` een link naar `[[./guava]]` aanmaakt, 
+dan verwijst deze naar dezelfde link als `[[fruit/guava]]` van elders.
+
+Relatieve links kunnen `../` gebruiken om hoger in de documentboom te refereren.
+Vanaf de `voeding/groenten/` pagina kunt u `[[../fruit/guava]]` gebruiken om naar de `voeding/fruit/guava`
+pagina te refereren.
+
+Relatieve links werken niet als ze buiten de wikipagina's worden gebruikt.
+U kunt bijvoorbeeld geen relatieve link gebruiken in een commentaar op een taak, omdat er geen geschikte
+plaats is om de oorsprong van de link te bepalen.
+
+Wanneer documenten worden verplaatst, worden relatieve links niet automatisch bijgewerkt:
+ze worden bewaard zoals ze op dit moment zijn geschreven. Na het verplaatsen van een document kan het nodig
+zijn om de relatieve links die het document bevat te bekijken en aan te passen.
+
+= Tekstblokken =
+
+Om tekst te plaatsen in een zg. tekstblok, waarin de tekst getoond moet worden zoals deze geschreven is,
+plaatst men de tekst tussen `%%%`:
+```
+%%%Deze tekst wordt niet geformatteerd door Remarkup
+[[http://www.example.com | voorbeeld]]
+%%%
+```
+
+Remarkup zal de inhoud van een tekstblok niet formatteren.
+
+= Tabellen =
+
+Remarkup ondersteunt een eenvoudige tabel-syntax:
+
+```
+| Fruit  | Kleur  | Priijs     | Pellen?
+| -----  | -----  | ------     | -----
+| Appel  | rood   | `0.76 EUR` | nee
+| Banaan | geel   | `0.16 EUR` | **JA**
+```
+
+...genereert het volgende
+
+| Fruit  | Kleur  | Priijs     | Pellen?
+| -----  | -----  | ------     | -----
+| Appel  | rood   | `0.76 EUR` | nee
+| Banaan | geel   | `0.16 EUR` | **JA**
+
+Remarkup ondersteunt ook een eenvoudige HTML table syntax:
+
+```
+<table>
+    <tr>
+        <th>Fruit</th>
+        <th>Kleur</th>
+        <th>Prijs</th>
+        <th>Pellen?</th>
+    </tr>
+    <tr>
+        <td>Appel</td>
+        <td>rood</td>
+        <td>`0.76 EUR`</td>
+        <td>nee</td>
+    </tr>
+    <tr>
+        <td>Banaan</td>
+        <td>geel</td>
+        <td>`0.16 EUR`</td>
+        <td>**NEE**</td>
+    </tr>
+</table>
+```
+
+...produces this:
+
+<table>
+    <tr>
+        <th>Fruit</th>
+        <th>Kleur</th>
+        <th>Prijs</th>
+        <th>Pellen?</th>
+    </tr>
+    <tr>
+        <td>Appel</td>
+        <td>rood</td>
+        <td>`0.76 EUR`</td>
+        <td>nee</td>
+    </tr>
+    <tr>
+        <td>Banaan</td>
+        <td>geel</td>
+        <td>`0.16 EUR`</td>
+        <td>**NEE**</td>
+    </tr>
+</table>
+
+Enkele opmerkingen over deze syntax:
+
+- de HTML tags moeten in de juiste volgorde zijn;
+- de HTML tags mogen geen attributen bevatten (`<td>` is OK, `<td style="...">` is fout);
+  - Je kan andere Remarkup formatteringen in deze cellen gebruiken (bv. **vet**, //cursief//, enz.)
+
+Navigatie
+=========
+
+Je kan mbv `{nav ...}` een navigatie tonen waarmee men uitlegt hoe men iets moet bereiken.
+Dit kan handig zijn bij het beschrijven van sommige documentatie.
+Het volgend voorbeeld legt uit hoe men citroenen kan kopen:
+
+```
+{nav icon=home, name=Thuis >
+Supermarkt >
+Fruitafdeling >
+icon=lemon-o, name=Citroenen}
+```
+
+Dit genereert het volgende:
+
+{nav icon=home, name=Thuis >
+Supermarkt >
+Fruitafdeling >
+icon=lemon-o, name=Citroenen}
+
+In het algemeen:
+
+  - Secties worden gescheiden dmv `>`.
+  - Elke sectie kan een naam en verschillende parameters hebben.
+  - Bechikbare parameters zijn `icon`, `name`, `type` en `href`.
+  - Indien de `type` gelijk wordt gesteld aan `instructions`, dan wordt er aangegeven dat de
+    gebruiker een keuze te maken of specifieke instructies op te volgen.
+
+Toetsaanslagen
+==============
+
+Je kan mbv `{key ...}` toetsaanslagen visualizeren.
+Bijvoorbeeld:
+
+```
+Druk op {key M} om de sterrenkaart te bekijken.
+```
+
+...genereert het volgende:
+
+> Druk op {key M} om de sterrenkaart te bekijken.
+
+Je kan ook toetencombinaties visualizeren:
+
+```
+Druk op {key command option shift 3} om een screenshot te nemen.
+Druk op {key down down-right right LP} om de Hadoken techniek uit te voeren.
+```
+
+...genereert volgende output:
+
+> Druk op {key command option shift 3} om een screenshot te nemen.
+> Druk op {key down down-right right LP} om de Hadoken techniek uit te voeren.

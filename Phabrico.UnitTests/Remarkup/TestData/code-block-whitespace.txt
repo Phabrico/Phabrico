@@ -1,0 +1,7 @@
+  lang=txt
+    x
+  y
+~~~~~~~~~~
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>  x
+y</code></pre></div>
+~~~~~~~~~~

@@ -1,0 +1,178 @@
+{
+    "result": {
+        "data": [{
+                "id": 11,
+                "type": "USER",
+                "phid": "PHID-USER-e807f1fcf82d132f9bb0",
+                "fields": {
+                    "username": "johnny",
+                    "realName": "Johnny Birddog",
+                    "roles": ["approved", "activated"],
+                    "dateCreated": 1577742417,
+                    "dateModified": 1577742417,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 10,
+                "type": "USER",
+                "phid": "PHID-USER-kanr5d3yhp32trj7u25u",
+                "fields": {
+                    "username": "alan",
+                    "realName": "Alan Cooper",
+                    "roles": ["approved", "activated"],
+                    "dateCreated": 1577750851,
+                    "dateModified": 1577750851,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 9,
+                "type": "USER",
+                "phid": "PHID-USER-pq3yaapgo4mz5o3pqek2",
+                "fields": {
+                    "username": "eddie",
+                    "realName": "Eddie Riggs",
+                    "roles": ["approved", "activated"],
+                    "dateCreated": 1567258703,
+                    "dateModified": 1567258703,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 8,
+                "type": "USER",
+                "phid": "PHID-USER-oj7a3ujksafag6ehaqdj",
+                "fields": {
+                    "username": "barry",
+                    "realName": "Barry Clark",
+                    "roles": ["approved", "activated"],
+                    "dateCreated": 1567255468,
+                    "dateModified": 1567255468,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 7,
+                "type": "USER",
+                "phid": "PHID-USER-2mlb4uyaam5673yd3dho",
+                "fields": {
+                    "username": "charles",
+                    "realName": "Charles Jackson",
+                    "roles": ["approved", "activated"],
+                    "dateCreated": 1567255455,
+                    "dateModified": 1567255455,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 6,
+                "type": "USER",
+                "phid": "PHID-USER-kh6a7hlttexdktozazqa",
+                "fields": {
+                    "username": "guffie",
+                    "realName": "Guffie Palmer",
+                    "roles": ["approved", "activated"],
+                    "dateCreated": 1567255445,
+                    "dateModified": 1567255445,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 5,
+                "type": "USER",
+                "phid": "PHID-USER-lddunoeriaw4kn6s7y7t",
+                "fields": {
+                    "username": "jeffrey",
+                    "realName": "Jeffrey Damon",
+                    "roles": ["approved", "activated"],
+                    "dateCreated": 1567255431,
+                    "dateModified": 1567255431,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 4,
+                "type": "USER",
+                "phid": "PHID-USER-wrd4t7xspbqhcbrbwocc",
+                "fields": {
+                    "username": "bert",
+                    "realName": "Bert Shiver",
+                    "roles": ["approved", "activated"],
+                    "dateCreated": 1567255421,
+                    "dateModified": 1567255421,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 3,
+                "type": "USER",
+                "phid": "PHID-USER-3qb44av27tsayks7ivf3",
+                "fields": {
+                    "username": "diane",
+                    "realName": "Diane Hopkins",
+                    "roles": [],
+                    "dateCreated": 1564562179,
+                    "dateModified": 1564562180,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }, {
+                "id": 1,
+                "type": "USER",
+                "phid": "PHID-USER-avflgkkgmrvd526jk522",
+                "fields": {
+                    "username": "jeanie",
+                    "realName": "Jeanie Cochran",
+                    "roles": ["admin", "verified", "approved", "activated"],
+                    "dateCreated": 1563288228,
+                    "dateModified": 1563288229,
+                    "policy": {
+                        "view": "public",
+                        "edit": "no-one"
+                    }
+                },
+                "attachments": {}
+            }
+        ],
+        "maps": {},
+        "query": {
+            "queryKey": null
+        },
+        "cursor": {
+            "limit": 100,
+            "after": null,
+            "before": null,
+            "order": null
+        }
+    },
+    "error_code": null,
+    "error_info": null
+}

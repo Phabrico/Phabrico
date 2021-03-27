@@ -1,0 +1,173 @@
+﻿/*************************************************************************************************/
+@media only screen and (max-width: 1600px) {
+    .phabrico-standard-treeitem-body {
+        flex-direction: column;
+    }
+}
+
+/*************************************************************************************************/
+@media only screen and (max-width: 1440px) {
+    .phriction div.toc,
+    .phui-document > .toc {
+        max-width: 300px;
+    }
+
+    div.phui-document {
+        left: 300px;
+    }
+
+    #phui-navigator li a {
+        white-space: pre-wrap;
+        text-indent: 0em;
+        width: 272px;
+    }
+
+    #phui-navigator li ul li a {
+        width: 221px;
+        text-indent: -2.2em;
+        padding-left: 2.2em;
+    }
+
+    #phui-navigator li ul li ul li a {
+        width: 201px;
+    }
+
+    .autocomplete {
+        width: 300px;
+    }
+}
+
+/*************************************************************************************************/
+@media only screen and (max-width: 1366px) {
+    .phriction div.toc,
+    .phui-document > .toc {
+        max-width: 250px;
+    }
+
+    div.phui-document {
+        left: 250px;
+    }
+
+    #phui-navigator li a {
+        white-space: pre-wrap;
+        text-indent: 0em;
+        width: 222px;
+    }
+
+    #phui-navigator li ul li a {
+        width: 171px;
+        text-indent: -2.2em;
+        padding-left: 2.2em;
+    }
+
+    #phui-navigator li ul li ul li a {
+        width: 151px;
+    }
+}
+
+/*************************************************************************************************/
+@media only screen and (max-width: 1288px) {
+    .phriction div.toc,
+    .phui-document > .toc {
+        max-width: 175px;
+    }
+
+    div.phui-document {
+        left: 175px;
+    }
+
+    #phui-navigator li a {
+        white-space: pre-wrap;
+        text-indent: 0em;
+        width: 147px;
+    }
+
+    #phui-navigator li ul li a {
+        width: 96px;
+        text-indent: -2.2em;
+        padding-left: 2.2em;
+    }
+
+    #phui-navigator li ul li ul li a {
+        width: 76px;
+    }
+}
+
+/*************************************************************************************************/
+@media only screen and (max-width: 960px) {
+    .configure nav,
+    .file nav,
+    .project nav,
+    .user nav {
+        display: none;
+    }
+
+    .configure .phabrico-page-content,
+    .file .phabrico-page-content,
+    .project .phabrico-page-content,
+    .user .phabrico-page-content {
+        left: 0px;
+        width: calc(100% - 25px);
+    }
+
+    .configure .aphront-form-label {
+        display: none;
+        min-width: 0px;
+        width: 0px;
+    }
+
+    .configure tr.setting.Theme td:nth-child(2) .instructions {
+        display: ruby block;
+    }
+
+    .configure .setting td {
+        margin-bottom: 5px;
+        padding-bottom: 10px;
+    }
+
+    .file #tblFiles .numberOfReferences,
+    .file #tblFiles .fileSize,
+    .file #tblFiles .fileType {
+        display: none;
+    }
+
+    .file #tblFiles .fileName {
+        width: calc(100vw - 200px);
+    }
+
+    .maniphest .toc {
+        display: none;
+    }
+
+    .maniphest .maniphest-list-overview {
+        width: calc(100vw + 14px);
+        margin-left: -32px;
+        margin-top: -32px;
+    }
+}
+
+/*************************************************************************************************/
+@media only screen and (max-width: 480px) {
+    input[type="text"].search-box {
+        width:150px;
+    }
+
+    .phriction div.toc,
+    .phui-document > .toc {
+        display: none;
+    }
+
+    div.phui-document {
+        left: 0px;
+        width: calc(100vw - 10px);
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .maniphest .maniphest-list-item-timestamp,
+    .maniphest .maniphest-list-item-assigned,
+    .maniphest .maniphest-list-item-projects,
+    .maniphest-task .timeline .timestamp {
+        display: none;
+    }
+}

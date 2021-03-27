@@ -1,0 +1,1024 @@
+﻿# Chinese translations
+
+# general
+msgid "Phabrico"
+msgstr "法布日蔻"
+
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"
+
+msgid "Button-AccessKey-Yes"
+msgstr "Y"
+
+msgid "Button-AccessKey-No"
+msgstr "N"
+
+msgid "Undo"
+msgstr "撤销"
+
+msgid "EmptyParameter"
+msgstr "(无)"
+
+msgid "No projects assigned"
+msgstr "(无)"
+
+msgid "No users assigned"
+msgstr "(没有人)"
+
+msgid "ERROR"
+msgstr "錯誤"
+
+msgid "OK"
+msgstr "好"
+
+msgid "Cancel"
+msgstr "取消"
+
+# login dialog
+msgid "Username"
+msgstr "用户名"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "Log In"
+msgstr "登录"
+
+msgid "Invalid"
+msgstr "无效"
+
+msgid "Search"
+msgstr "搜索"
+
+msgid "Username or password are incorrect."
+msgstr "用户名或密码不正确"
+
+msgid "Create New User"
+msgstr "创建新用户"
+
+msgid "Verify Password"
+msgstr "验证密码"
+
+msgid "Create User"
+msgstr "创建用户"
+
+# home page
+msgid "Change language"
+msgstr "更改语言"
+
+msgid "Language"
+msgstr "语种"
+
+msgid "Change password"
+msgstr "更改密码"
+
+msgid "Current password"
+msgstr "当前密码"
+
+msgid "New password"
+msgstr "新密码"
+
+msgid "Verify new password"
+msgstr "验证新密码"
+
+msgid "Password is incorrect."
+msgstr "密码不正确"
+
+msgid "Password should contain at least 1 punctuation character"
+msgstr "密码应至少包含1个标点符号"
+
+msgid "The passwords entered do not match"
+msgstr "输入的密码不匹配"
+
+msgid "Password should contain at least 1 number"
+msgstr "密码应至少包含1个数字"
+
+msgid "Password should contain at least 1 lowercase letter"
+msgstr "密码应至少包含一个小写字母"
+
+msgid "Password should contain at least 1 capital letter"
+msgstr "密码应至少包含一个大写字母"
+
+msgid "Password should be at least 12 characters long"
+msgstr "密码至少要有12个字符"
+
+msgid "Log out"
+msgstr "注销"
+
+msgid "Synchronizing"
+msgstr "同步..."
+
+msgid "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
+msgstr "有[b]1个本地修改[/b]准备上传至Phabricator服务器。"
+
+msgid "There are local [b]@@NBR-CHANGES@@ modifications[/b] ready to be uploaded the Phabricator server."
+msgstr "有[b]@@NBR-CHANGES@@本地的变化[/b]可以上传到Phabricator服务器。"
+
+msgid "@@FILE@@ uploaded..."
+msgstr "@@FILE@@上传了..."
+
+msgid "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
+msgstr "上传@@FILE@@ (@@PERCENTAGE@@%)"
+
+msgid "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
+msgstr "由于这些文件或任务的较新版本已经存在于Phabricator上，所以有些更改无法上传。在 \'本地变更\' 页面进行确认。"
+
+msgid "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
+msgstr "你真的想同步公共Phabricator服务器和私人法布日蔻服务器吗？"
+
+msgid "Favorites"
+msgstr "我的最爱"
+
+msgid "General Overview"
+msgstr "概况"
+
+msgid "Phabrico Version:"
+msgstr "法布日蔻版本:"
+
+msgid "Phabrico Build date:"
+msgstr "法布日蔻建造日期:"
+
+msgid "Last synchronized with Phabricator at:"
+msgstr "最后与Phabricator同步的是:"
+
+msgid "Phabrico Database Location:"
+msgstr "法布日蔻数据库定位:"
+
+msgid "Phabrico Database size:"
+msgstr "法布日蔻数据库大小:"
+
+msgid "Remote access:"
+msgstr "远程访问:"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Disabled"
+msgstr "已关闭"
+
+msgid "Number of Phriction documents:"
+msgstr "维基文件的数量:"
+
+msgid "Number of Maniphest tasks:"
+msgstr "任务数量:"
+
+msgid "Number of Projects:"
+msgstr "项目数量:"
+
+msgid "Number of Users:"
+msgstr "用户数:"
+
+msgid "Number of File objects:"
+msgstr "文件对象的数量:"
+
+msgid "Number of uncommitted objects:"
+msgstr "未转让的物体数量:"
+
+msgid "Number of frozen objects:"
+msgstr "冻结物体的数量:"
+
+msgid "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+msgstr "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (平均大小 = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  最大尺寸 = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+
+# main menu navigator
+msgid "Maniphest"
+msgstr "任务"
+
+msgid "Tasks and Bugs"
+msgstr "任务和错误"
+
+msgid "Phriction"
+msgstr "维基"
+
+msgid "Wiki Documents"
+msgstr "维基文件"
+
+msgid "Projects"
+msgstr "项目介绍"
+
+msgid "Projects to be synchronized"
+msgstr "要同步进行的项目"
+
+msgid "Users"
+msgstr "用户"
+
+msgid "User accounts to be synchronized"
+msgstr "要同步的用户账户"
+
+msgid "File objects"
+msgstr "文件对象"
+
+msgid "Referenced file objects"
+msgstr "引用的文件对象"
+
+msgid "Config"
+msgstr "配置"
+
+msgid "Configure Phabrico"
+msgstr "配置法布日蔻"
+
+msgid "Offline changes"
+msgstr "当地变化"
+
+msgid "View local changes"
+msgstr "查看本地变化"
+
+msgid "Synchronize"
+msgstr "同步"
+
+# Synchronization
+msgid "No new data dowloaded from Phabricator"
+msgstr "没有从Phabricator下载新的数据。"
+
+msgid "Latest synchronized data"
+msgstr "最新同步数据"
+
+msgid "View changes"
+msgstr "查看变化"
+
+msgid "Current version"
+msgstr "当前版本"
+
+msgid "Previous version"
+msgstr "上一版本"
+
+msgid "Overview latest synchronization"
+msgstr "概述上次同步"
+
+msgid "Difference between previous and current version of @@SYNCHRONIZED-ITEM@@"
+msgstr "@@SYNCHRONIZED-ITEM@@上一版本和当前版本的区别"
+
+msgid "Synchronization.Status.NotYetSynchronized"
+msgstr "尚未同步"
+
+msgid "Synchronization.Status.Initializing"
+msgstr "初始化";
+
+msgid "Synchronization.Status.ConnectingToPhabricatorServer"
+msgstr "连接到 @@PHABRICATOR-SERVER@@";
+
+msgid "Synchronization.Status.PreparingDownloadManiphestData"
+msgstr "正在准备下载的任务"
+
+msgid "Synchronization.Status.DownloadingManiphestData"
+msgstr "正在下载任务"
+
+msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
+msgstr "正在下载任务优先事项和状态"
+
+msgid "Synchronization.Status.DownloadingPhrictionData"
+msgstr "维基文档正在下载中"
+
+msgid "Synchronization.Status.DownloadingProjects"
+msgstr "正在下载项目名称"
+
+msgid "Synchronization.Status.DownloadingUsers"
+msgstr "正在下载用户名"
+
+msgid "Synchronization.Status.LoadingAccountInfo"
+msgstr "正在下载账户信息"
+
+msgid "Synchronization.Status.LoadingMacroData"
+msgstr "正在下载宏观数据"
+
+msgid "Synchronization.Status.LoadingFileObjects"
+msgstr "正在下载文件对象"
+
+msgid "Synchronization.Status.UploadingManiphestData"
+msgstr "正在上传任务"
+
+msgid "Synchronization.Status.UploadingPhrictionData"
+msgstr "维基文件正在上传"
+
+msgid "Synchronization.Status.UploadingCommentsAndTransactions"
+msgstr "正在上传评论和状态变化"
+
+msgid "Synchronization.Status.CleaningUp"
+msgstr "正在删除旧数据"
+
+msgid "Synchronization.Status.CleaningUp.Phriction"
+msgstr "删除旧的维基文件"
+
+msgid "Synchronization.Status.CleaningUp.Maniphest"
+msgstr "删除旧任务"
+
+msgid "Synchronization.Status.CleaningUp.UnreferencedFiles"
+msgstr "删除未引用的文件对象"
+
+msgid "Synchronization.Status.Finishing"
+msgstr "同步化正在完成";
+
+msgid "Synchronization.Status.Failed"
+msgstr "失败";
+
+# Maniphest
+msgid "Create Task"
+msgstr "创建一个任务"
+
+msgid "Assigned"
+msgstr "分配"
+
+msgid "Open Tasks"
+msgstr "项未决任务"
+
+msgid "Per User"
+msgstr "每个用户的"
+
+msgid "Per Project"
+msgstr "每个项目的"
+
+msgid "Authored"
+msgstr "创建的"
+
+msgid "Subscribed"
+msgstr "认购"
+
+msgid "Queries"
+msgstr "查询"
+
+msgid "No tasks found"
+msgstr "无未决任务"
+
+msgid "Change Subscribers"
+msgstr "更改订阅者名单"
+
+msgid "Change Status"
+msgstr "改变状态"
+
+msgid "Change Project Tags"
+msgstr "更改项目列表"
+
+msgid "Change Priority"
+msgstr "更改优先级"
+
+msgid "Assign / Claim"
+msgstr "分配任务"
+
+msgid "Authored By"
+msgstr "创建者"
+
+msgid "Assigned To"
+msgstr "分配到"
+
+msgid "Edit Task"
+msgstr "编辑任务"
+
+msgid "Description"
+msgstr "说明"
+
+msgid "Priority"
+msgstr "优先级"
+
+msgid "First"
+msgstr "第一个"
+
+msgid "Previous"
+msgstr "上一个"
+
+msgid "Next"
+msgstr "下一个"
+
+msgid "Type a user or project name..."
+msgstr "输入用户或项目名称"
+
+msgid "Type a project name..."
+msgstr "输入项目名称"
+
+msgid "Type a username..."
+msgstr "输入一些用户名"
+
+msgid "@@COMMENT-AUTHOR@@ added a comment."
+msgstr "@@COMMENT-AUTHOR@@ 添加了一个评论"
+
+msgid "@@PERSON@@ marked this task as @@STATE@@"
+msgstr "@@PERSON@@ 将此任务标记为 @@STATE@@"
+
+msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
+msgstr "@@PERSON@@ 将这项任务从 @@NEWSTATE@@ 标记为 @@OLDSTATE@@"
+
+msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
+msgstr "@@PERSON@@ 将 @@PERSONS@@ 添加到订阅者列表中"
+
+msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
+msgstr "@@PERSON1@@ 把任务交给了 @@PERSON2@@"
+
+msgid "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
+msgstr "@@PERSON1@@ 把 @@PERSON2@@ 的任务重新分配给 @@PERSON3@@"
+
+msgid "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
+msgstr "@@PERSON@@ 将任务的优先级从 @@PRIORITY1@@ 改为 @@PRIORITY2@@"
+
+msgid "@@PERSON@@ changed the task priority to @@PRIORITY@@"
+msgstr "@@PERSON@@ 将任务的优先级改为 @@PRIORITY@@"
+
+msgid "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
+msgstr "@@PERSON@@ 分配了以下项目: @@PROJECT-NAME@@"
+
+msgid "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
+msgstr "@@PERSON@@ 分配了以下项目: @@PROJECT-NAMES@@"
+
+msgid "and"
+msgstr "和"
+
+msgid "ManiphestPriority.Unbreak Now!"
+msgstr "马上执行!"
+
+msgid "ManiphestPriority.Needs Triage"
+msgstr "需要进一步阐述"
+
+msgid "ManiphestPriority.High"
+msgstr "高"
+
+msgid "ManiphestPriority.Normal"
+msgstr "正常"
+
+msgid "ManiphestPriority.Low"
+msgstr "低"
+
+msgid "ManiphestPriority.Wishlist"
+msgstr "愿望清单"
+
+msgid "ManiphestStatus.Closed"
+msgstr "已关闭"
+
+msgid "ManiphestStatus.Duplicate"
+msgstr "双倍"
+
+msgid "ManiphestStatus.Invalid"
+msgstr "无效"
+
+msgid "ManiphestStatus.On hold"
+msgstr "等候接听"
+
+msgid "ManiphestStatus.Ongoing"
+msgstr "正在进行"
+
+msgid "ManiphestStatus.Open"
+msgstr "开放"
+
+msgid "ManiphestStatus.Planned"
+msgstr "已安排"
+
+msgid "ManiphestStatus.Programmed"
+msgstr "编程了"
+
+msgid "ManiphestStatus.Resolved"
+msgstr "已解决"
+
+msgid "ManiphestStatus.Spite"
+msgstr "拇指向下"
+
+msgid "ManiphestStatus.To be QAd"
+msgstr "正在评估"
+
+msgid "ManiphestStatus.Wontfix"
+msgstr "将不会得到解决"
+
+# Phriction
+msgid "Subscribers"
+msgstr "订阅者"
+
+msgid "Subscribe"
+msgstr "订阅"
+
+msgid "Tags"
+msgstr "标签"
+
+msgid "Last modified at"
+msgstr "最后修改于"
+
+msgid "Last modified by"
+msgstr "最后修改者为"
+
+msgid "Printable Page"
+msgstr "可打印页面"
+
+msgid "Add to favorites"
+msgstr "添加到收藏夹"
+
+msgid "Remove from favorites"
+msgstr "从收藏夹中删除"
+
+msgid "Dismiss local changes"
+msgstr "驳回局部变化"
+
+msgid "Edit Document"
+msgstr "编辑维基文档"
+
+msgid "Contents"
+msgstr "内容"
+
+msgid "New Document"
+msgstr "创建一个新的维基文档"
+
+msgid "Document Hierarchy"
+msgstr "文件层次结构"
+
+msgid "Save Changes"
+msgstr "保存更改"
+
+msgid "Title"
+msgstr "标题"
+
+msgid "Title already exists"
+msgstr "标题已经存在"
+
+msgid "Type a title..."
+msgstr "输入标题"
+
+msgid "Create this Document"
+msgstr "创建此文件"
+
+msgid "There is no document here, but you may create it."
+msgstr "该文件不存在，但您可以创建它。"
+
+msgid "No Document Here"
+msgstr "未找到文件"
+
+msgid "Page Not Found"
+msgstr "未找到网页"
+
+msgid "This newly created page hasn't been uploaded yet to the Phabricator server"
+msgstr "这个新创建的页面还没有上传到Phabricator服务器上。"
+
+msgid "This modified page hasn't been uploaded yet to the Phabricator server"
+msgstr "这个修改后的页面还没有上传到Phabricator服务器上。"
+
+msgid "One moment please..."
+msgstr "请等一下..."
+
+msgid "References"
+msgstr "参考文献"
+
+msgid "Show references"
+msgstr "显示参考文献"
+
+# Projects & Users
+msgid "Project"
+msgstr "项目"
+
+msgid "User"
+msgstr "用户"
+
+msgid "Disallow"
+msgstr "禁止"
+
+msgid "Select"
+msgstr "选择"
+
+msgid "Unselect"
+msgstr "取消选择"
+
+msgid "Show all projects"
+msgstr "显示所有项目"
+
+msgid "Show selected projects"
+msgstr "显示所有选定的项目"
+
+msgid "Disallow all projects"
+msgstr "禁止一切项目"
+
+msgid "Unselect all projects"
+msgstr "不要选择任何项目"
+
+msgid "Select all projects"
+msgstr "选择所有项目"
+
+msgid "Unselect all users"
+msgstr "不要选择任何用户"
+
+msgid "Select all users"
+msgstr "选择所有用户"
+
+msgid "Show all users"
+msgstr "显示所有用户"
+
+msgid "Show selected users"
+msgstr "显示所有选中的用户"
+
+msgid "Set color"
+msgstr "设置颜色"
+
+msgid "Set project tag color"
+msgstr "为项目标签设置颜色"
+
+msgid "Set color for all shown project tags"
+msgstr "为所有显示的项目标签设置颜色"
+
+# File objects
+msgid "Type"
+msgstr "文件类型"
+
+msgid "Size"
+msgstr "文件大小"
+
+msgid "Number of references"
+msgstr "参考文献数量"
+
+msgid "File name"
+msgstr "文件名"
+
+msgid "File object"
+msgstr "文件对象"
+
+msgid "Type some text to filter the list of file objects..."
+msgstr "输入文本以过滤文件对象列表"
+
+# Config
+msgid "Phabricator"
+msgstr "Phabricator"
+
+msgid "UI Controls"
+msgstr "用户界面控制"
+
+msgid "General"
+msgstr "一般"
+
+msgid "Enter the URL of your Phabricator server:"
+msgstr "输入你的Phabricator服务器的地址:"
+
+msgid "Phabricator URL"
+msgstr "Phabricator网址"
+
+msgid "Enter the Conduit API Token for your Phabricator account:"
+msgstr "为您的Phabricator账户输入Conduit API令牌:"
+
+msgid "Conduit API Token"
+msgstr "Conduit API令牌"
+
+msgid "Choose the synchronization method for Maniphest tasks:"
+msgstr "选择任务的同步方法:"
+
+msgid "Synchronize Maniphest tasks for"
+msgstr "同步所有任务"
+
+msgid "Selected users only"
+msgstr "只为选定的用户"
+
+msgid "Choose the default state for new or modified Maniphest tasks:"
+msgstr "选择新建或修改任务的默认状态:"
+
+msgid "Mark new/modified Maniphest tasks as"
+msgstr "将新的或修改的任务标记为"
+
+msgid "Delete closed Maniphest tasks from Phabrico older than:"
+msgstr "删除法布日蔻中关闭时间超过的任务:"
+
+msgid "Maximum lifetime closed Maniphest tasks"
+msgstr "已结束任务的最大寿命"
+
+msgid "1 day"
+msgstr "1天"
+
+msgid "1 week"
+msgstr "1周"
+
+msgid "2 weeks"
+msgstr "2周"
+
+msgid "1 month"
+msgstr "1个月"
+
+msgid "3 months"
+msgstr "3个月"
+
+msgid "6 months"
+msgstr "6个月"
+
+msgid "1 year"
+msgstr "1年"
+
+msgid "10 years"
+msgstr "10年"
+
+msgid "Choose the synchronization method for Phriction documents:"
+msgstr "选择维基文档的同步方法:"
+
+msgid "Synchronize Phriction documents for"
+msgstr "同步所有维基文档"
+
+msgid "All projects"
+msgstr "所有项目"
+
+msgid "Selected projects only"
+msgstr "只为选定的项目"
+
+msgid "Selected projects only including document tree"
+msgstr "只有选定的项目，包括相关文件"
+
+msgid "Selected projects combined"
+msgstr "所有选定的项目合并"
+
+msgid "Selected projects combined including document tree"
+msgstr "包括相关文件在内的所有选定项目合并"
+
+msgid "Choose the default state for new or modified Phriction documents:"
+msgstr "选择新建或修改维基文档的默认状态:"
+
+msgid "Mark new/modified Phriction documents as"
+msgstr "将新的/修改的维基文档标记为"
+
+msgid "Add information about the Phriction document in the action menu on the right"
+msgstr "在右侧的操作菜单中显示Phriction文档的信息"
+
+msgid "Show Phriction metadata"
+msgstr "显示维基元数据"
+
+msgid "Download project tags and subcribers for all Phriction documents"
+msgstr "下载所有维基文档的项目标签和订阅者"
+
+msgid "Force download all Phriction metadata"
+msgstr "强制下载所有维基元数据"
+
+msgid "Frozen: local modifications will not be uploaded during synchronization"
+msgstr "冻结：在同步过程中，本地修改将不会被上传"
+
+msgid "Unfrozen: local modifications will be uploaded during synchronization"
+msgstr "解锁：本地修改将在同步过程中上传"
+
+msgid "Add Copy button:"
+msgstr "添加复制按钮:"
+
+msgid "Add Copy-to-clipboard button to code blocks:"
+msgstr "在代码块中添加复制到剪贴板按钮:"
+
+msgid "Use dynamic coloring for project tags:"
+msgstr "为项目标签使用动态着色:"
+
+msgid "Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:"
+msgstr "翻译 NOTE、WARNING 或 IMPORTANT 信息的标题。"
+
+msgid "Translate notification block titles:"
+msgstr "翻译一下通知的标题:"
+
+msgid "Generate a separate color for each project tag shown:"
+msgstr "为显示的每个项目标签生成单独的颜色:"
+
+msgid "Confidential Table Headers"
+msgstr "机密表头"
+
+msgid "Confidential Table Header"
+msgstr "机密表头"
+
+msgid "Enter the text of table row/column headers which should only be visible when you move the mouse over it:"
+msgstr "输入表格行/列标题的文本，只有当你把鼠标移到它们上面时，这些标题才会显示出来:"
+
+msgid "Add Confidential Table Header"
+msgstr "增加一个保密表头"
+
+msgid "Auto log on"
+msgstr "自动登录"
+
+msgid "Allow to log on automatically but disable synchronization and configuration"
+msgstr "允许自动登录，但禁止同步和配置"
+
+msgid "Remove"
+msgstr "删除"
+
+msgid "WARNING: this will create a security risk by storing the encryption key in the Phabrico database"
+msgstr "警告：这将在法布日蔻数据库中存储加密密钥，从而产生安全风险"
+
+msgid "Maximum Duration of Inactivity"
+msgstr "最长不活动时间"
+
+msgid "Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)"
+msgstr "每个会话被配置为几分钟后自动注销（0或更低=没有自动注销, 1440是最大值）"
+
+msgid "Theme"
+msgstr "色彩主题"
+
+msgid "Choose the color theme you want to use:"
+msgstr "选择你想使用的颜色主题:"
+
+msgid "Light"
+msgstr "浅色"
+
+msgid "Dark"
+msgstr "深色"
+
+msgid "Darken light images"
+msgstr "变暗光图像"
+
+msgid "Moderate"
+msgstr "中度"
+
+msgid "Extreme"
+msgstr "极端"
+
+msgid "Getting started with Phabrico"
+msgstr "开始使用法布日蔻"
+
+msgid "In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator."
+msgstr "在这个配置界面，你可以改变法布日蔻的外观，并配置哪些数据应该与Phabricator同步。"
+
+msgid "Which Phabricator accounts should be monitored ?"
+msgstr "哪些Phabricator账户应该被监控？"
+
+msgid "In this Users screen, you can select for which Phabricator users you want to have your data always available."
+msgstr "在这个 "用户 "屏幕中，你可以选择你想让哪些Phabricator用户的数据始终可用。"
+
+msgid "Currently, only your Phabricator account is selected."
+msgstr "目前，只有您的Phabricator账户被选中。"
+
+msgid "Which Phabricator projects should be monitored ?"
+msgstr "哪些Phabricator项目应该被监控？"
+
+msgid "In this Projects screen, you can select for which Phabricator projects you want to have your data always available."
+msgstr "在 "项目 "屏幕中，您可以选择您想让数据始终可用的Phabricator项目。"
+
+msgid "You can here also change the colors of the project tags."
+msgstr "你也可以在这里改变项目标签的颜色。"
+
+msgid "In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...)."
+msgstr "在当前的配置中，法布日蔻将同步所有的wiki文档，并且只同步你参与的开放任务（如分配、订阅...）。"
+
+msgid "Click on the Synchronize button to download all requested data from Phabricator"
+msgstr "点击同步按钮，从Phabricator下载所有要求的数据。"
+
+# Offline changes
+msgid "Offline changes for @@STAGED-ITEM@@"
+msgstr "@@STAGED-ITEM@@的本地改编"
+
+msgid "Overview offline changes"
+msgstr "当地改编概况"
+
+msgid "Dismiss local version"
+msgstr "拒绝本地版本"
+
+msgid "Save local version"
+msgstr "保存本地版本"
+
+msgid "Phabricator version"
+msgstr "在Phabricator中的版本"
+
+msgid "Local version"
+msgstr "本地版本"
+
+msgid "Modification"
+msgstr "适应"
+
+msgid "Content"
+msgstr "内容"
+
+msgid "Freeze"
+msgstr "冻结"
+
+msgid "Unfreeze"
+msgstr "解锁"
+
+msgid "No offline changes found"
+msgstr "没有找到当地的改编版本"
+
+msgid "Are you sure you want to dismiss all your local changes for this document ?"
+msgstr "你确定你要为这个文件驳回你所有的本地适应性 ?"
+
+msgid "Are you sure you want to undo this local change ?"
+msgstr "你确定你要取消这个本地适应？"
+
+msgid "(New)"
+msgstr "(新)"
+
+msgid "(Metadata modified)"
+msgstr "(元数据已修改)"
+
+msgid "(Priority modified)"
+msgstr "(修改了优先权)"
+
+msgid "(Owner modified)"
+msgstr "(责任人已变更)"
+
+msgid "(Status modified)"
+msgstr "(状态已经改变)"
+
+msgid "Project @@PROJECT@@ tagged"
+msgstr "增加了@@PROJECT@@项目"
+
+msgid "Subscriber @@SUBSCRIBER@@ added"
+msgstr "已添加用户@@SUBSCRIBER@@"
+
+msgid "Append left line after right line"
+msgstr "在右行之后加上左行"
+
+msgid "Append left block after right block"
+msgstr "在右块之后添加左块"
+
+msgid "Insert left line before right line"
+msgstr "在右行之前插入左行"
+
+msgid "Insert left block before right block"
+msgstr "在右图块之前插入左图块"
+
+msgid "Replace right line with left line"
+msgstr "用左线代替右线"
+
+msgid "Replace right block with left block"
+msgstr "用左块替换右块"
+
+msgid "The Phabricator server contains a newer version"
+msgstr "Phabricator服务器包含一个较新的版本"
+
+msgid "Frozen"
+msgstr "冻结了"
+
+msgid "Modified"
+msgstr "修改了"
+
+# Remarkup editor
+msgid "Bold"
+msgstr "粗体"
+
+msgid "Bold text"
+msgstr "粗体字"
+
+msgid "Italic"
+msgstr "斜体"
+
+msgid "Italic text"
+msgstr "斜体字"
+
+msgid "Monospaced"
+msgstr "等宽"
+
+msgid "Monospaced text"
+msgstr "等宽字"
+
+msgid "Bulleted List"
+msgstr "项目符号列表"
+
+msgid "Numbered List"
+msgstr "编号列表"
+
+msgid "Code Block"
+msgstr "代码块"
+
+msgid "Quote"
+msgstr "引用"
+
+msgid "Table"
+msgstr "表"
+
+msgid "Help"
+msgstr "救命"
+
+msgid "Set Sail for Adventure"
+msgstr "踏上冒险之路"
+
+msgid "Add Action..."
+msgstr "增加一个动作"
+
+msgid "CodeBlock.Copy"
+msgstr "复制"
+
+msgid "Notification.IMPORTANT"
+msgstr "重要的是"
+
+msgid "Notification.NOTE"
+msgstr "注意"
+
+msgid "Notification.WARNING"
+msgstr "警告"
+
+msgid "FileReference.Download"
+msgstr "下载"
+
+# Browser not supported
+msgid "Browser not supported"
+msgstr "浏览器不支持"
+
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access Phabrico"
+msgstr "使用火狐 Firefox、Opera、谷歌 Chrome或微软 Edge访问法布日蔻"
+
+# URL Not Found
+msgid "404"
+msgstr "404"
+
+msgid "Url not found:"
+msgstr "找不到网址:"
+
+msgid "Show content in Phabricator instead"
+msgstr "在Phabricator中显示它"
+
+# Access denied
+msgid "ACCESS DENIED"
+msgstr "拒绝访问"
+
+msgid "Details:"
+msgstr "详情:"
+
+msgid "URL:"
+msgstr "网址:"
+
+msgid "Comment:"
+msgstr "资料:"
+
+msgid "You don't have sufficient rights to configure Phabrico"
+msgstr "您没有足够的权限来配置法布日蔻。"
+
+msgid "You don't have sufficient rights to synchronize Phabrico with Phabricator"
+msgstr "您没有足够的权限来同步法布日蔻和Phabricator。"
+
+msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
+msgstr "这个维基文档或任务没有从Phabricator服务器下载，因为它被标记了一个或多个被拒绝的项目或用户。"

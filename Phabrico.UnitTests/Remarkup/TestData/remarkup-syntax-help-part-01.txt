@@ -1,0 +1,51 @@
+= Remarkup Syntax Reference =
+
+Phabricator uses a lightweight markup language called "Remarkup", similar to
+other lightweight markup languages like Markdown and Wiki markup.
+
+This document describes how to format text using Remarkup.
+
+= Quick Reference =
+
+All the syntax is explained in more detail below, but this is a quick guide to
+formatting text in Remarkup.
+
+These are inline styles, and can be applied to most text:
+```
+**bold** //italic// `monospaced` ##monospaced## ~~deleted~~ __underlined__
+!!highlighted!!
+D123 T123 rX123           # Link to Objects
+{D123} {T123}             # Link to Objects (Full Name)
+{F123}                    # Embed Images
+{M123}                    # Embed Pholio Mock
+@username                 # Mention a User
+#project                  # Mention a Project
+[[wiki page]]             # Link to Phriction
+[[wiki page | name]]      # Named link to Phriction
+http://xyz/               # Link to web
+[[http://xyz/ | name]]    # Named link to web
+[name](http://xyz/)       # Alternate Link
+```
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='hdrRemarkup_Syntax_Reference' style='padding-top: 80px;'></a>Remarkup Syntax Reference </h1>
+Phabricator uses a lightweight markup language called &quot;Remarkup&quot;, similar to<br>
+other lightweight markup languages like Markdown and Wiki markup.<br>
+This document describes how to format text using Remarkup.<br>
+<h1 class='remarkup-header'><a name='hdrQuick_Reference' style='padding-top: 80px;'></a>Quick Reference </h1>
+All the syntax is explained in more detail below, but this is a quick guide to<br>
+formatting text in Remarkup.<br>
+These are inline styles, and can be applied to most text:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>**bold** //italic// `monospaced` ##monospaced## ~~deleted~~ __underlined__
+!!highlighted!!
+D123 T123 rX123           # Link to Objects
+{D123} {T123}             # Link to Objects (Full Name)
+{F123}                    # Embed Images
+{M123}                    # Embed Pholio Mock
+@username                 # Mention a User
+#project                  # Mention a Project
+[[wiki page]]             # Link to Phriction
+[[wiki page | name]]      # Named link to Phriction
+http://xyz/               # Link to web
+[[http://xyz/ | name]]    # Named link to web
+[name](http://xyz/)       # Alternate Link</code></pre></div>
+~~~~~~~~~~

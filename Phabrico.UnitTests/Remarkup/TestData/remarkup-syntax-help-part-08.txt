@@ -1,0 +1,69 @@
+Dividers
+========
+
+You can divide sections by putting three or more dashes on a line by
+themselves. This creates a divider or horizontal rule similar to an `<hr />`
+tag, like this one:
+
+---
+
+The dashes need to appear on their own line and be separated from other
+content. For example, like this:
+
+```
+This section will be visually separated.
+
+---
+
+On an entirely different topic, ...
+```
+
+
+= Linking URIs =
+
+URIs are automatically linked: http://phabricator.org/
+
+If you have a URI with problematic characters in it, like
+"`http://comma.org/,`", you can surround it with angle brackets:
+
+  <http://comma.org/,>
+
+This will force the parser to consume the whole URI: <http://comma.org/,>
+
+You can also use create named links, where you choose the displayed text. These
+work within Phabricator or on the internet at large:
+
+[[http://www.boring-legal-documents.com/ | exciting legal documents]]
+
+Markdown-style links are also supported:
+
+[Toil](http://www.trouble.com)
+
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='hdrDividers' style='padding-top: 80px;'></a>Dividers </h1>
+<br>
+You can divide sections by putting three or more dashes on a line by<br>
+themselves. This creates a divider or horizontal rule similar to an <tt class='remarkup-monospaced'>&lt;hr /&gt;</tt><br>
+tag, like this one:<br>
+<hr class='remarkup-hr' />
+<br>
+The dashes need to appear on their own line and be separated from other<br>
+content. For example, like this:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>This section will be visually separated.
+
+---
+
+On an entirely different topic, ...</code></pre></div>
+<br>
+<h1 class='remarkup-header'><a name='hdrLinking_URIs' style='padding-top: 80px;'></a>Linking URIs </h1>
+URIs are automatically linked: <a class='phriction-link' href='http://phabricator.org/'>http://phabricator.org/</a><br>
+If you have a URI with problematic characters in it, like<br>
+"<tt class='remarkup-monospaced'>http://comma.org/,</tt>&quot;, you can surround it with angle brackets:<br>
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>&lt;http://comma.org/,&gt;</code></pre></div>
+This will force the parser to consume the whole URI: <a class='phriction-link' href='http://comma.org/,'>http://comma.org/,</a><br>
+You can also use create named links, where you choose the displayed text. These<br>
+work within Phabricator or on the internet at large:<br>
+<a class='phriction-link' href='http://www.boring-legal-documents.com/'>exciting legal documents</a><br>
+Markdown-style links are also supported:<br>
+<a class='phriction-link' href='http://www.trouble.com'>Toil</a>
+~~~~~~~~~~

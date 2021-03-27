@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="@@LOCALE@@" class="notranslate" translate="no">
+    <head>
+      <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
+      <meta name="google" content="notranslate">
+      <title>Phabrico</title>
+      <style>
+            .phui-font-fa::before {
+                content: "\200B";
+            }
+      </style>
+      <link rel="preload" href="/fonts/icomoon.woff?version=@@PHABRICO-VERSION@@" as="font" type="font/woff" crossorigin>
+      <link rel="preload" href="/fonts/NotoSans-Regular-latin.woff2?version=@@PHABRICO-VERSION@@" as="font" type="font/woff2" crossorigin>
+      <link rel="preload" href="/fonts/fontawesome-webfont.woff2?version=@@PHABRICO-VERSION@@" as="font" type="font/woff2" crossorigin>
+      <link rel="preload" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css">
+      <link rel="preload" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="/css/theme.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="stylesheet" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="/css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="shortcut icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <script defer src="/scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+      <script defer src="/scripts/highlight.min.js?version=@@PHABRICO-VERSION@@">
+      /***************************************************************************************************************
+          BSD 3-Clause License
+
+          Copyright (c) 2006, Ivan Sagalaev.
+          All rights reserved.
+          
+          Redistribution and use in source and binary forms, with or without
+          modification, are permitted provided that the following conditions are met:
+          
+          * Redistributions of source code must retain the above copyright notice, this
+            list of conditions and the following disclaimer.
+          
+          * Redistributions in binary form must reproduce the above copyright notice,
+            this list of conditions and the following disclaimer in the documentation
+            and/or other materials provided with the distribution.
+          
+          * Neither the name of the copyright holder nor the names of its
+            contributors may be used to endorse or promote products derived from
+            this software without specific prior written permission.
+          
+          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+          AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+          IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+          DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+          FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+          DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+          SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+          CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+          OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+          OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+      ***************************************************************************************************************/
+      </script>
+      <script defer="" src="/scripts/vanilla-picker.min.js">
+      /***************************************************************************************************************
+          ISC License (ISC)
+      
+          Copyright 2017-2018 Andreas Borgen, Adam Brooks
+      
+          Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is
+          hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
+      
+          THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+          INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+          FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+          OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+          OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+      ***************************************************************************************************************/
+      </script>
+      <script>
+          window.addEventListener('load', function() {
+             var hljsCssFile = 'vs-modified.css';
+             if ('@@THEME@@' == 'dark') hljsCssFile = 'vs2015-modified.css';
+             var link = document.createElement( "link" );
+             link.href = '/css/highlight.js/' + hljsCssFile;
+             link.type = "text/css";
+             link.rel = "stylesheet";
+             link.media = "screen,print";
+             document.getElementsByTagName( "head" )[0].appendChild( link );
+             
+             hljs.initHighlightingOnLoad();
+          }, false);
+      </script>
+    </head>
+    <body class="@@CONTENT-VIEW-NAME@@">
+        <script>
+            document.body.dataset.theme = '@@THEME@@';
+            document.body.dataset.themestyle = '@@THEME-STYLE@@';
+            document.body.dataset.locale = '@@LOCALE@@';
+        </script>
+        <header>
+            <div id="headerBar">
+                <a href="/" style="text-decoration: none;">
+                    <span class="phabrico-logo" style=""></span>
+                    <span class="phabrico-wordmark">Phabrico</span>
+                </a>
+                @@HEADERACTIONS@@
+            </div>
+
+            <div id="popSearchResults">
+            </div>
+        </header>
+
+        @@CONTENT@@
+
+        <script>
+            @{IF @@SYNCHRONIZE@@=True@
+                async function startSynchronization() {
+                    while (typeof phabrico == 'undefined'  ||  typeof phabrico.synchronization == 'undefined') {
+                        await sleep(50);
+                    }
+
+                    await sleep(50);
+
+                    phabrico.synchronization.start(dlgRequestSynchronize, 'light');
+                }
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Call start synchronization
+                    (async() => {
+                    
+                        await startSynchronization();
+  
+                    })();
+                
+                }, false);
+            }@
+        </script>
+    </body>
+</html>

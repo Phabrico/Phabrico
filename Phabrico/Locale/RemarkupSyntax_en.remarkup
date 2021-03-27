@@ -1,0 +1,640 @@
+﻿= Remarkup Syntax Reference =
+
+Phabrico uses a lightweight markup language called "Remarkup", similar to
+other lightweight markup languages like Markdown and Wiki markup.
+
+This document describes how to format text using Remarkup.
+
+= Quick Reference =
+
+All the syntax is explained in more detail below, but this is a quick guide to
+formatting text in Remarkup.
+
+These are inline styles, and can be applied to most text:
+```
+**bold** //italic// `monospaced` ##monospaced## ~~deleted~~ __underlined__
+!!highlighted!!
+T123                      # Link to Tasks
+{T123}                    # Link to Tasks (Full Name)
+{F123}                    # Embed Images
+@username                 # Mention a User
+#project                  # Mention a Project
+[[wiki page]]             # Link to Phriction
+[[wiki page | name]]      # Named link to Phriction
+http://xyz/               # Link to web
+[[http://xyz/ | name]]    # Named link to web
+[name](http://xyz/)       # Alternate Link
+```
+These are block styles, and must be separated from surrounding text by
+empty lines:
+```
+= Large Header =
+
+== Smaller Header ==
+
+## This is a Header As Well
+
+Also a Large Header
+===================
+
+Also a Smaller Header
+---------------------
+
+> Quoted Text
+
+Use `-` or `*` for bulleted lists, and `#` for numbered lists.
+Use ``` or indent two spaces for code.
+Use %%% for a literal block.
+Use | ... | ... for tables.
+```
+
+= Basic Styling =
+
+Format **basic text styles** like this:
+```
+**bold text**
+//italic text//
+`monospaced text`
+##monospaced text##
+~~deleted text~~
+__underlined text__
+!!highlighted text!!
+```
+
+Those produce **bold text**, //italic text//, `monospaced text`, ##monospaced
+text##, ~~deleted text~~, __underlined text__, and !!highlighted text!!
+respectively.
+
+= Layout =
+
+Make **headers** like this:
+```
+= Large Header =
+
+== Smaller Header ==
+
+===== Very Small Header =====
+
+Alternate Large Header
+======================
+
+Alternate Smaller Header
+------------------------
+```
+
+You can optionally omit the trailing `=` signs -- that is, these are the same:
+
+```
+== Smaller Header ==
+
+== Smaller Header
+```
+
+This produces headers like the ones in this document. Make sure you have an
+empty line before and after the header.
+
+Lists
+=====
+
+Make **lists** by beginning each item with a `-` or a `*`:
+```
+lang=text
+- milk
+- eggs
+- bread
+
+* duck
+* duck
+* goose
+```
+
+This produces a list like this:
+
+- milk
+- eggs
+- bread
+
+(Note that you need to put a space after the `-` or `*`.)
+
+You can make numbered lists with a `#` instead of `-` or `*`:
+
+# Buy the product
+# Extend the product
+# Sell the product back with big profit
+
+Numbered lists can also be started with `1.` or `1)`. If you use a number other
+than `1`, the list will start at that number instead. For example, this:
+
+```
+200) OK
+201) Created
+202) Accepted
+```
+
+...produces this:
+
+200) OK
+201) Created
+202) Accepted
+
+You can also nest lists:
+
+```
+- Body
+  - Head
+  - Arm
+    - Elbow
+    - Hand
+      # Thumb
+      # Index
+      # Middle
+      # Ring
+      # Pinkie
+  - Leg
+    - Knee
+    - Foot
+```
+
+...which produces:
+
+- Body
+  - Head
+  - Arm
+    - Elbow
+    - Hand
+      # Thumb
+      # Index
+      # Middle
+      # Ring
+      # Pinkie
+  - Leg
+    - Knee
+    - Foot
+
+If you prefer, you can indent lists using multiple characters to show indent
+depth, like this:
+
+```
+- Tree
+-- Branch
+--- Twig
+```
+
+As expected, this produces:
+
+- Tree
+-- Branch
+--- Twig
+
+You can add checkboxes to items by prefacing them with `[ ]` or `[X]`, like
+this:
+
+```
+- [X] Preheat oven to 450 degrees.
+- [ ] Zest 35 lemons.
+```
+
+When rendered, this produces:
+
+- [X] Preheat oven to 450 degrees.
+- [ ] Zest 35 lemons.
+
+Make **code blocks** by indenting two spaces:
+
+  f(x, y);
+
+You can also use three backticks to enclose the code block:
+
+```
+f(x, y);
+g(f);
+```
+
+You can specify a language for syntax highlighting with `lang=xxx`:
+  lang=text
+  lang=html
+  <a href="#">...</a>
+
+This will highlight the block using a highlighter for that language, if one is
+available:
+  lang=html
+  <a href="#">...</a>
+
+You can also use a `COUNTEREXAMPLE` header to show that a block of code is
+bad and shouldn't be copied:
+  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+This produces a block like this:
+
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+You can use `lines=N` to limit the vertical size of a chunk of code, and
+`name=some_name.ext` to give it a name. For example, this:
+
+  lang=text
+  lang=html, name=example.html, lines=4, counterexample
+  <p>Apple</p>
+  <p>Apricot</p>
+  <p>Avocado</p>
+  <p>Banana</p>
+  <p>Blueberry</p>
+  <p>Grape</p>
+
+...produces this:
+
+  lang=html, name=example.html, lines=4, counterexample
+  <p>Apple</p>
+  <p>Apricot</p>
+  <p>Avocado</p>
+  <p>Banana</p>
+  <p>Blueberry</p>
+  <p>Grape</p>
+
+
+You can use the `NOTE:`, `WARNING:` or `IMPORTANT:` elements to call attention
+to an important idea.
+
+For example, write this:
+
+```
+NOTE: Hold regular meetings to keep your employees awake.
+```
+
+...to produce this:
+
+NOTE: Hold regular meetings to keep your employees awake.
+
+Using `WARNING:` or `IMPORTANT:` at the beginning of the line changes the
+color of the callout:
+
+WARNING: Too many meetings can become sleep-inducing
+
+IMPORTANT: Don't attend too many meetings
+
+In addition, you can use `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` to get the
+same effect but without `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` appearing in
+the rendered result. For example, this callout uses `(NOTE)`:
+
+(NOTE) Do not attend too few meetings.
+
+
+Dividers
+========
+
+You can divide sections by putting three or more dashes on a line by
+themselves. This creates a divider or horizontal rule similar to an `<hr />`
+tag, like this one:
+
+---
+
+The dashes need to appear on their own line and be separated from other
+content. For example, like this:
+
+```
+This section will be visually separated.
+
+---
+
+On an entirely different topic, ...
+```
+
+
+= Linking URIs =
+
+URIs are automatically linked: http://phabricator.org/
+
+If you have a URI with problematic characters in it, like
+"`http://comma.org/,`", you can surround it with angle brackets:
+```
+<http://comma.org/,>
+```
+
+This will force the parser to consume the whole URI: <http://comma.org/,>
+
+You can also use create named links, where you choose the displayed text. These
+work on the internet at large:
+```
+[[http://www.boring-legal-documents.com/ | exciting legal documents]]
+```
+
+Markdown-style links are also supported:
+```
+[Toil](http://www.trouble.com)
+```
+
+= Linking to Objects =
+
+You can link to Phabricator objects, such as Maniphest tasks, by mentioning the name of an object:
+```
+T123          # Link to Maniphest task T123
+```
+
+= Embedding Objects
+
+You can also generate full-name references to some objects by using braces:
+```
+{T123}        # Link to Maniphest task T123 with the full name
+```
+
+These references will also show when an object changes state (for instance, a
+task or revision is closed). Some types of objects support rich embedding.
+
+== Linking to Project Tags
+
+Projects can be linked to with the use of a hashtag `#`. This works by default
+using the name of the Project (lowercase, underscored). Additionally you
+can set multiple additional hashtags by editing the Project details in Phabricator.
+```
+#qa, #quality_assurance
+```
+
+== Embedding Images
+
+You can embed an image or other file by using braces to refer to it:
+```
+{F123}
+```
+
+In most interfaces, you can drag-and-drop an image from your computer into the
+text area to upload and reference it.
+
+Most browsers also support uploading an image data just by pasting them from the
+clipboard into the text area.
+
+You can set file display options like this:
+```
+{F123, layout=left, float, size=full, alt="a duckling"}
+```
+
+Valid options for all files are:
+
+- **layout**
+  - left : Places the image on the left (default)
+  - center : Places the image horizontally in the center
+  - right : Places the image on the right
+  - inline : Places the image on the left but closer to the previous and next line
+  - link : renders a link instead of the image itself
+- **name** : When `layout` is set to `link`, or for non-images, this name is used as the link text.
+- **alt** Provides alternate text for assistive technologies.
+
+Image files support these options:
+
+- **float** If layout is set to left or right, the image will be floated so text wraps around it.
+- **size** thumb (default), full
+- **width** Scale image to a specific width.
+- **height** Scale image to a specific height.
+
+Audio and video files support these options:
+
+- **media**: Specify the media type as `audio` or `video`. This allows you to disambiguate how file format which may contain either audio or video should be rendered.
+- **loop**: Loop this media.
+- **autoplay**: Automatically begin playing this media.
+
+= Quoting Text =
+
+To quote text, preface it with an `>`:
+```
+  > This is quoted text.
+```
+
+This appears like this:
+
+> This is quoted text.
+
+= Memes =
+
+You can also use image macros in the context of memes. For example, if you
+have an image macro named `grumpy`, you can create a meme by doing the
+following:
+```
+{meme, src=grumpy, above=toptextgoeshere, below=bottomtextgoeshere}
+```
+
+= Mentioning Users =
+
+In Maniphest, you can mention another user by writing:
+```
+@username
+```
+
+Icons
+=====
+
+You can add icons to comments using the `{icon ...}` syntax. For example:
+```
+  {icon camera}
+```
+
+This renders: {icon camera}
+
+You can select a color for icons:
+```
+  {icon camera color=blue}
+```
+
+This renders: {icon camera color=blue}
+
+For a list of available icons, check the [[ https://fontawesome.com/v4.7.0/icons/ | FontAwesome website]]
+The following colors are available:
+  - dark              {icon phabrico-square, color=dark}
+  - bluegrey          {icon phabrico-square, color=bluegrey}
+  - white             {icon phabrico-square, color=white}
+  - red               {icon phabrico-square, color=red}
+  - orange            {icon phabrico-square, color=orange}
+  - yellow            {icon phabrico-square, color=yellow}
+  - green             {icon phabrico-square, color=green}
+  - blue              {icon phabrico-square, color=blue}
+  - sky               {icon phabrico-square, color=sky}
+  - indigo            {icon phabrico-square, color=indigo}
+  - pink              {icon phabrico-square, color=pink}
+  - fire              {icon phabrico-square, color=fire}
+  - violet            {icon phabrico-square, color=violet}
+  - lightbluetext     {icon phabrico-square, color=lightbluetext}
+  - lightgreytext     {icon phabrico-square, color=lightgreytext}
+  - grey              {icon phabrico-square, color=grey}
+
+You can add `spin` to make the icon spin:
+```
+  {icon cog spin}
+```
+
+This renders: {icon cog spin}
+
+
+= Phriction Documents =
+
+You can link to Phriction documents by means of their path:
+```
+  Make sure you sign and date your [[legal/Letter of Marque and Reprisal]]!
+```
+
+By default, the link will render with the document title as the link name.
+With a pipe (`|`), you can retitle the link. Use this to mislead your
+opponents:
+```
+  Check out these [[legal/boring_documents/ | exciting legal documents]]!
+```
+
+If you begin a link path with `./` or `../`, the remainder of the path will be
+evaluated relative to the current wiki page.
+For example, if you are writing content for the document `fruit/` a link 
+to `[[./guava]]` is the same as a link to `[[fruit/guava]]` from elsewhere.
+
+Relative links may use `../` to transverse up the document tree. From the
+`produce/vegetables/` page, you can use `[[../fruit/guava]]` to link to the
+`produce/fruit/guava` page.
+
+Relative links do not work when used outside of wiki pages.
+For example, you can't use a relative link in a comment on a task, because
+there is no reasonable place for the link to start resolving from.
+
+When documents are moved, relative links are not automatically updated:
+they are preserved as currently written. After moving a document, you may
+need to review and adjust any relative links it contains.
+
+
+= Literal Blocks =
+
+To place text in a literal block use `%%%`:
+```
+%%%Text that won't be processed by remarkup
+[[http://www.example.com | example]]
+%%%
+```
+
+Remarkup will not process the text inside of literal blocks (other than to escape HTML and preserve line breaks).
+
+= Tables =
+
+Remarkup supports simple table syntax. For example, this:
+
+```
+| Fruit  | Color  | Price   | Peel?
+| -----  | -----  | -----   | -----
+| Apple  | red    | `$0.93` | no
+| Banana | yellow | `$0.19` | **YES**
+```
+
+...produces this:
+
+| Fruit  | Color  | Price   | Peel?
+| -----  | -----  | -----   | -----
+| Apple  | red    | `$0.93` | no
+| Banana | yellow | `$0.19` | **YES**
+
+Remarkup also supports a simplified HTML table syntax. For example, this:
+
+```
+<table>
+    <tr>
+        <th>Fruit</th>
+        <th>Color</th>
+        <th>Price</th>
+        <th>Peel?</th>
+    </tr>
+    <tr>
+        <td>Apple</td>
+        <td>red</td>
+        <td>`$0.93`</td>
+        <td>no</td>
+    </tr>
+    <tr>
+        <td>Banana</td>
+        <td>yellow</td>
+        <td>`$0.19`</td>
+        <td>**YES**</td>
+    </tr>
+</table>
+```
+
+...produces this:
+
+<table>
+    <tr>
+        <th>Fruit</th>
+        <th>Color</th>
+        <th>Price</th>
+        <th>Peel?</th>
+    </tr>
+    <tr>
+        <td>Apple</td>
+        <td>red</td>
+        <td>`$0.93`</td>
+        <td>no</td>
+    </tr>
+    <tr>
+        <td>Banana</td>
+        <td>yellow</td>
+        <td>`$0.19`</td>
+        <td>**YES**</td>
+    </tr>
+</table>
+
+Some general notes about this syntax:
+
+- your tags must all be properly balanced;
+- your tags must NOT include attributes (`<td>` is OK, `<td style="...">` is not);
+  - you can use other Remarkup rules (like **bold**, //italics//, etc.) inside
+    table cells.
+
+Navigation Sequences
+====================
+
+You can use `{nav ...}` to render a stylized navigation sequence when helping
+someone to locate something. This can be useful when writing documentation.
+For example, you could give someone directions to purchase lemons:
+
+{nav icon=home, name=Home >
+Grocery Store >
+Produce Section >
+icon=lemon-o, name=Lemons}
+
+To render this example, use this markup:
+
+```
+{nav icon=home, name=Home >
+Grocery Store >
+Produce Section >
+icon=lemon-o, name=Lemons}
+```
+
+In general:
+
+  - Separate sections with `>`.
+  - Each section can just have a name to add an element to the navigation
+    sequence, or a list of key-value pairs.
+  - Supported keys are `icon`, `name`, `type` and `href`.
+  - The `type` option can be set to `instructions` to indicate that an element
+    is asking the user to make a choice or follow specific instructions.
+
+Keystrokes
+==========
+
+You can use `{key ...}` to render a stylized keystroke. For example, this:
+
+```
+Press {key M} to view the starmap.
+```
+
+...renders this:
+
+> Press {key M} to view the starmap.
+
+You can also render sequences with modifier keys. This:
+
+```
+Use {key command option shift 3} to take a screenshot.
+Press {key down down-right right LP} to activate the hadoken technique.
+```
+
+...renders this:
+
+> Use {key command option shift 3} to take a screenshot.
+> Press {key down down-right right LP} to activate the hadoken technique.

@@ -1,0 +1,1024 @@
+﻿# Dutch translations
+
+# general
+msgid "Phabrico"
+msgstr "Phabrico"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nee"
+
+msgid "Button-AccessKey-Yes"
+msgstr "J"
+
+msgid "Button-AccessKey-No"
+msgstr "N"
+
+msgid "Undo"
+msgstr "Ongedaan maken"
+
+msgid "EmptyParameter"
+msgstr "(geen)"
+
+msgid "No projects assigned"
+msgstr "(geen)"
+
+msgid "No users assigned"
+msgstr "(niemand)"
+
+msgid "ERROR"
+msgstr "PROBLEEM"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Annuleren"
+
+# login dialog
+msgid "Username"
+msgstr "Gebruikersnaam"
+
+msgid "Password"
+msgstr "Wachtwoord"
+
+msgid "Log In"
+msgstr "Aanmelden"
+
+msgid "Invalid"
+msgstr "Foutief"
+
+msgid "Search"
+msgstr "Zoeken"
+
+msgid "Username or password are incorrect."
+msgstr "Gebruikersnaam en/of wachtwoord zijn niet juist."
+
+msgid "Create New User"
+msgstr "Nieuwe gebruiker aanmaken"
+
+msgid "Verify Password"
+msgstr "Verifieer wachtwoord"
+
+msgid "Create User"
+msgstr "Gebruiker aanmaken"
+
+# home page
+msgid "Change language"
+msgstr "Taal wijzigen"
+
+msgid "Language"
+msgstr "Taal"
+
+msgid "Change password"
+msgstr "Wachtwoord wijzigen"
+
+msgid "Current password"
+msgstr "Huidig wachtwoord"
+
+msgid "New password"
+msgstr "Nieuw wachtwoord"
+
+msgid "Verify new password"
+msgstr "Verifieer nieuw wachtwoord"
+
+msgid "Password is incorrect."
+msgstr "Wachtwoord is niet juist"
+
+msgid "Password should contain at least 1 punctuation character"
+msgstr "Wachtwoord moet minstens 1 leesteken bevatten"
+
+msgid "The passwords entered do not match"
+msgstr "De ingevoerde wachtwoorden komen niet overeen"
+
+msgid "Password should contain at least 1 number"
+msgstr "Wachtwoord moet minstens 1 cijfer bevatten"
+
+msgid "Password should contain at least 1 lowercase letter"
+msgstr "Wachtwoord moest minstens 1 kleine letter bevatten"
+
+msgid "Password should contain at least 1 capital letter"
+msgstr "Wachtwoord moet minstens 1 hoofdletter bevatten"
+
+msgid "Password should be at least 12 characters long"
+msgstr "Wachtwoord moet minstens 12 karakters lang zijn"
+
+msgid "Log out"
+msgstr "Afmelden"
+
+msgid "Synchronizing"
+msgstr "Bezig met synchronizeren..."
+
+msgid "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
+msgstr "Er is [b]1 lokale wijziging[/b] klaar om geupload te worden naar de Phabricator server."
+
+msgid "There are local [b]@@NBR-CHANGES@@ modifications[/b] ready to be uploaded the Phabricator server."
+msgstr "Er zijn [b]@@NBR-CHANGES@@ lokale wijzigingen[/b] klaar om geupload te worden naar de Phabricator server."
+
+msgid "@@FILE@@ uploaded..."
+msgstr "@@FILE@@ geupload..."
+
+msgid "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
+msgstr "Bezig met @@FILE@@ up te loaden (@@PERCENTAGE@@ %)"
+
+msgid "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
+msgstr "Sommige wijzigingen konden niet geupload worden omdat er op Phabricator reeds nieuwere versies van deze documenten of taken bestaan. Controleer deze via \'Lokale wijzigingen\'"
+
+msgid "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
+msgstr "Bent u zeker dat u de publieke Phabricator server en uw private Phabrico server wil synchronizeren ?"
+
+msgid "Favorites"
+msgstr "Favorieten"
+
+msgid "General Overview"
+msgstr "Algemeen overzicht"
+
+msgid "Phabrico Version:"
+msgstr "Phabrico Versie:"
+
+msgid "Phabrico Build date:"
+msgstr "Phabrico Build datum:"
+
+msgid "Last synchronized with Phabricator at:"
+msgstr "Laatst met Phabricator gesynchronizeerd om:"
+
+msgid "Phabrico Database Location:"
+msgstr "Phabrico Database Locatie:"
+
+msgid "Phabrico Database size:"
+msgstr "Phabrico Database grootte:"
+
+msgid "Remote access:"
+msgstr "Remote toegang:"
+
+msgid "Enabled"
+msgstr "Ingeschakeld"
+
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+msgid "Number of Phriction documents:"
+msgstr "Aantal Phriction documenten:"
+
+msgid "Number of Maniphest tasks:"
+msgstr "Aantal Maniphest taken:"
+
+msgid "Number of Projects:"
+msgstr "Aantal projecten:"
+
+msgid "Number of Users:"
+msgstr "Aantal gebruikers:"
+
+msgid "Number of File objects:"
+msgstr "Aantal bestandsobjecten:"
+
+msgid "Number of uncommitted objects:"
+msgstr "Aantal niet-gecommitte objecten:"
+
+msgid "Number of frozen objects:"
+msgstr "Aantal bevroren objecten:"
+
+msgid "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+msgstr "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Gemiddelde grootte = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum grootte = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+
+# main menu navigator
+msgid "Maniphest"
+msgstr "Maniphest"
+
+msgid "Tasks and Bugs"
+msgstr "Taken en Bugs"
+
+msgid "Phriction"
+msgstr "Phriction"
+
+msgid "Wiki Documents"
+msgstr "Wiki Documenten"
+
+msgid "Projects"
+msgstr "Projecten"
+
+msgid "Projects to be synchronized"
+msgstr "Gesynchronizeerde projecten"
+
+msgid "Users"
+msgstr "Gebruikers"
+
+msgid "User accounts to be synchronized"
+msgstr "Gesynchronizeerde gebruikersaccounts"
+
+msgid "File objects"
+msgstr "Bestandsobjecten"
+
+msgid "Referenced file objects"
+msgstr "Gerefereerde bestandsobjecten"
+
+msgid "Config"
+msgstr "Configuratie"
+
+msgid "Configure Phabrico"
+msgstr "Configureer Phabrico"
+
+msgid "Offline changes"
+msgstr "Lokale wijzigingen"
+
+msgid "View local changes"
+msgstr "Bekijk lokale wijzigingen"
+
+msgid "Synchronize"
+msgstr "Synchronizeren"
+
+# Synchronization
+msgid "No new data dowloaded from Phabricator"
+msgstr "Geen nieuwe gegevens gedownload van Phabricator"
+
+msgid "Latest synchronized data"
+msgstr "Laatst gesynchroniseerde gegevens"
+
+msgid "View changes"
+msgstr "Wijzigingen"
+
+msgid "Current version"
+msgstr "Huidige versie"
+
+msgid "Previous version"
+msgstr "Vorige versie"
+
+msgid "Overview latest synchronization"
+msgstr "Overzicht laatste synchronisatie"
+
+msgid "Difference between previous and current version of @@SYNCHRONIZED-ITEM@@"
+msgstr "Verschil tussen de vorige en de huidige versie van @@SYNCHRONIZED-ITEM@@"
+
+msgid "Synchronization.Status.NotYetSynchronized"
+msgstr "Nog niet"
+
+msgid "Synchronization.Status.Initializing"
+msgstr "Initialiseren...";
+
+msgid "Synchronization.Status.ConnectingToPhabricatorServer"
+msgstr "Verbinding maken met @@PHABRICATOR-SERVER@@...";
+
+msgid "Synchronization.Status.PreparingDownloadManiphestData"
+msgstr "Voorbereiden van download Maniphest data..."
+
+msgid "Synchronization.Status.DownloadingManiphestData"
+msgstr "Bezig met Maniphest data te downloaden..."
+
+msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
+msgstr "Bezig met het laden van Maniphest-prioriteiten -en statussen..."
+
+msgid "Synchronization.Status.DownloadingPhrictionData"
+msgstr "Bezig met Phriction data te downloaden..."
+
+msgid "Synchronization.Status.DownloadingProjects"
+msgstr "Bezig met projecten te downloaden..."
+
+msgid "Synchronization.Status.DownloadingUsers"
+msgstr "Bezig met gebruikers te downloaden..."
+
+msgid "Synchronization.Status.LoadingAccountInfo"
+msgstr "Bezig met account-info te downloaden..."
+
+msgid "Synchronization.Status.LoadingMacroData"
+msgstr "Bezig met macro-data te downloaden..."
+
+msgid "Synchronization.Status.LoadingFileObjects"
+msgstr "Bezig met bestandsobjecten te downloaden..."
+
+msgid "Synchronization.Status.UploadingManiphestData"
+msgstr "Bezig met Maniphest taken up te loaden..."
+
+msgid "Synchronization.Status.UploadingPhrictionData"
+msgstr "Bezig met Phriction documenten up te loaden..."
+
+msgid "Synchronization.Status.UploadingCommentsAndTransactions"
+msgstr "Bezig met commentaar en transacties up te loaden..."
+
+msgid "Synchronization.Status.CleaningUp"
+msgstr "Bezig met het opkuisen van oude data..."
+
+msgid "Synchronization.Status.CleaningUp.Phriction"
+msgstr "Bezig met het verwijderen van oude Phriction documenten"
+
+msgid "Synchronization.Status.CleaningUp.Maniphest"
+msgstr "Bezig met het verwijderen van oude Maniphest taken"
+
+msgid "Synchronization.Status.CleaningUp.UnreferencedFiles"
+msgstr "Bezig met het verwijderen van ongerefereerde bestandsobjecten"
+
+msgid "Synchronization.Status.Finishing"
+msgstr "Voltooien...";
+
+msgid "Synchronization.Status.Failed"
+msgstr "Gefaald";
+
+# Maniphest
+msgid "Create Task"
+msgstr "Maak taak aan"
+
+msgid "Assigned"
+msgstr "Toegewezen"
+
+msgid "Open Tasks"
+msgstr "Openstaande taken"
+
+msgid "Per User"
+msgstr "Per Gebruiker"
+
+msgid "Per Project"
+msgstr "Per Project"
+
+msgid "Authored"
+msgstr "Aangemaakt"
+
+msgid "Subscribed"
+msgstr "Gevolgd"
+
+msgid "Queries"
+msgstr "Queries"
+
+msgid "No tasks found"
+msgstr "Geen openstaande taken"
+
+msgid "Change Subscribers"
+msgstr "Wijzig volgers"
+
+msgid "Change Status"
+msgstr "Wijzig status"
+
+msgid "Change Project Tags"
+msgstr "Wijzig project tags"
+
+msgid "Change Priority"
+msgstr "Wijzig prioriteit"
+
+msgid "Assign / Claim"
+msgstr "Toewijzen"
+
+msgid "Authored By"
+msgstr "Aangemaakt door"
+
+msgid "Assigned To"
+msgstr "Toegewezen aan"
+
+msgid "Edit Task"
+msgstr "Taak bewerken"
+
+msgid "Description"
+msgstr "Beschrijving"
+
+msgid "Priority"
+msgstr "Prioriteit"
+
+msgid "First"
+msgstr "Begin"
+
+msgid "Previous"
+msgstr "Vorige"
+
+msgid "Next"
+msgstr "Volgende"
+
+msgid "Type a user or project name..."
+msgstr "Voer een gebruikers- of projectnaam in..."
+
+msgid "Type a project name..."
+msgstr "Voer een projectnaam in..."
+
+msgid "Type a username..."
+msgstr "Voer een gebruikersnaam in..."
+
+msgid "@@COMMENT-AUTHOR@@ added a comment."
+msgstr "@@COMMENT-AUTHOR@@ heeft een opmerking toegevoegd."
+
+msgid "@@PERSON@@ marked this task as @@STATE@@"
+msgstr "@@PERSON@@ markeerde deze taak als @@STATE@@"
+
+msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
+msgstr "@@PERSON@@ heeft deze taak gewijzigd van @@OLDSTATE@@ naar @@NEWSTATE@@"
+
+msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
+msgstr "@@PERSON@@ heeft @@PERSONS@@ toegevoegd als volgers"
+
+msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
+msgstr "@@PERSON1@@ heeft de taak toegewezen aan @@PERSON2@@"
+
+msgid "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
+msgstr "@@PERSON1@@ de taak opnieuw toegewezen van @@PERSON2@@ naar @@PERSON3@@"
+
+msgid "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
+msgstr "@@PERSON@@ veranderde de taakprioriteit van @@PRIORITY1@@ naar @@PRIORITY2@@"
+
+msgid "@@PERSON@@ changed the task priority to @@PRIORITY@@"
+msgstr "@@PERSON@@ veranderde de taakprioriteit in @@PRIORITY@@"
+
+msgid "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
+msgstr "@@PERSON@@ heeft het volgende project toegewezen: @@PROJECT-NAME@@"
+
+msgid "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
+msgstr "@@PERSON@@ heeft de volgende projecten toegewezen: @@PROJECT-NAMES@@"
+
+msgid "and"
+msgstr "en"
+
+msgid "ManiphestPriority.Unbreak Now!"
+msgstr "Nu uit te voeren!"
+
+msgid "ManiphestPriority.Needs Triage"
+msgstr "Moet nog uitgewerkt worden"
+
+msgid "ManiphestPriority.High"
+msgstr "Hoog"
+
+msgid "ManiphestPriority.Normal"
+msgstr "Normaal"
+
+msgid "ManiphestPriority.Low"
+msgstr "Laag"
+
+msgid "ManiphestPriority.Wishlist"
+msgstr "Verlanglijstje"
+
+msgid "ManiphestStatus.Closed"
+msgstr "Afgesloten"
+
+msgid "ManiphestStatus.Duplicate"
+msgstr "Dubbel"
+
+msgid "ManiphestStatus.Invalid"
+msgstr "Ongeldig"
+
+msgid "ManiphestStatus.On hold"
+msgstr "In wachtrij"
+
+msgid "ManiphestStatus.Ongoing"
+msgstr "Wordt aan gewerkt"
+
+msgid "ManiphestStatus.Open"
+msgstr "Open"
+
+msgid "ManiphestStatus.Planned"
+msgstr "Gepland"
+
+msgid "ManiphestStatus.Programmed"
+msgstr "Geprogrammeerd"
+
+msgid "ManiphestStatus.Resolved"
+msgstr "Opgelost"
+
+msgid "ManiphestStatus.Spite"
+msgstr "Duimen omlaag"
+
+msgid "ManiphestStatus.To be QAd"
+msgstr "Wordt geëvalueerd"
+
+msgid "ManiphestStatus.Wontfix"
+msgstr "Wordt niet opgelost"
+
+# Phriction
+msgid "Subscribers"
+msgstr "Volgers"
+
+msgid "Subscribe"
+msgstr "Volg"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "Last modified at"
+msgstr "Laatst aangepast om"
+
+msgid "Last modified by"
+msgstr "Laatst aangepast door"
+
+msgid "Printable Page"
+msgstr "Afdrukbare pagina"
+
+msgid "Add to favorites"
+msgstr "Voeg toe aan favorieten"
+
+msgid "Remove from favorites"
+msgstr "Verwijder uit favorieten"
+
+msgid "Dismiss local changes"
+msgstr "Annuleer lokale wijzigingen"
+
+msgid "Edit Document"
+msgstr "Bewerk document"
+
+msgid "Contents"
+msgstr "Inhoud"
+
+msgid "New Document"
+msgstr "Nieuw Document"
+
+msgid "Document Hierarchy"
+msgstr "Onderliggende documenten"
+
+msgid "Save Changes"
+msgstr "Wijzigingen opslaan"
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Title already exists"
+msgstr "Titel bestaat al"
+
+msgid "Type a title..."
+msgstr "Voer een titel in..."
+
+msgid "Create this Document"
+msgstr "Document aanmaken"
+
+msgid "There is no document here, but you may create it."
+msgstr "Het document bestaat niet, maar u kan het wel aanmaken."
+
+msgid "No Document Here"
+msgstr "Document bestaat niet"
+
+msgid "Page Not Found"
+msgstr "Pagina niet gevonden"
+
+msgid "This newly created page hasn't been uploaded yet to the Phabricator server"
+msgstr "Deze nieuw aangemaakte pagina is nog niet geüpload naar de Phabricator-server."
+
+msgid "This modified page hasn't been uploaded yet to the Phabricator server"
+msgstr "Deze aangepaste pagina is nog niet geüpload naar de Phabricator-server"
+
+msgid "One moment please..."
+msgstr "Even geduld..."
+
+msgid "References"
+msgstr "Verwijzingen"
+
+msgid "Show references"
+msgstr "Toon verwijzingen"
+
+# Projects & Users
+msgid "Project"
+msgstr "Project"
+
+msgid "User"
+msgstr "Gebruiker"
+
+msgid "Disallow"
+msgstr "Verbied"
+
+msgid "Select"
+msgstr "Selecteer"
+
+msgid "Unselect"
+msgstr "Deselecteer"
+
+msgid "Show all projects"
+msgstr "Toon alle projecten"
+
+msgid "Show selected projects"
+msgstr "Toon geselecteerde projecten"
+
+msgid "Disallow all projects"
+msgstr "Verbied alle projecten"
+
+msgid "Unselect all projects"
+msgstr "Selecteer geen projecten"
+
+msgid "Select all projects"
+msgstr "Selecteer alle projecten"
+
+msgid "Unselect all users"
+msgstr "Selecteer geen gebruikers"
+
+msgid "Select all users"
+msgstr "Selecteer alle gebruikers"
+
+msgid "Show all users"
+msgstr "Toon alle gebruikers"
+
+msgid "Show selected users"
+msgstr "Geselecteerde gebruikers tonen"
+
+msgid "Set color"
+msgstr "Kleur wijzigen"
+
+msgid "Set project tag color"
+msgstr "Wijzig kleur project tag"
+
+msgid "Set color for all shown project tags"
+msgstr "Wijzig kleur van alle getoonde project tags"
+
+# File objects
+msgid "Type"
+msgstr "Type"
+
+msgid "Size"
+msgstr "Grootte"
+
+msgid "Number of references"
+msgstr "Aantal referenties"
+
+msgid "File name"
+msgstr "Bestandsnaam"
+
+msgid "File object"
+msgstr "Bestandsobject"
+
+msgid "Type some text to filter the list of file objects..."
+msgstr "Voer tekst in om de lijst met bestandsobjecten te filteren..."
+
+# Config
+msgid "Phabricator"
+msgstr "Phabricator"
+
+msgid "UI Controls"
+msgstr "UI Controls"
+
+msgid "General"
+msgstr "Algemeen"
+
+msgid "Enter the URL of your Phabricator server:"
+msgstr "Voer de URL van uw Phabricator server in:"
+
+msgid "Phabricator URL"
+msgstr "Phabricator URL"
+
+msgid "Enter the Conduit API Token for your Phabricator account:"
+msgstr "Voer het Conduit API-token voor uw Phabricator-account in:"
+
+msgid "Conduit API Token"
+msgstr "Conduit API Token"
+
+msgid "Choose the synchronization method for Maniphest tasks:"
+msgstr "Kies de synchronisatiemethode voor Maniphest-taken:"
+
+msgid "Synchronize Maniphest tasks for"
+msgstr "Synchroniseer Maniphest-taken voor"
+
+msgid "Selected users only"
+msgstr "Alleen geselecteerde gebruikers"
+
+msgid "Choose the default state for new or modified Maniphest tasks:"
+msgstr "Kies de standaardtoestand voor nieuwe of gewijzigde Maniphest-taken:"
+
+msgid "Mark new/modified Maniphest tasks as"
+msgstr "Markeer nieuwe/gewijzigde Maniphest-taken als"
+
+msgid "Delete closed Maniphest tasks from Phabrico older than:"
+msgstr "Verwijder afgesloten Maniphest taken uit Phabrico ouder dan:"
+
+msgid "Maximum lifetime closed Maniphest tasks"
+msgstr "Maximale levensduur gesloten Maniphest taken"
+
+msgid "1 day"
+msgstr "1 dag"
+
+msgid "1 week"
+msgstr "1 week"
+
+msgid "2 weeks"
+msgstr "2 weken"
+
+msgid "1 month"
+msgstr "1 maand"
+
+msgid "3 months"
+msgstr "3 maanden"
+
+msgid "6 months"
+msgstr "6 maanden"
+
+msgid "1 year"
+msgstr "1 jaar"
+
+msgid "10 years"
+msgstr "10 jaar"
+
+msgid "Choose the synchronization method for Phriction documents:"
+msgstr "Kies de synchronisatiemethode voor Phriction-documenten:"
+
+msgid "Synchronize Phriction documents for"
+msgstr "Synchroniseer Phriction-documenten voor"
+
+msgid "All projects"
+msgstr "Alle projecten"
+
+msgid "Selected projects only"
+msgstr "Alleen geselecteerde projecten"
+
+msgid "Selected projects only including document tree"
+msgstr "Alleen geselecteerde projecten inclusief onderliggende documenten"
+
+msgid "Selected projects combined"
+msgstr "Geselecteerde projecten gecombineerd"
+
+msgid "Selected projects combined including document tree"
+msgstr "Geselecteerde projecten gecombineerd inclusief onderliggende documenten"
+
+msgid "Choose the default state for new or modified Phriction documents:"
+msgstr "Kies de standaardtoestand voor nieuwe of gewijzigde Phriction-documenten:"
+
+msgid "Mark new/modified Phriction documents as"
+msgstr "Markeer nieuwe/gewijzigde Phriction-documenten als"
+
+msgid "Add information about the Phriction document in the action menu on the right"
+msgstr "Toon informatie over het Phriction-document in het actiemenu aan de rechterkant"
+
+msgid "Show Phriction metadata"
+msgstr "Toon Phriction metagegevens"
+
+msgid "Download project tags and subcribers for all Phriction documents"
+msgstr "Download project tags en subcribers voor alle Phriction documenten"
+
+msgid "Force download all Phriction metadata"
+msgstr "Forceer downloaden van alle Phriction metadata"
+
+msgid "Frozen: local modifications will not be uploaded during synchronization"
+msgstr "Bevroren: lokale wijzigingen worden niet geüpload tijdens de synchronisatie"
+
+msgid "Unfrozen: local modifications will be uploaded during synchronization"
+msgstr "Ontgrendeld: lokale wijzigingen worden tijdens de synchronisatie geüpload."
+
+msgid "Add Copy button:"
+msgstr "Voeg Kopieer knop toe:"
+
+msgid "Add Copy-to-clipboard button to code blocks:"
+msgstr "Voeg de Copy-to-clipboard knop toe aan de codeblokken:"
+
+msgid "Use dynamic coloring for project tags:"
+msgstr "Gebruik dynamische inkleuring voor projecttags:"
+
+msgid "Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:"
+msgstr "Vertaal de titel van een NOTE, WARNING of IMPORTANT melding:"
+
+msgid "Translate notification block titles:"
+msgstr "Vertaal titel van meldingen:"
+
+msgid "Generate a separate color for each project tag shown:"
+msgstr "Genereer een aparte kleur voor elke getoonde projecttag:"
+
+msgid "Confidential Table Headers"
+msgstr "Vertrouwelijke tabelkoppen"
+
+msgid "Confidential Table Header"
+msgstr "Vertrouwelijke tabelkop"
+
+msgid "Enter the text of table row/column headers which should only be visible when you move the mouse over it:"
+msgstr "Voer de tekst van de tabelrij/kolomkoppen in die alleen zichtbaar mag zijn als u er met de muis overheen beweegt:"
+
+msgid "Add Confidential Table Header"
+msgstr "Vertrouwelijke tabelkop toevoegen"
+
+msgid "Auto log on"
+msgstr "Auto log on"
+
+msgid "Allow to log on automatically but disable synchronization and configuration"
+msgstr "Automatisch aanmelden toestaan, maar synchronisatie en configuratie uitschakelen"
+
+msgid "Remove"
+msgstr "Verwijder"
+
+msgid "WARNING: this will create a security risk by storing the encryption key in the Phabrico database"
+msgstr "WAARSCHUWING: dit creëert een veiligheidsrisico door de encryptiesleutel op te slaan in de Phabrico database."
+
+msgid "Maximum Duration of Inactivity"
+msgstr "Maximale duur van de inactiviteit"
+
+msgid "Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)"
+msgstr "Elke sessie is geconfigureerd om automatisch uit te loggen na een aantal minuten (0 of lager = geen automatische afmelding, 1440 is de maximale waarde)."
+
+msgid "Theme"
+msgstr "Thema"
+
+msgid "Choose the color theme you want to use:"
+msgstr "Kies het kleurenthema dat u wilt gebruiken:"
+
+msgid "Light"
+msgstr "Licht"
+
+msgid "Dark"
+msgstr "Donker"
+
+msgid "Darken light images"
+msgstr "Lichte afbeeldingen donkerder maken"
+
+msgid "Moderate"
+msgstr "Gematigd"
+
+msgid "Extreme"
+msgstr "Extreem"
+
+msgid "Getting started with Phabrico"
+msgstr "Aan de slag met Phabrico"
+
+msgid "In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator."
+msgstr "In dit Configuratiescherm kunt u het uiterlijk van Phabrico veranderen en configureren welke gegevens gesynchroniseerd moeten worden met Phabricator."
+
+msgid "Which Phabricator accounts should be monitored ?"
+msgstr "Welke Phabricator accounts moeten worden gemonitord ?"
+
+msgid "In this Users screen, you can select for which Phabricator users you want to have your data always available."
+msgstr "In dit Gebruikersscherm kunt u selecteren voor welke Phabricator-gebruikers u uw gegevens altijd beschikbaar wilt hebben."
+
+msgid "Currently, only your Phabricator account is selected."
+msgstr "Momenteel is alleen uw Phabricator account geselecteerd."
+
+msgid "Which Phabricator projects should be monitored ?"
+msgstr "Welke Phabricator projecten moeten worden gemonitord ?"
+
+msgid "In this Projects screen, you can select for which Phabricator projects you want to have your data always available."
+msgstr "In dit Projecten scherm, kunt u selecteren voor welke Phabricator projecten u uw gegevens altijd beschikbaar wilt hebben."
+
+msgid "You can here also change the colors of the project tags."
+msgstr "U kunt hier ook de kleuren van de project labels veranderen."
+
+msgid "In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...)."
+msgstr "In de huidige configuratie zal Phabrico alle Phriction documenten synchroniseren en zal het enkel de open Maniphest taken synchroniseren waar u bij betrokken was (bv. toegewezen, geabonneerd, ...)."
+
+msgid "Click on the Synchronize button to download all requested data from Phabricator"
+msgstr "Klik op de knop Synchroniseren om alle gevraagde gegevens van Phabricator te downloaden"
+
+# Offline changes
+msgid "Offline changes for @@STAGED-ITEM@@"
+msgstr "Lokale aanpassingen voor @@STAGED-ITEM@@"
+
+msgid "Overview offline changes"
+msgstr "Overzicht lokale aanpassingen"
+
+msgid "Dismiss local version"
+msgstr "Verwerp lokale versie"
+
+msgid "Save local version"
+msgstr "Bewaar lokale versie"
+
+msgid "Phabricator version"
+msgstr "Phabricator versie"
+
+msgid "Local version"
+msgstr "Lokale versie"
+
+msgid "Modification"
+msgstr "Wijziging"
+
+msgid "Content"
+msgstr "Inhoud"
+
+msgid "Freeze"
+msgstr "Bevriezen"
+
+msgid "Unfreeze"
+msgstr "Ontgrendelen"
+
+msgid "No offline changes found"
+msgstr "Geen lokale wijzigingen gevonden"
+
+msgid "Are you sure you want to dismiss all your local changes for this document ?"
+msgstr "Weet u zeker dat u al uw lokale wijzigingen voor dit document wilt verwerpen ?"
+
+msgid "Are you sure you want to undo this local change ?"
+msgstr "Weet u zeker dat u deze lokale wijziging ongedaan wilt maken ?"
+
+msgid "(New)"
+msgstr "(Nieuw)"
+
+msgid "(Metadata modified)"
+msgstr "(Metagegevens gewijzigd)"
+
+msgid "(Priority modified)"
+msgstr "(Prioriteit gewijzigd)"
+
+msgid "(Owner modified)"
+msgstr "(Verantwoordelijke gewijzigd)"
+
+msgid "(Status modified)"
+msgstr "(Status gewijzigd)"
+
+msgid "Project @@PROJECT@@ tagged"
+msgstr "Project @@PROJECT@@ gelabeld"
+
+msgid "Subscriber @@SUBSCRIBER@@ added"
+msgstr "Volger @@SUBSCRIBER@@ toegevoegd"
+
+msgid "Append left line after right line"
+msgstr "Voeg de linker regel toe na de rechter regel"
+
+msgid "Append left block after right block"
+msgstr "Voeg links blok na rechts blok toe"
+
+msgid "Insert left line before right line"
+msgstr "Linker regel invoegen voor rechter regel"
+
+msgid "Insert left block before right block"
+msgstr "Linkerblok voor rechterblok invoegen"
+
+msgid "Replace right line with left line"
+msgstr "Vervang de rechterlijn door de linkerlijn"
+
+msgid "Replace right block with left block"
+msgstr "Vervang het rechterblok door het linkerblok"
+
+msgid "The Phabricator server contains a newer version"
+msgstr "De Phabricator server bevat een nieuwere versie"
+
+msgid "Frozen"
+msgstr "Bevroren"
+
+msgid "Modified"
+msgstr "Gewijzigd"
+
+# Remarkup editor
+msgid "Bold"
+msgstr "Vetgedrukt"
+
+msgid "Bold text"
+msgstr "Vetgedrukte tekst"
+
+msgid "Italic"
+msgstr "Cursief"
+
+msgid "Italic text"
+msgstr "Cursieve tekst"
+
+msgid "Monospaced"
+msgstr "Monospaced"
+
+msgid "Monospaced text"
+msgstr "Monospaced tekst"
+
+msgid "Bulleted List"
+msgstr "Opsomming met bullets"
+
+msgid "Numbered List"
+msgstr "Numerieke oplijsting"
+
+msgid "Code Block"
+msgstr "Code Block"
+
+msgid "Quote"
+msgstr "Quote"
+
+msgid "Table"
+msgstr "Tabel"
+
+msgid "Help"
+msgstr "Help"
+
+msgid "Set Sail for Adventure"
+msgstr "Zet koers naar avontuur"
+
+msgid "Add Action..."
+msgstr "Voeg actie toe..."
+
+msgid "CodeBlock.Copy"
+msgstr "Kopieer"
+
+msgid "Notification.IMPORTANT"
+msgstr "BELANGRIJK"
+
+msgid "Notification.NOTE"
+msgstr "OPMERKING"
+
+msgid "Notification.WARNING"
+msgstr "WAARSCHUWING"
+
+msgid "FileReference.Download"
+msgstr "Download"
+
+# Browser not supported
+msgid "Browser not supported"
+msgstr "Browser wordt niet ondersteund"
+
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access Phabrico"
+msgstr "Gebruik Mozilla Firefox, Opera, Google Chrome of Microsoft Edge om toegang te krijgen tot Phabrico"
+
+# URL Not Found
+msgid "404"
+msgstr "404"
+
+msgid "Url not found:"
+msgstr "Url niet gevonden:"
+
+msgid "Show content in Phabricator instead"
+msgstr "Inhoud weergeven in Phabricator"
+
+# Access denied
+msgid "ACCESS DENIED"
+msgstr "TOEGANG GEWEIGERD"
+
+msgid "Details:"
+msgstr "Details:"
+
+msgid "URL:"
+msgstr "URL:"
+
+msgid "Comment:"
+msgstr "Informatie:"
+
+msgid "You don't have sufficient rights to configure Phabrico"
+msgstr "U hebt niet genoeg rechten om Phabrico te kunnen configureren"
+
+msgid "You don't have sufficient rights to synchronize Phabrico with Phabricator"
+msgstr "U hebt niet genoeg rechten om Phabrico met Phabricator te kunnen synchronizeren"
+
+msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
+msgstr "Dit Phriction-document of Maniphest-taak werd niet gedownload van de Phabricator-server omdat het was getagged met een of meerdere afgekeurde projecten of gebruikers."

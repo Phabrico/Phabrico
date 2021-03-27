@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <ComponentGroup Id="PluginPhrictionToPDFComponents" Directory="INSTALLDIR">
+        <Component Id="phrictiontopdf_Phabrico_Plugin_PhrictionToPDF_dll" Guid="$(var.PluginPhrictionToPDFGUID)"
+                   Win64="yes">
+            <File Id="file_phrictiontopdf_Phabrico_Plugin_PhrictionToPDF_dll"
+                  Source="$(var.Phabrico.Plugin.PhrictionToPDF.TargetDir)Phabrico.Plugin.PhrictionToPDF.dll"
+                  KeyPath="yes" />
+            <ServiceControl Id="StartServiceForPhrictionToPDF"
+                            Name="Phabrico"
+                            Start="install"
+                            Stop="install"
+                            Wait="yes" />
+        </Component>
+        <Component Id="phrictiontopdf_Phabrico_Plugin_PhrictionToPDF_pdb" Guid="50c4c87b-1155-4508-8ba4-86ef3f9b00c9"
+                   Win64="yes">
+            <File Id="file_phrictiontopdf_Phabrico_Plugin_PhrictionToPDF_pdb"
+                  Source="$(var.Phabrico.Plugin.PhrictionToPDF.TargetDir)Phabrico.Plugin.PhrictionToPDF.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="phrictiontopdf_NReco_PdfGenerator_dll" Guid="a4b624c6-bf43-492d-9ffe-cce1c9bce12b"
+                   Win64="yes">
+            <File Id="file_phrictiontopdf_NReco_PdfGenerator_dll"
+                  Source="$(var.Phabrico.Plugin.PhrictionToPDF.TargetDir)NReco.PdfGenerator.dll"
+                  KeyPath="yes" />
+        </Component>
+    </ComponentGroup>
+</Include>

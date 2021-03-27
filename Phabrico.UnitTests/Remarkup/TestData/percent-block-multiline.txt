@@ -1,0 +1,12 @@
+**foo**
+%%%- first
+- second
+- third%%%
+[[http://hello | world]]
+~~~~~~~~~~
+<strong>foo</strong><br>
+<p class='remarkup-literal'>- first<br>
+- second<br>
+- third</p>
+<a class='phriction-link' href='http://hello'>world</a>
+~~~~~~~~~~

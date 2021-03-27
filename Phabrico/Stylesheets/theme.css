@@ -1,0 +1,952 @@
+﻿::-webkit-scrollbar-track {
+    -webkit-box-shadow: var(--webkit-scrollbar-track-box-shadow);
+}
+
+::-webkit-scrollbar-thumb {
+    -webkit-box-shadow: var(--webkit-scrollbar-thumb-shadow);
+}
+
+#disablePrintableView {
+    background: var(--disablePrintableView-background);
+    color: var(--disablePrintableView-color);
+}
+
+#headerBar {
+    background: var(--headerBar-background);
+}
+
+#popSearchResults {
+    background: var(--popSearchResults-background);
+    border: var(--popSearchResults-border);
+}
+
+#popSearchResults > a {
+    border-bottom: var(--popSearchResults-a-border-bottom);
+}
+
+#popSearchResults > a:hover {
+    background: var(--popSearchResults-a-hover-background);
+}
+
+#requestStackTrace {
+    background: var(--requestStackTrace-background);
+    color: var(--requestStackTrace-color);
+}
+
+#tblOfflineChanges .fa-fire {
+    color: var(--modified-color);
+}
+
+#tblOfflineChanges .fa-snowflake-o {
+    color: var(--button-snowflake-color);
+}
+
+::selection {
+    color: var(--selected-text-foreground);
+    background: var(--selected-text-background);
+}
+
+@keyframes tblOfflineChanges-exclamation-triangle {
+  from {color: transparent;}
+  to {color: var(--tblOfflineChanges-exclamation-triangle-color);}
+}
+
+.aphront-dialog-body,.aphront-table-view,table.remarkup-table td,.edit-right {
+    background: var(--aphront-dialog-body-background);
+}
+
+.aphront-dialog-head {
+    background: var(--aphront-dialog-head-background);
+    border-bottom: var(--aphront-dialog-head-border-bottom);
+    color: var(--aphront-dialog-head-color);
+}
+
+.aphront-dialog-overlay {
+    background: var(--aphront-dialog-overlay-background);
+}
+
+.aphront-dialog-tail {
+    background: var(--aphront-dialog-tail-background);
+    border-top: var(--aphront-dialog-tail-border-top);
+}
+
+.aphront-dialog-view,
+.app-window,
+.app-main-window,
+.app-side-window,
+.app-edit-window,
+.maniphest-list-view,
+.stagin-view,
+.tab-page {
+    background-color: var(--aphront-dialog-view-background-color);
+    border: var(--aphront-dialog-view-border);
+}
+
+.aphront-dialog-view.modal {
+    border: var(--aphront-dialog-view-modal-border);
+}
+
+.aphront-form-error {
+    color: var(--aphront-form-error-color);
+}
+
+.aphront-table-view th {
+    background-color: var(--aphront-table-view-th-background-color);
+    border-bottom: var(--aphront-table-view-th-border-bottom);
+    color: var(--aphront-table-view-th-color);
+}
+
+.app-edit-window-head, .app-edit-window-head > a {
+    background-image: var(--app-edit-window-head-background-image);
+    border-bottom: var(--app-edit-window-head-border-bottom);
+    color: var(--app-edit-window-head-color);
+}
+
+.app-edit-window-head > .phui-font-fa:hover, .app-edit-window-head > a:hover {
+    color: var(--app-edit-window-head-phui-font-fa-hover-color);
+}
+
+.app-window-head {
+    background: var(--app-window-head-background);
+    color: var(--app-window-head-color);
+}
+
+.collapsed .app-window-head {
+    background: var(--app-window-head-background-collapsed);
+}
+
+.config-tables-body {
+    color: var(--config-tables-body-color) !important; 
+    background-color: var(--config-tables-body-background-color); 
+    border-bottom: var(--config-tables-body-border-bottom);
+}
+
+.config-tables-header {
+    border: var(--config-tables-bodyheader-border);
+}
+
+.crumbs {
+    background: var(--body-background);
+}
+
+.crumbs > a:hover {
+    color: var(--crumbs-a-hover-color);
+}
+
+.edit-container .app-window-body.edit {
+    border: var(--edit-container-app-window-body-edit-border);
+}
+
+.edit-left {
+    background: var(--edit-left-background);
+}
+
+.edit-slider {
+    background-image: var(--edit-slider-background-image);
+}
+
+.fa-sign-out {
+    color: var(--fa-sign-out-color);
+}
+
+.created {
+    background: var(--created-background1);
+    background: var(--created-background2);
+    -webkit-background-clip: var(--created-webkit-background-clip);
+    -webkit-text-fill-color: var(--created-webkit-text-fill-color);
+}
+
+.maniphest-task-syncstate.frozen,
+.phriction #documentState.frozen,
+.staging td.frozen {
+    background: var(--frozen-background1);
+    background-image: var(--frozen-background2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: var(--frozen-webkit-text-fill-color);
+}
+
+.maniphest-task-syncstate.unfrozen,
+.phriction #documentState.unfrozen,
+.staging td.unfrozen {
+    background: var(--unfrozen-background1);
+    background-image: var(--unfrozen-background2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: var(--unfrozen-webkit-text-fill-color);
+}
+
+.staging table.aphront-table-view tr.alternate.frozen:nth-child(2n) td {
+    background-color: var(--frozen-even-row-background);
+}
+
+.staging table.aphront-table-view tr.alternate.frozen:nth-child(2n+1) td {
+    background-color: var(--frozen-odd-row-background);
+}
+
+.list-item-separator {
+    border-top: var(--list-item-separator-border-top);
+}
+
+.list-item-view a,.phui-list-item-href,.instructions,.aphront-table-view td, .toc a,.crumbs > a {
+    color: var(--list-item-view-a-color);
+}
+
+.navigator-menuitem-notification.error {
+    background: var(--navigator-menuitem-notification-error-background);
+    color: var(--navigator-menuitem-notification-error-color);
+}
+
+.navigator-menuitem-notification.information {
+    background: var(--navigator-menuitem-notification-information-background);
+    color: var(--navigator-menuitem-notification-information-color);
+}
+
+a.maniphest-link:not(.button) {
+    background-image: var(--maniphest-link-background-image);
+    border: var(--maniphest-link-border);
+    color: var(--maniphest-link-color);
+}
+
+a.maniphest-link:hover {
+    background-image: var(--maniphest-link-hover-background-image);
+}
+
+.maniphest-list-head,
+.staging-head,
+.synchronization {
+    background: var(--maniphest-list-head-background);
+    border-bottom: var(--maniphest-list-head-border-bottom);
+}
+
+.maniphest-list-item {
+    border-bottom: var(--maniphest-list-item-border-bottom);
+}
+
+.maniphest-list-item-timestamp,
+.maniphest-list-item-assigned {
+    color: var(--maniphest-list-item-timestamp);
+}
+
+.maniphest-task-header > .red,
+.maniphest-list-item .red {
+    color: var(--maniphest-task-red-color);
+}
+
+.maniphest-task-header > .lightred,
+.maniphest-list-item .lightred {
+    color: var(--maniphest-task-lightred-color);
+}
+
+.maniphest-task-header > .orange,
+.maniphest-list-item .orange {
+    color: var(--maniphest-task-orange-color);
+}
+
+.maniphest-task-header > .lightorange,
+.maniphest-list-item .lightorange {
+    color: var(--maniphest-task-lightorange-color);
+}
+
+.maniphest-task-header > .yellow,
+.maniphest-list-item .yellow {
+    color: var(--maniphest-task-yellow-color);
+}
+
+.maniphest-task-header > .lightyellow,
+.maniphest-list-item .lightyellow {
+    color: var(--maniphest-task-lightyellow-color);
+}
+
+.maniphest-task-header > .green,
+.maniphest-list-item .green {
+    color: var(--maniphest-task-green-color);
+}
+
+.maniphest-task-header > .lightgreen,
+.maniphest-list-item .lightgreen {
+    color: var(--maniphest-task-lightgreen-color);
+}
+
+.maniphest-task-header > .blue,
+.maniphest-list-item .blue {
+    color: var(--maniphest-task-blue-color);
+}
+
+.maniphest-task-header > .lightblue,
+.maniphest-list-item .lightblue {
+    color: var(--maniphest-task-lightblue-color);
+}
+
+.maniphest-task-header > .sky,
+.maniphest-list-item .sky {
+    color: var(--maniphest-task-sky-color);
+}
+
+.maniphest-task-header > .lightsky,
+.maniphest-list-item .lightsky {
+    color: var(--maniphest-task-lightsky-color);
+}
+
+.maniphest-task-header > .fire,
+.maniphest-list-item .fire {
+    color: var(--maniphest-task-fire-color);
+}
+
+.maniphest-task-header > .indigo,
+.maniphest-list-item .indigo {
+    color: var(--maniphest-task-indigo-color);
+}
+
+.maniphest-task-header > .lightindigo,
+.maniphest-list-item .lightindigo {
+    color: var(--maniphest-task-lightindigo-color);
+}
+
+.maniphest-task-header > .pink,
+.maniphest-list-item .pink {
+    color: var(--maniphest-task-pink-color);
+}
+
+.maniphest-task-header > .lightpink,
+.maniphest-list-item .lightpink {
+    color: var(--maniphest-task-lightpink-color);
+}
+
+.maniphest-task-header > .violet,
+.maniphest-list-item .violet {
+    color: var(--maniphest-task-violet-color);
+}
+
+.maniphest-task-header > .lightviolet,
+.maniphest-list-item .lightviolet {
+    color: var(--maniphest-task-lightviolet-color);
+}
+
+.maniphest-task-header > .charcoal,
+.maniphest-list-item .charcoal {
+    color: var(--maniphest-task-charcoal-color);
+}
+
+.maniphest-task-state {
+    background: var(--maniphest-task-state-background);
+    color: var(--maniphest-task-state-color);
+}
+
+.maniphest-list > .toc ul ul li a.assigned:hover:not([href^="/maniphest/assigned/"]),
+.maniphest-list > .toc ul ul li a.authored:hover:not([href^="/maniphest/authored/"]),
+.maniphest-list > .toc ul ul li a.subscribed:hover:not([href^="/maniphest/subscribed/"]),
+.maniphest-list > .toc ul ul li a.opentasks:hover:not([href^="/maniphest/opentasks/"]),
+.maniphest-list > .toc ul ul ul li a.opentasks-perproject:hover:not([href^="/maniphest/opentasks/perproject/"]),
+.maniphest-list > .toc ul ul ul li a.opentasks-peruser:hover:not([href^="/maniphest/opentasks/peruser/"]) {
+    color: var(--crumbs-a-hover-color);
+}
+
+.phabrico-logo,
+.phabrico-wordmark {
+    color: var(--phabrico-logo-color);
+}
+
+.phabrico-standard-treeitem-body {
+    background: var(--body-background);
+}
+
+.phriction-edit-error {
+    color: var(--phui-info-severity-error-color);
+}
+
+.phriction .toc {
+    background: var(--body-background);
+}
+
+.phui-document {
+    background: var(--phui-document-background);
+    border-bottom: var(--phui-document-border-bottom);
+}
+
+.list-item-view:hover,
+.toc a:hover {
+    background-color: var(--phui-document-toc-li-hover-background-color);
+}
+
+.list-item-view.no-hover:hover {
+    background-color: unset;
+}
+
+.phui-document-create-message {
+    background: var(--phui-document-create-message-background);
+}
+
+.phui-document-hierarchy-border {
+    border: var(--phui-document-hierarchy-border);
+    background: var(--phui-document-hierarchy-border-background);
+}
+
+.phui-document-hierarchy-border a:not(.button) {
+    color: var(--phui-document-hierarchy-a-color);
+}
+
+.phui-list-item-href:hover {
+    background: var(--phui-list-item-href-hover-background);
+}
+
+.phui-list-view .phui-font-fa {
+    color: var(--phui-font-fa-color);
+}
+
+.phui-info-severity-error {
+    border-color: var(--phui-info-severity-error-border-color);
+    color: var(--phui-info-severity-error-color);
+}
+
+.phui-info-error {
+    color: var(--phui-info-severity-error-color);
+}
+
+.phui-list-view {
+    background: var(--phui-list-view-background);
+}
+
+.tab-head > button {
+    background-image: var(--tab-head-button-background-image);
+    border: var(--tab-head-button-border);
+    border-bottom: var(--tab-head-button-border-bottom);
+    color: var(--tab-head-button-color);
+}
+
+.button.button-green,
+button.button-green {
+    background-image: var(--button-green-background-image);
+}
+
+.button.button-green:hover,
+button.button-green:hover:enabled {
+    background-image: var(--button-green-hover-background-image);
+}
+
+.button.button-red,
+button.button-red {
+    background-image: var(--button-red-background-image);
+}
+
+.button.button-red:hover,
+button.button-red:hover:enabled {
+    background-image: var(--button-red-hover-background-image);
+}
+
+.tab-head > button.selected {
+    background-image: var(--tab-head-button-selected-background-image);
+    border-bottom: var(--tab-head-button-selected-border-bottom);
+    color: var(--tab-head-button-selected-color);
+}
+
+.tab-head > button:hover {
+    background-image: var(--tab-head-button-background-image-hover) !important;
+    color: var(--tab-head-button-color-hover) !important;
+}
+
+.tab-head > button.selected:hover {
+    background-image: var(--tab-head-button-selected-background-image) !important;
+    border-bottom: var(--tab-head-button-selected-border-bottom) !important;
+    color: var(--tab-head-button-selected-color) !important;
+}
+
+a:not(.button),
+.list-item-view.list-item-link a,
+.list-item-view.list-item-link a:hover {
+    color: var(--a-color);
+}
+
+blockquote {
+    background-color: var(--blockquote-background-color);
+    border-left: var(--blockquote-border-left);
+    color: var(--blockquote-color);
+}
+
+body,textarea {
+    background: var(--body-background);
+    color: var(--body-color);
+}
+
+button,
+.button,
+.button.button-blue,
+button.button-blue {
+    background-color: var(--button-background-color);
+    background-image: var(--button-background-image);
+    border: var(--button-border);
+    color: var(--button-color);
+}
+
+button:hover:enabled,
+.button:hover,
+.button.button-blue:hover,
+button.button-blue:hover:enabled {
+    background-image: var(--button-background-image-hover);
+    color: var(--button-color-hover);
+}
+
+button.button-gray,input[type=submit].button-gray,.button-gray,.button-gray:visited {
+    background-color: var(--button-gray-background-color);
+    background-image: var(--button-gray-background-image);
+    border: var(--button-gray-border);
+    color: var(--button-gray-color);
+}
+
+button.button-gray > i.phui-font-fa, 
+.button-gray > i.phui-font-fa {
+    color: var(--button-gray-color);
+}
+
+button.button-gray:hover:enabled,
+.button-gray:hover {
+    background-image: var(--button-gray-background-image-hover);
+    color: var(--button-gray-color-hover);
+}
+
+.remarkup-important {
+    background: var(--remarkup-important-background);
+    border-left: var(--remarkup-important-border-left);
+    color: var(--remarkup-important-color);
+}
+
+.remarkup-note {
+    background: var(--remarkup-note-background);
+    border-left: var(--remarkup-note-border-left);
+    color: var(--remarkup-note-color);
+}
+
+.remarkup-warning {
+    background: var(--remarkup-warning-background);
+    border-left: var(--remarkup-warning-border-left);
+    color: var(--remarkup-warning-color);
+}
+
+hr.remarkup-hr {
+    color: var(--hr-remarkup-hr-color);
+}
+
+label.aphront-form-label,.list-item-head {
+    color: var(--label-aphront-form-label-color);
+}
+
+div.favorite-item {
+    -webkit-box-shadow: 0px 0px 0px 1px var(--favorite-item-border-normal);
+}
+
+div.favorite-item.dragging {
+    -webkit-box-shadow: var(--favorite-item-border-dragging);
+}
+
+div.homepage > table > tbody > tr > td > hr {
+    color: var(--homepage-line-color);
+}
+
+img.darkness-extreme {
+    filter: var(--img-darkness-extreme-filter);
+}
+
+img.darkness-moderate {
+    filter: var(--img-darkness-moderate-filter);
+}
+
+select {
+    background: var(--textarea-background-color);
+    color: var(--textarea-color);
+}
+
+select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 var(--textarea-color);
+}
+
+.select {
+    border: var(--select-border);
+}
+
+.select:after {
+    color: var(--select-after-color);
+}
+
+span.remarkup-highlight {
+    background-color: var(--span-remarkup-highlight-background-color);
+    color: var(--span-remarkup-highlight-color);
+}
+
+table.aphront-table-view tr:hover td {
+    background-color: var(--table-aphront-table-view-tr-hover-td-background-color) !important;
+    color: var(--table-aphront-table-view-tr-hover-td-color) !important;
+}
+
+table.aphront-table-view tr:hover td a:not(.button) {
+    color: var(--table-aphront-table-view-tr-hover-td-a-color) !important;
+}
+
+table.aphront-table-view tr.alternate:nth-child(2n) td {
+    background-color: var(--table-aphront-table-view-tr-alternate-nth-child-2n-td-background-color);
+}
+
+table.aphront-table-view tr.alternate:nth-child(2n+1) td {
+    background-color: var(--table-aphront-table-view-tr-alternate-nth-child-2n1-td-background-color);
+}
+
+table.aphront-table-view tr.alternate.disallowed td,
+table.aphront-table-view tr.alternate.disallowed td a:not(.button) {
+    background-color: var(--table-aphront-table-view-tr-disallowed-td-background-color) !important;
+    color: var(--table-aphront-table-view-tr-disallowed-td-color) !important;
+}
+
+table.aphront-table-view tr.alternate.disallowed,
+table.aphront-table-view tr.alternate.selected {
+    border-bottom-color: var(--table-aphront-table-view-tr-border-bottom-color);
+}
+
+table.aphront-table-view tr.selected td,
+table.aphront-table-view tr.selected td a:not(.button) {
+    background-color: var(--table-aphront-table-view-tr-selected-td-background-color) !important;
+    color: var(--table-aphront-table-view-tr-selected-td-color) !important;
+}
+
+table.remarkup-table {
+    background: var(--table-remarkup-table-background);
+}
+
+table.remarkup-table th {
+    background: var(--table-remarkup-table-th-background);
+}
+
+textarea.dropzone.dragging {
+    background-color: var(--textarea-dropzone-background-color);
+}
+
+textarea,input[type=number],input[type=text],input[type=password] {
+    background-color: var(--textarea-background-color);
+    color: var(--textarea-color);
+    border: var(--textarea-border);
+}
+
+textarea:focus,input[type=number]:focus,input[type=text]:focus,input[type=password]:focus {
+    border: var(--textarea-focus-border);
+    box-shadow: var(--textarea-focus-box-shadow);
+}
+
+tt.remarkup-monospaced {
+    background: var(--tt-remarkup-monospaced-background);
+    color: var(--tt-remarkup-monospaced-color);
+}
+
+.progress-bar div {
+    background-color: var(--progress-bar-div-background-color);
+    color: var(--progress-bar-div-color);
+}
+
+.progress-bar div div {
+    background-color: var(--progress-bar-div-div-background-color);
+    background-image: var(--progress-bar-div-div-background-image1);
+    background-image: var(--progress-bar-div-div-background-image2);
+    background-image: var(--progress-bar-div-div-background-image3);
+}
+
+.remarkup-embed-border {
+    border: var(--remarkup-embed-border-border);
+    color: var(--remarkup-embed-border-color);
+    background: var(--remarkup-embed-border-background);
+}
+
+.remarkup-embed-border:hover {
+    border-color: var(--remarkup-embed-border-hover-border-color);
+    background: var(--remarkup-embed-border-hover-background);
+}
+
+.remarkup-embed-file-size {
+    color: var(--remarkup-embed-file-size-color);
+}
+
+.remarkup-embed-download-link {
+    color: var(--remarkup-embed-download-link-a-color);
+}
+
+.tooltip-right .tooltiptext,
+.tooltip-top .tooltiptext {
+    background-color: var(--tooltiptext-background-color);
+    color: var(--tooltiptext-color);
+}
+
+.tooltip-right .tooltiptext::after {
+    border-color: transparent var(--tooltiptext-background-color) transparent transparent;
+}
+
+.tooltip-top .tooltiptext::after {
+    border-color: var(--tooltiptext-background-color) transparent transparent transparent;
+}
+
+.counterexample.hljs,
+.counterexample.remarkup-code-header {
+    background: var(--counterexample-background);
+}
+
+kbd {
+    background: var(--kbd-background);
+    border: var(--kbd-border);
+}
+
+.kbd-join {
+    color: var(--kbd-join-color);
+}
+
+.remarkup-nav-sequence-item {
+    background: var(--remarkup-nav-sequence-item-background);
+    border: var(--remarkup-nav-sequence-item-border);
+    color: var(--remarkup-nav-sequence-item-color);
+ }
+
+.remarkup-nav-sequence-anchor {
+    text-decoration: var(--remarkup-nav-sequence-anchor-text-decoration);
+}
+
+.input-tag > div:first-child {
+    border: solid 1px #A1A6B0; 
+    background: var(--textarea-background-color);
+}
+
+.input-tag > div:first-child > span {
+    background: var(--input-tag-div-first-child-span-background);
+    color: var(--input-tag-div-first-child-span-color);
+    border: var(--input-tag-div-first-child-span-border);
+}
+
+.input-tag > div:nth-child(2) {
+    background: var(--input-tag-div-nth-child-2-background);
+    color: var(--input-tag-div-nth-child-2-color);
+    border: var(--input-tag-div-nth-child-2-border);
+}
+
+.input-tag > div:nth-child(2) > a {
+    border-top: var(--input-tag-div-nth-child-2-a-border-top);
+    color: var(--input-tag-div-nth-child-2-a-color);
+}
+
+.menu.opened > a.input-tag-hovered {
+    background: var(--input-tag-div-nth-child-2-a-hover-background);
+    color: var(--input-tag-div-nth-child-2-a-hover-color);
+}
+
+.menu.opened > a {
+    background: var(--input-tag-div-nth-child-2-a-background);
+    color: var(--input-tag-div-nth-child-2-a-color);
+}
+
+.input-tag > div.menu {
+    border-color: var(--menu-border-color);
+}
+
+.diff-left td, .diff-left th,
+.diff-right td, .diff-right th {
+    border-color: var(--diff-border-color);
+}
+
+.diff-left,
+.diff-right {
+    background: var(--diff-header-background);
+    border-color: var(--diff-header-border-color);
+}
+
+.diff-left .header,
+.diff-right .header {
+    background: var(--diff-header-background);
+    z-index: 1;
+}
+
+.diff-left th,
+.diff-right th {
+    background: var(--diff-header-background);
+}
+
+.diff-left td,
+.diff-right td {
+    background: var(--diff-td-equal-background);
+}
+
+.diff-left td.empty,
+.diff-right td.empty {
+    background: var(--diff-empty-line-background);
+}
+
+.diff-left td.delete,
+.diff-right td.delete {
+    background:var(--diff-td-delete-background);
+}
+
+.diff-left td.equal,
+.diff-right td.equal,
+.diff-left,
+.diff-right
+{
+    background: var(--diff-td-equal-background);
+}
+
+.diff-left td.insert,
+.diff-right td.insert {
+    background:var(--diff-td-insert-background);
+    color:var(--diff-td-insert-color);
+}
+
+.diff-left td.merge,
+.diff-right td.merge {
+    background:var(--diff-td-merge-background);
+    color:var(--diff-td-merge-color);
+}
+    
+.diff-left td.replace,
+.diff-right td.replace {
+    background:var(--diff-td-replace-background);
+    color:var(--diff-td-replace-color);
+}
+
+.diff-left table td.replace em,
+.diff-right table td.replace em {
+    background:var(--diff-td-replace-em-background);
+    border:var(--diff-td-replace-em-border);
+    color:var(--diff-td-replace-em-color);
+}
+
+.diff #locationPane div.delete {
+    background: var(--diff-locationpane-delete-background);
+    border-left: solid 3px var(--body-background);
+    border-right: solid 3px var(--body-background);
+}
+
+.diff #locationPane div.empty {
+    background: var(--diff-locationpane-insert-background);
+    border-left: solid 3px var(--body-background);
+    border-right: solid 3px var(--body-background);
+}
+
+.diff #locationPane div.equal {
+    background: var(--diff-locationpane-equal-background);
+    border-left: solid 3px var(--body-background);
+    border-right: solid 3px var(--body-background);
+}
+
+.diff #locationPane div.replace {
+    background: var(--diff-locationpane-replace-background);
+    border-left: solid 3px var(--body-background);
+    border-right: solid 3px var(--body-background);
+}
+
+.timeline {
+    color: var(--timeline-color);
+}
+
+.timeline .comment {
+    border: var(--timeline-comment-border);
+    background: var(--timeline-comment-background);
+}
+
+.timeline .timeline-item.comment .timeline-item-content {
+    background: var(--timeline-comment-content-background);
+    color: var(--timeline-comment-content-color);
+}
+
+.timeline .timeline-item .timeline-item-content {
+    background: var(--timeline-content-background);
+}
+
+.timeline-item {
+    border: var(--timeline-item-border-bottom);
+}
+
+.timeline .timeline-item.owner .timeline-item-title::before {
+    background: var(--timeline-item-owner-background);
+    color: var(--timeline-item-owner-color);
+}
+
+.timeline .timeline-item.priority .timeline-item-title::before {
+    background: var(--timeline-item-priority-background);
+    color: var(--timeline-item-priority-color);
+}
+
+.timeline .timeline-item.project-0 .timeline-item-title::before {
+    background: var(--timeline-item-project-background);
+    color: var(--timeline-item-project-color);
+}
+
+.timeline .timeline-item.status .timeline-item-title i.open {
+    background: var(--timeline-item-status-open-background);
+    color: var(--timeline-item-status-open-color);
+}
+
+.timeline .timeline-item.status .timeline-item-title i.closed {
+    background: var(--timeline-item-status-closed-background);
+    color: var(--timeline-item-status-closed-color);
+}
+
+.timeline .timeline-item.subscriber-0 .timeline-item-title::before {
+    background: var(--timeline-item-subscriber-background);
+    color: var(--timeline-item-subscriber-color);
+}
+
+.transaction-item {
+    background: var(--transaction-item-background);
+    color: var(--transaction-item-color);
+}
+
+.transaction-item .close {
+    color: var(--transaction-item-close-color);
+}
+
+.transaction-item .close:hover {
+    color: var(--transaction-item-close-hover-color);
+}
+
+a.user-reference {
+    background:var(--user-reference-background);
+    color: var(--user-reference-color);
+    border-color: var(--user-reference-border-color);
+}
+
+.meme-above,
+.meme-below {
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    color: white;
+}
+
+.autocomplete {
+    background: var(--autocomplete-background);
+    border-color: var(--autocomplete-border-color);
+}
+
+.autocomplete-head {
+    background: var(--autocomplete-head-background);
+    color:  var(--autocomplete-head-color);
+}
+
+.autocomplete-head .icon {
+    color: var(--autocomplete-head-icon-color);
+}
+
+.autocomplete-list a.menuitem {
+    border-top-color: var(--autocomplete-list-a-menuitem-border-top-color);
+    color: var(--autocomplete-list-a-menuitem-color);
+}
+
+.autocomplete-list a.menuitem.focused {
+    color: var(--autocomplete-list-a-menuitem-focused-color);
+    background: var(--autocomplete-list-a-menuitem-focused-background);
+}
+
+.autocomplete-list a.menuitem .icon {
+    color: var(--autocomplete-list-a-menuitem-icon-color);
+}
+
+.user-menu .content ul li a span:hover {
+    background-color: var(--user-menu-content-ul-li-a-span-hover-background);
+}
+
+.phui-list-item-view:hover .phui-font-fa,
+.user-menu .content ul li a span:hover {
+    color: var(--user-menu-content-ul-li-a-span-hover-color);
+}
+
+.user-menu .content {
+    background: var(--user-menu-content-background);
+    border-color: var(--user-menu-content-border-color);
+}

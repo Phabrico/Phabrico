@@ -1,0 +1,9 @@
+  lang=txt
+  code block
+
+  - still a code block
+~~~~~~~~~~
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>code block
+
+- still a code block</code></pre></div>
+~~~~~~~~~~
