@@ -134,6 +134,8 @@ namespace Phabrico.Http
         {
             this.RemoteAccessEnabled = remoteAccessEnabled;
 
+            cacheStatusHttpMessages = CacheState.Invalid;
+
             // search for unsecured controller methods in Phabrico
             unsecuredUrlPaths.AddRange( Assembly.GetExecutingAssembly()
                                                 .GetExportedTypes()
@@ -376,8 +378,8 @@ namespace Phabrico.Http
 
             // collect all assemblies (Phabrico + plugin dll's)
             List<Assembly> assemblies = new List<Assembly>();
-            assemblies.Add(Assembly.GetEntryAssembly());
-            assemblies.AddRange(Plugins.Select(plugin => plugin.Assembly));
+            assemblies.Add(Assembly.GetCallingAssembly());  // phabrico
+            assemblies.AddRange(Plugins.Select(plugin => plugin.Assembly));  // plugins
 
             // loop through all assemblies
             foreach (Assembly assembly in assemblies)
@@ -1870,6 +1872,12 @@ namespace Phabrico.Http
 
             // terminates the TCP socket listener
             this.httpListener.Stop();
+
+            // wait until we're not caching any more
+            while (cacheStatusHttpMessages == CacheState.Busy)
+            {
+                Thread.Sleep(100);
+            }
             
             // dispose all the plugins
             foreach (Plugin.PluginBase plugin in Plugins)

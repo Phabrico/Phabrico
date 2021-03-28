@@ -37,6 +37,11 @@ namespace Phabrico.Plugin
         internal PluginState State = PluginState.NotLoaded;
 
         /// <summary>
+        /// internal link to the Phabrico database
+        /// </summary>
+        private Storage.Database database = null;
+
+        /// <summary>
         /// The DLL assembly where the plugin code is located in
         /// </summary>
         public Assembly Assembly { get; set; }
@@ -44,7 +49,23 @@ namespace Phabrico.Plugin
         /// <summary>
         /// Link to the Phabrico database
         /// </summary>
-        public Storage.Database Database { get; set; }
+        public Storage.Database Database
+        {
+            get
+            {
+                return database;
+            }
+
+            set
+            {
+                if (database != null)
+                {
+                    database.Dispose();
+                }
+
+                database = value;
+            }
+        }
 
         /// <summary>
         /// The FontAwesome icon name that should be shown in the navigator menu

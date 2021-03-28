@@ -16,7 +16,7 @@ namespace Phabrico.UnitTests.Remarkup
     /// </summary>
     [TestClass]
     public class RemarkupUnitTest : UnitTests.PhabricoUnitTest
-    {
+    { 
         Phabrico.Controllers.Remarkup remarkupController;
 
         public RemarkupUnitTest()
@@ -25,9 +25,10 @@ namespace Phabrico.UnitTests.Remarkup
             remarkupController.browser = new Http.Browser(HttpServer, HttpListenerContext);
             remarkupController.EncryptionKey = EncryptionKey;
 
-            Http.SessionManager.Token token = remarkupController.browser.HttpServer.Session.CreateToken(EncryptionKey, remarkupController.browser);
+            Http.SessionManager.Token token = remarkupController.browser.HttpServer.Session.CreateToken(accountWhoAmI.Token, remarkupController.browser);
             remarkupController.browser.SetCookie("token", token.ID);
             token.EncryptionKey = EncryptionKey;
+            token.PrivateEncryptionKey = PrivateEncryptionKey;
         }
 
         [TestMethod]

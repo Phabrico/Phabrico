@@ -14,6 +14,7 @@ This product includes software developed at
 - https://archive.codeplex.com/?p=credentialmanagement  (Phabrico.Plugin.Gitanos)
 - https://github.com/antonmedv/codejar  (Phabrico.Plugin.Gitanos)
 - https://www.nrecosite.com/pdf_generator_net.aspx  (Phabrico.Plugin.PhrictionToPDF)
+- https://github.com/rosolko/WebDriverManager.Net (Selenium tests in Phabrico.UnitTests)
 
 This software contains data derived from:
 - https://www.phacility.com  (unit tests + remarkup help)

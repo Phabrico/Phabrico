@@ -139,7 +139,7 @@ namespace Phabrico.Storage
         /// The private key for encrypting/decrypting secure parts of the SQLite database
         /// </summary>
         public string PrivateEncryptionKey { get; set; }
-
+public static Dictionary<Database,string> instances = new Dictionary<Database, string>();
         /// <summary>
         /// Initializes an instance of Storage.Database
         /// </summary>
@@ -183,6 +183,8 @@ namespace Phabrico.Storage
 
                 UpgradeIfNeeded();
             }
+
+            instances[this] = Environment.StackTrace;
         }
 
         /// <summary>
@@ -551,6 +553,8 @@ namespace Phabrico.Storage
         /// </summary>
         public void Dispose()
         {
+            instances.Remove(this);
+
             Connection.Close();
         }
 

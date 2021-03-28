@@ -221,7 +221,9 @@ namespace Phabrico.Http
         /// <returns></returns>
         public Token GetToken(string tokenId)
         {
-            return ActiveTokens.FirstOrDefault(token => token != null && token.ID.Equals(tokenId));
+            return ActiveTokens.Where(token => token != null && token.ID.Equals(tokenId))
+                               .OrderByDescending(token => token.PrivateEncryptionKey)
+                               .FirstOrDefault();
         }
 
         /// <summary>

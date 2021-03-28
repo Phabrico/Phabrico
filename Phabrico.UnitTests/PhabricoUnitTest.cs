@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 
 using Newtonsoft.Json;
+using Phabrico.Miscellaneous;
 
 namespace Phabrico.UnitTests
 {
@@ -11,7 +12,10 @@ namespace Phabrico.UnitTests
         public Storage.Database Database;
         public Http.Server HttpServer;
         public Miscellaneous.HttpListenerContext HttpListenerContext;
-        public string EncryptionKey = "0123456789abcdef";
+        public string EncryptionKey = "q%9#kpdw8,dp%k/+&hs3/<spt%-|//e;";
+        public static string Username = "johnny";
+        public static string Password = "My-Secret-Password-0123456789";
+        public static string PrivateEncryptionKey = "enrr%8.rzwjc1s;4,#jitt/=\"f2w1ru9";
         public Http.SessionManager.Token Token;
         public Phabricator.Data.User userWhoAmI;
         public Phabricator.Data.Account accountWhoAmI;
@@ -30,7 +34,7 @@ namespace Phabrico.UnitTests
             // create database and HTTP server settings
             Storage.Database._dbVersionInDataFile = 0;
             Database = new Storage.Database(EncryptionKey);
-            Database.PrivateEncryptionKey = EncryptionKey;
+            Database.PrivateEncryptionKey = PrivateEncryptionKey;
             HttpServer = new Http.Server(false, 13468);
             HttpListenerContext = new Miscellaneous.HttpListenerContext();
             Token = HttpServer.Session.CreateToken(EncryptionKey, null);
@@ -47,7 +51,7 @@ namespace Phabrico.UnitTests
             userWhoAmI = new Phabricator.Data.User();
             userWhoAmI.DateSynchronized = DateTimeOffset.MinValue;
             userWhoAmI.RealName = "Johnny Birddog";
-            userWhoAmI.UserName = "johnny";
+            userWhoAmI.UserName = Username;
             userWhoAmI.Selected = true;
             userWhoAmI.Token = "PHID-USER-e807f1fcf82d132f9bb0";
             userStorage.Add(Database, userWhoAmI);
@@ -63,7 +67,7 @@ namespace Phabrico.UnitTests
             accountWhoAmI.Parameters.Synchronization = Phabricator.Data.Account.SynchronizationMethod.All;
             accountWhoAmI.Parameters.ClipboardCopyForCodeBlock = true;
             accountWhoAmI.Parameters.UserToken = userWhoAmI.Token;
-            accountWhoAmI.Token = EncryptionKey;
+            accountWhoAmI.Token = "a'=jm+ul#`~9'&mb;\" ;k,dqkowxo4,5";
             accountWhoAmI.PublicXorCipher = new UInt64[] { 0, 0, 0, 0 };
             accountWhoAmI.PrivateXorCipher = new UInt64[] { 0, 0, 0, 0 };
             accountStorage.Add(Database, accountWhoAmI);

@@ -34,7 +34,7 @@ namespace Phabrico.Http.Response
         public string GetLanguageOptions(string currentLanguageCode)
         {
             // dictionary holding native language name (key) and its language code (value)
-            Dictionary<string,string> availableLanguages =  Assembly.GetEntryAssembly()
+            Dictionary<string,string> availableLanguages =  Assembly.GetExecutingAssembly()
                                                                     .GetManifestResourceNames()
                                                                     .Where(resourceName => resourceName.StartsWith("Phabrico.Locale.Phabrico_", System.StringComparison.OrdinalIgnoreCase))
                                                                     .Select(resourceName => resourceName.Substring("Phabrico.Locale.Phabrico_".Length))
