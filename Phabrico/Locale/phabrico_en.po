@@ -960,6 +960,9 @@ msgstr "Quote"
 msgid "Table"
 msgstr "Table"
 
+msgid "Diagram"
+msgstr "Diagram"
+
 msgid "Help"
 msgstr "Help"
 

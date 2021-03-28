@@ -129,7 +129,10 @@
 
 	document.addEventListener('DOMContentLoaded', function () {
 	    edit(document.querySelector('img.drawio'));
-	    setScreenMode();
+
+	    if (diagramName.innerText != "@@NEW-DIAGRAM-NAME@@") {
+	        sessionStorage["DiagramsNet.DiagramName"] = diagramName.innerText;
+	    }
 	}, false);
 </script>
 
@@ -137,7 +140,7 @@
     <a href="/diagrams.net/">
         <span class="phui-font-fa fa-sitemap" style="padding-right: 5px;"></span>
     </a>
-    <a href="/diagrams.net/">Diagrams</a>
+    <a href="/diagrams.net/">Diagram</a>
     <span>  &gt;  </span>
-    <a>@@DIAGRAM-NAME@@</a>
+    <a id="diagramName">@@DIAGRAM-NAME@@</a>
 </div>

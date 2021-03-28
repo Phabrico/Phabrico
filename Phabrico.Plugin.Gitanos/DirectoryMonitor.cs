@@ -164,7 +164,15 @@ namespace Phabrico.Plugin
                         }
                         else
                         {
-                            Http.Server.SendNotificationInformation("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                            int numberOfLocalChanges = Repositories.Sum(repo => repo.NumberOfLocalChanges);
+                            if (numberOfLocalChanges == 0)
+                            {
+                                Http.Server.SendNotificationInformation("/gitanos/notification", "");  // don't show a notification
+                            }
+                            else
+                            {
+                                Http.Server.SendNotificationInformation("/gitanos/notification", numberOfLocalChanges.ToString());
+                            }
                         }
                     }
                 }

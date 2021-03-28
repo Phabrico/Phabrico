@@ -180,7 +180,7 @@ div.codeblock button.codeblock.copy {
     top: 0;
 }
 
-div.image-container > a.button.overlapped,
+div.image-container:not(.non-overlappable) > a.button.overlapped,
 div.codeblock button.codeblock.copy.overlapped {
     margin-right: 260px;
 }
@@ -2013,6 +2013,11 @@ a.remarkup-embed {
     margin-left: var(--remarkup-editor-tooltip-table-margin-left);
 }
 
+.tooltip-top.phui-font-fa.fa-sitemap .tooltiptext {
+    width: var(--remarkup-editor-tooltip-sitemap-width);
+    margin-left: var(--remarkup-editor-tooltip-sitemap-margin-left);
+}
+
 .tooltip-top.phui-font-fa.fa-book       .tooltiptext { 
     width: var(--remarkup-editor-tooltip-help-width);
     margin-left: var(--remarkup-editor-tooltip-help-margin-left);
@@ -2986,6 +2991,11 @@ div.color-selector .btnSetColorForAll {
     position: relative;
 }
 
+.image-container.non-overlappable {
+    width: max-content;
+    max-width: 100%;
+}
+
 .image-container:before {
     content: "";
     position: absolute;
@@ -3017,6 +3027,10 @@ div.color-selector .btnSetColorForAll {
 
 .image-container.allow-full-screen {
     cursor: zoom-in;
+}
+
+.edit-right .image-container.allow-full-screen {
+    cursor: unset;
 }
 
 .image-container.allow-full-screen.full-screen {

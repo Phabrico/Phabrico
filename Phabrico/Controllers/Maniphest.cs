@@ -1073,6 +1073,16 @@ namespace Phabrico.Controllers
 
             viewPage.SetText("OPERATION", operation);
 
+            // add Diagram icon to toolbar if DiagramsNet plugin is installed
+            if (Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.DiagramsNet")))
+            {
+                viewPage.SetText("PLUGIN-DIAGRAM-AVAILABLE", "yes", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            }
+            else
+            {
+                viewPage.SetText("PLUGIN-DIAGRAM-AVAILABLE", "no", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            }
+
             if (operation.Equals("new"))
             {
                 viewPage.SetText("TASK-ID", "maniphestTask.ID");

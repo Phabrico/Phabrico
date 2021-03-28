@@ -47,7 +47,7 @@ namespace Phabrico.Plugin
         /// <returns></returns>
         public override string GetName(string locale)
         {
-            return Locale.TranslateText("Diagrams", locale);
+            return Locale.TranslateText("Diagram", locale);
         }
 
         /// <summary>

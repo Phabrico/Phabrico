@@ -18,6 +18,8 @@
     --remarkup-editor-tooltip-quote-margin-left: -32px;
     --remarkup-editor-tooltip-table-width: 40px;
     --remarkup-editor-tooltip-table-margin-left: -36px;
+    --remarkup-editor-tooltip-sitemap-width: 69px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -52px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -42,6 +44,8 @@
     --remarkup-editor-tooltip-quote-margin-left: -32px;
     --remarkup-editor-tooltip-table-width: 35px;
     --remarkup-editor-tooltip-table-margin-left: -32px;
+    --remarkup-editor-tooltip-sitemap-width: 65px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -50px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -66,6 +70,8 @@
     --remarkup-editor-tooltip-quote-margin-left: -32px;
     --remarkup-editor-tooltip-table-width: 35px;
     --remarkup-editor-tooltip-table-margin-left: -32px;
+    --remarkup-editor-tooltip-sitemap-width: 56px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -45px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -90,6 +96,8 @@
     --remarkup-editor-tooltip-quote-margin-left: -32px;
     --remarkup-editor-tooltip-table-width: 35px;
     --remarkup-editor-tooltip-table-margin-left: -32px;
+    --remarkup-editor-tooltip-sitemap-width: 28px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -31px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -114,6 +122,8 @@
     --remarkup-editor-tooltip-quote-margin-left: -32px;
     --remarkup-editor-tooltip-table-width: 35px;
     --remarkup-editor-tooltip-table-margin-left: -32px;
+    --remarkup-editor-tooltip-sitemap-width: 58px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -46px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }

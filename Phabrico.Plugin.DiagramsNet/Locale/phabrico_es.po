@@ -1,8 +1,8 @@
 ﻿# Spanish translations
 
 # General
-msgid "Diagrams"
-msgstr "Diagramas"
+msgid "Diagram"
+msgstr "Diagrama"
 
 msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
 msgstr "Editor de diagramas de flujo, diagramas de proceso, organigramas, UML, ER y diagramas de red."

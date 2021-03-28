@@ -1,8 +1,8 @@
 ﻿# Dutch translations
 
 # General
-msgid "Diagrams"
-msgstr "Diagrammen"
+msgid "Diagram"
+msgstr "Diagram"
 
 msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
 msgstr "Editor voor stroomdiagrammen, procesdiagrammen, organigrammen, UML, ER en netwerkdiagrammen."

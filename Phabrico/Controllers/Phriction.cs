@@ -332,6 +332,16 @@ namespace Phabrico.Controllers
                         viewPage.SetText("SHOW-PHRICTION-METADATA", "no");
                     }
 
+                    // add Diagram icon to toolbar if DiagramsNet plugin is installed
+                    if (Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.DiagramsNet")))
+                    {
+                        viewPage.SetText("PLUGIN-DIAGRAM-AVAILABLE", "yes", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    }
+                    else
+                    {
+                        viewPage.SetText("PLUGIN-DIAGRAM-AVAILABLE", "no", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    }
+
                     if (documentState == "created")
                     {
                         viewPage.SetText("DOCUMENT-CONFIRMATION-UNDO-LOCAL-CHANGES", "Are you sure you want to delete this document and all underlying documents ?");

@@ -443,7 +443,7 @@
     // set page title
     window.addEventListener('load', function() {
         document.title = "Phabrico - " + fromHTML("@@TASK-HEADER@@");
-        remarkup = new Remarkup(() => { updateProjectTagColors(); });
+        remarkup = new Remarkup(() => { });
     }, false);
 
     const taskInputTagValues = [];

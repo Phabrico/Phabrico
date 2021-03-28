@@ -1,7 +1,7 @@
 ﻿# Chinese translations
 
 # General
-msgid "Diagrams"
+msgid "Diagram"
 msgstr "图表"
 
 msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."

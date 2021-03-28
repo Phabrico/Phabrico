@@ -1077,24 +1077,7 @@ namespace Phabrico.Http
                     {
                         throw new Exception.AuthorizationException();
                     }
-/*
-                    // check if url is correctly formatted (URL should end with a /)
-                    if (cmdGetUrl.Split('?').FirstOrDefault().EndsWith("/") == false)
-                    {
-                        string[] incorrectUrlParts = cmdGetUrl.Split('?');
-                        string cmdGetUrlParameters = string.Join("?", incorrectUrlParts.Skip(1));
 
-                        cmdGetUrl = incorrectUrlParts[0] + "/";
-                        if (string.IsNullOrEmpty(cmdGetUrlParameters) == false)
-                        {
-                            cmdGetUrl += "?" + cmdGetUrlParameters;
-                        }
-
-                        Http.Response.HttpRedirect browserRedirect = new Http.Response.HttpRedirect(this, browser, cmdGetUrl);
-                        browserRedirect.Send(browser);
-                        return;
-                    }
-*/
                     // search for controller method
                     string controllerUrl;
                     string controllerUrlAlias;

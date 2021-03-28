@@ -37,36 +37,38 @@
 
 
 <script>
-function generateString(length) {
-   var result           = '';
-   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-   var charactersLength = characters.length;
-   for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-   }
-   return result;
-}
-
-const inputChanged = function(e) {
-    if (username.value != '' && 
-        isValidPassword(password.value))
-    {
-        btnLogIn.disabled = false;
-        btnLogIn.style.cursor = 'pointer';
+    function generateString(length) {
+       var result           = '';
+       var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+       var charactersLength = characters.length;
+       for ( var i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+       }
+       return result;
     }
-    else
-    {
-        btnLogIn.disabled = true;
-        btnLogIn.style.cursor = 'not-allowed';
+
+    const inputChanged = function(e) {
+        if (username.value != '' && 
+            isValidPassword(password.value))
+        {
+            btnLogIn.disabled = false;
+            btnLogIn.style.cursor = 'pointer';
+        }
+        else
+        {
+            btnLogIn.disabled = true;
+            btnLogIn.style.cursor = 'not-allowed';
+        }
     }
-}
 
-inputChanged();
+    // disable autosave for password input field
+     Array.prototype.slice.call(document.querySelectorAll('input[type=password]'))
+                    .map( function(e) { 
+                        e.autocomplete = generateString(32); 
+                    });
 
-// disable autosave for password input field
- Array.prototype.slice.call(document.querySelectorAll('input[type=password]'))
-                .map( function(e) { 
-                    e.autocomplete = generateString(32); 
-                });
+     window.addEventListener('load', function() {
+         inputChanged();
+     });
 </script>
 </form>

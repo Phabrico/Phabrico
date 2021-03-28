@@ -760,6 +760,14 @@ class Remarkup {
                     textarea.selectionEnd = textarea.selectionStart + selectedText.length;
                     return;
                 }
+                
+                if (span.classList.contains('fa-sitemap'))
+                {
+                    sessionStorage["remarkup-editor-text-before"] = textarea.Text.substring(0, selectionStart);
+                    sessionStorage["remarkup-editor-text-after"] = textarea.Text.substring(selectionEnd);
+                    sessionStorage["originURL"] = window.location;
+                    window.location = "/diagrams.net/new/";
+                }
             };
         });
     }
@@ -2003,6 +2011,32 @@ function isValidPassword(pwd, error) {
     return true;
 }
 
+function phrictionCorrectButtonLocations() {
+    // when the window gets scrolled, the copy-button (or other type of edit button) might get hidden behind the right action menu in Phriction
+    // if so, move the button a bit more to the left
+    document.querySelectorAll('div.codeblock button.codeblock.copy, div.image-container > a.button').forEach((btn) => {
+        if (isElementBehindAppSideWindow(btn)) {
+            btn.classList.add('overlapped');
+        } else  {
+            btn.classList.remove('overlapped');
+            if (isElementBehindAppSideWindow(btn)) {
+                btn.classList.add('overlapped');
+            }
+        }
+    });
+
+    var main = document.querySelector('main');
+    if (main != null) {
+        var mainWidth = parseInt(getComputedStyle(main).width);
+        document.querySelectorAll('div.image-container img').forEach((img) => {
+            if (mainWidth - 260 > img.naturalWidth) {
+                var imageContainer = img.closest('.image-container');
+                imageContainer.classList.add('non-overlappable')
+            }
+        });
+    }
+}
+
 function postForm(form, url)
 {
     var data = new FormData(form);
@@ -2411,18 +2445,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         phabrico.tmrWindowScrollEvent = setTimeout(function() {
-            // when the window gets scrolled, the copy-button (or other type of edit button) might get hidden behind the right action menu in Phriction
-            // if so, move the button a bit more to the left
-            document.querySelectorAll('div.codeblock button.codeblock.copy, div.image-container > a.button').forEach((btn) => {
-                if (isElementBehindAppSideWindow(btn)) {
-                    btn.classList.add('overlapped');
-                } else  {
-                    btn.classList.remove('overlapped');
-                    if (isElementBehindAppSideWindow(btn)) {
-                        btn.classList.add('overlapped');
-                    }
-                }
-            });
+            phrictionCorrectButtonLocations();
         }, 100);
     });
 
@@ -2581,4 +2604,7 @@ window.addEventListener('load', function() {
             console.log(parseInt(getComputedStyle(document.querySelector('main')).width));
         }
     });
+
+    // make sure all buttons in Phriction are visible when needed (e.g. codeblock buttons, diagram buttons)
+    phrictionCorrectButtonLocations();
 }, false);

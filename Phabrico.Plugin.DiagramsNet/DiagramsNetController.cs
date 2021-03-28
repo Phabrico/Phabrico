@@ -36,6 +36,7 @@ namespace Phabrico.Plugin
             Storage.File fileStorage = new Storage.File();
             string diagramName;
             string theme;
+            bool openedFromRemarkupEditor = false;
             Phabricator.Data.Account.DarkenImageStyle darkenImageStyle;
 
             using (Storage.Database database = new Storage.Database(null))
@@ -51,42 +52,58 @@ namespace Phabrico.Plugin
             {
                 if (parameters.Any())
                 {
-                    // parameter is file object to be edited
-                    string fileObjectName = parameters.FirstOrDefault();
-
-                    // check if parameter is really a file object
-                    Match matchFileObjectName = RegexSafe.Match(fileObjectName, "F(-?[0-9]+)", RegexOptions.None);
-                    if (matchFileObjectName.Success)
+                    if (parameters.FirstOrDefault().Equals("new"))
                     {
-                        // open given file object
-                        int fileObjectId = Int32.Parse(matchFileObjectName.Groups[1].Value);
-
-                        if (fileObjectName.StartsWith("F-"))
-                        {
-                            Storage.Stage stageStorage = new Storage.Stage();
-                            fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectId, true);
-                        }
-                        else
-                        {
-                            fileObject = fileStorage.GetByID(database, fileObjectId, false);
-                        }
-
-                        diagramName = string.Format("F{0}", fileObjectId);
+                        // diagramsnet is opened from a remarkup editor
+                        openedFromRemarkupEditor = true;
+                        diagramName = Locale.TranslateText("(New)", browser.Session.Locale);
                     }
                     else
                     {
-                        // load plugin static data
-                        string url = string.Join("/", parameters);
-                        string resourceName = string.Format("Phabrico.Plugin.{0}", string.Join(".", parameters))
-                                                    .Split('?')
-                                                    .FirstOrDefault()
-                                                    .TrimEnd('.');
+                        // parameter is file object to be edited
+                        string fileObjectName = parameters.FirstOrDefault();
 
-                        Assembly assembly = Assembly.GetExecutingAssembly();
-                        resourceName = assembly.GetManifestResourceNames()
-                                               .FirstOrDefault(name => name.Equals(resourceName, System.StringComparison.OrdinalIgnoreCase));
-                        httpFound = ReadResourceContent(assembly, httpServer, "", url, resourceName);
-                        return;
+                        // check if parameter is really a file object
+                        Match matchFileObjectName = RegexSafe.Match(fileObjectName, "F(-?[0-9]+)", RegexOptions.None);
+                        if (matchFileObjectName.Success)
+                        {
+                            // open given file object
+                            int fileObjectId = Int32.Parse(matchFileObjectName.Groups[1].Value);
+
+                            if (fileObjectName.StartsWith("F-"))
+                            {
+                                Storage.Stage stageStorage = new Storage.Stage();
+                                fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectId, true);
+                            }
+                            else
+                            {
+                                fileObject = fileStorage.GetByID(database, fileObjectId, false);
+                            }
+
+                            diagramName = string.Format("F{0}", fileObjectId);
+                        }
+                        else
+                        {
+                            // load plugin static data
+                            string url = string.Join("/", parameters);
+                            string resourceName = string.Format("Phabrico.Plugin.{0}", string.Join(".", parameters))
+                                                        .Split('?')
+                                                        .FirstOrDefault()
+                                                        .TrimEnd('.');
+
+                            Assembly assembly = Assembly.GetExecutingAssembly();
+                            resourceName = assembly.GetManifestResourceNames()
+                                                   .FirstOrDefault(name => name.Equals(resourceName, System.StringComparison.OrdinalIgnoreCase));
+                            if (resourceName == null)
+                            {
+                                httpFound = new HttpNotFound(httpServer, browser, url);
+                            }
+                            else
+                            {
+                                httpFound = ReadResourceContent(assembly, httpServer, "", url, resourceName);
+                            }
+                            return;
+                        }
                     }
                 }
                 else
@@ -113,7 +130,7 @@ namespace Phabrico.Plugin
                 htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64," + base64Data, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
 
-            if (parameters.Any())
+            if (parameters.Any() || openedFromRemarkupEditor)
             {
                 htmlViewPage.SetText("HIDE-EXIT-BTN", "False", HtmlViewPage.ArgumentOptions.Default);
             }
@@ -124,6 +141,7 @@ namespace Phabrico.Plugin
 
 
             htmlViewPage.SetText("DIAGRAM-NAME", diagramName, HtmlViewPage.ArgumentOptions.Default);
+            htmlViewPage.SetText("NEW-DIAGRAM-NAME", Locale.TranslateText("(New)", browser.Session.Locale), HtmlViewPage.ArgumentOptions.Default);
             htmlViewPage.SetText("LANGUAGE", browser.Session.Locale, HtmlViewPage.ArgumentOptions.Default);
 
             if (theme.Equals("dark"))
@@ -268,68 +286,73 @@ namespace Phabrico.Plugin
                             stageStorage.Create(database, file);
 
                             // search for all wiki/task objects in which the original file is referenced
-                            Storage.File fileStorage = new Storage.File();
-                            Phabricator.Data.File originalFile = fileStorage.GetByID(database, Int32.Parse(fileID), true);
-                            IEnumerable<Phabricator.Data.PhabricatorObject> referrers = database.GetDependentObjects(originalFile.Token);
-                            RemarkupEngine remarkupEngine = new RemarkupEngine();
-                            foreach (Phabricator.Data.PhabricatorObject referrer in referrers)
+                            int numericFileID;
+                            if (Int32.TryParse(fileID, out numericFileID))  // fileID could be NaN (when creating a new diagram or when creating from remarkup editor)
                             {
-                                RemarkupParserOutput remarkupParserOutput;
-                                Phabricator.Data.Phriction phrictionDocument = referrer as Phabricator.Data.Phriction;
-                                Phabricator.Data.Maniphest maniphestTask = referrer as Phabricator.Data.Maniphest;
+                                Storage.File fileStorage = new Storage.File();
+                                Phabricator.Data.File originalFile = fileStorage.GetByID(database, Int32.Parse(fileID), true);
+                                IEnumerable<Phabricator.Data.PhabricatorObject> referrers = database.GetDependentObjects(originalFile.Token);
 
-                                // rename file object in referencing phriction document
-                                if (phrictionDocument != null)
+                                RemarkupEngine remarkupEngine = new RemarkupEngine();
+                                foreach (Phabricator.Data.PhabricatorObject referrer in referrers)
                                 {
-                                    string html = remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
-                                    List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
-                                                                                                        .OfType<RuleReferenceFile>()
-                                                                                                        .ToList();
-                                    referencedFileObjects.Reverse();
+                                    RemarkupParserOutput remarkupParserOutput;
+                                    Phabricator.Data.Phriction phrictionDocument = referrer as Phabricator.Data.Phriction;
+                                    Phabricator.Data.Maniphest maniphestTask = referrer as Phabricator.Data.Maniphest;
 
-                                    string originalFileID = originalFile.ID.ToString();
-                                    foreach (RuleReferenceFile referencedFileObject in referencedFileObjects)
+                                    // rename file object in referencing phriction document
+                                    if (phrictionDocument != null)
                                     {
-                                        Match matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{F(-?[0-9]*)", RegexOptions.None);
-                                        if (matchReferencedFileObject.Success)
-                                        {
-                                            if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
+                                        string html = remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+                                        List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
+                                                                                                            .OfType<RuleReferenceFile>()
+                                                                                                            .ToList();
+                                        referencedFileObjects.Reverse();
 
-                                            phrictionDocument.Content = phrictionDocument.Content.Substring(0, referencedFileObject.Start)
-                                                                      + "{F" + file.ID.ToString()
-                                                                      + phrictionDocument.Content.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
+                                        string originalFileID = originalFile.ID.ToString();
+                                        foreach (RuleReferenceFile referencedFileObject in referencedFileObjects)
+                                        {
+                                            Match matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{F(-?[0-9]*)", RegexOptions.None);
+                                            if (matchReferencedFileObject.Success)
+                                            {
+                                                if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
+
+                                                phrictionDocument.Content = phrictionDocument.Content.Substring(0, referencedFileObject.Start)
+                                                                          + "{F" + file.ID.ToString()
+                                                                          + phrictionDocument.Content.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
+                                            }
                                         }
+
+                                        // stage document
+                                        stageStorage.Modify(database, phrictionDocument);
                                     }
 
-                                    // stage document
-                                    stageStorage.Modify(database, phrictionDocument);
-                                }
-
-                                // rename file object in referencing maniphest task
-                                if (maniphestTask != null)
-                                {
-                                    string html = remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false);
-                                    List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
-                                                                                                        .OfType<RuleReferenceFile>()
-                                                                                                        .ToList();
-                                    referencedFileObjects.Reverse();
-
-                                    string originalFileID = originalFile.ID.ToString();
-                                    foreach (RuleReferenceFile referencedFileObject in referencedFileObjects)
+                                    // rename file object in referencing maniphest task
+                                    if (maniphestTask != null)
                                     {
-                                        Match matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{F(-?[0-9]*)", RegexOptions.None);
-                                        if (matchReferencedFileObject.Success)
+                                        string html = remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false);
+                                        List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
+                                                                                                            .OfType<RuleReferenceFile>()
+                                                                                                            .ToList();
+                                        referencedFileObjects.Reverse();
+
+                                        string originalFileID = originalFile.ID.ToString();
+                                        foreach (RuleReferenceFile referencedFileObject in referencedFileObjects)
                                         {
-                                            if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
+                                            Match matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{F(-?[0-9]*)", RegexOptions.None);
+                                            if (matchReferencedFileObject.Success)
+                                            {
+                                                if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
 
-                                            maniphestTask.Description = maniphestTask.Description.Substring(0, referencedFileObject.Start)
-                                                                      + "{F" + file.ID.ToString()
-                                                                      + maniphestTask.Description.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
+                                                maniphestTask.Description = maniphestTask.Description.Substring(0, referencedFileObject.Start)
+                                                                          + "{F" + file.ID.ToString()
+                                                                          + maniphestTask.Description.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
+                                            }
                                         }
-                                    }
 
-                                    // stage maniphest task
-                                    stageStorage.Modify(database, maniphestTask);
+                                        // stage maniphest task
+                                        stageStorage.Modify(database, maniphestTask);
+                                    }
                                 }
                             }
                         }

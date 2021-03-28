@@ -960,6 +960,9 @@ msgstr "引用"
 msgid "Table"
 msgstr "表"
 
+msgid "Diagram"
+msgstr "图示"
+
 msgid "Help"
 msgstr "救命"
 

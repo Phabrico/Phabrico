@@ -82,6 +82,8 @@ function populateTable()
         if (tbody == null) return;
         tbody.innerHTML = "";
 
+        sessionStorage['originURL'] = window.location;
+
         var jsonResponse = JSON.parse(xmlhttp.responseText);
         jsonResponse.forEach(function(record) {
             var tbody = document.querySelector('#tblOfflineChanges tbody');

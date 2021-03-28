@@ -37,6 +37,9 @@
                         <span class="phui-font-fa fa-code tooltip-top"><span class="tooltiptext">Code Block</span></span>
                         <span class="phui-font-fa fa-quote-right tooltip-top"><span class="tooltiptext">Quote</span></span>
                         <span class="phui-font-fa fa-table tooltip-top"><span class="tooltiptext">Table</span></span>
+                        @{IF @@PLUGIN-DIAGRAM-AVAILABLE@@=yes@
+                            <span class="phui-font-fa fa-sitemap tooltip-top"><span class="tooltiptext">Diagram</span></span>
+                        }@
                         <a href="/remarkup/syntax" target="_blank">
                             <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
                         </a>
@@ -67,7 +70,7 @@
         window.addEventListener('load', function() {
             var textAreaUserContextMenu = new TextAreaContextMenu(textarea, "@", "user", "/user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
             var textAreaProjectContextMenu = new TextAreaContextMenu(textarea, "#", "project", "/project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
-            remarkup = new Remarkup(() => { updateProjectTagColors(); });
+            remarkup = new Remarkup(() => { });
         }, false);
 
         var inputHasBeenChanged = false;
@@ -159,9 +162,27 @@
         };
 
 
-        // set page title
         window.addEventListener('load', function() {
+            // set page title
             document.title = "Phabrico - Editing " + fromHTML("@@DOCUMENT-TITLE@@");
+
+            // if this screen returned from the DiagramsNet plugin, insert the diagram object in the textarea
+            if (sessionStorage.getItem("remarkup-editor-text-before") != null && sessionStorage.getItem("remarkup-editor-text-after") != null) {
+                var diagramName = sessionStorage.getItem("DiagramsNet.DiagramName");
+                if (!diagramName == false) {
+                    // update textarea
+                    textarea.value = sessionStorage["remarkup-editor-text-before"]
+                                   + "{" + diagramName + "}"
+                                   + sessionStorage["remarkup-editor-text-after"];
+
+                    // decode remarkup and show content on the right
+                    remarkup.Decode(textarea.value, right);
+                }
+
+                // remove Remarkup-DiagramsNet transition parameters from sessionStorage
+                sessionStorage.removeItem("remarkup-editor-text-before");
+                sessionStorage.removeItem("remarkup-editor-text-after");
+            }
         }, false);
 
         // if title was available during creation, the document was created by a ref-link
