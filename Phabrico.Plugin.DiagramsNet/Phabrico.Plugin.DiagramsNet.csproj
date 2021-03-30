@@ -54,7 +54,9 @@
     <Compile Include="DiagramsNet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Phabrico\Phabrico.csproj">
       <Project>{76b94be6-005e-44c7-911b-a155d007c982}</Project>

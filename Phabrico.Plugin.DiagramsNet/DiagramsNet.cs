@@ -4,8 +4,10 @@ using Phabrico.Phabricator.Data;
 
 namespace Phabrico.Plugin
 {
+    /// <summary>
+    /// Integrates the Diagrams.Net (formerly known as Draw.io) application into Phabrico
+    /// </summary>
     [PluginType(Usage = PluginTypeAttribute.UsageType.Navigator)]
-    [PluginType(Usage = PluginTypeAttribute.UsageType.FileEditor)]
     public class DiagramsNet : PluginBase
     {
         /// <summary>
@@ -75,15 +77,6 @@ namespace Phabrico.Plugin
         /// <returns>True if initialization was successfull. If false, the plugin will not be loaded</returns>
         public override bool Load()
         {
-            return true;
-        }
-
-        // TODO
-        public override bool OpenFileEditor(File fileObject, out string url, out string initJavascript)
-        {
-            url = "/" + URL + "/webapp/?embed=1&noSaveBtn=1&spin=1&modified=unsavedChanges&proto=json&gapi=0&db=0&od=0&tr=0&gh=0&gl=0";
-            initJavascript = @"
-            ";
             return true;
         }
 

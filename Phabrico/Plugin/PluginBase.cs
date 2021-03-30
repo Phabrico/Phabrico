@@ -180,20 +180,6 @@ namespace Phabrico.Plugin
         public abstract bool Load();
 
         /// <summary>
-        /// Opens a editor to edit some file data
-        /// </summary>
-        /// <param name="fileObject">File object to be modified</param>
-        /// <param name="url">URL to editor</param>
-        /// <param name="initJavascript">Javascript code to be executed after editor is started</param>
-        /// <returns>True if the file object was successfully opened by the editor</returns>
-        public virtual bool OpenFileEditor(Phabricator.Data.File fileObject, out string url, out string initJavascript)
-        {
-            url = null;
-            initJavascript = null;
-            return false;
-        }
-
-        /// <summary>
         /// Preprocesses the remarkup content before Remarkup engine decodes it to HTML
         /// </summary>
         /// <param name="browser">Browser object</param>

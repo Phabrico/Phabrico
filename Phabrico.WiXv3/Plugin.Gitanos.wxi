@@ -4,6 +4,10 @@
     <ComponentGroup Id="PluginGitanosComponents" Directory="INSTALLDIR">
         <Component Id="gitanos_Phabrico_Plugin_Gitanos_dll" Guid="$(var.PluginGitanosGUID)"
                    Win64="yes">
+            <RemoveFile Id="file_gitanos_Phabrico_Plugin_Gitanos_dll"
+                        Name="Phabrico.Plugin.Gitanos.dll"
+                        On="install" />
+
             <File Id="file_gitanos_Phabrico_Plugin_Gitanos_dll"
                   Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)Phabrico.Plugin.Gitanos.dll"
                   KeyPath="yes" />
@@ -15,6 +19,10 @@
         </Component>
         <Component Id="gitanos_Phabrico_Plugin_Gitanos_pdb" Guid="b6068bf9-a148-4ef6-b629-c7cc987fcdab"
                    Win64="yes">
+            <RemoveFile Id="removefile_gitanos_Phabrico_Plugin_Gitanos_pdb"
+                        Name="Phabrico.Plugin.Gitanos.pdb"
+                        On="install" />
+
             <File Id="file_gitanos_Phabrico_Plugin_Gitanos_pdb"
                   Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)Phabrico.Plugin.Gitanos.pdb"
                   KeyPath="yes"
@@ -22,12 +30,20 @@
         </Component>
         <Component Id="gitanos_LibGit2Sharp_dll" Guid="2e8d9bc7-5ada-4176-995a-24cc8861fcf6"
                    Win64="yes">
+            <RemoveFile Id="removefile_gitanos_LibGit2Sharp_dll"
+                        Name="LibGit2Sharp.dll"
+                        On="install" />
+
             <File Id="file_gitanos_LibGit2Sharp_dll"
                   Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)LibGit2Sharp.dll"
                   KeyPath="yes" />
         </Component>
         <Component Id="gitanos_CredentialManagement_dll" Guid="5f12383e-b428-442c-ada0-abf8bd801211"
                    Win64="yes">
+            <RemoveFile Id="removefile_gitanos_CredentialManagement_dll"
+                        Name="CredentialManagement.dll"
+                        On="install" />
+
             <File Id="file_gitanos_CredentialManagement_dll"
                   Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)CredentialManagement.dll"
                   KeyPath="yes" />
@@ -42,6 +58,10 @@
                 <Directory Id="GitanosDirectory_x64" Name="x64">
                     <Component Id="gitanos_git2_dll" Guid="39b4a9df-4e0e-4986-8d0c-4188c62142ca"
                        Win64="yes">
+                        <RemoveFile Id="removefile_gitanos_git2_dll"
+                                    Name="git2-6777db8.dll"
+                                    On="install" />
+
                         <File Id="file_gitanos_git2_dll"
                               Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)\lib\win32\x64\git2-6777db8.dll"
                               KeyPath="yes"

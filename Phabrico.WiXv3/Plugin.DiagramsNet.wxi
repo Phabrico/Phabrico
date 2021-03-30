@@ -4,6 +4,10 @@
     <ComponentGroup Id="PluginDiagramsNetComponents" Directory="INSTALLDIR">
         <Component Id="diagramsnet_Phabrico_Plugin_DiagramsNet_dll" Guid="$(var.PluginDiagramsNetGUID)"
                    Win64="yes">
+            <RemoveFile Id="removefile_diagramsnet_Phabrico_Plugin_DiagramsNet_dll"
+                        Name="Phabrico.Plugin.DiagramsNet.dll"
+                        On="install" />
+
             <File Id="file_diagramsnet_Phabrico_Plugin_DiagramsNet_dll"
                   Source="$(var.Phabrico.Plugin.DiagramsNet.TargetDir)Phabrico.Plugin.DiagramsNet.dll"
                   KeyPath="yes" />
@@ -15,6 +19,10 @@
         </Component>
         <Component Id="diagramsnet_Phabrico_Plugin_DiagramsNet_pdb" Guid="75b7e346-9dca-4430-9c91-59c1fb88b1ee"
                    Win64="yes">
+            <RemoveFile Id="removefile_diagramsnet_Phabrico_Plugin_DiagramsNet_pdb"
+                        Name="Phabrico.Plugin.DiagramsNet.pdb"
+                        On="install" />
+            
             <File Id="file_diagramsnet_Phabrico_Plugin_DiagramsNet_pdb"
                   Source="$(var.Phabrico.Plugin.DiagramsNet.TargetDir)Phabrico.Plugin.DiagramsNet.pdb"
                   KeyPath="yes"

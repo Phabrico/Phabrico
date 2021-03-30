@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Browser\BrowserUnitTest.cs" />
+    <Compile Include="Browser\Chrome\ManiphestUnitTest.cs" />
     <Compile Include="Browser\Chrome\PhrictionUnitTests.cs" />
     <Compile Include="Browser\Chrome\AuthenticationUnitTests.cs" />
     <Compile Include="JsonConfiguration\Account.cs" />

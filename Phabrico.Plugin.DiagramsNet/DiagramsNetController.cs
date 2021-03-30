@@ -14,20 +14,47 @@ using System.Text.RegularExpressions;
 
 namespace Phabrico.Plugin
 {
+    /// <summary>
+    /// Represents the controller for all the DiagramsNet functionalities
+    /// </summary>
     public class DiagramsNetController : PluginController
     {
+        /// <summary>
+        /// This method is fired when the user selects 'Diagram -> Help -> Keyboard Shortcuts'
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="htmlViewPage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
         [UrlController(URL = "/diagrams.net/help", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView | HtmlViewPage.ContentOptions.HideHeader)]
         public void HttpGetHelpShortcuts(Http.Server httpServer, Browser browser, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
         {
             htmlViewPage = new HtmlViewPage(httpServer, browser, true, "HelpShortcuts", parameters);
         }
 
+        /// <summary>
+        /// This method is fired when the user selects 'Diagram -> Help -> Quick Start Video'
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="htmlViewPage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
         [UrlController(URL = "/diagrams.net/quickstart", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView | HtmlViewPage.ContentOptions.HideHeader)]
         public void HttpGetHelpQuickStartDiagramsNet(Http.Server httpServer, Browser browser, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
         {
             htmlViewPage = new HtmlViewPage(httpServer, browser, true, "HelpQuickStartDiagramsNet", parameters);
         }
 
+        /// <summary>
+        /// This method is fired when the user opens the Diagram screen (from the Phabrico navigator or via a Remarkup-editor)
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="httpFound"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
         [UrlController(URL = "/diagrams.net", ServerCache = false, HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetDiagramsScreen(Http.Server httpServer, Browser browser, ref HttpFound httpFound, string[] parameters, string parameterActions)
         {
@@ -170,6 +197,16 @@ namespace Phabrico.Plugin
             httpFound = htmlViewPage;
         }
 
+        /// <summary>
+        /// The Diagrams.Net (formerly known as Draw.io) application is loaded in an IFRAME tag.
+        /// The IFRAME will execute this method to load (and show) the Diagrams.Net application
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="httpFound"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        /// <returns></returns>
         [UrlController(URL = "/diagrams.net/webapp", HtmlViewPageOptions = HtmlViewPage.ContentOptions.IFrame)]
         public HttpMessage HttpGetDiagramsNetEditorIFrame(Http.Server httpServer, Browser browser, ref HttpFound httpFound, string[] parameters, string parameterActions)
         {
@@ -227,7 +264,14 @@ namespace Phabrico.Plugin
             return null;
         }
 
-        [UrlController(URL = "/diagrams.net/save", IntegratedWindowsSecurity = true)]
+        /// <summary>
+        /// This method is fired when the user clicks on the Save button
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        [UrlController(URL = "/diagrams.net/save")]
         public JsonMessage HttpPostSaveFlowchart(Http.Server httpServer, Browser browser, string[] parameters)
         {
             try
@@ -388,6 +432,16 @@ namespace Phabrico.Plugin
             }
         }
 
+        /// <summary>
+        /// The Diagrams.Net (formerly known as Draw.io) application consists of a lot of specific files and resources (e.g. javascript, css, ...)
+        /// All these files are embedded in the DiagramsNet plugin. This method will return the content of this file as a HttpFound object
+        /// </summary>
+        /// <param name="assembly"></param>
+        /// <param name="httpServer"></param>
+        /// <param name="rootPath"></param>
+        /// <param name="originalURL"></param>
+        /// <param name="resourceName"></param>
+        /// <returns></returns>
         private HttpFound ReadResourceContent(Assembly assembly, Http.Server httpServer, string rootPath, string originalURL, string resourceName)
         {
             string fileExtenstion = resourceName.Split('.')
@@ -402,20 +456,6 @@ namespace Phabrico.Plugin
 
                     if (fileExtenstion.StartsWith("htm"))
                     {
-                        // if (javascriptInitializationCode != null)
-                        // {
-                        //     // small hack to overwrite arguments
-                        //     string newContent = content.Replace("// Forces CDN caches by passing URL parameters via URL hash",
-                        //                                         javascriptInitializationCode + "\r\n" +
-                        //                                         "// Forces CDN caches by passing URL parameters via URL hash");
-                        //     if (content.Equals(newContent))
-                        //     {
-                        //         throw new InvalidProgramException("Diagrams.Net content was not modified");
-                        //     }
-                        // 
-                        //     content = newContent;
-                        // }
-
                         HtmlViewPage htmlViewPage = new HtmlViewPage(httpServer, browser, false, originalURL);
                         htmlViewPage.Content = content;
 

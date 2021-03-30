@@ -44,6 +44,9 @@ namespace Phabrico.UnitTests
             // initialize database with test content
             Storage.Account accountStorage = new Storage.Account();
             Storage.File fileStorage = new Storage.File();
+            Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+            Storage.ManiphestPriority maniphestPriorityStorage = new Storage.ManiphestPriority();
+            Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.Project projectStorage = new Storage.Project();
             Storage.User userStorage = new Storage.User();
@@ -112,6 +115,47 @@ namespace Phabrico.UnitTests
             phrictionDocument.Subscribers = userWhoAmI.Token + "," + project.Token;
             phrictionDocument.Token = "PHID-WIKI-GRANDADDYSSTORY";
             phrictionStorage.Add(Database, phrictionDocument);
+
+            Phabricator.Data.ManiphestPriority maniphestPriority = new Phabricator.Data.ManiphestPriority();
+            maniphestPriority.Name = "High";
+            maniphestPriority.Priority = 80;
+            maniphestPriorityStorage.Add(Database, maniphestPriority);
+
+            Phabricator.Data.ManiphestStatus maniphestStatus = new Phabricator.Data.ManiphestStatus();
+            maniphestStatus.Name = "Open";
+            maniphestStatus.Value = "open";
+            maniphestStatusStorage.Add(Database, maniphestStatus);
+
+            Phabricator.Data.Maniphest maniphestTask = new Phabricator.Data.Maniphest();
+            maniphestTask.ID = "1247";
+            maniphestTask.Token = "PHID-TASK-PIXIES";
+            maniphestTask.Name = "Mind searching";
+            maniphestTask.Description = "# Put your feet in the air\n# Put your head on the ground\n# Spin it";
+            maniphestTask.Author = userWhoAmI.Token;
+            maniphestTask.DateModified = DateTimeOffset.MinValue;
+            maniphestTask.IsOpen = true;
+            maniphestTask.IsOpen = true;
+            maniphestTask.Owner = userWhoAmI.Token;
+            maniphestTask.Priority = "80";
+            maniphestTask.Projects = "";
+            maniphestTask.Status = "open";
+            maniphestTask.Subscribers = "";
+            maniphestStorage.Add(Database, maniphestTask);
+
+            maniphestTask = new Phabricator.Data.Maniphest();
+            maniphestTask.ID = "2145";
+            maniphestTask.Token = "PHID-TASK-DEEPPURPLE";
+            maniphestTask.Name = "Play the intro of Child In Time";
+            maniphestTask.Description = "G2 G2 A2";
+            maniphestTask.Author = userWhoAmI.Token;
+            maniphestTask.DateModified = DateTimeOffset.MinValue;
+            maniphestTask.IsOpen = true;
+            maniphestTask.Owner = userWhoAmI.Token;
+            maniphestTask.Priority = "80";
+            maniphestTask.Projects = "";
+            maniphestTask.Status = "open";
+            maniphestTask.Subscribers = "";
+            maniphestStorage.Add(Database, maniphestTask);
 
             Phabricator.Data.File file = new Phabricator.Data.File();
             file.DateModified = DateTimeOffset.MinValue;

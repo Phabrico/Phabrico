@@ -28,9 +28,12 @@
     }
 
     tbody {
-        background-image: repeating-linear-gradient( var(--table-aphront-table-view-tr-alternate-nth-child-2n1-td-background-color)  0 36px, 
-                                                     var(--table-aphront-table-view-tr-alternate-nth-child-2n-td-background-color) 0 70px
-                                                   );
+        background-image: none;
+    }
+
+    #tblGitanosUnpushedCommits tbody tr:nth-child(2n),
+    #tblGitanosModifications tbody tr:nth-child(2n) {
+        background: #4448;
     }
 
     #tblGitanosUnpushedCommits th.action,
@@ -49,6 +52,14 @@
         margin-left: 4px;
         margin-top: 5px;
         min-width: 70px;
+    }
+
+    #tblGitanosUnpushedCommits tbody tr td {
+        vertical-align: top;
+    }
+
+    #tblGitanosUnpushedCommits tbody tr td.description {
+        white-space: pre;
     }
 
     #tblGitanosModifications tr.selected td {

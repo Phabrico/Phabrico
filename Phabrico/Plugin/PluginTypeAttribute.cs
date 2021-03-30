@@ -31,12 +31,7 @@ namespace Phabrico.Plugin
             /// <summary>
             /// Plugin is accessible via the actions menu  in a Maniphest task
             /// </summary>
-            ManiphestTask,
-
-            /// <summary>
-            /// Plugin is accessible via the edit button on referenced file object
-            /// </summary>
-            FileEditor
+            ManiphestTask
         }
 
         /// <summary>
