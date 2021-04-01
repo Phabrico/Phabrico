@@ -2277,6 +2277,7 @@ kbd {
 }
 
 .remarkup-code-header {
+    display: inline-block !important;
     padding: 6px 12px;
     font-size: 13px;
     font-weight: bold;
@@ -2284,7 +2285,9 @@ kbd {
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     overflow: hidden;
-}
+    margin-top: 10px !important;
+    margin-bottom: -10px;
+ }
 
 .remarkup-nav-sequence {
     margin-top: 10px;
@@ -3012,8 +3015,13 @@ div.color-selector .btnSetColorForAll {
 .image-container a.button {
     position: absolute;
     top: 0;
-    right: 0;
+    left: calc(100% - 290px - 50px);
     opacity: 0;
+}
+
+.right-collapsed .image-container a.button,
+.image-container.non-overlappable a.button {
+    left: calc(100% - 50px);
 }
 
 .image-container:hover a.button {

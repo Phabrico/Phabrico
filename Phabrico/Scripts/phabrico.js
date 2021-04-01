@@ -1238,15 +1238,17 @@ class TextAreaContextMenu {
         me.remarkupInput = function(e) {
             var textarea = e.target;
             var keyPressed = "";
+            var eventType = e.type;
+            var eventKey = e.key;
 
-            if (e.type == "keydown")
+            if (eventType == "keydown")
             {
                 if (me.autocomplete == null)
                 {
                     return;
                 }
         
-                if (e.key == "Backspace")
+                if (eventKey == "Backspace")
                 {
                     me.endOffsetSearchValue--;
 
@@ -1272,14 +1274,14 @@ class TextAreaContextMenu {
                     }
                 }
                 else
-                if (e.key == "Escape")
+                if (eventKey == "Escape")
                 {
                     document.body.removeChild(me.autocomplete);
                     me.autocomplete = null;
                     return;
                 }
                 else
-                if (e.key == "ArrowLeft")
+                if (eventKey == "ArrowLeft")
                 {
                     // hide contextmenu if cursor went before contextmenu-trigger character
                     if (me.offsetSearchValue >= textarea.selectionStart)
@@ -1290,7 +1292,7 @@ class TextAreaContextMenu {
                     }
                 }
                 else
-                if (e.key == "ArrowRight")
+                if (eventKey == "ArrowRight")
                 {
                     // hide contextmenu if cursor went after last entered contextmenu-character
                     if (me.endOffsetSearchValue <= textarea.selectionEnd)
@@ -1301,7 +1303,7 @@ class TextAreaContextMenu {
                     }
                 }
                 else
-                if (e.key == "ArrowUp")
+                if (eventKey == "ArrowUp")
                 {
                     var highlightedMenuItem = document.querySelector('.autocomplete-list a.menuitem.focused');
                     var selectedIndex = Array.prototype.indexOf.call(me.autocomplete.list.children, highlightedMenuItem);
@@ -1323,7 +1325,7 @@ class TextAreaContextMenu {
                     return;
                 }
                 else
-                if (e.key == "ArrowDown")
+                if (eventKey == "ArrowDown")
                 {
                     var highlightedMenuItem = document.querySelector('.autocomplete-list a.menuitem.focused');
                     var selectedIndex = Array.prototype.indexOf.call(me.autocomplete.list.children, highlightedMenuItem);
@@ -1341,14 +1343,24 @@ class TextAreaContextMenu {
                     return;
                 }
                 else
+                if (eventKey == "Tab")
+                {
+                    // disable TAB keypress
+                    e.preventDefault();
+
+                    // convert TAB to ENTER (to close the context menu)
+                    eventType = "keypress";
+                    eventKey = "Enter";
+                }
+                else
                 {
                     return;
                 }
             }
 
-            if (e.type == "keypress")
+            if (eventType == "keypress")
             {
-                keyPressed = e.key;
+                keyPressed = eventKey;
                 if (me.showDropDownMenu == false && keyPressed == me.contextMenuTriggerCharacter)
                 {
                     me.showDropDownMenu = true;
@@ -1371,7 +1383,7 @@ class TextAreaContextMenu {
         
                 if (me.autocomplete != null)
                 {
-                    if (e.key == "Enter")
+                    if (eventKey == "Enter")
                     {
                         var highlightedMenuItem = document.querySelector('.autocomplete-list a.menuitem.focused');
                         if (highlightedMenuItem != null)
@@ -1445,11 +1457,12 @@ class TextAreaContextMenu {
 
                 var getContextMenuItems = new XMLHttpRequest();
                 getContextMenuItems.overrideMimeType("application/json");
-                getContextMenuItems.open('GET', me.urlData + me.searchValue + "/", true);
+                getContextMenuItems.open('POST', me.urlData + me.searchValue + "/", true);
+                getContextMenuItems.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
                 getContextMenuItems.onload  = async function() {
                     var menuItems = null;
                     try {
-                        menuItems = JSON.parse(getContextMenuItems.responseText);
+                        menuItems = JSON.parse(getContextMenuItems.responseText).records;
                     } catch(exc) {
                         return;
                     }
@@ -1477,7 +1490,10 @@ class TextAreaContextMenu {
                     var menuItemHeight = 28;
                     var cursorPosition = me.getCaretCoordinates(textarea, textarea.selectionEnd);
                     var textAreaBoundaries = textarea.getBoundingClientRect();
-                    var menuPostion = { top: textAreaBoundaries.top + cursorPosition.top + menuItemHeight, left: cursorPosition.left };
+                    var menuPostion = { 
+                        top: textarea.offsetTop + cursorPosition.top + menuItemHeight, 
+                        left: cursorPosition.left 
+                    };
                     if (menuPostion.top + (2 + menuItems.length) * menuItemHeight > textAreaBoundaries.bottom)
                     {
                         menuPostion.top = menuPostion.top - menuItemHeight * (2.5 + menuItems.length);
@@ -1554,6 +1570,7 @@ class TextAreaContextMenu {
 
                             document.body.removeChild(me.autocomplete);
                             me.autocomplete = null;
+                            return false;
                         };
             
                         if (me.autocomplete.list.values[0] == item) {            
@@ -2026,10 +2043,11 @@ function phrictionCorrectButtonLocations() {
     });
 
     var main = document.querySelector('main');
-    if (main != null) {
+    var phuiDocument = document.querySelector('.phui-document');
+    if (main != null && phuiDocument != null) {
         var mainWidth = parseInt(getComputedStyle(main).width);
         document.querySelectorAll('div.image-container img').forEach((img) => {
-            if (mainWidth - 260 > img.naturalWidth) {
+            if (mainWidth - 260 > img.naturalWidth + parseInt(getComputedStyle(document.querySelector('.phui-document')).left)) {
                 var imageContainer = img.closest('.image-container');
                 imageContainer.classList.add('non-overlappable')
             }
@@ -2599,9 +2617,6 @@ window.addEventListener('load', function() {
             imageContainer.onclick = toggleFullScreenImage;
         } else {
             imageContainer.classList.remove('allow-full-screen');
-            console.log(imageContainer)
-            console.log(imageContainer.querySelector('img').naturalWidth);
-            console.log(parseInt(getComputedStyle(document.querySelector('main')).width));
         }
     });
 

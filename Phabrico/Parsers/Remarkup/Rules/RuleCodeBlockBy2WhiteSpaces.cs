@@ -41,7 +41,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                 if (string.IsNullOrEmpty(codeBlockName) == false)
                 {
-                    codeBlockName = string.Format("<div class='remarkup-code-header " + counterexample + "'>{0}</div>", HttpUtility.HtmlEncode(codeBlockName));
+                    codeBlockName = string.Format("<div class='remarkup-code-header hljs " + counterexample + "'>{0}</div>", HttpUtility.HtmlEncode(codeBlockName));
                 }
 
                 string encodedCodeBlock = "";

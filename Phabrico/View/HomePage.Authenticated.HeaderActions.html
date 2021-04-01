@@ -141,7 +141,6 @@
         http.open('POST', "/auth/language/", true);
         http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         http.onload = function () {
-            console.log(this);
             if (this.responseText.length > 0) {
                 var jsonResponse = JSON.parse(this.responseText);
                 if (jsonResponse.Status === "OK") {
@@ -211,7 +210,6 @@
         http.open('POST', "/auth/password/", true);
         http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         http.onload = function () {
-            console.log(this);
             if (this.responseText.length > 0) {
                 var jsonResponse = JSON.parse(this.responseText);
                 if (jsonResponse.Status === "OK") {

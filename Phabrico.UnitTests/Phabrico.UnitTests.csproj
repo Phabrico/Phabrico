@@ -176,6 +176,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Remarkup\TestData\code-block-parameters.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Remarkup\TestData\european-characters.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

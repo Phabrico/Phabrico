@@ -1,0 +1,18 @@
+  lang=html, name=fruit.html, lines=3, counterexample
+  Apple
+  Banana
+  Orange
+
+``` lang=html, name=vegetables.html, lines=3, counterexample
+Asparagus
+Broccoli
+Tomato
+```
+~~~~~~~~~~
+<div class='remarkup-code-header hljs counterexample'>fruit.html</div><div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='xml counterexample'>Apple
+Banana
+Orange</code></pre></div>
+<div class='remarkup-code-header hljs counterexample'>vegetables.html</div><div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='xml counterexample'>Asparagus
+Broccoli
+Tomato</code></pre></div>
+~~~~~~~~~~

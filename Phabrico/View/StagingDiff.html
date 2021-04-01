@@ -209,10 +209,6 @@
     }
 
     function insertButtonClicked(buttonSpan, leftLineNumber, rightLineNumber, action) {
-        console.log(leftLineNumber);
-        console.log(rightLineNumber);
-        console.log(action);
-
         var firstGlobalRowIndex = Array.prototype.slice.call( buttonSpan.parentElement.parentElement.parentElement.children, 0 ).indexOf( buttonSpan.parentElement.parentElement);
         var lastGlobalRowIndex = firstGlobalRowIndex;
 

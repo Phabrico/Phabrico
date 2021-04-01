@@ -146,7 +146,9 @@ namespace Phabrico.Controllers
                                        );
                 }
 
-                bool showSelectedUsersOnly = browser.Session.FormVariables["showusers"].Equals("selected");
+                bool showSelectedUsersOnly = browser.Session.FormVariables.ContainsKey("showusers") 
+                                           && browser.Session.FormVariables["showusers"].Equals("selected");
+
                 foreach (Phabricator.Data.User userData in users)
                 {
                     if (showSelectedUsersOnly && userData.Selected == false)
@@ -163,6 +165,7 @@ namespace Phabrico.Controllers
 
                     tableRows.Add(record);
                 }
+
             }
 
             string jsonData = JsonConvert.SerializeObject(new

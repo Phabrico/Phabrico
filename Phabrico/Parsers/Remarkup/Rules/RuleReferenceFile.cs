@@ -266,20 +266,20 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Storage.File fileStorage = new Storage.File();
             string imgClass = "";
 
-            // check if file content was also loaded, if not load it
-            if (fileObject.DataStream == null)
-            {
-                Storage.Stage stageStorage = new Storage.Stage();
-                fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectID, true);
-                if (fileObject == null)
-                {
-                    // file was not loaded from staging area, so content was not loaded -> load file content
-                    fileObject = fileStorage.GetByID(database, fileObjectID, false);
-                }
-            }
-
             if (existingAccount.Theme == "dark" && existingAccount.Parameters.DarkenBrightImages != Account.DarkenImageStyle.Disabled)
             {
+                // check if file content was also loaded, if not load it
+                if (fileObject.DataStream == null)
+                {
+                    Storage.Stage stageStorage = new Storage.Stage();
+                    fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectID, true);
+                    if (fileObject == null)
+                    {
+                        // file was not loaded from staging area, so content was not loaded -> load file content
+                        fileObject = fileStorage.GetByID(database, fileObjectID, false);
+                    }
+                }
+
                 try
                 {
                     // load image and count the 16 boundary colors of the image (10x10 pixels for each corner) + center

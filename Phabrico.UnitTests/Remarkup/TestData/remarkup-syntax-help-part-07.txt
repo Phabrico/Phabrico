@@ -112,7 +112,7 @@ lang=text<br>
 lang=html, name=example.html, lines=12, counterexample<br>
 ...<br>
 ...produces this:<br>
-<div class='remarkup-code-header counterexample'>example.html</div><div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='xml counterexample'>&lt;p&gt;Apple&lt;/p&gt;
+<div class='remarkup-code-header hljs counterexample'>example.html</div><div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='xml counterexample'>&lt;p&gt;Apple&lt;/p&gt;
 &lt;p&gt;Apricot&lt;/p&gt;
 &lt;p&gt;Avocado&lt;/p&gt;
 &lt;p&gt;Banana&lt;/p&gt;

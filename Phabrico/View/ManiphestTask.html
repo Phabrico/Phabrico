@@ -200,7 +200,7 @@
                         <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
                     </a>
                 </div>
-                <textarea class="@@TASK-NEW-TOKEN@@ dropzone" name="comment" style="min-height: 12em;" oninput="inputChanged(this.value, previewNewComment)">@@TASK-STAGED-COMMENT@@</textarea>
+                <textarea id="textarea" class="@@TASK-NEW-TOKEN@@ dropzone" name="comment" style="min-height: 12em;" oninput="inputChanged(this.value, previewNewComment)">@@TASK-STAGED-COMMENT@@</textarea>
                 <div id="editStatusBar"></div>
                 <div style="margin-top: 17px;float: right;">
                     <button type="submit" style="margin-bottom: 10px;">Set Sail for Adventure</button>
@@ -440,9 +440,19 @@
         }
     }
 
+    function ignoreNoProject(item) {
+        return item.Token != "PHID-PROJ-NONE";
+    }
+
+    function ignoreNoUser(item) {
+        return item.Token != "PHID-USER-NONE";
+    }
+
     // set page title
     window.addEventListener('load', function() {
         document.title = "Phabrico - " + fromHTML("@@TASK-HEADER@@");
+        new TextAreaContextMenu(textarea, "@", "user", "/user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
+        new TextAreaContextMenu(textarea, "#", "project", "/project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
         remarkup = new Remarkup(() => { });
     }, false);
 

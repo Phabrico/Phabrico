@@ -177,7 +177,8 @@ namespace Phabrico.Controllers
                 }
 
                 // add all project-tag-records to the result
-                bool showSelectedProjectsOnly = browser.Session.FormVariables["showprojects"].Equals("selected");
+                bool showSelectedProjectsOnly = browser.Session.FormVariables.ContainsKey("showprojects")
+                                              && browser.Session.FormVariables["showprojects"].Equals("selected");
                 foreach (Phabricator.Data.Project projectData in projects)
                 {
                     if (showSelectedProjectsOnly && projectData.Selected != Phabricator.Data.Project.Selection.Selected)

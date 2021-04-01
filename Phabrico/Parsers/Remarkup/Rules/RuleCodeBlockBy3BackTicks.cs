@@ -25,24 +25,24 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html)
         {
             html = "";
-            Match match = RegexSafe.Match(remarkup, "^```\\s*((((lang=([^,\n]*))|(name=([^,\n]*))|(lines=([^,\n]*))|(counterexample)) *,? *)?\r?\n?(.+?(?=```( *\r?\n|$)))```( *\r?\n|$))?", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            Match match = RegexSafe.Match(remarkup, "^```((\\s*(((\\s*lang=([^\n,]*),?)|(\\s*name=([^\n,]*),?)|(\\s*lines=([^\n,]*),?)|(\\s*counterexample\\s*,?))*)?)\r?\n?(.+?(?=```))```)?( *\r?\n|$)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             if (match.Success == false) return false;
 
-            string counterexample = match.Groups[10].Value.Trim('\r').ToLower();
-            string codeBlock = match.Groups[11].Value;
-            string codeBlockName = match.Groups[7].Value.Trim('\r');
-            // string codeBlockLines = match.Groups[9].Value.Trim('\r');
-            string language = match.Groups[5].Value.Trim('\r');
+            string counterexample = match.Groups[11].Value.Trim(' ', '\r', '\n').ToLower();
+            string codeBlock = match.Groups[12].Value;
+            string codeBlockName = match.Groups[8].Value.Trim(' ', '\r', '\n');
+            // string codeBlockLines = match.Groups[10].Value.Trim('\r');
+            string language = match.Groups[6].Value.Trim(' ', '\r', '\n');
 
             if (string.IsNullOrEmpty(codeBlockName) == false)
             {
-                codeBlockName = string.Format("<div class='remarkup-code-header " + counterexample + "'>{0}</div>", HttpUtility.HtmlEncode(codeBlockName));
+                codeBlockName = string.Format("<div class='remarkup-code-header hljs " + counterexample + "'>{0}</div>", HttpUtility.HtmlEncode(codeBlockName));
             }
 
             string encodedCodeBlock = System.Web.HttpUtility.HtmlEncode(codeBlock);
             encodedCodeBlock = RegexSafe.Replace(encodedCodeBlock, "[\r\n]*$", "");  // remove newlines at the end (in case they exist)
 
-            html = "<div class='codeblock'>";
+            html = codeBlockName + "<div class='codeblock'>";
 
             string tokenId = browser.GetCookie("token");
             if (tokenId != null)
