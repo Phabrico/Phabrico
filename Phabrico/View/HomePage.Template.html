@@ -136,6 +136,43 @@
                 
                 }, false);
             }@
+
+
+            // check for latest Phabrico version on Github
+            githubRepository = new XMLHttpRequest();
+            githubRepository.overrideMimeType("application/json");
+            githubRepository.open('GET', "https://api.github.com/repos/phabrico/phabrico/releases/latest", true);
+            githubRepository.onload = function () {
+                if (githubRepository.readyState == 4 && githubRepository.status == 200) {
+                    try {
+                        var jsonResponse = JSON.parse(githubRepository.responseText);
+                        var githubRepositoryVersion = jsonResponse.tag_name.split('.').map(function (el) { return parseInt(el); });
+                        var localPhabricoVersion = "@@PHABRICO-VERSION@@".split('.').map(function (el) { return parseInt(el); });
+                        var newerVersionAvailable = false;
+
+                        if (githubRepositoryVersion.length == 4  &&  localPhabricoVersion.length == 4) {
+                            for (i = 0; i < 4; i++) {
+                                if (githubRepositoryVersion[i] > localPhabricoVersion[i]) {
+                                    newerVersionAvailable = true;
+                                    break;
+                                } else {
+                                    if (githubRepositoryVersion[i] < localPhabricoVersion[i]) {
+                                        // might be a development version
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (newerVersionAvailable) {
+                                document.body.classList.add("new-version-available");
+                            }
+                        }
+                    }
+                    catch (exc) {
+                    }
+                }
+            };
+            githubRepository.send(null);
         </script>
     </body>
 </html>

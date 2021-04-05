@@ -324,6 +324,7 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-Authenticated", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.Merge();
                     return htmlViewPage.Content;
 
@@ -347,6 +348,7 @@ namespace Phabrico.Http.Response
                         htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-AuthenticationError", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.Merge();
                     }
                     return htmlViewPage.Content;
@@ -395,6 +397,7 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", "5", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("SYNCHRONIZE", "True", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-EmptyDatabase", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.Merge();
                     return htmlViewPage.Content;
 
@@ -416,6 +419,7 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-InitializationError");
+                    htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.Merge();
                     return htmlViewPage.Content;
 
@@ -437,6 +441,7 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-Initialized", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.Merge();
                     return htmlViewPage.Content;
 
@@ -463,6 +468,7 @@ namespace Phabrico.Http.Response
                         htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-AuthenticationDialog", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.Merge();
                     }
                     return htmlViewPage.Content;
@@ -492,6 +498,7 @@ namespace Phabrico.Http.Response
                 htmlViewPage.SetText("HEADERACTIONS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("CONTENT", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-Template", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 html = htmlViewPage.Content;
             }
             else

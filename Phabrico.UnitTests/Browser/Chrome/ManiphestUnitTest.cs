@@ -95,6 +95,14 @@ namespace Phabrico.UnitTests.Browser.Chrome
             // validate if modifications were stored
             maniphestTaskContent = WebBrowser.FindElement(By.Id("remarkupContent"));
             Assert.IsTrue(maniphestTaskContent.Text.Equals("Left: G2 G2 A2\r\nRight: C5 B4 A4 G4 F4 G4 E4"), "Task content was not modified");
+            
+            // verify if new saved task is searchable
+            IWebElement searchPhabrico = WebBrowser.FindElement(By.Id("searchPhabrico"));
+            searchPhabrico.SendKeys("child");
+            wait.Until(condition => condition.FindElement(By.ClassName("search-result")));
+            IWebElement searchResult = WebBrowser.FindElement(By.ClassName("search-result"));
+            Assert.IsTrue(searchResult.Displayed);
+            Assert.AreEqual("T2145: Play the intro of Child In Time", searchResult.GetAttribute("name"));
         }
     }
 }

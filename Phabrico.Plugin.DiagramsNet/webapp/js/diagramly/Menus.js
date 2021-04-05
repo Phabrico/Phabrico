@@ -654,7 +654,8 @@
 			editorUi.copyImage(cells, xml);
 		}));
 
-		action.visible = Editor.enableNativeCipboard && editorUi.isExportToCanvas();
+		// Disabled in Safari as operation is not allowed
+		action.visible = Editor.enableNativeCipboard && editorUi.isExportToCanvas() && !mxClient.IS_SF;
 		
 		action = editorUi.actions.put('shadowVisible', new Action(mxResources.get('shadow'), function()
 		{
@@ -758,18 +759,19 @@
 		action.setToggleAction(true);
 		action.setSelectedCallback(mxUtils.bind(this, function() { return this.tagsWindow != null && this.tagsWindow.window.isVisible(); }));
 
-		action = editorUi.actions.addAction('findReplace...', mxUtils.bind(this, function()
+		action = editorUi.actions.addAction('findReplace...', mxUtils.bind(this, function(arg1, evt)
 		{
-			var evtName = (graph.isEnabled()) ? 'findReplace' : 'find';
+			var findReplace = graph.isEnabled() && (evt == null || !mxEvent.isShiftDown(evt));
+			var evtName = (findReplace) ? 'findReplace' : 'find';
 			var name = evtName + 'Window';
 			
 			if (this[name] == null)
 			{
-				var w = (graph.isEnabled()) ? ((uiTheme == 'min') ? 330 : 300) : 240;
-				var h = (graph.isEnabled()) ? ((uiTheme == 'min') ? 304 : 288) : 160;
+				var w = (findReplace) ? ((uiTheme == 'min') ? 330 : 300) : 240;
+				var h = (findReplace) ? ((uiTheme == 'min') ? 304 : 288) : 170;
 				this[name] = new FindWindow(editorUi,
 					document.body.offsetWidth - (w + 20),
-					100, w, h, graph.isEnabled());
+					100, w, h, findReplace);
 				this[name].window.addListener('show', function()
 				{
 					editorUi.fireEvent(new mxEventObject(evtName));
@@ -795,7 +797,32 @@
 		
 		editorUi.actions.put('exportVsdx', new Action(mxResources.get('formatVsdx') + ' (beta)...', function()
 		{
-			editorUi.exportVisio();
+			var noPages = editorUi.pages == null || editorUi.pages.length <= 1;
+			
+			if (noPages)
+			{
+				editorUi.exportVisio();
+			}
+			else
+			{
+				var div = document.createElement('div');
+				div.style.whiteSpace = 'nowrap';
+
+				var hd = document.createElement('h3');
+				mxUtils.write(hd, mxResources.get('formatVsdx'));
+				hd.style.cssText = 'width:100%;text-align:center;margin-top:0px;margin-bottom:4px';
+				div.appendChild(hd);
+				
+				var pages = editorUi.addCheckbox(div, mxResources.get('allPages'), !noPages, noPages);
+				pages.style.marginBottom = '16px';
+				
+				var dlg = new CustomDialog(editorUi, div, mxUtils.bind(this, function()
+				{
+					editorUi.exportVisio(!pages.checked);
+				}), null, mxResources.get('export'));
+				
+				editorUi.showDialog(dlg.container, 300, 110, true, true);
+			}
 		}));
 		
 		if (isLocalStorage && localStorage != null && urlParams['embed'] != '1')
@@ -1339,7 +1366,7 @@
 			mxResources.parse('showBoundingBox=Show bounding box');
 			mxResources.parse('createSidebarEntry=Create Sidebar Entry');
 			mxResources.parse('testCheckFile=Check File');
-			mxResources.parse('testDiff=Diff');
+			mxResources.parse('testDiff=Diff/Sync');
 			mxResources.parse('testInspect=Inspect');
 			mxResources.parse('testShowConsole=Show Console');
 			mxResources.parse('testXmlImageExport=XML Image Export');
@@ -1537,36 +1564,66 @@
 				dlg.init();
 			}));
 	
+			var snapshot = null;
+			
 			editorUi.actions.addAction('testDiff', mxUtils.bind(this, function()
 			{
 				if (editorUi.pages != null)
 				{
-			    	var dlg = new TextareaDialog(editorUi, 'Paste Data:', '',
+					var buttons = [['Snapshot', function(evt, input)
+					{
+						snapshot = editorUi.getPagesForNode(mxUtils.parseXml(
+							editorUi.getFileData(true)).documentElement);
+						dlg.textarea.value = 'Snapshot updated ' + new Date().toLocaleString();
+					}], ['Diff', function(evt, input)
+					{
+						try
+						{
+							dlg.textarea.value = JSON.stringify(editorUi.diffPages(
+								snapshot, editorUi.pages), null, 2);
+						}
+						catch (e)
+						{
+							editorUi.handleError(e);
+						}
+					}]];
+					
+			    	var dlg = new TextareaDialog(editorUi, 'Diff/Sync:', '',
 			    		function(newValue)
 					{
-						if (newValue.length > 0)
+						var file = editorUi.getCurrentFile();
+						
+						if (newValue.length > 0 && file != null)
 						{
 							try
 							{
-								console.log(JSON.stringify(editorUi.diffPages(editorUi.pages,
-									editorUi.getPagesForNode(mxUtils.parseXml(newValue).
-									documentElement)), null, 2));
-	
+								var patch = JSON.parse(newValue);
+								file.patch([patch], null, true);
+								editorUi.hideDialog();
 							}
 							catch (e)
 							{
 								editorUi.handleError(e);
-								
-								if (window.console != null)
-								{
-									console.error(e);
-								}
 							}
 						}
-					});
+					}, null, 'Close', null, null, null, true, null, 'Patch', null, buttons);
 			    	
 			    	dlg.textarea.style.width = '600px';
 			    	dlg.textarea.style.height = '380px';
+
+
+					if (snapshot == null)
+					{
+						snapshot = editorUi.getPagesForNode(mxUtils.parseXml(
+							editorUi.getFileData(true)).documentElement);
+						dlg.textarea.value = 'Snapshot created ' + new Date().toLocaleString();
+					}
+					else
+					{
+						dlg.textarea.value = JSON.stringify(editorUi.diffPages(
+							snapshot, editorUi.pages), null, 2);
+					}
+					
 					editorUi.showDialog(dlg.container, 620, 460, true, true);
 					dlg.init();
 				}
@@ -2337,7 +2394,8 @@
 			}, parent);
 			
 			if (theme != 'kennedy' && theme != 'atlas' &&
-				theme != 'dark' && theme != 'min')
+				theme != 'dark' && theme != 'min' &&
+				theme != 'sketch')
 			{
 				menu.addCheckmark(item, Editor.checkmarkImage);
 			}
@@ -2390,6 +2448,21 @@
 			if (theme == 'dark')
 			{
 				menu.addCheckmark(item, Editor.checkmarkImage);
+			}
+			
+			if (urlParams['test'] == '1')
+			{			
+				item = menu.addItem(mxResources.get('sketch'), null, function()
+				{
+					mxSettings.setUi('sketch');
+					mxSettings.save();
+					editorUi.alert(mxResources.get('restartForChangeRequired'));
+				}, parent);
+				
+				if (theme == 'sketch')
+				{
+					menu.addCheckmark(item, Editor.checkmarkImage);
+				}
 			}
 		})));
 

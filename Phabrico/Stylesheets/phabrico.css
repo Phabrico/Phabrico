@@ -495,6 +495,23 @@ select {
     font-size: 30px;
 }
 
+.new-version-available .phabrico-logo:before {
+    font-family: 'icomoon';
+    content: "\e9ad";
+    font-size: 30px;
+}
+
+.phabrico-version > a {
+    display: none;
+}
+
+.new-version-available .phabrico-version > a {
+    display: block;
+}
+
+.new-version-available .phabrico-version > span {
+    display: none;
+}
 .phabrico-wordmark {
     font-size: 18px;
     position: absolute;

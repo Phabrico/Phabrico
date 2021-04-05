@@ -326,6 +326,7 @@ namespace Phabrico.Http.Response
                                 htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), ArgumentOptions.NoHtmlEncoding);
                                 htmlViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                                 htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, ArgumentOptions.NoHtmlEncoding);
+                                htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                 htmlViewPage.Merge();
                                 html = htmlViewPage.Content;
                             }
@@ -372,6 +373,7 @@ namespace Phabrico.Http.Response
                             htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), ArgumentOptions.NoHtmlEncoding);
                             htmlViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                             htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, ArgumentOptions.NoHtmlEncoding);
+                            htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                             htmlViewPage.Merge();
                             html = htmlViewPage.Content;
                         }

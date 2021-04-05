@@ -3645,6 +3645,25 @@
 				Editor.checkmarkImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAMAAACeyVWkAAAARVBMVEUAAACZmZkICAgEBASNjY2Dg4MYGBiTk5N5eXl1dXVmZmZQUFBCQkI3NzceHh4MDAykpKSJiYl+fn5sbGxaWlo/Pz8SEhK96uPlAAAAAXRSTlMAQObYZgAAAE5JREFUGNPFzTcSgDAQQ1HJGUfy/Y9K7V1qeOUfzQifCQZai1XHaz11LFysbDbzgDSSWMZiETz3+b8yNUc/MMsktxuC8XQBSncdLwz+8gCCggGXzBcozAAAAABJRU5ErkJggg==';
 			}
     	}
+
+		Editor.sketchFontFamily = 'Architects Daughter';
+		Editor.sketchFontSource = 'https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter';
+
+		// Implements the sketch-min UI
+		if (urlParams['sketch'] == '1')
+		{
+			Graph.prototype.defaultVertexStyle = {'fontFamily': Editor.sketchFontFamily , 'fontSize': '20',
+				'fontSource': Editor.sketchFontSource, 'pointerEvents': '0', 'sketch': '1', 'hachureGap': '4'};
+			
+			Graph.prototype.defaultEdgeStyle = {'edgeStyle': 'none', 'rounded': '0', 'curved': '1',
+				'jettySize': 'auto', 'orthogonalLoop': '1', 'endArrow': 'open', 'endSize': '14',
+				'fontFamily': Editor.sketchFontFamily, 'fontSize': '20','fontSource': Editor.sketchFontSource,
+				'sourcePerimeterSpacing': '8', 'targetPerimeterSpacing': '8', 'sketch': '1'};
+			
+			Graph.prototype.defaultGridEnabled = false;
+			Graph.prototype.defaultPageVisible = false;
+			Graph.prototype.defaultEdgeLength = 120;
+		}
     };
     
     EditorUi.initTheme();
@@ -7056,7 +7075,7 @@
 	/**
 	 * Export the diagram to VSDX
 	 */
-	EditorUi.prototype.exportVisio = function()
+	EditorUi.prototype.exportVisio = function(currentPage)
 	{
 		var delayed = mxUtils.bind(this, function()
 		{
@@ -7066,7 +7085,7 @@
 			{
 				try
 				{
-					var expSuccess = new VsdxExport(this).exportCurrentDiagrams();
+					var expSuccess = new VsdxExport(this).exportCurrentDiagrams(currentPage);
 					
 					if (!expSuccess)
 					{
@@ -7964,8 +7983,6 @@
 			}
 			else
 			{
-				console.log('here', evt,mxEvent.isControlDown(evt));
-				
 				importedCells = this.importXml(xml, dx, dy, crop, null,
 					(evt != null) ? mxEvent.isControlDown(evt) : null);
 			}
@@ -10191,97 +10208,8 @@
 				
 				if (data != null && data.length > 0)
 				{
-					var hasMeta = data.substring(0, 6) == '<meta ';
-					elt = document.createElement('div');
-					elt.innerHTML = ((hasMeta) ? '<meta charset="utf-8">' : '') +
-						this.editor.graph.sanitizeHtml(data);
-					asHtml = true;
-					
-					// Workaround for innerText not ignoring style elements in Chrome
-					var styles = elt.getElementsByTagName('style');
-					
-					if (styles != null)
-					{
-						while (styles.length > 0)
-						{
-							styles[0].parentNode.removeChild(styles[0]);
-						}
-					}
-					
-					// Special case of link pasting from Chrome
-					if (elt.firstChild != null && elt.firstChild.nodeType == mxConstants.NODETYPE_ELEMENT &&
-						elt.firstChild.nextSibling != null && elt.firstChild.nextSibling.nodeType == mxConstants.NODETYPE_ELEMENT &&
-						elt.firstChild.nodeName == 'META' && elt.firstChild.nextSibling.nodeName == 'A' &&
-						elt.firstChild.nextSibling.nextSibling == null)
-					{
-						var temp = (elt.firstChild.nextSibling.innerText == null) ?
-							mxUtils.getTextContent(elt.firstChild.nextSibling) :
-							elt.firstChild.nextSibling.innerText;
-					
-						if (temp == elt.firstChild.nextSibling.getAttribute('href'))
-						{
-							mxUtils.setTextContent(elt, temp);
-							asHtml = false;
-						}
-					}
-
-					// Extracts single image source address with meta tag in markup
-					var img = (hasMeta && elt.firstChild != null) ? elt.firstChild.nextSibling : elt.firstChild;
-
-					if (img != null && img.nextSibling == null &&
-						img.nodeType == mxConstants.NODETYPE_ELEMENT &&
-						img.nodeName == 'IMG')
-					{
-						var temp = img.getAttribute('src');
-						
-						if (temp != null)
-						{
-							if (temp.substring(0, 22) == 'data:image/png;base64,')
-							{
-								var xml = this.extractGraphModelFromPng(temp);
-								
-								if (xml != null && xml.length > 0)
-								{
-									temp = xml;
-								}
-							}
-
-							mxUtils.setTextContent(elt, temp);
-							asHtml = false;
-						}
-					}
-					else
-					{
-						// Extracts embedded XML or image source address from single PNG image
-						var images = elt.getElementsByTagName('img');
-
-						if (images.length == 1)
-						{
-							var img = images[0];
-							var temp = img.getAttribute('src');
-							
-							if (temp != null && img.parentNode == elt && elt.children.length == 1)
-							{
-								if (temp.substring(0, 22) == 'data:image/png;base64,')
-								{
-									var xml = this.extractGraphModelFromPng(temp);
-									
-									if (xml != null && xml.length > 0)
-									{
-										temp = xml;
-									}
-								}
-								
-								mxUtils.setTextContent(elt, temp);
-								asHtml = false;
-							}
-						}
-					}
-					
-					if (asHtml)
-					{
-						Graph.removePasteFormatting(elt);
-					}
+					elt = this.parseHtmlData(data);
+					asHtml = elt.getAttribute('data-type') != 'text/plain';
 				}
 				else if (plain != null && plain.length > 0)
 				{

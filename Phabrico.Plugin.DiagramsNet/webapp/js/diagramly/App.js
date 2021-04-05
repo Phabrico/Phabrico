@@ -291,6 +291,7 @@ App.PUSHER_URL = 'https://js.pusher.com/4.3/pusher.min.js';
  * Socket.io library 
  */
 App.SOCKET_IO_URL = window.DRAWIO_BASE_URL + '/js/socket.io/socket.io.min.js';
+App.SIMPLE_PEER_URL = window.DRAWIO_BASE_URL + '/js/socket.io/simplepeer9.10.0.min.js';
 App.SOCKET_IO_SRV = 'http://localhost:3030';
 
 /**
@@ -710,6 +711,7 @@ App.main = function(callback, createUi)
 			if (urlParams['rtCursors'] == '1')
 			{
 				mxscript(App.SOCKET_IO_URL);
+				mxscript(App.SIMPLE_PEER_URL);
 			}
 		}
 		
@@ -5636,7 +5638,7 @@ App.prototype.updateButtonContainer = function()
 		var file = this.getCurrentFile();
 		
 		// Comments
-		if (this.commentsSupported())
+		if (this.commentsSupported() && urlParams['sketch'] != '1')
 		{
 			if (this.commentButton == null)
 			{
@@ -5846,6 +5848,7 @@ App.prototype.showNotification = function(notifs, lsReadFlag)
 		
 		if (uiTheme == 'min')
 		{
+			this.notificationBtn.style.width = '30px';
 			this.notificationBtn.style.top = '4px';
 		}
 		
@@ -7317,7 +7320,18 @@ App.prototype.updateUserElement = function()
 					div.style.background = 'whiteSmoke';
 					div.style.borderTop = '1px solid #e0e0e0';
 					div.style.whiteSpace = 'nowrap';
-					
+										
+					if (urlParams['sketch'] == '1')
+					{
+						var btn = mxUtils.button(mxResources.get('share'), mxUtils.bind(this, function()
+						{
+							this.actions.get('share').funct();
+						}));
+						btn.className = 'geBtn gePrimaryBtn';
+						div.appendChild(btn);
+						this.userPanel.appendChild(div);
+					}
+
 					var btn = mxUtils.button(mxResources.get('close'), mxUtils.bind(this, function()
 					{
 						if (!mxEvent.isConsumed(evt) && this.userPanel != null && this.userPanel.parentNode != null)

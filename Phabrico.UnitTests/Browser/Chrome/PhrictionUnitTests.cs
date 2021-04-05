@@ -75,6 +75,14 @@ namespace Phabrico.UnitTests.Browser.Chrome
             phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
             phrictionDocumentTitle = phrictionDocument.Text.Replace("\r", "").Split('\n')[1];
             Assert.IsTrue(phrictionDocumentTitle.Equals("Once upon a time, I was reading this story over and over again and saw it was all good..."), "Modifications couldn't be saved");
+
+            // verify if new saved document is searchable
+            IWebElement searchPhabrico = WebBrowser.FindElement(By.Id("searchPhabrico"));
+            searchPhabrico.SendKeys("good");
+            wait.Until(condition => condition.FindElement(By.ClassName("search-result")));
+            IWebElement searchResult = WebBrowser.FindElement(By.ClassName("search-result"));
+            Assert.IsTrue(searchResult.Displayed);
+            Assert.AreEqual("Story of my life", searchResult.GetAttribute("name"));
         }
     }
 }

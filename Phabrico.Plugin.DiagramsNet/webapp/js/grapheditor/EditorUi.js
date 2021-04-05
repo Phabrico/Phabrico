@@ -56,6 +56,233 @@ EditorUi = function(editor, container, lightbox)
 	
 	if (!graph.standalone)
 	{
+		// Stores the current style and assigns it to new cells
+		var styles = ['rounded', 'shadow', 'glass', 'dashed', 'dashPattern', 'labelBackgroundColor',
+			'comic', 'sketch', 'fillWeight', 'hachureGap', 'hachureAngle', 'jiggle',
+			'disableMultiStroke', 'disableMultiStrokeFill', 'fillStyle', 'curveFitting',
+			'simplification', 'sketchStyle', 'pointerEvents'];
+		var connectStyles = ['shape', 'edgeStyle', 'curved', 'rounded', 'elbow', 'jumpStyle', 'jumpSize',
+			'comic', 'sketch', 'fillWeight', 'hachureGap', 'hachureAngle', 'jiggle',
+			'disableMultiStroke', 'disableMultiStrokeFill', 'fillStyle', 'curveFitting',
+			'simplification', 'sketchStyle'];
+		
+		// Note: Everything that is not in styles is ignored (styles is augmented below)
+		this.setDefaultStyle = function(cell)
+		{
+			try
+			{
+				var state = graph.view.getState(cell);
+				
+				if (state != null)
+				{
+					// Ignores default styles
+					var clone = cell.clone();
+					clone.style = ''
+					var defaultStyle = graph.getCellStyle(clone);
+					var values = [];
+					var keys = [];
+		
+					for (var key in state.style)
+					{
+						if (defaultStyle[key] != state.style[key])
+						{
+							values.push(state.style[key]);
+							keys.push(key);
+						}
+					}
+					
+					// Handles special case for value "none"
+					var cellStyle = graph.getModel().getStyle(state.cell);
+					var tokens = (cellStyle != null) ? cellStyle.split(';') : [];
+					
+					for (var i = 0; i < tokens.length; i++)
+					{
+						var tmp = tokens[i];
+				 		var pos = tmp.indexOf('=');
+				 					 		
+				 		if (pos >= 0)
+				 		{
+				 			var key = tmp.substring(0, pos);
+				 			var value = tmp.substring(pos + 1);
+				 			
+				 			if (defaultStyle[key] != null && value == 'none')
+				 			{
+				 				values.push(value);
+				 				keys.push(key);
+				 			}
+				 		}
+					}
+		
+					// Resets current style
+					if (graph.getModel().isEdge(state.cell))
+					{
+						graph.currentEdgeStyle = {};
+					}
+					else
+					{
+						graph.currentVertexStyle = {}
+					}
+		
+					this.fireEvent(new mxEventObject('styleChanged', 'keys', keys, 'values', values, 'cells', [state.cell]));
+				}
+			}
+			catch (e)
+			{
+				this.handleError(e);
+			}
+		};
+
+		this.clearDefaultStyle = function()
+		{
+			graph.currentEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
+			graph.currentVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
+			
+			// Updates UI
+			this.fireEvent(new mxEventObject('styleChanged', 'keys', [], 'values', [], 'cells', []));
+		};
+	
+		// Keys that should be ignored if the cell has a value (known: new default for all cells is html=1 so
+	    // for the html key this effecticely only works for edges inserted via the connection handler)
+		var valueStyles = ['fontFamily', 'fontSource', 'fontSize', 'fontColor'];
+		
+		// Keys that always update the current edge style regardless of selection
+		var alwaysEdgeStyles = ['edgeStyle', 'startArrow', 'startFill', 'startSize', 'endArrow',
+			'endFill', 'endSize'];
+		
+		// Keys that are ignored together (if one appears all are ignored)
+		var keyGroups = [['startArrow', 'startFill', 'startSize', 'sourcePerimeterSpacing',
+						'endArrow', 'endFill', 'endSize', 'targetPerimeterSpacing'],
+		                 ['strokeColor', 'strokeWidth'],
+		                 ['fillColor', 'gradientColor'],
+		                 valueStyles,
+		                 ['opacity'],
+		                 ['align'],
+		                 ['html']];
+		
+		// Adds all keys used above to the styles array
+		for (var i = 0; i < keyGroups.length; i++)
+		{
+			for (var j = 0; j < keyGroups[i].length; j++)
+			{
+				styles.push(keyGroups[i][j]);
+			}
+		}
+		
+		for (var i = 0; i < connectStyles.length; i++)
+		{
+			if (mxUtils.indexOf(styles, connectStyles[i]) < 0)
+			{
+				styles.push(connectStyles[i]);
+			}
+		}
+		
+		// Implements a global current style for edges and vertices that is applied to new cells
+		var insertHandler = function(cells, asText, model, vertexStyle, edgeStyle)
+		{
+			vertexStyle = (vertexStyle != null) ? vertexStyle : graph.currentVertexStyle;
+			edgeStyle = (edgeStyle != null) ? edgeStyle : graph.currentEdgeStyle;
+			
+			model = (model != null) ? model : graph.getModel();
+			
+			model.beginUpdate();
+			try
+			{
+				for (var i = 0; i < cells.length; i++)
+				{
+					var cell = cells[i];
+
+					var appliedStyles;
+
+					if (asText)
+					{
+						// Applies only basic text styles
+						appliedStyles = ['fontSize', 'fontFamily', 'fontColor'];
+					}
+					else
+					{
+						// Removes styles defined in the cell style from the styles to be applied
+						var cellStyle = model.getStyle(cell);
+						var tokens = (cellStyle != null) ? cellStyle.split(';') : [];
+						appliedStyles = styles.slice();
+						
+						for (var j = 0; j < tokens.length; j++)
+						{
+							var tmp = tokens[j];
+					 		var pos = tmp.indexOf('=');
+					 					 		
+					 		if (pos >= 0)
+					 		{
+					 			var key = tmp.substring(0, pos);
+					 			var index = mxUtils.indexOf(appliedStyles, key);
+					 			
+					 			if (index >= 0)
+					 			{
+					 				appliedStyles.splice(index, 1);
+					 			}
+					 			
+					 			// Handles special cases where one defined style ignores other styles
+					 			for (var k = 0; k < keyGroups.length; k++)
+					 			{
+					 				var group = keyGroups[k];
+					 				
+					 				if (mxUtils.indexOf(group, key) >= 0)
+					 				{
+					 					for (var l = 0; l < group.length; l++)
+					 					{
+								 			var index2 = mxUtils.indexOf(appliedStyles, group[l]);
+								 			
+								 			if (index2 >= 0)
+								 			{
+								 				appliedStyles.splice(index2, 1);
+								 			}
+					 					}
+					 				}
+					 			}
+					 		}
+						}
+					}
+					
+					// Applies the current style to the cell
+					var edge = model.isEdge(cell);
+					var current = (edge) ? edgeStyle : vertexStyle;
+					var newStyle = model.getStyle(cell);
+					
+					for (var j = 0; j < appliedStyles.length; j++)
+					{
+						var key = appliedStyles[j];
+						var styleValue = current[key];
+	
+						if (styleValue != null && (key != 'shape' || edge))
+						{
+							// Special case: Connect styles are not applied here but in the connection handler
+							if (!edge || mxUtils.indexOf(connectStyles, key) < 0)
+							{
+								newStyle = mxUtils.setStyle(newStyle, key, styleValue);
+							}
+						}
+					}
+					
+					model.setStyle(cell, newStyle);
+				}
+			}
+			finally
+			{
+				model.endUpdate();
+			}
+		};
+	
+		graph.addListener('cellsInserted', function(sender, evt)
+		{
+			insertHandler(evt.getProperty('cells'));
+		});
+		
+		graph.addListener('textInserted', function(sender, evt)
+		{
+			insertHandler(evt.getProperty('cells'), true);
+		});
+		
+		this.insertHandler = insertHandler;
+		
 		this.createDivs();
 		this.createUi();
 		this.refresh();
@@ -428,231 +655,7 @@ EditorUi = function(editor, container, lightbox)
 		{
 			return keyHandler;
 		};
-		
-		// Stores the current style and assigns it to new cells
-		var styles = ['rounded', 'shadow', 'glass', 'dashed', 'dashPattern', 'labelBackgroundColor',
-			'comic', 'sketch', 'fillWeight', 'hachureGap', 'hachureAngle', 'jiggle',
-			'disableMultiStroke', 'disableMultiStrokeFill', 'fillStyle', 'curveFitting',
-			'simplification', 'sketchStyle'];
-		var connectStyles = ['shape', 'edgeStyle', 'curved', 'rounded', 'elbow', 'jumpStyle', 'jumpSize',
-			'comic', 'sketch', 'fillWeight', 'hachureGap', 'hachureAngle', 'jiggle',
-			'disableMultiStroke', 'disableMultiStrokeFill', 'fillStyle', 'curveFitting',
-			'simplification', 'sketchStyle'];
-		
-		// Note: Everything that is not in styles is ignored (styles is augmented below)
-		this.setDefaultStyle = function(cell)
-		{
-			try
-			{
-				var state = graph.view.getState(cell);
-				
-				if (state != null)
-				{
-					// Ignores default styles
-					var clone = cell.clone();
-					clone.style = ''
-					var defaultStyle = graph.getCellStyle(clone);
-					var values = [];
-					var keys = [];
-		
-					for (var key in state.style)
-					{
-						if (defaultStyle[key] != state.style[key])
-						{
-							values.push(state.style[key]);
-							keys.push(key);
-						}
-					}
-					
-					// Handles special case for value "none"
-					var cellStyle = graph.getModel().getStyle(state.cell);
-					var tokens = (cellStyle != null) ? cellStyle.split(';') : [];
-					
-					for (var i = 0; i < tokens.length; i++)
-					{
-						var tmp = tokens[i];
-				 		var pos = tmp.indexOf('=');
-				 					 		
-				 		if (pos >= 0)
-				 		{
-				 			var key = tmp.substring(0, pos);
-				 			var value = tmp.substring(pos + 1);
-				 			
-				 			if (defaultStyle[key] != null && value == 'none')
-				 			{
-				 				values.push(value);
-				 				keys.push(key);
-				 			}
-				 		}
-					}
-		
-					// Resets current style
-					if (graph.getModel().isEdge(state.cell))
-					{
-						graph.currentEdgeStyle = {};
-					}
-					else
-					{
-						graph.currentVertexStyle = {}
-					}
-		
-					this.fireEvent(new mxEventObject('styleChanged', 'keys', keys, 'values', values, 'cells', [state.cell]));
-				}
-			}
-			catch (e)
-			{
-				this.handleError(e);
-			}
-		};
-		
-		this.clearDefaultStyle = function()
-		{
-			graph.currentEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
-			graph.currentVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
-			
-			// Updates UI
-			this.fireEvent(new mxEventObject('styleChanged', 'keys', [], 'values', [], 'cells', []));
-		};
-	
-		// Keys that should be ignored if the cell has a value (known: new default for all cells is html=1 so
-	    // for the html key this effecticely only works for edges inserted via the connection handler)
-		var valueStyles = ['fontFamily', 'fontSource', 'fontSize', 'fontColor'];
-		
-		// Keys that always update the current edge style regardless of selection
-		var alwaysEdgeStyles = ['edgeStyle', 'startArrow', 'startFill', 'startSize', 'endArrow',
-			'endFill', 'endSize'];
-		
-		// Keys that are ignored together (if one appears all are ignored)
-		var keyGroups = [['startArrow', 'startFill', 'startSize', 'sourcePerimeterSpacing',
-						'endArrow', 'endFill', 'endSize', 'targetPerimeterSpacing'],
-		                 ['strokeColor', 'strokeWidth'],
-		                 ['fillColor', 'gradientColor'],
-		                 valueStyles,
-		                 ['opacity'],
-		                 ['align'],
-		                 ['html']];
-		
-		// Adds all keys used above to the styles array
-		for (var i = 0; i < keyGroups.length; i++)
-		{
-			for (var j = 0; j < keyGroups[i].length; j++)
-			{
-				styles.push(keyGroups[i][j]);
-			}
-		}
-		
-		for (var i = 0; i < connectStyles.length; i++)
-		{
-			if (mxUtils.indexOf(styles, connectStyles[i]) < 0)
-			{
-				styles.push(connectStyles[i]);
-			}
-		}
-	
-		// Implements a global current style for edges and vertices that is applied to new cells
-		var insertHandler = function(cells, asText, model)
-		{
-			model = (model != null) ? model : graph.getModel();
-			
-			model.beginUpdate();
-			try
-			{
-				for (var i = 0; i < cells.length; i++)
-				{
-					var cell = cells[i];
 
-					var appliedStyles;
-
-					if (asText)
-					{
-						// Applies only basic text styles
-						appliedStyles = ['fontSize', 'fontFamily', 'fontColor'];
-					}
-					else
-					{
-						// Removes styles defined in the cell style from the styles to be applied
-						var cellStyle = model.getStyle(cell);
-						var tokens = (cellStyle != null) ? cellStyle.split(';') : [];
-						appliedStyles = styles.slice();
-						
-						for (var j = 0; j < tokens.length; j++)
-						{
-							var tmp = tokens[j];
-					 		var pos = tmp.indexOf('=');
-					 					 		
-					 		if (pos >= 0)
-					 		{
-					 			var key = tmp.substring(0, pos);
-					 			var index = mxUtils.indexOf(appliedStyles, key);
-					 			
-					 			if (index >= 0)
-					 			{
-					 				appliedStyles.splice(index, 1);
-					 			}
-					 			
-					 			// Handles special cases where one defined style ignores other styles
-					 			for (var k = 0; k < keyGroups.length; k++)
-					 			{
-					 				var group = keyGroups[k];
-					 				
-					 				if (mxUtils.indexOf(group, key) >= 0)
-					 				{
-					 					for (var l = 0; l < group.length; l++)
-					 					{
-								 			var index2 = mxUtils.indexOf(appliedStyles, group[l]);
-								 			
-								 			if (index2 >= 0)
-								 			{
-								 				appliedStyles.splice(index2, 1);
-								 			}
-					 					}
-					 				}
-					 			}
-					 		}
-						}
-					}
-					
-					// Applies the current style to the cell
-					var edge = model.isEdge(cell);
-					var current = (edge) ? graph.currentEdgeStyle : graph.currentVertexStyle;
-					var newStyle = model.getStyle(cell);
-					
-					for (var j = 0; j < appliedStyles.length; j++)
-					{
-						var key = appliedStyles[j];
-						var styleValue = current[key];
-	
-						if (styleValue != null && (key != 'shape' || edge))
-						{
-							// Special case: Connect styles are not applied here but in the connection handler
-							if (!edge || mxUtils.indexOf(connectStyles, key) < 0)
-							{
-								newStyle = mxUtils.setStyle(newStyle, key, styleValue);
-							}
-						}
-					}
-					
-					model.setStyle(cell, newStyle);
-				}
-			}
-			finally
-			{
-				model.endUpdate();
-			}
-		};
-	
-		graph.addListener('cellsInserted', function(sender, evt)
-		{
-			insertHandler(evt.getProperty('cells'));
-		});
-		
-		graph.addListener('textInserted', function(sender, evt)
-		{
-			insertHandler(evt.getProperty('cells'), true);
-		});
-		
-		this.insertHandler = insertHandler;
-		
 		graph.connectionHandler.addListener(mxEvent.CONNECT, function(sender, evt)
 		{
 			var cells = [evt.getProperty('cell')];
@@ -1247,22 +1250,51 @@ EditorUi.prototype.installShapePicker = function()
  */
 EditorUi.prototype.showShapePicker = function(x, y, source, callback, direction)
 {
-	var cells = this.getCellsForShapePicker(source);
+	var div = this.createShapePicker(x, y, source, callback, direction, mxUtils.bind(this, function()
+	{	
+		this.hideShapePicker();
+	}), this.getCellsForShapePicker(source));
+	
+	if (div != null)
+	{
+		if (this.hoverIcons != null)
+		{
+			this.hoverIcons.reset();
+		}
+		
+		var graph = this.editor.graph;
+		graph.popupMenuHandler.hideMenu();
+		graph.tooltipHandler.hideTooltip();
+		this.hideCurrentMenu();
+		this.hideShapePicker();
+		
+		this.shapePickerCallback = callback;
+		this.shapePicker = div;
+	}
+};
+
+/**
+ * Creates a temporary graph instance for rendering off-screen content.
+ */
+EditorUi.prototype.createShapePicker = function(x, y, source, callback, direction, afterClick, cells)
+{
+	var div = null;
 	
 	if (cells != null && cells.length > 0)
 	{
 		var ui = this;
 		var graph = this.editor.graph;
-		var div = document.createElement('div');
+		div = document.createElement('div');
 		var sourceState = graph.view.getState(source);
 		var style = (source != null && (sourceState == null ||
 			!graph.isTransparentState(sourceState))) ?
 			graph.copyStyle(source) : null;
 		
 		// Do not place entry under pointer for touch devices
+		var w = (cells.length < 6) ? cells.length * 35 : 140;
 		div.className = 'geToolbarContainer geSidebarContainer geSidebar';
 		div.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y +
-			'px;width:140px;border-radius:10px;padding:4px;text-align:center;' +
+			'px;width:' + w + 'px;border-radius:10px;padding:4px;text-align:center;' +
 			'box-shadow:0px 0px 3px 1px #d1d1d1;padding: 6px 0 8px 0;';
 		mxUtils.setPrefixedStyle(div.style, 'transform', 'translate(-22px,-22px)');
 		
@@ -1282,13 +1314,13 @@ EditorUi.prototype.showShapePicker = function(x, y, source, callback, direction)
 				'width:30px;height:30px;cursor:pointer;overflow:hidden;padding:3px 0 0 3px;';
 			div.appendChild(node);
 			
-			if (style != null)
+			if (style != null && urlParams['sketch'] != '1')
 			{
 				this.sidebar.graph.pasteStyle(style, [cell]);
 			}
 			else
 			{
-				ui.insertHandler([cell], cell.value != '', this.sidebar.graph.model);
+				ui.insertHandler([cell], cell.value != '' && urlParams['sketch'] != '1', this.sidebar.graph.model);
 			}
 			
 			this.sidebar.createThumb([cell], 25, 25, node, null, true, false, cell.geometry.width, cell.geometry.height);
@@ -1328,7 +1360,10 @@ EditorUi.prototype.showShapePicker = function(x, y, source, callback, direction)
 					}
 				}
 				
-				ui.hideShapePicker();
+				if (afterClick != null)
+				{
+					afterClick();
+				}
 			});
 		});
 		
@@ -1336,20 +1371,9 @@ EditorUi.prototype.showShapePicker = function(x, y, source, callback, direction)
 		{
 			addCell(cells[i]);
 		}
-		
-		if (ui.hoverIcons != null)
-		{
-			ui.hoverIcons.reset();
-		}
-		
-		graph.popupMenuHandler.hideMenu();
-		graph.tooltipHandler.hideTooltip();
-		this.hideCurrentMenu();
-		this.hideShapePicker();
-		
-		this.shapePickerCallback = callback;
-		this.shapePicker = div;
 	}
+	
+	return div;
 };
 
 /**
@@ -1378,7 +1402,7 @@ EditorUi.prototype.getCellsForShapePicker = function(cell)
 		createVertex('shape=document;whiteSpace=wrap;html=1;boundedLbl=1;', 120, 80),
 		createVertex('shape=tape;whiteSpace=wrap;html=1;', 120, 100),
 		createVertex('ellipse;shape=cloud;whiteSpace=wrap;html=1;', 120, 80),
-		createVertex('shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;', 60, 80)];
+		createVertex('shape=waypoint;sketch=0;size=6;pointerEvents=1;points=[[0.5,0.5,0]];fillColor=none;snapToPoint=1;resizable=0;rotatable=0;', 40, 40)];
 };
 
 /**
@@ -4197,6 +4221,247 @@ EditorUi.prototype.extractGraphModelFromHtml = function(data)
 	}
 	
 	return result;
+};
+
+/**
+ * Opens the given files in the editor.
+ */
+EditorUi.prototype.readGraphModelFromClipboard = function(fn)
+{
+	this.readGraphModelFromClipboardWithType(mxUtils.bind(this, function(xml)
+	{
+		if (xml != null)
+		{
+			fn(xml);
+		}
+		else
+		{
+			this.readGraphModelFromClipboardWithType(mxUtils.bind(this, function(xml)
+			{
+				if (xml != null)
+				{
+					var tmp = decodeURIComponent(xml);
+							
+					if (this.isCompatibleString(tmp))
+					{
+						xml = tmp;
+					}
+				}
+				
+				fn(xml);
+			}), 'text');
+		}
+	}), 'html');
+};
+
+/**
+ * Opens the given files in the editor.
+ */
+EditorUi.prototype.readGraphModelFromClipboardWithType = function(fn, type)
+{
+	navigator.clipboard.read().then(mxUtils.bind(this, function(data)
+	{
+		if (data != null && data.length > 0 && type == 'html' &&
+			mxUtils.indexOf(data[0].types, 'text/html') >= 0)
+		{
+			data[0].getType('text/html').then(mxUtils.bind(this, function(blob)
+			{
+				blob.text().then(mxUtils.bind(this, function(value)
+				{
+					try
+					{
+						var elt = this.parseHtmlData(value);
+						var asHtml = elt.getAttribute('data-type') != 'text/plain';
+						
+						// KNOWN: Paste from IE11 to other browsers on Windows
+						// seems to paste the contents of index.html
+						var xml = (asHtml) ? elt.innerHTML :
+							mxUtils.trim((elt.innerText == null) ?
+							mxUtils.getTextContent(elt) : elt.innerText);
+		
+						// Workaround for junk after XML in VM
+						try
+						{
+							var idx = xml.lastIndexOf('%3E');
+							
+							if (idx >= 0 && idx < xml.length - 3)
+							{
+								xml = xml.substring(0, idx + 3);
+							}
+						}
+						catch (e)
+						{
+							// ignore
+						}
+						
+						// Checks for embedded XML content
+						try
+						{
+							var spans = elt.getElementsByTagName('span');
+							var tmp = (spans != null && spans.length > 0) ? 
+								mxUtils.trim(decodeURIComponent(spans[0].textContent)) :
+								decodeURIComponent(xml);
+									
+							if (this.isCompatibleString(tmp))
+							{
+								xml = tmp;
+							}
+						}
+						catch (e)
+						{
+							// ignore
+						}
+					}
+					catch (e)
+					{
+						// ignore
+					}
+					
+					fn(this.isCompatibleString(xml) ? xml : null);
+				}))['catch'](function(data)
+				{
+					fn(null);
+				});
+			}))['catch'](function(data)
+			{
+				fn(null);
+			});
+		}
+		else if (data != null && data.length > 0 && type == 'text' &&
+				mxUtils.indexOf(data[0].types, 'text/plain') >= 0)
+		{
+			data[0].getType('text/plain').then(function(blob)
+			{
+				blob.text().then(function(value)
+				{
+					fn(value);
+				})['catch'](function()
+				{
+					fn(null);
+				});
+			})['catch'](function()
+			{
+				fn(null);
+			});
+		}
+		else
+		{
+			fn(null);
+		}
+	}))['catch'](function(data)
+	{
+		fn(null);
+	});
+};
+
+/**
+ * Parses the given HTML data and returns a DIV.
+ */
+EditorUi.prototype.parseHtmlData = function(data)
+{
+	var elt = null;
+	
+	if (data != null && data.length > 0)
+	{
+		var hasMeta = data.substring(0, 6) == '<meta ';
+		elt = document.createElement('div');
+		elt.innerHTML = ((hasMeta) ? '<meta charset="utf-8">' : '') +
+			this.editor.graph.sanitizeHtml(data);
+		asHtml = true;
+		
+		// Workaround for innerText not ignoring style elements in Chrome
+		var styles = elt.getElementsByTagName('style');
+		
+		if (styles != null)
+		{
+			while (styles.length > 0)
+			{
+				styles[0].parentNode.removeChild(styles[0]);
+			}
+		}
+		
+		// Special case of link pasting from Chrome
+		if (elt.firstChild != null && elt.firstChild.nodeType == mxConstants.NODETYPE_ELEMENT &&
+			elt.firstChild.nextSibling != null && elt.firstChild.nextSibling.nodeType == mxConstants.NODETYPE_ELEMENT &&
+			elt.firstChild.nodeName == 'META' && elt.firstChild.nextSibling.nodeName == 'A' &&
+			elt.firstChild.nextSibling.nextSibling == null)
+		{
+			var temp = (elt.firstChild.nextSibling.innerText == null) ?
+				mxUtils.getTextContent(elt.firstChild.nextSibling) :
+				elt.firstChild.nextSibling.innerText;
+		
+			if (temp == elt.firstChild.nextSibling.getAttribute('href'))
+			{
+				mxUtils.setTextContent(elt, temp);
+				asHtml = false;
+			}
+		}
+
+		// Extracts single image source address with meta tag in markup
+		var img = (hasMeta && elt.firstChild != null) ? elt.firstChild.nextSibling : elt.firstChild;
+
+		if (img != null && img.nextSibling == null &&
+			img.nodeType == mxConstants.NODETYPE_ELEMENT &&
+			img.nodeName == 'IMG')
+		{
+			var temp = img.getAttribute('src');
+			
+			if (temp != null)
+			{
+				if (temp.substring(0, 22) == 'data:image/png;base64,')
+				{
+					var xml = this.extractGraphModelFromPng(temp);
+					
+					if (xml != null && xml.length > 0)
+					{
+						temp = xml;
+					}
+				}
+
+				mxUtils.setTextContent(elt, temp);
+				asHtml = false;
+			}
+		}
+		else
+		{
+			// Extracts embedded XML or image source address from single PNG image
+			var images = elt.getElementsByTagName('img');
+
+			if (images.length == 1)
+			{
+				var img = images[0];
+				var temp = img.getAttribute('src');
+				
+				if (temp != null && img.parentNode == elt && elt.children.length == 1)
+				{
+					if (temp.substring(0, 22) == 'data:image/png;base64,')
+					{
+						var xml = this.extractGraphModelFromPng(temp);
+						
+						if (xml != null && xml.length > 0)
+						{
+							temp = xml;
+						}
+					}
+					
+					mxUtils.setTextContent(elt, temp);
+					asHtml = false;
+				}
+			}
+		}
+		
+		if (asHtml)
+		{
+			Graph.removePasteFormatting(elt);
+		}
+	}
+	
+	if (!asHtml)
+	{
+		elt.setAttribute('data-type', 'text/plain');
+	}
+
+	return elt;
 };
 
 /**
