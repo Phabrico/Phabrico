@@ -106,7 +106,6 @@ namespace Phabrico.Storage
                 {
                     _datasource = (string)System.Configuration.ConfigurationManager.AppSettings["DatabaseDirectory"];
                     _datasource += "\\Phabrico.data";
-                    System.IO.File.WriteAllText("c:\\temp\\tt.txt", _datasource);
                 }
 
                 return _datasource;
