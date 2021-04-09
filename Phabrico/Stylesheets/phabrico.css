@@ -2923,6 +2923,7 @@ div.wait {
 div.wait span.message {
     display: none;
     background: #00a;
+    color: #fff;
     margin-left: auto;
     margin-right: auto;
     width: max-content;

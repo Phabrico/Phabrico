@@ -728,7 +728,8 @@ namespace Phabrico.Controllers
                     if (action.Equals("save"))
                     {
                         // save document in stage area
-                        if (string.IsNullOrEmpty(tokenCurrentDocument))
+                        /*
+                        if (string.IsNullOrEmpty(tokenCurrentDocument) || tokenCurrentDocument.StartsWith("PHID-NEWTOKEN-"))
                         {
                             string[] urlParts = parameters.TakeWhile(p => p.StartsWith("?") == false).ToArray();
                             if (urlParts.Length >= 1)
@@ -745,8 +746,9 @@ namespace Phabrico.Controllers
                         {
                             parentPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument);
                         }
-
-                        Phabricator.Data.Phriction originalPhrictionDocument = parentPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, true);
+                        */
+                        Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, true);
+                        parentPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, false);
 
                         if (parentPhrictionDocument == null ||
                             browser.Session.FormVariables["operation"] == "new")
@@ -825,8 +827,11 @@ namespace Phabrico.Controllers
                             List<Phabricator.Data.PhabricatorObject> linkedPhabricatorObjects;
                             ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, modifiedPhrictionDocument.Content, out remarkupParserOutput, false);
                             linkedPhabricatorObjects = remarkupParserOutput.LinkedPhabricatorObjects;
-                            ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, originalPhrictionDocument.Content, out remarkupParserOutput, false);  // remember also references in original content, so we can always undo our modifications
-                            linkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                            if (originalPhrictionDocument != null)
+                            {
+                                ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, originalPhrictionDocument.Content, out remarkupParserOutput, false);  // remember also references in original content, so we can always undo our modifications
+                                linkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                            }
                             foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in linkedPhabricatorObjects.Distinct())
                             {
                                 database.AssignToken(modifiedPhrictionDocument.Token, linkedPhabricatorObject.Token);
