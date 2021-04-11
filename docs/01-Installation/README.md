@@ -24,7 +24,7 @@ Phabrico will be installed.
 
 
 
-If everything went OK, you should see this dialog:
+If everything went OK, you should see this dialog: <br />
 ![image-20210411103445072](msi-installer-05.png) <br /> 
 After you click *Finish* to close the installer, your browser will open the Phabrico website.
 
