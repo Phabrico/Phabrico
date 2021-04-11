@@ -2,30 +2,30 @@
 
 The MSI installer for Windows can be found here: https://github.com/Phabrico/Phabrico/releases/latest
 
-![image-20210411101554975](msi-installer-01.png)
+![image-20210411101554975](msi-installer-01.png) 
 Click *Next*
 
 
 
-![image-20210411102642590](msi-installer-02.png)
+![image-20210411102642590](msi-installer-02.png) 
 Set the path to where Phabrico should be installed to and click *Next* afterwards.
  Note: the local database itself will be installed in the user's document directory.
 
 
 
-![image-20210411103037509](msi-installer-03.png)
+![image-20210411103037509](msi-installer-03.png) 
 You can extend your Phabrico with some plugins.
  Click *Install* afterwards.
 
 
 
-![image-20210411103251481](msi-installer-04.png)
+![image-20210411103251481](msi-installer-04.png) 
 Phabrico will be installed.
 
 
 
 If everything went OK, you should see this dialog:
-![image-20210411103445072](msi-installer-05.png)
+![image-20210411103445072](msi-installer-05.png) 
 After you click *Finish* to close the installer, your browser will open the Phabrico website.
 
 
@@ -34,7 +34,7 @@ After you click *Finish* to close the installer, your browser will open the Phab
 
  The first time you browse to the Phabrico website, you will see this screen:
 
-![image-20210411103907992](configuration-01.png)
+![image-20210411103907992](configuration-01.png) 
 In the top right corner, you can change the language of the application.
 
 You need to enter a username and a password.
