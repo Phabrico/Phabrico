@@ -36,3 +36,7 @@ It visualizes the state of all available local git repositories.
 ## PhrictionToPDF
 allows you to convert a Phriction document (or including all the documents under this Phriction document) into a single PDF file.
 
+# User manual
+See https://phabrico.github.io/Phabrico/
+
+
