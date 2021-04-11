@@ -1,7 +1,7 @@
 # User configuration
 
  The *Users* screen displays a list of users known in Phabricator:
-![image-20210411201030515](users-01.png) The list of users can be filtered by entering text in the filter field on top.
+![image-20210411201030515](users-01.png) <br /> The list of users can be filtered by entering text in the filter field on top.
 
 ## Synchronization configuration
 

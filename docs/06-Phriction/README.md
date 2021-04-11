@@ -4,7 +4,7 @@
 
 ## Components
 
-![image-20210411174124300](C:\projecten\public\Phabrico\docs\04-Phriction\phriction-01.png)
+![image-20210411174124300](C:\projecten\public\Phabrico\docs\04-Phriction\phriction-01.png) <br />
 
 *Phriction* consists of the following parts:
 
@@ -63,9 +63,9 @@ To return back to the original format, click on the *Return* button in the top r
 Links to wiki pages can be added on Phabrico's initial homepage by clicking on *Add to favorites*.
 To remove a page from the homepage, click on *Remove from favorites*
 
- Favorites can be relocated by drag and drop them:![image-20210411182114782](phriction-02.png) 
+ Favorites can be relocated by drag and drop them:![image-20210411182114782](phriction-02.png) <br /> 
 
-Favorites can also be grouped by clicking on the dot next to it (a scissor should appear):![image-20210411182513804](phriction-03.png)
+Favorites can also be grouped by clicking on the dot next to it (a scissor should appear):![image-20210411182513804](phriction-03.png) <br />
 
 To ungroup favorites, click in front of the split line
 
@@ -86,7 +86,7 @@ See also [Phriction's configuration documentation)](../02-Configuration/README.m
 
 The following screen is shown when you click on *Edit Document* in the action pane.
 
-![image-20210411185144523](phriction-04.png)
+![image-20210411185144523](phriction-04.png) <br />
 
 ### 1. Title
 

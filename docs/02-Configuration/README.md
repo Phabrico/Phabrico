@@ -1,7 +1,7 @@
 # Configuring Phabrico
 
  The *Config* screen contains a number of settings in which you can configure the look and feel of Phabrico
-![image-20210411112557512](configuration-06.png)
+![image-20210411112557512](configuration-06.png) <br />
 
 
 
@@ -11,7 +11,7 @@
 | ------------------------------ | ------------------------------------------------------------ |
 | Auto log on                    | If set to *Yes*, you won't need to log in with a username and password.<br />However, you won't be able to open this *Config* screen and you won't be able to synchronize with Phabricator.<br />You still need to log in with your username and password.<br />By logging off, you can log in with a user name and password:<br />![image-20210411113417942](configuration-07.png) |
 | Maximum Duration of inactivity | Phabrico disconnects the browser after a period of inactivity.<br />You can configure the time span in here. |
-| Theme                          | You can choose a light theme or a dark theme.<br />If you choose a dark theme, you get also the option to darken bright images:<br />![image-20210411113755859](configuration-08.png)- *Disabled* keep the bright images as they are<br />- *Moderate* puts some kind of a dark shade over the images. White background will look gray.<br />- *Extreme* tries to invert the bright images but keeps the colors. White will be black, but green for example remains (lighter) green |
+| Theme                          | You can choose a light theme or a dark theme.<br />If you choose a dark theme, you get also the option to darken bright images:<br />![image-20210411113755859](configuration-08.png) <br />- *Disabled* keep the bright images as they are<br />- *Moderate* puts some kind of a dark shade over the images. White background will look gray.<br />- *Extreme* tries to invert the bright images but keeps the colors. White will be black, but green for example remains (lighter) green |
 
 
 
@@ -41,7 +41,7 @@
 | Parameter              | Description                                                  |
 | ---------------------- | ------------------------------------------------------------ |
 | Local root directories | A local root directory is a directory which contains local git repositories.<br />The git repositories should be a direct subdirectory of this root directory.<br />If for example a git repository is stored in a subdirectory of a subdirectory, the git repository will not be monitored. |
-| Notification           | Gitanos may show a notification in Phabrico's navigation menu:<br />![image-20210411122535171](configuration-09.png)This number is the summation of all git states over all repositories in all local root directories.<br />The states that are summarized are the ones that are configured in this parameter. |
+| Notification           | Gitanos may show a notification in Phabrico's navigation menu:<br />![image-20210411122535171](configuration-09.png) <br />This number is the summation of all git states over all repositories in all local root directories.<br />The states that are summarized are the ones that are configured in this parameter. |
 
 
 

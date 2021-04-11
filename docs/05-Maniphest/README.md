@@ -1,7 +1,7 @@
 # Maniphest tasks
 
  The *Maniphest* task overview screen displays a list of tasks to be performed:
-![image-20210411140728743](maniphest-01.png)
+![image-20210411140728743](maniphest-01.png) <br />
 
 
 
@@ -9,7 +9,7 @@
 
 The following information can be found in a single Maniphest task:
 
-![image-20210411142350677](maniphest-02.png) 
+![image-20210411142350677](maniphest-02.png) <br /> 
 
 ### 1. Maniphest task identifier
 
@@ -54,7 +54,7 @@ See for more information further below.
 
 *View local changes* will show you the differences between the last download from Phabricator and the current task content.
 
-![image-20210411145642799](maniphest-03.png) The original Phabricator content is shown the left (1), while the current Phabrico version is shown at the right (2).
+![image-20210411145642799](maniphest-03.png) <br /> The original Phabricator content is shown the left (1), while the current Phabrico version is shown at the right (2).
 
 Lines which differ are marked by means of color.
 At the right of the screen, you have a location pane which contains a color visualization of all lines (whether being modified or not)
@@ -91,7 +91,7 @@ Who will execute the task  and  who wrote the task
 
 The following screen is shown when you click on *Edit Task* in the action pane.
 
-![image-20210411150954212](maniphest-04.png) 
+![image-20210411150954212](maniphest-04.png) <br /> 
 
 ### 1. Title
 

@@ -1,7 +1,7 @@
 # Project configuration
 
  The *Projects* screen displays a list of projects known in Phabricator:
-![image-20210411201030515](projects-01.png) The list of projects can be filtered by entering text in the filter field on top.
+![image-20210411201030515](projects-01.png) <br /> The list of projects can be filtered by entering text in the filter field on top.
 
 ## Synchronization configuration
 
@@ -13,14 +13,14 @@ In case for any of *Maniphest* or *Phriction* the synchronization is set to *Sel
 Projects can also be disallowed to be downloaded.
 If, for example, a Maniphest task is linked to 2 projects.
 One of them is a selected project but the other is disallowed, then the Maniphest task will not be downloaded.
-![image-20210411201030517](projects-03.png)
+![image-20210411201030517](projects-03.png) <br />
 
 You can also configure in the *Config* screen to allow only downloads when all linked project tags are selected.
 
 ## Color visualization
 
 You can also configure the color of a project tag to better distinguish them in the *Maniphest* overview screen:
-![image-20210411201030516](projects-02.png) By clicking on the *Set color* button, you can assign a color.
+![image-20210411201030516](projects-02.png) <br /> By clicking on the *Set color* button, you can assign a color.
 
 By clicking *Set project tag color* you will assign the color only to the reference project tag.
 If you click however on the *Set color for all shown project tags*, the color will be assigned to all listed project tags.
