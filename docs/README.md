@@ -1,12 +1,12 @@
 # User manual
-<a href="docs/01-Installation/README.md">01 Installation</a><br />
-<a href="docs/02-Configuration/README.md">02 Configuration</a><br />
-<a href="docs/03-Projects/README.md">03 Projects</a><br />
-<a href="docs/04-Users/README.md">04 Users</a><br />
-<a href="docs/05-Maniphest/README.md">05 Maniphest</a><br />
-<a href="docs/06-Phriction/README.md">06 Phriction</a><br />
-<a href="docs/07-Remarkup/README.md">07 Remarkup</a><br />
-<a href="docs/08-OfflineChanges/README.md">08 Offline hanges</a><br />
-<a href="docs/09-FileObjects/README.md">09 File objects</a><br />
-<a href="docs/10-Diagrams/README.md">10 Diagrams (plugin)</a><br />
-<a href="docs/11-Gitanos/README.md">11 Gitanos (plugin)</a><br />
+<a href="01-Installation">01 Installation</a><br />
+<a href="02-Configuration">02 Configuration</a><br />
+<a href="03-Projects">03 Projects</a><br />
+<a href="04-Users">04 Users</a><br />
+<a href="05-Maniphest">05 Maniphest</a><br />
+<a href="06-Phriction">06 Phriction</a><br />
+<a href="07-Remarkup">07 Remarkup</a><br />
+<a href="08-OfflineChanges">08 Offline hanges</a><br />
+<a href="09-FileObjects">09 File objects</a><br />
+<a href="10-Diagrams">10 Diagrams (plugin)</a><br />
+<a href="11-Gitanos">11 Gitanos (plugin)</a><br />
