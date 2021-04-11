@@ -23,7 +23,7 @@
                         <label class="aphront-form-label">Phabrico Version:</label>
                     </td>
                     <td class="phabrico-version">
-                        <a href="https://github.com/Phabrico/Phabrico/releases/latest">@@PHABRICO-VERSION@@</a>
+                        <a href="https://github.com/Phabrico/Phabrico/releases/latest" title="There's a new Phabrico version available">@@PHABRICO-VERSION@@</a>
                         <span>@@PHABRICO-VERSION@@</span>
                     </td>
                 </tr>
@@ -305,5 +305,11 @@
                         removeFavoriteItemsSplitter(event.target.parentElement);
                    }, true);
                 });
+    }
+
+    if (localStorage.getItem("phabrico-new-version-available") != null  &&  "@@PHABRICO-VERSION@@" != localStorage["phabrico-new-version-available"]) {
+        // force new version check by removing localStorage variables after new Phabrico version is installed
+        localStorage.removeItem("phabrico-new-version-check");
+        localStorage.removeItem("phabrico-new-version-available");
     }
 </script>

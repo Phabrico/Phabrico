@@ -43,9 +43,8 @@
     --config-tables-body-border-bottom: solid 1px #333;
     --config-tables-header-border: solid 1px #666;
     --created-background1: yellow;
-    --created-background2: linear-gradient(to bottom,#fc0,#ff0,#f80);
+    --created-background2: linear-gradient(to bottom,#fff,#ff0,#fff);
     --created-color: #f09040;
-    --created-webkit-background-clip: text;
     --created-webkit-text-fill-color: transparent;
     --crumbs-a-hover-color: #fff;
     --diff-border-color: #ccc;

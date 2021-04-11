@@ -168,6 +168,9 @@
 
                                 if (newerVersionAvailable) {
                                     document.body.classList.add("new-version-available");
+                                    localStorage["phabrico-new-version-available"] = githubRepositoryVersion.join('.');
+                                } else {
+                                    localStorage.removeItem("phabrico-new-version-available");
                                 }
                             }
 
@@ -179,6 +182,10 @@
                     }
                 };
                 githubRepository.send(null);
+            } else {
+                if (localStorage.getItem("phabrico-new-version-available") != null) {
+                    document.body.classList.add("new-version-available");
+                }
             }
         </script>
     </body>

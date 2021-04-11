@@ -743,7 +743,7 @@ namespace Phabrico.Http
                     htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
                     Controllers.Phriction phrictionController = new Controllers.Phriction();
                     phrictionController.browser = clonedBrowser;
-                    foreach (Phabricator.Data.Phriction phrictionDocument in favoritePhrictionDocuments)
+                    foreach (Phabricator.Data.Phriction phrictionDocument in favoritePhrictionDocuments.Where(document => document != null))
                     {
                         lock (cachedHttpMessages)
                         {
@@ -1537,29 +1537,32 @@ namespace Phabrico.Http
                         Plugin.PluginController pluginController = controller as Plugin.PluginController;
                         if (pluginController != null)
                         {
-                            // controller method belongs of plugin -> load app-specific formdata data from browser
-                            Plugin.PluginBase pluginClass = Plugins.FirstOrDefault(plugin => plugin.Assembly.Equals(controllerMethod.Module.Assembly));
-
-                            Plugin.PluginTypeAttribute.UsageType[] pluginUsages = pluginClass.GetType()
-                                                                                             .GetCustomAttributes(typeof(Plugin.PluginTypeAttribute))
-                                                                                             .OfType<Plugin.PluginTypeAttribute>()
-                                                                                             .Select(pluginTypeAttribute => pluginTypeAttribute.Usage)
-                                                                                             .ToArray();
-                            if (pluginUsages.Contains(Plugin.PluginTypeAttribute.UsageType.ManiphestTask))
+                            if (browser.Session.FormVariables.ContainsKey("confirm"))
                             {
-                                pluginController.ManiphestTaskData = new Plugin.PluginController.ManiphestTaskDataType();
-                                pluginController.ManiphestTaskData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables["confirm"]);
-                                pluginController.ManiphestTaskData.TaskID = browser.Session.FormVariables["taskID"];
-                            }
+                                // controller method belongs of plugin -> load app-specific formdata data from browser
+                                Plugin.PluginBase pluginClass = Plugins.FirstOrDefault(plugin => plugin.Assembly.Equals(controllerMethod.Module.Assembly));
 
-                            if (pluginUsages.Contains(Plugin.PluginTypeAttribute.UsageType.PhrictionDocument))
-                            {
-                                pluginController.PhrictionData = new Plugin.PluginController.PhrictionDataType();
-                                pluginController.PhrictionData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables["confirm"]);
-                                pluginController.PhrictionData.Content = browser.Session.FormVariables["content"];
-                                pluginController.PhrictionData.Crumbs = browser.Session.FormVariables["crumbs"];
-                                pluginController.PhrictionData.Path = browser.Session.FormVariables["path"];
-                                pluginController.PhrictionData.TOC = browser.Session.FormVariables["toc"];
+                                Plugin.PluginTypeAttribute.UsageType[] pluginUsages = pluginClass.GetType()
+                                                                                                 .GetCustomAttributes(typeof(Plugin.PluginTypeAttribute))
+                                                                                                 .OfType<Plugin.PluginTypeAttribute>()
+                                                                                                 .Select(pluginTypeAttribute => pluginTypeAttribute.Usage)
+                                                                                                 .ToArray();
+                                if (pluginUsages.Contains(Plugin.PluginTypeAttribute.UsageType.ManiphestTask))
+                                {
+                                    pluginController.ManiphestTaskData = new Plugin.PluginController.ManiphestTaskDataType();
+                                    pluginController.ManiphestTaskData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables["confirm"]);
+                                    pluginController.ManiphestTaskData.TaskID = browser.Session.FormVariables["taskID"];
+                                }
+
+                                if (pluginUsages.Contains(Plugin.PluginTypeAttribute.UsageType.PhrictionDocument))
+                                {
+                                    pluginController.PhrictionData = new Plugin.PluginController.PhrictionDataType();
+                                    pluginController.PhrictionData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables["confirm"]);
+                                    pluginController.PhrictionData.Content = browser.Session.FormVariables["content"];
+                                    pluginController.PhrictionData.Crumbs = browser.Session.FormVariables["crumbs"];
+                                    pluginController.PhrictionData.Path = browser.Session.FormVariables["path"];
+                                    pluginController.PhrictionData.TOC = browser.Session.FormVariables["toc"];
+                                }
                             }
                         }
 

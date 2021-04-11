@@ -113,11 +113,6 @@ namespace Phabrico.Plugin
         /// <returns></returns>
         public HtmlViewPage GetConfigurationViewPage(Browser browser)
         {
-            if (IsVisible(browser) == false)
-            {
-                return null;
-            }
-
             return GetViewPage(browser, "Configuration");
         }
 

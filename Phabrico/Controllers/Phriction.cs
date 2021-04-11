@@ -314,7 +314,7 @@ namespace Phabrico.Controllers
                         viewPage.SetText("IS-MEMBER-OF-FAVORITES", "no");
                     }
 
-                    if (database.GetDependentObjects(phrictionDocument.Token).Any())
+                    if (phrictionDocument.Token != null && database.GetDependentObjects(phrictionDocument.Token).Any())
                     {
                         viewPage.SetText("HAS-REFERENCES", "yes");
                     }
@@ -468,29 +468,31 @@ namespace Phabrico.Controllers
                         }
                     }
 
-                    foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(phrictionDocument.Token))
+                    if (phrictionDocument.Token != null)
                     {
-                        Phabricator.Data.Phriction phrictionDocumentReferencer = dependentObject as Phabricator.Data.Phriction;
-                        Phabricator.Data.Maniphest maniphestTaskReferencer = dependentObject as Phabricator.Data.Maniphest;
-                        if (phrictionDocumentReferencer == null && maniphestTaskReferencer == null) continue;
-
-                        HtmlPartialViewPage referencedData = viewPage.GetPartialView("REFERENCES");
-                        if (referencedData != null)
+                        foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(phrictionDocument.Token))
                         {
-                            if (phrictionDocumentReferencer != null)
-                            {
-                                referencedData.SetText("REFERENCE-URL", "/w/" + phrictionDocumentReferencer.Path);
-                                referencedData.SetText("REFERENCE-TEXT", phrictionDocumentReferencer.Name);
-                            }
+                            Phabricator.Data.Phriction phrictionDocumentReferencer = dependentObject as Phabricator.Data.Phriction;
+                            Phabricator.Data.Maniphest maniphestTaskReferencer = dependentObject as Phabricator.Data.Maniphest;
+                            if (phrictionDocumentReferencer == null && maniphestTaskReferencer == null) continue;
 
-                            if (maniphestTaskReferencer != null)
+                            HtmlPartialViewPage referencedData = viewPage.GetPartialView("REFERENCES");
+                            if (referencedData != null)
                             {
-                                referencedData.SetText("REFERENCE-URL", string.Format("/maniphest/T{0}/", maniphestTaskReferencer.ID));
-                                referencedData.SetText("REFERENCE-TEXT", maniphestTaskReferencer.Name);
+                                if (phrictionDocumentReferencer != null)
+                                {
+                                    referencedData.SetText("REFERENCE-URL", "/w/" + phrictionDocumentReferencer.Path);
+                                    referencedData.SetText("REFERENCE-TEXT", phrictionDocumentReferencer.Name);
+                                }
+
+                                if (maniphestTaskReferencer != null)
+                                {
+                                    referencedData.SetText("REFERENCE-URL", string.Format("/maniphest/T{0}/", maniphestTaskReferencer.ID));
+                                    referencedData.SetText("REFERENCE-TEXT", maniphestTaskReferencer.Name);
+                                }
                             }
                         }
                     }
-
 
                     viewPage.Merge();
 

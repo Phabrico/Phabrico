@@ -152,7 +152,7 @@
 .created {
     background: var(--created-background1);
     background: var(--created-background2);
-    -webkit-background-clip: var(--created-webkit-background-clip);
+    -webkit-background-clip: text;
     -webkit-text-fill-color: var(--created-webkit-text-fill-color);
 }
 
