@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{74651BE8-D5AB-4740-91BB-86F8887E1B8F}</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>CD ..
+RD /S /Q obj
+RD /S /Q bin
+</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="01-Installation\README.md" />
+    <None Include="02-Configuration\README.md" />
+    <None Include="03-Projects\README.md" />
+    <None Include="04-Users\README.md" />
+    <None Include="05-Maniphest\README.md" />
+    <None Include="06-Phriction\README.md" />
+    <None Include="07-Remarkup\README.md" />
+    <None Include="08-OfflineChanges\README.md" />
+    <None Include="09-FileObjects\README.md" />
+    <None Include="10-Diagrams\README.md" />
+    <None Include="11-Gitanos\README.md" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="01-Installation\configuration-01.png" />
+    <Content Include="01-Installation\configuration-02.png" />
+    <Content Include="01-Installation\configuration-03.png" />
+    <Content Include="01-Installation\configuration-04.png" />
+    <Content Include="01-Installation\configuration-05.png" />
+    <Content Include="01-Installation\msi-installer-01.png" />
+    <Content Include="01-Installation\msi-installer-02.png" />
+    <Content Include="01-Installation\msi-installer-03.png" />
+    <Content Include="01-Installation\msi-installer-04.png" />
+    <Content Include="01-Installation\msi-installer-05.png" />
+    <Content Include="02-Configuration\configuration-06.png" />
+    <Content Include="02-Configuration\configuration-07.png" />
+    <Content Include="02-Configuration\configuration-08.png" />
+    <Content Include="02-Configuration\configuration-09.png" />
+    <Content Include="02-Configuration\configuration-10.png" />
+    <Content Include="02-Configuration\configuration-11.png" />
+    <Content Include="02-Configuration\configuration-12.png" />
+    <Content Include="03-Projects\projects-01.png" />
+    <Content Include="03-Projects\projects-02.png" />
+    <Content Include="03-Projects\projects-03.png" />
+    <Content Include="04-Users\users-01.png" />
+    <Content Include="05-Maniphest\maniphest-01.png" />
+    <Content Include="05-Maniphest\maniphest-02.png" />
+    <Content Include="05-Maniphest\maniphest-03.png" />
+    <Content Include="05-Maniphest\maniphest-04.png" />
+    <Content Include="06-Phriction\phriction-01.png" />
+    <Content Include="06-Phriction\phriction-02.png" />
+    <Content Include="06-Phriction\phriction-03.png" />
+    <Content Include="06-Phriction\phriction-04.png" />
+    <Content Include="07-Remarkup\Remarkup-01.png" />
+    <Content Include="07-Remarkup\Remarkup-02.png" />
+    <Content Include="07-Remarkup\Remarkup-03.png" />
+    <Content Include="07-Remarkup\Remarkup-04.png" />
+    <Content Include="07-Remarkup\Remarkup-05.png" />
+    <Content Include="07-Remarkup\Remarkup-06.png" />
+    <Content Include="07-Remarkup\Remarkup-07.png" />
+    <Content Include="07-Remarkup\Remarkup-08.png" />
+    <Content Include="07-Remarkup\Remarkup-09.png" />
+    <Content Include="07-Remarkup\Remarkup-10.png" />
+    <Content Include="07-Remarkup\Remarkup-11.png" />
+    <Content Include="07-Remarkup\Remarkup-12.png" />
+    <Content Include="07-Remarkup\Remarkup-13.png" />
+    <Content Include="07-Remarkup\Remarkup-14.png" />
+    <Content Include="07-Remarkup\Remarkup-15.png" />
+    <Content Include="07-Remarkup\Remarkup-16.png" />
+    <Content Include="07-Remarkup\Remarkup-17.png" />
+    <Content Include="08-OfflineChanges\OfflineChanges-01.png" />
+    <Content Include="09-FileObjects\FileObjects-01.png" />
+    <Content Include="10-Diagrams\Diagrams-01.png" />
+    <Content Include="11-Gitanos\Gitanos-01.png" />
+    <Content Include="11-Gitanos\Gitanos-02.png" />
+    <Content Include="11-Gitanos\Gitanos-03.png" />
+    <Content Include="11-Gitanos\Gitanos-04.png" />
+    <Content Include="11-Gitanos\Gitanos-05.png" />
+    <Content Include="11-Gitanos\Gitanos-06.png" />
+    <Content Include="11-Gitanos\Gitanos-07.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

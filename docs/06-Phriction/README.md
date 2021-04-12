@@ -4,7 +4,7 @@
 
 ## Components
 
-![image-20210411174124300](C:\projecten\public\Phabrico\docs\04-Phriction\phriction-01.png) <br />
+![image-20210411174124300](phriction-01.png) <br />
 
 *Phriction* consists of the following parts:
 

@@ -1,0 +1,19 @@
+# Diagrams
+
+Diagrams is an embedded integration of Diagrams.net (formerly known as Draw.io) and allows you to draw diagrams of all kind.
+
+![image-20210412181119372](Diagrams-01.png) <br />
+
+When you click on the Save button(1) in the top right corner, the diagram will be saved as a PNG file.
+This PNG file contains some metadata which allows you to edit diagram afterwards again.
+If you upload the file to Phabricator, Phabricator will still see the file as an ordinary PNG file.
+
+The name of the diagram can be found at the top left (1).
+The name is formatted as "F" + a number (e.g.  F-3).
+If this number is a negative number, then the diagram was edited or created in Phabrico.
+If it is a positive number, then the diagram has not been edited yet in Phabrico.
+
+If you edit a diagram that was previously uploaded to Phabricator (and thus has a positive number in its name), and you save it, the diagram will be reloaded. The diagram will now have a negative number in its name.
+
+The user manuals for Diagrams.net can be found at <https://www.diagrams.net/doc/>
+

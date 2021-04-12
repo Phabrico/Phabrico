@@ -54,7 +54,7 @@ See for more information further below.
 
 *View local changes* will show you the differences between the last download from Phabricator and the current task content.
 
-![image-20210411145642799](maniphest-03.png) <br /> The original Phabricator content is shown the left (1), while the current Phabrico version is shown at the right (2).
+![image-20210411145642799](maniphest-03.png) <br /> The original Phabricator content is shown at the left (1), while the current Phabrico version is shown at the right (2).
 
 Lines which differ are marked by means of color.
 At the right of the screen, you have a location pane which contains a color visualization of all lines (whether being modified or not)

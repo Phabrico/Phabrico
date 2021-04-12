@@ -1,4 +1,15 @@
 # User manual
+
+## General info
+
+Phabrico is a local webserver which acts as an offline editor for [Phabricator's](https://www.phacility.com/phabricator/) Maniphest tasks and Phriction documents.
+A partial copy of Phabricator's database will be stored in a local [sqlite](https://www.sqlite.org/index.html) file.
+This way you can always access your Maniphest tasks and Phriction documents.
+
+You can also edit your offline copies and synchronize them later to Phabricator.
+
+## Chapters
+
 <a href="01-Installation">01 Installation</a><br />
 <a href="02-Configuration">02 Configuration</a><br />
 <a href="03-Projects">03 Projects</a><br />

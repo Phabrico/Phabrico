@@ -1,6 +1,6 @@
 # Installation
 
-The MSI installer for Windows can be found here: https://github.com/Phabrico/Phabrico/releases/latest
+The MSI installer for Windows can be found here: <https://github.com/Phabrico/Phabrico/releases/latest>
 
 ![image-20210411101554975](msi-installer-01.png) <br />
 Click *Next*
