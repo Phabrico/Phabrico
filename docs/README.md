@@ -1,3 +1,11 @@
+<!--
+  Title: Phabrico
+  Description: offline editor for Phabricator's  Maniphest tasks and Phriction documents
+  Author: gjacobs
+  -->
+
+<meta name="google-site-verification" content="Y9X2IDTLwcmyNHj10yojYbwM9s_LsBs7s7OcJaPzca8" />
+
 # User manual
 
 ## General info
