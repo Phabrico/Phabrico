@@ -31,12 +31,12 @@ Files can be drag-and-dropped into the code editor area:
 ![image-20210412153147100](Remarkup-15.png) <br />
 The code editor area will color green until you dropped the file.
 If the file is an image, the image will be shown as is in the right WYSIWYG area.
-If the file is not an image (e.g. a PDF file), an icon representing the file be shown.
+If the file is not an image (e.g. a PDF file), an icon representing the file be shown. <br />
 For example:
-![image-20210412153147101](Remarkup-16.png) <br />
+![image-20210412153147101](Remarkup-16.png) <br /><br />
 
-Audio and video files will also directly visualized.
-For example:
+Audio and video files will also directly visualized. <br />
+For example: <br />
 ![image-20210412153147102](Remarkup-17.png) <br />
 
 

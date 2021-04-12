@@ -24,5 +24,3 @@ You can also configure the color of a project tag to better distinguish them in 
 
 By clicking *Set project tag color* you will assign the color only to the reference project tag.
 If you click however on the *Set color for all shown project tags*, the color will be assigned to all listed project tags.
-
-## 
