@@ -55,3 +55,5 @@ These will be used later on to configure the synchronization process between Pha
 
 After the first synchronization process between Phabrico and Phabricator, you will get a short introduction:
 ![image-20210411111315207](configuration-05.png) <br />
+
+[Next page](../02-Configuration/README.md)

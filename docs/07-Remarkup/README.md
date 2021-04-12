@@ -46,3 +46,5 @@ For example: <br />
 Table data from Microsoft Excel can be directly copy pasted if the table does not contain merged cells.
 Color and formatting aren't copied.
 However, a formatted Excel cell will be seen as header cell in Remarkup (it will be visualized bold)
+
+[Previous Page](../06-Phriction/README.md) |  [Next page](../08-OfflineChanges/README.md)

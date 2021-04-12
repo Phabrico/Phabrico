@@ -10,3 +10,4 @@ This can be configured in the *Config* screen under the *Phriction* tab.
 
 In case the *Synchronize Phriction documents for* parameter is set to *Selected users*, then only the tasks referenced by users that are selected in this *Users* screen are downloaded from Phabricator.
 
+[Previous Page](../03-Projects/README.md) |  [Next page](../05-Maniphest/README.md)

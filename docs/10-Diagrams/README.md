@@ -17,3 +17,4 @@ If you edit a diagram that was previously uploaded to Phabricator (and thus has 
 
 The user manuals for Diagrams.net can be found at <https://www.diagrams.net/doc/>
 
+[Previous Page](../09-FileObjects/README.md) |  [Next page](../11-Gitanos/README.md)

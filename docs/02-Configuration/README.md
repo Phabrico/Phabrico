@@ -52,3 +52,5 @@
 | Add Copy button                     | If set to *Yes*, a *Copy* button will be displayed in the top right corner when the mouse is hovered over a code block.<br />For example: ![image-20210411124251835](configuration-10.png) |
 | Translate notification block titles | If set to Yes, the NOTE, IMPORTANT and WARNING texts are translated according to the user's configured language:<br />![image-20210411130721519](configuration-11.png) |
 | Confidential Table Headers          | Here you can enter table headers whose values should initially not be visible.<br />Their values will be visible for 3 seconds when you hover over their values:<br />![image-20210411134619442](configuration-12.png) |
+
+[Previous Page](../01-Installation/README.md) |  [Next page](../03-Projects/README.md)

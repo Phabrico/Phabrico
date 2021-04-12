@@ -114,3 +114,4 @@ The content of the wiki page in Remarkup format.
 
 The WYSIWYG content of the wiki page.
 
+[Previous Page](../05-Maniphest/README.md) |  [Next page](../07-Remarkup/README.md)

@@ -28,7 +28,7 @@ After clicking the COMMIT button in the top right corner, you need to enter a co
 The local commit is visible on top of the screen: ![Gitanos-07](Gitanos-07.png) <br />
 With the PUSH button in the top right corner you can push the local commit to your remote git repository.
 
-Local commits and modifications can be undone by means of the *Undo* buttons.
+Local commits and modifications can be undone by means of the *Undo* buttons. 
 
 
-
+[Previous Page](../10-Diagrams/README.md)
