@@ -10,8 +10,8 @@ class AcceleratorKeys {
             if ( Array.prototype.slice.call( document.querySelectorAll('input[type=text],input[type=password],textarea'), 0 ).indexOf( document.activeElement ) )
             {
                 var button = Array.prototype.slice.call(document.querySelectorAll('button', 0))
-                        .find( function(elem) { 
-                            return (!!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length )) && 
+                        .find( function(elem) {
+                            return (!!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length )) &&
                                     elem.dataset.accesskey == evt.key.toUpperCase();
                 });
 
@@ -68,7 +68,7 @@ class AutoLogOff {
         var timeoutTime = autoLogOutAfterMinutesOfInactivity * 60000;
         var keepAliveTime = 10000;
         var isEnabled = true;
-        
+
         if (timeoutTime == 0)
         {
             timeoutTime = 2147483647;
@@ -76,7 +76,7 @@ class AutoLogOff {
 
         instance.timeoutTimer = null;
         instance.keepAliveTimer = null;
-        
+
         this.doLogOff = function(evt) {
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open('GET', '/logout', true);
@@ -86,7 +86,7 @@ class AutoLogOff {
             };
             xmlhttp.send();
         }
-        
+
         this.doPoke = function(evt) {
             var pokeRequest = new XMLHttpRequest();
             pokeRequest.onreadystatechange = function() {
@@ -114,7 +114,7 @@ class AutoLogOff {
                 instance.timeoutTimer = setTimeout(instance.doLogOff, timeoutTime);
             }
         }
-        
+
         this.disable = function() {
             instance.isEnabled = false;
             document.body.removeEventListener('mousemove', instance.doWakeUp);
@@ -186,7 +186,7 @@ class InputTag {
 
             var settings = {};
 
-            settings.placeholder = input.placeholder;        
+            settings.placeholder = input.placeholder;
             settings.divInputTag = document.createElement('div');
             settings.divInputTag.classList.add('input-tag');
             input.parentElement.insertBefore(settings.divInputTag, input);
@@ -233,7 +233,7 @@ class InputTag {
 
                 if (newlyFocusedElement != divMenu &&
                     divMenu.classList.contains('opened') &&
-                    divMenu.children.length > 0) 
+                    divMenu.children.length > 0)
                 {
                     inputText.value = '';
                     divMenu.classList.remove('opened');
@@ -253,7 +253,7 @@ class InputTag {
 
                 for (var i=0; i < jsonResponse.length; i++)
                 {
-                    if (input.previousSibling.children[1].children.length > 0 && 
+                    if (input.previousSibling.children[1].children.length > 0 &&
                         maxNbrTags < input.previousSibling.children[1].children[0].children.length - 1) {
                         break;
                     }
@@ -276,7 +276,7 @@ class InputTag {
             var inputText = divInputTagFirstChild.lastElementChild;
             var inputHidden = divInputTag.nextSibling;
             divInputTagFirstChild.insertBefore(span, inputText);
-    
+
             var spanBriefCase = document.createElement('span');
             spanBriefCase.className += ' phui-icon-view';
             spanBriefCase.className += ' phui-font-fa';
@@ -285,12 +285,12 @@ class InputTag {
 
             var text = document.createTextNode(name + " ");
             span.appendChild(text);
-    
+
             var input = document.createElement('input');
             input.type = 'hidden';
             input.id = value;
             span.appendChild(input);
-    
+
             var anchorClose = document.createElement('a');
             anchorClose.onclick = function () {
                 me.delTag(this);
@@ -300,7 +300,7 @@ class InputTag {
             };
             anchorClose.innerHTML = '&times;';
             span.appendChild(anchorClose);
-    
+
             inputText.placeholder = '';
 
             if (inputHidden.value === "")
@@ -308,8 +308,8 @@ class InputTag {
                 inputHidden.value = value;
             }
             else
-            if (inputHidden.value.indexOf("," + value) == -1 
-                && inputHidden.value.indexOf(value + ",") == -1 
+            if (inputHidden.value.indexOf("," + value) == -1
+                && inputHidden.value.indexOf(value + ",") == -1
                 && inputHidden.value !== value)
             {
                 inputHidden.value += "," + value;
@@ -339,11 +339,11 @@ class InputTag {
         }
 
         this.inputTextKeyDown = function (inputText, e) {
-            switch (e.keyCode) 
+            switch (e.keyCode)
             {
                 case 8 : // backspace
                     if (inputText.parentElement.children.length > 1 &&
-                        inputText.selectionStart == 0) 
+                        inputText.selectionStart == 0)
                     {
                         this.delTag(inputText.previousElementSibling.lastElementChild);
                         return;
@@ -385,7 +385,7 @@ class InputTag {
                     var previousMenuItem = selectedMenuItem.previousSibling;
                     if (selectedMenuItem != null && previousMenuItem != null) {
                         selectedMenuItem.classList.remove('input-tag-hovered');
-                        previousMenuItem.classList.add('input-tag-hovered');                        
+                        previousMenuItem.classList.add('input-tag-hovered');
                     }
                     return false;
 
@@ -396,7 +396,7 @@ class InputTag {
                     var nextMenuItem = selectedMenuItem.nextSibling;
                     if (selectedMenuItem != null && nextMenuItem != null) {
                         selectedMenuItem.classList.remove('input-tag-hovered');
-                        nextMenuItem.classList.add('input-tag-hovered');                        
+                        nextMenuItem.classList.add('input-tag-hovered');
                     }
                     return false;
 
@@ -404,7 +404,7 @@ class InputTag {
                     var hiddenInput =  inputText.parentElement.parentElement.parentElement.querySelector('input.hidden-input-tag');
                     var maxNbrTags = parseInt( isNaN(hiddenInput.dataset.limit) ? 999 : 1);
                     if (hiddenInput.previousSibling.children.length > 0 &&
-                        maxNbrTags <=  hiddenInput.previousSibling.children[0].children.length - 1) 
+                        maxNbrTags <=  hiddenInput.previousSibling.children[0].children.length - 1)
                     {
                         return false;
                     }
@@ -428,7 +428,7 @@ class InputTag {
             var xmlhttpUrl = inputHidden.dataset.url;
             var inputTag = inputText.parentElement.parentElement;
             var menu = inputTag.querySelector('.menu');
-    
+
             if (inputText.value == '') {
                 menu.innerHTML = '';
                 menu.classList.remove('opened');
@@ -444,7 +444,7 @@ class InputTag {
                 this.httpSearchTag.open('GET', xmlhttpUrl + "/search/?keyword=" + inputText.value + "&tags=" + inputHidden.value, true);
                 this.httpSearchTag.onload  = function() {
                     var jsonResponse = JSON.parse(httpSearchTag.responseText);
-                                        
+
                     for (var i=0; i < jsonResponse.length; i++)
                     {
                         var anchor = document.createElement('a');
@@ -466,7 +466,7 @@ class InputTag {
                             } else {
                                 hoveredAnchor = ev.target.closest('A');
                             }
-                            
+
                             // mark anchor tag as 'hovered'
                             hoveredAnchor.classList.add('input-tag-hovered');
                         };
@@ -523,7 +523,7 @@ class ProgressBar {
         const xmlhttp = new XMLHttpRequest();
         this.xmlhttp = xmlhttp;
         var me = this;
-        this.xmlhttp.onreadystatechange = function () 
+        this.xmlhttp.onreadystatechange = function ()
         {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 try {
@@ -570,7 +570,7 @@ class ProgressBar {
 
         var spanText = document.createElement('span');
         divContainer.appendChild(spanText);
-        
+
         this.currentValue = 0;
         this.text = '';
 
@@ -584,7 +584,7 @@ class ProgressBar {
             me.xmlhttp.send();
         }, 300);
     }
-    
+
     set currentValue(val){
         if (val < 0) val = 0;
         if (val > 100) val = 100;
@@ -594,7 +594,7 @@ class ProgressBar {
     get currentValue(){
         return parseInt(document.querySelector('.progress-bar div div').style.width);
     }
-    
+
     set text(val){
         document.querySelector('.progress-bar span').innerText = val;
     }
@@ -610,7 +610,7 @@ class Remarkup {
         // initialize AJAX object
         const xmlhttp = new XMLHttpRequest();
         this.xmlhttp = xmlhttp;
-        this.xmlhttp.onreadystatechange = function () 
+        this.xmlhttp.onreadystatechange = function ()
         {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 var htmlData = JSON.parse(xmlhttp.responseText).html;
@@ -647,12 +647,31 @@ class Remarkup {
                         selectedText = Locale.Translate("Bold text");
                     }
 
-                    textarea.Text = textarea.Text.substring(0, selectionStart)
-                                    + "**" + selectedText + "**"
-                                    + textarea.Text.substring(selectionEnd);
-                    textarea.focus();
-                    textarea.selectionStart = selectionStart + 2;
-                    textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                    if(selectedText.startsWith("**") && selectedText.endsWith("**")) {
+                        // already in bold -> undo bold
+                        textarea.Text = textarea.Text.substring(0, selectionStart)
+                                        + selectedText.substr(2, selectedText.length - 4)
+                                        + textarea.Text.substring(selectionEnd);
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length - 4;
+                    } else if(selectionStart > 2  &&  textarea.Text.substr(textarea.selectionStart - 2, 2) == "**" && textarea.Text.substring(textarea.selectionEnd).startsWith("**")) {
+                        // already in bold -> undo bold
+                        textarea.Text = textarea.Text.substring(0, selectionStart - 2)
+                                        + selectedText
+                                        + textarea.Text.substring(selectionEnd + 2);
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart - 2;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                    } else {
+                        // set to bold
+                        textarea.Text = textarea.Text.substring(0, selectionStart)
+                                        + "**" + selectedText + "**"
+                                        + textarea.Text.substring(selectionEnd);
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart + 2;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                    }
                     return;
                 }
 
@@ -662,30 +681,69 @@ class Remarkup {
                         selectedText = Locale.Translate("Italic text");
                     }
 
-                    textarea.Text = textarea.Text.substring(0, selectionStart)
+                    if(selectedText.startsWith("//") && selectedText.endsWith("//")) {
+                        // already in italic -> undo italic
+                        textarea.Text = textarea.Text.substring(0, selectionStart)
+                                        + selectedText.substr(2, selectedText.length - 4)
+                                        + textarea.Text.substring(selectionEnd);
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length - 4;
+                    } else if(selectionStart > 2  &&  textarea.Text.substr(textarea.selectionStart - 2, 2) == "//" && textarea.Text.substring(textarea.selectionEnd).startsWith("//")) {
+                        // already in italic -> undo italic
+                        textarea.Text = textarea.Text.substring(0, selectionStart - 2)
+                                        + selectedText
+                                        + textarea.Text.substring(selectionEnd + 2);
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart - 2;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                    } else {
+                        // set to italic
+                        textarea.Text = textarea.Text.substring(0, selectionStart)
                                     + "//" + selectedText + "//"
                                     + textarea.Text.substring(selectionEnd);
-                    textarea.focus();
-                    textarea.selectionStart = selectionStart + 2;
-                    textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart + 2;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                    }
                     return;
                 }
-                
+
                 if (span.classList.contains('fa-text-width'))
                 {
                     if (selectedText == "") {
                         selectedText = Locale.Translate("Monospaced text");
                     }
 
-                    textarea.Text = textarea.Text.substring(0, selectionStart)
+
+                    if(selectedText.startsWith("`") && selectedText.endsWith("`")) {
+                        // already monospaced -> undo monospaced
+                        textarea.Text = textarea.Text.substring(0, selectionStart)
+                                        + selectedText.substr(1, selectedText.length - 2)
+                                        + textarea.Text.substring(selectionEnd);
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length - 2;
+                    } else if(selectionStart > 1  &&  textarea.Text.substr(textarea.selectionStart - 1, 1) == "`" && textarea.Text.substring(textarea.selectionEnd).startsWith("`")) {
+                        // already monospaced -> undo monospaced
+                        textarea.Text = textarea.Text.substring(0, selectionStart - 1)
+                                        + selectedText
+                                        + textarea.Text.substring(selectionEnd + 1);
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart - 1;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                    } else {
+                        // set to monospaced
+                        textarea.Text = textarea.Text.substring(0, selectionStart)
                                     + "`" + selectedText + "`"
                                     + textarea.Text.substring(selectionEnd);
-                    textarea.focus();
-                    textarea.selectionStart = selectionStart + 1;
-                    textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                        textarea.focus();
+                        textarea.selectionStart = selectionStart + 1;
+                        textarea.selectionEnd = textarea.selectionStart + selectedText.length;
+                    }
                     return;
                 }
-                
+
                 if (span.classList.contains('fa-list-ul'))
                 {
                     if (selectedText == "") {
@@ -700,7 +758,7 @@ class Remarkup {
                     textarea.selectionEnd = textarea.selectionStart + selectedText.length;
                     return;
                 }
-                
+
                 if (span.classList.contains('fa-list-ol'))
                 {
                     if (selectedText == "") {
@@ -715,7 +773,7 @@ class Remarkup {
                     textarea.selectionEnd = textarea.selectionStart + selectedText.length;
                     return;
                 }
-                
+
                 if (span.classList.contains('fa-code'))
                 {
                     if (selectedText == "") {
@@ -730,7 +788,7 @@ class Remarkup {
                     textarea.selectionEnd = textarea.selectionStart + selectedText.length;
                     return;
                 }
-                
+
                 if (span.classList.contains('fa-quote-right'))
                 {
                     if (selectedText == "") {
@@ -745,7 +803,7 @@ class Remarkup {
                     textarea.selectionEnd = textarea.selectionStart + selectedText.length;
                     return;
                 }
-                
+
                 if (span.classList.contains('fa-table'))
                 {
                     if (selectedText == "") {
@@ -760,7 +818,7 @@ class Remarkup {
                     textarea.selectionEnd = textarea.selectionStart + selectedText.length;
                     return;
                 }
-                
+
                 if (span.classList.contains('fa-sitemap'))
                 {
                     sessionStorage["remarkup-editor-text-before"] = textarea.Text.substring(0, selectionStart);
@@ -769,6 +827,32 @@ class Remarkup {
                     window.location = "/diagrams.net/new/";
                 }
             };
+        });
+
+        document.querySelectorAll('.app-window-body.edit textarea.dropzone').forEach((remarkupEditor) => {
+            remarkupEditor.addEventListener('keydown', function(e) {
+                if (e.ctrlKey  &&  !e.target.ctrlAction) {
+                    switch (e.key) {
+                        case 'b':
+                            var btnBold = e.target.parentElement.querySelector('.app-edit-window-head > .phui-font-fa.fa-bold');
+                            btnBold.click();
+                            e.preventDefault();
+                            e.target.ctrlAction = true;
+                            return false;
+
+                        case 'i':
+                            var btnItalic = e.target.parentElement.querySelector('.app-edit-window-head > .phui-font-fa.fa-italic');
+                            btnItalic.click();
+                            e.preventDefault();
+                            e.target.ctrlAction = true;
+                            return false;
+                    }
+                }
+            });
+
+            remarkupEditor.addEventListener('keyup', function(e) {
+                delete e.target.ctrlAction;
+            });
         });
     }
 
@@ -789,7 +873,7 @@ class Remarkup {
         var data = new FormData();
         data.append('token', token);
         data.append('referencedFiles', referencedFiles);
-        
+
         var http = new XMLHttpRequest();
         http.open('POST', "?action=cancel", true);
         http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
@@ -808,7 +892,7 @@ class Remarkup {
         var xmlhttp = this.xmlhttp;
         xmlhttp.destinationField = dest;
 
-        this.tmrDecodeRemarkup = setTimeout(function(){ 
+        this.tmrDecodeRemarkup = setTimeout(function(){
             var data = new FormData();
             data.append('data', remarkup);
             data.append('url', document.URL);
@@ -870,13 +954,13 @@ class Responsiveness {
 
 // ************************************************************************************************
 class Search {
-    constructor() 
+    constructor()
     {
         // initialize AJAX object
         const xmlhttp = new XMLHttpRequest();
         this.xmlhttp = xmlhttp;
 
-        this.xmlhttp.onreadystatechange = function () 
+        this.xmlhttp.onreadystatechange = function ()
         {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 popSearchResults.innerHTML = "";
@@ -988,7 +1072,7 @@ class Synchronization {
            else
            {
               dlgRequestSynchronizeDetail.style.display = 'block';
-              dlgRequestSynchronizeDetail.innerHTML = phabrico.synchronization.htmlFormatString( Locale.Translate("There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."), 
+              dlgRequestSynchronizeDetail.innerHTML = phabrico.synchronization.htmlFormatString( Locale.Translate("There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."),
                                                                                         ["[b]", "[/b]"]
                                                                                       )
                                                             .replace(/\[b\]/, '<b>')
@@ -1013,7 +1097,7 @@ class Synchronization {
     htmlFormatString(str, exclude) {
         var result = "";
         var index = 0;
-        
+
         while (index < str.length) {
             var excludeFound = false;
             for (var exc in exclude) {
@@ -1037,7 +1121,7 @@ class Synchronization {
     start(frm,type) {
         phabrico.autoLogOff.disable();
         postForm(frm, "/synchronize/" + type + "/");
-        
+
         btnCloseSyncErrorDialog.style.display = 'none';
         dlgRequestSynchronize.style.display = 'none';
         requestStackTrace.innerText = "";
@@ -1138,7 +1222,7 @@ class TextAreaContextMenu {
         me.getCaretCoordinates = function(element, position) {
             var isFirefox = !(window.mozInnerScreenX == null);
             var computed, style;
-    
+
             // The properties that we copy into a hidden div.
             // Note that some browsers, such as Firefox,
             // do not concatenate properties, i.e. padding-top, bottom etc. -> padding,
@@ -1149,17 +1233,17 @@ class TextAreaContextMenu {
                 'height',
                 'overflowX',
                 'overflowY',  // copy the scrollbar for IE
-        
+
                 'borderTopWidth',
                 'borderRightWidth',
                 'borderBottomWidth',
                 'borderLeftWidth',
-        
+
                 'paddingTop',
                 'paddingRight',
                 'paddingBottom',
                 'paddingLeft',
-        
+
                 // https://developer.mozilla.org/en-US/docs/Web/CSS/font
                 'fontStyle',
                 'fontVariant',
@@ -1168,55 +1252,55 @@ class TextAreaContextMenu {
                 'fontSize',
                 'lineHeight',
                 'fontFamily',
-        
+
                 'textAlign',
                 'textTransform',
                 'textIndent',
                 'textDecoration',  // might not make a difference, but better be safe
-        
+
                 'letterSpacing',
                 'wordSpacing'
             ];
-    
+
             var hiddenDiv = document.createElement('div');
             hiddenDiv.id = element.nodeName + '--hidden-div';
             document.body.appendChild(hiddenDiv);
-    
+
             style = hiddenDiv.style;
             computed = getComputedStyle(element);
-    
+
             // default textarea styles
             style.whiteSpace = 'pre-wrap';
             if (element.nodeName !== 'INPUT')
             style.wordWrap = 'break-word';  // only for textarea-s
-    
+
             // position off-screen
             style.position = 'absolute';  // required to return coordinates properly
             style.top = element.offsetTop + parseInt(computed.borderTopWidth) + 'px';
             style.left = "400px";
             style.visibility = 'hidden';
-    
+
             // transfer the element's properties to the div
             properties.forEach(function (prop) {
                 style[prop] = computed[prop];
             });
-    
+
             if (isFirefox) {
                 style.width = parseInt(computed.width) - 2 + 'px'  // Firefox adds 2 pixels to the padding - https://bugzilla.mozilla.org/show_bug.cgi?id=753662
-        
+
                 // Firefox lies about the overflow property for textareas: https://bugzilla.mozilla.org/show_bug.cgi?id=984275
                 if (element.scrollHeight > parseInt(computed.height))
                     style.overflowY = 'scroll';
             } else {
                 style.overflow = 'hidden';  // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
-            }  
-    
+            }
+
             hiddenDiv.textContent = element.value.substring(0, position);
-    
+
             // the second special handling for input type="text" vs textarea: spaces need to be replaced with non-breaking spaces - http://stackoverflow.com/a/13402035/1269037
             if (element.nodeName === 'INPUT')
                 hiddenDiv.textContent = hiddenDiv.textContent.replace(/\s/g, "\u00a0");
-    
+
             var span = document.createElement('span');
             // Wrapping must be replicated *exactly*, including when a long word gets
             // onto the next line, with whitespace at the end of the line before (#7).
@@ -1226,12 +1310,12 @@ class TextAreaContextMenu {
             span.textContent = element.value.substring(position) || '.';  // || because a completely empty faux span doesn't render at all
             span.style.backgroundColor = "lightgrey";
             hiddenDiv.appendChild(span);
-    
+
             var coordinates = {
                 top: span.offsetTop + parseInt(computed['borderTopWidth']),
                 left: span.offsetLeft + parseInt(computed['borderLeftWidth'])
             };
-    
+
             return coordinates;
         }
 
@@ -1247,7 +1331,7 @@ class TextAreaContextMenu {
                 {
                     return;
                 }
-        
+
                 if (eventKey == "Backspace")
                 {
                     me.endOffsetSearchValue--;
@@ -1264,12 +1348,12 @@ class TextAreaContextMenu {
 
                     if (textarea.selectionStart == textarea.selectionEnd)
                     {
-                        me.searchValue = textarea.value.substring(me.offsetSearchValue, textarea.selectionStart - 1) 
+                        me.searchValue = textarea.value.substring(me.offsetSearchValue, textarea.selectionStart - 1)
                                        + textarea.value.substring(textarea.selectionEnd - 1, me.endOffsetSearchValue);
                     }
                     else
                     {
-                        me.searchValue = textarea.value.substring(me.offsetSearchValue, textarea.selectionStart) 
+                        me.searchValue = textarea.value.substring(me.offsetSearchValue, textarea.selectionStart)
                                        + textarea.value.substring(textarea.selectionEnd, me.endOffsetSearchValue + 1);
                     }
                 }
@@ -1307,7 +1391,7 @@ class TextAreaContextMenu {
                 {
                     var highlightedMenuItem = document.querySelector('.autocomplete-list a.menuitem.focused');
                     var selectedIndex = Array.prototype.indexOf.call(me.autocomplete.list.children, highlightedMenuItem);
-            
+
                     selectedIndex = selectedIndex - 1;
 
                     if (selectedIndex < 0)
@@ -1329,14 +1413,14 @@ class TextAreaContextMenu {
                 {
                     var highlightedMenuItem = document.querySelector('.autocomplete-list a.menuitem.focused');
                     var selectedIndex = Array.prototype.indexOf.call(me.autocomplete.list.children, highlightedMenuItem);
-            
+
                     selectedIndex = selectedIndex + 1;
 
                     if (me.autocomplete.list.values.length <= selectedIndex)
                     {
                         selectedIndex = 0;
                     }
-            
+
                     highlightedMenuItem.classList.remove('focused');
                     me.autocomplete.list.children[selectedIndex].classList.add('focused');
                     e.preventDefault();
@@ -1364,13 +1448,13 @@ class TextAreaContextMenu {
                 if (me.showDropDownMenu == false && keyPressed == me.contextMenuTriggerCharacter)
                 {
                     me.showDropDownMenu = true;
-            
+
                     // contextmenu can only be shown if previous character allows it
                     var previousCharacter = textarea.value.substring(textarea.selectionStart - 1, textarea.selectionStart);
                     if ([' ','\n','\t','.','-',')','>','!','|',''].indexOf(previousCharacter) < 0)
                     {
                         me.showDropDownMenu = false;
-                    }                    
+                    }
 
                     if (me.showDropDownMenu)
                     {
@@ -1380,7 +1464,7 @@ class TextAreaContextMenu {
                     }
                     return;
                 }
-        
+
                 if (me.autocomplete != null)
                 {
                     if (eventKey == "Enter")
@@ -1436,18 +1520,18 @@ class TextAreaContextMenu {
                 me.endOffsetSearchValue++;
 
                 if (me.autocomplete != null) {
-                    me.searchValue = textarea.value.substring(me.offsetSearchValue, textarea.selectionStart) 
-                                    + keyPressed 
+                    me.searchValue = textarea.value.substring(me.offsetSearchValue, textarea.selectionStart)
+                                    + keyPressed
                                     + textarea.value.substring(textarea.selectionEnd, me.endOffsetSearchValue);
                 }
             }
-    
+
             var searchText = me.searchValue;
             if (searchText == null || searchText.length == 0)
             {
                 searchText = "Type a " + me.ObjectType + "name...";
             }
-    
+
             if (me.showDropDownMenu || me.autocomplete != null)
             {
                 if (me.autocomplete == null)
@@ -1490,9 +1574,9 @@ class TextAreaContextMenu {
                     var menuItemHeight = 28;
                     var cursorPosition = me.getCaretCoordinates(textarea, textarea.selectionEnd);
                     var textAreaBoundaries = textarea.getBoundingClientRect();
-                    var menuPostion = { 
-                        top: textarea.offsetTop + cursorPosition.top + menuItemHeight, 
-                        left: cursorPosition.left 
+                    var menuPostion = {
+                        top: textarea.offsetTop + cursorPosition.top + menuItemHeight,
+                        left: cursorPosition.left
                     };
                     if (menuPostion.top + (2 + menuItems.length) * menuItemHeight > textAreaBoundaries.bottom)
                     {
@@ -1508,22 +1592,22 @@ class TextAreaContextMenu {
                         me.autocomplete.target = textarea;
                         me.autocomplete.classList.add('autocomplete');
                         me.autocomplete.style.left = menuPostion.left + 'px';
-        
+
                         me.autocomplete.head = document.createElement('div');
                         me.autocomplete.head.classList.add('autocomplete-head');
                         me.autocomplete.appendChild(me.autocomplete.head);
-        
+
                         me.autocomplete.head.prompt = document.createElement('span');
                         me.autocomplete.head.prompt.classList.add('autocomplete-prompt');
                         me.autocomplete.head.appendChild(me.autocomplete.head.prompt);
-        
+
                         me.autocomplete.head.prompt.icon = document.createElement('span');
                         me.autocomplete.head.prompt.icon.classList.add('icon');
                         me.autocomplete.head.prompt.icon.classList.add('phui-font-fa');
                         me.autocomplete.head.prompt.icon.classList.add('fa-user');
                         me.autocomplete.head.prompt.icon.classList.add('bluegrey');
                         me.autocomplete.head.prompt.appendChild(me.autocomplete.head.prompt.icon);
-        
+
                         me.autocomplete.head.prompt.content = document.createTextNode('Find ' + me.ObjectType + ': ');
                         me.autocomplete.head.prompt.appendChild(me.autocomplete.head.prompt.content);
 
@@ -1546,10 +1630,10 @@ class TextAreaContextMenu {
                     me.autocomplete.style.top = menuPostion.top + 'px';
 
                     // parse received JSON data and convert it to contextmenu content
-                    me.autocomplete.list.values.forEach(function(item) { 
+                    me.autocomplete.list.values.forEach(function(item) {
                         var anchor = document.createElement('a');
                         me.autocomplete.list.appendChild(anchor);
-            
+
                         anchor.href = "#";
                         if (me.PropertyReadableName == null) {
                             anchor.name = item[me.PropertyInternalName];
@@ -1563,7 +1647,7 @@ class TextAreaContextMenu {
                             me.autocomplete.target.setRangeText(clickedAnchor.shortenedName + " ", me.offsetSearchValue, me.endOffsetSearchValue);
                             me.autocomplete.target.focus()
                             me.autocomplete.target.selectionStart += clickedAnchor.shortenedName.length + 1;
-                            
+
                             // trigger oninput event for refreshing remarkup decoding
                             var oninputEvent = new Event('input', { 'bubbles': true, 'cancelable': true });
                             me.autocomplete.target.dispatchEvent(oninputEvent);
@@ -1572,21 +1656,21 @@ class TextAreaContextMenu {
                             me.autocomplete = null;
                             return false;
                         };
-            
-                        if (me.autocomplete.list.values[0] == item) {            
+
+                        if (me.autocomplete.list.values[0] == item) {
                             anchor.classList.add('focused');
                         }
-            
+
                         anchor.head = document.createElement('span');
                         anchor.appendChild(anchor.head);
-            
+
                         anchor.head.icon = document.createElement('span');
                         anchor.head.icon.classList.add('icon');
                         anchor.head.icon.classList.add('phui-font-fa');
                         anchor.head.icon.classList.add('fa-user');
                         anchor.head.icon.classList.add('bluegrey');
                         anchor.head.appendChild(anchor.head.icon);
-            
+
                         if (me.PropertyReadableName == null) {
                             anchor.head.content = document.createTextNode(item[me.PropertyInternalName]);
                         } else {
@@ -1594,7 +1678,7 @@ class TextAreaContextMenu {
                         }
                         anchor.head.appendChild(anchor.head.content);
                     });
-                
+
                     document.body.appendChild(me.autocomplete);
                 }
 
@@ -1624,7 +1708,7 @@ class TextAreaDropZone {
 
         this.fileReaderLoad = function(evt, files, i) {
                 var chunkSize = 0x400000 - 0x1000;
-                
+
                 var getIDForNewFileData = new FormData();
                 getIDForNewFileData.append('url', document.URL);
 
@@ -1727,13 +1811,13 @@ class TextAreaDropZone {
             evt.preventDefault();
 
             var files = evt.dataTransfer.files; // FileList object.
-            for (var i = 0; i < files.length; i++) 
+            for (var i = 0; i < files.length; i++)
             {
                 var fileReader = new FileReader();
                 fileReader.onload = (me.fileReaderLoad)(evt, files, i);
 
                 fileReader.readAsBinaryString(files[i],"UTF-8");
-            }        
+            }
 
             evt.target.classList.remove('dragging');
         }
@@ -1757,6 +1841,7 @@ class TextAreaDropZone {
             for (var i = 0; i < items.length; i++) {
                 if (items[i].type.indexOf("text") === 0) {
                     var clipboardHtmlData = event.clipboardData.getData('text/html');
+
                     if (clipboardHtmlData.indexOf("xmlns:o=\"urn:schemas-microsoft-com:office:office\"") >= 0 &&
                         clipboardHtmlData.indexOf("xmlns:x=\"urn:schemas-microsoft-com:office:excel\"") >= 0
                        ) {
@@ -1767,6 +1852,7 @@ class TextAreaDropZone {
                                                              .replace(/<tr[^>]*>/g,                         '<tr>')            // remove all attributes from <tr> tags
                                                              .replace(/<td[^>]+class=[^>]+>([^<]*)<\/td>/g, '<th>$1</th>')     // replace all td-tags with a class attribute into th-tags
                                                              .replace(/<td[^>]*>/g,                         '<td>')            // remove all attributes from <td> tags
+                                                             .replace(/<\/?span[^>]*>/g,                    '')                // remove all inner span tags
                                                              .replace(/>[\s]*</g,                           '><')              // remove all whitespace between tags
                                                              .replace(/<\/table>.*/g,                       '</table>')        // remove all data after </table> tag
                                                              .replace(/<tr>/g,                              '\n  <tr>')        // indent rows
@@ -1789,7 +1875,7 @@ class TextAreaDropZone {
                     // paste image
                     image = items[i].getAsFile();
 
-                    var fileReader = new FileReader();  
+                    var fileReader = new FileReader();
                     fileReader.onload = (me.fileReaderLoad)(evt, evt.clipboardData.files, 0);
                     fileReader.readAsBinaryString(evt.clipboardData.files[i],"UTF-8");
                     return true;
@@ -1838,14 +1924,14 @@ function diffDrawLocationPane() {
     window.addEventListener('resize', diffResizeLocationPane);
 
     var data = Array.prototype.slice.call( document.querySelectorAll('td.left'), 0 )
-                   .map(function(td) { 
-                       if (td.classList.contains('equal')) 
+                   .map(function(td) {
+                       if (td.classList.contains('equal'))
                            return "equal";
-                       else  if (td.classList.contains('empty')) 
+                       else  if (td.classList.contains('empty'))
                            return "empty";
-                       else  if (td.classList.contains('replace')) 
+                       else  if (td.classList.contains('replace'))
                            return "replace";
-                       else  if (td.classList.contains('delete')) 
+                       else  if (td.classList.contains('delete'))
                        return "delete";
                    });
     var colorId = [];
@@ -1953,7 +2039,7 @@ function getElementOverlappingElement(elementBelow) {
     const right = boundingRect.right - 1
     const top = boundingRect.top + 1
     const bottom = boundingRect.bottom - 1
-    
+
     var elementAbove = document.elementFromPoint(left, top);
     if(elementAbove !== elementBelow) return elementAbove;
 
@@ -1965,13 +2051,13 @@ function getElementOverlappingElement(elementBelow) {
 
     elementAbove = document.elementFromPoint(right, bottom);
     if(elementAbove !== elementBelow) return elementAbove;
-    
+
     return null;
 }
 
 function initializeTab(tab) {
     Array.prototype.slice.call(tab.querySelectorAll('.tab-head'), 0)
-            .map( function(tabHeader) { 
+            .map( function(tabHeader) {
                 tabChanged( tabHeader.children[0] );
             }
     );
@@ -2220,7 +2306,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (cumulativeOffset(nextRightLineSpan).top - cumulativeOffset(firstRightLineSpan).top < right.clientHeight) {
                         // first and next line are both visible in right pane
                         right.scrollTop = cumulativeOffset(firstRightLineSpan).top - 70;
-                    } 
+                    }
                     else {
                         // first and next line are not both visible in right pane
                         right.scrollTop = cumulativeOffset(firstRightLineSpan).top
@@ -2304,7 +2390,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 transaction.className = "transaction-item";
                 label.className = "label";
                 close.className = "close phui-font-fa fa-times-circle";
-                
+
                 transaction.appendChild(label);
                 transaction.appendChild(close);
 
@@ -2336,7 +2422,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         inputTag.inputText.focus();
                         break;
-                        
+
                     case 'priority':
                         label.innerText = Locale.Translate('Change Priority');
                         label.style.position = "relative";
@@ -2361,7 +2447,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         transaction.insertBefore(inputField, null);
                         var inputTag = document.body.inputTag.create(inputField);
                         taskInputTagValues["projectPHIDs"].forEach(
-                            function(item) { 
+                            function(item) {
                                 document.body.inputTag.addTag(inputTag, item.Name, item.Token, "fa-briefcase");
                             });
                         inputTag.inputText.focus();
@@ -2391,7 +2477,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         transaction.insertBefore(inputField, null);
                         var inputTag = document.body.inputTag.create(inputField);
                         taskInputTagValues["subscriberPHIDs"].forEach(
-                            function(item) { 
+                            function(item) {
                                 document.body.inputTag.addTag(inputTag, item.Name, item.Token, item.Icon);
                             });
                         inputTag.inputText.focus();
@@ -2407,12 +2493,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('table.remarkup-table td')
             .forEach(function(td) {
                 // when doubleclick on table cell -> select all text in cell
-                td.ondblclick = function(e) { 
+                td.ondblclick = function(e) {
                     var selection = window.getSelection();
                     var range = document.createRange();
                     range.selectNodeContents(e.target);
                     selection.removeAllRanges();
-                    selection.addRange(range); 
+                    selection.addRange(range);
                 };
             });
 
@@ -2440,7 +2526,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('div.codeblock button.codeblock.copy')
             .forEach(function(btn) {
                 // when click on button -> copy all text from code block to clipboard
-                btn.onclick = function(e) { 
+                btn.onclick = function(e) {
                     var pre = e.target.parentNode.querySelector('pre');
                     var code = pre.querySelector('code');
 
@@ -2461,7 +2547,7 @@ document.addEventListener('DOMContentLoaded', function() {
         {
             clearTimeout(phabrico.tmrWindowScrollEvent);
         }
-        
+
         phabrico.tmrWindowScrollEvent = setTimeout(function() {
             phrictionCorrectButtonLocations();
         }, 100);
@@ -2578,7 +2664,7 @@ document.addEventListener('DOMContentLoaded', function() {
         enumerable: true,
         configurable: false
     });
-    
+
     Object.defineProperty( phabrico, "responsiveness", {
         value: new Responsiveness(),
         writable: false,

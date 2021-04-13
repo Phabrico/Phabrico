@@ -51,6 +51,9 @@ msgstr "Removed"
 msgid "Gitanos::Modified"
 msgstr "Modified"
 
+msgid "Gitanos::ModifiedTooLarge"
+msgstr "Modified (too large)"
+
 msgid "Gitanos::Renamed"
 msgstr "Renamed"
 

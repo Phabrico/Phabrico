@@ -15,6 +15,12 @@ If it is a positive number, then the diagram has not been edited yet in Phabrico
 
 If you edit a diagram that was previously uploaded to Phabricator (and thus has a positive number in its name), and you save it, the diagram will be reloaded. The diagram will now have a negative number in its name.
 
+When you hover over a diagram in a Maniphest task or a Phriction wiki page, you may see a diagram icon appear in the top right corner of the diagram.<br />
+For example:<br />
+![Diagrams 02](Diagrams-02.png)
+
+If you click on it, the Diagram editor will be opened.
+
 The user manuals for Diagrams.net can be found at <https://www.diagrams.net/doc/>
 
 [Previous Page](../09-FileObjects/README.md) |  [Next page](../11-Gitanos/README.md)

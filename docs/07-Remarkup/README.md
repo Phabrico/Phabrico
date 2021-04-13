@@ -15,7 +15,7 @@ The toolbar on top of the code editor contains the following formatting actions:
 | ------------------------------------------- | ------------------------------------------------------------ |
 | ![image-20210412153147183](Remarkup-02.png) | Formats the (selected) text in bold                          |
 | ![image-20210412153147184](Remarkup-03.png) | Formats the (selected) text in italic                        |
-| ![image-20210412153147185](Remarkup-04.png) | Underlines the (selected) text                               |
+| ![image-20210412153147185](Remarkup-04.png) | Formats the (selected) text in monospaced text               |
 | ![image-20210412153147186](Remarkup-05.png) | Creates a bulleted list<br />For example:<br />![image-20210412161052374](Remarkup-11.png) |
 | ![image-20210412153147187](Remarkup-06.png) | Creates a bulleted list<br />For example:<br />![image-20210412161052375](Remarkup-12.png) |
 | ![image-20210412153147188](Remarkup-07.png) | Creates a code block<br />For example:<br />![image-20210412161052376](Remarkup-13.png) |
@@ -46,5 +46,8 @@ For example: <br />
 Table data from Microsoft Excel can be directly copy pasted if the table does not contain merged cells.
 Color and formatting aren't copied.
 However, a formatted Excel cell will be seen as header cell in Remarkup (it will be visualized bold)
+For example: <br />
+![image-20210412153147103](Remarkup-19.png) <br />
+![image-20210412153147104](Remarkup-18.png) <br />
 
 [Previous Page](../06-Phriction/README.md) |  [Next page](../08-OfflineChanges/README.md)

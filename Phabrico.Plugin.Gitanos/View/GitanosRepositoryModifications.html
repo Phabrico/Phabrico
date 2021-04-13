@@ -561,7 +561,7 @@
                         var cell = row.insertCell();
                         cell.classList.add('wide');
                         cell.classList.add('file');
-                        if (record.ModificationType == "Renamed") {
+                        if (record.ModificationType == "Renamed"  ||  record.ModificationType == "ModifiedTooLarge") {
                             var text = document.createTextNode(record.File.substr(repositoryRootDirectoryNameLength + 1));
                             cell.appendChild(text);
                         } else {

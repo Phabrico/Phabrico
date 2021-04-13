@@ -59,8 +59,17 @@ namespace Phabrico.Plugin
                     {
                         modification = new GitanosModificationsJsonRecordData();
                         modification.File = repositoryDirectory + "\\" + modified.FilePath.Replace("/", "\\");
-                        modification.ModificationType = "Modified";
-                        modification.ModificationTypeText = Locale.TranslateText("Gitanos::Modified", browser.Session.Locale);
+
+                        System.IO.FileInfo fileInfo = new System.IO.FileInfo(modification.File);
+                        if (fileInfo.Length > 2100000)
+                        {
+                            modification.ModificationType = "ModifiedTooLarge";
+                        }
+                        else
+                        {
+                            modification.ModificationType = "Modified";
+                        }
+                        modification.ModificationTypeText = Locale.TranslateText("Gitanos::" + modification.ModificationType, browser.Session.Locale);
                         modification.Timestamp = Controller.FormatDateTimeOffset(System.IO.File.GetLastWriteTime(modification.File), browser.Session.Locale);
 
                         modifications.Add(modification);

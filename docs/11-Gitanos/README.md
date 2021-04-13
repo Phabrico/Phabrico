@@ -1,4 +1,4 @@
-# Gitanos
+﻿# Gitanos
 
 Gitanos is a management system for local git repositories. It visualizes the state of all available local git repositories.
 
@@ -24,6 +24,10 @@ In the files overview screen you can select 1 or more files for a commit.
 After clicking the COMMIT button in the top right corner, you need to enter a commit message.
 
 ![Gitanos-06](Gitanos-06.png) <br />
+
+> ⚠️ You may be asked to enter your Windows username and password<br />
+> The Phabrico webserver is running in the background under the LocalSystem account.<br />
+> To get access to your git account configuration, you need to logon with your Windows credentials.
 
 The local commit is visible on top of the screen: ![Gitanos-07](Gitanos-07.png) <br />
 With the PUSH button in the top right corner you can push the local commit to your remote git repository.

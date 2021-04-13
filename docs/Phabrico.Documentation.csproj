@@ -83,9 +83,12 @@ RD /S /Q bin
     <Content Include="07-Remarkup\Remarkup-15.png" />
     <Content Include="07-Remarkup\Remarkup-16.png" />
     <Content Include="07-Remarkup\Remarkup-17.png" />
+    <Content Include="07-Remarkup\Remarkup-18.png" />
+    <Content Include="07-Remarkup\Remarkup-19.png" />
     <Content Include="08-OfflineChanges\OfflineChanges-01.png" />
     <Content Include="09-FileObjects\FileObjects-01.png" />
     <Content Include="10-Diagrams\Diagrams-01.png" />
+    <Content Include="10-Diagrams\Diagrams-02.png" />
     <Content Include="11-Gitanos\Gitanos-01.png" />
     <Content Include="11-Gitanos\Gitanos-02.png" />
     <Content Include="11-Gitanos\Gitanos-03.png" />
