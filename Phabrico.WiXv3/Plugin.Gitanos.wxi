@@ -48,6 +48,873 @@
                   Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)CredentialManagement.dll"
                   KeyPath="yes" />
         </Component>
+        <Component Id="gitanos_netstandard_dll" Guid="78195646-b8fb-45cf-be01-7f5145c095d9"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_netstandard_dll"
+                        Name="netstandard.dll"
+                        On="install" />
+
+            <File Id="file_gitanos_netstandard_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)netstandard.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_microsoft_win32_primitives_dll" Guid="248323f1-72bb-4937-9575-ea16e2d3a0e1"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_microsoft_win32_primitives_dll"
+                        Name="Microsoft.Win32.Primitives.dll"
+                        On="install" />
+            <File Id="file_gitanos_microsoft_win32_primitives_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)Microsoft.Win32.Primitives.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_appcontext_dll" Guid="5cd17b92-2100-49a8-b9c5-732ee3b3076a"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_appcontext_dll"
+                        Name="System.AppContext.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_appcontext_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.AppContext.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_collections_concurrent_dll" Guid="b5e42c70-24a9-4571-b570-86a401de9f91"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_collections_concurrent_dll"
+                        Name="System.Collections.Concurrent.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_collections_concurrent_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Collections.Concurrent.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_collections_dll" Guid="06192669-b6d2-4145-a301-10c3f635429f"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_collections_dll"
+                        Name="System.Collections.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_collections_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Collections.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_collections_nongeneric_dll" Guid="4787d8dd-b930-4758-9d63-09323ef8f302"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_collections_nongeneric_dll"
+                        Name="System.Collections.NonGeneric.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_collections_nongeneric_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Collections.NonGeneric.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_collections_specialized_dll" Guid="b9022341-a5fc-40b1-a305-1b84b17d6a5a"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_collections_specialized_dll"
+                        Name="System.Collections.Specialized.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_collections_specialized_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Collections.Specialized.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_componentmodel_dll" Guid="ffc3bad3-6eb3-4779-af54-39eb1d4af45f"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_componentmodel_dll"
+                        Name="System.ComponentModel.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_componentmodel_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.ComponentModel.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_componentmodel_eventbasedasync_dll" Guid="6872677c-0614-463c-91bb-157df83e4eec"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_componentmodel_eventbasedasync_dll"
+                        Name="System.ComponentModel.EventBasedAsync.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_componentmodel_eventbasedasync_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.ComponentModel.EventBasedAsync.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_componentmodel_primitives_dll" Guid="66e9945d-1bdb-4cf2-9674-0f71b4e20b27"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_componentmodel_primitives_dll"
+                        Name="System.ComponentModel.Primitives.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_componentmodel_primitives_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.ComponentModel.Primitives.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_componentmodel_typeconverter_dll" Guid="750c4509-2c38-471d-b212-4a09a74db6ca"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_componentmodel_typeconverter_dll"
+                        Name="System.ComponentModel.TypeConverter.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_componentmodel_typeconverter_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.ComponentModel.TypeConverter.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_console_dll" Guid="114c7332-2dbd-4d9e-a8c2-5273b4372407"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_console_dll"
+                        Name="System.Console.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_console_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Console.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_data_common_dll" Guid="e5920a67-cf89-47f5-bebb-a3ee92f5ac1b"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_data_common_dll"
+                        Name="System.Data.Common.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_data_common_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Data.Common.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_contracts_dll" Guid="28e5286b-63af-452a-84c8-595fa2853472"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_contracts_dll"
+                        Name="System.Diagnostics.Contracts.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_contracts_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.Contracts.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_debug_dll" Guid="618c2a7b-38d6-430e-91b8-ee08b54aa8e5"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_debug_dll"
+                        Name="System.Diagnostics.Debug.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_debug_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.Debug.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_fileversioninfo_dll" Guid="0d17f352-167f-43fd-ab73-5c0f0ee50ad1"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_fileversioninfo_dll"
+                        Name="System.Diagnostics.FileVersionInfo.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_fileversioninfo_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.FileVersionInfo.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_process_dll" Guid="78cce0b6-d7c0-4cfa-be64-5b64291ddde2"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_process_dll"
+                        Name="System.Diagnostics.Process.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_process_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.Process.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_stacktrace_dll" Guid="62947f08-2c19-4d18-ae6e-f3a8cceb5f8d"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_stacktrace_dll"
+                        Name="System.Diagnostics.StackTrace.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_stacktrace_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.StackTrace.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_textwritertracelistener_dll" Guid="b80fed6d-b633-48e9-b504-274f7d790910"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_textwritertracelistener_dll"
+                        Name="System.Diagnostics.TextWriterTraceListener.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_textwritertracelistener_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.TextWriterTraceListener.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_tools_dll" Guid="14cec58a-4ccd-4934-b8e5-6382ce6f99fd"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_tools_dll"
+                        Name="System.Diagnostics.Tools.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_tools_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.Tools.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_tracesource_dll" Guid="7ab1f59b-49de-45a9-a230-a1e3f7cfc9ca"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_tracesource_dll"
+                        Name="System.Diagnostics.TraceSource.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_tracesource_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.TraceSource.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_diagnostics_tracing_dll" Guid="5c88d19e-f246-4805-bbd6-16647692259a"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_diagnostics_tracing_dll"
+                        Name="System.Diagnostics.Tracing.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_diagnostics_tracing_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Diagnostics.Tracing.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_drawing_primitives_dll" Guid="1290ec1e-cc7a-4e40-8526-6ebad3308e52"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_drawing_primitives_dll"
+                        Name="System.Drawing.Primitives.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_drawing_primitives_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Drawing.Primitives.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_dynamic_runtime_dll" Guid="6c59a36d-9a7a-4132-81f0-5fafff1d5c99"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_dynamic_runtime_dll"
+                        Name="System.Dynamic.Runtime.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_dynamic_runtime_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Dynamic.Runtime.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_globalization_calendars_dll" Guid="40b69e39-49b2-45c2-9542-ce61a69ec6b5"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_globalization_calendars_dll"
+                        Name="System.Globalization.Calendars.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_globalization_calendars_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Globalization.Calendars.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_globalization_dll" Guid="46e1616f-309a-4900-85ae-047db65dc5e0"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_globalization_dll"
+                        Name="System.Globalization.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_globalization_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Globalization.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_globalization_extensions_dll" Guid="98a6f77a-f08b-4da9-8a5c-a0980739f74a"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_globalization_extensions_dll"
+                        Name="System.Globalization.Extensions.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_globalization_extensions_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Globalization.Extensions.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_compression_dll" Guid="0aa23bef-c761-4790-b196-00cda96f9cf4"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_compression_dll"
+                        Name="System.IO.Compression.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_compression_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.Compression.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_compression_zipfile_dll" Guid="57acb4b3-f6b0-453f-8537-250e937571bc"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_compression_zipfile_dll"
+                        Name="System.IO.Compression.ZipFile.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_compression_zipfile_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.Compression.ZipFile.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_dll" Guid="b50afabe-ad91-4dea-aa1e-ecfdeec8b3c8"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_dll"
+                        Name="System.IO.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_filesystem_dll" Guid="514a9260-00c0-434e-a46e-4b6171591701"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_filesystem_dll"
+                        Name="System.IO.FileSystem.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_filesystem_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.FileSystem.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_filesystem_driveinfo_dll" Guid="be251d2c-da02-4ccb-9b29-c1b6d5974c37"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_filesystem_driveinfo_dll"
+                        Name="System.IO.FileSystem.DriveInfo.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_filesystem_driveinfo_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.FileSystem.DriveInfo.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_filesystem_primitives_dll" Guid="4fd6c894-20a1-4e67-a6e2-04b7ac29c86d"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_filesystem_primitives_dll"
+                        Name="System.IO.FileSystem.Primitives.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_filesystem_primitives_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.FileSystem.Primitives.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_filesystem_watcher_dll" Guid="e794ab1a-1592-4c5b-b5c0-e48863af0cd0"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_filesystem_watcher_dll"
+                        Name="System.IO.FileSystem.Watcher.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_filesystem_watcher_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.FileSystem.Watcher.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_isolatedstorage_dll" Guid="5be985d0-e563-4953-a003-3461dec935d9"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_isolatedstorage_dll"
+                        Name="System.IO.IsolatedStorage.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_isolatedstorage_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.IsolatedStorage.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_memorymappedfiles_dll" Guid="47047b62-f56f-46a6-a5b2-45fced71c26f"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_memorymappedfiles_dll"
+                        Name="System.IO.MemoryMappedFiles.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_memorymappedfiles_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.MemoryMappedFiles.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_pipes_dll" Guid="9f06e214-8702-449b-bdaa-1308a69cb736"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_pipes_dll"
+                        Name="System.IO.Pipes.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_pipes_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.Pipes.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_io_unmanagedmemorystream_dll" Guid="aeb563b2-6d54-45f4-b118-3447388dfc9c"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_io_unmanagedmemorystream_dll"
+                        Name="System.IO.UnmanagedMemoryStream.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_io_unmanagedmemorystream_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.UnmanagedMemoryStream.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_linq_dll" Guid="886c9670-effb-4f59-90b7-3b66e8e5976d"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_linq_dll"
+                        Name="System.Linq.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_linq_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Linq.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_linq_expressions_dll" Guid="afea261e-e468-4df5-8611-fe51258ad050"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_linq_expressions_dll"
+                        Name="System.Linq.Expressions.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_linq_expressions_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Linq.Expressions.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_linq_parallel_dll" Guid="4d3662ca-ab47-4123-b145-6a36ac169edc"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_linq_parallel_dll"
+                        Name="System.Linq.Parallel.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_linq_parallel_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Linq.Parallel.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_linq_queryable_dll" Guid="54972757-eddb-4093-98c3-a424785761bc"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_linq_queryable_dll"
+                        Name="System.Linq.Queryable.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_linq_queryable_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Linq.Queryable.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_http_dll" Guid="b56ac6f2-7723-4aa0-95e0-abb88de7d816"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_http_dll"
+                        Name="System.Net.Http.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_http_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.Http.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_nameresolution_dll" Guid="146d5177-cd47-40ed-9161-0ffb8d06ce7e"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_nameresolution_dll"
+                        Name="System.Net.NameResolution.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_nameresolution_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.NameResolution.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_networkinformation_dll" Guid="19a70abb-4f93-40c9-9e23-b34ce260db7e"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_networkinformation_dll"
+                        Name="System.Net.NetworkInformation.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_networkinformation_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.NetworkInformation.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_ping_dll" Guid="c12b21f5-970c-4b86-bf0b-e11208d588e8"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_ping_dll"
+                        Name="System.Net.Ping.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_ping_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.Ping.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_primitives_dll" Guid="0c841ce4-4213-4cda-81de-7bda6f043467"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_primitives_dll"
+                        Name="System.Net.Primitives.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_primitives_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.Primitives.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_requests_dll" Guid="8b6981b3-9bec-4c1a-9cc0-91b804dd9679"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_requests_dll"
+                        Name="System.Net.Requests.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_requests_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.Requests.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_security_dll" Guid="7f22cde8-60e3-488c-9860-473c73f10f4f"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_security_dll"
+                        Name="System.Net.Security.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_security_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.Security.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_sockets_dll" Guid="63c79f5d-7cba-4c9b-8753-aa29b12a96ff"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_sockets_dll"
+                        Name="System.Net.Sockets.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_sockets_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.Sockets.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_webheadercollection_dll" Guid="8b0306f0-7e04-47db-ac92-d098d6f0058f"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_webheadercollection_dll"
+                        Name="System.Net.WebHeaderCollection.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_webheadercollection_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.WebHeaderCollection.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_websockets_client_dll" Guid="a7915a9c-d10a-4505-acaf-01c9a80ae9d2"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_websockets_client_dll"
+                        Name="System.Net.WebSockets.Client.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_websockets_client_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.WebSockets.Client.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_net_websockets_dll" Guid="0261ce96-e819-48f0-b88a-08db1196a47c"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_net_websockets_dll"
+                        Name="System.Net.WebSockets.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_net_websockets_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Net.WebSockets.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_objectmodel_dll" Guid="9b687ccb-5a13-464d-af71-ab0cb54b7947"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_objectmodel_dll"
+                        Name="System.ObjectModel.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_objectmodel_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.ObjectModel.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_reflection_dll" Guid="e31ad860-b25f-4ce9-8c33-528e9c0a54a1"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_reflection_dll"
+                        Name="System.Reflection.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_reflection_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Reflection.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_reflection_extensions_dll" Guid="1720a28e-7360-4713-a0bc-a4269a390535"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_reflection_extensions_dll"
+                        Name="System.Reflection.Extensions.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_reflection_extensions_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Reflection.Extensions.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_reflection_primitives_dll" Guid="b4d3e09f-1a36-4d50-b631-4b6a366b3472"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_reflection_primitives_dll"
+                        Name="System.Reflection.Primitives.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_reflection_primitives_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Reflection.Primitives.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_resources_reader_dll" Guid="295c1d8e-3b5c-4fdd-bfb3-2d78b7414daa"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_resources_reader_dll"
+                        Name="System.Resources.Reader.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_resources_reader_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Resources.Reader.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_resources_resourcemanager_dll" Guid="dad01301-fc0a-48cf-b716-c7dffb1fa8e7"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_resources_resourcemanager_dll"
+                        Name="System.Resources.ResourceManager.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_resources_resourcemanager_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Resources.ResourceManager.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_resources_writer_dll" Guid="09ad3353-b020-4ed3-a39c-e4b20a82811c"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_resources_writer_dll"
+                        Name="System.Resources.Writer.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_resources_writer_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Resources.Writer.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_compilerservices_visualc_dll" Guid="f62232f1-351d-42c0-8fef-b9b313c2f63c"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_compilerservices_visualc_dll"
+                        Name="System.Runtime.CompilerServices.VisualC.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_compilerservices_visualc_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.CompilerServices.VisualC.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_dll" Guid="2bb78625-d691-487a-a161-5ea8fd8dd758"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_dll"
+                        Name="System.Runtime.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_extensions_dll" Guid="22518f03-baba-448c-b2c2-0363c715eb49"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_extensions_dll"
+                        Name="System.Runtime.Extensions.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_extensions_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.Extensions.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_handles_dll" Guid="addaeee3-2429-4b03-a646-d3061bfc8163"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_handles_dll"
+                        Name="System.Runtime.Handles.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_handles_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.Handles.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_interopservices_dll" Guid="cd8ea48b-e12b-4584-8b3e-5c394235ead7"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_interopservices_dll"
+                        Name="System.Runtime.InteropServices.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_interopservices_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.InteropServices.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_interopservices_runtimeinformation_dll" Guid="9ad3933c-8f22-4fd6-b225-21478c10345b"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_interopservices_runtimeinformation_dll"
+                        Name="System.Runtime.InteropServices.RuntimeInformation.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_interopservices_runtimeinformation_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.InteropServices.RuntimeInformation.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_numerics_dll" Guid="595e2ab1-e0ce-441a-ae0c-73191ae29139"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_numerics_dll"
+                        Name="System.Runtime.Numerics.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_numerics_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.Numerics.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_serialization_formatters_dll" Guid="c96007f4-c343-420e-b94f-6af920140217"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_serialization_formatters_dll"
+                        Name="System.Runtime.Serialization.Formatters.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_serialization_formatters_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.Serialization.Formatters.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_serialization_json_dll" Guid="efb40d3f-a8a8-4cd6-9095-9316236277e6"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_serialization_json_dll"
+                        Name="System.Runtime.Serialization.Json.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_serialization_json_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.Serialization.Json.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_serialization_primitives_dll" Guid="3669381f-0db1-4b30-90fd-1ba874bc0d04"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_serialization_primitives_dll"
+                        Name="System.Runtime.Serialization.Primitives.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_serialization_primitives_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.Serialization.Primitives.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_runtime_serialization_xml_dll" Guid="8fe9d8c8-0457-42ff-96ed-18c094aa7ea2"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_runtime_serialization_xml_dll"
+                        Name="System.Runtime.Serialization.Xml.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_runtime_serialization_xml_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Runtime.Serialization.Xml.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_security_claims_dll" Guid="1e678281-8350-4a02-b7d0-2f49aa0b39c3"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_security_claims_dll"
+                        Name="System.Security.Claims.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_security_claims_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Security.Claims.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_security_cryptography_algorithms_dll" Guid="25e3af0a-0691-4e66-b796-b812b40996f9"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_security_cryptography_algorithms_dll"
+                        Name="System.Security.Cryptography.Algorithms.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_security_cryptography_algorithms_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Security.Cryptography.Algorithms.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_security_cryptography_csp_dll" Guid="8c7a92a1-271a-40c9-9724-b22fa319835e"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_security_cryptography_csp_dll"
+                        Name="System.Security.Cryptography.Csp.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_security_cryptography_csp_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Security.Cryptography.Csp.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_security_cryptography_encoding_dll" Guid="8650175a-a97a-4f50-9ba9-2765c707a132"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_security_cryptography_encoding_dll"
+                        Name="System.Security.Cryptography.Encoding.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_security_cryptography_encoding_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Security.Cryptography.Encoding.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_security_cryptography_primitives_dll" Guid="a6a99010-4d14-4016-b3e9-6629f8408223"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_security_cryptography_primitives_dll"
+                        Name="System.Security.Cryptography.Primitives.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_security_cryptography_primitives_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Security.Cryptography.Primitives.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_security_cryptography_x509certificates_dll" Guid="1d2dd404-c766-45dc-ac80-aa9d69ccc87a"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_security_cryptography_x509certificates_dll"
+                        Name="System.Security.Cryptography.X509Certificates.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_security_cryptography_x509certificates_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Security.Cryptography.X509Certificates.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_security_principal_dll" Guid="d5f6ed7f-1ee4-455a-b833-5cc132c4fcb5"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_security_principal_dll"
+                        Name="System.Security.Principal.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_security_principal_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Security.Principal.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_security_securestring_dll" Guid="f96eca54-60fd-40f8-b75b-2d9d5a453eef"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_security_securestring_dll"
+                        Name="System.Security.SecureString.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_security_securestring_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Security.SecureString.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_text_encoding_dll" Guid="fb7a2104-d650-4c75-ac98-4919ec7c2181"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_text_encoding_dll"
+                        Name="System.Text.Encoding.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_text_encoding_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Text.Encoding.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_text_encoding_extensions_dll" Guid="0380a1cf-c839-4b8d-b26d-e5d09a2dfb5a"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_text_encoding_extensions_dll"
+                        Name="System.Text.Encoding.Extensions.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_text_encoding_extensions_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Text.Encoding.Extensions.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_text_regularexpressions_dll" Guid="268293db-8a6b-479d-8af3-65ec362ece99"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_text_regularexpressions_dll"
+                        Name="System.Text.RegularExpressions.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_text_regularexpressions_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Text.RegularExpressions.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_threading_dll" Guid="48a0d362-545d-4ce6-99f4-9ec81e8e4605"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_threading_dll"
+                        Name="System.Threading.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_threading_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Threading.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_threading_overlapped_dll" Guid="bf1724f0-ed4b-447d-a2ca-59eeff28dcb1"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_threading_overlapped_dll"
+                        Name="System.Threading.Overlapped.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_threading_overlapped_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Threading.Overlapped.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_threading_tasks_dll" Guid="3b65b099-a5cd-490e-90e8-8edcb0863b9a"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_threading_tasks_dll"
+                        Name="System.Threading.Tasks.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_threading_tasks_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Threading.Tasks.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_threading_tasks_parallel_dll" Guid="e533d785-fedc-4306-840a-2ae6757e28ad"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_threading_tasks_parallel_dll"
+                        Name="System.Threading.Tasks.Parallel.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_threading_tasks_parallel_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Threading.Tasks.Parallel.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_threading_thread_dll" Guid="2c35484d-c16a-44dc-a485-890597f10b70"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_threading_thread_dll"
+                        Name="System.Threading.Thread.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_threading_thread_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Threading.Thread.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_threading_threadpool_dll" Guid="9b4cd9ec-2232-4e08-8ab5-e0db579be92a"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_threading_threadpool_dll"
+                        Name="System.Threading.ThreadPool.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_threading_threadpool_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Threading.ThreadPool.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_threading_timer_dll" Guid="abc07716-4ef3-45c7-b8b1-0a564fcf6f87"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_threading_timer_dll"
+                        Name="System.Threading.Timer.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_threading_timer_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Threading.Timer.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_valuetuple_dll" Guid="7d447489-fa6d-4ccc-92e7-0a3aef2b3b09"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_valuetuple_dll"
+                        Name="System.ValueTuple.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_valuetuple_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.ValueTuple.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_xml_readerwriter_dll" Guid="d4c9348b-4cbf-4790-9a5e-ead55b0423ed"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_xml_readerwriter_dll"
+                        Name="System.Xml.ReaderWriter.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_xml_readerwriter_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Xml.ReaderWriter.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_xml_xdocument_dll" Guid="f9cf5515-219b-438a-8234-4504ab726253"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_xml_xdocument_dll"
+                        Name="System.Xml.XDocument.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_xml_xdocument_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Xml.XDocument.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_xml_xmldocument_dll" Guid="b87660a9-fa14-4c08-84d5-ce377430ec21"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_xml_xmldocument_dll"
+                        Name="System.Xml.XmlDocument.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_xml_xmldocument_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Xml.XmlDocument.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_xml_xmlserializer_dll" Guid="57336b8e-ad19-4b0e-8566-d371c41c361e"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_xml_xmlserializer_dll"
+                        Name="System.Xml.XmlSerializer.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_xml_xmlserializer_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Xml.XmlSerializer.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_xml_xpath_dll" Guid="1d10af72-9c8b-4289-a171-ef28bcf18101"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_xml_xpath_dll"
+                        Name="System.Xml.XPath.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_xml_xpath_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Xml.XPath.dll"
+                  KeyPath="yes" />
+        </Component>
+        <Component Id="gitanos_system_xml_xpath_xdocument_dll" Guid="f67e30da-992f-4222-9071-81f614084edf"
+                   Win64="yes">
+            <RemoveFile Id="removefile_gitanos_system_xml_xpath_xdocument_dll"
+                        Name="System.Xml.XPath.XDocument.dll"
+                        On="install" />
+            <File Id="file_gitanos_system_xml_xpath_xdocument_dll"
+                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.Xml.XPath.XDocument.dll"
+                  KeyPath="yes" />
+        </Component>
+
+
 
         <ComponentRef Id="gitanos_git2_dll" />
     </ComponentGroup>

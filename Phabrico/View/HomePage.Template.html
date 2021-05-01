@@ -183,7 +183,7 @@
                 };
                 githubRepository.send(null);
             } else {
-                if (localStorage.getItem("phabrico-new-version-available") != null) {
+                if (localStorage.getItem("phabrico-new-version-available") != null  &&  localStorage.getItem("phabrico-new-version-available") != "@@PHABRICO-VERSION@@") {
                     document.body.classList.add("new-version-available");
                 }
             }

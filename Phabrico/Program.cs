@@ -11,6 +11,7 @@ namespace Phabrico
     class Program
     {
         private Http.Server httpServer;
+        private static AppConfigLoader appConfigLoader = new AppConfigLoader();
 
         /// <summary>
         /// Main method

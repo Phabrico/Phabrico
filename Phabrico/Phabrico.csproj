@@ -97,6 +97,7 @@
     <Compile Include="Http\Response\HttpInternalServerError.cs" />
     <Compile Include="Http\Response\PlainTextMessage.cs" />
     <Compile Include="Http\RouteManager.cs" />
+    <Compile Include="Miscellaneous\AppConfigLoader.cs" />
     <Compile Include="Miscellaneous\ColorFunctionality.cs" />
     <Compile Include="Miscellaneous\DataTreeNode.cs" />
     <Compile Include="Exception\PhabricoException.cs" />

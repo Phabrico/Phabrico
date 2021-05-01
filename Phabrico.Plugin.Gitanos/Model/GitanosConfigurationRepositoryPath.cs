@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using Phabrico.Miscellaneous;
+using System.Linq;
 
 namespace Phabrico.Plugin.Model
 {
@@ -84,8 +85,17 @@ namespace Phabrico.Plugin.Model
                                              + (UseUntracked ? NumberOfUntrackedFiles : 0);
                     }
                 }
-                catch
+                catch (System.Exception ex)
                 {
+                    Logging.WriteInfo("Gitanos-Directory", ex.Message);
+                    if (ex.InnerException != null)
+                    {
+                        Logging.WriteInfo("Gitanos-Directory", ex.InnerException.Message);
+                    }
+                    foreach (string line in ex.StackTrace.Split('\n'))
+                    {
+                        Logging.WriteInfo("Gitanos-Directory", line.Trim('\r'));
+                    }
                 }
             }
         }

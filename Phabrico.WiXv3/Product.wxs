@@ -25,6 +25,17 @@
         <!-- Make sure the installing user has administrative rights -->
         <Condition Message="You need local administrator rights to install Phabrico">Privileged</Condition>
 
+        <!-- Check for Windows version -->
+        <Condition Message="Phabrico is only supported on Windows 10 or higher.">
+            <![CDATA[Installed OR (VersionNT64 >= 603)]]>
+        </Condition>
+        
+        <!-- Check for .NET framework version -->
+        <PropertyRef Id="WIX_IS_NETFRAMEWORK_461_OR_LATER_INSTALLED" />
+        <Condition Message="Phabrico requires .NET Framework 4.6.1 or higher.">
+            <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_461_OR_LATER_INSTALLED]]>
+        </Condition>
+
         <MajorUpgrade Schedule="afterInstallExecute"
                       DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."/>
 
@@ -37,11 +48,8 @@
         <Property Id="APPCONFIG_ALLOWREMOTEACCESS" Secure="yes" Value="No" />
         <Property Id="APPCONFIG_TCPLISTENPORT" Secure="yes" Value="13467" />
         <Property Id="APPCONFIG_DATABASEDIRECTORY" Secure="yes" />
-        <Property Id="PLUGIN_GITANOS" Secure="yes" Value="No" />
-        <Property Id="PLUGIN_PHRICTIONTOPDF" Secure="yes" Value="No" />
-        <Property Id="PLUGIN_DIAGRAMSNET" Secure="yes" Value="No" />
 
-        <SetDirectory Id="APPCONFIG_DATABASEDIRECTORY" Value="[PersonalFolder]" Sequence="both"/>
+        <SetDirectory Id="APPCONFIG_DATABASEDIRECTORY" Value="[LocalAppDataFolder]\Phabrico" Sequence="both"/>
         
         <!-- Dialog set up -->
         <UI>
@@ -147,30 +155,9 @@
             <Publish Dialog="InstallDirDlg"
                   Control="Next"
                   Event="NewDialog"
-                  Value="FeaturesDlg"
-                  Order="2">1</Publish>
-            <Publish Dialog="InstallDirDlg"
-                  Control="ChangeFolder"
-                  Property="_BrowseProperty"
-                  Value="[WIXUI_INSTALLDIR]"
-                  Order="1">1</Publish>
-            <Publish Dialog="InstallDirDlg"
-                  Control="ChangeFolder"
-                  Event="SpawnDialog"
-                  Value="BrowseDlg"
+                  Value="InitializationParametersDialog"
                   Order="2">1</Publish>
 
-            <Publish Dialog="FeaturesDlg"
-                     Control="Back"
-                     Event="NewDialog"
-                     Value="InstallDirDlg"
-                     Order="2">1</Publish>
-            <Publish Dialog="FeaturesDlg"
-                     Control="Install"
-                     Event="NewDialog"
-                     Value="InitializationParametersDialog"
-                     Order="2">1</Publish>
-            
             <Publish Dialog="InitializationParametersDialog"
                   Control="Back"
                   Event="NewDialog"
@@ -190,10 +177,25 @@
             <Publish Dialog="ShortcutDialog"
                   Control="Next"
                   Event="NewDialog"
-                  Value="VerifyReadyDlg"
+                  Value="FeaturesDlg"
                   Order="2">1</Publish>
 
-            <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchFile" Order="1">1</Publish>
+            <Publish Dialog="FeaturesDlg"
+                     Control="Back"
+                     Event="NewDialog"
+                     Value="InstallDirDlg"
+                     Order="2">1</Publish>
+
+            <Publish Dialog="InstallDirDlg"
+                  Control="ChangeFolder"
+                  Property="_BrowseProperty"
+                  Value="[WIXUI_INSTALLDIR]"
+                  Order="1">1</Publish>
+            <Publish Dialog="InstallDirDlg"
+                  Control="ChangeFolder"
+                  Event="SpawnDialog"
+                  Value="BrowseDlg"
+                  Order="2">1</Publish>
 
             <InstallUISequence>
                 <Show Dialog="WelcomeDlg" Before="ProgressDlg" Overridable="no">NOT Installed AND NOT PREVFOUND AND NOT WIX_UPGRADE_DETECTED</Show>
@@ -228,7 +230,11 @@
         </Feature>
 
         <Property Id="IEXPLORE" Value="Explorer.exe"/>
-        <CustomAction Id="LaunchFile" Property="IEXPLORE" ExeCommand="http://localhost:13467" Return="asyncNoWait" />
+        <CustomAction Id="LaunchFile" Property="IEXPLORE" ExeCommand="http://localhost:13467" Return="asyncNoWait"></CustomAction>
+
+        <InstallExecuteSequence>
+            <Custom Action="LaunchFile" After="InstallFinalize">NOT Installed AND NOT REMOVE</Custom>
+        </InstallExecuteSequence>
     </Product>
 
     <Fragment>
