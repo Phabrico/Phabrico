@@ -3,6 +3,10 @@
 
 @import "{{ site.theme }}";
 
+.inner {
+    margin-left: 20px;
+}
+
 img,
 .inner {
     max-width: unset;

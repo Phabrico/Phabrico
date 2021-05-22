@@ -65,7 +65,7 @@ To remove a page from the homepage, click on *Remove from favorites*
 
  Favorites can be relocated by drag and drop them:<br />![image-20210411182114782](phriction-02.png) <br /> 
 
-Favorites can also be grouped by clicking on the dot next to it (a scissor should appear):![image-20210411182513804](phriction-03.png) <br />
+Favorites can also be grouped by clicking on the dot next to it (a scissor should appear):<br />![image-20210411182513804](phriction-03.png) <br />
 
 To ungroup favorites, click in front of the split line
 
