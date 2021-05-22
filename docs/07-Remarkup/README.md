@@ -27,12 +27,12 @@ At the right end you find the book icon which explains the Remarkup syntax more 
 
 ## Drag and drop functionalities
 
-Files can be drag-and-dropped into the code editor area:
+Files can be drag-and-dropped into the code editor area:<br />
 ![image-20210412153147100](Remarkup-15.png) <br />
 The code editor area will color green until you dropped the file.
 If the file is an image, the image will be shown as is in the right WYSIWYG area.
 If the file is not an image (e.g. a PDF file), an icon representing the file be shown. <br />
-For example:
+For example:<br />
 ![image-20210412153147101](Remarkup-16.png) <br /><br />
 
 Audio and video files will also directly visualized. <br />
@@ -45,9 +45,9 @@ For example: <br />
 
 Table data from Microsoft Excel can be directly copy pasted if the table does not contain merged cells.
 Color and formatting aren't copied.
-However, a formatted Excel cell will be seen as header cell in Remarkup (it will be visualized bold)
+However, a formatted Excel cell will be seen as header cell in Remarkup (it will be visualized bold)<br />
 For example: <br />
 ![image-20210412153147103](Remarkup-19.png) <br />
 ![image-20210412153147104](Remarkup-18.png) <br />
 
-[Previous Page](../06-Phriction/README.md) |  [Next page](../08-OfflineChanges/README.md)
+[Index](../README.md) | [Previous Page](../06-Phriction/README.md) |  [Next page](../08-OfflineChanges/README.md)

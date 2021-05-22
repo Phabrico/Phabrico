@@ -1,6 +1,6 @@
 # Configuring Phabrico
 
- The *Config* screen contains a number of settings in which you can configure the look and feel of Phabrico
+ The *Config* screen contains a number of settings in which you can configure the look and feel of Phabrico<br />
 ![image-20210411112557512](configuration-06.png) <br />
 
 
@@ -53,4 +53,4 @@
 | Translate notification block titles | If set to Yes, the NOTE, IMPORTANT and WARNING texts are translated according to the user's configured language:<br />![image-20210411130721519](configuration-11.png) |
 | Confidential Table Headers          | Here you can enter table headers whose values should initially not be visible.<br />Their values will be visible for 3 seconds when you hover over their values:<br />![image-20210411134619442](configuration-12.png) |
 
-[Previous Page](../01-Installation/README.md) |  [Next page](../03-Projects/README.md)
+[Index](../README.md) | [Previous Page](../01-Installation/README.md) |  [Next page](../03-Projects/README.md)

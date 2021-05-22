@@ -63,7 +63,7 @@ To return back to the original format, click on the *Return* button in the top r
 Links to wiki pages can be added on Phabrico's initial homepage by clicking on *Add to favorites*.
 To remove a page from the homepage, click on *Remove from favorites*
 
- Favorites can be relocated by drag and drop them:![image-20210411182114782](phriction-02.png) <br /> 
+ Favorites can be relocated by drag and drop them:<br />![image-20210411182114782](phriction-02.png) <br /> 
 
 Favorites can also be grouped by clicking on the dot next to it (a scissor should appear):![image-20210411182513804](phriction-03.png) <br />
 
@@ -114,4 +114,4 @@ The content of the wiki page in Remarkup format.
 
 The WYSIWYG content of the wiki page.
 
-[Previous Page](../05-Maniphest/README.md) |  [Next page](../07-Remarkup/README.md)
+[Index](../README.md) | [Previous Page](../05-Maniphest/README.md) |  [Next page](../07-Remarkup/README.md)

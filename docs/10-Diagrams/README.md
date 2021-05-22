@@ -23,4 +23,4 @@ If you click on it, the Diagram editor will be opened.
 
 The user manuals for Diagrams.net can be found at <https://www.diagrams.net/doc/>
 
-[Previous Page](../09-FileObjects/README.md) |  [Next page](../11-Gitanos/README.md)
+[Index](../README.md) | [Previous Page](../09-FileObjects/README.md) |  [Next page](../11-Gitanos/README.md)

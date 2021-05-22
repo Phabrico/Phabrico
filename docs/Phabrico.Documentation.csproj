@@ -34,6 +34,7 @@ RD /S /Q bin
     <None Include="09-FileObjects\README.md" />
     <None Include="10-Diagrams\README.md" />
     <None Include="11-Gitanos\README.md" />
+    <None Include="assets\css\style.scss" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>

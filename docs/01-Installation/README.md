@@ -53,7 +53,7 @@ It will download all available projects and user accounts from the Phabricator s
 ![image-20210411111026032](configuration-04.png) <br />
 These will be used later on to configure the synchronization process between Phabrico and Phabricator.
 
-After the first synchronization process between Phabrico and Phabricator, you will get a short introduction:
+After the first synchronization process between Phabrico and Phabricator, you will get a short introduction:<br />
 ![image-20210411111315207](configuration-05.png) <br />
 
-[Next page](../02-Configuration/README.md)
+[Index](../README.md) | [Next page](../02-Configuration/README.md)

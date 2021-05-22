@@ -13,7 +13,7 @@ For each repository, the number of modifications per type is shown in columns to
 When you click on a repository, you will see an overview of the files that have been modified:
 
 ![Gitanos-03](Gitanos-03.png) <br />
-When you click on the file, you will see a diff view of this file:
+When you click on the file, you will see a diff view of this file:<br />
 ![Gitanos-04](Gitanos-04.png) <br />
 You can edit this file directly by clicking the *Edit* button in the top right corner:
 
@@ -29,10 +29,10 @@ After clicking the COMMIT button in the top right corner, you need to enter a co
 > The Phabrico webserver is running in the background under the LocalSystem account.<br />
 > To get access to your git account configuration, you need to logon with your Windows credentials.
 
-The local commit is visible on top of the screen: ![Gitanos-07](Gitanos-07.png) <br />
+The local commit is visible on top of the screen:<br /> ![Gitanos-07](Gitanos-07.png) <br />
 With the PUSH button in the top right corner you can push the local commit to your remote git repository.
 
 Local commits and modifications can be undone by means of the *Undo* buttons. 
 
 
-[Previous Page](../10-Diagrams/README.md)
+[Index](../README.md) | [Previous Page](../10-Diagrams/README.md)

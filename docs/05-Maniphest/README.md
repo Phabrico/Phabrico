@@ -1,6 +1,6 @@
 # Maniphest tasks
 
- The *Maniphest* task overview screen displays a list of tasks to be performed:
+ The *Maniphest* task overview screen displays a list of tasks to be performed:<br />
 ![image-20210411140728743](maniphest-01.png) <br />
 
 
@@ -129,4 +129,4 @@ The content of the task in Remarkup format.
 
 The WYSIWYG content of the task.
 
-[Previous Page](../04-Users/README.md) |  [Next page](../06-Phriction/README.md)
+[Index](../README.md) | [Previous Page](../04-Users/README.md) |  [Next page](../06-Phriction/README.md)

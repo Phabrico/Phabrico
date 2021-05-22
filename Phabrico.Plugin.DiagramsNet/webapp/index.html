@@ -5,7 +5,6 @@
 
     .geMenubarContainer {
         padding-left: var(--navigator-width);
-        top: 45px !important;
     }
 
     a.geToolbarButton {
@@ -341,7 +340,8 @@
         filter: brightness(110%) contrast(120%);
     }
 
-    html body[data-theme="dark"] {
+    html body[data-theme="dark"][data-themestyle="moderate"],
+    html body[data-theme="dark"][data-themestyle="extreme"] {
         color: #ccc;
     }
 </style>

@@ -48,6 +48,21 @@ namespace Phabrico.Miscellaneous
                 .GetField("s_current", BindingFlags.NonPublic |
                                        BindingFlags.Static)
                 .SetValue(null, null);
+
+            // fix version issue with System.Runtime.InteropServices.RuntimeInformation.dll
+            AppDomain.CurrentDomain.AssemblyResolve += delegate (object sender, ResolveEventArgs e)
+            {
+                AssemblyName requestedName = new AssemblyName(e.Name);
+
+                if (requestedName.Name.Equals("System.Runtime.InteropServices.RuntimeInformation", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Assembly.LoadFrom("System.Runtime.InteropServices.RuntimeInformation.dll");
+                }
+                else
+                {
+                    return null;
+                }
+            };
         }
 
         /// <summary>

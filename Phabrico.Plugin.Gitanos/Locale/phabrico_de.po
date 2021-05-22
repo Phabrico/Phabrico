@@ -55,7 +55,6 @@ msgid "Gitanos::ModifiedTooLarge"
 msgstr "Geändert (zu groß)"
 
 msgid "Gitanos::Renamed"
-
 msgstr "Umbenannt"
 
 msgid "Gitanos::Untracked"

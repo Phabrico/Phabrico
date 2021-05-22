@@ -9,15 +9,15 @@
 		/**
 		 * Enables paste from Lucidchart
 		 */
-		html4.ATTRIBS["span::data-lucid-content"] = 0;
-		html4.ATTRIBS["span::data-lucid-type"] = 0;
+		html4.ATTRIBS['span::data-lucid-content'] = 0;
+		html4.ATTRIBS['span::data-lucid-type'] = 0;
 		
 		/**
 		 * Enables custom fonts in labels.
 		 */
 		html4.ATTRIBS['font::data-font-src'] = 0;
 	}
-	
+
 	/**
 	 * Specifies the app name. Default is document.title.
 	 */
@@ -197,6 +197,16 @@
 	 * Error image for not found images
 	 */	
 	Editor.errorImage = 'data:image/gif;base64,R0lGODlhEAAQAPcAAADGAIQAAISEhP8AAP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////yH5BAEAAAAALAAAAAAQABAAAAhoAAEIFBigYMGBCAkGGMCQ4cGECxtKHBAAYUQCEzFSHLiQgMeGHjEGEAAg4oCQJz86LCkxpEqHAkwyRClxpEyXGmGaREmTIsmOL1GO/DkzI0yOE2sKIMlRJsWhCQHENDiUaVSpS5cmDAgAOw==';
+	
+	/**
+	 * Error image for not found images
+	 */	
+	Editor.configurationKey = '.configuration';
+		
+	/**
+	 * Error image for not found images
+	 */	
+	Editor.settingsKey = '.drawio-config';
 	
 	/**
 	 * Default value for custom libraries in mxSettings.
@@ -424,7 +434,8 @@
         			{val: 'hexagonPerimeter2', dispName: 'Hexagon'}, {val: 'lifelinePerimeter', dispName: 'Lifeline'},
         			{val: 'orthogonalPerimeter', dispName: 'Orthogonal'}, {val: 'backbonePerimeter', dispName: 'Backbone'},
         			{val: 'calloutPerimeter', dispName: 'Callout'}, {val: 'parallelogramPerimeter', dispName: 'Parallelogram'},
-        			{val: 'trapezoidPerimeter', dispName: 'Trapezoid'}, {val: 'stepPerimeter', dispName: 'Step'}]
+        			{val: 'trapezoidPerimeter', dispName: 'Trapezoid'}, {val: 'stepPerimeter', dispName: 'Step'},
+        			{val: 'centerPerimeter', dispName: 'Center'}]
         },
         {name: 'fixDash', dispName: 'Fixed Dash', type: 'bool', defVal: false},
         {name: 'autosize', dispName: 'Autosize', type: 'bool', defVal: false},
@@ -567,10 +578,14 @@
 		'## An optional placeholders can be set to target to use data from the target instead.\n' +
 		'## In addition to label, an optional fromlabel and tolabel can be used to name the column\n' +
 		'## that contains the text for the label in the edges source or target (invert ignored).\n' +
-		'## The label is concatenated in the form fromlabel + label + tolabel if all are defined.\n' +
+		'## In addition to those, an optional source and targetlabel can be used to specify a label\n' +
+		'## that contains placeholders referencing the respective columns in the source or target row.\n' +
+		'## The label is created in the form fromlabel + sourcelabel + label + tolabel + targetlabel.\n' +
 		'## Additional labels can be added by using an optional labels array with entries of the\n' +
 		'## form {"label": string, "x": number, "y": number, "dx": number, "dy": number} where\n' +
 		'## x is from -1 to 1 along the edge, y is orthogonal, and dx/dy are offsets in pixels.\n' +
+		'## An optional placeholders with the string value "source" or "target" can be specified\n' +
+		'## to replace placeholders in the additional label with data from the source or target.\n' +
 		'## The target column may contain a comma-separated list of values.\n' +
 		'## Multiple connect entries are allowed.\n' +
 		'#\n' +
@@ -649,7 +664,7 @@
 				return c;
 			}
 		});
-	
+		
 		rc.draw = function(drawable)
 		{
 			var sets = drawable.sets || [];
@@ -829,7 +844,7 @@
 				}
 			}
 
-			var style = {strokeWidth: this.canvas.state.strokeWidth, seed: seed};
+			var style = {strokeWidth: this.canvas.state.strokeWidth, seed: seed, preserveVertices: true};
 			var defs = this.rc.getDefaultOptions();
 			
 			if (stroke)
@@ -1199,29 +1214,15 @@
 		var shapePaint = mxShape.prototype.paint;
 		mxShape.prototype.paint = function(c)
 		{
-			var fillStyle = null;
+			var addTolerance = c.addTolerance;
 			var events = true;
 			
 			if (this.style != null)
 			{
 				events = mxUtils.getValue(this.style, mxConstants.STYLE_POINTER_EVENTS, '1') == '1';
-				fillStyle = mxUtils.getValue(this.style, 'fillStyle', 'auto');
-				
-				if (this.state != null && fillStyle == 'auto')
-				{
-					var bg = this.state.view.graph.defaultPageBackgroundColor;
-					
-					if (this.fill != null && (this.gradient != null || (bg != null &&
-						this.fill.toLowerCase() == bg.toLowerCase())))
-					{
-						fillStyle = 'solid';
-					}
-				}
 			}
 			
-			if (events && c.handJiggle != null && c.handJiggle.constructor == RoughCanvas &&
-				!this.outline && (this.fill == null || this.fill == mxConstants.NONE ||
-				fillStyle != 'solid'))
+			if (c.handJiggle != null && c.handJiggle.constructor == RoughCanvas && !this.outline)
 			{
 				// Save needed for possible transforms applied during paint
 				c.save();
@@ -1229,17 +1230,73 @@
 				var stroke = this.stroke;
 				this.fill = null;
 				this.stroke = null;
+				
+				var configurePointerEvents = this.configurePointerEvents;
+				
+				// Ignores color changes during paint
+				var setStrokeColor = c.setStrokeColor;
+				
+				c.setStrokeColor = function()
+				{
+					// ignore
+				};
+		
+				var setFillColor = c.setFillColor;
+				
+				c.setFillColor = function()
+				{
+					// ignore
+				};
+				
+				// Adds stroke tolerance for plain rendering if filled
+				if (!events && fill != null)
+				{
+					this.configurePointerEvents = function()
+					{
+						// ignore
+					};
+				}
+				
 				c.handJiggle.passThrough = true;
 
 				shapePaint.apply(this, arguments);
 
 				c.handJiggle.passThrough = false;
-				this.fill = fill;
+				c.setFillColor = setFillColor;
+				c.setStrokeColor = setStrokeColor;
+				this.configurePointerEvents = configurePointerEvents;
 				this.stroke = stroke;
+				this.fill = fill;
 				c.restore();
+				
+				// Bypasses stroke tolerance for sketched rendering if filled
+				if (events && fill != null)
+				{
+					c.addTolerance = function()
+					{
+						// ignore	
+					};
+				}
 			}
 			
 			shapePaint.apply(this, arguments);
+			c.addTolerance = addTolerance;
+		};
+
+		// Overrides glass effect to disable sketch style
+		var shapePaintGlassEffect = mxShape.prototype.paintGlassEffect;
+		mxShape.prototype.paintGlassEffect = function(c, x, y, w, h, arc)
+		{
+			if (c.handJiggle != null && c.handJiggle.constructor == RoughCanvas)
+			{
+				c.handJiggle.passThrough = true;
+				shapePaintGlassEffect.apply(this, arguments);
+				c.handJiggle.passThrough = false;
+			}
+			else
+			{
+				shapePaintGlassEffect.apply(this, arguments);
+			}
 		};
 	})();
 
@@ -1647,7 +1704,6 @@
 		}
 		catch (e)
 		{
-			console.log('here', e);
 			// ignores decoding errors
 		}
 		
@@ -1743,6 +1799,11 @@
 				Editor.compressXml = config.compressXml;
 			}
 			
+			if (config.simpleLabels != null)
+			{
+				Editor.simpleLabels = config.simpleLabels;
+			}
+			
 			if (config.customFonts)
 			{
 				Menus.prototype.defaultFonts = config.customFonts.
@@ -1812,6 +1873,17 @@
 			if (config.defaultEdgeStyle != null)
 			{
 				Graph.prototype.defaultEdgeStyle = config.defaultEdgeStyle;
+			}
+
+			// Overrides zoom factor
+			if (config.zoomFactor != null)
+			{
+				var val = parseFloat(config.zoomFactor);
+				
+				if (!isNaN(val) && val > 1)
+				{
+					Graph.prototype.zoomFactor = val;
+				}
 			}
 
 			// Overrides grid steps
@@ -4182,8 +4254,8 @@
 			{fill: '#0050ef', stroke: '#001DBC', font: '#ffffff'}, {fill: '#6a00ff', stroke: '#3700CC', font: '#ffffff'},
 			//{fill: '#aa00ff', stroke: '#7700CC', font: '#ffffff'},
 			{fill: '#d80073', stroke: '#A50040', font: '#ffffff'}, {fill: '#a20025', stroke: '#6F0000', font: '#ffffff'}],
-			[{fill: '#e51400', stroke: '#B20000', font: '#ffffff'}, {fill: '#fa6800', stroke: '#C73500', font: '#ffffff'},
-			{fill: '#f0a30a', stroke: '#BD7000', font: '#ffffff'}, {fill: '#e3c800', stroke: '#B09500', font: '#ffffff'},
+			[{fill: '#e51400', stroke: '#B20000', font: '#ffffff'}, {fill: '#fa6800', stroke: '#C73500', font: '#000000'},
+			{fill: '#f0a30a', stroke: '#BD7000', font: '#000000'}, {fill: '#e3c800', stroke: '#B09500', font: '#000000'},
 			{fill: '#6d8764', stroke: '#3A5431', font: '#ffffff'}, {fill: '#647687', stroke: '#314354', font: '#ffffff'},
 			{fill: '#76608a', stroke: '#432D57', font: '#ffffff'}, {fill: '#a0522d', stroke: '#6D1F00', font: '#ffffff'}],
 			[{fill: '', stroke: ''}, {fill: mxConstants.NONE, stroke: ''},
@@ -5106,6 +5178,8 @@
 					
 					if (colorset != null)
 					{
+						var b = (urlParams['sketch'] == '1') ? '2px solid' : '1px solid';
+						
 						if (colorset['gradient'] != null)
 						{
 							if (mxClient.IS_IE && (document.documentMode < 10))
@@ -5127,27 +5201,27 @@
 						else if (colorset['fill'] == '')
 						{
 							btn.style.backgroundColor = mxUtils.getValue(ui.initialDefaultVertexStyle,
-								mxConstants.STYLE_FILLCOLOR, (uiTheme == 'dark') ?'#2a2a2a' : '#ffffff');
+								mxConstants.STYLE_FILLCOLOR, (Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff');
 						}
 						else
 						{
 							btn.style.backgroundColor = colorset['fill'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
-								mxConstants.STYLE_FILLCOLOR, (uiTheme == 'dark') ?'#2a2a2a' : '#ffffff');
+								mxConstants.STYLE_FILLCOLOR, (Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff');
 						}
 						
 						if (colorset['stroke'] == mxConstants.NONE)
 						{
-							btn.style.border = '1px solid transparent';
+							btn.style.border = b + ' transparent';
 						}
 						else if (colorset['stroke'] == '')
 						{
-							btn.style.border = '1px solid ' + mxUtils.getValue(ui.initialDefaultVertexStyle, 
-								mxConstants.STYLE_STROKECOLOR, (uiTheme != 'dark') ?'#2a2a2a' : '#ffffff');
+							btn.style.border = b + ' ' + mxUtils.getValue(ui.initialDefaultVertexStyle, 
+								mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff');
 						}
 						else
 						{
-							btn.style.border = '1px solid ' + (colorset['stroke'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
-									mxConstants.STYLE_STROKECOLOR, (uiTheme != 'dark') ?'#2a2a2a' : '#ffffff'));
+							btn.style.border = b + ' ' + (colorset['stroke'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
+									mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff'));
 						}
 					}
 					else
@@ -5158,6 +5232,8 @@
 						btn.style.backgroundColor = bg;
 						btn.style.border = '1px solid ' + bd;
 					}
+					
+					btn.style.borderRadius = '0';
 					
 					picker.appendChild(btn);
 				});
@@ -5177,7 +5253,7 @@
 
 			if (this.format.currentScheme == null)
 			{
-				setScheme((uiTheme == 'dark') ? 1 : 0);
+				setScheme(Editor.isDarkMode() ? 1 : (urlParams['sketch'] == '1' ? 5 : 0));
 			}
 			else
 			{
@@ -5854,10 +5930,13 @@
 		incExtFonts, keepTheme, exportType, cells)
 	{
 		var temp = null;
+		var tempBg = null;
 		
 		if (!keepTheme && this.themes != null && this.defaultThemeName == 'darkTheme')
 		{
 			temp = this.stylesheet;
+			tempBg = this.defaultPageBackgroundColor;
+			this.defaultPageBackgroundColor = this.defaultThemeName == 'darkTheme' ? '#ffffff' : '#2a2a2a';
 			this.stylesheet = this.getDefaultStylesheet();
 			// LATER: Fix math export in dark mode by fetching text nodes before
 			// calling refresh and changing the font color in-place
@@ -5900,6 +5979,7 @@
 		
 		if (temp != null)
 		{
+			this.defaultPageBackgroundColor = tempBg;
 			this.stylesheet = temp;
 			this.refresh();
 		}
@@ -6629,7 +6709,8 @@
 	
 	mxStencilRegistry.libraries['arrows2'] = [SHAPES_PATH + '/mxArrows.js'];
 	mxStencilRegistry.libraries['atlassian'] = [STENCIL_PATH + '/atlassian.xml', SHAPES_PATH + '/mxAtlassian.js'];
-	mxStencilRegistry.libraries['bpmn'] = [SHAPES_PATH + '/bpmn/mxBpmnShape2.js', STENCIL_PATH + '/bpmn.xml'];
+	mxStencilRegistry.libraries['bpmn'] = [SHAPES_PATH + '/mxBasic.js', STENCIL_PATH + '/bpmn.xml', SHAPES_PATH + '/bpmn/mxBpmnShape2.js'];
+	mxStencilRegistry.libraries['bpmn2'] = [SHAPES_PATH + '/mxBasic.js', STENCIL_PATH + '/bpmn.xml', SHAPES_PATH + '/bpmn/mxBpmnShape2.js'];
 	mxStencilRegistry.libraries['c4'] = [SHAPES_PATH + '/mxC4.js'];
 	mxStencilRegistry.libraries['cisco19'] = [SHAPES_PATH + '/mxCisco19.js', STENCIL_PATH + '/cisco19.xml'];
 	mxStencilRegistry.libraries['cisco_safe'] = [SHAPES_PATH + '/mxCiscoSafe.js', STENCIL_PATH + '/cisco_safe/architecture.xml', STENCIL_PATH + '/cisco_safe/business_icons.xml', STENCIL_PATH + '/cisco_safe/capability.xml', STENCIL_PATH + '/cisco_safe/design.xml', STENCIL_PATH + '/cisco_safe/iot_things_icons.xml', STENCIL_PATH + '/cisco_safe/people_places_things_icons.xml', STENCIL_PATH + '/cisco_safe/security_icons.xml', STENCIL_PATH + '/cisco_safe/technology_icons.xml', STENCIL_PATH + '/cisco_safe/threat.xml'];
@@ -6648,7 +6729,7 @@
 	mxStencilRegistry.libraries['electrical/abstract'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/abstract.xml'];
 	mxStencilRegistry.libraries['electrical/logic_gates'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/logic_gates.xml'];
 	mxStencilRegistry.libraries['electrical/miscellaneous'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/miscellaneous.xml'];
-	mxStencilRegistry.libraries['electrical/sources'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/signal_sources.xml'];
+	mxStencilRegistry.libraries['electrical/signal_sources'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/signal_sources.xml'];
 	mxStencilRegistry.libraries['electrical/transmission'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/transmission.xml'];
 	mxStencilRegistry.libraries['infographic'] = [SHAPES_PATH + '/mxInfographic.js'];
 	mxStencilRegistry.libraries['mockup/buttons'] = [SHAPES_PATH + '/mockup/mxMockupButtons.js'];

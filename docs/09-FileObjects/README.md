@@ -4,4 +4,4 @@ The *File objects* screen presents a list of all file objects which have been re
 
 ![image-20210412173747632](FileObjects-01.png)  <br />
 
-[Previous Page](../08-OfflineChanges/README.md) |  [Next page](../10-Diagrams/README.md)
+[Index](../README.md) | [Previous Page](../08-OfflineChanges/README.md) |  [Next page](../10-Diagrams/README.md)

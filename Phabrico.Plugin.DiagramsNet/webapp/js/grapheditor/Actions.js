@@ -263,7 +263,7 @@ Actions.prototype.init = function()
 		}
 	});
 	
-	this.addAction('copySize', function(evt)
+	this.addAction('copySize', function()
 	{
 		var cell = graph.getSelectionCell();
 		
@@ -278,7 +278,7 @@ Actions.prototype.init = function()
 		}
 	}, null, null, 'Alt+Shift+X');
 
-	this.addAction('pasteSize', function(evt)
+	this.addAction('pasteSize', function()
 	{
 		if (graph.isEnabled() && !graph.isSelectionEmpty() && ui.copiedSize != null)
 		{
@@ -311,6 +311,72 @@ Actions.prototype.init = function()
 			}
 		}
 	}, null, null, 'Alt+Shift+V');
+		
+	this.addAction('copyData', function()
+	{
+		var cell = graph.getSelectionCell() || graph.getModel().getRoot();
+		
+		if (graph.isEnabled() && cell != null)
+		{
+			var value = cell.cloneValue();
+			
+			if (value != null && !isNaN(value.nodeType))
+			{
+				ui.copiedValue = value;
+			}
+		}
+	}, null, null, 'Alt+Shift+B');
+
+	this.addAction('pasteData', function(evt)
+	{
+		var model = graph.getModel();
+		
+		function applyValue(cell, value)
+		{
+			var old = model.getValue(cell);
+			value = cell.cloneValue(value);
+			value.removeAttribute('placeholders');
+			
+			// Carries over placeholders and label properties
+			if (old != null && !isNaN(old.nodeType))
+			{
+				value.setAttribute('placeholders', old.getAttribute('placeholders'));
+			}
+			
+			if (evt == null || (!mxEvent.isMetaDown(evt) && !mxEvent.isControlDown(evt)))
+			{
+				value.setAttribute('label', graph.convertValueToString(cell));
+			}
+			
+			model.setValue(cell, value);
+		};
+		
+		if (graph.isEnabled() && !graph.isSelectionEmpty() && ui.copiedValue != null)
+		{
+			model.beginUpdate();
+			
+			try
+			{
+				var cells = graph.getSelectionCells();
+				
+				if (cells.length == 0)
+				{
+					applyValue(model.getRoot(), ui.copiedValue);
+				}
+				else
+				{
+					for (var i = 0; i < cells.length; i++)
+					{
+						applyValue(cells[i], ui.copiedValue);
+					}
+				}
+			}
+			finally
+			{
+				model.endUpdate();
+			}
+		}
+	}, null, null, 'Alt+Shift+E');
 	
 	function deleteCells(includeEdges)
 	{
@@ -872,6 +938,16 @@ Actions.prototype.init = function()
 		}
 		else
 		{
+			var b = Editor.fitWindowBorders;
+			
+			if (b != null)
+			{
+				bounds.x -= b.x;
+				bounds.y -= b.y;
+				bounds.width += b.width + b.x;
+				bounds.height += b.height + b.y;
+			}
+			
 			graph.fitWindow(bounds);
 		}
 	}, null, null, Editor.ctrlKey + '+Shift+H');
@@ -1376,10 +1452,10 @@ Actions.prototype.init = function()
 			rmWaypointAction.handler.removePoint(rmWaypointAction.handler.state, rmWaypointAction.index);
 		}
 	});
-	this.addAction('clearWaypoints', function()
+	this.addAction('clearWaypoints', function(evt)
 	{
 		var cells = graph.getSelectionCells();
-		
+
 		if (cells != null)
 		{
 			cells = graph.addAllEdges(cells);
@@ -1395,10 +1471,21 @@ Actions.prototype.init = function()
 					{
 						var geo = graph.getCellGeometry(cell);
 			
-						if (geo != null)
+						// Resets fixed connection point
+						if (mxEvent.isShiftDown(evt))
+						{
+							graph.setCellStyles(mxConstants.STYLE_EXIT_X, null, [cell]);
+							graph.setCellStyles(mxConstants.STYLE_EXIT_Y, null, [cell]);
+							graph.setCellStyles(mxConstants.STYLE_ENTRY_X, null, [cell]);
+							graph.setCellStyles(mxConstants.STYLE_ENTRY_Y, null, [cell]);
+						}
+						else if (geo != null)
 						{
 							geo = geo.clone();
 							geo.points = null;
+							geo.x = 0;
+							geo.y = 0;
+							geo.offset = null;
 							graph.getModel().setGeometry(cell, geo);
 						}
 					}

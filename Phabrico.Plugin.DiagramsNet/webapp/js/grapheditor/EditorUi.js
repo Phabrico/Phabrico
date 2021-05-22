@@ -144,19 +144,27 @@ EditorUi = function(editor, container, lightbox)
 		// Keys that should be ignored if the cell has a value (known: new default for all cells is html=1 so
 	    // for the html key this effecticely only works for edges inserted via the connection handler)
 		var valueStyles = ['fontFamily', 'fontSource', 'fontSize', 'fontColor'];
+				
+		for (var i = 0; i < valueStyles.length; i++)
+		{
+			if (mxUtils.indexOf(styles, valueStyles[i]) < 0)
+			{
+				styles.push(valueStyles[i]);
+			}
+		}
 		
 		// Keys that always update the current edge style regardless of selection
 		var alwaysEdgeStyles = ['edgeStyle', 'startArrow', 'startFill', 'startSize', 'endArrow',
 			'endFill', 'endSize'];
 		
 		// Keys that are ignored together (if one appears all are ignored)
-		var keyGroups = [['startArrow', 'startFill', 'startSize', 'sourcePerimeterSpacing',
-						'endArrow', 'endFill', 'endSize', 'targetPerimeterSpacing'],
+		var keyGroups = [['startArrow', 'startFill', 'endArrow', 'endFill'],
+						 ['startSize', 'endSize'],
+						 ['sourcePerimeterSpacing', 'targetPerimeterSpacing'],
 		                 ['strokeColor', 'strokeWidth'],
 		                 ['fillColor', 'gradientColor'],
-		                 valueStyles,
+		                 ['align', 'verticalAlign'],
 		                 ['opacity'],
-		                 ['align'],
 		                 ['html']];
 		
 		// Adds all keys used above to the styles array
@@ -177,12 +185,24 @@ EditorUi = function(editor, container, lightbox)
 		}
 		
 		// Implements a global current style for edges and vertices that is applied to new cells
-		var insertHandler = function(cells, asText, model, vertexStyle, edgeStyle)
+		var insertHandler = function(cells, asText, model, vertexStyle, edgeStyle, applyAll, recurse)
 		{
 			vertexStyle = (vertexStyle != null) ? vertexStyle : graph.currentVertexStyle;
 			edgeStyle = (edgeStyle != null) ? edgeStyle : graph.currentEdgeStyle;
 			
 			model = (model != null) ? model : graph.getModel();
+			
+			if (recurse)
+			{
+				var temp = [];
+				
+				for (var i = 0; i < cells.length; i++)
+				{
+					temp = temp.concat(model.getDescendants(cells[i]));
+				}
+				
+				cells = temp;				
+			}
 			
 			model.beginUpdate();
 			try
@@ -255,11 +275,17 @@ EditorUi = function(editor, container, lightbox)
 						if (styleValue != null && (key != 'shape' || edge))
 						{
 							// Special case: Connect styles are not applied here but in the connection handler
-							if (!edge || mxUtils.indexOf(connectStyles, key) < 0)
+							if (!edge || applyAll || mxUtils.indexOf(connectStyles, key) < 0)
 							{
 								newStyle = mxUtils.setStyle(newStyle, key, styleValue);
 							}
 						}
+					}
+					
+					if (Editor.simpleLabels)
+					{
+						newStyle = mxUtils.setStyle(mxUtils.setStyle(
+							newStyle, 'html', null), 'whiteSpace', null);
 					}
 					
 					model.setStyle(cell, newStyle);
@@ -1387,22 +1413,26 @@ EditorUi.prototype.getCellsForShapePicker = function(cell)
 	});
 	
 	return [(cell != null) ? this.editor.graph.cloneCell(cell) :
-			createVertex('text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;', 40, 20, 'Text'),
+			createVertex('text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;', 40, 20, 'Text'),
 		createVertex('whiteSpace=wrap;html=1;'),
-		createVertex('ellipse;whiteSpace=wrap;html=1;', 120, 80),
+		createVertex('rounded=1;whiteSpace=wrap;html=1;'),
+		createVertex('ellipse;whiteSpace=wrap;html=1;'),
 		createVertex('rhombus;whiteSpace=wrap;html=1;', 80, 80),
 		createVertex('shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;'),
 		createVertex('shape=trapezoid;perimeter=trapezoidPerimeter;whiteSpace=wrap;html=1;fixedSize=1;', 120, 60),
 		createVertex('shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;', 120, 80),
 		createVertex('shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;', 120, 80),
 		createVertex('shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;'),
-		createVertex('shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;', 120, 80),
-		createVertex('shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;', 80, 100),
 		createVertex('triangle;whiteSpace=wrap;html=1;', 60, 80),
 		createVertex('shape=document;whiteSpace=wrap;html=1;boundedLbl=1;', 120, 80),
 		createVertex('shape=tape;whiteSpace=wrap;html=1;', 120, 100),
 		createVertex('ellipse;shape=cloud;whiteSpace=wrap;html=1;', 120, 80),
-		createVertex('shape=waypoint;sketch=0;size=6;pointerEvents=1;points=[[0.5,0.5,0]];fillColor=none;snapToPoint=1;resizable=0;rotatable=0;', 40, 40)];
+		createVertex('shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;', 60, 80),
+		createVertex('shape=callout;rounded=1;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;', 120, 80),
+		createVertex('shape=doubleArrow;whiteSpace=wrap;html=1;arrowWidth=0.4;arrowSize=0.3;'),
+		createVertex('shape=singleArrow;whiteSpace=wrap;html=1;arrowWidth=0.4;arrowSize=0.4;', 80, 60),
+		createVertex('shape=singleArrow;whiteSpace=wrap;html=1;arrowWidth=0.4;arrowSize=0.4;flipH=1;', 80, 60),
+		createVertex('shape=waypoint;sketch=0;size=6;pointerEvents=1;points=[];fillColor=none;resizable=0;rotatable=0;perimeter=centerPerimeter;snapToPoint=1;', 40, 40)];
 };
 
 /**
@@ -3414,18 +3444,22 @@ EditorUi.prototype.setFoldingEnabled = function(value)
 /**
  * Loads the stylesheet for this graph.
  */
-EditorUi.prototype.setPageFormat = function(value)
+EditorUi.prototype.setPageFormat = function(value, ignorePageVisible)
 {
+	ignorePageVisible = (ignorePageVisible != null) ? ignorePageVisible : urlParams['sketch'] == '1';
 	this.editor.graph.pageFormat = value;
 	
-	if (!this.editor.graph.pageVisible)
+	if (!ignorePageVisible)
 	{
-		this.actions.get('pageView').funct();
-	}
-	else
-	{
-		this.editor.graph.view.validateBackground();
-		this.editor.graph.sizeDidChange();
+		if (!this.editor.graph.pageVisible)
+		{
+			this.actions.get('pageView').funct();
+		}
+		else
+		{
+			this.editor.graph.view.validateBackground();
+			this.editor.graph.sizeDidChange();
+		}
 	}
 
 	this.fireEvent(new mxEventObject('pageFormatChanged'));
@@ -4159,7 +4193,7 @@ EditorUi.prototype.pickColor = function(color, apply)
 {
 	var graph = this.editor.graph;
 	var selState = graph.cellEditor.saveSelection();
-	var h = 226 + ((Math.ceil(ColorDialog.prototype.presetColors.length / 12) +
+	var h = 230 + ((Math.ceil(ColorDialog.prototype.presetColors.length / 12) +
 		Math.ceil(ColorDialog.prototype.defaultColors.length / 12)) * 17);
 	
 	var dlg = new ColorDialog(this, color || 'none', function(color)
@@ -4809,7 +4843,9 @@ EditorUi.prototype.altShiftActions = {67: 'clearWaypoints', // Alt+Shift+C
   80: 'connectionPoints', // Alt+Shift+P
   84: 'editTooltip', // Alt+Shift+T
   86: 'pasteSize', // Alt+Shift+V
-  88: 'copySize' // Alt+Shift+X
+  88: 'copySize', // Alt+Shift+X
+  66: 'copyData', // Alt+Shift+B
+  69: 'pasteData' // Alt+Shift+E
 };
 
 /**

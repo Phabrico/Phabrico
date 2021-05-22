@@ -23,6 +23,9 @@
 	color: black;
 	padding:6px;
 }
+.geDragPreview {
+	border: 1px dashed black;
+}
 .geMenubarContainer .geItem, .geToolbar .geButton, .geToolbar .geLabel {
 	cursor:pointer !important;
 }
@@ -846,7 +849,7 @@ table.geProperties tr td {
 }
 .geTemplateDlg ::-webkit-scrollbar-track {
 	background:whiteSmoke;
-	-webkit-box-shadow:inset 0 0 4px rgba(0,0,0,0.1);
+	box-shadow:inset 0 0 4px rgba(0,0,0,0.1);
 }
 .geTemplateDlg ::-webkit-scrollbar-thumb {
 	background:#c5c5c5;

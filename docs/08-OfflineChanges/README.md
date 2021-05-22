@@ -11,4 +11,4 @@ There are 3 actions you can perform on a modification:
 | Freeze or Unfreeze | By freezing a modification you can prevent this modification being uploaded to Phabricator.<br />Frozen modifications are visualized with a snow icon in front of it.<br />Unfrozen modifications have a flame icon |
 | View changes       | This will show a screen where you get can see your modifications compared to the (original) Phabricator version.<br />This button is only visible if a Phabricator version of this task or wiki page exists.<br />If this task or wiki page was created in Phabrico, you will see the text *(New)* instead. |
 
-[Previous Page](../07-Remarkup/README.md) |  [Next page](../09-FileObjects/README.md)
+[Index](../README.md) | [Previous Page](../07-Remarkup/README.md) |  [Next page](../09-FileObjects/README.md)

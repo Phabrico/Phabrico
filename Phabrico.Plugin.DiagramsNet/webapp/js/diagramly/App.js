@@ -243,7 +243,7 @@ App.MODE_EMBED = 'embed';
 /**
  * Sets the delay for autosave in milliseconds. Default is 2000.
  */
-App.DROPBOX_APPKEY = 'libwls2fa9szdji';
+App.DROPBOX_APPKEY = window.DRAWIO_DROPBOX_ID;
 
 /**
  * Sets URL to load the Dropbox SDK from
@@ -487,7 +487,7 @@ App.getStoredMode = function()
 							mxscript(App.DROPBOX_URL, function()
 							{
 								// Must load this after the dropbox SDK since they use the same namespace
-								mxscript(App.DROPINS_URL, null, 'dropboxjs', App.DROPBOX_APPKEY);
+								mxscript(App.DROPINS_URL, null, 'dropboxjs', App.DROPBOX_APPKEY, true);
 							});							
 						}
 						else if (urlParams['chrome'] == '0')
@@ -563,12 +563,6 @@ App.getStoredMode = function()
 					}
 				}
 			}
-			
-			// Loads JSON for older browsers
-			if (typeof(JSON) == 'undefined')
-			{
-				mxscript('js/json/json2.min.js');
-			}
 		}
 	}
 })();
@@ -641,7 +635,7 @@ App.main = function(callback, createUi)
 	if (window.mxscript != null)
 	{
 		// Checks for script content changes to avoid CSP errors in production
-		if (urlParams['dev'] == '1' && CryptoJS != null && urlParams['mode'] != 'trello')
+		if (urlParams['dev'] == '1' && CryptoJS != null && App.mode != App.MODE_DROPBOX && App.mode != App.MODE_TRELLO)
 		{
 			var scripts = document.getElementsByTagName('script');
 			
@@ -650,7 +644,7 @@ App.main = function(callback, createUi)
 			{
 				var content = mxUtils.getTextContent(scripts[0]);
 				
-				if (CryptoJS.MD5(content).toString() != 'f13d3aba97e718436f2562cef8787e06')
+				if (CryptoJS.MD5(content).toString() != 'b02227617087e21bd49f2faa15164112')
 				{
 					console.log('Change bootstrap script MD5 in the previous line:', CryptoJS.MD5(content).toString());
 					alert('[Dev] Bootstrap script change requires update of CSP');
@@ -865,10 +859,40 @@ App.main = function(callback, createUi)
 					{
 						EditorUi.debug('Setting configuration', JSON.stringify(value));
 						
+						if (value.merge != null)
+						{
+							var temp = localStorage.getItem(Editor.configurationKey);
+							
+							if (temp != null)
+							{
+								
+								try
+								{
+									var config = JSON.parse(temp);
+									
+									for (var key in value.merge)
+									{
+										config[key] = value.merge[key];
+									}
+									
+									value = config;	
+								}
+								catch (e)
+								{
+									window.location.hash = '';
+									alert(e);
+								}								
+							}
+							else
+							{
+								value = value.merge;
+							}
+						}
+						
 						if (confirm(mxResources.get('configLinkWarn')) &&
 							confirm(mxResources.get('configLinkConfirm')))
 						{
-							localStorage.setItem('.configuration', JSON.stringify(value));
+							localStorage.setItem(Editor.configurationKey, JSON.stringify(value));
 							window.location.hash = '';
 							window.location.reload();
 						}
@@ -996,7 +1020,8 @@ App.main = function(callback, createUi)
 			}
 			else
 			{
-				App.loadScripts(['js/shapes.min.js', 'js/stencils.min.js',
+				mxStencilRegistry.allowEval = false;
+				App.loadScripts(['js/shapes-14-6-5.min.js', 'js/stencils.min.js',
 					'js/extensions.min.js'], realMain);
 			}
 		}, function(xhr)
@@ -1025,6 +1050,9 @@ App.main = function(callback, createUi)
 		{
 			if (mxSettings.settings != null)
 			{
+				document.body.style.backgroundColor = (uiTheme == 'dark' ||
+					mxSettings.settings.darkMode) ? '#2a2a2a' : '#ffffff';
+				
 				if (mxSettings.settings.autosaveDelay != null)
 				{
 					var val = parseInt(mxSettings.settings.autosaveDelay);
@@ -1063,7 +1091,23 @@ App.main = function(callback, createUi)
 				console.error(e);
 			}
 		}
-		
+
+		// Prefetches default fonts with URLs
+		if (Menus.prototype.defaultFonts != null)
+		{
+			for (var i = 0; i < Menus.prototype.defaultFonts.length; i++)
+			{
+				var value = Menus.prototype.defaultFonts[i];
+				
+				if (typeof value !== 'string' &&
+					value.fontFamily != null &&
+					value.fontUrl != null)
+				{
+					Graph.addFont(value.fontFamily, value.fontUrl);
+				}
+			}
+		}
+	
 		// Adds required resources (disables loading of fallback properties, this can only
 		// be used if we know that all keys are defined in the language specific file)
 		mxResources.loadDefaultBundle = false;
@@ -1131,7 +1175,7 @@ App.main = function(callback, createUi)
 			// Loads configuration from local storage
 			if (isLocalStorage && localStorage != null && urlParams['embed'] != '1')
 			{
-				var configData = localStorage.getItem('.configuration');
+				var configData = localStorage.getItem(Editor.configurationKey);
 	
 				if (configData != null)
 				{
@@ -1167,7 +1211,7 @@ mxUtils.extend(App, EditorUi);
 /**
  * Executes the first step for connecting to Google Drive.
  */
-App.prototype.defaultUserPicture = 'https://lh3.googleusercontent.com/-HIzvXUy6QUY/AAAAAAAAAAI/AAAAAAAAAAA/giuR7PQyjEk/photo.jpg?sz=64';
+App.prototype.defaultUserPicture = IMAGE_PATH + '/default-user.jpg';
 
 /**
  * 
@@ -1877,43 +1921,10 @@ App.prototype.showNameConfBanner = function()
  */
 App.prototype.showDownloadDesktopBanner = function()
 {
-	var link = 'https://get.diagrams.net/';
-	
-	if (this.showBanner('DesktopFooter', mxResources.get('downloadDesktop'), mxUtils.bind(this, function()
-		{
-			this.openLink(link);
-		})))
+	this.showBanner('DesktopFooter', mxResources.get('downloadDesktop'), mxUtils.bind(this, function()
 	{
-		// Downloads installer for macOS and Windows
-		mxUtils.get('https://api.github.com/repos/jgraph/drawio-desktop/releases/latest', mxUtils.bind(this, function(req)
-		{
-			try
-			{
-				var rel = JSON.parse(req.getText());
-				
-				if (rel != null)
-				{
-					if (rel.tag_name != null && rel.name != null && rel.html_url != null)
-					{
-						if (mxClient.IS_MAC)
-						{
-							link = 'https://github.com/jgraph/drawio-desktop/releases/download/' +
-		        				rel.tag_name + '/draw.io-' + rel.name + '.dmg';
-						}
-						else if (mxClient.IS_WIN)
-						{
-							link = 'https://github.com/jgraph/drawio-desktop/releases/download/' +
-		        				rel.tag_name + '/draw.io-' + rel.name + '-windows-installer.exe';
-						}
-					}
-				}
-			}
-			catch (e)
-			{
-				// ignore
-			}
-		}));
-	}
+		this.openLink('https://get.diagrams.net/');
+	}));
 };
 
 /**
@@ -3866,7 +3877,7 @@ App.prototype.pickFile = function(mode)
 			{
 				peer.pickFile();
 			}
-			else if (mode == App.MODE_DEVICE && 'showOpenFilePicker' in window && !EditorUi.isElectronApp)
+			else if (mode == App.MODE_DEVICE && EditorUi.nativeFileSupport)
 			{
 				window.showOpenFilePicker().then(mxUtils.bind(this, function(fileHandles)
 				{
@@ -4409,7 +4420,7 @@ App.prototype.saveFile = function(forceDialog, success)
 						
 						if (prev == null && mode == App.MODE_DEVICE)
 						{
-							if (file != null && 'showSaveFilePicker' in window)
+							if (file != null && EditorUi.nativeFileSupport)
 							{
 								this.showSaveFilePicker(mxUtils.bind(this, function(fileHandle, desc)
 								{
@@ -4701,7 +4712,7 @@ App.prototype.createFile = function(title, data, libs, mode, done, replace, fold
 					this.fileCreated(file, libs, replace, done, clibs);
 				}), error);
 			}
-			else if (!tempFile && mode == App.MODE_DEVICE && 'showSaveFilePicker' in window && !EditorUi.isElectronApp)
+			else if (!tempFile && mode == App.MODE_DEVICE && EditorUi.nativeFileSupport)
 			{
 				complete();
 				
@@ -6288,6 +6299,8 @@ App.prototype.descriptorChanged = function()
 		this.format.refresh();
 		this.fileEditable = (file != null) ? file.isEditable() : null;
 	}
+	
+	this.fireEvent(new mxEventObject('fileDescriptorChanged', 'file', file));
 };
 
 /**
@@ -7317,7 +7330,7 @@ App.prototype.updateUserElement = function()
 					var div = document.createElement('div');
 					div.style.textAlign = 'center';
 					div.style.padding = '12px';
-					div.style.background = 'whiteSmoke';
+					div.style.background = Editor.isDarkMode() ? '' : 'whiteSmoke';
 					div.style.borderTop = '1px solid #e0e0e0';
 					div.style.whiteSpace = 'nowrap';
 										
@@ -7327,21 +7340,34 @@ App.prototype.updateUserElement = function()
 						{
 							this.actions.get('share').funct();
 						}));
-						btn.className = 'geBtn gePrimaryBtn';
+						btn.className = 'geBtn';
+						div.appendChild(btn);
+						this.userPanel.appendChild(div);
+				
+						if (this.commentsSupported())
+						{
+							btn = mxUtils.button(mxResources.get('comments'), mxUtils.bind(this, function()
+							{
+								this.actions.get('comments').funct();
+							}));
+							btn.className = 'geBtn';
+							div.appendChild(btn);
+							this.userPanel.appendChild(div);
+						}
+					}
+					else
+					{
+						var btn = mxUtils.button(mxResources.get('close'), mxUtils.bind(this, function()
+						{
+							if (!mxEvent.isConsumed(evt) && this.userPanel != null && this.userPanel.parentNode != null)
+							{
+								this.userPanel.parentNode.removeChild(this.userPanel);
+							}
+						}));
+						btn.className = 'geBtn';
 						div.appendChild(btn);
 						this.userPanel.appendChild(div);
 					}
-
-					var btn = mxUtils.button(mxResources.get('close'), mxUtils.bind(this, function()
-					{
-						if (!mxEvent.isConsumed(evt) && this.userPanel != null && this.userPanel.parentNode != null)
-						{
-							this.userPanel.parentNode.removeChild(this.userPanel);
-						}
-					}));
-					btn.className = 'geBtn';
-					div.appendChild(btn);
-					this.userPanel.appendChild(div);
 
 					document.body.appendChild(this.userPanel);
 				}

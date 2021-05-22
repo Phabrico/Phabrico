@@ -1186,7 +1186,7 @@ EditorUi.prototype.updateTabContainer = function()
 				if (this.pages[index] == this.currentPage)
 				{
 					tab.className = 'geActivePage';
-					tab.style.backgroundColor = (uiTheme == 'dark') ? '#2a2a2a' : '#fff';
+					tab.style.backgroundColor = Editor.isDarkMode() ? '#2a2a2a' : '#fff';
 				}
 				else
 				{
@@ -1339,7 +1339,7 @@ EditorUi.prototype.createTab = function(hoverEnabled)
 	tab.style.marginLeft = '-1px';
 	tab.style.height = this.tabContainer.clientHeight + 'px';
 	tab.style.padding = '12px 4px 8px 4px';
-	tab.style.border = (uiTheme == 'dark') ? '1px solid #505759' : '1px solid #e8eaed';
+	tab.style.border = Editor.isDarkMode() ? '1px solid #505759' : '1px solid #e8eaed';
 	tab.style.borderTopStyle = 'none';
 	tab.style.borderBottomStyle = 'none';
 	tab.style.backgroundColor = this.tabContainer.style.backgroundColor;
@@ -1352,7 +1352,7 @@ EditorUi.prototype.createTab = function(hoverEnabled)
 		{
 			if (!this.editor.graph.isMouseDown)
 			{
-				tab.style.backgroundColor = (uiTheme == 'dark') ? 'black' : '#e8eaed';
+				tab.style.backgroundColor = Editor.isDarkMode() ? 'black' : '#e8eaed';
 				mxEvent.consume(evt);
 			}
 		}));
@@ -1370,9 +1370,9 @@ EditorUi.prototype.createTab = function(hoverEnabled)
 /**
  * Returns true if the given string contains an mxfile.
  */
-EditorUi.prototype.createControlTab = function(paddingTop, html)
+EditorUi.prototype.createControlTab = function(paddingTop, html, hoverEnabled)
 {
-	var tab = this.createTab(true);
+	var tab = this.createTab((hoverEnabled != null) ? hoverEnabled : true);
 	tab.style.lineHeight = this.tabContainerHeight + 'px';
 	tab.style.paddingTop = paddingTop + 'px';
 	tab.style.cursor = 'pointer';
@@ -1390,9 +1390,11 @@ EditorUi.prototype.createControlTab = function(paddingTop, html)
 /**
  * Returns true if the given string contains an mxfile.
  */
-EditorUi.prototype.createPageMenuTab = function()
+EditorUi.prototype.createPageMenuTab = function(hoverEnabled)
 {
-	var tab = this.createControlTab(3, '<div class="geSprite geSprite-dots" style="display:inline-block;margin-top:5px;width:21px;height:21px;"></div>');
+	var tab = this.createControlTab(3, '<div class="geSprite geSprite-dots" ' +
+		'style="display:inline-block;margin-top:5px;width:21px;height:21px;"></div>',
+		hoverEnabled);
 	tab.setAttribute('title', mxResources.get('pages'));
 	tab.style.position = 'absolute';
 	tab.style.marginLeft = '0px';

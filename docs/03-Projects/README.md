@@ -1,6 +1,6 @@
 # Project configuration
 
- The *Projects* screen displays a list of projects known in Phabricator:
+ The *Projects* screen displays a list of projects known in Phabricator:<br />
 ![image-20210411201030515](projects-01.png) <br /> The list of projects can be filtered by entering text in the filter field on top.
 
 ## Synchronization configuration
@@ -19,10 +19,10 @@ You can also configure in the *Config* screen to allow only downloads when all l
 
 ## Color visualization
 
-You can also configure the color of a project tag to better distinguish them in the *Maniphest* overview screen:
+You can also configure the color of a project tag to better distinguish them in the *Maniphest* overview screen:<br />
 ![image-20210411201030516](projects-02.png) <br /> By clicking on the *Set color* button, you can assign a color.
 
 By clicking *Set project tag color* you will assign the color only to the reference project tag.
 If you click however on the *Set color for all shown project tags*, the color will be assigned to all listed project tags.
 
-[Previous Page](../02-Configuration/README.md) |  [Next page](../04-Users/README.md)
+[Index](../README.md) | [Previous Page](../02-Configuration/README.md) |  [Next page](../04-Users/README.md)

@@ -283,8 +283,8 @@ LucidImporter = {};
 //UML Component
 			'UMLComponentBlock' : 'shape=component;align=left;spacingLeft=36',
 			'UMLComponentBlockV2' : 'shape=component;align=left;spacingLeft=36',
-			'UMLNodeBlock' : 'shape=cube;size=12;flipH=1;verticalAlign=top;align=left;spacingTop=10;spacingLeft=5',
-			'UMLNodeBlockV2' : 'shape=cube;size=12;flipH=1;verticalAlign=top;align=left;spacingTop=10;spacingLeft=5',
+			'UMLNodeBlock' : 'shape=cube;size=20;flipH=1;verticalAlign=top;spacingTop=22;spacingLeft=5',
+			'UMLNodeBlockV2' : 'shape=cube;size=20;flipH=1;verticalAlign=top;spacingTop=22;spacingLeft=5',
 			'UMLComponentInterfaceBlock' : 'ellipse',
 			'UMLComponentInterfaceBlockV2' : 'ellipse',
 			'UMLComponentBoxBlock' : cs,
@@ -327,7 +327,7 @@ LucidImporter = {};
 			'GSDFDDataStoreBlock' : cs,
 			'GSDFDDataStoreBlock2' : 'shape=partialRectangle;right=0',
 //Org Chart
-			'OrgBlock' : '',
+			'OrgBlock' : cs,
 //Tables
 			'DefaultTableBlock' : cs,
 //Value Stream Mapping			
@@ -3820,6 +3820,20 @@ LucidImporter = {};
 			'PersonRoleBlock' : cs
 	};
 	
+	function mapImgUrl(imgUrl)
+	{
+		if (imgUrl && LucidImporter.imgSrcRepl != null)
+		{
+			for (var i = 0; i < LucidImporter.imgSrcRepl.length; i++)
+			{
+				var repl = LucidImporter.imgSrcRepl[i];
+				imgUrl = imgUrl.replace(repl.searchVal, repl.replVal);
+			}
+		}
+	
+		return imgUrl;
+	};
+	
 	function mapFontFamily(fontFamily)
 	{
 		//We support a single font only since we can have one mapping only
@@ -4390,33 +4404,33 @@ LucidImporter = {};
 	function convertText(props, forceHTML)
 	{
 		isLastLblHTML = false;
-		var text = (props.Text != null) ? props.Text :
-			((props.Value != null) ? props.Value :
-			props.Lane_0);
+		var text = (props.Text != null && props.Text.t) ? props.Text :
+			((props.Value != null && props.Value.t) ? props.Value :
+			((props.Lane_0 != null && props.Lane_0.t) ? props.Lane_0 : null));
 		var text2 = null;
 		
 		if (text == null && props.State != null)
 		{
-			if (props.State.t != null)
+			if (props.State.t)
 			{
 				text = props.State;
 			}
 		}
 		else if (text == null && props.Note != null)
 		{
-			if (props.Note.t != null)
+			if (props.Note.t)
 			{
 				text = props.Note;
 			}
 		}
 		else if (text == null && props.Title != null)
 		{
-			if (props.Title.t != null)
+			if (props.Title.t)
 			{
 				text = props.Title;
 			}
 		}
-		else if (props.t != null)
+		else if (props.t)
 		{
 			text = props;
 		}
@@ -4427,7 +4441,7 @@ LucidImporter = {};
 			{
 				if (props.TextAreas.Text.Value != null)
 				{
-					if (props.TextAreas.Text.Value.t != null)
+					if (props.TextAreas.Text.Value.t)
 					{
 						text = props.TextAreas.Text.Value;
 					}
@@ -4436,7 +4450,7 @@ LucidImporter = {};
 		}
 		else if (text == null && props.t0 != null)
 		{
-			if (props.t0.t != null)
+			if (props.t0.t)
 			{
 				text = props.t0;
 			}
@@ -5444,16 +5458,7 @@ LucidImporter = {};
 					
 		if (imgUrl != null)
 		{
-			if (LucidImporter.imgSrcRepl != null)
-			{
-				for (var i = 0; i < LucidImporter.imgSrcRepl.length; i++)
-				{
-					var repl = LucidImporter.imgSrcRepl[i];
-					imgUrl = imgUrl.replace(repl.searchVal, repl.replVal);
-				}
-			}
-			
-			return 'image=' + imgUrl + ';' + extraStyles;
+			return 'image=' + mapImgUrl(imgUrl) + ';' + extraStyles;
 		}
 		
 		return '';
@@ -5609,7 +5614,7 @@ LucidImporter = {};
 				
 				addCustomData(cell, p, graph);
 				
-				if (p.Title && p.Text && a.Class.substr(0, 8) != 'ExtShape')
+				if (p.Title && p.Title.t && p.Text && p.Text.t && a.Class.substr(0, 8) != 'ExtShape')
 				{
 					var geo = cell.geometry;
 					var title = new mxCell(convertText(p.Title), new mxGeometry(0, geo.height,geo.width, 10), 'strokeColor=none;fillColor=none;');
@@ -5749,9 +5754,9 @@ LucidImporter = {};
 					// Anchor points and arrows					
 					var p1, p2;
 					
-					if (source == null || !source.geometry.isRotated) //TODO Rotate the endpoint instead of ignoring it (The same for flipped shapes)
+					if (source == null || !source.geometry.isRotated) //TODO Rotate the endpoint instead of ignoring it
 					{
-						p1 = updateEndpoint(cell, p.Endpoint1, true, implicitY);
+						p1 = updateEndpoint(cell, p.Endpoint1, true, implicitY, null, source);
 					}
 					
 					if (source != null && p1 != null)
@@ -5765,9 +5770,9 @@ LucidImporter = {};
 						LucidImporter.stylePointsSet.add(source);
 					}
 					
-					if (target == null || !target.geometry.isRotated) //TODO Rotate the endpoint instead of ignoring it (The same for flipped shapes)
+					if (target == null || !target.geometry.isRotated) //TODO Rotate the endpoint instead of ignoring it
 					{
-						p2 = updateEndpoint(cell, p.Endpoint2, false, implicitY);
+						p2 = updateEndpoint(cell, p.Endpoint2, false, implicitY, null, target);
 					}
 					
 					if (target != null && p2 != null)
@@ -5850,16 +5855,21 @@ LucidImporter = {};
 		{
 			var count = 0;
 			
-			while (ta['t' + count] != null)
+			while (ta['t' + count] !== undefined) //Some files has null for some labels 
 			{
 				var tmp = ta['t' + count];
-				e = insertLabel(tmp, e, obj, source, target);
+				
+				if (tmp != null)
+				{
+					e = insertLabel(tmp, e, obj, source, target);
+				}
+				
 				count++;
 			}
 			
 			count = 0;
 			
-			while (ta['m' + count] != null || count < 1)
+			while (ta['m' + count] !== undefined || count < 1)
 			{
 				var tmp = ta['m' + count];
 				
@@ -6010,7 +6020,7 @@ LucidImporter = {};
 		return '';
 	};
 
-	function updateEndpoint(cell, endpoint, source, ignoreX, ignoreY)
+	function updateEndpoint(cell, endpoint, source, ignoreX, ignoreY, endCell)
 	{
 		if (endpoint != null)
 		{
@@ -6018,6 +6028,17 @@ LucidImporter = {};
 			{
 				endpoint.LinkX = Math.round(endpoint.LinkX * 1000) / 1000;
 				endpoint.LinkY = Math.round(endpoint.LinkY * 1000) / 1000;
+				
+				if (endCell != null && endCell.style && endCell.style.indexOf('flipH=1') > -1)
+				{
+					endpoint.LinkX = 1 - endpoint.LinkX;
+				}
+
+				if (endCell != null && endCell.style && endCell.style.indexOf('flipV=1') > -1)
+				{
+					endpoint.LinkY = 1 - endpoint.LinkY;
+				}
+				
 				cell.style += ((!ignoreX) ? ((source) ? 'exitX' : 'entryX') + '=' + endpoint.LinkX + ';' : '') +
 					((!ignoreY) ? (((source) ? 'exitY' : 'entryY') + '=' + endpoint.LinkY + ';') : '') +
 					((source) ? 'exitPerimeter' : 'entryPerimeter') + '=0;'; //perimeter as 0 works with both cases better
@@ -9452,7 +9473,27 @@ LucidImporter = {};
 				item1.style += addAllStyles(item1.style, p, a, item1, isLastLblHTML);
 
 				break;
+			case 'OrgBlock' :
+				var lbls = '';
 				
+				for (var key in p.Active)
+				{
+					if (key == 'Photo' || !p.Active[key]) continue;
+					
+					lbls += convertText(p[key], true);
+				}
+				
+				if (p.Active.Photo)
+				{
+					var imgSize = w * 0.4;
+					v.style += 'spacingLeft=' + imgSize + ';imageWidth=' + (imgSize - 4) + ';imageHeight=' + (imgSize - 4) + 
+						';imageAlign=left;imageVerticalAlign=top;image=' + mapImgUrl(p.Photo);
+				}
+				
+				v.value = lbls;
+				v.style += addAllStyles(v.style, p, a, v, true);
+
+				break;				
 			case 'DefaultTableBlock' :
 				try
 				{
@@ -13446,7 +13487,7 @@ LucidImporter = {};
 			v.style += 'html=1;';
 		}
 		
-		if (p.Title && p.Text)
+		if (p.Title && p.Title.t && p.Text && p.Text.t)
 		{
 			try
 			{
@@ -13463,6 +13504,7 @@ LucidImporter = {};
 		}
 				
 		handleTextRotation(v, p);
+		addCustomData(v, p, graph);
 		
 		if (p.Hidden)
 		{
