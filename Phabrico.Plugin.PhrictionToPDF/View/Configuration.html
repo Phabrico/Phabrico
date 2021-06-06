@@ -1,0 +1,572 @@
+<style>
+    .phrictionToPDF {
+        width: 100%;
+    }
+
+    .phrictionToPDF #tableHeaderLayout,
+    .phrictionToPDF #tableFooterLayout {
+        width: calc(100% - 20px);
+        margin-left: 15px;
+    }
+
+    .phrictionToPDF .headerLayout,
+    .phrictionToPDF .footerLayout {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .phrictionToPDF .headerLayout div,
+        .phrictionToPDF .footerLayout div {
+            pointer-events: none;
+        }
+
+        .phrictionToPDF .headerLayout div.resize-handle,
+        .phrictionToPDF .footerLayout div.resize-handle {
+            pointer-events: all;
+            top: 0;
+            right: 0;
+            width: 5px;
+            position: absolute;
+            cursor: col-resize;
+            user-select: none;
+            height: 100%;
+        }
+
+    .phrictionToPDF .footerLayout {
+        margin-top: 20px;
+    }
+
+        .phrictionToPDF .headerLayout .aphront-form-label,
+        .phrictionToPDF .footerLayout .aphront-form-label {
+            float: left;
+            text-align: unset;
+            height: 0px;
+        }
+
+    .phrictionToPDF table.resizable {
+        border-collapse: collapse;
+    }
+
+        .phrictionToPDF table.resizable td {
+            border-style: dashed;
+            border-width: 1px;
+            border-color: gray;
+        }
+
+            .phrictionToPDF table.resizable td.headerColumn1 *,
+            .phrictionToPDF table.resizable td.headerColumn2 *,
+            .phrictionToPDF table.resizable td.headerColumn3 *,
+            .phrictionToPDF table.resizable td.footerColumn1 *,
+            .phrictionToPDF table.resizable td.footerColumn2 *,
+            .phrictionToPDF table.resizable td.footerColumn3 * {
+                vertical-align: top;
+            }
+
+
+    .phrictionToPDF .menu {
+        width: max-content;
+        box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+        position: absolute;
+        display: none;
+        background: #eee;
+    }
+
+    [data-theme="dark"] .phrictionToPDF .menu {
+        background: #666;
+    }
+
+        .phrictionToPDF .menu .menu-options {
+            list-style: none;
+            margin: 5px 5px 5px 10px;
+        }
+
+            .phrictionToPDF .menu .menu-options .menu-option {
+                cursor: pointer;
+                margin-bottom: 5px;
+            }
+
+                .phrictionToPDF .menu .menu-options .menu-option:hover {
+                    background: #8888;
+                }
+
+                [data-theme="dark"] .phrictionToPDF .menu .menu-options .menu-option:hover {
+                    background: #999;
+                }
+
+    .phrictionToPDF .font.arial {
+        font-family: Arial, sans-serif;
+    }
+
+    .phrictionToPDF .font.times-new-roman {
+        font-family: Times New Roman, serif;
+    }
+
+    .phrictionToPDF .font.garamond {
+        font-family: Garamond, serif;
+    }
+
+    .phrictionToPDF .font.courier-new {
+        font-family: Courier New, monospace;
+    }
+
+    .phrictionToPDF .font.brush-script {
+        font-family: Brush Script MT, cursive;
+    }
+
+    .phrictionToPDF #txtHeaderFontSize,
+    .phrictionToPDF #txtFooterFontSize {
+        height: 30px;
+        line-height: 30px;
+        padding: 17px 5px;
+        width: 90px;
+    }
+</style>
+
+<div class="phrictionToPDF">
+    <div class="headerLayout">
+        <label class="aphront-form-label">Header layout</label>
+        <table style="width: max-content;">
+            <tr>
+                <td>
+                    <label class="select">
+                        <select id="cmbHeaderFont" onchange="changeHeaderFooterFont(this, tableHeaderLayout)" oninput="changeHeaderFooterFont(this, tableHeaderLayout)">
+                            <option data-font="arial" selected>Arial</option>
+                            <option data-font="brush-script">Brush Script</option>
+                            <option data-font="courier-new">Courier New</option>
+                            <option data-font="garamond">Garamond</option>
+                            <option data-font="times-new-roman">Times New Roman</option>
+                        </select>
+                    </label>
+                </td>
+                <td style="white-space:nowrap">
+                    <input id="txtHeaderFontSize" type="number" onchange="changeHeaderFooterFontSize(this, tableHeaderLayout)" value="16" />px
+                <td>
+            </tr>
+        </table>
+
+        <table id="tableHeaderLayout" class="resizable">
+            <tbody>
+                <tr class="font @@HEADER-FONT-NAME@@" style="font-size: 16px">
+                    <td class="headerFooterColumn headerColumn1" contenteditable="true" style="width:@@HEADER-SIZE1@@; text-align:@@HEADER-ALIGN1@@">@@HEADER-TEXT1@@</td>
+                    <td class="headerFooterColumn headerColumn2" contenteditable="true" style="width:@@HEADER-SIZE2@@; text-align:@@HEADER-ALIGN2@@">@@HEADER-TEXT2@@</td>
+                    <td class="headerFooterColumn headerColumn3" contenteditable="true" style="text-align:@@HEADER-ALIGN3@@">@@HEADER-TEXT3@@</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footerLayout">
+        <label class="aphront-form-label">Footer layout</label>
+        <table style="width: max-content;">
+            <tr>
+                <td>
+                    <label class="select">
+                        <select id="cmbFooterFont" onchange="changeHeaderFooterFont(this, tableFooterLayout)" oninput="changeHeaderFooterFont(this, tableFooterLayout)">
+                            <option data-font="arial" selected>Arial</option>
+                            <option data-font="brush-script">Brush Script</option>
+                            <option data-font="courier-new">Courier New</option>
+                            <option data-font="garamond">Garamond</option>
+                            <option data-font="times-new-roman">Times New Roman</option>
+                        </select>
+                    </label>
+                </td>
+                <td style="white-space:nowrap">
+                    <input id="txtFooterFontSize" type="number" onchange="changeHeaderFooterFontSize(this, tableFooterLayout)" value="16" />px
+                <td>
+            </tr>
+        </table>
+
+        <table id="tableFooterLayout" class="resizable">
+            <tbody>
+                <tr class="font @@FOOTER-FONT-NAME@@" style="font-size: 16px">
+                    <td class="headerFooterColumn footerColumn1" contenteditable="true" style="width:@@FOOTER-SIZE1@@; text-align:@@FOOTER-ALIGN1@@">@@FOOTER-TEXT1@@</td>
+                    <td class="headerFooterColumn footerColumn2" contenteditable="true" style="width:@@FOOTER-SIZE2@@; text-align:@@FOOTER-ALIGN2@@">@@FOOTER-TEXT2@@</td>
+                    <td class="headerFooterColumn footerColumn3" contenteditable="true" style="text-align:@@FOOTER-ALIGN3@@">@@FOOTER-TEXT3@@</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="menu">
+        <ul class="menu-options">
+            <li class="menu-option" data-code="current-page">Current page</li>
+            <li class="menu-option" data-code="number-of-pages">Number of pages</li>
+            <li class="menu-option" data-code="image">Image</li>
+            <li class="menu-option" data-code="title">Title</li>
+            <li class="menu-option" data-code="last-modified">Last modification date</li>
+            <li class="menu-option" data-code="ask">Prompt field</li>
+            <li><hr></li>
+            <li class="menu-option" data-code="align-left">Align left</li>
+            <li class="menu-option" data-code="align-center">Center text</li>
+            <li class="menu-option" data-code="align-right">Align right</li>
+        </ul>
+    </div>
+
+    <input type="file" id="imgupload" style="display:none" />
+</div>
+
+<script>
+    var cursorSelection = null;
+    var tmrSaveConfiguration = null;
+    const menu = document.querySelector(".menu");
+
+    const setPosition = ({ top, left }) => {
+        menu.style.display = "block";
+
+        var menuWidth = parseInt(window.getComputedStyle(menu).width)
+        var screenWidth = parseInt(window.getComputedStyle(document.body).width);
+        if (menuWidth + left > screenWidth) {
+            left = screenWidth - menuWidth - 10;
+        }
+
+        left -= document.querySelector('div.phabrico-page-content').getBoundingClientRect().x;
+        top -= document.querySelector('div.phabrico-page-content').getBoundingClientRect().y;
+
+        menu.style.left = left + "px";
+        menu.style.top = top + "px";
+    };
+    
+    window.addEventListener("click", e => {
+        menu.style.display = "none";
+    });
+
+    window.addEventListener("contextmenu", e => {
+        const origin = {
+            left: e.clientX,
+            top: e.clientY
+        };
+        var targetElement = event.target
+        if (targetElement.nodeName === "TD") {
+            cursorSelection = saveSelection();
+            e.preventDefault();
+
+            setPosition(origin);
+        }
+
+        return false;
+    });
+
+    imgupload.addEventListener("change", e => {
+        var file = imgupload.files[0];
+        if (file.type && !file.type.startsWith("image/")) {
+            alert("File is not an image");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.addEventListener("load", (event) => {
+            var img = document.createElement("img");
+            img.src = event.target.result;
+            insertElementAtCaret(img);
+        });
+        reader.readAsDataURL(file);
+    });
+
+    document.querySelectorAll(".headerFooterColumn").forEach(function(headerFooterColumn) {
+        headerFooterColumn.addEventListener("input", function(e) {
+            if (headerFooterColumn.querySelector('.resize-handle') == null) {
+                // resize-handle was deleted -> add it again
+                var div = document.createElement("div");
+                div.className = 'resize-handle'
+                headerFooterColumn.appendChild(div);
+
+                addResizeHandleEvents(div);
+            }
+
+            if (tmrSaveConfiguration != null) {
+                clearTimeout(tmrSaveConfiguration);
+            }
+
+            tmrSaveConfiguration = setTimeout(function(){ 
+                sendPhrictionToPDFConfigurationToServer();
+                tmrSaveConfiguration = null;
+            }, 750);
+        });
+
+        headerFooterColumn.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                document.execCommand('insertLineBreak')
+                event.preventDefault()
+            }
+        });
+    });
+
+    document.querySelectorAll("div.menu .menu-options .menu-option").forEach(function(menuItem) {
+        menuItem.addEventListener("click", e => {
+            var menuItem = e.target;
+            var menuItemCode = menuItem.dataset["code"];
+            switch (menuItemCode) {
+                case "current-page":
+                    insertElementAtCaret( document.createTextNode("{PAGE}") );
+                    break;
+
+                case "number-of-pages":
+                    insertElementAtCaret( document.createTextNode("{NUMPAGES}") );
+                    break;
+
+                case "title":
+                    insertElementAtCaret( document.createTextNode("{TITLE}") );
+                    break;
+
+                case "last-modified":
+                    insertElementAtCaret( document.createTextNode("{LAST-MODIFIED}") );
+                    break;
+
+                case "image":
+                    imgupload.click();
+                    break;
+
+                case "ask":
+                    var askName = prompt("Enter your prompt/question", "Project number");
+                    if (askName != null  &&  askName.indexOf("}") == -1) {
+                        askName = "{ASK " + askName + "}";
+                        insertElementAtCaret( document.createTextNode(askName) );
+                    }
+                    break;
+
+                case "align-left":
+                    alignText("left");
+                    break;
+
+                case "align-center":
+                    alignText("center");
+                    break;
+
+                case "align-right":
+                    alignText("right");
+                    break;
+            }
+        });
+    });
+
+    // set header config
+    txtHeaderFontSize.value = parseInt("@@HEADER-FONT-SIZE@@");
+    changeHeaderFooterFontSize(txtHeaderFontSize, tableHeaderLayout);
+
+    var headerFonts = [].slice.apply(cmbHeaderFont);
+    var selectedHeaderFont = headerFonts.filter(e => e.dataset.font == '@@HEADER-FONT-NAME@@');
+    cmbHeaderFont.selectedIndex = headerFonts.indexOf(selectedHeaderFont[0]);
+
+    resizableGrid(tableHeaderLayout);
+
+    // set footer config
+    txtFooterFontSize.value = parseInt("@@FOOTER-FONT-SIZE@@");
+    changeHeaderFooterFontSize(txtFooterFontSize, tableFooterLayout);
+
+    var footerFonts = [].slice.apply(cmbFooterFont);
+    var selectedFooterFont = footerFonts.filter(e => e.dataset.font == '@@FOOTER-FONT-NAME@@');
+    cmbFooterFont.selectedIndex = footerFonts.indexOf(selectedFooterFont[0]);
+
+    resizableGrid(tableFooterLayout);
+
+    function alignText(align) {
+        var td = null;
+        var selection = restoreSelection(cursorSelection);
+        if (selection != null) {
+            td = selection.anchorNode.parentElement;
+
+            if (td.nodeName != 'TD') {
+                td = td.closest('TD');
+            }
+
+            switch (align) {
+                case "left":
+                    td.style.textAlign = "left";
+                    break;
+
+                case "center":
+                    td.style.textAlign = "center";
+                    break;
+
+                case "right":
+                    td.style.textAlign = "right";
+                    break;
+            }
+
+            sendPhrictionToPDFConfigurationToServer();
+        }
+    }
+
+    function insertElementAtCaret(element) {
+        var selection = restoreSelection(cursorSelection);
+        if (selection != null) {
+            range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(element);
+
+            range.setStartAfter(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            range.collapse(true);
+
+            sendPhrictionToPDFConfigurationToServer();
+        } 
+    }
+
+    function saveSelection() {
+        var selection = window.getSelection();
+        if (selection.anchorNode == null) {
+            return null;
+        } else {
+            return selection.getRangeAt(0);
+        }
+    }
+
+    function restoreSelection(range) {
+        if (range) {
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            return selection;
+        }
+
+        return null;
+    }
+
+    function resizableGrid(table) {
+        var tr = table.getElementsByTagName("tr")[0],
+            tds = tr ? tr.children : undefined;
+        if (!tds) return;
+
+        table.style.overflow = "hidden";
+        table.style.marginTop = "-15px";
+
+        // create resize handlers for all td"s except for the last one
+        for (var i = 0; i < tds.length - 1; i++) {
+            var div = document.createElement("div");
+            div.className = 'resize-handle'
+
+            tds[i].appendChild(div);
+            tds[i].style.position = "relative";
+
+            addResizeHandleEvents(div);
+        }
+    };
+
+    function addResizeHandleEvents(div) {
+        var pageX, td, tdWidth;
+
+        div.addEventListener("mousedown", function(e) {
+
+            td = e.target.parentElement;
+            pageX = e.pageX;
+
+            if ((window.getComputedStyle(td, null).getPropertyValue("box-sizing")) == "border-box") {
+                return 0;
+            }
+
+            var padLeft = window.getComputedStyle(td, null).getPropertyValue("padding-left");
+            var padRight = window.getComputedStyle(td, null).getPropertyValue("padding-right");
+            var padding = (parseInt(padLeft) + parseInt(padRight));
+
+            tdWidth = td.offsetWidth - padding;
+        });
+
+        div.addEventListener("mouseover", function(e) {
+            if (document.body.dataset.theme == 'dark') {
+                e.target.style.borderRight = "4px solid #48c";
+            } else  {
+                e.target.style.borderRight = "4px solid #4448";
+            }
+        })
+
+        div.addEventListener("mouseout", function(e) {
+            e.target.style.borderRight = "";
+        })
+
+        document.addEventListener("mousemove", function(e) {
+            if (td) {
+                var diffX = e.pageX - pageX;
+
+                td.style.width = (tdWidth + diffX) + "px";
+            }
+        });
+
+        document.addEventListener("mouseup", function(e) {
+            if (td != undefined) {
+                sendPhrictionToPDFConfigurationToServer()
+            }
+
+            td = undefined;
+            pageX = undefined;
+            tdWidth = undefined
+        });
+    }
+
+    function changeHeaderFooterFont(fontSelector, tableLayout) {
+        var fontName = fontSelector.item(fontSelector.selectedIndex).dataset["font"];
+        tableLayout.querySelector("tr").className = "font " + fontName;
+
+        sendPhrictionToPDFConfigurationToServer();
+    }
+
+    function changeHeaderFooterFontSize(fontSizeSelector, tableLayout) {
+        var fontSize = fontSizeSelector.value;
+        tableLayout.querySelector("tr").style.fontSize = fontSize + "px";
+
+        sendPhrictionToPDFConfigurationToServer();
+    }
+
+    function sendPhrictionToPDFConfigurationToServer() {
+        var headerWidth = tableHeaderLayout.getBoundingClientRect().width;
+
+        var headerFontName = cmbHeaderFont.options[cmbHeaderFont.options.selectedIndex].dataset.font;
+        var headerFontSize = parseInt(txtHeaderFontSize.value);
+        var header1Text = document.querySelector('.headerColumn1').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
+        var header1Size = (100 * document.querySelector('.headerColumn1').getBoundingClientRect().width / headerWidth) + "%";
+        var header1Align = document.querySelector('.headerColumn1').style.textAlign;
+        var header2Text = document.querySelector('.headerColumn2').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
+        var header2Size = (100 * document.querySelector('.headerColumn2').getBoundingClientRect().width / headerWidth) + "%";
+        var header2Align = document.querySelector('.headerColumn2').style.textAlign;
+        var header3Text = document.querySelector('.headerColumn3').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
+        var header3Align = document.querySelector('.headerColumn3').style.textAlign;
+
+        var footerFontName = cmbFooterFont.options[cmbFooterFont.options.selectedIndex].dataset.font;
+        var footerFontSize = parseInt(txtFooterFontSize.value);
+        var footer1Text = document.querySelector('.footerColumn1').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
+        var footer1Size = (100 * document.querySelector('.footerColumn1').getBoundingClientRect().width / headerWidth) + "%";
+        var footer1Align = document.querySelector('.footerColumn1').style.textAlign;
+        var footer2Text = document.querySelector('.footerColumn2').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
+        var footer2Size = (100 * document.querySelector('.footerColumn2').getBoundingClientRect().width / headerWidth) + "%";
+        var footer2Align = document.querySelector('.footerColumn2').style.textAlign;
+        var footer3Text = document.querySelector('.footerColumn3').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
+        var footer3Align = document.querySelector('.footerColumn3').style.textAlign;
+
+        var configuration = new FormData();
+        configuration.append("headerLayout",  
+                             JSON.stringify({
+                                 "Font": headerFontName,
+                                 "FontSize": headerFontSize,
+                                 "Text1": header1Text,
+                                 "Size1": header1Size,
+                                 "Align1": header1Align,
+                                 "Text2": header2Text,
+                                 "Size2": header2Size,
+                                 "Align2": header2Align,
+                                 "Text3": header3Text,
+                                 "Align3": header3Align,
+                             })
+                            );
+        configuration.append("footerLayout",  
+                             JSON.stringify({
+                                 "Font": footerFontName,
+                                 "FontSize": footerFontSize,
+                                 "Text1": footer1Text,
+                                 "Size1": footer1Size,
+                                 "Align1": footer1Align,
+                                 "Text2": footer2Text,
+                                 "Size2": footer2Size,
+                                 "Align2": footer2Align,
+                                 "Text3": footer3Text,
+                                 "Align3": footer3Align,
+                             })
+                            );
+
+        // send to HTTP server
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("POST", "/PhrictionToPDF/configuration/save/", true);
+        xmlhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8");
+        xmlhttp.send(configuration);
+    }
+</script>

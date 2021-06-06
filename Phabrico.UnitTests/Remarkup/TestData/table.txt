@@ -5,10 +5,13 @@
 </table>
 ~~~~~~~~~~
 <table class='remarkup-table'>
+<thead>
   <tr>
     <th>Table</th>
     <th>Storage</th>
   </tr>
+</thead>
+<tbody>
   <tr>
     <td><tt class='remarkup-monospaced'>differential_diff</tt></td>
     <td>InnoDB</td>
@@ -17,5 +20,6 @@
     <td><tt class='remarkup-monospaced'>edge</tt></td>
     <td>?</td>
   </tr>
+</tbody>
 </table>
 ~~~~~~~~~~

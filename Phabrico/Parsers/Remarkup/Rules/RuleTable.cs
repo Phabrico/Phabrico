@@ -260,6 +260,15 @@ namespace Phabrico.Parsers.Remarkup.Rules
                             tableContent += "</table>\n";
                         }
 
+                        Match regexTableContentWithFirstRowAsHeaders = RegexSafe.Match(tableContent, "(<table[^>]*>)([^<]*<tr>([^<]*<th>[^<]*</th>)*[^<]*</tr>)[^<]+((<tr>.+?</tr>[^<]*)*)", RegexOptions.Singleline);
+                        if (regexTableContentWithFirstRowAsHeaders.Success)
+                        {
+                            tableContent = regexTableContentWithFirstRowAsHeaders.Groups[1].Value
+                                         + "\n<thead>" + regexTableContentWithFirstRowAsHeaders.Groups[2].Value + "\n</thead>"
+                                         + "\n<tbody>\n  " + regexTableContentWithFirstRowAsHeaders.Groups[4].Value + "</tbody>\n"
+                                         + "</table>\n";
+                        }
+
                         remarkup = remarkup.Substring(match.Length);
 
                         html = tableContent;

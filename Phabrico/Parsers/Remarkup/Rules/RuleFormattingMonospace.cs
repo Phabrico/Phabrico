@@ -23,11 +23,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html)
         {
             html = "";
-            Match matchSquare = RegexSafe.Match(remarkup, @"^##((.+?(?<!##))|#+)##", RegexOptions.Singleline);
+            Match matchSquare = RegexSafe.Match(remarkup, @"^##((.+?(?<![^\n]##))|#+)([^\n])##", RegexOptions.Singleline);
             if (matchSquare.Success)
             {
                 remarkup = remarkup.Substring(matchSquare.Length);
-                html = string.Format("<tt class='remarkup-monospaced'>{0}</tt>", HttpUtility.HtmlEncode(matchSquare.Groups[1].Value));
+                html = string.Format("<tt class='remarkup-monospaced'>{0}{1}</tt>", HttpUtility.HtmlEncode(matchSquare.Groups[1].Value), HttpUtility.HtmlEncode(matchSquare.Groups[3].Value));
 
                 Length = matchSquare.Length;
 

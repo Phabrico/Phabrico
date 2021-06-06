@@ -323,6 +323,21 @@ EditorUi.initMinimalTheme = function()
 			graph.defaultThemeName = Editor.isDarkMode() ? 'darkTheme' : 'default-style2';
 			graph.graphHandler.previewColor = Editor.isDarkMode() ? '#cccccc' : 'black';
 			graph.loadStylesheet();
+			
+			// Destroys windows with code for dark mode
+		    if (this.actions.layersWindow != null)
+		    {
+		    	this.actions.layersWindow.window.setVisible(false);
+		    	this.actions.layersWindow.destroy();
+		    	this.actions.layersWindow = null;
+		    }
+
+			if (this.menus.commentsWindow != null)
+			{
+		    	this.menus.commentsWindow.window.setVisible(false);
+				this.menus.commentsWindow.destroy();
+				this.menus.commentsWindow = null;
+			}
 
 			// Sets global vars
 			Dialog.backdropColor = Editor.isDarkMode() ? '#2a2a2a' : 'white';
@@ -377,6 +392,7 @@ EditorUi.initMinimalTheme = function()
 			'html > body > div > a.geItem { background-color: #ffffff; color: #707070; border-top: 1px solid lightgray; border-left: 1px solid lightgray; }' +
 			'html body .geMenubarContainer { border-bottom:1px solid lightgray;background-color:#ffffff; }' +
 			'html body .mxWindow button.geBtn { font-size:12px !important; margin-left: 0; }' +
+			'html body .mxWindowTitle > div > img { padding: 4px; }' +
 			'html body table.mxWindow td.mxWindowPane div.mxWindowPane *:not(svg *) { font-size:9pt; }' +
 			'table.mxWindow * :not(svg *) { font-size:13px; }' +
 			'html body div.diagramContainer button, html body button.geBtn { font-size:14px; font-weight:700; border-radius: 5px; }' +
@@ -411,8 +427,8 @@ EditorUi.initMinimalTheme = function()
 			'td.mxWindowPane .geSidebarContainer button { padding:2px; box-sizing: border-box; }' +
 			'html body .geMenuItem { font-size:14px; text-decoration: none; font-weight: normal; padding: 6px 10px 6px 10px; border: none; border-radius: 5px; color: #353535; box-shadow: inset 0 0 0 1px rgba(0,0,0,.11), inset 0 -1px 0 0 rgba(0,0,0,.08), 0 1px 2px 0 rgba(0,0,0,.04); }' +
 			// Styling for Minimal
-			'.geTabContainer { border-bottom:1px solid lightgray; border-top:1px solid lightgray; }' +
-			'.geToolbarContainer, .geTabContainer { background: ' + (Editor.isDarkMode() ? '#2a2a2a' : '#fff') + ' !important; }' +
+			'.geTabContainer { border-bottom:1px solid lightgray; border-top:1px solid lightgray; background: ' + (Editor.isDarkMode() ? '#2a2a2a' : '#fff') + ' !important; }' +
+			'.geToolbarContainer { background: ' + (Editor.isDarkMode() ? '#2a2a2a' : '#fff') + '; }' +
 			'div.geSidebarContainer { background-color: ' + (Editor.isDarkMode() ? '#2a2a2a' : '#fff') + '; }' +
 			'div.geSidebarContainer .geTitle { background-color: ' + (Editor.isDarkMode() ? '#2a2a2a' : '#fdfdfd') + '; }' +
 			'div.mxWindow td.mxWindowPane button { background-image: none; float: none; }' +
@@ -568,7 +584,7 @@ EditorUi.initMinimalTheme = function()
 			var div = document.createElement('div');
 			div.style.display = 'inline-block';
 			div.style.position = 'relative';
-			div.style.marginTop = '8px';
+			div.style.marginTop = '6px';
 			div.style.marginRight = '4px';
 			
 			var button = document.createElement('a');
@@ -578,9 +594,10 @@ EditorUi.initMinimalTheme = function()
 			
 			if (urlParams['noSaveBtn'] == '1')
 			{
-				mxUtils.write(button, mxResources.get('saveAndExit'));
-				button.setAttribute('title', mxResources.get('saveAndExit'));
-				
+				var saveAndExitTitle = urlParams['publishClose'] == '1' ? mxResources.get('publish') : mxResources.get('saveAndExit');
+				mxUtils.write(button, saveAndExitTitle);
+				button.setAttribute('title', saveAndExitTitle);
+					
 				mxEvent.addListener(button, 'click', mxUtils.bind(this, function()
 				{
 					this.actions.get('saveAndExit').funct();
@@ -621,8 +638,9 @@ EditorUi.initMinimalTheme = function()
 			if (urlParams['noExitBtn'] != '1')
 			{
 				button = document.createElement('a');
-				mxUtils.write(button, mxResources.get('exit'));
-				button.setAttribute('title', mxResources.get('exit'));
+				var exitTitle = urlParams['publishClose'] == '1' ? mxResources.get('close') : mxResources.get('exit');
+				mxUtils.write(button, exitTitle);
+				button.setAttribute('title', exitTitle);
 				button.className = 'geMenuItem';
 				button.style.marginLeft = '6px';
 				button.style.padding = '6px';
@@ -781,7 +799,7 @@ EditorUi.initMinimalTheme = function()
         if (this.actions.layersWindow != null)
         {
         	this.actions.layersWindow.window.setVisible(false);
-        	this.actions.layersWindow.window.destroy();
+        	this.actions.layersWindow.destroy();
         	this.actions.layersWindow = null;
         }
 
@@ -935,9 +953,13 @@ EditorUi.initMinimalTheme = function()
 			}
 			else if (urlParams['embed'] == '1')
 			{
-				ui.menus.addMenuItems(menu, ['-', 'save'], parent);
-
-				if (urlParams['saveAndExit'] == '1')
+				if (urlParams['noSaveBtn'] != '1')
+				{
+					ui.menus.addMenuItems(menu, ['-', 'save'], parent);
+				}
+				
+				if (urlParams['saveAndExit'] == '1' || 
+					(urlParams['noSaveBtn'] == '1' && urlParams['saveAndExit'] != '0'))
 				{
 					ui.menus.addMenuItems(menu, ['saveAndExit'], parent);
 				}
@@ -1266,7 +1288,8 @@ EditorUi.initMinimalTheme = function()
 	EditorUi.prototype.init = function()
 	{
 		editorUiInit.apply(this, arguments);
-		this.doSetDarkMode(mxSettings.settings.darkMode);
+		this.doSetDarkMode((urlParams['dark'] != null) ?
+			urlParams['dark'] == 1 : mxSettings.settings.darkMode);
 		
 		var div = document.createElement('div');
 		div.style.cssText = 'position:absolute;left:0px;right:0px;top:0px;overflow-y:auto;overflow-x:hidden;';
@@ -1330,9 +1353,12 @@ EditorUi.initMinimalTheme = function()
 					this.fit();
 				};
 				
-				mxEvent.addListener(this.formatWindow.window.title, 'dblclick', mxUtils.bind(this, function()
+				mxEvent.addListener(this.formatWindow.window.title, 'dblclick', mxUtils.bind(this, function(evt)
 				{
-					this.formatWindow.window.toggleMinimized();
+					if (mxEvent.getSource(evt) == this.formatWindow.window.title)
+					{
+						this.formatWindow.window.toggleMinimized();
+					}
 				}));
 				
 				this.formatWindow.window.toggleMinimized();
@@ -1664,10 +1690,6 @@ EditorUi.initMinimalTheme = function()
 		{
 			if (graph.freehand != null)
 			{
-				graph.freehand.setAutoInsert(true);
-				graph.freehand.setAutoScroll(true);
-				graph.freehand.setOpenFill(true);
-				
 				var freehandCreateStyle = graph.freehand.createStyle;
 				
 				graph.freehand.createStyle = function(stencil)
@@ -1829,9 +1851,11 @@ EditorUi.initMinimalTheme = function()
 				addElt(ui.sidebar.createVertexTemplate('text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;', 
 					40, 20, 'Text', mxResources.get('text'), true, true, null, true), mxResources.get('text') +
 					' (' +  Editor.ctrlKey + '+Shift+X' + ')');
-				addElt(ui.sidebar.createVertexTemplate('shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFF9B2;strokeColor=none;' +
-					'fillStyle=solid;direction=west;gradientDirection=north;gradientColor=#FFF2A1;sketch=1;shadow=1;size=20;fontSize=24;jiggle=2;pointerEvents=1;',
-					140, 160, '', mxResources.get('note'), true, true, null, true), mxResources.get('note'));
+				addElt(ui.sidebar.createVertexTemplate('shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;' +
+					'fontColor=#000000;darkOpacity=0.05;fillColor=#FFF9B2;strokeColor=none;fillStyle=solid;' +
+					'direction=west;gradientDirection=north;gradientColor=#FFF2A1;sketch=1;shadow=1;size=20;' +
+					'fontSize=24;jiggle=2;pointerEvents=1;', 140, 160, '', mxResources.get('note'), true, true,
+					null, true), mxResources.get('note'));
 				addElt(ui.sidebar.createVertexTemplate('rounded=0;whiteSpace=wrap;html=1;', 160, 80,
 					'', mxResources.get('rectangle'), true, true, null, true), mxResources.get('rectangle') +
 					' (' +  Editor.ctrlKey + '+K' + ')');
@@ -1944,11 +1968,19 @@ EditorUi.initMinimalTheme = function()
 	       		'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTguNCAxMC42QzE2LjU1IDguOTkgMTQuMTUgOCAxMS41IDhjLTQuNjUgMC04LjU4IDMuMDMtOS45NiA3LjIyTDMuOSAxNmMxLjA1LTMuMTkgNC4wNS01LjUgNy42LTUuNSAxLjk1IDAgMy43My43MiA1LjEyIDEuODhMMTMgMTZoOVY3bC0zLjYgMy42eiIvPjwvc3ZnPg==');
 			var fitElt = addMenuItem('', fitFunction, true, mxResources.get('fit') + ' (' + Editor.ctrlKey + '+H)', resetViewAction, fullscreenImage);
 			var fullscreenElt = addMenuItem('', fullscreenAction.funct, null, mxResources.get('fullscreen'), fullscreenAction, fullscreenImage);
+			var deleteImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNNiAxOWMwIDEuMS45IDIgMiAyaDhjMS4xIDAgMi0uOSAyLTJWN0g2djEyek0xOSA0aC0zLjVsLTEtMWgtNWwtMSAxSDV2MmgxNFY0eiIvPjwvc3ZnPg==';
 
 			if (footer != null)
 			{
-				toolbar.appendChild(undoElt);
-				toolbar.appendChild(redoElt);
+				var deleteAction = ui.actions.get('delete');
+				var deleteElt = addMenuItem('', deleteAction.funct, null, mxResources.get('delete'), deleteAction, deleteImage);
+				deleteElt.style.opacity = '0.1';
+	        	toolbar.appendChild(deleteElt);
+
+				deleteAction.addListener('stateChanged', function()
+				{
+					deleteElt.style.opacity = (deleteAction.enabled) ? '0.4' : '0.1';
+				});
 				
 				var undoListener = function()
 				{
@@ -1959,17 +1991,20 @@ EditorUi.initMinimalTheme = function()
 					undoElt.style.opacity = (undoAction.enabled) ? '0.4' : '0.1';
 					redoElt.style.opacity = (redoAction.enabled) ? '0.4' : '0.1';
 				};
-								
+				
+				toolbar.appendChild(undoElt);
+				toolbar.appendChild(redoElt);
+				
 				undoAction.addListener('stateChanged', undoListener);
 				redoAction.addListener('stateChanged', undoListener);
 				undoListener();
 				
-				if (fullscreenAction.visible)
-				{
-					fullscreenElt.style.opacity = '0.4';
-					footer.appendChild(fullscreenElt);
-				}
-					
+				var outlineAction = ui.actions.get('outline');
+				var outlineImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAwIDI0IDI0IiB3aWR0aD0iMjRweCIgZmlsbD0iIzAwMDAwMCI+PHBhdGggZD0iTTAgMGgyNHYyNEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0yMC41IDNsLS4xNi4wM0wxNSA1LjEgOSAzIDMuMzYgNC45Yy0uMjEuMDctLjM2LjI1LS4zNi40OFYyMC41YzAgLjI4LjIyLjUuNS41bC4xNi0uMDNMOSAxOC45bDYgMi4xIDUuNjQtMS45Yy4yMS0uMDcuMzYtLjI1LjM2LS40OFYzLjVjMC0uMjgtLjIyLS41LS41LS41ek0xNSAxOWwtNi0yLjExVjVsNiAyLjExVjE5eiIvPjwvc3ZnPg==';
+				var outlineElt = addMenuItem('', outlineAction.funct, null, mxResources.get('outline'), outlineAction, outlineImage);
+				outlineElt.style.opacity = '0.4';
+				footer.appendChild(outlineElt);
+	
 				var zoomOutElt = addMenuItem('', zoomOutAction.funct, true, mxResources.get('zoomOut') + ' (' + Editor.ctrlKey + ' -/Alt+Mousewheel)', zoomOutAction, zoomOutImage);
 				zoomOutElt.style.opacity = '0.4';
 				footer.appendChild(zoomOutElt);
@@ -1995,6 +2030,22 @@ EditorUi.initMinimalTheme = function()
 				var zoomInElt = addMenuItem('', zoomInAction.funct, true, mxResources.get('zoomIn') + ' (' + Editor.ctrlKey + ' +/Alt+Mousewheel)', zoomInAction, zoomInImage);
 				zoomInElt.style.opacity = '0.4';
 				footer.appendChild(zoomInElt);
+
+				var toggleDarkElt = addMenuItem('', toggleDarkAction.funct, null, mxResources.get('dark'), toggleDarkAction,
+					Editor.isDarkMode() ? lightImage : darkImage);
+				toggleDarkElt.style.opacity = '0.4';
+				footer.appendChild(toggleDarkElt);
+				
+				ui.addListener('darkModeChanged', mxUtils.bind(this, function()
+				{
+					toggleDarkElt.style.backgroundImage = 'url(' + (Editor.isDarkMode() ? lightImage : darkImage) + ')';
+				}));
+									
+				if (fullscreenAction.visible)
+				{
+					fullscreenElt.style.opacity = '0.4';
+					footer.appendChild(fullscreenElt);
+				}
 				
 				var pageMenu = this.createPageMenuTab(false);
 				pageMenu.style.display = 'none';
@@ -2016,16 +2067,6 @@ EditorUi.initMinimalTheme = function()
 				pageMenu.firstChild.style.margin = '0px';
 				footer.appendChild(pageMenu);
 				
-				var toggleDarkElt = addMenuItem('', toggleDarkAction.funct, null, mxResources.get('dark'), toggleDarkAction,
-					Editor.isDarkMode() ? lightImage : darkImage);
-				toggleDarkElt.style.opacity = '0.4';
-				footer.appendChild(toggleDarkElt);
-				
-				ui.addListener('darkModeChanged', mxUtils.bind(this, function()
-				{
-					toggleDarkElt.style.backgroundImage = 'url(' + (Editor.isDarkMode() ? lightImage : darkImage) + ')';
-				}));
-
 				// Page menu only visible for multiple pages
 				ui.addListener('fileDescriptorChanged', function()
 				{
@@ -2037,18 +2078,18 @@ EditorUi.initMinimalTheme = function()
 				ui.tabContainer.style.visibility = 'hidden';
 				menubar.style.cssText = 'position:absolute;right:20px;top:10px;height:30px;z-index:1;border-radius:4px;' +
 					'box-shadow:0px 0px 3px 1px #d1d1d1;padding:6px 0px 6px 6px;border-bottom:1px solid lightgray;' +
-					'text-align:right;white-space:nowrap;background-color:#fff;overflow:hidden;';
+					'text-align:right;white-space:nowrap;overflow:hidden;';
 				toolbar.style.cssText = 'position:absolute;left:10px;top:10px;height:30px;z-index:1;border-radius:4px;' +
 					'box-shadow:0px 0px 3px 1px #d1d1d1;padding:6px;border-bottom:1px solid lightgray;' +
-					'text-align:right;white-space:nowrap;background-color:#fff;overflow:hidden;';
+					'text-align:right;white-space:nowrap;overflow:hidden;';
 				footer.style.cssText = 'position:absolute;right:20px;bottom:20px;height:28px;z-index:1;border-radius:4px;' +
-					'box-shadow:0px 0px 3px 1px #d1d1d1;padding:8px;white-space:nowrap;background-color:#fff;';
+					'box-shadow:0px 0px 3px 1px #d1d1d1;padding:8px;white-space:nowrap;';
 				wrapper.appendChild(toolbar);
 				wrapper.appendChild(footer);
 				
 				picker.style.cssText = 'position:absolute;left:10px;z-index:1;border-radius:4px;' +
 					'box-shadow:0px 0px 3px 1px #d1d1d1;padding:8px 6px 10px 6px;white-space:nowrap;' +
-					'background-color:#fff;transform:translate(0, -50%);top:50%;';
+					'transform:translate(0, -50%);top:50%;';
 				wrapper.appendChild(picker);
 				
 				if (urlParams['format-toolbar'] == '1')
@@ -2149,7 +2190,11 @@ EditorUi.initMinimalTheme = function()
 	        	addMenu('diagram');
 	        }
 
-			if (urlParams['sketch'] != '1')
+			if (urlParams['sketch'] == '1')
+			{
+				toolbar.style.left = (picker.offsetTop - picker.offsetHeight / 2 < 58) ? '70px' : '10px';
+			}
+			else
 			{
 		        createGroup([((small) ? addMenu('diagram', null, IMAGE_PATH + '/drawlogo.svg') : null),
 		        	addMenuItem(mxResources.get('shapes'), ui.actions.get('toggleShapes').funct, null, mxResources.get('shapes'), ui.actions.get('image'),
@@ -2160,9 +2205,9 @@ EditorUi.initMinimalTheme = function()
 	   				(small) ? 60 : null);
 			
 		        var elt = addMenu('insert', true, (small) ? insertImage : null);
-	        	createGroup([elt, addMenuItem(mxResources.get('delete'), ui.actions.get('delete').funct, null, mxResources.get('delete'), ui.actions.get('delete'),
-		        	(small) ? 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNNiAxOWMwIDEuMS45IDIgMiAyaDhjMS4xIDAgMi0uOSAyLTJWN0g2djEyek0xOSA0aC0zLjVsLTEtMWgtNWwtMSAxSDV2MmgxNFY0eiIvPjwvc3ZnPg==' : null)],
-	   				(small) ? 60 : null);
+	        	createGroup([elt, addMenuItem(mxResources.get('delete'), ui.actions.get('delete').funct,
+					null, mxResources.get('delete'), ui.actions.get('delete'),
+		        	(small) ? deleteImage : null)], (small) ? 60 : null);
 	
 		        if (iw >= 411)
 		        {

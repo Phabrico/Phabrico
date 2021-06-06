@@ -1675,6 +1675,12 @@ table.aphront-table-view tr.selected {
     border-bottom-width: 1px;
 }
 
+table.remarkup-table tr,
+table.remarkup-table th,
+table.remarkup-table td {
+    page-break-inside: avoid;
+}
+
 table.remarkup-table th {
     font-weight: bold;
     padding: 4px 6px;

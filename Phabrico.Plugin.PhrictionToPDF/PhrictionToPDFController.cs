@@ -83,10 +83,10 @@ namespace Phabrico.Plugin
 
             cacheCounter++;
 
-            Storage.Account accountStorage = new Storage.Account();
-            Storage.Phriction phrictionStorage = new Storage.Phriction();
+            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
+            Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
 
-            using (Storage.Database database = new Storage.Database(null))
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
                 UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
@@ -96,7 +96,7 @@ namespace Phabrico.Plugin
             }
 
             List<string> underlyingPhrictionTokens = new List<string>();
-            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 string jsonData;
                 Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, PhrictionData.Path);
@@ -106,6 +106,55 @@ namespace Phabrico.Plugin
                     RetrieveUnderlyingPhrictionDocuments(database, phrictionDocument.Token, ref underlyingPhrictionTokens);
                 }
 
+                if (PhrictionData.IsPrepared == false)
+                {
+                    List<string> askParameters = new List<string>();
+
+                    Model.PhrictionToPDFConfiguration phrictionToPDFConfiguration = Storage.PhrictionToPDFConfiguration.Load(database, null);
+                    foreach (string headerFooterText in new string[] { phrictionToPDFConfiguration.HeaderData.Text1, phrictionToPDFConfiguration.HeaderData.Text2, phrictionToPDFConfiguration.HeaderData.Text3,
+                                                                       phrictionToPDFConfiguration.FooterData.Text1, phrictionToPDFConfiguration.FooterData.Text2, phrictionToPDFConfiguration.FooterData.Text3
+                                                                     })
+                    {
+                        foreach (Match askParameter in RegexSafe.Matches(headerFooterText, "{ASK ([^}]*)}"))
+                        {
+                            askParameters.Add(askParameter.Groups[1].Value);
+                        }
+                    }
+
+
+                    string innerHTML = null;
+                    if (askParameters.Any())
+                    {
+                        innerHTML = "<table><tbody>";
+
+                        for (int p = 0; p < askParameters.Count; p++)
+                        {
+                            innerHTML += string.Format(
+                                    @"<tr>
+                                        <td>
+                                            <label class='aphront-form-label' style='display:inline-block; width:10%; text-align: right; white-space: nowrap;' for='input-{0}'>{1}</label>
+                                        </td>
+                                        <td>
+                                            <input id='input-{0}' name='input-{0}' style='margin-top: 4px; width: calc(90% - 8px);' type='text' autofocus=''>
+                                        </td>
+                                     </tr>",
+                                    p + 1,
+                                    HttpUtility.HtmlEncode(askParameters[p]));
+                        }
+
+                        innerHTML += "</tbody></table>";
+
+
+                        jsonData = JsonConvert.SerializeObject(new
+                        {
+                            Status = "Prepare",
+                            DialogTitle = Locale.TranslateText("Custom template parameters", browser.Session.Locale),
+                            DialogHTML = innerHTML
+                        });
+
+                        return new JsonMessage(jsonData);
+                    }
+                }
 
                 if (underlyingPhrictionTokens.Any() && PhrictionData.ConfirmState == ConfirmResponse.None)
                 {
@@ -133,8 +182,8 @@ namespace Phabrico.Plugin
                     PhrictionData.Content = "<h1>" + HttpUtility.HtmlEncode(phrictionDocument.Name) + "</h1>" + PhrictionData.Content;
 
                     // read content of all linked files and store them temporary in cache dictionary
-                    Storage.File fileStorage = new Storage.File();
-                    Storage.Stage stageStorage = new Stage();
+                    Phabrico.Storage.File fileStorage = new Phabrico.Storage.File();
+                    Phabrico.Storage.Stage stageStorage = new Phabrico.Storage.Stage();
                     foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
                     {
                         string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
@@ -161,12 +210,12 @@ namespace Phabrico.Plugin
                     {
                         foreach (string underlyingPhrictionToken in underlyingPhrictionTokens)
                         {
-                            phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken);
-                            if (phrictionDocument != null)
+                            Phabricator.Data.Phriction underlyingPhrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken);
+                            if (underlyingPhrictionDocument != null)
                             {
-                                if (string.IsNullOrWhiteSpace(phrictionDocument.Content)) continue;
+                                if (string.IsNullOrWhiteSpace(underlyingPhrictionDocument.Content)) continue;
 
-                                string html = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+                                string html = ConvertRemarkupToHTML(database, underlyingPhrictionDocument.Path, underlyingPhrictionDocument.Content, out remarkupPerserOutput, false);
                                 foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
                                 {
                                     string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
@@ -192,10 +241,10 @@ namespace Phabrico.Plugin
                                 html = LowerHeaderLevels(html);
 
                                 // add title
-                                html = "<h1>" + HttpUtility.HtmlEncode(phrictionDocument.Name) + "</h1>" + html;
+                                html = "<h1>" + HttpUtility.HtmlEncode(underlyingPhrictionDocument.Name) + "</h1>" + html;
 
                                 PhrictionData.Content += "<div class='page-break'></div>";
-                                PhrictionData.Content += string.Format("<div class='underlying-document-title'>{0}</div>", HttpUtility.HtmlEncode(phrictionDocument.Name));
+                                PhrictionData.Content += string.Format("<div class='underlying-document-title'>{0}</div>", HttpUtility.HtmlEncode(underlyingPhrictionDocument.Name));
                                 PhrictionData.Content += html;
                             }
                         }
@@ -206,6 +255,27 @@ namespace Phabrico.Plugin
 
                     // add a <br> tag before each image
                     PhrictionData.Content = PhrictionData.Content.Replace("<img ", "<br><img ");
+
+                    // configure page layout
+                    Model.PhrictionToPDFConfiguration phrictionToPDFConfiguration = Storage.PhrictionToPDFConfiguration.Load(database, phrictionDocument);
+                    string pageHeaderHtml = phrictionToPDFConfiguration.PageHeaderHtml;
+                    foreach (Match askParameter in RegexSafe.Matches(pageHeaderHtml, "{ASK ([^}]*)}").OfType<Match>().OrderByDescending(match => match.Index).ToArray())
+                    {
+                        string parameterName = askParameter.Groups[1].Value;
+                        string parameterValue = browser.Session.FormVariables[parameterName];
+                        pageHeaderHtml = pageHeaderHtml.Replace(askParameter.Value, parameterValue);
+                    }
+                    htmlToPdf.PageHeaderHtml = pageHeaderHtml;
+
+                    string pageFooterHtml = phrictionToPDFConfiguration.PageFooterHtml;
+                    foreach (Match askParameter in RegexSafe.Matches(pageFooterHtml, "{ASK ([^}]*)}").OfType<Match>().OrderByDescending(match => match.Index).ToArray())
+                    {
+                        string parameterName = askParameter.Groups[1].Value;
+                        string parameterValue = browser.Session.FormVariables[parameterName];
+                        pageFooterHtml = pageFooterHtml.Replace(askParameter.Value, parameterValue);
+                    }
+
+                    htmlToPdf.PageFooterHtml = pageFooterHtml;
 
                     // convert HTML to PDF
                     PhrictionData.Content = MergeStyleSheets(title, PhrictionData.Content);
@@ -250,10 +320,10 @@ namespace Phabrico.Plugin
             string crumbs = browser.Session.FormVariables["crumbs"];
             string path = browser.Session.FormVariables["path"];
 
-            Storage.Account accountStorage = new Storage.Account();
-            Storage.Phriction phrictionStorage = new Storage.Phriction();
+            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
+            Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
 
-            using (Storage.Database database = new Storage.Database(null))
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
                 UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
@@ -263,7 +333,7 @@ namespace Phabrico.Plugin
             }
 
             List<string> underlyingPhrictionTokens = new List<string>();
-            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, path);
 
@@ -301,6 +371,70 @@ namespace Phabrico.Plugin
             }
 
             return new JsonMessage(jsonData);
+        }
+
+        /// <summary>
+        /// This method is fired when a PhrictionToPDF parameter is changed in the configuration screen
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        [UrlController(URL = "/PhrictionToPDF/configuration/save")]
+        public JsonMessage HttpPostSaveConfiguration(Http.Server httpServer, Browser browser, string[] parameters)
+        {
+            string headerLayout = browser.Session.FormVariables["headerLayout"];
+            string footerLayout = browser.Session.FormVariables["footerLayout"];
+
+            Model.PhrictionToPDFConfiguration configuration = new Model.PhrictionToPDFConfiguration(null);
+            configuration.PageHeaderJson = headerLayout;
+            configuration.PageFooterJson = footerLayout;
+
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
+            {
+                Storage.PhrictionToPDFConfiguration.Save(database, configuration);
+            }
+            string jsonData = JsonConvert.SerializeObject(new
+            {
+                Status = "OK"
+            });
+
+            return new JsonMessage(jsonData);
+        }
+
+        /// <summary>
+        /// Is executed after GetConfigurationViewPage and fills in all the data in the plugin tab in the configuration screen
+        /// </summary>
+        /// <param name="plugin"></param>
+        /// <param name="configurationTabContent"></param>
+        public override void LoadConfigurationParameters(PluginBase plugin, HtmlPartialViewPage configurationTabContent)
+        {
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
+            {
+                Model.PhrictionToPDFConfiguration phrictionToPDFConfiguration = Storage.PhrictionToPDFConfiguration.Load(database, null);
+
+                configurationTabContent.SetText("HEADER-FONT-NAME", phrictionToPDFConfiguration.HeaderData.Font);
+                configurationTabContent.SetText("HEADER-FONT-SIZE", phrictionToPDFConfiguration.HeaderData.FontSize.ToString() + "px");
+                configurationTabContent.SetText("HEADER-SIZE1", phrictionToPDFConfiguration.HeaderData.Size1, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("HEADER-TEXT1", phrictionToPDFConfiguration.HeaderData.Text1, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("HEADER-ALIGN1", phrictionToPDFConfiguration.HeaderData.Align1, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("HEADER-SIZE2", phrictionToPDFConfiguration.HeaderData.Size2, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("HEADER-TEXT2", phrictionToPDFConfiguration.HeaderData.Text2, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("HEADER-ALIGN2", phrictionToPDFConfiguration.HeaderData.Align2, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("HEADER-TEXT3", phrictionToPDFConfiguration.HeaderData.Text3, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("HEADER-ALIGN3", phrictionToPDFConfiguration.HeaderData.Align3, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+
+                configurationTabContent.SetText("FOOTER-FONT-NAME", phrictionToPDFConfiguration.FooterData.Font);
+                configurationTabContent.SetText("FOOTER-FONT-SIZE", phrictionToPDFConfiguration.FooterData.FontSize.ToString() + "px");
+                configurationTabContent.SetText("FOOTER-SIZE1", phrictionToPDFConfiguration.FooterData.Size1, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("FOOTER-TEXT1", phrictionToPDFConfiguration.FooterData.Text1, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("FOOTER-ALIGN1", phrictionToPDFConfiguration.FooterData.Align1, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("FOOTER-SIZE2", phrictionToPDFConfiguration.FooterData.Size2, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("FOOTER-TEXT2", phrictionToPDFConfiguration.FooterData.Text2, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("FOOTER-ALIGN2", phrictionToPDFConfiguration.FooterData.Align2, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("FOOTER-TEXT3", phrictionToPDFConfiguration.FooterData.Text3, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                configurationTabContent.SetText("FOOTER-ALIGN3", phrictionToPDFConfiguration.FooterData.Align3, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            }
         }
 
         /// <summary>

@@ -6900,7 +6900,7 @@
 	/**
 	 * Imports the given Visio file
 	 */
-	EditorUi.prototype.importVisio = function(file, done, onerror, filename)
+	EditorUi.prototype.importVisio = function(file, done, onerror, filename, customParam)
 	{
 		//A reduced version of this code is used in conf/jira plugins, review that code whenever this function is changed
 		filename = (filename != null) ? filename : file.name; 
@@ -6957,6 +6957,11 @@
 						xhr.open('POST', VSD_CONVERT_URL + (/(\.vss|\.vsx)$/.test(filename)? '?stencil=1' : ''));
 						xhr.responseType = 'blob';
 						this.addRemoteServiceSecurityCheck(xhr);
+						
+						if (customParam != null)
+						{
+							xhr.setRequestHeader('x-convert-custom', customParam);
+						}
 						
 						xhr.onreadystatechange = mxUtils.bind(this, function()
 						{
@@ -11014,7 +11019,7 @@
 		{
 			if (urlParams['spin'] != '1' || this.spinner.spin(document.body, mxResources.get('loading')))
 			{
-				this.installMessageHandler(mxUtils.bind(this, function(xml, evt, modified)
+				this.installMessageHandler(mxUtils.bind(this, function(xml, evt, modified, convertToSketch)
 				{
 					this.spinner.stop();
 					this.addEmbedButtons();
@@ -11029,6 +11034,34 @@
 					this.setCurrentFile(new EmbedFile(this, xml, {}));
 					this.mode = App.MODE_EMBED;
 					this.setFileData(xml);
+					
+					if (convertToSketch)
+					{
+						try
+						{
+							//Disable grid and page view
+							var graph = this.editor.graph;
+							graph.setGridEnabled(false);
+							graph.pageVisible = false;
+							var cells = graph.model.cells;
+							
+							//Add sketch style and font to all cells
+							for (var id in cells)
+							{
+								var cell = cells[id];
+								
+								if (cell != null && cell.style != null)
+								{
+									cell.style += ';sketch=1;' + (cell.style.indexOf('fontFamily=') == -1 || cell.style.indexOf('fontFamily=Helvetica;') > -1? 
+											'fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;' : '');
+								}
+							}
+						}
+						catch(e)
+						{
+							console.log(e); //Ignore
+						}
+					}
 					
 					if (!this.editor.isChromelessView())
 					{
@@ -11187,6 +11220,8 @@
 
 			if (urlParams['proto'] == 'json')
 			{
+				var convertToSketch = false;
+				
 				try
 				{
 					data = JSON.parse(data);
@@ -11311,7 +11346,7 @@
 							}
 							else
 							{
-								fn(xml, evt, xml != this.emptyDiagramXml);
+								fn(xml, evt, xml != this.emptyDiagramXml, data.toSketch);
 								
 								// Workaround for status updated before modified applied
 								if (!this.editor.modified)
@@ -11664,6 +11699,7 @@
 					}
 					else if (data.action == 'load')
 					{
+						convertToSketch = data.toSketch;
 						autosave = data.autosave == 1;
 						this.hideDialog();
 						
@@ -11798,7 +11834,7 @@
 				ignoreChange = true;
 				try
 				{
-					fn(data, evt);
+					fn(data, evt, null, convertToSketch);
 				}
 				catch (e)
 				{
@@ -14300,13 +14336,13 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 		
 	var div = document.createElement('div');
 	div.className = 'geCommentsWin';
-	div.style.background = (Dialog.backdropColor == 'white') ? 'whiteSmoke' : Dialog.backdropColor;
+	div.style.background = (!Editor.isDarkMode()) ? 'whiteSmoke' : Dialog.backdropColor;
 
 	var tbarHeight = (!EditorUi.compactUi) ? '30px' : '26px';
 	
 	var listDiv = document.createElement('div');
 	listDiv.className = 'geCommentsList';
-	listDiv.style.backgroundColor = (Dialog.backdropColor == 'white') ? 'whiteSmoke' : Dialog.backdropColor;
+	listDiv.style.backgroundColor = (!Editor.isDarkMode()) ? 'whiteSmoke' : Dialog.backdropColor;
 	listDiv.style.bottom = (parseInt(tbarHeight) + 7) + 'px';
 	div.appendChild(listDiv);
 	
@@ -14321,7 +14357,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 	ldiv.className = 'geToolbarContainer geCommentsToolbar';
 	ldiv.style.height = tbarHeight;
 	ldiv.style.padding = (!EditorUi.compactUi) ? '1px' : '4px 0px 3px 0px';
-	ldiv.style.backgroundColor = (Dialog.backdropColor == 'white') ? 'whiteSmoke' : Dialog.backdropColor;
+	ldiv.style.backgroundColor = (!Editor.isDarkMode()) ? 'whiteSmoke' : Dialog.backdropColor;
 	
 	var link = document.createElement('a');
 	link.className = 'geButton';

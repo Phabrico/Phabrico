@@ -212,7 +212,7 @@ namespace Phabrico.Miscellaneous
                     return internalUserLanguages;
                 }
 
-                return internalHttpListenerRequest.UserLanguages;
+                return internalHttpListenerRequest.UserLanguages ?? new string[] { "en-US" };
             }
 
             set

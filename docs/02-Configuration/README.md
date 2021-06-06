@@ -45,6 +45,27 @@
 
 
 
+## Export to PDF (plugin) settings
+
+A header and a footer can be configured for the Export to PDF functionality in Phriction.<br />
+Both can be confgired in 3 resizable columns: a left area, a center area and a right area.<br />
+![image-20210606122535172](configuration-13.png) <br />
+A font can be configured per footer and header.<br />
+By right-clicking on a footer or header area, you can add some generated parameters:<br />
+| Parameter                      | Description                                                  |
+| ------------------------------ | ------------------------------------------------------------ |
+| Current page                   | Shows the current page number |
+| Number of pages                | Shows the total number of pages in the generated PDF file |
+| Image                          | Imports a local image |
+| Title                          | Shows the title of the document to be exported |
+| Last modification date         | Shows the last modification of the document to be exported |
+| Prompt field                   | Prompts just before the export action a messagebox in which you can enter a custom value.<br />For example:<br />![image-20210606122535173](configuration-14.png) |
+| Align left                     | Aligns the text in the footer / header area to the left |
+| Center text                    | Centers the text in the footer / header area |
+| Align right                    | Aligns the text in the footer / header area to the right |
+
+
+
 ## UI Controls settings
 
 | Parameter                           | Description                                                  |

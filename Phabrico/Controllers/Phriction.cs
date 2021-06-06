@@ -63,7 +63,7 @@ namespace Phabrico.Controllers
         /// <returns></returns>
         private string FormatPhabricatorSlug(string parentPath, string documentTitle)
         {
-            return string.Format("{0}{1}/", parentPath.TrimStart('/'), documentTitle);
+            return string.Format("{0}{1}/", parentPath.TrimStart('/'), documentTitle.TrimEnd('/'));
         }
 
         /// <summary>
@@ -77,7 +77,9 @@ namespace Phabrico.Controllers
             string completeCrumb = "";
             List<JObject> crumbs = new List<JObject>();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
-            foreach (string slug in phrictionDocument.Path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+            string[] urlParts = phrictionDocument.Path.Split('?');
+            string url = urlParts.FirstOrDefault();
+            foreach (string slug in url.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 completeCrumb += slug + "/";
 
@@ -87,6 +89,20 @@ namespace Phabrico.Controllers
                     new JProperty("slug", slug),
                     new JProperty("name", crumbPhrictionReference?.Name ?? ConvertPhabricatorUrlPartToDescription(slug))
                 });
+            }
+
+            if (urlParts.Count() > 1)
+            {
+                Dictionary<string,string> arguments = string.Join("?", urlParts.Skip(1))
+                                                            .Split('&')
+                                                            .ToDictionary(arg => arg.Split('=').FirstOrDefault(),
+                                                                          arg => HttpUtility.UrlDecode(arg.Split('=').Skip(1).FirstOrDefault() ?? "")
+                                                                         );
+                string title;
+                if (arguments.TryGetValue("title", out title))
+                {
+                    crumbs.LastOrDefault()["name"] = title;
+                }
             }
 
             return new JArray(crumbs).ToString(Newtonsoft.Json.Formatting.None);
@@ -125,8 +141,9 @@ namespace Phabrico.Controllers
                 bool editMode = false;
                 bool documentIsStaged = false;
                 string documentState = "";
-                string url = string.Join("/", parameters.TakeWhile(parameter => parameter.StartsWith("?action=") == false)) + "/";
-                url = url.Split(new string[] { "?action=" }, StringSplitOptions.None).FirstOrDefault();
+                string url = string.Join("/", parameters.TakeWhile(parameter => parameter.StartsWith("?action=") == false));
+                url = url.Split(new string[] { "?" }, StringSplitOptions.None).FirstOrDefault();
+                url = url.TrimEnd('/') + "/";
 
                 Phabricator.Data.Phriction phrictionDocument = null;
 
@@ -164,7 +181,7 @@ namespace Phabrico.Controllers
                             phrictionDocument = new Phabricator.Data.Phriction();
                             if (parameterActions.Contains("&title="))
                             {
-                                if (parameters.Length == 1)
+                                if (parameters.FirstOrDefault().StartsWith("?action=new"))
                                 {
                                     // new root page
                                     phrictionDocument.Path = "/";
@@ -186,6 +203,11 @@ namespace Phabrico.Controllers
                         {
                             phrictionDocument = new Phabricator.Data.Phriction();
                             phrictionDocument.Path = url;
+                            if (parameterActions.StartsWith("title="))
+                            {
+                                phrictionDocument.Path += "?" + parameterActions;
+                            }
+
                             viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionNoDocumentFound", parameters);
                             viewPage.SetText("OPERATION", "new");
                             viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
@@ -246,11 +268,28 @@ namespace Phabrico.Controllers
                             break;
 
                         case "new":
+                            string title = parameterActions.Substring("action=".Length + action.Length).TrimStart('&');
+                            if (title.StartsWith("title="))
+                            {
+                                if (phrictionDocument.Path.Equals("/"))
+                                {
+                                    title = "";
+                                }
+                                else
+                                {
+                                    title = HttpUtility.UrlDecode(title.Substring("title=".Length));
+                                }
+                            }
+                            else
+                            {
+                                phrictionDocument.Path = "";
+                            }
+
                             documentState = "modified";
                             viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionEdit", parameters);
                             viewPage.SetText("OPERATION", "new");
                             phrictionDocument.DateModified = DateTimeOffset.UtcNow;
-                            phrictionDocument.Name = "";
+                            phrictionDocument.Name = title;
                             phrictionDocument.Content = "";
                             formattedDocumentContent = "";
                             break;
@@ -286,6 +325,7 @@ namespace Phabrico.Controllers
 
                 viewPage.SetText("DOCUMENT-TOKEN", phrictionDocument.Token, editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("DOCUMENT-TITLE", phrictionDocument.Name, editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                viewPage.SetText("DOCUMENT-PATH", phrictionDocument.Path, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("DOCUMENT-CONTENT", formattedDocumentContent, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                 viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
@@ -729,26 +769,6 @@ namespace Phabrico.Controllers
                     else
                     if (action.Equals("save"))
                     {
-                        // save document in stage area
-                        /*
-                        if (string.IsNullOrEmpty(tokenCurrentDocument) || tokenCurrentDocument.StartsWith("PHID-NEWTOKEN-"))
-                        {
-                            string[] urlParts = parameters.TakeWhile(p => p.StartsWith("?") == false).ToArray();
-                            if (urlParts.Length >= 1)
-                            {
-                                string fullUrl = string.Join("/", urlParts);
-                                string parentUrl = string.Join("/", urlParts.Take(urlParts.Length - 1));
-                                if (phrictionStorage.Get(database, fullUrl) == null)
-                                {
-                                    parentPhrictionDocument = phrictionStorage.Get(database, parentUrl);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            parentPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument);
-                        }
-                        */
                         Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, true);
                         parentPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, false);
 

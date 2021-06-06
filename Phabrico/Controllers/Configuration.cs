@@ -195,130 +195,137 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/configure")]
         public void HttpPostSave(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            Storage.Account accountStorage = new Storage.Account();
-
-            SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Storage.Database database = new Storage.Database(null))
+            try
             {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
+                Storage.Account accountStorage = new Storage.Account();
 
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+                SessionManager.Token token = SessionManager.GetToken(browser);
 
-            using (Storage.Database database = new Storage.Database(EncryptionKey))
-            {
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "You don't have sufficient rights to configure Phabrico");
-
-                // unmask private encryption key
-                UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-
-                Account existingAccount = accountStorage.Get(database, token);
-                if (existingAccount != null)
+                using (Storage.Database database = new Storage.Database(null))
                 {
-                    existingAccount.ConduitAPIToken = browser.Session.FormVariables["conduitApiToken"];
-                    existingAccount.PhabricatorUrl = browser.Session.FormVariables["phabricatorUrl"];
-                    
-                    // determine synchronization method for Phriction and Maniphest
-                    SynchronizationMethod newManiphestSynchronizationMethod, newPhrictionSynchronizationMethod;
-                    if (Enum.TryParse<SynchronizationMethod>(browser.Session.FormVariables["syncMethodManiphest"], out newManiphestSynchronizationMethod) == false)
-                    {
-                        newManiphestSynchronizationMethod = SynchronizationMethod.PerUsers;
-                    }
+                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
 
-                    if (Enum.TryParse<SynchronizationMethod>(browser.Session.FormVariables["syncMethodPhriction"], out newPhrictionSynchronizationMethod) == false)
-                    {
-                        newPhrictionSynchronizationMethod = SynchronizationMethod.PerUsers;
-                    }
-
-                    // check if synchronization methods have been modified
-                    SynchronizationMethod activeSynchronizationMethod = existingAccount.Parameters.Synchronization;
-                    if (activeSynchronizationMethod != (newManiphestSynchronizationMethod | newPhrictionSynchronizationMethod))
-                    {
-                        // synchronization methods have been modified => check if we need to download more the next synchronization than we did before
-                        bool downloadEverythingAtNextSynchronization = false;
-                        
-                        if (activeSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionAllProjects) == false &&
-                            newPhrictionSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionAllProjects))
-                        {
-                            downloadEverythingAtNextSynchronization = true;
-                        }
-                        
-                        if (activeSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionAllProjects) == false &&
-                            activeSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree) == false &&
-                            newPhrictionSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree))
-                        {
-                            downloadEverythingAtNextSynchronization = true;
-                        }
-
-                        if (activeSynchronizationMethod.HasFlag(SynchronizationMethod.PerProjects) == false &&
-                            newPhrictionSynchronizationMethod.HasFlag(SynchronizationMethod.PerProjects))
-                        {
-                            downloadEverythingAtNextSynchronization = true;
-                        }
-
-                        if (activeSynchronizationMethod.HasFlag(SynchronizationMethod.PerUsers) == false &&
-                            newPhrictionSynchronizationMethod.HasFlag(SynchronizationMethod.PerUsers))
-                        {
-                            downloadEverythingAtNextSynchronization = true;
-                        }
-
-                        if (downloadEverythingAtNextSynchronization)
-                        {
-                            ResetLastSynchronizationTimeProjects(database);
-                            ResetLastSynchronizationTimeUsers(database);
-                        }
-
-                        existingAccount.Parameters.Synchronization = newManiphestSynchronizationMethod | newPhrictionSynchronizationMethod;
-                    }
-                    
-                    
-                    existingAccount.Parameters.RemovalPeriodClosedManiphests = (RemovalPeriod)Enum.Parse(typeof(RemovalPeriod), (string)browser.Session.FormVariables["removalPeriodClosedManiphests"]);
-
-                    try
-                    {
-                        existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = Int32.Parse(browser.Session.FormVariables["autoLogOutAfterMinutesOfInactivity"].ToString());
-                        if (existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity >= 1440)
-                        {
-                            // set max inactivity to 1 day 
-                            // the AutoLogOff javascript timer may not work correctly if you use a very large value in here.
-                            // I guess 1 day should be enough
-                            existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = 1440;
-                        }
-                    }
-                    catch
-                    {
-                        existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = 5;
-                    }
-
-                    existingAccount.Parameters.DefaultStateModifiedManiphest = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables["defaultStateModifiedManiphest"]);
-                    existingAccount.Parameters.DefaultStateModifiedPhriction = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables["defaultStateModifiedPhriction"]);
-
-                    existingAccount.Parameters.ShowPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables["showPhrictionMetadata"]);
-                    existingAccount.Parameters.ForceDownloadAllPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables["forceDownloadAllPhrictionMetadata"]);
-
-                    existingAccount.Theme = browser.Session.FormVariables["theme"];
-
-                    existingAccount.Parameters.DarkenBrightImages = (DarkenImageStyle)Enum.Parse(typeof(DarkenImageStyle), (string)browser.Session.FormVariables["darkenImages"]);
-
-                    existingAccount.Parameters.ClipboardCopyForCodeBlock = bool.Parse((string)browser.Session.FormVariables["clipboardCopyForCodeBlock"]);
-                    existingAccount.Parameters.UITranslation = bool.Parse((string)browser.Session.FormVariables["uiTranslation"]);
-
-                    if (bool.Parse((string)browser.Session.FormVariables["autoLogon"]))
-                    {
-                        database.SetConfigurationParameter("EncryptionKey", database.EncryptionKey);
-                    }
-                    else
-                    {
-                        database.SetConfigurationParameter("EncryptionKey", null);
-                    }
-
-                    accountStorage.Set(database, existingAccount);
-
-                    Http.Server.InvalidateNonStaticCache(database, DateTime.MaxValue);
+                    // unmask encryption key
+                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
                 }
+
+                using (Storage.Database database = new Storage.Database(EncryptionKey))
+                {
+                    if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "You don't have sufficient rights to configure Phabrico");
+
+                    // unmask private encryption key
+                    UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
+                    database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
+
+                    Account existingAccount = accountStorage.Get(database, token);
+                    if (existingAccount != null)
+                    {
+                        existingAccount.ConduitAPIToken = browser.Session.FormVariables["conduitApiToken"];
+                        existingAccount.PhabricatorUrl = browser.Session.FormVariables["phabricatorUrl"];
+
+                        // determine synchronization method for Phriction and Maniphest
+                        SynchronizationMethod newManiphestSynchronizationMethod, newPhrictionSynchronizationMethod;
+                        if (Enum.TryParse<SynchronizationMethod>(browser.Session.FormVariables["syncMethodManiphest"], out newManiphestSynchronizationMethod) == false)
+                        {
+                            newManiphestSynchronizationMethod = SynchronizationMethod.PerUsers;
+                        }
+
+                        if (Enum.TryParse<SynchronizationMethod>(browser.Session.FormVariables["syncMethodPhriction"], out newPhrictionSynchronizationMethod) == false)
+                        {
+                            newPhrictionSynchronizationMethod = SynchronizationMethod.PerUsers;
+                        }
+
+                        // check if synchronization methods have been modified
+                        SynchronizationMethod activeSynchronizationMethod = existingAccount.Parameters.Synchronization;
+                        if (activeSynchronizationMethod != (newManiphestSynchronizationMethod | newPhrictionSynchronizationMethod))
+                        {
+                            // synchronization methods have been modified => check if we need to download more the next synchronization than we did before
+                            bool downloadEverythingAtNextSynchronization = false;
+
+                            if (activeSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionAllProjects) == false &&
+                                newPhrictionSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionAllProjects))
+                            {
+                                downloadEverythingAtNextSynchronization = true;
+                            }
+
+                            if (activeSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionAllProjects) == false &&
+                                activeSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree) == false &&
+                                newPhrictionSynchronizationMethod.HasFlag(SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree))
+                            {
+                                downloadEverythingAtNextSynchronization = true;
+                            }
+
+                            if (activeSynchronizationMethod.HasFlag(SynchronizationMethod.PerProjects) == false &&
+                                newPhrictionSynchronizationMethod.HasFlag(SynchronizationMethod.PerProjects))
+                            {
+                                downloadEverythingAtNextSynchronization = true;
+                            }
+
+                            if (activeSynchronizationMethod.HasFlag(SynchronizationMethod.PerUsers) == false &&
+                                newPhrictionSynchronizationMethod.HasFlag(SynchronizationMethod.PerUsers))
+                            {
+                                downloadEverythingAtNextSynchronization = true;
+                            }
+
+                            if (downloadEverythingAtNextSynchronization)
+                            {
+                                ResetLastSynchronizationTimeProjects(database);
+                                ResetLastSynchronizationTimeUsers(database);
+                            }
+
+                            existingAccount.Parameters.Synchronization = newManiphestSynchronizationMethod | newPhrictionSynchronizationMethod;
+                        }
+
+
+                        existingAccount.Parameters.RemovalPeriodClosedManiphests = (RemovalPeriod)Enum.Parse(typeof(RemovalPeriod), (string)browser.Session.FormVariables["removalPeriodClosedManiphests"]);
+
+                        try
+                        {
+                            existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = Int32.Parse(browser.Session.FormVariables["autoLogOutAfterMinutesOfInactivity"].ToString());
+                            if (existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity >= 1440)
+                            {
+                                // set max inactivity to 1 day 
+                                // the AutoLogOff javascript timer may not work correctly if you use a very large value in here.
+                                // I guess 1 day should be enough
+                                existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = 1440;
+                            }
+                        }
+                        catch
+                        {
+                            existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = 5;
+                        }
+
+                        existingAccount.Parameters.DefaultStateModifiedManiphest = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables["defaultStateModifiedManiphest"]);
+                        existingAccount.Parameters.DefaultStateModifiedPhriction = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables["defaultStateModifiedPhriction"]);
+
+                        existingAccount.Parameters.ShowPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables["showPhrictionMetadata"]);
+                        existingAccount.Parameters.ForceDownloadAllPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables["forceDownloadAllPhrictionMetadata"]);
+
+                        existingAccount.Theme = browser.Session.FormVariables["theme"];
+
+                        existingAccount.Parameters.DarkenBrightImages = (DarkenImageStyle)Enum.Parse(typeof(DarkenImageStyle), (string)browser.Session.FormVariables["darkenImages"]);
+
+                        existingAccount.Parameters.ClipboardCopyForCodeBlock = bool.Parse((string)browser.Session.FormVariables["clipboardCopyForCodeBlock"]);
+                        existingAccount.Parameters.UITranslation = bool.Parse((string)browser.Session.FormVariables["uiTranslation"]);
+
+                        if (bool.Parse((string)browser.Session.FormVariables["autoLogon"]))
+                        {
+                            database.SetConfigurationParameter("EncryptionKey", database.EncryptionKey);
+                        }
+                        else
+                        {
+                            database.SetConfigurationParameter("EncryptionKey", null);
+                        }
+
+                        accountStorage.Set(database, existingAccount);
+
+                        Http.Server.InvalidateNonStaticCache(database, DateTime.MaxValue);
+                    }
+                }
+            }
+            catch
+            {
+                // in case we requested too many save calls, we might get some exceptions because the FormVariables has been reinitialized (and some variables might be missing)
             }
         }
 

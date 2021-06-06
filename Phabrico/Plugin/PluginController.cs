@@ -53,6 +53,7 @@ namespace Phabrico.Plugin
             public string TOC { get; set; }
             public string Crumbs { get; set; }
             public string Path { get; set; }
+            public bool IsPrepared { get; set; }
             public ConfirmResponse ConfirmState { get; set; }
         }
         

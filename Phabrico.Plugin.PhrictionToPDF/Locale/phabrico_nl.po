@@ -6,3 +6,57 @@ msgstr "Exporteer naar PDF"
 
 msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to export these as well ?"
 msgstr "Er zijn @@NBR-CHILD-DOCUMENTS@@ onderliggende documenten. Wilt u deze ook exporteren ?"
+
+# Configuration
+msgid "Header layout"
+msgstr "Opmaak koptekst"
+
+msgid "Footer layout"
+msgstr "Opmaak voettekst"
+
+msgid "px"
+msgstr "px"
+
+msgid "Arial"
+msgstr "Arial"
+
+msgid "Brush Script"
+msgstr "Brush Script"
+
+msgid "Courier New"
+msgstr "Courier New"
+
+msgid "Garamond"
+msgstr "Garamond"
+
+msgid "Times New Roman"
+msgstr "Times New Roman"
+
+# Context menu
+msgid "Current page"
+msgstr "Actuele pagina"
+
+msgid "Number of pages"
+msgstr "Aantal pagina's"
+
+msgid "Image"
+msgstr "Afbeelding"
+
+msgid "Last modification date"
+msgstr "Datum laatste aanpassing"
+
+msgid "Prompt field"
+msgstr "Prompt veld"
+
+msgid "Align left"
+msgstr "Links uitlijnen"
+
+msgid "Center text"
+msgstr "Tekst centreren"
+
+msgid "Align right"
+msgstr "Rechts uitlijnen"
+
+# Custom template parameters dialog
+msgid "Custom template parameters"
+msgstr "Aangepaste template parameters"

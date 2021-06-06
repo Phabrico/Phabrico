@@ -187,6 +187,9 @@
     <Content Include="Remarkup\TestData\header-after-2-spaces-indented-code.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Remarkup\TestData\dupicated-anchor-names.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Remarkup\TestData\list-bold-items.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

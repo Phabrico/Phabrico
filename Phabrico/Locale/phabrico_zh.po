@@ -556,6 +556,9 @@ msgstr "参考文献"
 msgid "Show references"
 msgstr "显示参考文献"
 
+msgid "Parameters"
+msgstr "参数"
+
 # Projects & Users
 msgid "Project"
 msgstr "项目"

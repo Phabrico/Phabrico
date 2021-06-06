@@ -306,6 +306,7 @@ dateModified won't change when a subscription is added or removed
             if (hierarchy != null) hierarchy.parentElement.removeChild(hierarchy)
             data.append('content', div.innerHTML);
             data.append('confirm', 'None');
+            data.append('isPrepared', 'false');
 
             // get toc
             var toc = document.querySelector('.toc');
@@ -332,9 +333,13 @@ dateModified won't change when a subscription is added or removed
             return data;
         }
 
-        function executePhrictionPlugin(pluginName, pluginURL) {
-            var data = initializePhrictionPluginFormData();
+        function executePhrictionPlugin(pluginName, pluginURL, data) {
             var xmlhttp = new XMLHttpRequest();
+
+            if (data == null) {
+                data = initializePhrictionPluginFormData();
+            }
+
             xmlhttp.onreadystatechange = function() {
                 if(xmlhttp.readyState == 4)
                 {
@@ -355,6 +360,10 @@ dateModified won't change when a subscription is added or removed
                                                     );
                     }
 
+                    if (jsonResponse.Status == 'Prepare') {
+                        showHideParametersDialog(true, data, jsonResponse.DialogTitle, pluginName, pluginURL, jsonResponse);
+                    }
+
                     if (jsonResponse.Status == 'Finished') {
                         showHideConfirmationMessage(false);
                         executePhrictionPluginConfirmed('/' + pluginURL, data, false);
@@ -367,7 +376,7 @@ dateModified won't change when a subscription is added or removed
         }
 
         function executePhrictionPluginConfirmed(url, data, confirmed) {
-            var data = initializePhrictionPluginFormData();
+            data.set('isPrepared', 'true');
             if (confirmed) {
                 data.set('confirm', 'Yes');
             } else {
@@ -400,6 +409,25 @@ dateModified won't change when a subscription is added or removed
             };
 
             xmlhttp.open('POST', url, true);
+            xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            xmlhttp.send(data);
+        }
+
+        function executePhrictionPluginPrepared(pluginName, pluginURL, data) {
+            data.set('isPrepared', 'true');
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if(xmlhttp.readyState == 4)
+                {
+                    showHideParametersDialog(false, data);
+
+                    var jsonResponse = JSON.parse(xmlhttp.responseText);
+                    executePhrictionPlugin(pluginName, pluginURL, data);
+                }
+            };
+
+            xmlhttp.open('POST', '/' + pluginURL, true);
             xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             xmlhttp.send(data);
         }
@@ -446,6 +474,94 @@ dateModified won't change when a subscription is added or removed
             }
         }
 
+        function showHideParametersDialog(show, data, dialogTitle, pluginName, pluginURL, jsonResponse)
+        {
+            if (show) {
+                var form = document.createElement("form");
+                form.method = "POST";
+                form.action = "/" + pluginURL;
+                form.className = "preparationParameters aphront-dialog-view modal";
+                var overlay = document.createElement("div")
+                overlay.className = "aphront-dialog-overlay";
+                var dialogHeader = document.createElement("div");
+                dialogHeader.className = "aphront-dialog-head";
+                var dialogHeaderText = document.createElement("span");
+                dialogHeaderText.className = "phui-header-header";
+                dialogHeaderText.innerText = typeof dialogTitle == "undefined" ? dialogTitle : Locale.Translate("Parameters");
+                var dialogBody = document.createElement("div");
+                dialogBody.className = "aphront-dialog-body phabrico-remarkup";
+                dialogBody.innerHTML = jsonResponse.DialogHTML;
+                var dialogButtons = document.createElement("div");
+                dialogButtons.className = "aphront-dialog-tail grouped";
+                var btnCancel = document.createElement("button");
+                btnCancel.type = "button";
+                btnCancel.innerText = Locale.Translate("Cancel");
+                btnCancel.className = "button-gray";
+                btnCancel.addEventListener("click", function(e) {
+                    showHideParametersDialog(false);
+                });
+                var btnOK = document.createElement("button");
+                btnOK.innerText = Locale.Translate("OK");
+                btnOK.type = "button";
+                btnOK.addEventListener("click", function(e) {
+                    data.set('isPrepared', 'true');
+
+                    var parameters = Array.prototype.slice.call( document.querySelector('.preparationParameters ').elements, 0)
+                                                          .filter(function(elem) { 
+                                                              return elem.name != "";
+                                                          })
+                                                          .map(function(elem) { 
+                                                              return { 
+                                                                  "name": elem.name, 
+                                                                  "value": elem.value 
+                                                              }; 
+                                                          })
+                                                          .map(function(parameter) {
+                                                              var label = document.querySelector('label[for="' + parameter.name + '"]');
+                                                              if (label != null) {
+                                                                  return {
+                                                                      "name": label.innerText,
+                                                                      "value": parameter.value
+                                                                  };
+                                                              } else {
+                                                                  return parameter;
+                                                              }
+                                                          });
+
+                    parameters.forEach(parameter => {
+                        data.set(parameter.name, parameter.value);
+                    });
+
+                    executePhrictionPluginPrepared(pluginName, pluginURL, data);
+                });
+
+                form.appendChild(overlay);
+                form.appendChild(dialogHeader);
+                form.appendChild(dialogBody);
+                form.appendChild(dialogButtons);
+                dialogHeader.appendChild(dialogHeaderText);
+                dialogButtons.appendChild(btnCancel);
+                dialogButtons.appendChild(btnOK);
+
+                document.body.appendChild(form);
+
+                // center dialog
+                var dialogWidth = form.getBoundingClientRect().width;
+                var screenWidth = document.body.getBoundingClientRect().width;
+                form.style.left = ((parseInt(screenWidth) - parseInt(dialogWidth)) / 2) + "px";
+                form.style.marginLeft = "0px";
+
+                var dialogHeight = form.getBoundingClientRect().height;
+                var screenHeight = document.body.getBoundingClientRect().height;
+                form.style.top = ((parseInt(screenHeight) - parseInt(dialogHeight)) / 2) + "px";
+                form.style.marginTop = "0px";
+            } else {
+                var form = document.querySelector("form.preparationParameters");
+                if (form != null) {
+                    document.body.removeChild(form);
+                }
+            }
+        }
         function subscribe()
         {
             doSubscribe(true);

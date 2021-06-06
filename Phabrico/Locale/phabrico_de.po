@@ -556,6 +556,9 @@ msgstr "Referenzen"
 msgid "Show references"
 msgstr "Referenzen anzeigen"
 
+msgid "Parameters"
+msgstr "Parameter"
+
 # Projects & Users
 msgid "Project"
 msgstr "Projekt"

@@ -14,7 +14,7 @@
                 <div>
                     <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="title">Title</label>
                     <input id="title" name="title" placeholder="Type a title..." style="margin-top: 4px; width: calc(90% - 8px);" type="text" autofocus="" value="@@DOCUMENT-TITLE@@" oninput="titleChanged()" onblur="verifyTitle()" />
-                    <input id="path" name="path" type="hidden" />
+                    <input id="path" name="path" type="hidden" value="@@DOCUMENT-PATH@@" />
                 </div>
                 <label id="titleAlreadyExists" class="phriction-edit-error" style="display:none">Title already exists</label>
             @{IF @@SHOW-PHRICTION-METADATA@@=yes@
@@ -127,10 +127,15 @@
             if (title.value == "") return;
             if (operation.value !== "new") return;
 
-            path.value = getPath();
+            var url = "";
+            if (path.value == ""  ||  path.value == "/") {
+                path.value = getPath();
 
-            var url = document.location.pathname + path.value;
-            url = url.replace(/\/\//g, "/");
+                url = document.location.pathname + path.value;
+                url = url.replace(/\/\//g, "/");
+            } else {
+                url = path.value;
+            }
 
             var http = new XMLHttpRequest();
             http.open('GET', url, true);
@@ -235,7 +240,9 @@
         if (title.value == "") {
             btnSave.disabled = true;
         } else {
-            path.value = getPath();
+            if ("@@DOCUMENT-PATH@@" == "") {
+                path.value = getPath();
+            }
         }
     </script>
 </div>

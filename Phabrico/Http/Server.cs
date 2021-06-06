@@ -1560,6 +1560,7 @@ namespace Phabrico.Http
                                     pluginController.PhrictionData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables["confirm"]);
                                     pluginController.PhrictionData.Content = browser.Session.FormVariables["content"];
                                     pluginController.PhrictionData.Crumbs = browser.Session.FormVariables["crumbs"];
+                                    pluginController.PhrictionData.IsPrepared = bool.Parse(browser.Session.FormVariables["isPrepared"]);
                                     pluginController.PhrictionData.Path = browser.Session.FormVariables["path"];
                                     pluginController.PhrictionData.TOC = browser.Session.FormVariables["toc"];
                                 }

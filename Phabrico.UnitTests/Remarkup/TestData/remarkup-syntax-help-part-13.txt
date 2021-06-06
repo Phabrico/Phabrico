@@ -138,12 +138,15 @@ Remarkup supports simple table syntax. For example, this:<br>
 <br>
 ...produces this:<br>
 <table class='remarkup-table'>
+<thead>
   <tr>
     <th>Fruit</th>
     <th>Color</th>
     <th>Price</th>
     <th>Peel?</th>
   </tr>
+</thead>
+<tbody>
   <tr>
     <td>Apple</td>
     <td>red</td>
@@ -156,6 +159,7 @@ Remarkup supports simple table syntax. For example, this:<br>
     <td><tt class='remarkup-monospaced'>$0.19</tt></td>
     <td><strong>YES</strong></td>
   </tr>
+</tbody>
 </table>
 
 <br>
@@ -183,12 +187,15 @@ Remarkup also supports a simplified HTML table syntax. For example, this:<br>
 <br>
 ...produces this:<br>
 <table class='remarkup-table'>
+<thead>
   <tr>
     <th>Fruit</th>
     <th>Color</th>
     <th>Price</th>
     <th>Peel?</th>
   </tr>
+</thead>
+<tbody>
   <tr>
     <td>Apple</td>
     <td>red</td>
@@ -201,6 +208,7 @@ Remarkup also supports a simplified HTML table syntax. For example, this:<br>
     <td><tt class='remarkup-monospaced'>$0.19</tt></td>
     <td><strong>YES</strong></td>
   </tr>
+</tbody>
 </table>
 
 <br>

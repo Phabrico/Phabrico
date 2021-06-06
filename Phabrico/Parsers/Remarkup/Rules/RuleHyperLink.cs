@@ -353,7 +353,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         string encryptionKey = token?.EncryptionKey;
 
                         Storage.Account accountStorage = new Storage.Account();
-                            Phabricator.Data.Account accountData = accountStorage.Get(database, token);
+                        Phabricator.Data.Account accountData = accountStorage.Get(database, token);
+                        if (accountData == null) throw new Exception.AuthorizationException();
+
                         if (hrefAbsolutePath.Groups[1].Value.StartsWith(accountData.PhabricatorUrl, StringComparison.OrdinalIgnoreCase))
                         {
                             // Phabricator url found
@@ -389,10 +391,22 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>CSS-formatted banned hyperlink tag</returns>
         private string GenerateInvalidUrlError(string urlHyperlink, string urlHyperlinkText)
         {
-            return string.Format("<a class=\"phriction-link banned\" href=\"/w/{0}\">{1}</a>", 
-                urlHyperlink.Replace("\r", "")         // hide newlines in url
-                            .Replace("\n", ""),        // hide newlines in url
-                urlHyperlinkText);
+            bool invalidUrl = RegexSafe.IsMatch(urlHyperlink, "[\r\n\\\\]", RegexOptions.Singleline);
+            if (invalidUrl)
+            {
+                return string.Format("<a class=\"phriction-link banned\" href=\"/w/{0}\">{1}</a>",
+                    urlHyperlink.Replace("\r", "")         // hide newlines in url
+                                .Replace("\n", ""),        // hide newlines in url
+                    urlHyperlinkText);
+            }
+            else
+            {
+                return string.Format("<a class=\"phriction-link banned\" href=\"/w/{0}?title={1}\">{2}</a>",
+                    urlHyperlink.Replace("\r", "")         // hide newlines in url
+                                .Replace("\n", ""),        // hide newlines in url
+                    HttpUtility.UrlPathEncode(urlHyperlinkText),
+                    urlHyperlinkText);
+            }
         }
 
         /// <summary>

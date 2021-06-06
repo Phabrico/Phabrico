@@ -434,5 +434,130 @@ namespace Phabrico.UnitTests.Browser.Chrome
                                          .Replace("\r", "");
             Assert.AreEqual("Phriction > Story of my dad's life > Today is the greatest day I've ever known > After five years in the institution...", navigationCrumbs);
         }
+
+
+        [TestMethod]
+        public void CreateNewSubdocumentByMeansOfNewLink()
+        {
+            Logon();
+
+            // click on 'Phriction' in the menu navigator
+            IWebElement navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+            navigatorPhriction.Click();
+
+            // wait a while
+            WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElement(By.ClassName("phui-document")));
+
+            // validate if Phriction was opened
+            IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            string phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
+
+             // navigate to "Story of my dad's life" document
+            IWebElement linkStoryDadsLife = WebBrowser.FindElement(By.XPath("//*[contains(text(), \"Story of my dad's life\")]"));
+            linkStoryDadsLife.Click();
+
+            // validate if correct document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my dad's life"), "Unable to open dad's life story");
+
+           // if action pane is collapsed -> expand it
+            bool actionPaneCollapsed = true;
+            try
+            {
+                WebBrowser.FindElement(By.ClassName("right-collapsed"));
+            }
+            catch
+            {
+                actionPaneCollapsed = false;
+            }
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Edit
+            IWebElement edit = WebBrowser.FindElement(By.LinkText("Edit Document"));
+            edit.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElement(By.ClassName("phriction-edit")));
+
+            // edit content
+            IWebElement textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys(OpenQA.Selenium.Keys.End);
+            textarea.SendKeys("\n\n[[ ./new-link | This is a new link ]]\n");
+
+            // click Save button
+            IWebElement btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElement(By.ClassName("phui-document")));
+
+            // get newly created anchor link
+            IWebElement anchor = WebBrowser.FindElement(By.LinkText("This is a new link"));
+            Assert.IsTrue(anchor.GetAttribute("href").EndsWith("/w/x/new-link?title=This%20is%20a%20new%20link"));
+
+            // click on anchor
+            anchor.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElement(By.ClassName("phui-document")));
+
+            // validate if Phriction was opened
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Page Not Found"), "Unable to open Phriction");
+
+            // click on Create this Document button
+            IWebElement btnCreateThisDocument = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Create this Document')]"));
+            btnCreateThisDocument.Click();
+            wait.Until(condition => condition.FindElement(By.Id("title")));
+
+            // enter data for first Phriction document
+            IWebElement inputTitle = WebBrowser.FindElement(By.Id("title"));
+            Assert.IsTrue(inputTitle.GetAttribute("value").Equals("This is a new link"), "Title of new document not correctly set");
+
+            // Enter some text
+            textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys("Bird is the word");
+
+            // click save button
+            btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+            wait.Until(condition => condition.FindElement(By.ClassName("phriction")));
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElement(By.ClassName("phui-document")));
+
+            // validate if modifications were stored
+            string documentTitle = WebBrowser.FindElement(By.ClassName("phui-document"))
+                                      .FindElement(By.TagName("H1"))
+                                      .Text;
+            Assert.AreEqual("This is a new link", documentTitle);
+
+            // validate document content
+            string documentContent = WebBrowser.FindElement(By.Id("remarkupContent"))
+                                               .Text
+                                               .Replace("\r", "");
+            Assert.AreEqual("Bird is the word", documentContent);
+
+            // validate crumbs
+            string navigationCrumbs = WebBrowser.FindElement(By.Id("crumbsContainer"))
+                                         .Text
+                                         .Split('\n')[0]
+                                         .Replace("\r", "");
+            Assert.AreEqual("Phriction > Story of my dad's life > This is a new link", navigationCrumbs);
+        }
     }
 }
