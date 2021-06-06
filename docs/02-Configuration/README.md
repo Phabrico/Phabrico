@@ -52,6 +52,7 @@ Both can be confgired in 3 resizable columns: a left area, a center area and a r
 ![image-20210606122535172](configuration-13.png) <br />
 A font can be configured per footer and header.<br />
 By right-clicking on a footer or header area, you can add some generated parameters:<br />
+
 | Parameter                      | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
 | Current page                   | Shows the current page number |
