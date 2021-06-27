@@ -217,6 +217,12 @@
     <Compile Include="WindowsService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\LICENSE">
+      <Link>LICENSE</Link>
+    </None>
+    <None Include="..\NOTICE">
+      <Link>NOTICE</Link>
+    </None>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
@@ -491,8 +497,6 @@
     <EmbeddedResource Include="Fonts\NotoSans-Regular-latin-ext.woff2" />
     <EmbeddedResource Include="Fonts\NotoSans-Regular-latin.woff2" />
     <EmbeddedResource Include="Fonts\NotoSans-Regular-vietnamese.woff2" />
-    <None Include="LICENSE" />
-    <None Include="NOTICE" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

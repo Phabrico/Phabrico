@@ -2314,7 +2314,6 @@ kbd {
 
 .remarkup-nav-sequence {
     margin-top: 10px;
-    margin-bottom: -10px;
 }
 
 .remarkup-nav-sequence-item {
@@ -2712,6 +2711,10 @@ kbd {
     float: right;
     width: calc(100% - var(--navigator-width)  + 16px);
     margin-top: -5px;
+}
+
+.maniphest-task .transaction-item .input-tag {
+    margin-top: -34px;
 }
 
 .transaction-item .input-tag .menu {

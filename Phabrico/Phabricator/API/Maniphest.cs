@@ -222,7 +222,7 @@ namespace Phabrico.Phabricator.API
                                         },
                                         new JObject {
                                             { "type", "description" },
-                                            { "value", maniphestTask.Description }
+                                            { "value", maniphestTask.Description.Replace("\r", "") }
                                         },
                                         new JObject {
                                             { "type", "owner" },

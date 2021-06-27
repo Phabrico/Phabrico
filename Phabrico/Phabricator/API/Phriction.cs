@@ -152,7 +152,7 @@ namespace Phabrico.Phabricator.API
                 {
                     { "slug", phrictionDocument.Path },
                     { "title", phrictionDocument.Name },
-                    { "content", phrictionDocument.Content }
+                    { "content", phrictionDocument.Content.Replace("\r", "") }
                 });
             }
             else
@@ -161,7 +161,7 @@ namespace Phabrico.Phabricator.API
                 {
                     { "slug", phrictionDocument.Path },
                     { "title", phrictionDocument.Name },
-                    { "content", phrictionDocument.Content }
+                    { "content", phrictionDocument.Content.Replace("\r", "") }
                 });
             }
 
