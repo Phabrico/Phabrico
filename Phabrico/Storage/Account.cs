@@ -23,8 +23,8 @@ namespace Phabrico.Storage
         public override void Add(Database database, Phabricator.Data.Account account)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       INSERT INTO accountInfo(token, userName, publicXorCipher, privateXorCipher, url, api, theme, parameters) 
-                       VALUES (@tokenHash, @userName, @publicXorCipher, @privateXorCipher, @phabricatorUrl, @conduitAPiToken, @theme, @parameters);
+                       INSERT INTO accountInfo(token, userName, publicXorCipher, privateXorCipher, dpapiXorCipher1, dpapiXorCipher2, url, api, theme, parameters)
+                       VALUES (@tokenHash, @userName, @publicXorCipher, @privateXorCipher, @dpapiXorCipher1, @dpapiXorCipher2, @phabricatorUrl, @conduitAPiToken, @theme, @parameters);
                    ", database.Connection))
             {
                 byte[] publicXorCipherBytes = new byte[account.PublicXorCipher.Length * 8];
@@ -33,10 +33,18 @@ namespace Phabrico.Storage
                 byte[] privateXorCipherBytes = new byte[account.PrivateXorCipher.Length * 8];
                 Buffer.BlockCopy(account.PrivateXorCipher, 0, privateXorCipherBytes, 0, privateXorCipherBytes.Length);
 
+                byte[] dpapiXorCipher1Bytes = new byte[account.DpapiXorCipher1.Length * 8];
+                Buffer.BlockCopy(account.DpapiXorCipher1, 0, dpapiXorCipher1Bytes, 0, dpapiXorCipher1Bytes.Length);
+
+                byte[] dpapiXorCipher2Bytes = new byte[account.DpapiXorCipher2.Length * 8];
+                Buffer.BlockCopy(account.DpapiXorCipher2, 0, dpapiXorCipher2Bytes, 0, dpapiXorCipher2Bytes.Length);
+
                 database.AddParameter(dbCommand, "tokenHash", account.Token, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "userName", account.UserName);
                 database.AddParameter(dbCommand, "publicXorCipher", publicXorCipherBytes, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "privateXorCipher", privateXorCipherBytes, Database.EncryptionMode.None);
+                database.AddParameter(dbCommand, "dpapiXorCipher1", dpapiXorCipher1Bytes, Database.EncryptionMode.None);
+                database.AddParameter(dbCommand, "dpapiXorCipher2", dpapiXorCipher2Bytes, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "phabricatorUrl", account.PhabricatorUrl);
                 database.AddParameter(dbCommand, "conduitAPiToken", account.ConduitAPIToken, Database.EncryptionMode.Private);
                 database.AddParameter(dbCommand, "theme", account.Theme, Database.EncryptionMode.None);
@@ -63,13 +71,13 @@ namespace Phabrico.Storage
                     {
                         Phabricator.Data.Account record = new Phabricator.Data.Account();
 
-                        byte[] publicXorCipherBytes = (byte[])reader["publicXorCipher"];
-                        record.PublicXorCipher = new UInt64[publicXorCipherBytes.Length / 8];
-                        Buffer.BlockCopy(publicXorCipherBytes, 0, record.PublicXorCipher, 0, publicXorCipherBytes.Length);
-
                         record.Token = (string)reader["token"];
                         record.UserName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["username"]);
                         record.PhabricatorUrl = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["url"]);
+
+                        byte[] publicXorCipherBytes = (byte[])reader["publicXorCipher"];
+                        record.PublicXorCipher = new UInt64[publicXorCipherBytes.Length / 8];
+                        Buffer.BlockCopy(publicXorCipherBytes, 0, record.PublicXorCipher, 0, publicXorCipherBytes.Length);
 
                         if (database.PrivateEncryptionKey != null)
                         {
@@ -148,7 +156,7 @@ namespace Phabrico.Storage
             if (token != null)
             {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                           SELECT token, userName, publicXorCipher, privateXorCipher, url, api, parameters, theme
+                           SELECT token, userName, publicXorCipher, privateXorCipher, dpapiXorCipher1, dpapiXorCipher2, url, api, parameters, theme
                            FROM accountInfo
                            WHERE token = @token;
                        ", database.Connection))
@@ -167,6 +175,14 @@ namespace Phabrico.Storage
                             byte[] privateXorCipherBytes = (byte[])reader["privateXorCipher"];
                             record.PrivateXorCipher = new UInt64[privateXorCipherBytes.Length / 8];
                             Buffer.BlockCopy(privateXorCipherBytes, 0, record.PrivateXorCipher, 0, privateXorCipherBytes.Length);
+
+                            byte[] dpapiXorCipher1Bytes = (byte[])reader["dpapiXorCipher1"];
+                            record.DpapiXorCipher1 = new UInt64[dpapiXorCipher1Bytes.Length / 8];
+                            Buffer.BlockCopy(dpapiXorCipher1Bytes, 0, record.DpapiXorCipher1, 0, dpapiXorCipher1Bytes.Length);
+
+                            byte[] dpapiXorCipher2Bytes = (byte[])reader["dpapiXorCipher2"];
+                            record.DpapiXorCipher2 = new UInt64[dpapiXorCipher2Bytes.Length / 8];
+                            Buffer.BlockCopy(dpapiXorCipher2Bytes, 0, record.DpapiXorCipher2, 0, dpapiXorCipher2Bytes.Length);
 
                             record.Token = (string)reader["token"];
                             record.Theme = (string)reader["theme"];
@@ -201,24 +217,34 @@ namespace Phabrico.Storage
         {
             if (token != null)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                           SELECT privateXorCipher
-                           FROM accountInfo
-                           WHERE token = @token;
-                       ", database.Connection))
+                if (token.AuthenticationFactor == AuthenticationFactor.Knowledge)
                 {
-                    database.AddParameter(dbCommand, "token", token.Key, Database.EncryptionMode.None);
-                    using (var reader = dbCommand.ExecuteReader())
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                              SELECT privateXorCipher
+                              FROM accountInfo
+                              WHERE token = @token;
+                          ", database.Connection))
                     {
-                        if (reader.Read())
+                        database.AddParameter(dbCommand, "token", token.Key, Database.EncryptionMode.None);
+                        using (var reader = dbCommand.ExecuteReader())
                         {
-                            byte[] privateXorCipherBytes = (byte[])reader["privateXorCipher"];
-                            UInt64[] privateXorCipher = new UInt64[privateXorCipherBytes.Length / 8];
-                            Buffer.BlockCopy(privateXorCipherBytes, 0, privateXorCipher, 0, privateXorCipherBytes.Length);
+                            if (reader.Read())
+                            {
+                                byte[] privateXorCipherBytes = (byte[])reader["privateXorCipher"];
+                                UInt64[] privateXorCipher = new UInt64[privateXorCipherBytes.Length / 8];
+                                Buffer.BlockCopy(privateXorCipherBytes, 0, privateXorCipher, 0, privateXorCipherBytes.Length);
 
-                            return privateXorCipher;
+                                return privateXorCipher;
+                            }
                         }
                     }
+                }
+                else
+                if (token.AuthenticationFactor == AuthenticationFactor.Ownership)
+                {
+                    UInt64[] xorPublic, xorPrivate;
+                    GetDpapiXorCiphers(database, out xorPublic, out xorPrivate);
+                    return xorPrivate;
                 }
             }
 
@@ -257,6 +283,40 @@ namespace Phabrico.Storage
             }
 
             return new UInt64[4];
+        }
+
+        /// <summary>
+        /// Returns the XOR value being used for masking the DPAPI (Windows Authentication) database encryption key
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public void GetDpapiXorCiphers(Database database, out UInt64[] xorPublic, out UInt64[] xorPrivate)
+        {
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                           SELECT dpapiXorCipher1, dpapiXorCipher2
+                           FROM accountInfo;
+                       ", database.Connection))
+            {
+                using (var reader = dbCommand.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        byte[] dpapiXorCipherBytes = (byte[])reader["dpapiXorCipher1"];
+                        xorPublic = new UInt64[dpapiXorCipherBytes.Length / 8];
+                        Buffer.BlockCopy(dpapiXorCipherBytes, 0, xorPublic, 0, dpapiXorCipherBytes.Length);
+
+                        dpapiXorCipherBytes = (byte[])reader["dpapiXorCipher2"];
+                        xorPrivate = new UInt64[dpapiXorCipherBytes.Length / 8];
+                        Buffer.BlockCopy(dpapiXorCipherBytes, 0, xorPrivate, 0, dpapiXorCipherBytes.Length);
+                    }
+                    else
+                    {
+                        xorPublic = new UInt64[4];
+                        xorPrivate = new UInt64[4];
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -311,7 +371,7 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
-        /// Modifies the token and xorCipher of a given accountInfo record
+        /// Modifies the token and xorCiphers of a given accountInfo record
         /// </summary>
         /// <param name="database"></param>
         /// <param name="oldToken"></param>
@@ -341,6 +401,33 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "newToken", newToken, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "oldToken", oldToken, Database.EncryptionMode.None);
                 
+                return dbCommand.ExecuteNonQuery() > 0;
+            }
+        }
+
+        /// <summary>
+        /// Modifies the DPAPI xorCipher of all accountInfo records
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="newDpapiXorValue"></param>
+        /// <returns></returns>
+        public bool UpdateDpapiXorCipher(Database database, UInt64[] newPublicDpapiXorValue, UInt64[] newPrivateDpapiXorValue)
+        {
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       UPDATE accountInfo
+                         SET dpapiXorCipher1 = @newPublicDpapiXorValue,
+                             dpapiXorCipher2 = @newPrivateDpapiXorValue;
+                   ", database.Connection))
+            {
+                byte[] dpapiPublicXorCipherBytes = new byte[newPublicDpapiXorValue.Length * 8];
+                Buffer.BlockCopy(newPublicDpapiXorValue, 0, dpapiPublicXorCipherBytes, 0, dpapiPublicXorCipherBytes.Length);
+
+                byte[] dpapiPrivateXorCipherBytes = new byte[newPrivateDpapiXorValue.Length * 8];
+                Buffer.BlockCopy(newPrivateDpapiXorValue, 0, dpapiPrivateXorCipherBytes, 0, dpapiPrivateXorCipherBytes.Length);
+
+                database.AddParameter(dbCommand, "newPublicDpapiXorValue", dpapiPublicXorCipherBytes, Database.EncryptionMode.None);
+                database.AddParameter(dbCommand, "newPrivateDpapiXorValue", dpapiPrivateXorCipherBytes, Database.EncryptionMode.None);
+
                 return dbCommand.ExecuteNonQuery() > 0;
             }
         }

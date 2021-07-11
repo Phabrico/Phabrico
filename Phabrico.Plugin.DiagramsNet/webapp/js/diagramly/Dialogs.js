@@ -18,7 +18,7 @@ var StorageDialog = function(editorUi, fn, rowLimit)
 	buttons.style.borderWidth = '1px 0px 1px 0px';
 	buttons.style.padding = '10px 0px 20px 0px';
 	
-	var count = 0;
+	var count = 0, totalBtns = 0;
 	var container = document.createElement('div');
 	container.style.paddingTop = '2px';
 	buttons.appendChild(container);
@@ -27,10 +27,12 @@ var StorageDialog = function(editorUi, fn, rowLimit)
 	
 	function addLogo(img, title, mode, clientName, labels, clientFn)
 	{
+		totalBtns++;
+		
 		if (++count > rowLimit)
 		{
 			mxUtils.br(container);
-			count = 0;
+			count = 1;
 		}
 		
 		var button = document.createElement('a');
@@ -233,6 +235,11 @@ var StorageDialog = function(editorUi, fn, rowLimit)
 		{
 			addLogo(IMAGE_PATH + '/gitlab-logo.svg', mxResources.get('gitlab'), App.MODE_GITLAB, 'gitLab');
 		}
+		
+		if (totalBtns < 6 && editorUi.notion != null)
+		{
+			addLogo(IMAGE_PATH + '/notion-logo.svg', mxResources.get('notion'), App.MODE_NOTION, 'notion');
+		}
 	};
 	
 	div.appendChild(buttons);
@@ -336,6 +343,11 @@ var SplashDialog = function(editorUi)
 	{
 		logo.src = IMAGE_PATH + '/gitlab-logo.svg';
 		service = mxResources.get('gitlab');
+	}
+	else if (editorUi.mode == App.MODE_NOTION)
+	{
+		logo.src = IMAGE_PATH + '/notion-logo.svg';
+		service = mxResources.get('notion');
 	}
 	else if (editorUi.mode == App.MODE_BROWSER)
 	{
@@ -459,6 +471,10 @@ var SplashDialog = function(editorUi)
 	else if (editorUi.mode == App.MODE_GITLAB)
 	{
 		storage = mxResources.get('gitlab');
+	}
+	else if (editorUi.mode == App.MODE_NOTION)
+	{
+		storage = mxResources.get('notion');
 	}
 	else if (editorUi.mode == App.MODE_TRELLO)
 	{
@@ -596,6 +612,13 @@ var SplashDialog = function(editorUi)
 			{
 				editorUi.gitLab.logout();
 				editorUi.openLink(DRAWIO_GITLAB_URL + '/users/sign_out');
+			});
+		}
+		else if (editorUi.mode == App.MODE_NOTION && editorUi.notion != null)
+		{
+			addLogout(function()
+			{
+				editorUi.notion.logout();
 			});
 		}
 		else if (editorUi.mode == App.MODE_TRELLO && editorUi.trello != null)
@@ -2366,7 +2389,7 @@ var ParseDialog = function(editorUi, title, defaultType)
  */
 var NewDialog = function(editorUi, compact, showName, callback, createOnly, cancelCallback,
 		leftHighlight, rightHighlight, rightHighlightBorder, itemPadding, templateFile,
-		recentDocsCallback, searchDocsCallback, openExtDocCallback, showImport, createButtonLabel, customTempCallback)
+		recentDocsCallback, searchDocsCallback, openExtDocCallback, showImport, createButtonLabel, customTempCallback, withoutType)
 {
 	showName = (showName != null) ? showName : true;
 	createOnly = (createOnly != null) ? createOnly : false;
@@ -2416,6 +2439,10 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	{
 		logo.src = IMAGE_PATH + '/gitlab-logo.svg';
 	}
+	else if (editorUi.mode == App.MODE_NOTION)
+	{
+		logo.src = IMAGE_PATH + '/notion-logo.svg';
+	}
 	else if (editorUi.mode == App.MODE_TRELLO)
 	{
 		logo.src = IMAGE_PATH + '/trello-logo.svg';
@@ -2462,6 +2489,10 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	{
 		ext = editorUi.gitLab.extension;
 	}
+	else if (editorUi.mode == App.MODE_NOTION && editorUi.notion != null)
+	{
+		ext = editorUi.notion.extension;
+	}
 	else if (editorUi.mode == App.MODE_TRELLO && editorUi.trello != null)
 	{
 		ext = editorUi.trello.extension;
@@ -2487,6 +2518,14 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 				document.execCommand('selectAll', false, null);
 			}
 		}
+		
+		if (div.parentNode != null && div.parentNode.parentNode != null)
+		{
+			mxEvent.addGestureListeners(div.parentNode.parentNode, mxUtils.bind(this, function(evt)
+			{
+				editorUi.sidebar.hideTooltip();
+			}), null, null);
+		}
 	};
 	
 	// Adds filetype dropdown
@@ -2494,21 +2533,28 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	{
 		header.appendChild(nameInput);
 
-		if (editorUi.editor.diagramFileTypes != null)
+		if (withoutType)
 		{
-			var typeSelect = FilenameDialog.createFileTypes(editorUi, nameInput, editorUi.editor.diagramFileTypes);
-			typeSelect.style.marginLeft = '6px';
-			typeSelect.style.width = (compact) ? '80px' : '180px';
-			header.appendChild(typeSelect);
+			nameInput.style.width = (compact) ? '350px' : '450px';
 		}
-		
-		if (editorUi.editor.fileExtensions != null)
+		else
 		{
-			var hint = FilenameDialog.createTypeHint(editorUi,
-				nameInput, editorUi.editor.fileExtensions);
-			hint.style.marginTop = '12px';
+			if (editorUi.editor.diagramFileTypes != null)
+			{
+				var typeSelect = FilenameDialog.createFileTypes(editorUi, nameInput, editorUi.editor.diagramFileTypes);
+				typeSelect.style.marginLeft = '6px';
+				typeSelect.style.width = (compact) ? '80px' : '180px';
+				header.appendChild(typeSelect);
+			}
 			
-			header.appendChild(hint);
+			if (editorUi.editor.fileExtensions != null)
+			{
+				var hint = FilenameDialog.createTypeHint(editorUi,
+					nameInput, editorUi.editor.fileExtensions);
+				hint.style.marginTop = '12px';
+				
+				header.appendChild(hint);
+			}
 		}
 	}
 
@@ -2516,8 +2562,14 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	var i0 = 0;
 	
 	// Dynamic loading
-	function addTemplates()
+	function addTemplates(smallSize)
 	{
+		//smallSize: Reduce template button size to fit 4 in a row
+		if (smallSize != null)
+		{
+			w = h = smallSize? 135 : 140;
+		}
+		
 		var first = true;
 		
 		//TODO support paging of external templates
@@ -2590,6 +2642,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		var templatesTab = mxUtils.button(mxResources.get('Templates', null, 'Templates'), function()
 		{
 			list.style.display = '';
+			searchBox.style.display = '';
 			div.style.left = '160px';
 			setActiveTab(0);
 
@@ -2614,6 +2667,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		var getExtTemplates = function(isSearch)
 		{
 			list.style.display = 'none';
+			searchBox.style.display = 'none';
 			div.style.left = '30px';				
 			
 			setActiveTab(isSearch? -1 : 1); //deselect all of them if isSearch 
@@ -2670,7 +2724,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 					}
 					else
 					{
-						addTemplates();
+						addTemplates(true);
 					}
 				}
 			}
@@ -2793,18 +2847,21 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	div.style.padding = '6px';
 	div.style.overflow = 'auto';
 
-	mxEvent.addListener(div, 'dragstart', function(evt)
-	{
-		mxEvent.consume(evt);
-	});
+//	mxEvent.addListener(div, 'dragstart', function(evt)
+//	{
+//		if (!mxEvent.isTouchEvent(evt))
+//		{
+//			mxEvent.consume(evt);
+//		}
+//	});
 	
 	var searchBox = document.createElement('div');
 	searchBox.style.cssText = 'position:absolute;left:30px;width:128px;top:' + divTop + 'px;height:22px;margin-top: 6px;white-space: nowrap';
-	var searchInput = document.createElement('input');
-	searchInput.style.cssText = 'width:105px;height:16px;border:1px solid #d3d3d3;padding: 3px 20px 3px 3px;font-size: 12px';
-	searchInput.setAttribute('placeholder', mxResources.get('search'));
-	searchInput.setAttribute('type', 'text');
-	searchBox.appendChild(searchInput);
+	var tmplSearchInput = document.createElement('input');
+	tmplSearchInput.style.cssText = 'width:105px;height:16px;border:1px solid #d3d3d3;padding: 3px 20px 3px 3px;font-size: 12px';
+	tmplSearchInput.setAttribute('placeholder', mxResources.get('search'));
+	tmplSearchInput.setAttribute('type', 'text');
+	searchBox.appendChild(tmplSearchInput);
 	
 	var cross = document.createElement('img');
 	var searchImg = typeof Sidebar != 'undefined'? Sidebar.prototype.searchImage : IMAGE_PATH + '/search.png';
@@ -2823,14 +2880,14 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		{
 			cross.setAttribute('src', searchImg);
 			cross.setAttribute('title', mxResources.get('search'));
-			searchInput.value = '';
+			tmplSearchInput.value = '';
 			resetTemplates();
 		}
 
-		searchInput.focus();
+		tmplSearchInput.focus();
 	});
 	
-	mxEvent.addListener(searchInput, 'keydown', mxUtils.bind(this, function(evt)
+	mxEvent.addListener(tmplSearchInput, 'keydown', mxUtils.bind(this, function(evt)
 	{
 		if (evt.keyCode == 13 /* Enter */)
 		{
@@ -2839,9 +2896,9 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		}
 	}));
 	
-	mxEvent.addListener(searchInput, 'keyup', mxUtils.bind(this, function(evt)
+	mxEvent.addListener(tmplSearchInput, 'keyup', mxUtils.bind(this, function(evt)
 	{
-		if (searchInput.value == '')
+		if (tmplSearchInput.value == '')
 		{
 			cross.setAttribute('src', searchImg);
 			cross.setAttribute('title', mxResources.get('search'));
@@ -2858,25 +2915,11 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	var list = document.createElement('div');
 	list.style.cssText = 'position:absolute;left:30px;width:128px;top:' + divTop + 'px;bottom:68px;margin-top:6px;overflow:auto;border:1px solid #d3d3d3;';
 	
-	var currentElt = null;
-	
 	mxEvent.addListener(div, 'scroll', function()
 	{
 		editorUi.sidebar.hideTooltip();
-		currentElt = null;
 	});
 	
-	mxEvent.addListener(div, 'mouseleave', function(evt)
-	{
-		if (evt.toElement != null && editorUi.sidebar.tooltip != null &&
-			!mxUtils.isAncestorNode(editorUi.sidebar.tooltip, evt.toElement))
-
-		{
-			editorUi.sidebar.hideTooltip();
-			currentElt = null;
-		}
-	});
-			
 	var w = 140;
 	var h = 140;
 
@@ -2902,12 +2945,11 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		selectedElt.style.border = rightHighlightBorder;
 	};
 	
-	var thread = null;
-
 	function addButton(url, libs, title, tooltip, select, imgUrl, infoObj, onClick, preview, noImg, clibs)
 	{
 		var elt = document.createElement('div');
 		elt.className = 'geTemplate';
+		elt.style.position = 'relative';
 		elt.style.height = w + 'px';
 		elt.style.width = h + 'px';
 		var xmlData = null;
@@ -2931,7 +2973,6 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			if (xmlData == null)
 			{
 				var realUrl = url;
-				loading = true;
 		
 				if (/^https?:\/\//.test(realUrl) && !editorUi.editor.isCorsEnabledForUrl(realUrl))
 				{
@@ -2984,101 +3025,37 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 					(title != null) ? mxResources.get(title, null, title) : null,
 					true, new mxPoint(x, y), true, function()
 					{
+						wasVisible = editorUi.sidebar.tooltip != null &&
+							editorUi.sidebar.tooltip.style.display != 'none';
 						selectElement(elt, null, null, url, infoObj, clibs);
-						hideTooltip();
-					});
+					}, true);
 			}
 		};
 
-		function startTimer(evt, delay)
+		function loadTooltip(evt, magElt)
 		{
-			if (currentElt != elt && thread != null)
+			if (url != null && !loading && editorUi.sidebar.currentElt != elt)
 			{
-				window.clearTimeout(thread);
-				loading = false;
-				thread = null;
-			}
-			
-			if (thread == null && currentElt != elt && !loading)
-			{
-				thread = window.setTimeout(function()
-				{
-					if (currentElt == elt)
-					{
-						if (url == null)
-						{
-							hideTooltip();
-						}
-						else
-						{
-							editorUi.sidebar.currentElt = elt;
-							loading = true;
-							
-							loadXmlData(url, function(xml)
-							{
-								if (loading && currentElt == elt)
-								{
-									showTooltip(xml, mxEvent.getClientX(evt), mxEvent.getClientY(evt));
-									editorUi.sidebar.currentElt = elt;
-								}
-								
-								loading = false;
-								thread = null;
-							});
-						}
-					}
-				}, delay);
-				
+				editorUi.sidebar.hideTooltip();
 				editorUi.sidebar.currentElt = elt;
-				currentElt = elt;
+				loading = true;
+				
+				loadXmlData(url, function(xml)
+				{
+					if (loading && editorUi.sidebar.currentElt == elt)
+					{
+						showTooltip(xml, mxEvent.getClientX(evt), mxEvent.getClientY(evt));
+					}
+					
+					loading = false;
+				});
+			}
+			else
+			{
+				editorUi.sidebar.hideTooltip();
 			}
 		};
 	
-		function hideTooltip()
-		{
-			if (currentElt == elt)
-			{
-				editorUi.sidebar.hideTooltip();
-				
-				if (thread != null)
-				{
-					window.clearTimeout(thread);
-					loading = false;
-					thread = null;
-				}
-			}
-		};
-
-		mxEvent.addGestureListeners(elt, mxUtils.bind(this, function(evt)
-		{
-			if (editorUi.sidebar.currentElt != elt)
-			{
-				currentElt = null;
-				startTimer(evt, 600);
-				mxEvent.consume(evt);
-			}
-			
-			hideTooltip();
-		}), mxUtils.bind(this, function(evt)
-		{
-			startTimer(evt, 600);
-		}), mxUtils.bind(this, function(evt)
-		{
-			currentElt = null;
-			hideTooltip();
-		}));
-			
-		mxEvent.addListener(elt, 'mouseleave', function(evt)
-		{
-			if (evt.toElement != null && editorUi.sidebar.tooltip != null &&
-				editorUi.sidebar.tooltip != evt.toElement &&
-				!editorUi.sidebar.tooltip.contains(evt.toElement))
-			{
-				editorUi.sidebar.hideTooltip();
-				currentElt = null;
-			}
-		});
-		
 		if (imgUrl != null)
 		{
 			elt.style.display = 'inline-flex';
@@ -3109,8 +3086,6 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			mxEvent.addGestureListeners(elt, mxUtils.bind(this, function(evt)
 			{
 				selectElement(elt, null, null, url, infoObj, clibs);
-				hideTooltip();
-				mxEvent.consume(evt);
 			}), null, null);
 			
 			mxEvent.addListener(elt, 'dblclick', function(evt)
@@ -3161,8 +3136,6 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			mxEvent.addGestureListeners(elt, mxUtils.bind(this, function(evt)
 			{
 				activate();
-				hideTooltip();
-				mxEvent.consume(evt);
 			}), null, null);
 			
 			mxEvent.addListener(elt, 'dblclick', function(evt)
@@ -3186,8 +3159,6 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			mxEvent.addGestureListeners(elt, mxUtils.bind(this, function(evt)
 			{
 				selectElement(elt, null, null, url, infoObj);
-				hideTooltip();
-				mxEvent.consume(evt);
 			}), null, null);
 			
 			if (onClick != null)
@@ -3207,6 +3178,38 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 					mxEvent.consume(evt);
 				});
 			}
+		}
+		
+		// Adds preview button
+		if (url != null)
+		{
+			var magnify = document.createElement('img');
+			magnify.setAttribute('src', Sidebar.prototype.searchImage);
+			magnify.setAttribute('title', mxResources.get('preview'));
+			magnify.className = 'geActiveButton';
+			magnify.style.position = 'absolute';
+			magnify.style.cursor = 'default';
+			magnify.style.padding = '8px';
+			magnify.style.right = '0px';
+			magnify.style.top = '0px';
+			elt.appendChild(magnify);
+			
+			var wasVisible = false;
+			
+			mxEvent.addGestureListeners(magnify, mxUtils.bind(this, function(evt)
+			{
+				wasVisible = editorUi.sidebar.currentElt == elt;
+			}), null, null);
+			
+			mxEvent.addListener(magnify, 'click', mxUtils.bind(this, function(evt)
+			{
+				if (!wasVisible)
+				{
+					loadTooltip(evt, magnify);
+				}
+				
+				mxEvent.consume(evt);
+			}));
 		}
 
 		div.appendChild(elt);
@@ -3232,7 +3235,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	
 	function filterTemplates()
 	{
-		var searchTerms = searchInput.value;
+		var searchTerms = tmplSearchInput.value;
 		
 		if (searchTerms == '')
 		{
@@ -3274,6 +3277,36 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 
 		var tmp = searchTerms.toLowerCase().split(' ');
 		tagsList = NewDialog.tagsList[templateFile];
+		
+		if (customCatCount > 0 && tagsList.__tagsList__ == null)
+		{
+			for (var cat in customCats)
+			{
+				var templateList = customCats[cat];
+				
+				for (var i = 0; i < templateList.length; i++)
+				{
+					var temp = templateList[i];
+					var tags = temp.title.split(' ');
+					tags.push(cat);
+					
+					for (var j = 0; j < tags.length; j++)
+					{
+						var tag = tags[j].toLowerCase();
+						
+						if (tagsList[tag] == null)
+						{
+							tagsList[tag] = [];
+						}
+						
+						tagsList[tag].push(temp);
+					}
+				}				
+			}
+			
+			tagsList.__tagsList__ = true;
+		}
+		
 		var results = [], resMap = {}, index = 0;
 		
 		for (var i = 0; i < tmp.length; i++)
@@ -3321,7 +3354,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 
 		templates = results;
 		oldTemplates = null;
-		addTemplates();
+		addTemplates(false);
 	};
 	
 	function initUi()
@@ -3386,7 +3419,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 							
 							templates = customCats[cat2];
 							oldTemplates = null;
-							addTemplates();
+							addTemplates(false);
 						}
 					});
 				})(cat, entry);
@@ -3431,7 +3464,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 					
 					templates = subCat? subCategories[cat][subCat] : categories[cat];
 					oldTemplates = null;
-					addTemplates();
+					addTemplates(false);
 				}				
 			});
 		};
@@ -3516,7 +3549,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			addEntryHandler(cat, clickElem);
 		}
 		
-		addTemplates();
+		addTemplates(false);
 	};
 
 	if (!compact)
@@ -4082,6 +4115,16 @@ var CreateDialog = function(editorUi, title, createFn, cancelFn, dlgTitle, btnLa
 			addLogo(IMAGE_PATH + '/gitlab-logo.svg', mxResources.get('gitlab'), App.MODE_GITLAB, 'gitLab');
 		}
 
+		if (editorUi.notion != null)
+		{
+			var notionOption = document.createElement('option');
+			notionOption.setAttribute('value', App.MODE_NOTION);
+			mxUtils.write(notionOption, mxResources.get('notion'));
+			serviceSelect.appendChild(notionOption);
+
+			addLogo(IMAGE_PATH + '/notion-logo.svg', mxResources.get('notion'), App.MODE_NOTION, 'notion');
+		}
+		
 		if (typeof window.TrelloClient === 'function')
 		{
 			var trelloOption = document.createElement('option');
@@ -4150,6 +4193,10 @@ var CreateDialog = function(editorUi, title, createFn, cancelFn, dlgTitle, btnLa
 				else if (newMode == App.MODE_GITLAB)
 				{
 					ext = editorUi.gitLab.extension;
+				}
+				else if (newMode == App.MODE_NOTION)
+				{
+					ext = editorUi.notion.extension;
 				}
 				else if (newMode == App.MODE_TRELLO)
 				{
@@ -5185,6 +5232,8 @@ var LinkDialog = function(editorUi, initialValue, btnLabel, fn, showPages, showN
 			});
 		});
 	}
+
+	//TODO should Notion support this?
 	//TODO should Trello support this?
 	
 	mxEvent.addListener(linkInput, 'keypress', function(e)
@@ -6848,7 +6897,7 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 			lastFound = firstMatch;
 			graph.scrollCellToVisible(lastFound.cell);
 			
-			if (graph.isEnabled())
+			if (graph.isEnabled() && !graph.isCellLocked(lastFound.cell))
 			{
 				if (!stayOnPage &&
 					(graph.getSelectionCell() != lastFound.cell ||
@@ -7025,7 +7074,12 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 				{
 					var cell = lastFound.cell, lbl = graph.getLabel(cell);
 					
-					graph.model.setValue(cell, replaceInLabel(lbl, lblMatch, replaceInput.value, lblMatchPos - lblMatch.length, graph.getCurrentCellStyle(cell)));
+					if (graph.isCellEditable(cell))
+					{
+						graph.model.setValue(cell, replaceInLabel(lbl, lblMatch, replaceInput.value,
+							lblMatchPos - lblMatch.length, graph.getCurrentCellStyle(cell)));
+					}
+					
 					searchInput.style.backgroundColor = search(false, true) ? '' :
 						(Editor.isDarkMode() ? '#ff0000' : '#ffcfcf');
 				}
@@ -7108,8 +7162,12 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 						
 						seen[cell.id] = {replAllMrk: marker, replAllPos: lblMatchPos};
 						
-						graph.model.setValue(cell, replaceInLabel(lbl, lblMatch, replaceInput.value, lblMatchPos - lblMatch.length, graph.getCurrentCellStyle(cell)));
-						safeguard++;
+						if (graph.isCellEditable(cell))
+						{
+							graph.model.setValue(cell, replaceInLabel(lbl, lblMatch, replaceInput.value,
+								lblMatchPos - lblMatch.length, graph.getCurrentCellStyle(cell)));
+							safeguard++;
+						}
 					}
 					
 					if (currentPage != ui.currentPage)
@@ -7251,7 +7309,7 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 		var ih = window.innerHeight || document.body.clientHeight || document.documentElement.clientHeight;
 		
 		x = Math.max(0, Math.min(x, iw - this.table.clientWidth));
-		y = Math.max(0, Math.min(y, ih - this.table.clientHeight - 48));
+		y = Math.max(0, Math.min(y, ih - this.table.clientHeight - ((urlParams['sketch'] == '1') ? 3 : 48)));
 
 		if (this.getX() != x || this.getY() != y)
 		{
@@ -7285,6 +7343,7 @@ var FreehandWindow = function(editorUi, x, y, w, h)
 	var propertyName = 'tags';
 
 	var div = document.createElement('div');
+	div.style.textAlign = 'center';
 	div.style.userSelect = 'none';
 	div.style.overflow = 'hidden';
 	div.style.height = '100%';
@@ -7295,33 +7354,23 @@ var FreehandWindow = function(editorUi, x, y, w, h)
 		{
 			graph.freehand.stopDrawing();
 		}
-		
-		graph.freehand.startDrawing();
+		else
+		{
+			graph.freehand.startDrawing();
+		}
 	});
 	
 	startBtn.setAttribute('title', mxResources.get('startDrawing'));
-	startBtn.style.marginTop = '8px';
-	startBtn.style.marginRight = '4px';
-	startBtn.style.width = '160px';
+	startBtn.style.marginTop = '10px';
+	startBtn.style.width = '90%';
+	startBtn.style.boxSizing = 'border-box';
 	startBtn.style.overflow = 'hidden';
 	startBtn.style.textOverflow = 'ellipsis';
 	startBtn.style.textAlign = 'center';
 	startBtn.className = 'geBtn gePrimaryBtn';
 	
 	div.appendChild(startBtn);
-	
-	var stopBtn = startBtn.cloneNode(false);
-	mxUtils.write(stopBtn, mxResources.get('stopDrawing'));
-	stopBtn.setAttribute('title', mxResources.get('stopDrawing'));
-	stopBtn.style.marginTop = '4px';
-	
-	mxEvent.addListener(stopBtn, 'click', function()
-	{
-		graph.freehand.stopDrawing();
-	});
-	
-	div.appendChild(stopBtn);
-	
+
 	this.window = new mxWindow(mxResources.get('freehand'), div, x, y, w, h, true, true);
 	this.window.destroyOnClose = false;
 	this.window.setMaximizable(false);
@@ -7330,7 +7379,10 @@ var FreehandWindow = function(editorUi, x, y, w, h)
 	
 	graph.addListener('freehandStateChanged', mxUtils.bind(this, function()
 	{
-		stopBtn.className = 'geBtn' + (graph.freehand.isDrawing() ? ' gePrimaryBtn' : '');
+		startBtn.innerHTML = '';
+		mxUtils.write(startBtn, mxResources.get(graph.freehand.isDrawing() ? 'stopDrawing' : 'startDrawing'));
+		startBtn.setAttribute('title', mxResources.get(graph.freehand.isDrawing() ? 'stopDrawing' : 'startDrawing'));
+		startBtn.className = 'geBtn' + (!graph.freehand.isDrawing() ? ' gePrimaryBtn' : '');
 	}));
 	
 	this.window.addListener('show', mxUtils.bind(this, function()
@@ -7352,7 +7404,7 @@ var FreehandWindow = function(editorUi, x, y, w, h)
 		var ih = window.innerHeight || document.body.clientHeight || document.documentElement.clientHeight;
 		
 		x = Math.max(0, Math.min(x, iw - this.table.clientWidth));
-		y = Math.max(0, Math.min(y, ih - this.table.clientHeight - 48));
+		y = Math.max(0, Math.min(y, ih - this.table.clientHeight - ((urlParams['sketch'] == '1') ? 3 : 48)));
 
 		if (this.getX() != x || this.getY() != y)
 		{
@@ -7461,7 +7513,9 @@ var TagsWindow = function(editorUi, x, y, w, h)
 			
 			for (var i = 0; i < cells.length; i++)
 			{
-				if (graph.model.isVertex(cells[i]) || graph.model.isEdge(cells[i]))
+				if (!graph.isCellLocked(cells[i]) &&
+					(graph.model.isVertex(cells[i]) ||
+					graph.model.isEdge(cells[i])))
 				{
 					temp.push(cells[i]);
 				}
@@ -7542,7 +7596,7 @@ var TagsWindow = function(editorUi, x, y, w, h)
 		var ih = window.innerHeight || document.body.clientHeight || document.documentElement.clientHeight;
 		
 		x = Math.max(0, Math.min(x, iw - this.table.clientWidth));
-		y = Math.max(0, Math.min(y, ih - this.table.clientHeight - 48));
+		y = Math.max(0, Math.min(y, ih - this.table.clientHeight - ((urlParams['sketch'] == '1') ? 3 : 48)));
 
 		if (this.getX() != x || this.getY() != y)
 		{
@@ -7614,6 +7668,12 @@ var AuthDialog = function(editorUi, peer, showRememberOption, fn)
 	{
 		service = mxResources.get('gitlab');
 		img.src = IMAGE_PATH + '/gitlab-logo.svg';
+		img.style.width = '32px';
+	}
+	else if (peer == editorUi.notion)
+	{
+		service = mxResources.get('notion');
+		img.src = IMAGE_PATH + '/notion-logo-white.svg';
 		img.style.width = '32px';
 	}
 	else if (peer == editorUi.trello)
@@ -9842,25 +9902,29 @@ var CustomDialog = function(editorUi, content, okFn, cancelFn, okButtonText, hel
 	this.container = div;
 };
 
-var TemplatesDialog = function()
+//TODO Many of the code is the same as NewDialog. Needs merging
+var TemplatesDialog = function(editorUi, callback, cancelCallback,
+		templateFile, newDiagramCatsFile, username, recentDocsCallback, searchDocsCallback,
+		loadExtDoc, linkToDiagramCallback, customTempCallback, withOpen, withLink, withoutType, noDlgHide)
 {
 	var dialogSkeleton = 
 	'<div class="geTempDlgHeader">' + 
 		'<img src="/images/draw.io-logo.svg" class="geTempDlgHeaderLogo">' +
-		'<input type="search" class="geTempDlgSearchBox" placeholder="'+ mxResources.get('search', null, 'Search') +'">' +
+		'<input type="search" class="geTempDlgSearchBox" ' + (searchDocsCallback? '' : 'style="display: none"')
+			+ ' placeholder="'+ mxResources.get('search') +'">' +
 	'</div>' +
-	'<div class="geTemplatesList">' +
-		'<div class="geTempDlgNewDiagramlbl">'+ mxResources.get('newDiagram', null, 'New Diagram') + '</div>' +
+	'<div class="geTemplatesList" style="display: none">' +
+		'<div class="geTempDlgBack">&lt; '+ mxResources.get('back') + '</div>' +
 		'<div class="geTempDlgHLine"></div>' +
-		'<div class="geTemplatesLbl">'+ mxResources.get('templates', null, 'Templates') + '</div>' +
+		'<div class="geTemplatesLbl">'+ mxResources.get('templates') + '</div>' +
 	'</div>' +
-	'<div class="geTempDlgContent">' +
+	'<div class="geTempDlgContent" style="width: 100%">' +
 		'<div class="geTempDlgNewDiagramCat">' +
-			'<div class="geTempDlgNewDiagramCatLbl">'+ mxResources.get('newDiagram', null, 'New Diagram') +'</div>' +
+			'<div class="geTempDlgNewDiagramCatLbl">'+ mxResources.get('newDiagram') +'</div>' +
 			'<div class="geTempDlgNewDiagramCatList">' +
 			'</div>' + 
 			'<div class="geTempDlgNewDiagramCatFooter">' + 
-				'<div class="geTempDlgShowAllBtn">'+ mxResources.get('showAll', null, '+ Show all') +'</div>' +
+				'<div class="geTempDlgShowAllBtn">'+ mxResources.get('showMore') +'</div>' +
 			'</div>' +
 		'</div>' + 
 		'<div class="geTempDlgDiagramsList">' +
@@ -9868,9 +9932,9 @@ var TemplatesDialog = function()
 				'<div class="geTempDlgDiagramsListTitle"></div>' +
 				'<div class="geTempDlgDiagramsListBtns">' +
 					'<div class="geTempDlgRadioBtn geTempDlgRadioBtnLarge" data-id="myDiagramsBtn">' +
-						'<img src="/images/my-diagrams.svg" class="geTempDlgMyDiagramsBtnImg"> <span>'+ mxResources.get('myDiagrams', null, 'My diagrams') + '</span>' +
+						'<img src="/images/my-diagrams.svg" class="geTempDlgMyDiagramsBtnImg"> <span>'+ mxResources.get('myDiagrams') + '</span>' +
 					'</div><div class="geTempDlgRadioBtn geTempDlgRadioBtnLarge geTempDlgRadioBtnActive" data-id="allDiagramsBtn">' +
-						'<img src="/images/all-diagrams-sel.svg" class="geTempDlgAllDiagramsBtnImg"> <span>'+ mxResources.get('allDiagrams', null, 'All diagrams') + '</span>' +
+						'<img src="/images/all-diagrams-sel.svg" class="geTempDlgAllDiagramsBtnImg"> <span>'+ mxResources.get('allDiagrams') + '</span>' +
 					'</div><div class="geTempDlgSpacer"> </div><div class="geTempDlgRadioBtn geTempDlgRadioBtnSmall geTempDlgRadioBtnActive" data-id="tilesBtn">' +
 						'<img src="/images/tiles-sel.svg" class="geTempDlgTilesBtnImg">' +
 					'</div><div class="geTempDlgRadioBtn geTempDlgRadioBtnSmall" data-id="listBtn">' +
@@ -9884,56 +9948,36 @@ var TemplatesDialog = function()
 	'</div>' +
 	'<br style="clear:both;"/>' +
 	'<div class="geTempDlgFooter">' +
-		'<span class="geTempDlgLinkToDiagram geTempDlgLinkToDiagramHint">&#x1F6C8; ' + mxResources.get('linkToDiagramHint', null, 'Add a link to this diagram. The diagram can only be edited from the page that owns it.') + '</span>' +
-		'<button class="geTempDlgLinkToDiagram geTempDlgLinkToDiagramBtn">'+ mxResources.get('linkToDiagram', null, 'Link to Diagram') + '</button>' +
-		'<div class="geTempDlgCreateBtn">'+ mxResources.get('create', null, 'Create') + '</div>' +
-		'<div class="geTempDlgCancelBtn">'+ mxResources.get('cancel', null, 'Cancel') + '</div>' +
+		'<div class="geTempDlgErrMsg"></div>' +
+		(withLink?
+			'<span class="geTempDlgLinkToDiagram geTempDlgLinkToDiagramHint">' + mxResources.get('linkToDiagramHint') + '</span>' +
+			'<button class="geTempDlgLinkToDiagram geTempDlgLinkToDiagramBtn">'+ mxResources.get('linkToDiagram') + '</button>' :
+			'' 
+		) +
+		(withOpen? '<div class="geTempDlgOpenBtn">'+ mxResources.get('open') + '</div>' : '') +
+		'<div class="geTempDlgCreateBtn">'+ mxResources.get('create') + '</div>' +
+		'<div class="geTempDlgCancelBtn">'+ mxResources.get('cancel') + '</div>' +
 	'</div>';
 	
-	var div = document.createElement('div');
-	div.innerHTML = dialogSkeleton;
-	div.className = "geTemplateDlg";
-	//override default dialog size based on screen size if needed
-	var ww = window.innerWidth;
-	var wh = window.innerHeight;
-	var dw = 987, dh = 712;
-	
-	if (ww * 0.9 < dw)
-	{
-		dw = Math.max(ww * 0.9, 600);
-		div.style.width = dw + "px";
-	}
-
-	if (wh * 0.9 < dh)
-	{
-		dh = Math.max(wh * 0.9, 300);
-		div.style.height = dh + "px";
-	}
-
-	this.width = dw;
-	this.height = dh;
-	this.container = div;
-};
-
-TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
-		templateFile, newDiagramCatsFile, username, recentDocsCallback, searchDocsCallback,
-		openExtDocCallback, linkToDiagramCallback)
-{
+	var dlg = this;
+	var dlgDiv = document.createElement('div');
+	dlgDiv.innerHTML = dialogSkeleton;
+	dlgDiv.className = "geTemplateDlg";
+	this.container = dlgDiv;
 	templateFile = (templateFile != null) ? templateFile : (TEMPLATE_PATH + '/index.xml');
 	newDiagramCatsFile = (newDiagramCatsFile != null) ? newDiagramCatsFile : NEW_DIAGRAM_CATS_PATH + '/index.xml';
-
-	var dlgDiv = this.container;
 	var callInitiated = false;
 	var cancelPendingCall = false;
-	var currentEntry = null;
+	var currentEntry = null, lastEntry = null;
 	var currentItem = null;
 	var currentItemInfo = null;
 	var showingAll = false;
 	var isGetAll = true;
 	var showAsList = false;
-	var curDiagList = [];
-	var lastSearchStr;
+	var curDiagList = [], curSearchImportCats = null;
+	var lastSearchStr, lastGetAll;
 	var categorySelected = true;
+	var inTempScreen = false;
 	var showAllBtn = dlgDiv.querySelector(".geTempDlgShowAllBtn");
 	var diagramsTiles = dlgDiv.querySelector('.geTempDlgDiagramsTiles');
 	var diagramsListTitle = dlgDiv.querySelector('.geTempDlgDiagramsListTitle');
@@ -9943,6 +9987,9 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 	var newDiagramCat = dlgDiv.querySelector('.geTempDlgNewDiagramCat');
 	var newDiagramCatList = dlgDiv.querySelector(".geTempDlgNewDiagramCatList");
 	var createBtn = dlgDiv.querySelector('.geTempDlgCreateBtn');
+	var openBtn = dlgDiv.querySelector('.geTempDlgOpenBtn');
+	var searchInout = dlgDiv.querySelector('.geTempDlgSearchBox');
+	var errMsg = dlgDiv.querySelector('.geTempDlgErrMsg');
 	var spinner = new Spinner({
 		lines: 12, // The number of lines to draw
 		length: 10, // The length of each line
@@ -9958,22 +10005,42 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 		zIndex: 2e9 // The z-index (defaults to 2000000000)
 	});
 	
+	function showError(msg)
+	{
+		errMsg.innerHTML = mxUtils.htmlEntities(msg);
+		errMsg.style.display = 'block';
+		
+		setTimeout(function()
+		{
+			errMsg.style.display = 'none';
+		}, 4000);
+	};
+	
 	function deselectTempCat()
 	{
 		if (currentEntry != null)
 		{
 			currentEntry.style.fontWeight = 'normal';
 			currentEntry.style.textDecoration = 'none';
+			lastEntry = currentEntry;
 			currentEntry = null;
 		}
 	};
 	
-	mxEvent.addListener(dlgDiv.querySelector('.geTempDlgNewDiagramlbl'), 'click', function()
+	mxEvent.addListener(dlgDiv.querySelector('.geTempDlgBack'), 'click', function()
 	{
 		deselectTempCat();
+		inTempScreen = false;
+		var list = dlgDiv.querySelector(".geTemplatesList");
+		list.style.display = 'none';
+		tempDlgContent.style.width = '100%';
 		newDiagramCat.style.display = '';
 		diagramsList.style.minHeight = 'calc(100% - 280px)';
-		getRecentDocs(isGetAll);
+		searchInout.style.display = searchDocsCallback? '' : 'none';
+		searchInout.value = '';
+		lastSearchStr = null;
+
+ 		getRecentDocs(isGetAll);
 	});
 	
 	function radioClick(btn, btnImgId, btnImgFile, otherBtnId, otherBtnImgId, otherBtnImgFile, isLarge)
@@ -10016,7 +10083,7 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 		if (radioClick(this, 'geTempDlgListBtnImg', 'list', 'tilesBtn', 'geTempDlgTilesBtnImg', 'tiles', false))
 		{
 			showAsList = true;
-			fillDiagramsList(curDiagList, false, showAsList);
+			fillDiagramsList(curDiagList, false, showAsList, curSearchImportCats);
 		}
 	});
 	
@@ -10025,41 +10092,139 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 		if (radioClick(this, 'geTempDlgTilesBtnImg', 'tiles', 'listBtn', 'geTempDlgListBtnImg', 'list', false))
 		{
 			showAsList = false;
-			fillDiagramsList(curDiagList, false, showAsList);
+			fillDiagramsList(curDiagList, false, showAsList, curSearchImportCats);
 		}
 	});
 	
-	function createPreview(diagram)
+	var loading = false;
+	
+	function createPreview(diagram, elt, img, evt)
 	{
-		var imgUrl = diagram.prevImgUrl || diagram.imgUrl || (TEMPLATE_PATH + '/' + diagram.url.substring(0, diagram.url.length - 4) + '.png');
-		var mask = document.createElement('div');
-		mask.className = "geTempDlgDialogMask";
-		dlgDiv.appendChild(mask);
-		var prevBox = document.createElement('div');
-		prevBox.className = "geTempDlgDiagramPreviewBox";
-		var img = document.createElement('img');
-		img.src = imgUrl;
-		prevBox.appendChild(img);
-		var closeBtn = document.createElement('img');
-		closeBtn.src = "/images/close.png";
-		closeBtn.className = "geTempDlgPreviewCloseBtn";
-		closeBtn.setAttribute('title', mxResources.get("close"));
-		prevBox.appendChild(closeBtn);
-		var scrollTop = tempDlgContent.scrollTop;
+		var xmlData = null;
 		
-		function closeBox(evt)
+		function loadXmlData(url, callback)
 		{
-			tempDlgContent.removeChild(prevBox);
-			dlgDiv.removeChild(mask);
-			tempDlgContent.scrollTop = scrollTop;
+			if (xmlData == null)
+			{
+				var realUrl = url;
+		
+				if (/^https?:\/\//.test(realUrl) && !editorUi.editor.isCorsEnabledForUrl(realUrl))
+				{
+					realUrl = PROXY_URL + '?url=' + encodeURIComponent(realUrl);
+				}
+				else
+				{
+					realUrl = TEMPLATE_PATH + '/' + realUrl;
+				}
+				
+				mxUtils.get(realUrl, mxUtils.bind(this, function(req)
+				{
+					if (req.getStatus() >= 200 && req.getStatus() <= 299)
+					{
+						xmlData = req.getText();
+						callback(xmlData);
+					}
+					else
+					{
+						callback(xmlData);	
+					}				
+				}));
+			}
+			else
+			{
+				callback(xmlData);
+			}
+		}
+		
+		// Shows a tooltip with the rendered template
+		function showTooltip(xml, x, y)
+		{
+			// Checks if dialog still visible
+			if (xml != null && mxUtils.isAncestorNode(document.body, elt))
+			{
+				var doc = mxUtils.parseXml(xml);
+				var tempNode = Editor.extractGraphModel(doc.documentElement, true);
+
+				if (tempNode == null) return; //Not a diagram file
+				
+				if (tempNode.nodeName == 'mxfile')
+				{
+					var tempNode = Editor.parseDiagramNode(tempNode.getElementsByTagName('diagram')[0]);
+				}
+					
+				var codec = new mxCodec(tempNode.ownerDocument);
+				var model = new mxGraphModel();
+				codec.decode(tempNode, model);
+				var cells = model.root.getChildAt(0).children || [];
+				
+				var ww = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+				var wh = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+				
+				// TODO: Use maxscreensize
+				editorUi.sidebar.createTooltip(elt, cells, Math.min(ww - 80, 1000), Math.min(wh - 80, 800),
+					(diagram.title != null) ? mxResources.get(diagram.title, null, diagram.title) : null,
+					true, new mxPoint(x, y), true, null, true);
+					
+				var mask = document.createElement('div');
+				mask.className = "geTempDlgDialogMask";
+				dlgDiv.appendChild(mask);
+				//Remove the mask when tooltop is hidden
+				var origHideTooltip = editorUi.sidebar.hideTooltip;
+				
+				editorUi.sidebar.hideTooltip = function()
+				{
+					if (mask)
+					{
+						dlgDiv.removeChild(mask);
+						mask = null;
+						origHideTooltip.apply(this, arguments);
+						editorUi.sidebar.hideTooltip = origHideTooltip;
+					}
+				};
+				
+				mxEvent.addListener(mask, 'click', function()
+				{
+					editorUi.sidebar.hideTooltip();
+				});
+			}
 		};
 
-		mxEvent.addListener(closeBtn, 'click', closeBox);
-		mxEvent.addListener(mask, 'click', closeBox);
-		tempDlgContent.appendChild(prevBox);
-		tempDlgContent.scrollTop = 0;
-		//for centering the image
-		prevBox.style.lineHeight = prevBox.clientHeight + "px";
+		if (!loading && editorUi.sidebar.currentElt != elt)
+		{
+			editorUi.sidebar.hideTooltip();
+			editorUi.sidebar.currentElt = elt;
+			loading = true;
+			img.src = '/images/aui-wait.gif';
+			
+			function renderXML(xml)
+			{
+				if (loading && editorUi.sidebar.currentElt == elt)
+				{
+					showTooltip(xml, mxEvent.getClientX(evt), mxEvent.getClientY(evt));
+				}
+				
+				loading = false;
+				img.src = '/images/icon-search.svg';
+			};
+			
+			if (diagram.isExt)
+			{
+				loadExtDoc(diagram, renderXML, function()
+				{
+					showError(mxResources.get('cantLoadPrev'));
+					loading = false;
+					img.src = '/images/icon-search.svg';
+				});
+			}
+			else
+			{
+				loadXmlData(diagram.url, renderXML);
+			}
+		}
+		else
+		{
+			editorUi.sidebar.hideTooltip();
+		}
 	};
 	
 	function swapActiveItem(newItem, activeCls, itemInfo)
@@ -10094,80 +10259,148 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 			currentItem = null;
 			currentItemInfo = null;
 			//disable create button
-			createBtn.className = "geTempDlgCreateBtn geTempDlgCreateBtnDisabled";
+			createBtn.className = "geTempDlgCreateBtn geTempDlgBtnDisabled";
 		}
 	};
 	
-	function handleDialogOK(linkToDiagram)
+	function handleDialogOK(linkToDiagram, openDiagram)
 	{
 		if (currentItemInfo != null)
 		{
 			var itemInfo = currentItemInfo;
 			//disable create button
 			currentItemInfo = null;
-			createBtn.className = "geTempDlgCreateBtn geTempDlgCreateBtnDisabled geTempDlgCreateBtnBusy";
-			
-			if (itemInfo.isExternal)
+
+			if (typeof openDiagram !== 'boolean')
 			{
-				if (linkToDiagram == true)
+				openDiagram = itemInfo.isExternal && withOpen; //Double click default to open with external docs
+			}
+			
+			function cancelSubmit()
+			{
+				currentItemInfo = itemInfo;
+				createBtn.className = 'geTempDlgCreateBtn';
+				
+				if (openDiagram)
 				{
-					linkToDiagramCallback(itemInfo.url, itemInfo, "nameInput.value");
+					openBtn.className = 'geTempDlgOpenBtn';
 				}
-				else 
+			};
+			
+			function submitErr()
+			{
+				showError(mxResources.get('cannotLoad'));
+				cancelSubmit();
+			};
+			
+			function doSubmit(xml, filename)
+			{
+				if (!noDlgHide)
 				{
-					openExtDocCallback(itemInfo.url, itemInfo, "nameInput.value");
+					editorUi.hideDialog(true);
 				}
 				
-				editorUi.hideDialog(true);
+				callback(xml, filename, itemInfo, openDiagram);
+			};
+			
+			function startSubmit(filename)
+			{
+				if (itemInfo.isExternal)
+				{
+					loadExtDoc(itemInfo, function(xml)
+					{
+						doSubmit(xml, filename);
+					}, submitErr);
+				}
+				else if (itemInfo.url)
+				{
+					mxUtils.get(TEMPLATE_PATH + '/' + itemInfo.url, mxUtils.bind(this, function(req)
+					{
+						if (req.getStatus() >= 200 && req.getStatus() <= 299)
+						{
+							doSubmit(req.getText(), filename);
+						}
+						else
+						{
+							submitErr();
+						}
+					}));
+				}
+				else
+				{
+					doSubmit(editorUi.emptyDiagramXml, filename);
+				}
+			};
+			
+			if (linkToDiagram == true)
+			{
+				linkToDiagramCallback(itemInfo.url, itemInfo);
+			}
+			else if (openDiagram)
+			{
+				openBtn.className = "geTempDlgOpenBtn geTempDlgBtnDisabled geTempDlgBtnBusy";
+				startSubmit();
 			}
 			else
 			{
-				mxUtils.get(TEMPLATE_PATH + '/' + itemInfo.url, mxUtils.bind(this, function(req)
-				{
-					if (req.getStatus() >= 200 && req.getStatus() <= 299)
-					{
-						callback(req.getText(), "nameInput.value");
-						editorUi.hideDialog(true);
-					}
-					else
-					{
-						//TODO Handle errors	
-					}
-				}));
+				createBtn.className = "geTempDlgCreateBtn geTempDlgBtnDisabled geTempDlgBtnBusy";
+				var nameTitle = (((editorUi.mode == null || editorUi.mode == App.MODE_GOOGLE ||
+						editorUi.mode == App.MODE_BROWSER) ? mxResources.get('diagramName') : mxResources.get('filename')));
+				var nameDlg = new FilenameDialog(editorUi, editorUi.defaultFilename + '.drawio',
+						mxResources.get('ok'), startSubmit, nameTitle, function(name)
+						{
+							//TODO validate?
+							var valid = name != null && name.length > 0;
+							
+							if (valid && noDlgHide)
+							{
+								startSubmit(name);
+								return false; //prevent closing
+							}
+							
+							return valid;
+						}, null, null, null, cancelSubmit, withoutType? null : []);
+						
+				editorUi.showDialog(nameDlg.container, 350, 80, true, true);
+				nameDlg.init();
 			}
 		}
 	};
 	
-	function showLinkToDiagram(isShown)
+	function toggleButtons(isTemplate)
 	{
-		var linkDisplay = isShown? '' : 'none';
+		createBtn.innerHTML = mxUtils.htmlEntities(mxResources.get(inTempScreen || isTemplate? 'create' : 'copy'));
+		
+		var opemDisplay = isTemplate? 'none' : '';
+		
+		if (withOpen)
+		{
+			openBtn.style.display = opemDisplay;
+		}
+		
 		var elems = dlgDiv.querySelectorAll(".geTempDlgLinkToDiagram");
 		
 		for(var i = 0; i < elems.length; i++)
 		{
-			elems[i].style.display = linkDisplay;
+			elems[i].style.display = opemDisplay;
 		}
 	};
 	
-	function fillDiagramsList(diagrams, isTemplate, asList)
+	function fillDiagramsList(diagrams, isTemplate, asList, searchImportCats, internalCall)
 	{
 		function setSubmitBtnLbl() 
 		{
-			if (isTemplate)
-			{
-				createBtn.innerHTML = mxUtils.htmlEntities(mxResources.get('create'));
-			}
-			else
-			{
-				createBtn.innerHTML = mxUtils.htmlEntities(mxResources.get('copy'));
-			}
-			
-			showLinkToDiagram (!isTemplate);
+			toggleButtons(isTemplate);
 		};
 		
-		diagramsTiles.innerHTML = '';
-		swapActiveItem();
-		curDiagList = diagrams;
+		if (!internalCall)
+		{
+			diagramsTiles.innerHTML = '';
+			swapActiveItem();
+			curDiagList = diagrams;
+			curSearchImportCats = searchImportCats;
+		}
+		
 		var grid = null;
 		
 		if (asList)
@@ -10178,15 +10411,15 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 			var hrow = document.createElement('tr');
 			var th = document.createElement('th');
 			th.style.width = "50%";
-			th.innerHTML = mxUtils.htmlEntities(mxResources.get('diagram', null, 'Diagram'));
+			th.innerHTML = mxUtils.htmlEntities(mxResources.get('diagram'));
 			hrow.appendChild(th);
 			th = document.createElement('th');
 			th.style.width = "25%";
-			th.innerHTML = mxUtils.htmlEntities(mxResources.get('changedBy', null, 'Changed By'));
+			th.innerHTML = mxUtils.htmlEntities(mxResources.get('changedBy'));
 			hrow.appendChild(th);
 			th = document.createElement('th');
 			th.style.width = "25%";
-			th.innerHTML = mxUtils.htmlEntities(mxResources.get('lastModifiedOn', null, 'Last modified on'));
+			th.innerHTML = mxUtils.htmlEntities(mxResources.get('lastModifiedOn'));
 			hrow.appendChild(th);
 			grid.appendChild(hrow);
 			diagramsTiles.appendChild(grid);
@@ -10197,11 +10430,25 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 		{
 			diagrams[i].isExternal = !isTemplate;
 			var url = diagrams[i].url;
-			var title = mxUtils.htmlEntities(diagrams[i].title);
-			var tooltip = diagrams[i].tooltip || diagrams[i].title;
+			var title = mxUtils.htmlEntities(isTemplate? 
+							mxResources.get(diagrams[i].title, null, diagrams[i].title): 
+							diagrams[i].title);
+			var tooltip = title || diagrams[i].url;
 			var imgUrl = diagrams[i].imgUrl;
 			var changedBy = mxUtils.htmlEntities(diagrams[i].changedBy || "");
-			var lastModifiedOn = mxUtils.htmlEntities(diagrams[i].lastModifiedOn || "");
+			var lastModifiedOn = '';
+			
+			if (diagrams[i].lastModifiedOn)
+			{
+				var str = editorUi.timeSince(new Date(diagrams[i].lastModifiedOn));
+		
+				if (str == null)
+				{
+					str = mxResources.get('lessThanAMinute');
+				}
+				
+				lastModifiedOn = mxUtils.htmlEntities(mxResources.get('timeAgo', [str], '{1} ago'));
+			}
 			
 			if (!imgUrl)
 			{
@@ -10223,7 +10470,12 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 				prevImg.src = "/images/icon-search.svg";
 				prevImg.className = "geTempDlgDiagramListPreviewBtn";
 				prevImg.setAttribute('title', mxResources.get("preview"));
-				td.appendChild(prevImg);
+				
+				if (!internalCall)
+				{
+					td.appendChild(prevImg);
+				}
+				
 				var titleSpan = document.createElement('span');
 				titleSpan.className = "geTempDlgDiagramTitle";
 				titleSpan.innerHTML = title;
@@ -10243,7 +10495,7 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 					swapActiveItem(row, "geTempDlgDiagramsListGridActive", diagrams[i]);
 				}
 				
-				(function(diagram2, row2)
+				(function(diagram2, row2, prevImg2)
 				{
 					mxEvent.addListener(row, 'click', function()
 					{
@@ -10256,11 +10508,11 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 					
 					mxEvent.addListener(row, 'dblclick', handleDialogOK);
 					
-					mxEvent.addListener(prevImg, 'click', function()
+					mxEvent.addListener(prevImg, 'click', function(evt)
 					{
-						createPreview(diagram2);
+						createPreview(diagram2, row2, prevImg2, evt);
 					});
-				})(diagrams[i], row);
+				})(diagrams[i], row, prevImg);
 			}
 			else
 			{
@@ -10279,7 +10531,7 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 				var img = document.createElement('img');
 				img.style.display = "none";
 				
-				(function(img2, imgDiv2)
+				(function(img2, imgDiv2, fallbackImgUrl)
 				{
 					img.onload = function() 
 					{
@@ -10289,9 +10541,16 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 					
 					img.onerror = function()
 					{
-						imgDiv2.className = "geTempDlgDiagramTileImg geTempDlgDiagramTileImgError";
-					}
-				})(img, imgDiv);
+						if (this.src != fallbackImgUrl)
+						{
+							this.src = fallbackImgUrl;
+						}
+						else
+						{
+							imgDiv2.className = "geTempDlgDiagramTileImg geTempDlgDiagramTileImgError";
+						}
+					}	
+				})(img, imgDiv, imgUrl? imgUrl.replace('.drawio.xml', '').replace('.drawio', '').replace('.xml', '') : '');
 				
 				img.src = imgUrl;
 				imgDiv.appendChild(img);
@@ -10299,16 +10558,20 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 	
 				var lblDiv = document.createElement('div');
 				lblDiv.className = "geTempDlgDiagramTileLbl";
-				lblDiv.innerHTML = title != null? title : "";
+				lblDiv.innerHTML = title != null? title : '';
 				tile.appendChild(lblDiv);
 				
 				var prevImg = document.createElement('img');
 				prevImg.src = "/images/icon-search.svg";
 				prevImg.className = "geTempDlgDiagramPreviewBtn";
 				prevImg.setAttribute('title', mxResources.get("preview"));
-				tile.appendChild(prevImg);
+					
+				if (!internalCall)
+				{
+					tile.appendChild(prevImg);
+				}
 				
-				(function(diagram2, tile2)
+				(function(diagram2, tile2, prevImg2)
 				{
 					mxEvent.addListener(tile, 'click', function()
 					{
@@ -10321,13 +10584,27 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 					
 					mxEvent.addListener(tile, 'dblclick', handleDialogOK);
 					
-					mxEvent.addListener(prevImg, 'click', function()
+					mxEvent.addListener(prevImg, 'click', function(evt)
 					{
-						createPreview(diagram2);
+						createPreview(diagram2, tile2, prevImg2, evt);
 					});
-				})(diagrams[i], tile);
+				})(diagrams[i], tile, prevImg);
 				
 				diagramsTiles.appendChild(tile);
+			}
+		}
+						
+		for (var cat in searchImportCats)
+		{
+			var catList = searchImportCats[cat];
+			
+			if (catList.length > 0)
+			{
+				var header = document.createElement('div');
+				header.className = 'geTempDlgImportCat';
+				header.innerHTML = mxResources.get(cat, null, cat);
+				diagramsTiles.appendChild(header);
+				fillDiagramsList(catList, isTemplate, asList, null, true);
 			}
 		}
 	};
@@ -10336,7 +10613,8 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 	{
 		newDiagramCatList.innerHTML = "";
 		swapActiveItem();
-		var catCount = !showAll && newDiagramCats.length > 5 ? 5 : newDiagramCats.length;
+		var oneRowCount = Math.floor(newDiagramCatList.offsetWidth / 150) - 1;
+		var catCount = !showAll && newDiagramCats.length > oneRowCount ? oneRowCount : newDiagramCats.length;
 		
 		for (var i = 0; i < catCount; i++)
 		{
@@ -10362,8 +10640,7 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 
 			if (currentItem == null)
 			{
-				createBtn.innerHTML = mxUtils.htmlEntities(mxResources.get('create'));
-				showLinkToDiagram();
+				toggleButtons(true);
 				swapActiveItem(entry, "geTempDlgNewDiagramCatItemActive", cat);
 			}
 			
@@ -10387,8 +10664,7 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 				{
 					if (currentItem != entry2)
 					{
-						createBtn.innerHTML = mxUtils.htmlEntities(mxResources.get('create'));
-						showLinkToDiagram();
+						toggleButtons(true);
 						swapActiveItem(entry2, "geTempDlgNewDiagramCatItemActive", cat2);
 					}
 				});
@@ -10397,7 +10673,51 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 			})(cat, entry);
 		}
 		
-		showAllBtn.style.display = newDiagramCats.length < 5 ? "none" : "";
+		//Add the "Show All Templates" card
+		var entry = document.createElement('div');
+		entry.className = 'geTempDlgNewDiagramCatItem';
+		var label = mxResources.get('showAllTemps');
+		entry.setAttribute('title', label);
+		var imgDiv = document.createElement('div');
+		imgDiv.className = "geTempDlgNewDiagramCatItemImg";
+		imgDiv.innerHTML = '...';
+		imgDiv.style.fontSize = '32px';
+		entry.appendChild(imgDiv);
+		var lblDiv = document.createElement('div');
+		lblDiv.className = "geTempDlgNewDiagramCatItemLbl";
+		lblDiv.innerHTML = label;
+		entry.appendChild(lblDiv);
+		newDiagramCatList.appendChild(entry);
+
+		mxEvent.addListener(entry, 'click', function()
+		{
+			//Show templates screen
+			inTempScreen = true;
+			var list = dlgDiv.querySelector(".geTemplatesList");
+			list.style.display = 'block';
+			tempDlgContent.style.width = '';
+			searchInout.style.display = '';
+			searchInout.value = '';
+			lastSearchStr = null;
+			
+			function openFirstCat()
+			{
+				var firstCat = list.querySelector('.geTemplateDrawioCatLink');
+				
+				if (firstCat != null)
+				{
+					firstCat.click();
+				}
+				else
+				{
+					setTimeout(openFirstCat, 200);
+				}
+			};
+			
+			openFirstCat();
+		});
+		
+		showAllBtn.style.display = newDiagramCats.length <= oneRowCount ? "none" : "";
 	};
 	
 	mxEvent.addListener(showAllBtn, 'click', function()
@@ -10406,132 +10726,319 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 		{
 			newDiagramCat.style.height = "280px";
 			newDiagramCatList.style.height = "190px";
-			showAllBtn.innerHTML = mxUtils.htmlEntities(mxResources.get('showAll', null, '+ Show all'));
+			showAllBtn.innerHTML = mxUtils.htmlEntities(mxResources.get('showMore'));
 			fillNewDiagramCats(newDiagramCats);
 		}
 		else 
 		{
 			newDiagramCat.style.height = "440px";
 			newDiagramCatList.style.height = "355px";
-			showAllBtn.innerHTML = mxUtils.htmlEntities(mxResources.get('showLess', null, '- Show less'));
+			showAllBtn.innerHTML = mxUtils.htmlEntities(mxResources.get('showLess'));
 			fillNewDiagramCats(newDiagramCats, true);
 		}
 
 		showingAll = !showingAll;
 	});
 	
-	function fillTemplatesList(categories)
+	function fillTemplatesList(categories, customCats, customCatCount)
 	{
 		var list = dlgDiv.querySelector(".geTemplatesList");
 		
-		for (var cat in categories)
+		function getEntryTitle(cat, templateList)
 		{
-			var entry = document.createElement('div');
 			var label = mxResources.get(cat);
-			var templateList = categories[cat];
 			
 			if (label == null)
 			{
 				label = cat.substring(0, 1).toUpperCase() + cat.substring(1);
 			}
 			
-			entry.className = 'geTemplateCatLink';
-			entry.setAttribute('title', label + ' (' + templateList.length + ')');
-			
+			var fullLbl = label + ' (' + templateList.length + ')';
 			label = mxUtils.htmlEntities(label);
+			var lblOnly = label;
 			
 			if (label.length > 15)
 			{
 				label = label.substring(0, 15) + '&hellip;';
 			}
+			
+			return {lbl: label + ' (' + templateList.length + ')', fullLbl: fullLbl, lblOnly: lblOnly};
+		};
+		
+		function addEntryHandler(cat, label, entry, subCat, isCustom)
+		{
+			mxEvent.addListener(entry, 'click', function()
+			{
+				if (currentEntry != entry)
+				{
+					if (currentEntry != null)
+					{
+						currentEntry.style.fontWeight = 'normal';
+						currentEntry.style.textDecoration = 'none';
+					}
+					else
+					{
+						newDiagramCat.style.display = 'none';
+						diagramsList.style.minHeight = '100%';
+					}
 					
-			entry.innerHTML = label + ' (' + templateList.length + ')';
+					currentEntry = entry;
+					currentEntry.style.fontWeight = 'bold';
+					currentEntry.style.textDecoration = 'underline';
+					
+					tempDlgContent.scrollTop = 0;
+					
+					if (callInitiated)
+					{
+						cancelPendingCall = true;
+					}
+
+					diagramsListTitle.innerHTML = label;
+					diagramsListBtns.style.display = 'none';
+					fillDiagramsList(isCustom ? customCats[cat] : 
+							(subCat? subCategories[cat][subCat] : categories[cat]), isCustom ? false : true);
+				}
+			});
+		};
+		
+		if (customCatCount > 0)
+		{
+			var titleCss = 'font-weight: bold;background: #f9f9f9;padding: 5px 0 5px 0;text-align: center;margin-top: 10px;';
+			var title = document.createElement('div');
+			title.style.cssText = titleCss;
+			mxUtils.write(title, mxResources.get('custom'));
+			list.appendChild(title);
+			
+			for (var cat in customCats)
+			{
+				var entry = document.createElement('div');
+				var templateList = customCats[cat];
+				var lbls = getEntryTitle(cat, templateList);
+				entry.className = 'geTemplateCatLink';
+				entry.setAttribute('title', lbls.fullLbl);
+				entry.innerHTML = lbls.lbl;
+				list.appendChild(entry);
+				addEntryHandler(cat, lbls.lblOnly, entry, null, true);
+			}
+			
+			title = document.createElement('div');
+			title.style.cssText = titleCss;
+			mxUtils.write(title, 'draw.io');
+			list.appendChild(title);
+		}
+		
+		for (var cat in categories)
+		{
+			var subCats = subCategories[cat];
+			var entry = document.createElement(subCats? 'ul' : 'div');
+			var clickElem = entry;
+			var templateList = categories[cat];
+			var lbls = getEntryTitle(cat, templateList);
+			
+			if (subCats != null)
+			{
+				var entryLi = document.createElement('li');
+				var entryDiv = document.createElement('div');
+				entryDiv.className = 'geTempTreeCaret geTemplateCatLink geTemplateDrawioCatLink';
+				entryDiv.style.padding = '0';
+				entryDiv.setAttribute('title', lbls.fullLbl);
+				entryDiv.innerHTML = lbls.lbl;
+				clickElem = entryDiv;
+				entryLi.appendChild(entryDiv);
+				//We support one level deep only
+				var subUl = document.createElement('ul');
+				subUl.className = 'geTempTreeNested';
+				subUl.style.visibility = 'hidden';
+				
+				for (var subCat in subCats)
+				{
+					var subLi = document.createElement('li');
+					var subLbls = getEntryTitle(subCat, subCats[subCat]);
+					subLi.setAttribute('title', subLbls.fullLbl);
+					subLi.innerHTML = subLbls.lbl;
+					subLi.className = 'geTemplateCatLink';
+					subLi.style.padding = '0';
+					subLi.style.margin = '0';
+					addEntryHandler(cat, subLbls.lblOnly, subLi, subCat);
+					subUl.appendChild(subLi);
+				}
+				
+				entryLi.appendChild(subUl);
+				entry.className = 'geTempTree';
+				entry.appendChild(entryLi);
+				
+				(function(subUl2, entryDiv2)
+				{
+					mxEvent.addListener(entryDiv2, 'click', function()
+					{
+						var lis = subUl2.querySelectorAll('li');
+						
+						for (var i = 0; i < lis.length; i++)
+						{
+							lis[i].style.margin = '';
+						}
+						
+						subUl2.style.visibility = 'visible';
+						subUl2.classList.toggle('geTempTreeActive');
+						
+						if (subUl2.classList.toggle('geTempTreeNested'))
+						{
+							//Must hide sub elements to allow click on elements above it
+							setTimeout(function()
+							{
+								for (var i = 0; i < lis.length; i++)
+								{
+									lis[i].style.margin = '0';
+								}
+								
+								subUl2.style.visibility = 'hidden';
+							}, 250);
+						}
+						
+	    				entryDiv2.classList.toggle('geTempTreeCaret-down');
+					});
+				})(subUl, entryDiv);
+			}
+			else
+			{
+				entry.className = 'geTemplateCatLink geTemplateDrawioCatLink';
+				entry.setAttribute('title', lbls.fullLbl);
+				entry.innerHTML = lbls.lbl;
+			}
 			
 			list.appendChild(entry);
-
-			(function(cat2, label2, entry2)
-			{
-				mxEvent.addListener(entry, 'click', function()
-				{
-					if (currentEntry != entry2)
-					{
-						if (currentEntry != null)
-						{
-							currentEntry.style.fontWeight = 'normal';
-							currentEntry.style.textDecoration = 'none';
-						}
-						else
-						{
-							newDiagramCat.style.display = 'none';
-							diagramsList.style.minHeight = '100%';
-						}
-						
-						currentEntry = entry2;
-						currentEntry.style.fontWeight = 'bold';
-						currentEntry.style.textDecoration = 'underline';
-						
-						tempDlgContent.scrollTop = 0;
-						
-						if (callInitiated)
-						{
-							cancelPendingCall = true;
-						}
-
-						diagramsListTitle.innerHTML = label2;
-						diagramsListBtns.style.display = 'none';
-						fillDiagramsList(categories[cat2], true);
-					}
-				});
-			})(cat, label, entry);
+			addEntryHandler(cat, lbls.lblOnly, clickElem);
 		}
 	};
 	
 	var indexLoaded = false, indexLoaded2 = false;
-	var categories = {};
+	var categories = {}, subCategories = {}, customCats = {};
 	var newDiagramCats = [];
-	var categoryCount = 1;
+	var categoryCount = 1, customCatCount = 0;
 	
-	mxUtils.get(templateFile, function(req)
+	function loadDrawioTemplates()
 	{
-		// Workaround for index loaded 3 times in iOS offline mode
-		if (!indexLoaded)
+		mxUtils.get(templateFile, function(req)
 		{
-			indexLoaded = true;
-			var tmpDoc = req.getXml();
-			var node = tmpDoc.documentElement.firstChild;
-
-			while (node != null)
+			// Workaround for index loaded 3 times in iOS offline mode
+			if (!indexLoaded)
 			{
-				if (typeof(node.getAttribute) !== 'undefined')
+				indexLoaded = true;
+				var tmpDoc = req.getXml();
+				var node = tmpDoc.documentElement.firstChild;
+				var clibs = {};
+	
+				while (node != null)
 				{
-					var url = node.getAttribute('url');
-					
-					if (url != null)
+					if (typeof(node.getAttribute) !== 'undefined')
 					{
-						var slash = url.indexOf('/');
-						var category = url.substring(0, slash);
-						
-						var list = categories[category];
-						
-						if (list == null)
+						if (node.nodeName == 'clibs')
 						{
-							categoryCount++;
-							list = [];
-							categories[category] = list;
+							var name = node.getAttribute('name');
+							var adds = node.getElementsByTagName('add');
+							var temp = [];
+							
+							for (var i = 0; i < adds.length; i++)
+							{
+								temp.push(encodeURIComponent(mxUtils.getTextContent(adds[i])));
+							}
+							
+							if (name != null && temp.length > 0)
+							{
+								clibs[name] = temp.join(';');
+							}
 						}
-						
-						list.push({url: node.getAttribute('url'), libs: node.getAttribute('libs'),
-							clibs: node.getAttribute('clibs'), title: node.getAttribute('title'),
-							tooltip: node.getAttribute('url'), imgUrl: node.getAttribute('imgUrl')});
+						else
+						{
+							var url = node.getAttribute('url');
+							
+							if (url != null)
+							{
+								var category = node.getAttribute('section');
+								var subCategory = node.getAttribute('subsection');
+								
+								if (category == null)
+								{
+									var slash = url.indexOf('/');
+									category = url.substring(0, slash);
+									
+									if (subCategory == null)
+									{
+										var nextSlash = url.indexOf('/', slash + 1);
+										
+										if (nextSlash > -1)
+										{
+											subCategory = url.substring(slash + 1, nextSlash);
+										}
+									}
+								}
+								
+								var list = categories[category];
+								
+								if (list == null)
+								{
+									categoryCount++;
+									list = [];
+									categories[category] = list;
+								}
+								
+								var tempLibs = node.getAttribute('clibs');
+								
+								if (clibs[tempLibs] != null)
+								{
+									tempLibs = clibs[tempLibs];
+								}
+								
+								var tempObj = {url: node.getAttribute('url'), libs: node.getAttribute('libs'),
+									title: node.getAttribute('title') || node.getAttribute('name'), 
+									preview: node.getAttribute('preview'), clibs: tempLibs, tags: node.getAttribute('tags')};
+								list.push(tempObj);
+									
+								if (subCategory != null)
+								{
+									var subCats = subCategories[category];
+									
+									if (subCats == null)
+									{
+										subCats = {};
+										subCategories[category] = subCats;
+									}
+									
+									var subCatList = subCats[subCategory];
+									
+									if (subCatList == null)
+									{
+										subCatList = [];
+										subCats[subCategory] = subCatList;
+									}
+									
+									subCatList.push(tempObj);
+								}
+							}
+						}
 					}
+					
+					node = node.nextSibling;
 				}
 				
-				node = node.nextSibling;
+				fillTemplatesList(categories, customCats, customCatCount);
 			}
-			
-			fillTemplatesList(categories);
-		}
-	});
+		});
+	};
+	
+	if (customTempCallback != null)
+	{
+		customTempCallback(function(cats, count)
+		{
+			customCats = cats;
+			customCatCount = count;
+			loadDrawioTemplates();
+		}, loadDrawioTemplates); //In case of an error, just load draw.io templates only
+	}
+	else
+	{
+		loadDrawioTemplates();
+	}
 	
 	mxUtils.get(newDiagramCatsFile, function(req)
 	{
@@ -10562,7 +11069,7 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 		}
 	});
 	
-	var extDiagramsCallback = function(list, errorMsg)
+	var extDiagramsCallback = function(list, errorMsg, searchImportCats)
 	{
 		diagramsListBtns.style.display = '';
 		spinner.stop();
@@ -10579,13 +11086,24 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 		{
 			diagramsTiles.innerHTML = errorMsg;
 		}
-		else if (list.length == 0)
-		{
-			diagramsTiles.innerHTML = mxUtils.htmlEntities(mxResources.get('noDiagrams', null, 'No Diagrams Found'));
-		}
 		else
 		{
-			fillDiagramsList(list, false, showAsList);
+			searchImportCats = searchImportCats || {};
+			var importListsCount = 0;
+				
+			for (var cat in searchImportCats)
+			{
+				importListsCount += searchImportCats[cat].length;
+			}
+				
+			if (list.length == 0 && importListsCount == 0)
+			{
+				diagramsTiles.innerHTML = mxUtils.htmlEntities(mxResources.get('noDiagrams'));
+			}
+			else
+			{
+				fillDiagramsList(list, false, showAsList, importListsCount == 0? null : searchImportCats);
+			}
 		}
 	};
 	
@@ -10598,9 +11116,13 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 			spinner.spin(diagramsTiles);
 			cancelPendingCall = false;
 			callInitiated = true;
-			diagramsListTitle.innerHTML = mxUtils.htmlEntities(mxResources.get('recentDiag', null, 'Recent Diagrams'));
+			diagramsListTitle.innerHTML = mxUtils.htmlEntities(mxResources.get('recentDiag'));
 			lastSearchStr = null;
-			recentDocsCallback(extDiagramsCallback, getAll? null : username);
+			recentDocsCallback(extDiagramsCallback, function()
+			{
+				showError(mxResources.get('cannotLoad'));
+				extDiagramsCallback([]);
+			}, getAll? null : username);
 		}
 	};
 	
@@ -10608,55 +11130,214 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 
 	var delayTimer = null;
 	
+	function resetTemplates()
+	{
+		if (lastEntry != null)
+		{
+			lastEntry.click();
+			lastEntry = null;
+		}
+	};
+	
+	function filterTemplates(searchTerms)
+	{
+		if (searchTerms == '')
+		{
+			resetTemplates();
+			return;
+		}
+		
+		if (TemplatesDialog.tagsList[templateFile] == null)
+		{
+			var tagsList = {};
+			
+			for (var cat in categories)
+			{
+				var templateList = categories[cat];
+				
+				for (var i = 0; i < templateList.length; i++)
+				{
+					var temp = templateList[i];
+					
+					if (temp.tags != null)
+					{
+						var tags = temp.tags.toLowerCase().split(';');
+						
+						for (var j = 0; j < tags.length; j++)
+						{
+							if (tagsList[tags[j]] == null)
+							{
+								tagsList[tags[j]] = [];
+							}
+							
+							tagsList[tags[j]].push(temp);
+						}
+					}
+				}				
+			}
+			
+			TemplatesDialog.tagsList[templateFile] = tagsList;
+		}
+
+		var tmp = searchTerms.toLowerCase().split(' ');
+		tagsList = TemplatesDialog.tagsList[templateFile];
+		
+		if (customCatCount > 0 && tagsList.__tagsList__ == null)
+		{
+			for (var cat in customCats)
+			{
+				var templateList = customCats[cat];
+				
+				for (var i = 0; i < templateList.length; i++)
+				{
+					var temp = templateList[i];
+					var tags = temp.title.split(' ');
+					tags.push(cat);
+					
+					for (var j = 0; j < tags.length; j++)
+					{
+						var tag = tags[j].toLowerCase();
+						
+						if (tagsList[tag] == null)
+						{
+							tagsList[tag] = [];
+						}
+						
+						tagsList[tag].push(temp);
+					}
+				}
+			}
+			
+			tagsList.__tagsList__ = true;
+		}
+		
+		var results = [], resMap = {}, index = 0;
+		
+		for (var i = 0; i < tmp.length; i++)
+		{
+			if (tmp[i].length > 0)
+			{
+				var list = tagsList[tmp[i]];
+				var tmpResMap = {};
+				results = [];
+				
+				if (list != null)
+				{
+					for (var j = 0; j < list.length; j++)
+					{
+						var temp = list[j];
+						
+						//ANDing terms
+						if ((index == 0) == (resMap[temp.url] == null))
+						{
+							tmpResMap[temp.url] = true;
+							results.push(temp);
+						}
+					}
+				}
+				
+				resMap = tmpResMap;
+				index++;
+			}
+		}
+		
+		if (results.length == 0)
+		{
+			diagramsListTitle.innerHTML = mxResources.get('noResultsFor', [searchTerms]);
+		}
+		else
+		{
+			fillDiagramsList(results, true);	
+		}
+	};
+
 	function doSearch(searchStr)
 	{
+		if (lastSearchStr == searchStr && isGetAll == lastGetAll) return;
+		
 		deselectTempCat();
 		tempDlgContent.scrollTop = 0;
 		diagramsTiles.innerHTML = '';
-		spinner.spin(diagramsTiles);
-		cancelPendingCall = false;
-		callInitiated = true;
+		diagramsListTitle.innerHTML = mxUtils.htmlEntities(mxResources.get('searchResults')) + 
+										' "' + mxUtils.htmlEntities(searchStr) + '"';
 		delayTimer = null;
-		diagramsListTitle.innerHTML = mxUtils.htmlEntities(mxResources.get('searchResults', null, 'Search Results')) + 
-								' "' + mxUtils.htmlEntities(searchStr) + '"';
-		searchDocsCallback(searchStr, extDiagramsCallback, isGetAll? null : username);
-		lastSearchStr = searchStr;
-	};
-	
-	//TODO use request id to allow only last request to show results
-	if (searchDocsCallback)
-	{
-		//Use keyup to detect delete and backspace
-		mxEvent.addListener(dlgDiv.querySelector(".geTempDlgSearchBox"), 'keyup', function(evt)
+
+		if (inTempScreen)
 		{
-			var searchInout = this;
-			
-			if (delayTimer != null)
+			//Do search in templates
+			filterTemplates(searchStr);
+		}
+		else if (searchDocsCallback)
+		{
+			if (searchStr)
 			{
-				clearTimeout(delayTimer);
-			}
-			
-			if (evt.keyCode == 13)
-			{
-				doSearch(searchInout.value);
+				spinner.spin(diagramsTiles);
+				cancelPendingCall = false;
+				callInitiated = true;
+				//TODO use request id to allow only last request to show results
+				searchDocsCallback(searchStr, extDiagramsCallback, function()
+				{
+					showError(mxResources.get('searchFailed'));
+					extDiagramsCallback([]);
+				}, isGetAll? null : username);
 			}
 			else
 			{
-				delayTimer = setTimeout(function()
-				{
-					doSearch(searchInout.value);	
-				}, 500);
+				getRecentDocs(isGetAll); //Load recent doc again
 			}
+		}
+		
+		lastSearchStr = searchStr;
+		lastGetAll = isGetAll;
+	};
+	
+	function searchEvent(evt)
+	{
+		if (delayTimer != null)
+		{
+			clearTimeout(delayTimer);
+		}
+		
+		if (evt.keyCode == 13)
+		{
+			doSearch(searchInout.value);
+		}
+		else
+		{
+			delayTimer = setTimeout(function()
+			{
+				doSearch(searchInout.value);	
+			}, 1000);
+		}
+	};
+	
+	//Use keyup to detect delete and backspace
+	mxEvent.addListener(searchInout, 'keyup', searchEvent);
+	//To detect copy/paste and clear
+	mxEvent.addListener(searchInout, 'search', searchEvent);
+	mxEvent.addListener(searchInout, 'input', searchEvent);
+	
+	mxEvent.addListener(createBtn, 'click', function(evt)
+	{
+		handleDialogOK(false, false);
+	});
+	
+	if (withOpen)
+	{
+		mxEvent.addListener(openBtn, 'click', function(evt)
+		{
+			handleDialogOK(false, true);
 		});
 	}
 	
-	mxEvent.addListener(createBtn, 'click', handleDialogOK);
-	
-	mxEvent.addListener(dlgDiv.querySelector(".geTempDlgLinkToDiagramBtn"), 'click', function(evt)
+	if (withLink)
 	{
-		handleDialogOK(true);
-	});
-
+		mxEvent.addListener(dlgDiv.querySelector(".geTempDlgLinkToDiagramBtn"), 'click', function(evt)
+		{
+			handleDialogOK(true);
+		});
+	}
+	
 	mxEvent.addListener(dlgDiv.querySelector('.geTempDlgCancelBtn'), 'click', function()
 	{
 		if (cancelCallback != null)
@@ -10664,11 +11345,14 @@ TemplatesDialog.prototype.init = function(editorUi, callback, cancelCallback,
 			cancelCallback();
 		}
 		
-		editorUi.hideDialog(true);
+		if (!noDlgHide)
+		{
+			editorUi.hideDialog(true);
+		}
 	});
 };
 
-
+TemplatesDialog.tagsList = {};
 /**
  * Constructs a new popup opener button dialog.
  */
@@ -10716,6 +11400,11 @@ var BtnDialog = function(editorUi, peer, btnLbl, fn)
 	{
 		service = mxResources.get('gitlab');
 		img.src = IMAGE_PATH + '/gitlab-logo.svg';
+	}
+	else if (peer == editorUi.notion)
+	{
+		service = mxResources.get('notion');
+		img.src = IMAGE_PATH + '/notion-logo.svg';
 	}
 	else if (peer == editorUi.trello)
 	{

@@ -158,6 +158,11 @@ namespace Phabrico.Controllers
                         }
                         else
                         {
+                            if (transactionType.Equals("comment") && string.IsNullOrEmpty(newValue))
+                            {
+                                continue;
+                            }
+
                             Phabricator.Data.Transaction newTransaction = new Phabricator.Data.Transaction();
                             newTransaction.Author = tokenWhoAmI;
                             newTransaction.Type = transactionType;
@@ -167,9 +172,9 @@ namespace Phabrico.Controllers
                                                                 .Max(id => id)
                                                                 .ToString();
                             newTransaction.OldValue = maniphestTask.Transactions
-                                                                    .Where(tran => tran.IsStaged && tran.Type.Equals(transactionType))
-                                                                    .OrderBy(tran => tran.DateModified)
-                                                                    .LastOrDefault()?.NewValue;
+                                                                   .Where(tran => tran.Type.Equals(transactionType))
+                                                                   .OrderBy(tran => tran.DateModified)
+                                                                   .LastOrDefault()?.NewValue;
 
                             newTransaction.NewValue = newValue;
                             newTransaction.DateModified = DateTimeOffset.UtcNow;
@@ -177,7 +182,7 @@ namespace Phabrico.Controllers
 
                             if (newTransaction.OldValue == null) newTransaction.OldValue = "";
 
-                            if (newTransaction.OldValue.Equals(newTransaction.NewValue) == false)
+                            if (stagedManiphestTask  ||  newTransaction.OldValue.Equals(newTransaction.NewValue) == false)
                             {
                                 // add new transaction only if old value and new value are different
                                 stageStorage.Modify(database, newTransaction);
@@ -336,15 +341,16 @@ namespace Phabrico.Controllers
                 {
                     // load and filter all maniphest tasks
                     List<Phabricator.Data.Maniphest> stagedTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database).ToList();
-                    foreach (Phabricator.Data.Maniphest stagedTask in stagedTasks)
+                    visibleManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database)
+                                                                               .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
+                                                                               .ToList();
+
+                    foreach (Phabricator.Data.Maniphest stagedTask in visibleManiphestTasks)
                     {
                         // load staged transactions (e.g. new owner, new priority, ...) into maniphestTask
                         maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedTask);
                     }
 
-                    visibleManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database)
-                                                                               .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
-                                                                               .ToList();
                     switch (parameter)
                     {
                         case "assigned":
@@ -1600,16 +1606,6 @@ namespace Phabrico.Controllers
         /// <param name="maniphestTaskID"></param>
         private void SetTransactionDataComment(HtmlPartialViewPage transactionData, Phabricator.Data.Transaction maniphestTransaction, string maniphestTaskID)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 RemarkupParserOutput remarkupParserOutput;

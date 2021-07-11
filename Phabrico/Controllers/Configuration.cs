@@ -44,7 +44,7 @@ namespace Phabrico.Controllers
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
-                    if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "You don't have sufficient rights to configure Phabrico");
+                    if (token.AuthenticationFactor == AuthenticationFactor.Public) throw new Phabrico.Exception.AccessDeniedException("/configure", "You don't have sufficient rights to configure Phabrico");
 
                     // unmask private encryption key
                     UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
@@ -56,7 +56,7 @@ namespace Phabrico.Controllers
                         string syncMethodManiphestValue = "ManiphestSelectedUsersOnly";
                         string syncMethodPhrictionValue = "PhrictionAllProjects";
 
-                        string publicEncryptionKey = database.GetConfigurationParameter("EncryptionKey");
+                        string authenticationFactor = database.GetConfigurationParameter("AuthenticationFactor");
 
                         if (existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.ManiphestSelectedProjectsOnly))
                         {
@@ -96,7 +96,10 @@ namespace Phabrico.Controllers
                             { "syncMethodPhriction", syncMethodPhrictionValue.ToString() },
                             { "clipboardCopyForCodeBlock", existingAccount.Parameters.ClipboardCopyForCodeBlock.ToString() },
                             { "uiTranslation", existingAccount.Parameters.UITranslation.ToString() },
-                            { "autoLogon", publicEncryptionKey == null ? "False" : "True" },
+                            { "autoLogon", authenticationFactor == null ? "False" :
+                                           authenticationFactor == AuthenticationFactor.Knowledge ? "False" :
+                                           authenticationFactor == AuthenticationFactor.Ownership ? "Windows" :
+                                           "True" },
                             { "autoLogOutAfterMinutesOfInactivity", existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity.ToString() },
                             { "darkenImages", existingAccount.Parameters.DarkenBrightImages.ToString() }
                         });
@@ -308,13 +311,29 @@ namespace Phabrico.Controllers
                         existingAccount.Parameters.ClipboardCopyForCodeBlock = bool.Parse((string)browser.Session.FormVariables["clipboardCopyForCodeBlock"]);
                         existingAccount.Parameters.UITranslation = bool.Parse((string)browser.Session.FormVariables["uiTranslation"]);
 
-                        if (bool.Parse((string)browser.Session.FormVariables["autoLogon"]))
+                        string autoLogonValue = (string)browser.Session.FormVariables["autoLogon"];
+                        switch (autoLogonValue)
                         {
-                            database.SetConfigurationParameter("EncryptionKey", database.EncryptionKey);
-                        }
-                        else
-                        {
-                            database.SetConfigurationParameter("EncryptionKey", null);
+                            case "Windows":
+                                database.SetConfigurationParameter("EncryptionKey", null);
+                                database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
+
+                                string newPassword = Encryption.GetDPAPIKey();
+                                UInt64[] newPublicDpapiXorValue = Authentication.GetXorValue(EncryptionKey, newPassword);
+                                UInt64[] newPrivateDpapiXorValue = Authentication.GetXorValue(database.PrivateEncryptionKey, newPassword);
+
+                                accountStorage.UpdateDpapiXorCipher(database, newPublicDpapiXorValue, newPrivateDpapiXorValue);
+                                break;
+
+                            case "True":
+                                database.SetConfigurationParameter("EncryptionKey", database.EncryptionKey);
+                                database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Public);
+                                break;
+
+                            case "False":
+                                database.SetConfigurationParameter("EncryptionKey", null);
+                                database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Knowledge);
+                                break;
                         }
 
                         accountStorage.Set(database, existingAccount);

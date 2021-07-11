@@ -115,7 +115,7 @@ namespace Phabrico.Controllers
                             browser.SetCookie("token", token.ID);
                             token.EncryptionKey = Encryption.XorString(encryptionKey, account.PublicXorCipher);
                             token.PrivateEncryptionKey = Encryption.XorString(privateEncryptionKey, account.PrivateXorCipher);
-                            token.IsPublic = false;
+                            token.AuthenticationFactor = AuthenticationFactor.Knowledge;
                         }
 
                         // send content to browser
@@ -305,7 +305,7 @@ namespace Phabrico.Controllers
         /// <param name="decodedString"></param>
         /// <param name="encodedString"></param>
         /// <returns></returns>
-        private static UInt64[] GetXorValue(string decodedString, string encodedString)
+        internal static UInt64[] GetXorValue(string decodedString, string encodedString)
         {
             UInt64[] result = new UInt64[4];
 

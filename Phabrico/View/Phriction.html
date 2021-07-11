@@ -777,7 +777,7 @@ dateModified won't change when a subscription is added or removed
         }
 }@
 
-@{IFNOT @@SHOW-SIDE-WINDOW@@=yes@
+@{IF NOT @@SHOW-SIDE-WINDOW@@=yes@
     var toc = document.querySelector('.toc');
     toc.style.display = 'none';
     toc.dataset.display = 'none';

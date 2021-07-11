@@ -236,6 +236,11 @@ App.MODE_BROWSER = 'browser';
 App.MODE_TRELLO = 'trello';
 
 /**
+ * Notion App Mode
+ */
+App.MODE_NOTION = 'notion';
+
+/**
  * Embed App Mode
  */
 App.MODE_EMBED = 'embed';
@@ -1448,6 +1453,26 @@ App.prototype.init = function()
 	if (this.gitLab != null)
 	{
 		this.gitLab.addListener('userChanged', mxUtils.bind(this, function()
+		{
+			this.updateUserElement();
+			this.restoreLibraries();
+		}));
+	}
+
+	/**
+	 * Creates notion client.
+	 */
+	this.notion = 
+	//TODO disabled by default
+		/*(!mxClient.IS_IE || document.documentMode == 10 ||
+		mxClient.IS_IE11 || mxClient.IS_EDGE) &&
+		(urlParams['ntn'] != '0' && (urlParams['embed'] != '1' ||
+		urlParams['ntn'] == '1')) */
+		urlParams['ntn'] == '1' ? new NotionClient(this) : null;
+
+	if (this.notion != null)
+	{
+		this.notion.addListener('userChanged', mxUtils.bind(this, function()
 		{
 			this.updateUserElement();
 			this.restoreLibraries();
@@ -2671,6 +2696,10 @@ App.prototype.appIconClicked = function(evt)
 		else if (mode == App.MODE_TRELLO)
 		{
 			this.openLink('https://trello.com/');
+		}
+		else if (mode == App.MODE_NOTION)
+		{
+			this.openLink('https://www.notion.so/');
 		}
 		else if (mode == App.MODE_GITHUB)
 		{
@@ -3951,17 +3980,32 @@ App.prototype.pickFile = function(mode)
 				// Installs local handler for opened files in same window
 				window.openFile.setConsumer(mxUtils.bind(this, function(xml, filename)
 				{
-					// Replaces PNG with XML extension
-					var dot = !this.useCanvasForExport && filename.substring(filename.length - 4) == '.png';
-					
-					if (dot)
+					var doOpenFile = mxUtils.bind(this, function()
 					{
-						filename = filename.substring(0, filename.length - 4) + '.drawio';
-					}
+						// Replaces PNG with XML extension
+						var dot = !this.useCanvasForExport && filename.substring(filename.length - 4) == '.png';
+						
+						if (dot)
+						{
+							filename = filename.substring(0, filename.length - 4) + '.drawio';
+						}
+		
+						this.fileLoaded((mode == App.MODE_BROWSER) ?
+							new StorageFile(this, xml, filename) :
+							new LocalFile(this, xml, filename));
+					});
 					
-					this.fileLoaded((mode == App.MODE_BROWSER) ?
-						new StorageFile(this, xml, filename) :
-						new LocalFile(this, xml, filename));
+					var currentFile = this.getCurrentFile();
+					
+					if (currentFile == null || !currentFile.isModified())
+					{
+						doOpenFile();
+					}
+					else
+					{
+						this.confirm(mxResources.get('allChangesLost'), null, doOpenFile,
+							mxResources.get('cancel'), mxResources.get('discardChanges'));
+					}
 				}));
 				
 				// Extends dialog close to show splash screen
@@ -3998,14 +4042,16 @@ App.prototype.pickLibrary = function(mode)
 	mode = (mode != null) ? mode : this.mode;
 	
 	if (mode == App.MODE_GOOGLE || mode == App.MODE_DROPBOX || mode == App.MODE_ONEDRIVE ||
-		mode == App.MODE_GITHUB || mode == App.MODE_GITLAB || mode == App.MODE_TRELLO)
+		mode == App.MODE_GITHUB || mode == App.MODE_GITLAB || mode == App.MODE_TRELLO ||
+		mode == App.MODE_NOTION)
 	{
 		var peer = (mode == App.MODE_GOOGLE) ? this.drive :
 			((mode == App.MODE_ONEDRIVE) ? this.oneDrive :
 			((mode == App.MODE_GITHUB) ? this.gitHub :
 			((mode == App.MODE_GITLAB) ? this.gitLab :
 			((mode == App.MODE_TRELLO) ? this.trello :
-			this.dropbox))));
+			((mode == App.MODE_NOTION) ? this.notion :
+			this.dropbox)))));
 		
 		if (peer != null)
 		{
@@ -4204,6 +4250,15 @@ App.prototype.saveLibrary = function(name, images, file, mode, noSpin, noReload,
 				else if (mode == App.MODE_GITLAB && this.gitLab != null && this.spinner.spin(document.body, mxResources.get('inserting')))
 				{
 					this.gitLab.insertLibrary(name, xml, mxUtils.bind(this, function(newFile)
+					{
+						this.spinner.stop();
+						this.hideDialog(true);
+						this.libraryLoaded(newFile, images);
+					}), error, folderId);
+				}
+				else if (mode == App.MODE_NOTION && this.notion != null && this.spinner.spin(document.body, mxResources.get('inserting')))
+				{
+					this.notion.insertLibrary(name, xml, mxUtils.bind(this, function(newFile)
 					{
 						this.spinner.stop();
 						this.hideDialog(true);
@@ -4609,7 +4664,11 @@ App.prototype.getPeerForMode = function(mode)
 	else if (mode == App.MODE_TRELLO)
 	{
 		return this.trello;
-	} 
+	}
+	else if (mode == App.MODE_NOTION)
+	{
+		return this.notion;
+	}
 	else
 	{
 		return null;
@@ -4675,6 +4734,14 @@ App.prototype.createFile = function(title, data, libs, mode, done, replace, fold
 			else if (mode == App.MODE_GITLAB && this.gitLab != null)
 			{
 				this.gitLab.insertFile(title, data, mxUtils.bind(this, function(file)
+				{
+					complete();
+					this.fileCreated(file, libs, replace, done, clibs);
+				}), error, false, folderId);
+			}
+			else if (mode == App.MODE_NOTION && this.notion != null)
+			{
+				this.notion.insertFile(title, data, mxUtils.bind(this, function(file)
 				{
 					complete();
 					this.fileCreated(file, libs, replace, done, clibs);
@@ -5207,6 +5274,10 @@ App.prototype.loadFile = function(id, sameWindow, file, success, force)
 				{
 					peer = this.trello;
 				}
+				else if (id.charAt(0) == 'N')
+				{
+					peer = this.notion;
+				}
 				
 				if (peer == null)
 				{
@@ -5724,7 +5795,7 @@ App.prototype.updateButtonContainer = function()
 					icon.style.marginTop = '-3px';
 					this.shareButton.appendChild(icon);
 					
-					if (uiTheme != 'dark' && uiTheme != 'atlas')
+					if (!Editor.isDarkMode() && uiTheme != 'atlas')
 					{
 						this.shareButton.style.color = 'black';
 						icon.style.filter = 'invert(100%)';
@@ -5748,6 +5819,10 @@ App.prototype.updateButtonContainer = function()
 			
 			//Fetch notifications
 			this.fetchAndShowNotification(this.mode == 'device' || this.mode == 'google'? this.mode : null);
+		}
+		else if (urlParams['notif'] != null) //Notif for embed mode
+		{
+			this.fetchAndShowNotification(urlParams['notif']);
 		}
 	}
 };
@@ -6101,6 +6176,14 @@ App.prototype.pickFolder = function(mode, fn, enabled, direct, force)
 	else if (enabled && mode == App.MODE_GITLAB && this.gitLab != null)
 	{
 		this.gitLab.pickFolder(mxUtils.bind(this, function(folderPath)
+		{
+			resume();
+			fn(folderPath);
+		}));
+	}
+	else if (enabled && mode == App.MODE_NOTION && this.notion != null)
+	{
+		this.notion.pickFolder(mxUtils.bind(this, function(folderPath)
 		{
 			resume();
 			fn(folderPath);
@@ -6612,6 +6695,11 @@ App.prototype.updateHeader = function()
 					this.appIcon.style.backgroundImage = 'url(' + IMAGE_PATH + '/gitlab-logo-white.svg)';
 					this.appIcon.style.backgroundSize = '100% 100%';
 				}
+				else if (mode == App.MODE_NOTION)
+				{
+					this.appIcon.style.backgroundImage = 'url(' + IMAGE_PATH + '/notion-logo-white.svg)';
+					this.appIcon.style.backgroundSize = '70% 70%';
+				}				
 				else if (mode == App.MODE_TRELLO)
 				{
 					this.appIcon.style.backgroundImage = 'url(' + IMAGE_PATH + '/trello-logo-white-orange.svg)';
@@ -6906,6 +6994,7 @@ App.prototype.updateUserElement = function()
 		(this.dropbox == null || this.dropbox.getUser() == null) &&
 		(this.gitHub == null || this.gitHub.getUser() == null) &&
 		(this.gitLab == null || this.gitLab.getUser() == null) &&
+		(this.notion == null || this.notion.getUser() == null) &&
 		(this.trello == null || !this.trello.isAuthorized())) //TODO Trello no user issue
 	{
 		if (this.userElement != null)
@@ -7284,6 +7373,37 @@ App.prototype.updateUserElement = function()
 							}
 						}), mxResources.get('gitlab'));
 					}
+
+					if (this.notion != null)
+					{
+						addUser(this.notion.getUser(), IMAGE_PATH + '/notion-logo.svg', mxUtils.bind(this, function()
+						{
+							var file = this.getCurrentFile();
+
+							if (file != null && file.constructor == NotionFile)
+							{
+								var doLogout = mxUtils.bind(this, function()
+								{
+									this.notion.logout();
+									window.location.hash = '';
+								});
+
+								if (!file.isModified())
+								{
+									doLogout();
+								}
+								else
+								{
+									this.confirm(mxResources.get('allChangesLost'), null, doLogout,
+										mxResources.get('cancel'), mxResources.get('discardChanges'));
+								}
+							}
+							else
+							{
+								this.notion.logout();
+							}
+						}), mxResources.get('notion'));
+					}
 					
 					//TODO We have no user info from Trello, how we can create a user?
 					if (this.trello != null)
@@ -7405,6 +7525,10 @@ App.prototype.updateUserElement = function()
 		else if (this.gitLab != null && this.gitLab.getUser() != null)
 		{
 			user = this.gitLab.getUser();
+		}
+		else if (this.notion != null && this.notion.getUser() != null)
+		{
+			user = this.notion.getUser();
 		}
 		//TODO Trello no user issue
 		

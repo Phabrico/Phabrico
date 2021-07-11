@@ -31,7 +31,7 @@ namespace Phabrico.Storage
             throw new NotImplementedException();
         }
 
-        private static int _dbVersionInApplication = 1;
+        private static int _dbVersionInApplication = 2;
         private static DateTime _utcNextTimeToVacuum = DateTime.MinValue;
 
         private string encryptionKey;
@@ -581,6 +581,21 @@ namespace Phabrico.Storage
                     return JsonConvert.DeserializeObject<Configuration>(serializedParameters);
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the way how authentication to Phabrico should be handled
+        /// </summary>
+        /// <returns></returns>
+        internal AuthenticationFactor GetAuthenticationFactor()
+        {
+            AuthenticationFactor result = GetConfigurationParameter("AuthenticationFactor") ?? AuthenticationFactor.Knowledge;
+            if (result == AuthenticationFactor.Public && PrivateEncryptionKey != null)
+            {
+                result = AuthenticationFactor.Knowledge;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1337,16 +1352,10 @@ namespace Phabrico.Storage
         /// <returns></returns>
         public bool UpgradeIfNeeded()
         {
-            if (_dbVersionInDataFile == 0)
+            if (_dbVersionInDataFile != _dbVersionInApplication)
             {
                 try
                 {
-                    string version = GetConfigurationParameter("version");
-                    if (string.IsNullOrEmpty(version) == false)
-                    {
-                        _dbVersionInDataFile = Int32.Parse(version);
-                    }
-
                     for (int dbVersion = _dbVersionInDataFile; dbVersion < _dbVersionInApplication; dbVersion++)
                     {
                         if (UpgradeToVersion(dbVersion + 1) == false)
@@ -1372,6 +1381,29 @@ namespace Phabrico.Storage
         /// <returns></returns>
         private bool UpgradeToVersion(int dbVersion)
         {
+            _dbVersionInDataFile = dbVersion;
+
+            if (dbVersion == 2)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                           ALTER TABLE accountInfo
+                             ADD dpapiXorCipher1 BLOB;
+
+                           ALTER TABLE accountInfo
+                             ADD dpapiXorCipher2 BLOB;
+
+                           UPDATE accountInfo
+                              SET dpapiXorCipher1 = @dpapiXorCipher1,
+                                  dpapiXorCipher2 = @dpapiXorCipher2;
+                       ", Connection))
+                {
+                    AddParameter(dbCommand, "dpapiXorCipher1", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                    AddParameter(dbCommand, "dpapiXorCipher2", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
+
+
             // store version number in database
             SetConfigurationParameter("version", dbVersion.ToString());
 

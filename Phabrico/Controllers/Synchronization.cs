@@ -2261,7 +2261,7 @@ namespace Phabrico.Controllers
                 }
 
                 // delete the local versions
-                foreach (var modifiedTransaction in modifiedTransactionsPerObject)
+                foreach (var modifiedTransaction in modifiedTransactionsPerObject.Reverse())
                 {
                     stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, modifiedTransaction);
                 }

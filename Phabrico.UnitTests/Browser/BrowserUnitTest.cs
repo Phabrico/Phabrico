@@ -55,7 +55,7 @@ namespace Phabrico.UnitTests.Browser
 
             // wait a while to make sure the logon has been processed
             WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
-            wait.Until(condition => condition.FindElement(By.ClassName("phabrico-page-content")));
+            wait.Until(condition => condition.FindElements(By.ClassName("phabrico-page-content")).Count > 0);
         }
     }
 }

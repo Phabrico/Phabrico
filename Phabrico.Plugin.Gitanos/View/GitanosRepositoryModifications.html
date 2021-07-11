@@ -310,6 +310,7 @@
 
     initializeTables();
 
+    document.querySelector('div.wait').style.display = 'block';
     populateTableUnpushedCommits();
     populateTableModifications(filter.value);
 
@@ -683,6 +684,8 @@
                     } else {
                         btnCommit.classList.remove('disabled');
                     }
+
+                    document.querySelector('div.wait').style.display = null;
                 }
                 catch(exc)
                 {

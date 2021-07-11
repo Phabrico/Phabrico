@@ -114,8 +114,8 @@ msgstr "Synchronizing"
 msgid "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
 msgstr "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
 
-msgid "There are local [b]@@NBR-CHANGES@@ modifications[/b] ready to be uploaded the Phabricator server."
-msgstr "There are local [b]@@NBR-CHANGES@@ modifications[/b] ready to be uploaded the Phabricator server."
+msgid "There are [b]@@NBR-CHANGES@@ local modifications[/b] ready to be uploaded the Phabricator server."
+msgstr "There are [b]@@NBR-CHANGES@@ local modifications[/b] ready to be uploaded the Phabricator server."
 
 msgid "@@FILE@@ uploaded..."
 msgstr "@@FILE@@ uploaded..."
@@ -774,6 +774,9 @@ msgstr "Add Confidential Table Header"
 
 msgid "Auto log on"
 msgstr "Auto log on"
+
+msgid "Yes (Windows authentication)"
+msgstr "Yes (Windows authentication)"
 
 msgid "Allow to log on automatically but disable synchronization and configuration"
 msgstr "Allow to log on automatically but disable synchronization and configuration"

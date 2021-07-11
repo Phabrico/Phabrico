@@ -85,10 +85,78 @@
 		editorUi.actions.addAction('new...', function()
 		{
 			var compact = editorUi.isOffline();
+			
+			if (!compact && urlParams['newTempDlg'] == '1' && editorUi.mode == App.MODE_GOOGLE)
+			{
+				function driveObjToTempDlg(item)
+				{
+					return {id: item.id, isExt: true, url: item.downloadUrl, title: item.title, imgUrl: item.thumbnailLink,
+							changedBy: item.lastModifyingUserName, lastModifiedOn: item.modifiedDate}
+				};
+				
+				var tempDlg = new TemplatesDialog(editorUi, function(templateXml, title, infoObj)
+				{
+					var templateLibs = infoObj.libs, templateClibs = infoObj.clibs;
+
+					editorUi.pickFolder(editorUi.mode, function(folderId)
+					{
+						editorUi.createFile(title, templateXml, (templateLibs != null &&
+							templateLibs.length > 0) ? templateLibs : null, null, function()
+						{
+							editorUi.hideDialog();
+						}, null, folderId, null, (templateClibs != null &&
+							templateClibs.length > 0) ? templateClibs : null);
+					}, editorUi.stateArg == null ||
+						editorUi.stateArg.folderId == null);
+					
+				}, null, null, null, 'user', function(callback, error, username)
+				{
+					var oneWeek = new Date();
+					oneWeek.setDate(oneWeek.getDate() - 7);
+					
+					editorUi.drive.listFiles(null, oneWeek, username? true : false, function(resp)
+					{
+						var results = [];
+						
+						for (var i = 0; i < resp.items.length; i++)
+						{
+							results.push(driveObjToTempDlg(resp.items[i]));
+						}
+						
+						callback(results);
+					}, error)
+				}, function(str, callback, error, username)
+				{
+					editorUi.drive.listFiles(str, null, username? true : false, function(resp)
+					{
+						var results = [];
+						
+						for (var i = 0; i < resp.items.length; i++)
+						{
+							results.push(driveObjToTempDlg(resp.items[i]));
+						}
+						
+						callback(results);
+					}, error)
+				}, function(obj, callback, error)
+				{
+					editorUi.drive.getFile(obj.id, function(file)
+					{
+						callback(file.data);
+					}, error);
+				}, null, null, false, false);
+				
+				editorUi.showDialog(tempDlg.container, window.innerWidth, window.innerHeight, true, false, null, false, true);
+
+				return;	
+			};
+			
 			var dlg = new NewDialog(editorUi, compact, !(editorUi.mode == App.MODE_DEVICE && 'chooseFileSystemEntries' in window));
 
-			editorUi.showDialog(dlg.container, (compact) ? 350 : 620, (compact) ? 70 : 440, true, true, function(cancel)
+			editorUi.showDialog(dlg.container, (compact) ? 350 : 620, (compact) ? 70 : 460, true, true, function(cancel)
 			{
+				editorUi.sidebar.hideTooltip();
+				
 				if (cancel && editorUi.getCurrentFile() == null)
 				{
 					editorUi.showSplash();
@@ -100,23 +168,31 @@
 
 		editorUi.actions.put('insertTemplate', new Action(mxResources.get('template') + '...', function()
 		{
-			var dlg = new NewDialog(editorUi, null, false, function(xml)
+			if (graph.isEnabled() && !graph.isCellLocked(graph.getDefaultParent()))
 			{
-				editorUi.hideDialog();
-				
-				if (xml != null)
+				var dlg = new NewDialog(editorUi, null, false, function(xml)
 				{
-					var insertPoint = editorUi.editor.graph.getFreeInsertPoint();
-					graph.setSelectionCells(editorUi.importXml(xml,
-						Math.max(insertPoint.x, 20),
-						Math.max(insertPoint.y, 20),
-						true, null, null, true));
-					graph.scrollCellToVisible(graph.getSelectionCell());
-				}
-			}, null, null, null, null, null, null, null, null, null, null,
-				false, mxResources.get('insert'));
-
-			editorUi.showDialog(dlg.container, 620, 440, true, true);
+					editorUi.hideDialog();
+					
+					if (xml != null)
+					{
+						var insertPoint = editorUi.editor.graph.getFreeInsertPoint();
+						graph.setSelectionCells(editorUi.importXml(xml,
+							Math.max(insertPoint.x, 20),
+							Math.max(insertPoint.y, 20),
+							true, null, null, true));
+						graph.scrollCellToVisible(graph.getSelectionCell());
+					}
+				}, null, null, null, null, null, null, null, null, null, null,
+					false, mxResources.get('insert'));
+	
+				editorUi.showDialog(dlg.container, 620, 460, true, true, function()
+				{
+					editorUi.sidebar.hideTooltip();
+				});
+				
+				dlg.init();
+			}
 		})).isEnabled = isGraphEnabled;
 		
 		var pointAction = editorUi.actions.addAction('points', function()
@@ -199,7 +275,7 @@
 				{
 					if (this.freehandWindow == null)
 					{
-						this.freehandWindow = new FreehandWindow(editorUi, document.body.offsetWidth - 420, 102, 176, 104);
+						this.freehandWindow = new FreehandWindow(editorUi, document.body.offsetWidth - 420, 102, 176, 84);
 					}
 					
 					if (graph.freehand.isDrawing())
@@ -2331,6 +2407,15 @@
 				}, parent);
 			}
 
+			if (editorUi.notion != null)
+			{
+				menu.addSeparator(parent);
+				menu.addItem(mxResources.get('notion') + '...', null, function()
+				{
+					pickFileFromService(editorUi.notion);
+				}, parent);
+			}
+
 			if (editorUi.trello != null)
 			{
 				menu.addItem(mxResources.get('trello') + '...', null, function()
@@ -2695,7 +2780,7 @@
 			}
 		})));
 
-		var addInsertItem = function(menu, parent, title, method)
+		editorUi.addInsertItem = function(menu, parent, title, method)
 		{
 			if (method != 'plantUml' || (EditorUi.enablePlantUml && !editorUi.isOffline()))
 			{
@@ -2794,7 +2879,7 @@
 			}
 		})).isEnabled = isGraphEnabled;
 		
-		var addInsertMenuItems = mxUtils.bind(this, function(menu, parent, methods)
+		editorUi.addInsertMenuItems = mxUtils.bind(this, function(menu, parent, methods)
 		{
 			for (var i = 0; i < methods.length; i++)
 			{
@@ -2804,7 +2889,7 @@
 				}
 				else
 				{
-					addInsertItem(menu, parent, mxResources.get(methods[i]) + '...', methods[i]);
+					editorUi.addInsertItem(menu, parent, mxResources.get(methods[i]) + '...', methods[i]);
 				}
 			}
 		});
@@ -2827,13 +2912,13 @@
 
 		this.put('insertLayout', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
-			addInsertMenuItems(menu, parent, ['horizontalFlow', 'verticalFlow', '-', 'horizontalTree',
+			editorUi.addInsertMenuItems(menu, parent, ['horizontalFlow', 'verticalFlow', '-', 'horizontalTree',
 				'verticalTree', 'radialTree', '-', 'organic', 'circle']);
 		})));
 
         this.put('insertAdvanced', new Menu(mxUtils.bind(this, function(menu, parent)
         {
-			addInsertMenuItems(menu, parent, ['fromText', 'plantUml', 'mermaid', '-', 'formatSql']);
+			editorUi.addInsertMenuItems(menu, parent, ['fromText', 'plantUml', 'mermaid', '-', 'formatSql']);
 			
 			menu.addItem(mxResources.get('csv') + '...', null, function()
 			{
@@ -2941,6 +3026,15 @@
 				menu.addItem(mxResources.get('gitlab') + '...', null, function()
 				{
 					editorUi.pickFile(App.MODE_GITLAB);
+				}, parent);
+			}
+
+			if (editorUi.notion != null)
+			{
+				menu.addSeparator(parent);
+				menu.addItem(mxResources.get('notion') + '...', null, function()
+				{
+					editorUi.pickFile(App.MODE_NOTION);
 				}, parent);
 			}
 
@@ -3075,6 +3169,15 @@
 					}, parent);
 				}
 				
+				if (editorUi.notion != null)
+				{
+					menu.addSeparator(parent);
+					menu.addItem(mxResources.get('notion') + '...', null, function()
+					{
+						editorUi.showLibraryDialog(null, null, null, null, App.MODE_NOTION);
+					}, parent);
+				}
+
 				if (editorUi.trello != null)
 				{
 					menu.addItem(mxResources.get('trello') + '...', null, function()
@@ -3177,6 +3280,15 @@
 					}, parent);
 				}
 				
+				if (editorUi.notion != null)
+				{
+					menu.addSeparator(parent);
+					menu.addItem(mxResources.get('notion') + '...', null, function()
+					{
+						editorUi.pickLibrary(App.MODE_NOTION);
+					}, parent);
+				}
+
 				if (editorUi.trello != null)
 				{
 					menu.addItem(mxResources.get('trello') + '...', null, function()
@@ -3436,49 +3548,54 @@
 			{
 				editorUi.actions.addAction('templates', function()
 				{
-					var tempDlg = new TemplatesDialog();
-					editorUi.showDialog(tempDlg.container, tempDlg.width, tempDlg.height, true, false, null, false, true);
-					tempDlg.init(editorUi, function(xml){console.log(xml)}, null,
-							null, null, 'user', function(callback, username)
+					function driveObjToTempDlg(item)
 					{
-						setTimeout(function(){
-							username? callback([
-								{url: '123', title: 'Test 1Test 1Test 1Test 1Test 1Test 1Test 11Test 1Test 11Test 1Test 1dgdsgdfg fdg dfgdfg dfg dfg'},
-								{url: '123', title: 'Test 2', imgUrl: 'https://www.google.com.eg/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'},
-								{url: '123', title: 'Test 3', changedBy: 'Ashraf Teleb', lastModifiedOn: 'Yesterday'},
-								{url: '123', title: 'Test 4'},
-								{url: '123', title: 'Test 5'},
-								{url: '123', title: 'Test 6'}
-							]) : callback([
-								{url: '123', title: 'Test 4', imgUrl: 'https://images.pexels.com/photos/459225/pexels-photo-459225.jpeg'},
-								{url: '123', title: 'Test 5'},
-								{url: '123', title: 'Test 6'},
-								{url: '123', title: 'Test 1Test 1Test 1Test 1Test 1Test 1Test 11Test 1Test 11Test 1Test 1dgdsgdfg fdg dfgdfg dfg dfg'},
-								{url: '123', title: 'Test 2', imgUrl: 'https://www.google.com.eg/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'},
-								{url: '123', title: 'Test 3', changedBy: 'Ashraf Teleb', lastModifiedOn: 'Yesterday'}
-							]);
-							console.log(username);
-						}, 1000);
-					}, function(str, callback, username)
+						return {id: item.id, isExt: true, url: item.downloadUrl, title: item.title, imgUrl: item.thumbnailLink,
+								changedBy: item.lastModifyingUserName, lastModifiedOn: item.modifiedDate}
+					};
+					
+					var tempDlg = new TemplatesDialog(editorUi, function(xml){console.log(arguments)}, null,
+							null, null, 'user', function(callback, error, username)
 					{
-						setTimeout(function(){
-							callback(username? [
-								{url: '123', title: str +'Test 1Test 1Test 1Test 1Test 1Test 1Test 1'},
-								{url: '123', title: str +'Test 2'},
-								{url: '123', title: str +'Test 3'},
-								{url: '123', title: str +'Test 4'},
-								{url: '123', title: str +'Test 5'},
-								{url: '123', title: str +'Test 6'}
-							]: [
-								{url: '123', title: str +'Test 5'},
-								{url: '123', title: str +'Test 6'},
-								{url: '123', title: str +'Test 1Test 1Test 1Test 1Test 1Test 1Test 1'},
-								{url: '123', title: str +'Test 2'},
-								{url: '123', title: str +'Test 3'},
-								{url: '123', title: str +'Test 4'}
-							]);
-						}, 2000);						
-					}, null);
+						var oneWeek = new Date();
+						oneWeek.setDate(oneWeek.getDate() - 7);
+						
+						editorUi.drive.listFiles(null, oneWeek, username? true : false, function(resp)
+						{
+							var results = [];
+							
+							for (var i = 0; i < resp.items.length; i++)
+							{
+								results.push(driveObjToTempDlg(resp.items[i]));
+							}
+							
+							callback(results);
+						}, error)
+					}, function(str, callback, error, username)
+					{
+						editorUi.drive.listFiles(str, null, username? true : false, function(resp)
+						{
+							var results = [];
+							
+							for (var i = 0; i < resp.items.length; i++)
+							{
+								results.push(driveObjToTempDlg(resp.items[i]));
+							}
+							
+							callback(results);
+						}, error)
+					}, function(obj, callback, error)
+					{
+						editorUi.drive.getFile(obj.id, function(file)
+						{
+							callback(file.data);
+						}, error);
+					}, null, function(callback)
+					{
+						callback({'Test': []}, 1);
+					}, true, false);
+					
+					editorUi.showDialog(tempDlg.container, window.innerWidth, window.innerHeight, true, false, null, false, true);
 				});
 				this.addMenuItem(menu, 'templates', parent);
 			}

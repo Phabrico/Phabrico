@@ -278,7 +278,18 @@ namespace Phabrico.Controllers
                 int fileID = Int32.Parse(parameters[0]);
                 int nbrChunks = Int32.Parse(parameters[1]);
                 int chunkID = Int32.Parse(parameters[2]);
-                string fileName = parameters[3];
+                string fileName = System.Web.HttpUtility.UrlDecode( parameters[3] );
+
+                // correct invalid characters
+                fileName = fileName.Replace(':', '_')
+                                   .Replace('\\', '_')
+                                   .Replace('/', '_')
+                                   .Replace('<', '_')
+                                   .Replace('>', '_')
+                                   .Replace('"', '\'')
+                                   .Replace('|', '_')
+                                   .Replace('?', '_')
+                                   .Replace('*', '_');
 
                 SessionManager.Token token = SessionManager.GetToken(browser);
 

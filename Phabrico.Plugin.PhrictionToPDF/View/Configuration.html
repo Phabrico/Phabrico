@@ -511,7 +511,7 @@
     function sendPhrictionToPDFConfigurationToServer() {
         var headerWidth = tableHeaderLayout.getBoundingClientRect().width;
 
-        var headerFontName = cmbHeaderFont.options[cmbHeaderFont.options.selectedIndex].dataset.font;
+        var headerFontName = cmbHeaderFont.options[cmbHeaderFont.options.selectedIndex != -1 ? cmbHeaderFont.options.selectedIndex : 0].dataset.font;
         var headerFontSize = parseInt(txtHeaderFontSize.value);
         var header1Text = document.querySelector('.headerColumn1').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
         var header1Size = (100 * document.querySelector('.headerColumn1').getBoundingClientRect().width / headerWidth) + "%";
@@ -522,7 +522,7 @@
         var header3Text = document.querySelector('.headerColumn3').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
         var header3Align = document.querySelector('.headerColumn3').style.textAlign;
 
-        var footerFontName = cmbFooterFont.options[cmbFooterFont.options.selectedIndex].dataset.font;
+        var footerFontName = cmbFooterFont.options[cmbFooterFont.options.selectedIndex != -1 ? cmbFooterFont.options.selectedIndex : 0].dataset.font;
         var footerFontSize = parseInt(txtFooterFontSize.value);
         var footer1Text = document.querySelector('.footerColumn1').innerHTML.replace(/<div[^>]*resize-handle[^>]*>[^<]*<\/div>/, "");
         var footer1Size = (100 * document.querySelector('.footerColumn1').getBoundingClientRect().width / headerWidth) + "%";

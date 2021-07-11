@@ -7,7 +7,11 @@
             configurable: false
         });
 
-        @{IF @@PUBLIC-ACCESS@@=True@
+        @{IF @@AUTHENTICATION-FACTOR@@=Public@
+            phabrico.autoLogOff.disable();
+        }@
+
+        @{IF @@AUTHENTICATION-FACTOR@@=Ownership@
             phabrico.autoLogOff.disable();
         }@
     }, false);

@@ -7,7 +7,11 @@
             configurable: false
         });
 
-        @{IF @@PUBLIC-ACCESS@@=True@
+        @{IF @@AUTHENTICATION-FACTOR@@=Public@
+            phabrico.autoLogOff.disable();
+        }@
+
+        @{IF @@AUTHENTICATION-FACTOR@@=Ownership@
             phabrico.autoLogOff.disable();
         }@
     }, false);
@@ -64,7 +68,7 @@
     }@
     
 
-    @{IF @@PUBLIC-ACCESS@@=False@
+    @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
         <li class="phui-list-item-view">
             <a href="/project/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa fa-briefcase phui-list-item-icon">
@@ -94,7 +98,7 @@
                 </span>
             </a>
         </li>
-    @{IF @@PUBLIC-ACCESS@@=False@
+    @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
         <li class="phui-list-item-view">
             <a href="/configure/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa fa-sliders phui-list-item-icon">
@@ -114,7 +118,7 @@
                 </span>
             </a>
         </li>
-    @{IF @@PUBLIC-ACCESS@@=False@
+    @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
         <li class="phui-list-item-view">
             <div style="margin:20px 5px; text-align:center;">
                 <button class="button-green" name="__synchronize__" type="button" onclick="phabrico.synchronization.confirm()">Synchronize</button>

@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -718,7 +719,7 @@ namespace Phabrico.Http
 
                 // reinitialize session variables
                 sessionToken.EncryptionKey = Encryption.XorString(encryptionKey, whoAmI.PublicXorCipher);
-                sessionToken.IsPublic = true;
+                sessionToken.AuthenticationFactor = AuthenticationFactor.Public;
                 Session.ClientSessions[sessionToken.ID] = new SessionManager.ClientSession();
 
                 // set language
@@ -1352,63 +1353,97 @@ namespace Phabrico.Http
             }
             else
             {
-                string publicEncryptionKey = database.GetConfigurationParameter("EncryptionKey");
-                if (string.IsNullOrEmpty(publicEncryptionKey) == false)
-                {
-                    // auto-logon is configured
+                Storage.Account accountStorage = new Storage.Account();
+                string authenticationFactor = database.GetAuthenticationFactor();
 
-                    // find out if public token already exists
-                    bool createPublicToken = false;
-                    tokenId = browser.GetCookie("token");
-                    if (string.IsNullOrEmpty(tokenId))
-                    {
-                        createPublicToken = true;
-                    }
-                    else
-                    {
-                        token = Session.GetToken(tokenId);
-                        if (token == null)
+                switch (authenticationFactor)
+                {
+                    case AuthenticationFactor.Public:
+                        // auto-logon is configured
+                        string publicEncryptionKey = database.GetConfigurationParameter("EncryptionKey");
+
+                        // find out if public token already exists
+                        bool createPublicToken = false;
+                        tokenId = browser.GetCookie("token");
+                        if (string.IsNullOrEmpty(tokenId))
                         {
                             createPublicToken = true;
                         }
-                    }
+                        else
+                        {
+                            token = Session.GetToken(tokenId);
+                            if (token == null)
+                            {
+                                createPublicToken = true;
+                            }
+                        }
 
-                    if (createPublicToken)
-                    {
-                        // logging in without username and password (auto logon)
+                        if (createPublicToken)
+                        {
+                            // logging in without username and password (auto logon)
 
-                        // get tokenId from accountinfo
-                        database.EncryptionKey = publicEncryptionKey;
-                        Storage.Account accountStorage = new Storage.Account();
-                        Phabricator.Data.Account firstAccount = accountStorage.Get(database).FirstOrDefault();
-                        tokenId = firstAccount.Token;
+                            // get tokenId from accountinfo
+                            database.EncryptionKey = publicEncryptionKey;
+                            Phabricator.Data.Account firstAccount = accountStorage.Get(database).FirstOrDefault();
+                            tokenId = firstAccount.Token;
+
+                            // create new session token (or reuse the one with the same tokenId)
+                            token = Session.CreateToken(tokenId, browser);
+                            browser.SetCookie("token", token.ID);
+
+                            // reinitialize session variables
+                            publicEncryptionKey = Encryption.XorString(publicEncryptionKey, firstAccount.PublicXorCipher);
+                            token.EncryptionKey = publicEncryptionKey;
+                            token.AuthenticationFactor = AuthenticationFactor.Public;
+                            Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
+                        }
+                        break;
+
+                    case AuthenticationFactor.Knowledge:
+                    default:
+                        if (string.IsNullOrEmpty(authenticationFactor))
+                        {
+                            database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Knowledge);
+                        }
+
+                        if (string.IsNullOrEmpty(tokenId) == false && string.IsNullOrEmpty(encryptionKey) == false)
+                        {
+                            Storage.User userStorage = new Storage.User();
+                            if (userStorage.Get(database).Any() == false &&
+                                browser.Session.FormVariables.ContainsKey("username") &&
+                                browser.Session.FormVariables.ContainsKey("password"))
+                            {
+                                // we have a local SQLite database, but there is no data in it => try to synchronize with Phabricator server
+                                httpResponse.Status = Http.Response.HomePage.HomePageStatus.EmptyDatabase;
+                            }
+                        }
+
+                        database.UpgradeIfNeeded();
+                        break;
+
+                    case AuthenticationFactor.Ownership:
+                        // get DPAPI key
+                        string dpapiKey = Encryption.GetDPAPIKey();
+
+                        // calculate database keys
+                        UInt64[] dpapiXorCipherPublic, dpapiXorCipherPrivate;
+                        accountStorage.GetDpapiXorCiphers(database, out dpapiXorCipherPublic, out dpapiXorCipherPrivate);
+                        database.EncryptionKey = Encryption.XorString(dpapiKey, dpapiXorCipherPublic);
+                        database.PrivateEncryptionKey = Encryption.XorString(dpapiKey, dpapiXorCipherPrivate);
 
                         // create new session token (or reuse the one with the same tokenId)
+                        Phabricator.Data.Account existingAccount = accountStorage.Get(database).FirstOrDefault();
+                        tokenId = existingAccount.Token;
                         token = Session.CreateToken(tokenId, browser);
                         browser.SetCookie("token", token.ID);
-
-                        // reinitialize session variables
-                        publicEncryptionKey = Encryption.XorString(publicEncryptionKey, firstAccount.PublicXorCipher);
-                        token.EncryptionKey = publicEncryptionKey;
-                        token.IsPublic = true;
+                        token.EncryptionKey = Encryption.XorString(database.EncryptionKey, existingAccount.PublicXorCipher);
+                        token.PrivateEncryptionKey = Encryption.XorString(database.PrivateEncryptionKey, existingAccount.PrivateXorCipher);
+                        token.AuthenticationFactor = AuthenticationFactor.Ownership;
                         Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
-                    }
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(tokenId) == false && string.IsNullOrEmpty(encryptionKey) == false)
-                    {
-                        Storage.User userStorage = new Storage.User();
-                        if (userStorage.Get(database).Any() == false &&
-                            browser.Session.FormVariables.ContainsKey("username") &&
-                            browser.Session.FormVariables.ContainsKey("password"))
-                        {
-                            // we have a local SQLite database, but there is no data in it => try to synchronize with Phabricator server
-                            httpResponse.Status = Http.Response.HomePage.HomePageStatus.EmptyDatabase;
-                        }
-                    }
 
-                    database.UpgradeIfNeeded();
+                        // store AuthenticationFactor in database
+                        database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
+                        break;
                 }
             }
 
@@ -1685,6 +1720,12 @@ namespace Phabrico.Http
                             catch (HttpListenerException)
                             {
                                 throw;
+                            }
+                            catch (CryptographicException)
+                            {
+                                // unable to decode database -> access denied
+                                AccessDeniedException accessDeniedException = new AccessDeniedException("/", "Invalid credentials");
+                                ProcessAccessDeniedException(browser, accessDeniedException);
                             }
                             catch (System.Exception exception)
                             {

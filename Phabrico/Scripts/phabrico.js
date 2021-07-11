@@ -1080,7 +1080,7 @@ class Synchronization {
               if (jsonResponse.NumberOfUnfrozenChanges > 1)
               {
                  // plural: there are more than 1 change
-                dlgRequestSynchronizeDetail.innerHTML = phabrico.synchronization.htmlFormatString( Locale.Translate("There are local [b]@@NBR-CHANGES@@ modifications[/b] ready to be uploaded the Phabricator server.")
+                dlgRequestSynchronizeDetail.innerHTML = phabrico.synchronization.htmlFormatString( Locale.Translate("There are [b]@@NBR-CHANGES@@ local modifications[/b] ready to be uploaded the Phabricator server.")
                                                                                                 .replace(/@@NBR-CHANGES@@/, jsonResponse.NumberOfUnfrozenChanges),
                                                                                           ["[b]", "[/b]"]
                                                                                         )
@@ -1545,8 +1545,13 @@ class TextAreaContextMenu {
                 getContextMenuItems.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
                 getContextMenuItems.onload  = async function() {
                     var menuItems = null;
+                    var contentIsHTML = null;
+                    var fontAwesomeIcon = null;
                     try {
-                        menuItems = JSON.parse(getContextMenuItems.responseText).records;
+                        var contextMenuContent = JSON.parse(getContextMenuItems.responseText);
+                        menuItems = contextMenuContent.records;
+                        contentIsHTML = (typeof contextMenuContent.contentIsHTML == 'undefined') ? false : contextMenuContent.contentIsHTML;
+                        fontAwesomeIcon = (typeof contextMenuContent.fontAwesomeIcon == 'undefined') ? null : contextMenuContent.fontAwesomeIcon;                        
                     } catch(exc) {
                         return;
                     }
@@ -1602,10 +1607,12 @@ class TextAreaContextMenu {
                         me.autocomplete.head.appendChild(me.autocomplete.head.prompt);
 
                         me.autocomplete.head.prompt.icon = document.createElement('span');
-                        me.autocomplete.head.prompt.icon.classList.add('icon');
-                        me.autocomplete.head.prompt.icon.classList.add('phui-font-fa');
-                        me.autocomplete.head.prompt.icon.classList.add('fa-user');
-                        me.autocomplete.head.prompt.icon.classList.add('bluegrey');
+                        if (fontAwesomeIcon != null) {
+                            me.autocomplete.head.prompt.icon.classList.add('icon');
+                            me.autocomplete.head.prompt.icon.classList.add('phui-font-fa');
+                            me.autocomplete.head.prompt.icon.classList.add(fontAwesomeIcon);
+                            me.autocomplete.head.prompt.icon.classList.add('bluegrey');
+                        }
                         me.autocomplete.head.prompt.appendChild(me.autocomplete.head.prompt.icon);
 
                         me.autocomplete.head.prompt.content = document.createTextNode('Find ' + me.ObjectType + ': ');
@@ -1641,10 +1648,19 @@ class TextAreaContextMenu {
                             anchor.name = item[me.PropertyInternalName] + " (" + item[me.PropertyReadableName] + ")";
                         }
                         anchor.shortenedName = item[me.PropertyResult];
+                        if (contentIsHTML) {
+                            var dummyTextArea = document.createElement("textarea");
+                            dummyTextArea.innerHTML = anchor.shortenedName;
+                            anchor.shortenedName = dummyTextArea.value;
+                        }
                         anchor.classList.add('menuitem');
                         anchor.onclick = function(e) {
                             var clickedAnchor = e.target.children[0].closest('a');
-                            me.autocomplete.target.setRangeText(clickedAnchor.shortenedName + " ", me.offsetSearchValue, me.endOffsetSearchValue);
+                            if (fontAwesomeIcon == null) {
+                                me.autocomplete.target.setRangeText(clickedAnchor.shortenedName + " ", me.offsetSearchValue - 1, me.endOffsetSearchValue);
+                            } else {
+                                me.autocomplete.target.setRangeText(clickedAnchor.shortenedName + " ", me.offsetSearchValue, me.endOffsetSearchValue);
+                            }
                             me.autocomplete.target.focus()
                             me.autocomplete.target.selectionStart += clickedAnchor.shortenedName.length + 1;
 
@@ -1667,7 +1683,11 @@ class TextAreaContextMenu {
                         anchor.head.icon = document.createElement('span');
                         anchor.head.icon.classList.add('icon');
                         anchor.head.icon.classList.add('phui-font-fa');
-                        anchor.head.icon.classList.add('fa-user');
+                        if (fontAwesomeIcon == null) {
+                            anchor.head.icon.innerHTML = item[me.PropertyResult];
+                        } else {
+                            anchor.head.icon.classList.add('fa-user');
+                        }
                         anchor.head.icon.classList.add('bluegrey');
                         anchor.head.appendChild(anchor.head.icon);
 
@@ -2392,7 +2412,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 close.className = "close phui-font-fa fa-times-circle";
 
                 transaction.appendChild(label);
-                transaction.appendChild(close);
 
                 header.parentElement.insertBefore(transaction, header);
 
@@ -2426,15 +2445,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'priority':
                         label.innerText = Locale.Translate('Change Priority');
                         label.style.position = "relative";
-                        label.style.top = "-16px";
                         var selectLabel = header.parentElement.querySelector('#priority');
                         var tempDiv = document.createElement('div');
+                        var filler = document.createElement('span');
                         tempDiv.innerHTML = selectLabel.outerHTML;
                         tempDiv.querySelector("#priority").removeAttribute('id');
                         selectLabel = tempDiv.children[0];
                         selectLabel.style.display = 'inline-block';
                         selectLabel.children[0].name = 'priority';
+                        filler.style.width = "100%";
+                        close.style.marginRight = "0px";
                         transaction.appendChild(selectLabel);
+                        transaction.appendChild(filler);
                         break;
 
                     case 'projectPHIDs':
@@ -2456,15 +2478,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'status':
                         label.innerText = Locale.Translate('Change Status');
                         label.style.position = "relative";
-                        label.style.top = "-16px";
                         var selectLabel = header.parentElement.querySelector('#status');
                         var tempDiv = document.createElement('div');
+                        var filler = document.createElement('span');
                         tempDiv.innerHTML = selectLabel.outerHTML;
                         tempDiv.querySelector("#status").removeAttribute('id');
                         selectLabel = tempDiv.children[0];
                         selectLabel.style.display = 'inline-block';
                         selectLabel.children[0].name = 'status';
+                        filler.style.width = "100%";
+                        close.style.marginRight = "0px";
                         transaction.appendChild(selectLabel);
+                        transaction.appendChild(filler);
                         break;
 
                     case 'subscriberPHIDs':
@@ -2483,6 +2508,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         inputTag.inputText.focus();
                         break;
                 }
+
+                transaction.appendChild(close);
+
+                // align width of all transaction item labels
+                var visibleLabels = Array.prototype.slice.call( document.querySelectorAll('.transaction-item label.label') );
+                visibleLabels.forEach(function(transactionItemLabel) {
+                    transactionItemLabel.style.minWidth = null;
+                });
+                var maxLabelWidth = Math.max.apply(Math, visibleLabels.map(function(transactionItemLabel) {
+                    return parseInt(
+                        getComputedStyle( transactionItemLabel ).width
+                    );
+                }) );
+                visibleLabels.forEach(function(transactionItemLabel) {
+                    transactionItemLabel.style.minWidth = maxLabelWidth + "px";
+                });
+
 
                 e.target.value = '+';
             }

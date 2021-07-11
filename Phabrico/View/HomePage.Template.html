@@ -2,6 +2,7 @@
 <html lang="@@LOCALE@@" class="notranslate" translate="no">
     <head>
       <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+      <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
       <meta name="google" content="notranslate">
@@ -126,7 +127,7 @@
                     phabrico.synchronization.start(dlgRequestSynchronize, 'light');
                 }
 
-                document.addEventListener('DOMContentLoaded', function () {
+                window.onload = function() {
                     // Call start synchronization
                     (async() => {
                     
@@ -134,7 +135,7 @@
   
                     })();
                 
-                }, false);
+                };
             }@
 
 

@@ -2678,6 +2678,7 @@ kbd {
 }
 
 .transaction-item {
+    display: flex;
     line-height: 30px;
     height: 36px;
     padding: 7px 5px 0px 5px;
@@ -2703,18 +2704,19 @@ kbd {
 .transaction-item .label {
     display: inline-block;
     text-align: right;
-    width: 120px;
+    white-space: nowrap;
+    margin-right: 5px;
 }
 
 .transaction-item .input-tag {
     display: inline-block;
     float: right;
-    width: calc(100% - var(--navigator-width)  + 16px);
+    width: 100%;
     margin-top: -5px;
 }
 
 .maniphest-task .transaction-item .input-tag {
-    margin-top: -34px;
+    margin-top: -4px;
 }
 
 .transaction-item .input-tag .menu {
@@ -2759,6 +2761,10 @@ kbd {
 
 .autocomplete-list a.menuitem .icon {
     margin-right: 4px;
+}
+
+.maniphest-task-edit .autocomplete {
+    margin-top: 56px;
 }
 
 a.user-reference {

@@ -18,9 +18,10 @@
                     </td>
                     <td colspan="3">
                         <p class="instructions">Allow to log on automatically but disable synchronization and configuration</p>
-                        <label class="select" style="width: 90px;">
+                        <label class="select" style="width: 215px;">
                             <select id="autoLogon" name="autoLogon">
                                 <option value="True">Yes</option>
+                                <option value="Windows">Yes (Windows authentication)</option>
                                 <option selected="selected" value="False">No</option>
                             </select>
                         </label>
@@ -580,10 +581,13 @@
 
     function inputFieldModified(item) {
         item.target.isModified = true;
+        console.log("inputFieldModified:4");
     }
 
     function inputFieldFocusLost(item) {
+        console.log("inputFieldFocusLost:1");
         if (item.target.isModified === true) {
+            console.log("inputFieldFocusLost:2");
             var form = tabConfigure.getElementsByTagName('form')[0];
             var data = new FormData(form);
             var xmlhttp = new XMLHttpRequest();
@@ -592,7 +596,8 @@
             xmlhttp.send(data);
             Array.prototype.slice.call( document.querySelectorAll('input[type=number], input[type=text], select'), 0)
                  .map( function(item) {
-                    item.isModified = false;
+                     console.log("inputFieldFocusLost:3");
+                     item.isModified = false;
                  }
             );
         }
@@ -605,6 +610,35 @@
                 warningAutoLogon.style.display = "inline-block";
             } else {
                 warningAutoLogon.style.display = "none";
+            }
+
+            // hide/show "Maximum Duration of Inactivity" parameter
+            if (autoLogon.value == "True" || autoLogon.value == "Windows") {
+                document.querySelector('tr.setting.AutoLogOutAfterMinutesOfInactivity').style.visibility = 'collapse';
+            } else  {
+                document.querySelector('tr.setting.AutoLogOutAfterMinutesOfInactivity').style.visibility = null;
+            }
+
+            // hide/show "change password" in user menu
+            if (autoLogon.value != "False") {
+                document.querySelectorAll('.user-menu .change-password').forEach(function(menu) {
+                    menu.style.display = 'none';
+                })
+            } else {
+                document.querySelectorAll('.user-menu .change-password').forEach(function(menu) {
+                    menu.style.display = null;
+                })
+            }
+
+            // hide/show "log out" in user menu
+            if (autoLogon.value == "Windows") {
+                document.querySelectorAll('.user-menu .logout').forEach(function(menu) {
+                    menu.style.display = 'none';
+                })
+            } else {
+                document.querySelectorAll('.user-menu .logout').forEach(function(menu) {
+                    menu.style.display = null;
+                })
             }
         }
     }
@@ -622,8 +656,9 @@
     Array.prototype.slice.call( tabConfigure.querySelectorAll('input[type=text], select'), 0)
          .map( function(item) {
             item.isModified = false;
-             item.addEventListener("input", inputFieldModified);
-             item.addEventListener("blur", inputFieldFocusLost);
+            item.addEventListener("input", inputFieldModified);
+            item.addEventListener("change", inputFieldModified);
+            item.addEventListener("blur", inputFieldFocusLost);
          }
     );
 

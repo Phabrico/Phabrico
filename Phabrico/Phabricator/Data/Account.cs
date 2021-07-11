@@ -195,9 +195,19 @@ namespace Phabrico.Phabricator.Data
         public UInt64[] PublicXorCipher { get; set; }
 
         /// <summary>
-        /// XOR value for decrypting the public database encryption key
+        /// XOR value for decrypting the private database encryption key
         /// </summary>
         public UInt64[] PrivateXorCipher { get; set; }
+
+        /// <summary>
+        /// XOR value for decrypting the DPAPI (Windows Authentication) database encryption key
+        /// </summary>
+        public UInt64[] DpapiXorCipher1 { get; set; }
+
+        /// <summary>
+        /// XOR value for decrypting the DPAPI (Windows Authentication) database encryption key
+        /// </summary>
+        public UInt64[] DpapiXorCipher2 { get; set; }
 
         /// <summary>
         /// Constructor
@@ -219,6 +229,20 @@ namespace Phabrico.Phabricator.Data
                 (UInt64)(DateTime.UtcNow.Ticks / 6899) * 24680251 + (UInt64)(new Random(139831489)).Next(),
                 (UInt64)(DateTime.UtcNow.Ticks / 7879) * 36925817 + (UInt64)(new Random(595878500)).Next(),
                 (UInt64)(DateTime.UtcNow.Ticks / 8929) * 48260497 + (UInt64)(new Random(864233365)).Next()
+            };
+
+            DpapiXorCipher1 = new UInt64[] {
+                (UInt64)0,
+                (UInt64)0,
+                (UInt64)0,
+                (UInt64)0
+            };
+
+            DpapiXorCipher2 = new UInt64[] {
+                (UInt64)0,
+                (UInt64)0,
+                (UInt64)0,
+                (UInt64)0
             };
         }
 

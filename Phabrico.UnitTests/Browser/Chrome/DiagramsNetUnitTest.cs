@@ -36,15 +36,9 @@ namespace Phabrico.UnitTests.Browser.Chrome
             Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
 
             // if action pane is collapsed -> expand it
-            bool actionPaneCollapsed = true;
-            try
-            {
-                WebBrowser.FindElement(By.ClassName("right-collapsed"));
-            }
-            catch
-            {
-                actionPaneCollapsed = false;
-            }
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
 
             if (actionPaneCollapsed)
             {

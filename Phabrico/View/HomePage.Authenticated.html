@@ -40,11 +40,11 @@
                         <label class="aphront-form-label">Last synchronized with Phabricator at:</label>
                     </td>
                     <td>
-                        @{IF @@PUBLIC-ACCESS@@=True@
-                        @@LAST-SYNCHRONIZATION-TIME@@
+                        @{IF @@AUTHENTICATION-FACTOR@@=Public@
+                            @@LAST-SYNCHRONIZATION-TIME@@
                         }@
-                        @{IF @@PUBLIC-ACCESS@@=False@
-                        <a href="/synchronization/logging/">@@LAST-SYNCHRONIZATION-TIME@@</a>
+                        @{ELSE
+                            <a href="/synchronization/logging/">@@LAST-SYNCHRONIZATION-TIME@@</a>
                         }@
                     </td>
                 </tr>

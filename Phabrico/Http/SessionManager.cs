@@ -39,6 +39,9 @@ namespace Phabrico.Http
         /// </summary>
         public class Token
         {
+            private string privateEncryptionKey;
+
+
             /// <summary>
             /// Key stored in the database (to verify if the user is known in the SQLite database)
             /// </summary>
@@ -56,14 +59,35 @@ namespace Phabrico.Http
             public string EncryptionKey { get; set; }
 
             /// <summary>
-            /// If true, the user is logged on without a username and password
+            /// Determines how the user is logged on
             /// </summary>
-            public bool IsPublic { get; set; }
+            public AuthenticationFactor AuthenticationFactor { get; set; }
 
             /// <summary>
             /// Private encryption key stored in memory (to decrypt some of the SQlite database, i.e. EncryptionMode.Private)
             /// </summary>
-            public string PrivateEncryptionKey { get; set; }
+            public string PrivateEncryptionKey
+            {
+                get
+                {
+                    switch (AuthenticationFactor)
+                    {
+                        case AuthenticationFactor.Knowledge:
+                            return privateEncryptionKey;
+
+                        case AuthenticationFactor.Ownership:
+                            return Encryption.GetDPAPIKey();
+
+                        default:
+                            return null;
+                    }
+                }
+
+                set
+                {
+                    privateEncryptionKey = value;
+                }
+            }
 
             /// <summary>
             /// The time at which the session was last poked (see Poke method and Invalid property)
@@ -90,7 +114,7 @@ namespace Phabrico.Http
                 Key = key;
                 ID = RandomString(32);
 
-                IsPublic = false;
+                AuthenticationFactor = AuthenticationFactor.Knowledge;
 
                 Poke();
             }

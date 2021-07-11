@@ -282,6 +282,7 @@ namespace Phabrico.Http.Response
                     else
                     {
                         string userName = accountData.UserName;
+                        string authenticationFactor = database.GetAuthenticationFactor();
 
                         if (contentOptions.HasFlag(ContentOptions.IFrame))
                         {
@@ -310,11 +311,11 @@ namespace Phabrico.Http.Response
                                 htmlPartialViewPage.SetContent(GetViewData("HomePage.NoTreeView.Template"));
                                 htmlPartialViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity.ToString(), ArgumentOptions.NoHtmlEncoding);
                                 htmlPartialViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
-                                htmlPartialViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                                htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                                 htmlPartialViewPage.Merge();
 
                                 htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
-                                htmlPartialHeaderViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                                htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                                 htmlPartialHeaderViewPage.Merge();
 
                                 htmlViewPage.SetContent(GetViewData("HomePage.Template"));
@@ -336,7 +337,7 @@ namespace Phabrico.Http.Response
                             htmlPartialViewPage.SetContent(GetViewData("HomePage.TreeView.Template"));
                             htmlPartialViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity.ToString(), ArgumentOptions.NoHtmlEncoding);
                             htmlPartialViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
-                            htmlPartialViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                            htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                             foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                             {
                                 if (plugin.State == Plugin.PluginBase.PluginState.Loaded)
@@ -361,7 +362,7 @@ namespace Phabrico.Http.Response
                             htmlPartialViewPage.Merge();
 
                             htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
-                            htmlPartialHeaderViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                            htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                             htmlPartialHeaderViewPage.Merge();
 
                             htmlViewPage.SetContent(GetViewData("HomePage.Template"));
@@ -403,7 +404,7 @@ namespace Phabrico.Http.Response
         public void Merge()
         {
             // parse conditional statements
-            Regex regConditionalStatements = new Regex(@"\@{IF(NOT)?[ ]+([^=]*=[^@]*)@    # opening {
+            Regex regConditionalStatements = new Regex(@"\@{IF\x20*(NOT)?\x20+?([^=]*=[^@]*)@    # opening {
                                                  (                      # begin of content
                                                      (?>                # now match...
                                                         [^{}]+          # any characters except braces
@@ -414,7 +415,21 @@ namespace Phabrico.Http.Response
                                                      )*                 # any number of times
                                                      (?(DEPTH)(?!))     # until the depth counter is zero again
                                                  )                      # end of content
-                                               \}@                      # then match the closing }",
+                                               \}@                     # then match the closing }
+                                               (
+                                                 [^{}]*{ELSE
+                                                     (                          # begin of content
+                                                         (?>                    # now match...
+                                                            [^{}]+              # any characters except braces
+                                                         |                      # or
+                                                            \{  (?<ELSEDEPTH>)  # a {, increasing the depth counter
+                                                         |                      # or
+                                                            \}  (?<-ELSEDEPTH>) # a }, decreasing the depth counter
+                                                         )*                     # any number of times
+                                                         (?(ELSEDEPTH)(?!))     # until the depth counter is zero again
+                                                     )                          # end of content
+                                                   \}@                          # then match the closing }
+                                               )?",
                                         RegexOptions.IgnorePatternWhitespace);
 
             // Merge subviews
@@ -450,12 +465,25 @@ namespace Phabrico.Http.Response
                 if (positiveCondition)
                 {
                     // conditional IF statement returned true -> remove IF statement, but keep content
-                    Content = Content.Substring(0, conditionalStatement.Index) + conditionalStatement.Groups[3].Value + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
+                    Content = Content.Substring(0, conditionalStatement.Index)
+                            + conditionalStatement.Groups[3].Value
+                            + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
                 }
                 else
                 {
-                    // conditional IF statement returned false -> remove IF statement and content
-                    Content = Content.Substring(0, conditionalStatement.Index) + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
+                    if (conditionalStatement.Groups[5].Success)
+                    {
+                        // conditional IF statement returned false -> remove IF statement, but keep ELSE content
+                        Content = Content.Substring(0, conditionalStatement.Index)
+                                + conditionalStatement.Groups[5].Value
+                                + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
+                    }
+                    else
+                    {
+                        // conditional IF statement returned false -> remove IF statement and content
+                        Content = Content.Substring(0, conditionalStatement.Index)
+                                + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
+                    }
                 }
             }
 
@@ -581,7 +609,11 @@ namespace Phabrico.Http.Response
             if (argumentOptions.HasFlag(ArgumentOptions.NoHtmlEncoding) == false)
             {
                 char temporaryAmpersandReplacement = (char)1;
-                string[] nonHtmlCharacters = RegexSafe.Matches(parameterValue, @"[^A-Za-z0-9 ,./?!@#$%*()\-_+={}\[\]:;]").OfType<Match>().Select(match => match.Value).ToArray();
+                string[] nonHtmlCharacters = RegexSafe.Matches(parameterValue, @"[^A-Za-z0-9 ,./?!@#$%*()\-_+={}\[\]:;]")
+                                                      .OfType<Match>()
+                                                      .Select(match => match.Value)
+                                                      .Where(character => character[0] <= 0xFF)
+                                                      .ToArray();
                 foreach (string character in nonHtmlCharacters)
                 {
                     parameterValue = parameterValue.Replace(character, string.Format("{0}#{1};", temporaryAmpersandReplacement, (int)character[0]));

@@ -5,34 +5,36 @@
             <div class="user-menu" tabindex="-1">
                 <div class="link">
                     <div class="icon">
-                        @{IF @@PUBLIC-ACCESS@@=False@
-                        <span>@@ICON-USERNAME@@</span>
+                        @{IF @@AUTHENTICATION-FACTOR@@=Public@
+                            <span><img alt="configuration" src="/images/cogwheel.png?version=@@PHABRICO-VERSION@@" width="17" height="17" style="margin-top:3px"></span>
                         }@
-                        @{IF @@PUBLIC-ACCESS@@=True@
-                        <span><img alt="configuration" src="/images/cogwheel.png?version=@@PHABRICO-VERSION@@" width="17" height="17" style="margin-top:3px"></span>
+                        @{ELSE
+                            <span>@@ICON-USERNAME@@</span>
                         }@
                     </div>
                     <span class="caret"></span>
                 </div>
                 <div class="content">
                     <ul>
-                        <li>
+                        <li class="change-language">
                             <a href="#" style="margin-top:15px;" onclick="showChangeLanguageDialog();">
                                 <span>Change language</span>
                             </a>
                         </li>
-                        @{IF @@PUBLIC-ACCESS@@=False@
-                        <li>
+                        @{IF @@AUTHENTICATION-FACTOR@@=Knowledge@
+                        <li class="change-password">
                             <a href="#" style="margin-top:15px;" onclick="showChangePasswordDialog();">
                                 <span>Change password</span>
                             </a>
                         </li>
                         }@
-                        <li>
+                        @{IF NOT @@AUTHENTICATION-FACTOR@@=Ownership@
+                        <li class="logout">
                             <a href="/logout" style="margin-top:15px;">
                                 <span>Log out</span>
                             </a>
                         </li>
+                        }@
                     </ul>
                 </div>
             </div>
@@ -49,7 +51,7 @@
     </div>
 </div>
 
-@{IF @@PUBLIC-ACCESS@@=False@
+@{IF @@AUTHENTICATION-FACTOR@@=Knowledge@
 <form class="dlgChangePassword aphront-dialog-view modalview" action="" method="POST" onsubmit="submitNewPassword(this); return false;" style="display:none;position: absolute; width: 600px; left: calc(50vw - 300px);">
     <div class="aphront-dialog-overlay"></div>
     <div class="aphront-dialog-head">
@@ -157,7 +159,7 @@
 
     newLanguage.addEventListener('input', newLanguageInputChanged);
 
-@{IF @@PUBLIC-ACCESS@@=False@
+@{IF @@AUTHENTICATION-FACTOR@@=Knowledge@
     function showChangePasswordDialog()
     {
         errorMessage.style.display = 'none';

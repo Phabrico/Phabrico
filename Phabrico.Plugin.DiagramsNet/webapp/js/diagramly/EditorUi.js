@@ -4599,11 +4599,22 @@
 	var editoUiAddChromelessToolbarItems = EditorUi.prototype.addChromelessToolbarItems;
 
 	/**
+	 * Image export in viewer is only allowed for same domain or hosted environments but
+	 * but disabled to avoid cross domain image export in canvas which isn't allowed.
+	 */
+	EditorUi.prototype.isChromelessImageExportEnabled = function()
+	{
+		return this.getServiceName() != 'draw.io' ||
+			/.*\.draw\.io$/.test(window.location.hostname) ||
+			/.*\.diagrams\.net$/.test(window.location.hostname);
+	};
+	
+	/**
 	 * Creates a temporary graph instance for rendering off-screen content.
 	 */
 	EditorUi.prototype.addChromelessToolbarItems = function(addButton)
 	{
-		if (this.isExportToCanvas())
+		if (this.isExportToCanvas() && this.isChromelessImageExportEnabled())
 		{
 			this.exportDialog = null;
 			
@@ -11331,6 +11342,45 @@
 						var enableSearchDocs = data.enableSearch == 1;
 						var enableCustomTemp = data.enableCustomTemp == 1;
 						
+						if (urlParams['newTempDlg'] == '1' && !data.templatesOnly && data.callback != null)
+						{
+							var user = this.getCurrentUser();
+							
+							var tempDlg = new TemplatesDialog(this, function(xml, filename, itemInfo)
+							{
+								xml = xml || this.emptyDiagramXml;
+								
+								parent.postMessage(JSON.stringify({event: 'template', xml: xml,
+									blank: xml == this.emptyDiagramXml, name: filename,
+									tempUrl: itemInfo.url, libs: itemInfo.libs, 
+									builtIn: itemInfo.info != null && itemInfo.info.custContentId != null,
+									message: data}), '*');
+							}, mxUtils.bind(this, function()
+							{
+								this.actions.get('exit').funct();
+							}), null, null, user != null? user.id : null, 
+							enableRecentDocs? mxUtils.bind(this, function(recentReadyCallback, error, username) 
+							{
+								this.remoteInvoke('getRecentDiagrams', [username], null, recentReadyCallback, error);
+							}) : null, enableSearchDocs?  mxUtils.bind(this, function(searchStr, searchReadyCallback, error, username) 
+							{
+								this.remoteInvoke('searchDiagrams', [searchStr, username], null, searchReadyCallback, error);
+							}) : null, mxUtils.bind(this, function(obj, callback, error) 
+							{
+								this.remoteInvoke('getFileContent', [obj.url], null, callback, error);
+							}), null, enableCustomTemp? mxUtils.bind(this, function(customTempCallback) 
+							{
+								this.remoteInvoke('getCustomTemplates', null, null, customTempCallback, function()
+								{
+									customTempCallback({}, 0); //ignore error by sending empty templates
+								});
+							}) : null, false, false, true, true);
+							
+							this.showDialog(tempDlg.container, window.innerWidth, window.innerHeight, true, false, null, false, true);
+
+							return;
+						}
+						
 						var dlg = new NewDialog(this, false, data.templatesOnly? false : data.callback != null,
 							mxUtils.bind(this, function(xml, name, url, libs)
 						{
@@ -11357,14 +11407,14 @@
 						}), null, null, null, null, null, null, null, 
 						enableRecentDocs? mxUtils.bind(this, function(recentReadyCallback) 
 						{
-							this.remoteInvoke('getRecentDiagrams', null, null, recentReadyCallback, function()
+							this.remoteInvoke('getRecentDiagrams', [null], null, recentReadyCallback, function()
 							{
 								recentReadyCallback(null, 'Network Error!');
 							});
 						}) : null, 
 						enableSearchDocs?  mxUtils.bind(this, function(searchStr, searchReadyCallback) 
 						{
-							this.remoteInvoke('searchDiagrams', [searchStr], null, searchReadyCallback, function()
+							this.remoteInvoke('searchDiagrams', [searchStr, null], null, searchReadyCallback, function()
 							{
 								searchReadyCallback(null, 'Network Error!');
 							});
@@ -11381,10 +11431,12 @@
 							{
 								customTempCallback({}, 0); //ignore error by sending empty templates
 							});
-						}) : null);
+						}) : null, data.withoutType == 1);
 	
-						this.showDialog(dlg.container, 620, 440, true, false, mxUtils.bind(this, function(cancel)
+						this.showDialog(dlg.container, 620, 460, true, false, mxUtils.bind(this, function(cancel)
 						{
+							this.sidebar.hideTooltip();
+							
 							if (cancel)
 							{
 								this.actions.get('exit').funct();
@@ -12879,113 +12931,6 @@
 		this.showDialog(dlg.container, 560, 130, true, true);
 		dlg.init();
 	};
-
-	/**
-	 * Overrides createOutline
-	 */
-	var editorUiCreateOutline = EditorUi.prototype.createOutline;
-
-	EditorUi.prototype.createOutline = function(wnd)
-	{
-		var outline = editorUiCreateOutline.apply(this, arguments);
-		var graph = this.editor.graph;
-
-		var outlineGetSourceGraphBounds = outline.getSourceGraphBounds;
-		outline.getSourceGraphBounds = function()
-		{
-			if (mxUtils.hasScrollbars(graph.container) && graph.pageVisible && this.source.minimumGraphSize != null)
-			{
-				var pb = this.source.getPagePadding();
-				var s = this.source.view.scale;
-				
-				var result = new mxRectangle(0, 0, Math.ceil(this.source.minimumGraphSize.width - 2 * pb.x / s),
-						Math.ceil(this.source.minimumGraphSize.height - 2 * pb.y / s));
-				
-				return result;
-			}
-			
-			return outlineGetSourceGraphBounds.apply(this, arguments);
-		};
-		
-		var outlineGetSourceContainerSize = outline.getSourceContainerSize;
-		outline.getSourceContainerSize = function()
-		{
-			if (mxUtils.hasScrollbars(graph.container) && this.source.minimumGraphSize != null)
-			{
-				var pad = this.source.getPagePadding();
-				var s = this.source.view.scale;
-				
-				return new mxRectangle(0, 0, Math.ceil(this.source.minimumGraphSize.width * s - 2 * pad.x),
-						Math.ceil(this.source.minimumGraphSize.height * s - 2 * pad.y));
-			}
-
-			return outlineGetSourceContainerSize.apply(this, arguments);
-		};
-
-		outline.getOutlineOffset = function(scale)
-		{
-			if (mxUtils.hasScrollbars(graph.container) && this.source.minimumGraphSize != null)
-			{
-				var pb = this.source.getPagePadding();
-
-				var dx = Math.max(0, (outline.outline.container.clientWidth / scale - (this.source.minimumGraphSize.width - 2 * pb.x)) / 2);
-				var dy = Math.max(0, (outline.outline.container.clientHeight / scale - (this.source.minimumGraphSize.height - 2 * pb.y)) / 2);
-
-				// Why is vertical offset negative relative to dy
-				return new mxPoint(Math.round(dx - pb.x), Math.round(dy - pb.y - 5 / scale));
-			}
-			
-			return new mxPoint(8 / scale, 8 / scale);
-		};
-		
-		var outlineInit = outline.init;
-		outline.init = function()
-		{
-			outlineInit.apply(this, arguments);
-			
-			// Problem: Need to override a function in the view but the view is created
-			// with the graph so a refresh of the page is needed to see this change.
-			outline.outline.view.getBackgroundPageBounds = function()
-			{
-				var layout = graph.getPageLayout();
-				var page = graph.getPageSize();
-				
-				return new mxRectangle(this.scale * (this.translate.x + layout.x * page.width),
-						this.scale * (this.translate.y + layout.y * page.height),
-						this.scale * layout.width * page.width,
-						this.scale * layout.height * page.height);
-			};
-			
-			outline.outline.view.validateBackgroundPage();
-		};
-		
-		this.editor.addListener('pageSelected', function(sender, evt)
-		{
-			var change = evt.getProperty('change');
-			
-			var graph = outline.source;
-			var g = outline.outline;
-			
-			g.pageScale = graph.pageScale;
-			g.pageFormat = graph.pageFormat;
-			g.background = graph.background;
-			g.pageVisible = graph.pageVisible;
-			g.background = graph.background;
-			
-			var current = mxUtils.getCurrentStyle(graph.container);
-			g.container.style.backgroundColor = current.backgroundColor;
-			
-			if (graph.view.backgroundPageShape != null && g.view.backgroundPageShape != null)
-			{
-				g.view.backgroundPageShape.fill = graph.view.backgroundPageShape.fill;
-			}
-
-			outline.outline.view.clear(change.previousPage.root, true);
-			outline.outline.view.validate();
-		});
-
-		return outline;
-	};
 	
 	/**
 	 * Returns the number of storage options enabled
@@ -13015,6 +12960,11 @@
 		}
 		
 		if (this.gitLab != null)
+		{
+			serviceCount++
+		}
+		
+		if (this.notion != null)
 		{
 			serviceCount++
 		}
@@ -13150,19 +13100,22 @@
 		editorUiUpdateActionStates.apply(this, arguments);
 
 		var graph = this.editor.graph;
-		var active = this.isDiagramActive();
 		var file = this.getCurrentFile();
+		var active = this.isDiagramActive();
+		var editable = graph.getEditableCells(graph.getSelectionCells());
 		var enabled = file != null || urlParams['embed'] == '1';
+
 		this.actions.get('pageSetup').setEnabled(active);
 		this.actions.get('autosave').setEnabled(file != null && file.isEditable() && file.isAutosaveOptional());
 		this.actions.get('guides').setEnabled(active);
-		this.actions.get('editData').setEnabled(active);
+		this.actions.get('editData').setEnabled(editable.length > 0 || graph.isSelectionEmpty());
 		this.actions.get('shadowVisible').setEnabled(active);
 		this.actions.get('connectionArrows').setEnabled(active);
 		this.actions.get('connectionPoints').setEnabled(active);
 		this.actions.get('copyStyle').setEnabled(active && !graph.isSelectionEmpty());
-		this.actions.get('pasteStyle').setEnabled(active && !graph.isSelectionEmpty());
-		this.actions.get('editGeometry').setEnabled(graph.getModel().isVertex(graph.getSelectionCell()));
+		this.actions.get('pasteStyle').setEnabled(active && editable.length > 0);
+		this.actions.get('editGeometry').setEnabled(editable.length > 0 &&
+			graph.getModel().isVertex(editable[0]));
 		this.actions.get('createShape').setEnabled(active);
 		this.actions.get('createRevision').setEnabled(active);
 		this.actions.get('moveToFolder').setEnabled(file != null);

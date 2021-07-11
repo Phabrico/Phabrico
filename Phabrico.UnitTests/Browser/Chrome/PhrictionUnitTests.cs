@@ -69,15 +69,9 @@ namespace Phabrico.UnitTests.Browser.Chrome
             Assert.AreEqual("I have a lot to say. Hang on tightly to the branches of the trees.", documentContent);
 
             // if action pane is collapsed -> expand it
-            bool actionPaneCollapsed = true;
-            try
-            {
-                WebBrowser.FindElement(By.ClassName("right-collapsed"));
-            }
-            catch
-            {
-                actionPaneCollapsed = false;
-            }
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
 
             if (actionPaneCollapsed)
             {
@@ -147,15 +141,9 @@ namespace Phabrico.UnitTests.Browser.Chrome
             Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
 
             // if action pane is collapsed -> expand it
-            bool actionPaneCollapsed = true;
-            try
-            {
-                WebBrowser.FindElement(By.ClassName("right-collapsed"));
-            }
-            catch
-            {
-                actionPaneCollapsed = false;
-            }
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
 
             if (actionPaneCollapsed)
             {
@@ -168,7 +156,6 @@ namespace Phabrico.UnitTests.Browser.Chrome
             edit.Click();
 
             // wait a while
-            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElement(By.ClassName("phriction-edit")));
 
@@ -267,15 +254,9 @@ namespace Phabrico.UnitTests.Browser.Chrome
 
 
             // if action pane is collapsed -> expand it
-            bool actionPaneCollapsed = true;
-            try
-            {
-                WebBrowser.FindElement(By.ClassName("right-collapsed"));
-            }
-            catch
-            {
-                actionPaneCollapsed = false;
-            }
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
 
             if (actionPaneCollapsed)
             {
@@ -377,15 +358,9 @@ namespace Phabrico.UnitTests.Browser.Chrome
 
 
             // if action pane is collapsed -> expand it
-            actionPaneCollapsed = true;
-            try
-            {
-                WebBrowser.FindElement(By.ClassName("right-collapsed"));
-            }
-            catch
-            {
-                actionPaneCollapsed = false;
-            }
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
 
             if (actionPaneCollapsed)
             {
@@ -463,16 +438,10 @@ namespace Phabrico.UnitTests.Browser.Chrome
             phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
             Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my dad's life"), "Unable to open dad's life story");
 
-           // if action pane is collapsed -> expand it
-            bool actionPaneCollapsed = true;
-            try
-            {
-                WebBrowser.FindElement(By.ClassName("right-collapsed"));
-            }
-            catch
-            {
-                actionPaneCollapsed = false;
-            }
+            // if action pane is collapsed -> expand it
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
 
             if (actionPaneCollapsed)
             {

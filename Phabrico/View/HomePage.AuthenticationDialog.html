@@ -30,8 +30,8 @@
     <div class="aphront-dialog-tail">
         <div class="phui-font-fa fa-sign-in" style="height: 1px;overflow: hidden;"></div> <!-- stupid hack to preload font-awesome font for Firefox -->
         <button class="button-blue" id="btnLogIn" type="submit" style="cursor: not-allowed;" disabled="">Log In</button>
-        @{IF @@PUBLIC-ACCESS@@=True@
-        <a href="/" class="button button-blue" style="float: right">Cancel</a>
+        @{IF @@AUTHENTICATION-FACTOR@@=Public@
+            <a href="/" class="button button-blue" style="float: right">Cancel</a>
         }@
     </div>
 

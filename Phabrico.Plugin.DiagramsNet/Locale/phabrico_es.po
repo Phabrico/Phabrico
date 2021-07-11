@@ -462,7 +462,7 @@ msgid "Group"
 msgstr "Agrupar"
 
 msgid "Home"
-msgstr "Posición básica"
+msgstr "Home"
 
 msgid "Ignores handles under the mouse"
 msgstr "Ignora las asas bajo el ratón"

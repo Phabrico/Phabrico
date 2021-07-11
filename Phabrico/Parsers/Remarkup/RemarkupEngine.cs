@@ -166,8 +166,23 @@ namespace Phabrico.Parsers.Remarkup
                     {
                         if (unprocessedRemarkupText.Length > 0)
                         {
-                            html += HttpUtility.HtmlEncode(unprocessedRemarkupText[0]);
-                            ruleStartsAfterWhiteSpace = unprocessedRemarkupText[0] == ' ';
+                            byte[] utf16 = System.Text.UnicodeEncoding.Unicode.GetBytes( unprocessedRemarkupText );
+
+                            if (unprocessedRemarkupText.Length == 1 || utf16[1] == 0x00)
+                            {
+                                html += HttpUtility.HtmlEncode(unprocessedRemarkupText[0]);
+                                ruleStartsAfterWhiteSpace = unprocessedRemarkupText[0] == ' ';
+                            }
+                            else
+                            {
+                                html += (char)BitConverter.ToUInt16(utf16, 0);
+                                if (utf16.Length >= 4 && utf16[3] != 0x00)
+                                {
+                                    html += (char)BitConverter.ToUInt16(utf16, 2);
+                                    unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
+                                }
+                            }
+                            
                             unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
                         }
 

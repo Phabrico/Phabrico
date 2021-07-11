@@ -32,6 +32,7 @@ namespace Phabrico.UnitTests.Synchronization
         public void Stop()
         {
             stopAllBrowserConnectionThreads = true;
+            tcpListener.Stop();
         }
 
         private void ListenerThread()

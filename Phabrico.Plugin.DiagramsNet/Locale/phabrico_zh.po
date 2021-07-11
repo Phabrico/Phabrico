@@ -462,7 +462,7 @@ msgid "Group"
 msgstr "分组"
 
 msgid "Home"
-msgstr "基本职位"
+msgstr "Home"
 
 msgid "Ignores handles under the mouse"
 msgstr "忽略鼠标下的手柄"

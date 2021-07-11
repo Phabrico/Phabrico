@@ -7,6 +7,7 @@ using System.Security.Principal;
 using System.Text;
 
 using Phabrico.Exception;
+using Phabrico.Http;
 using Phabrico.Parsers.Base64;
 
 namespace Phabrico.Miscellaneous
@@ -359,6 +360,65 @@ namespace Phabrico.Miscellaneous
             }
 
             return ASCIIEncoding.ASCII.GetString(data);
+        }
+
+        /// <summary>
+        /// Generates a DPAPI encrypted string based on the current computer name and user name
+        /// </summary>
+        /// <returns>DPAPI encrypted string which can be used as encryption/decyption key</returns>
+        public static string GetDPAPIKey()
+        {
+            System.Security.Principal.WindowsImpersonationContext windowsImpersonationContext = null;
+
+            try
+            {
+                // impersonate if needed
+                IntPtr currentUserToken = ImpersonationHelper.GetCurrentUserToken();
+                if (currentUserToken != IntPtr.Zero)
+                {
+                    WindowsIdentity currentUser = new WindowsIdentity(currentUserToken);
+                    windowsImpersonationContext = currentUser.Impersonate();
+                }
+
+                // calculate DPAPI key
+                string dpapiEncryptionKey = Environment.MachineName + "|" + Environment.UserName.ToUpperInvariant() + "abcdefghijklmnopqrstuvwxyz789012";
+                dpapiEncryptionKey = dpapiEncryptionKey.Substring(0, 32 * (dpapiEncryptionKey.Length / 32));  // length of DPAPI encryption key should be 32
+                byte[] data = UTF8Encoding.UTF8.GetBytes(dpapiEncryptionKey);
+                byte[] encryptedData = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser)
+                                                    .Concat(ASCIIEncoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz789012"))
+                                                    .ToArray();
+
+                // strip down DPAPI key to 32 bytes
+                for (uint c = 0; c < 32; c++)
+                {
+                    byte encryptedByte = encryptedData[c + (encryptedData.Length / 32) + 4];
+                    if (encryptedByte == 0) encryptedByte += (byte)((c+5)*3);
+                    encryptedData[c] = encryptedByte;
+                }
+                encryptedData = encryptedData.Take(32).ToArray();
+
+                // make sure string contains only printable characters
+                for (int index = 0; index < encryptedData.Length; index++)
+                {
+                    encryptedData[index] &= 127;
+                    encryptedData[index] |= 32;
+
+                    if (encryptedData[index] == 127) encryptedData[index] = 126;
+                }
+
+                return UTF8Encoding.UTF8.GetString(encryptedData);
+            }
+            finally
+            {
+                // un-impersonate if needed
+                if (windowsImpersonationContext != null)
+                {
+                    // Undo impersonation
+                    windowsImpersonationContext.Undo();
+
+                    windowsImpersonationContext.Dispose();
+                }
+            }
         }
 
         /// <summary>

@@ -70,6 +70,12 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>BuildVersion.cs</LastGenOutput>
     </Content>
+    <EmbeddedResource Include="webapp\js\diagramly\NotionClient.js" />
+    <EmbeddedResource Include="webapp\js\diagramly\NotionFile.js" />
+    <EmbeddedResource Include="webapp\js\diagramly\NotionLibrary.js" />
+    <EmbeddedResource Include="webapp\images\notion-logo-white.svg" />
+    <EmbeddedResource Include="webapp\images\notion-logo.svg" />
+    <EmbeddedResource Include="webapp\templates\software\data_flow_1.png" />
     <EmbeddedResource Include="webapp\templates\cloud\gcp\gcp_backup_and_archive_api_hosting.xml" />
     <EmbeddedResource Include="webapp\templates\cloud\gcp\gcp_big_data_complex_event_processing.xml" />
     <EmbeddedResource Include="webapp\templates\cloud\gcp\gcp_dev_test_continuous_delivery_with_spinnaker.xml" />

@@ -202,6 +202,7 @@ namespace Phabrico.Controllers
             {
                 nbrSelected = totalNumberSelected,
                 noneProjectSelected = noneProjectSelected ? "true" : "false",
+                fontAwesomeIcon = "fa-briefcase",
                 records = tableRows
             });
             return new JsonMessage(jsonData);

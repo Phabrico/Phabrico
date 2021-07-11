@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Browser\BrowserUnitTest.cs" />
+    <Compile Include="Browser\Chrome\InstallationPhabricoUnitTest.cs" />
     <Compile Include="Browser\Chrome\DiagramsNetUnitTest.cs" />
     <Compile Include="Browser\Chrome\ManiphestUnitTest.cs" />
     <Compile Include="Browser\Chrome\PhrictionUnitTests.cs" />
@@ -144,6 +145,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="Synchronization\PhabricatorConduitResults\Post\macro.query.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Synchronization\PhabricatorConduitResults\Post\maniphest.edit.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Synchronization\PhabricatorConduitResults\Post\phriction.content.search.json">

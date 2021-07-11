@@ -173,14 +173,14 @@
                 </label>
             </div>
             <div id="edit" class="app-window-body edit">
-                <label id="status" class="select" style="display: none; left: 8px; top: -3px;">
+                <label id="status" class="select" style="display: none; top: -3px;">
                     <select>
                         @{TASK-STATUSES
                         <option value="@@TASK-STATUSES-STATUS-TOKEN@@" @@TASK-STATUSES-STATUS-SELECTED@@>@@TASK-STATUSES-STATUS-NAME@@</option>
                         }@
                     </select>
                 </label>
-                <label id="priority" class="select" style="display: none; left: 8px; top: -3px;">
+                <label id="priority" class="select" style="display: none; top: -3px;">
                     <select>
                         @{TASK-PRIORITIES
                         <option value="@@TASK-PRIORITIES-PRIORITY-TOKEN@@" @@TASK-PRIORITIES-PRIORITY-SELECTED@@>@@TASK-PRIORITIES-PRIORITY-NAME@@</option>
@@ -453,6 +453,7 @@
         document.title = "Phabrico - " + fromHTML("@@TASK-HEADER@@");
         new TextAreaContextMenu(textarea, "@", "user", "/user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
         new TextAreaContextMenu(textarea, "#", "project", "/project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
+        new TextAreaContextMenu(textarea, ":", "emoji", "/remarkup/emoji/", "Code", "Name");
         remarkup = new Remarkup(() => { });
     }, false);
 

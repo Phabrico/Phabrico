@@ -27,8 +27,8 @@ namespace Phabrico.UnitTests.Remarkup
 
             Http.SessionManager.Token token = remarkupController.browser.HttpServer.Session.CreateToken(accountWhoAmI.Token, remarkupController.browser);
             remarkupController.browser.SetCookie("token", token.ID);
-            token.EncryptionKey = EncryptionKey;
-            token.PrivateEncryptionKey = PrivateEncryptionKey;
+            token.EncryptionKey = Encryption.XorString(EncryptionKey, PublicXorCipher);
+            token.PrivateEncryptionKey = Encryption.XorString(PrivateEncryptionKey, PrivateXorCipher);
         }
 
         [TestMethod]

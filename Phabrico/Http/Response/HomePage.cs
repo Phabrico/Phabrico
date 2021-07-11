@@ -120,7 +120,7 @@ namespace Phabrico.Http.Response
         private string GetPageContent(Browser browser)
         {
             SessionManager.Token token;
-            string userName;
+            string userName, authenticationFactor;
             Storage.Account accountStorage = new Storage.Account();
             Phabricator.Data.Account accountData;
             HtmlViewPage htmlViewPage = new HtmlViewPage(browser);
@@ -152,6 +152,8 @@ namespace Phabrico.Http.Response
                             UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
                             database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
                         }
+
+                        authenticationFactor = database.GetAuthenticationFactor();
 
                         database.ClearOldSessionVariables(browser);
 
@@ -260,7 +262,7 @@ namespace Phabrico.Http.Response
                         htmlPartialViewPage.SetText("PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE", ConvertFileSizeIntoReadableString(Storage.File.MaximumSize(database)), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PHABRICO-NUMBER-UNCOMMITTED-OBJECTS", Storage.Stage.CountUncommitted(database).ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PHABRICO-NUMBER-FROZEN-OBJECTS", Storage.Stage.CountFrozen(database).ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        htmlPartialViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("AUTENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.SetText("HAS-FAVORITES", htmlFavoriteObjects.Any() ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.SetText("FAVORITES", htmlFavoriteObjects, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.Merge();
@@ -268,7 +270,7 @@ namespace Phabrico.Http.Response
                         htmlViewPage.SetContent(GetViewData("HomePage.TreeView.Template"));
                         htmlViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity.ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                        htmlViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                         {
                             Plugin.PluginTypeAttribute pluginType = plugin.GetType().GetCustomAttributes(typeof(Plugin.PluginTypeAttribute), true).FirstOrDefault() as Plugin.PluginTypeAttribute;
@@ -308,11 +310,11 @@ namespace Phabrico.Http.Response
                         {
                             browser.Session.Locale = languageCookie;
                         }
-                    }
 
-                    htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
-                    htmlPartialHeaderViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                    htmlPartialHeaderViewPage.Merge();
+                        htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
+                        htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialHeaderViewPage.Merge();
+                    }
 
                     htmlViewPage = new HtmlViewPage(browser);
                     htmlViewPage.SetContent(GetViewData("HomePage.Template"));
@@ -331,14 +333,15 @@ namespace Phabrico.Http.Response
                 case HomePageStatus.AuthenticationError:
                     using (Storage.Database database = new Storage.Database(null))
                     {
-                        bool autoLogonEnabled = string.IsNullOrWhiteSpace(database.GetConfigurationParameter("EncryptionKey")) == false;
+                        authenticationFactor = database.GetAuthenticationFactor();
+
                         htmlPartialViewPage.SetContent(GetViewData("HomePage.AuthenticationDialog"));
                         htmlPartialViewPage.SetText("REDIRECT", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("USERNAME", browser.Session.FormVariables["username"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PASSWORD", browser.Session.FormVariables["password"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("STYLE.DISPLAY.ERROR", "flex", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("ERRORMESSAGE", Miscellaneous.Locale.TranslateText("Username or password are incorrect.", Browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        htmlPartialViewPage.SetText("PUBLIC-ACCESS", autoLogonEnabled ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.Merge();
 
                         htmlViewPage.SetContent(GetViewData("HomePage.Template"));
@@ -364,6 +367,7 @@ namespace Phabrico.Http.Response
                     HtmlViewPage configurationViewPage;
                     using (Storage.Database database = new Storage.Database(configurationController.EncryptionKey))
                     {
+                        authenticationFactor = database.GetAuthenticationFactor();
                         token = HttpServer.Session.GetToken(configurationController.TokenId);
                         UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
                         database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
@@ -380,11 +384,11 @@ namespace Phabrico.Http.Response
 
                     htmlPartialViewPage.SetContent(GetViewData("HomePage.TreeView.Template"));
                     htmlPartialViewPage.SetText("CONTENT", configurationViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                    htmlPartialViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlPartialViewPage.Merge();
 
                     htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
-                    htmlPartialHeaderViewPage.SetText("PUBLIC-ACCESS", token.IsPublic ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlPartialHeaderViewPage.Merge();
 
                     htmlViewPage.SetContent(GetViewData("HomePage.Template"));
@@ -449,7 +453,8 @@ namespace Phabrico.Http.Response
                 default:
                     using (Storage.Database database = new Storage.Database(null))
                     {
-                        bool autoLogonEnabled = string.IsNullOrWhiteSpace(database.GetConfigurationParameter("EncryptionKey")) == false;
+                        authenticationFactor = database.GetAuthenticationFactor();
+
                         htmlPartialViewPage.SetContent(GetViewData("HomePage.AuthenticationDialog"));
                         htmlPartialViewPage.SetText("REDIRECT", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("USERNAME", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -458,7 +463,7 @@ namespace Phabrico.Http.Response
                         htmlPartialViewPage.SetText("PHABRICATORURL", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("STYLE.DISPLAY.ERROR", "none", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("ERRORMESSAGE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        htmlPartialViewPage.SetText("PUBLIC-ACCESS", autoLogonEnabled ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.Merge();
 
                         htmlViewPage.SetContent(GetViewData("HomePage.Template"));
