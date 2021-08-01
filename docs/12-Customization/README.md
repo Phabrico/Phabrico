@@ -76,6 +76,7 @@ namespace Phabrico
 
 
 ## Customization parameters
+
 | Parameter                                   | Description                                                                                                                         |
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | ApplicationCSS                              | Global cascading style sheets which are injected in each page                                                                       |
@@ -99,3 +100,4 @@ namespace Phabrico
 | Language                                    | Language code for Phabrico application.  (Content of Phriction documents or Maniphest tasks will not be translated)                 |
 | MasterDataIsAccessible                      | If false, the master data on Phabricator is not accessible via Phabrico. If IsReadonly is true, MasterDataIsAccessible wil be false |
 | Theme                                       | Auto, Light or Dark                                                                                                                 |
+
