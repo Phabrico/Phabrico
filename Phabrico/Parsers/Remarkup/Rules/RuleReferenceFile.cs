@@ -35,112 +35,93 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Storage.File fileStorage = new Storage.File();
             Storage.Stage stageStorage = new Storage.Stage();
 
-            string tokenId = browser.GetCookie("token");
-            if (tokenId != null)
+            Account existingAccount = accountStorage.WhoAmI(database);
+
+            int fileObjectID = Int32.Parse(match.Groups[1].Value);
+            Dictionary<string, string> fileObjectOptions = match.Groups[2]
+                                                                         .Value
+                                                                         .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                                         .ToDictionary(key => key.Split('=')
+                                                                                                 .FirstOrDefault()
+                                                                                                 .ToLower()
+                                                                                                 .Trim(),
+                                                                                       value => value.Contains('=') ? value.Split('=')[1] : "");
+
+            bool showImageAsLink = false;
+            if (fileObjectOptions.ContainsKey("layout") == false)
             {
-                string encryptionKey = SessionManager.GetToken(browser)?.EncryptionKey;
-                if (string.IsNullOrEmpty(encryptionKey) == false)
+                fileObjectOptions["layout"] = "left";
+            }
+            else
+            if (fileObjectOptions["layout"].ToLower().Equals("link"))
+            {
+                showImageAsLink = true;
+            }
+
+            Phabricator.Data.File fileObject = fileStorage.GetByID(database, fileObjectID, true);
+            if (fileObject == null)
+            {
+                fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectID, false);
+            }
+
+            if (fileObject != null)
+            {
+                LinkedPhabricatorObjects.Add(fileObject);
+
+                if (fileObject.FileType == Phabricator.Data.File.FileStyle.Video)
                 {
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-
-                        // unmask private encryption key
-                        if (token.PrivateEncryptionKey != null)
-                        {
-                            UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                            database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                        }
-
-                        Account existingAccount = accountStorage.Get(database, SessionManager.GetToken(browser));
-
-                        int fileObjectID = Int32.Parse(match.Groups[1].Value);
-                        Dictionary<string, string> fileObjectOptions = match.Groups[2]
-                                                                                     .Value
-                                                                                     .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                                                                                     .ToDictionary(key => key.Split('=')
-                                                                                                             .FirstOrDefault()
-                                                                                                             .ToLower()
-                                                                                                             .Trim(),
-                                                                                                   value => value.Contains('=') ? value.Split('=')[1] : "");
-
-                        bool showImageAsLink = false;
-                        if (fileObjectOptions.ContainsKey("layout") == false)
-                        {
-                            fileObjectOptions["layout"] = "left";
-                        }
-                        else
-                        if (fileObjectOptions["layout"].ToLower().Equals("link"))
-                        {
-                            showImageAsLink = true;
-                        }
-
-                        Phabricator.Data.File fileObject = fileStorage.GetByID(database, fileObjectID, true);
-                        if (fileObject == null)
-                        {
-                            fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectID, false);
-                        }
-
-                    if (fileObject != null)
+                    KeyValuePair<string, string> mediaParameter = fileObjectOptions.FirstOrDefault(parameter => parameter.Key.Equals("media", StringComparison.OrdinalIgnoreCase));
+                    if (mediaParameter.Key != null)
                     {
-                        LinkedPhabricatorObjects.Add(fileObject);
-
-                        if (fileObject.FileType == Phabricator.Data.File.FileStyle.Video)
+                        if (mediaParameter.Value.Equals("audio", StringComparison.OrdinalIgnoreCase))
                         {
-                            KeyValuePair<string, string> mediaParameter = fileObjectOptions.FirstOrDefault(parameter => parameter.Key.Equals("media", StringComparison.OrdinalIgnoreCase));
-                            if (mediaParameter.Key != null)
-                            {
-                                if (mediaParameter.Value.Equals("audio", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    fileObject.FileType = Phabricator.Data.File.FileStyle.Audio;
-                                }
-                            }
-                        }
-
-                        switch (fileObject.FileType)
-                        {
-                            case Phabricator.Data.File.FileStyle.Audio:
-                                html = ProcessAudioFile(fileObjectOptions, fileObject);
-                                break;
-
-                            case Phabricator.Data.File.FileStyle.Image:
-                                if (showImageAsLink)
-                                {
-                                    fileObject.FontAwesomeIcon = "fa-file-picture-o";
-
-                                    if (fileObjectOptions.ContainsKey("name"))
-                                    {
-                                        fileObject.FileName = fileObjectOptions["name"];
-                                    }
-
-                                    html = ProcessGenericFile(fileObjectOptions, fileObject, browser);
-                                }
-                                else
-                                {
-                                    html = ProcessImageFile(database, browser, fileObjectOptions, existingAccount, fileObject, fileObjectID);
-                                }
-                                break;
-
-                            case Phabricator.Data.File.FileStyle.Other:
-                                html = ProcessGenericFile(fileObjectOptions, fileObject, browser);
-                                break;
-
-                            case Phabricator.Data.File.FileStyle.Video:
-                                html = ProcessVideoFile(fileObjectOptions, fileObject);
-                                break;
-
-                            default:
-                                break;
+                            fileObject.FileType = Phabricator.Data.File.FileStyle.Audio;
                         }
                     }
+                }
 
-                    remarkup = remarkup.Substring(match.Length);
-                    
-                    Length = match.Length;
+                switch (fileObject.FileType)
+                {
+                    case Phabricator.Data.File.FileStyle.Audio:
+                        html = ProcessAudioFile(fileObjectOptions, fileObject);
+                        break;
 
-                    return true;
+                    case Phabricator.Data.File.FileStyle.Image:
+                        if (showImageAsLink)
+                        {
+                            fileObject.FontAwesomeIcon = "fa-file-picture-o";
+
+                            if (fileObjectOptions.ContainsKey("name"))
+                            {
+                                fileObject.FileName = fileObjectOptions["name"];
+                            }
+
+                            html = ProcessGenericFile(fileObjectOptions, fileObject, browser);
+                        }
+                        else
+                        {
+                            html = ProcessImageFile(database, browser, fileObjectOptions, existingAccount, fileObject, fileObjectID);
+                        }
+                        break;
+
+                    case Phabricator.Data.File.FileStyle.Other:
+                        html = ProcessGenericFile(fileObjectOptions, fileObject, browser);
+                        break;
+
+                    case Phabricator.Data.File.FileStyle.Video:
+                        html = ProcessVideoFile(fileObjectOptions, fileObject);
+                        break;
+
+                    default:
+                        break;
                 }
             }
 
-            return false;
+            remarkup = remarkup.Substring(match.Length);
+
+            Length = match.Length;
+
+            return true;
         }
 
         /// <summary>
@@ -248,7 +229,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 }
             }
 
-            return string.Format(@"<audio controls='controls' preload='{1}'{2}><source src='/file/data/{0}/' type='audio/x-wav'></audio><br>", fileObject.ID, audioPreload, audioOptions);
+            return string.Format(@"<audio controls='controls' preload='{1}'{2}><source src='file/data/{0}/' type='audio/x-wav'></audio><br>", fileObject.ID, audioPreload, audioOptions);
         }
 
         /// <summary>
@@ -403,7 +384,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 {
                     isEditable = true;
                     imgClass += " diagram";
-                    btnEditImageHtml = string.Format("<a class='button' href='/diagrams.net/F{0}' onclick='javascript:sessionStorage[\"originURL\"] = document.location.href; return true;'>" +
+                    btnEditImageHtml = string.Format("<a class='button' href='diagrams.net/F{0}' onclick='javascript:sessionStorage[\"originURL\"] = document.location.href; return true;'>" +
                                                           "<span class='phui-font-fa fa-sitemap'></span>" +
                                                      "</a>", 
                         fileObject.ID);
@@ -416,7 +397,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (isFullSize)
                 {
                     return string.Format(@"<div class='image-container allow-full-screen'>
-                                          <img rel='{0}' src='/file/data/{1}/' class='{2}' style='{3}'{4}{5}>
+                                          <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>
                                           {6}
                                        </div>",
                         fileObject.FileName.Replace("'", ""),
@@ -430,7 +411,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 else
                 {
                     return string.Format(@"<div class='image-container'>
-                                          <img rel='{0}' src='/file/data/{1}/' class='{2}' style='{3}'{4}{5}>
+                                          <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>
                                           {6}
                                        </div>",
                         fileObject.FileName.Replace("'", ""),
@@ -447,7 +428,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (isFullSize)
                 {
                     return string.Format(@"<div class='image-container allow-full-screen'>
-                                          <img rel='{0}' src='/file/data/{1}/' class='{2}' style='{3}'{4}>
+                                          <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}>
                                        </div>",
                         fileObject.FileName.Replace("'", ""),
                         fileObject.ID,
@@ -457,7 +438,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 }
                 else
                 {
-                    return string.Format(@"<img rel='{0}' src='/file/data/{1}/' class='{2}' style='{3}'{4}{5}>",
+                    return string.Format(@"<img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>",
                         fileObject.FileName.Replace("'", ""),
                         fileObject.ID,
                         imgClass,
@@ -493,7 +474,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             return string.Format(
-                        @"<a class='remarkup-embed' href='/file/data/{3}/'>
+                        @"<a class='remarkup-embed' href='file/data/{3}/'>
                         <div class='remarkup-embed-border'>
                             <span class='phui-font-fa {0}' style='top:0px'></span>
                             <span>
@@ -532,7 +513,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 }
             }
 
-            return string.Format(@"<video controls='controls' preload='{1}'{2}><source src='/file/data/{0}/'{1}></video><br>", fileObject.ID, videoPreload, videoOptions);
+            return string.Format(@"<video controls='controls' preload='{1}'{2}><source src='file/data/{0}/'{1}></video><br>", fileObject.ID, videoPreload, videoOptions);
         }
     }
 }

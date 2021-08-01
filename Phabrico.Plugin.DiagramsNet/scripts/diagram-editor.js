@@ -56,7 +56,7 @@ DiagramEditor.prototype.config = null;
 /**
  * Protocol and domain to use.
  */
-DiagramEditor.prototype.drawDomain = '/diagrams.net/webapp/';
+DiagramEditor.prototype.drawDomain = 'diagrams.net/webapp/';
 
 /**
  * UI theme to be use.

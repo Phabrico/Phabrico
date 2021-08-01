@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.IO;
 
 namespace Phabrico.Miscellaneous
@@ -10,9 +11,10 @@ namespace Phabrico.Miscellaneous
     public class HttpListenerResponse
     {
         private System.Net.HttpListenerResponse internalHttpListenerResponse;
+        private System.Web.HttpResponse internalHttpResponse;
 
         private string internalContentType;
-        private System.Net.WebHeaderCollection internalHeaders = new System.Net.WebHeaderCollection();
+        private NameValueCollection internalHeaders = new NameValueCollection();
         private long internalContentLength64;
         private int internalStatusCode;
         private string internalStatusDescription;
@@ -25,48 +27,78 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     return internalContentType;
                 }
-                
-                return internalHttpListenerResponse.ContentType;
+                else
+                if (internalHttpResponse != null)
+                {
+                    return internalHttpResponse.ContentType;
+                }
+                else
+                {
+                    return internalHttpListenerResponse.ContentType;
+                }
             }
 
             set
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     internalContentType = value;
                 }
-                
-                internalHttpListenerResponse.ContentType = value;
+                else
+                if (internalHttpResponse != null)
+                {
+                    internalHttpResponse.ContentType = value;
+                }
+                else
+                {
+                    internalHttpListenerResponse.ContentType = value;
+                }
             }
         }
 
         /// <summary>
         /// Gets or sets the collection of header name/value pairs returned by the server.
         /// </summary>
-        public virtual System.Net.WebHeaderCollection Headers
+        public virtual NameValueCollection Headers
         {
             get
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     return internalHeaders;
                 }
-                
-                return internalHttpListenerResponse.Headers;
+                else
+                if (internalHttpResponse != null)
+                {
+                    return  internalHttpResponse.Headers;
+                }
+                else
+                {
+                    return internalHttpListenerResponse.Headers;
+                }
             }
 
             set
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     internalHeaders = value;
                 }
-                
-                internalHttpListenerResponse.Headers = value;
+                else
+                if (internalHttpResponse != null)
+                {
+                    internalHttpResponse.Headers.Clear();
+                    internalHttpResponse.Headers.Add(value);
+                }
+                else
+                {
+                    internalHttpListenerResponse.Headers.Clear();
+                    internalHttpListenerResponse.Headers.Add(value);
+                }
             }
         }
 
@@ -77,22 +109,43 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     return internalContentLength64;
                 }
-                
-                return internalHttpListenerResponse.ContentLength64;
+                else
+                if (internalHttpResponse != null)
+                {
+                    try
+                    {
+                        return Int32.Parse(internalHttpResponse.Headers["Content-Length"]);
+                    }
+                    catch
+                    {
+                        return 0;
+                    }
+                }
+                else
+                {
+                    return internalHttpListenerResponse.ContentLength64;
+                }
             }
 
             set
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     internalContentLength64 = value;
                 }
-                
-                internalHttpListenerResponse.ContentLength64 = value;
+                else
+                if (internalHttpResponse != null)
+                {
+                    internalHttpResponse.Headers["Content-Length"] = value.ToString();
+                }
+                else
+                {
+                    internalHttpListenerResponse.ContentLength64 = value;
+                }
             }
         }
 
@@ -103,22 +156,36 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     return internalStatusCode;
                 }
-                
-                return internalHttpListenerResponse.StatusCode;
+                else
+                if (internalHttpResponse != null)
+                {
+                    return internalHttpResponse.StatusCode;
+                }
+                else
+                {
+                    return internalHttpListenerResponse.StatusCode;
+                }
             }
 
             set
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     internalStatusCode = value;
                 }
-                
-                internalHttpListenerResponse.StatusCode = value;
+                else
+                if (internalHttpResponse != null)
+                {
+                    internalHttpResponse.StatusCode = value;
+                }
+                else
+                {
+                    internalHttpListenerResponse.StatusCode = value;
+                }
             }
         }
 
@@ -129,22 +196,36 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     return internalStatusDescription;
                 }
-                
-                return internalHttpListenerResponse.StatusDescription;
+                else
+                if (internalHttpResponse != null)
+                {
+                    return internalHttpListenerResponse.StatusDescription;
+                }
+                else
+                {
+                    return internalHttpResponse.StatusDescription;
+                }
             }
 
             set
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     internalStatusDescription = value;
                 }
-                
-                internalHttpListenerResponse.StatusDescription = value;
+                else
+                if (internalHttpResponse != null)
+                {
+                    internalHttpResponse.StatusDescription = value;
+                }
+                else
+                {
+                    internalHttpListenerResponse.StatusDescription = value;
+                }
             }
         }
 
@@ -155,22 +236,36 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     return internalRedirectLocation;
                 }
-                
-                return internalHttpListenerResponse.RedirectLocation;
+                else
+                if (internalHttpResponse != null)
+                {
+                    return internalHttpResponse.RedirectLocation;
+                }
+                else
+                {
+                    return internalHttpListenerResponse.RedirectLocation;
+                }
             }
 
             set
             {
-                if (internalHttpListenerResponse == null)
+                if (internalHttpListenerResponse == null && internalHttpResponse == null)
                 {
                     internalRedirectLocation = value;
                 }
-                
-                internalHttpListenerResponse.RedirectLocation = value;
+                else
+                if (internalHttpResponse != null)
+                {
+                    internalHttpResponse.RedirectLocation = value;
+                }
+                else
+                {
+                    internalHttpListenerResponse.RedirectLocation = value;
+                }
             }
         }
 
@@ -181,7 +276,14 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                return internalHttpListenerResponse.OutputStream;
+                if (internalHttpResponse != null)
+                {
+                    return internalHttpResponse.OutputStream;
+                }
+                else
+                {
+                    return internalHttpListenerResponse.OutputStream;
+                }
             }
         }
 
@@ -204,16 +306,39 @@ namespace Phabrico.Miscellaneous
         }
 
         /// <summary>
+        /// Converts a System.Web.HttpResponse object implicitly into a Phabrico.Miscellaneous.HttpListenerContext object
+        /// </summary>
+        /// <param name="httpListenerContext"></param>
+        public static implicit operator HttpListenerResponse(System.Web.HttpResponse httpContext)
+        {
+            return new HttpListenerResponse {
+                internalHttpResponse = httpContext
+            };
+        }
+
+        /// <summary>
         /// Adds a HTTP header to a response
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
         public void AddHeader(string name, string value)
         {
-            if (internalHttpListenerResponse == null)
+            if (internalHttpListenerResponse == null && internalHttpResponse == null)
             {
                 internalHeaders.Clear();
                 internalHeaders.Add(name, value);
+            }
+            else
+            if (internalHttpResponse != null)
+            {
+                if (internalHttpResponse.Headers[name] == null)
+                {
+                    internalHttpResponse.AddHeader(name, value);
+                }
+                else
+                {
+                    internalHttpResponse.Headers[name] = value;
+                }
             }
             else
             {
@@ -228,9 +353,14 @@ namespace Phabrico.Miscellaneous
         /// <param name="value"></param>
         public void AppendHeader(string name, string value)
         {
-            if (internalHttpListenerResponse == null)
+            if (internalHttpListenerResponse == null  &&  internalHttpResponse == null)
             {
                 internalHeaders.Add(name, value);
+            }
+            else
+            if (internalHttpResponse != null)
+            {
+                internalHttpResponse.AppendHeader(name, value);
             }
             else
             {

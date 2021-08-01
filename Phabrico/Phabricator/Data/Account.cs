@@ -182,7 +182,7 @@ namespace Phabrico.Phabricator.Data
         /// <summary>
         /// Color theme to be used by Phabrico
         /// </summary>
-        public string Theme { get; set; }
+        public string Theme { get; set; } = "light";
 
         /// <summary>
         /// Username you can login to Phabrico with
@@ -216,34 +216,10 @@ namespace Phabrico.Phabricator.Data
         {
             Parameters = new Configuration();
 
-            // set some default XorCipher values for masking the database encryption keys
-            PublicXorCipher = new UInt64[] {
-                (UInt64)(DateTime.UtcNow.Ticks / 1223) * 65567717 + (UInt64)(new Random(270544961)).Next(),
-                (UInt64)(DateTime.UtcNow.Ticks / 2011) * 86452669 + (UInt64)(new Random(541089922)).Next(),
-                (UInt64)(DateTime.UtcNow.Ticks / 3581) * 15156277 + (UInt64)(new Random(812691475)).Next(),
-                (UInt64)(DateTime.UtcNow.Ticks / 4099) * 64466863 + (UInt64)(new Random(108323660)).Next()
-            };
-
-            PrivateXorCipher = new UInt64[] {
-                (UInt64)(DateTime.UtcNow.Ticks / 5869) * 12345701 + (UInt64)(new Random(826366246)).Next(),
-                (UInt64)(DateTime.UtcNow.Ticks / 6899) * 24680251 + (UInt64)(new Random(139831489)).Next(),
-                (UInt64)(DateTime.UtcNow.Ticks / 7879) * 36925817 + (UInt64)(new Random(595878500)).Next(),
-                (UInt64)(DateTime.UtcNow.Ticks / 8929) * 48260497 + (UInt64)(new Random(864233365)).Next()
-            };
-
-            DpapiXorCipher1 = new UInt64[] {
-                (UInt64)0,
-                (UInt64)0,
-                (UInt64)0,
-                (UInt64)0
-            };
-
-            DpapiXorCipher2 = new UInt64[] {
-                (UInt64)0,
-                (UInt64)0,
-                (UInt64)0,
-                (UInt64)0
-            };
+            PublicXorCipher = new UInt64[] { 0, 0, 0, 0 };
+            PrivateXorCipher = new UInt64[] { 0, 0, 0, 0 };
+            DpapiXorCipher1 = new UInt64[] { 0, 0, 0, 0 };
+            DpapiXorCipher2 = new UInt64[] { 0, 0, 0, 0 };
         }
 
         /// <summary>

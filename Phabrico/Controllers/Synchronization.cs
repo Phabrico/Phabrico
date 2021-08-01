@@ -153,6 +153,11 @@ namespace Phabrico.Controllers
             public Dictionary<string, List<int>> fileObjectsPerToken = new Dictionary<string, List<int>>();
 
             /// <summary>
+            /// If set to true, Phabrico will only download the data from Phabricator since the last download
+            /// </summary>
+            public bool incrementalDownload = true;
+
+            /// <summary>
             /// Timestamp when the latest download process was finished.
             /// This timestamp represents the last time that new/modified Phriction documents and/or Maniphest tasks were downloaded from Phabricator
             /// The difference between lastDownloadTimestamp and lastSynchronizationTimestamp, is that lastDownloadTimestamp is specifically used for filtering the
@@ -358,18 +363,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronization/logging")]
         public void HttpGetLoadSyncLoggingScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+
             SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/logging", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
-
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/logging", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
         }
 
         /// <summary>
@@ -385,6 +382,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronization/search")]
         public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
@@ -393,16 +392,7 @@ namespace Phabrico.Controllers
             if (filterText == null) filterText = "";
 
             SessionManager.Token token = SessionManager.GetToken(browser);
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/search", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
-
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/search", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -481,22 +471,15 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronization/data")]
         public void HttpGetLoadSynchronizedObject(Http.Server httpServer, Browser browser, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.SynchronizationLogging synchronizationLoggingStorage = new Storage.SynchronizationLogging();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/data", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
-
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/data", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -554,6 +537,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronize/full")]
         public void HttpPostStartFullSynchronization(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+
             if (Synchronization.InProgress)
             {
                 // synchronization already in progress -> skip
@@ -578,6 +563,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronize/light")]
         public void HttpPostStartLightSynchronization(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+
             if (Synchronization.InProgress)
             {
                 // synchronization already in progress -> skip
@@ -607,15 +594,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronize/prepare")]
         public void HttpGetSynchronizationPrepare(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+
             Storage.Account accountStorage = new Storage.Account();
             SessionManager.Token token = SessionManager.GetToken(browser);
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -642,6 +624,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronize/status")]
         public void HttpGetSynchronizationStatus(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+
             string jsonData = JsonConvert.SerializeObject(new {
                 Percentage = (int)SharedResource.Instance.ProgressPercentage,
                 Description = SharedResource.Instance.ProgressDescription,
@@ -668,22 +652,10 @@ namespace Phabrico.Controllers
                 SessionManager.Token token = SessionManager.GetToken(browser);
                 if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronize", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
-                    // unmask private encryption key
-                    if (token.PrivateEncryptionKey != null)
-                    {
-                        UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                        database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                    }
+                    // set private encryption key
+                    database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                     SynchronizationParameters synchronizationParameters = new SynchronizationParameters();
                     synchronizationParameters.database = database;
@@ -769,22 +741,10 @@ namespace Phabrico.Controllers
                 SessionManager.Token token = SessionManager.GetToken(browser);
                 if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronize", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
-                    // unmask private encryption key
-                    if (token.PrivateEncryptionKey != null)
-                    {
-                        UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                        database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                    }
+                    // set private encryption key
+                    database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                     database.SetConfigurationParameter("LastSyncMode", SyncMode.Light.ToString());
 
@@ -1371,7 +1331,8 @@ namespace Phabrico.Controllers
                                                                         .ToArray();
                 IEnumerable<Phabricator.Data.Project> availableProjects = projectStorage.Get(synchronizationParameters.database);
 
-                if (selectedProjectTags.Count() == availableProjects.Count(p => p.Token.Equals(Phabricator.Data.Project.None) == false) &&
+                if (availableProjects.Count() > 0 &&
+                    selectedProjectTags.Count() == availableProjects.Count(p => p.Token.Equals(Phabricator.Data.Project.None) == false) &&
                     synchronizationParameters.projectSelected[Phabricator.Data.Project.None] == Phabricator.Data.Project.Selection.Selected
                    )
                 {
@@ -1524,7 +1485,7 @@ namespace Phabrico.Controllers
                     synchronizationLogging.DateModified = phabricatorManiphestTask.DateModified;
                     synchronizationLogging.LastModifiedBy = phabricatorManiphestTask.LastModifiedBy;
                     synchronizationLogging.Title = phabricatorManiphestTask.Name;
-                    synchronizationLogging.URL = "/maniphest/T" + phabricatorManiphestTask.ID.ToString() + "/";
+                    synchronizationLogging.URL = "maniphest/T" + phabricatorManiphestTask.ID.ToString() + "/";
 
                     if (string.IsNullOrEmpty(synchronizationLogging.LastModifiedBy))
                     {
@@ -1651,11 +1612,21 @@ namespace Phabrico.Controllers
             if (synchronizationParameters.existingAccount.Parameters.Synchronization != SynchronizationMethod.All &&
                 synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly))
             {
-                phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
-                                                                               synchronizationParameters.browser.Conduit,
-                                                                               phabricatorPhrictionDocumentConstraints,
-                                                                               lastDownloadTimestamp)
-                                                                       .ToList();
+                if (synchronizationParameters.incrementalDownload)
+                {
+                    phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
+                                                                                   synchronizationParameters.browser.Conduit,
+                                                                                   phabricatorPhrictionDocumentConstraints,
+                                                                                   lastDownloadTimestamp)
+                                                                           .ToList();
+                }
+                else
+                {
+                    phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
+                                                                                   synchronizationParameters.browser.Conduit,
+                                                                                   phabricatorPhrictionDocumentConstraints)
+                                                                           .ToList();
+                }
             }
             else
             if (synchronizationParameters.existingAccount.Parameters.Synchronization != SynchronizationMethod.All &&
@@ -1668,20 +1639,40 @@ namespace Phabrico.Controllers
                     Phabricator.API.Constraint constraintActivatedProject = new Phabricator.API.Constraint("projects", new string[] { selectedProject });
                     phabricatorPhrictionDocumentConstraints = new Phabricator.API.Constraint[] { constraintActivatedProject };
 
-                    phabricatorPhrictionDocuments.AddRange( phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
-                                                                                           synchronizationParameters.browser.Conduit,
-                                                                                           phabricatorPhrictionDocumentConstraints,
-                                                                                           lastDownloadTimestamp)
-                                                          );
+                    if (synchronizationParameters.incrementalDownload)
+                    {
+                        phabricatorPhrictionDocuments.AddRange(phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
+                                                                                               synchronizationParameters.browser.Conduit,
+                                                                                               phabricatorPhrictionDocumentConstraints,
+                                                                                               lastDownloadTimestamp)
+                                                              );
+                    }
+                    else
+                    {
+                        phabricatorPhrictionDocuments.AddRange(phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
+                                                                                                             synchronizationParameters.browser.Conduit,
+                                                                                                             phabricatorPhrictionDocumentConstraints)
+                                                              );
+                    }
                 }
             }
             else
             {
-                phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
-                                                                               synchronizationParameters.browser.Conduit,
-                                                                               phabricatorPhrictionDocumentConstraints,
-                                                                               lastDownloadTimestamp)
-                                                                       .ToList();
+                if (synchronizationParameters.incrementalDownload)
+                {
+                    phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
+                                                                                   synchronizationParameters.browser.Conduit,
+                                                                                   phabricatorPhrictionDocumentConstraints,
+                                                                                   lastDownloadTimestamp)
+                                                                           .ToList();
+                }
+                else
+                {
+                    phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
+                                                                                   synchronizationParameters.browser.Conduit,
+                                                                                   phabricatorPhrictionDocumentConstraints)
+                                                                           .ToList();
+                }
             }
 
             List<Phabricator.Data.Phriction> forbiddenDocuments = phabricatorPhrictionDocuments.Where(document => document.Projects
@@ -1714,11 +1705,23 @@ namespace Phabrico.Controllers
                         Phabricator.API.Constraint constraintChildPages = new Phabricator.API.Constraint("ancestorPaths", currentBlockAncestorPages);
                         phabricatorPhrictionDocumentConstraints = new Phabricator.API.Constraint[] { constraintChildPages };
 
-                        List<Phabricator.Data.Phriction> chilDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
-                                                                                                        synchronizationParameters.browser.Conduit,
-                                                                                                        phabricatorPhrictionDocumentConstraints,
-                                                                                                        synchronizationParameters.lastDownloadTimestamp)
-                                                                                                .ToList();
+                        List<Phabricator.Data.Phriction> chilDocuments;
+                        if (synchronizationParameters.incrementalDownload)
+                        {
+                            chilDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
+                                                                           synchronizationParameters.browser.Conduit,
+                                                                           phabricatorPhrictionDocumentConstraints,
+                                                                           synchronizationParameters.lastDownloadTimestamp)
+                                                                   .ToList();
+                        }
+                        else
+                        {
+                            chilDocuments = phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
+                                                                           synchronizationParameters.browser.Conduit,
+                                                                           phabricatorPhrictionDocumentConstraints)
+                                                                   .ToList();
+                        }
+
                         foreach (Phabricator.Data.Phriction childDocument in chilDocuments)
                         {
                             if (phabricatorPhrictionDocuments.Any(document => document.Token == childDocument.Token) == false)
@@ -1755,7 +1758,7 @@ namespace Phabrico.Controllers
                     synchronizationLogging.DateModified = phabricatorPhrictionDocument.DateModified;
                     synchronizationLogging.LastModifiedBy = phabricatorPhrictionDocument.LastModifiedBy;
                     synchronizationLogging.Title = phabricatorPhrictionDocument.Name;
-                    synchronizationLogging.URL = "/w/" + phabricatorPhrictionDocument.Path;
+                    synchronizationLogging.URL = "w/" + phabricatorPhrictionDocument.Path;
 
                     Phabricator.Data.Phriction previousData = phrictionStorage.Get(synchronizationParameters.database, phabricatorPhrictionDocument.Token, true);
                     if (previousData == null)
@@ -2288,12 +2291,8 @@ namespace Phabrico.Controllers
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                // unmask private encryption key
-                if (token.PrivateEncryptionKey != null)
-                {
-                    UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                    database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                }
+                // set private encryption key
+                database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                 Phabricator.Data.Account existingAccount = accountStorage.Get(database, token);
                 if (existingAccount != null)

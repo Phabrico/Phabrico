@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
@@ -17,23 +16,6 @@ namespace Phabrico.Miscellaneous
     /// </summary>
     public class Encryption
     {
-        private struct BY_HANDLE_FILE_INFORMATION
-        {
-            public uint FileAttributes;
-            public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime;
-            public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
-            public System.Runtime.InteropServices.ComTypes.FILETIME LastWriteTime;
-            public uint VolumeSerialNumber;
-            public uint FileSizeHigh;
-            public uint FileSizeLow;
-            public uint NumberOfLinks;
-            public uint FileIndexHigh;
-            public uint FileIndexLow;
-        }
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GetFileInformationByHandle(IntPtr hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
-
         /// <summary>
         /// Decrypts an encrypted string
         /// </summary>
@@ -235,57 +217,7 @@ namespace Phabrico.Miscellaneous
 
             return ASCIIEncoding.ASCII.GetString(data);
         }
-
-        /// <summary>
-        /// Generates an encryption key based on the logged on Windows username and the file handle index of the Phabrico.data file.
-        /// </summary>
-        /// <param name="windowsIdentity">Windows identity object of the logged on user</param>
-        /// <returns></returns>
-        public static string GenerateNTLMEncryptionKey(WindowsIdentity windowsIdentity)
-        {
-            string databaseFileName = System.Configuration.ConfigurationManager.AppSettings["DatabaseDirectory"] + "\\Phabrico.data";
-            BY_HANDLE_FILE_INFORMATION fileInformation = new BY_HANDLE_FILE_INFORMATION();
-            FileInfo fileInfo = new FileInfo(databaseFileName);
-            using (FileStream fileStream = fileInfo.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                GetFileInformationByHandle(fileStream.SafeFileHandle.DangerousGetHandle(), out fileInformation);
-                ulong fileIndex = ((ulong)fileInformation.FileIndexHigh << 32) + (ulong)fileInformation.FileIndexLow;
-                byte[] hashBytes = MD5.Create().ComputeHash(ASCIIEncoding.ASCII.GetBytes(fileIndex.ToString()));
-
-                // Convert the byte array to hexadecimal string
-                StringBuilder md5Preparation = new StringBuilder();
-                for (int i = 0; i < hashBytes.Length; i++)
-                {
-                    if (hashBytes[i] % 2 == 0)
-                    {
-                        md5Preparation.Append(hashBytes[i].ToString("X2"));
-                    }
-                    else
-                    {
-                        md5Preparation.Append(hashBytes[i].ToString("x2"));
-                    }
-                }
-                string md5Result = md5Preparation.ToString();
-
-                // combine known keys into 1 big unencrypted key
-                StringBuilder unencryptedKey = new StringBuilder(fileIndex.ToString("X2") + windowsIdentity.Name.ToLower() + md5Result);
-
-                // add some punctuation characters to unencrypted key
-                char[] punctuation = new char[] { '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '+', '=', '[', ']', '{', '}', '|', ':', ';', '"', '<', '>', '?', '/', '.', ',' };
-                while (fileIndex > 0)
-                {
-                    unencryptedKey[(int)(fileIndex % (ulong)unencryptedKey.Length)] = punctuation[(int)(fileIndex % (ulong)punctuation.Length)];
-                    fileIndex = fileIndex / 10;
-                }
-
-
-                // create ecryption key based on unencrypted key
-                string userKey = unencryptedKey.ToString().Substring(0, unencryptedKey.Length / 2);
-                string passKey = unencryptedKey.ToString().Substring(unencryptedKey.Length / 2);
-                return GenerateEncryptionKey(userKey, passKey);
-            }
-        }
-
+        
         /// <summary>
         /// Generates a password that will be used for encrypting the data in the SQLite database which needs to be encrypted in EncryptionMode.Private
         /// </summary>

@@ -48,7 +48,7 @@ namespace Phabrico
 
             try
             {
-                httpServer = new Http.Server(remoteAccessEnabled, tcpListenPort);
+                httpServer = new Http.Server(remoteAccessEnabled, tcpListenPort, "/");
             }
             catch (System.Exception exception)
             {

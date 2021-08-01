@@ -565,7 +565,7 @@
 
         // send to HTTP server
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("POST", "/PhrictionToPDF/configuration/save/", true);
+        xmlhttp.open("POST", "PhrictionToPDF/configuration/save/", true);
         xmlhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8");
         xmlhttp.send(configuration);
     }

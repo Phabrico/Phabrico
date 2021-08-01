@@ -79,7 +79,7 @@ class AutoLogOff {
 
         this.doLogOff = function(evt) {
             var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open('GET', '/logout', true);
+            xmlhttp.open('GET', document.baseURI + 'logout', true);
             xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             xmlhttp.onload = function () {
                 window.location.reload();
@@ -87,25 +87,25 @@ class AutoLogOff {
             xmlhttp.send();
         }
 
-        this.doPoke = function(evt) {
-            var pokeRequest = new XMLHttpRequest();
-            pokeRequest.onreadystatechange = function() {
-                if (pokeRequest.readyState == 4 && pokeRequest.status == 200) {
-                    try
-                    {
-                        var jsonResponse = JSON.parse(pokeRequest.responseText);
+        this.doPoke = function (evt) {
+            if (instance.isEnabled) {
+                var pokeRequest = new XMLHttpRequest();
+                pokeRequest.onreadystatechange = function () {
+                    if (pokeRequest.readyState == 4 && pokeRequest.status == 200) {
+                        try {
+                            var jsonResponse = JSON.parse(pokeRequest.responseText);
+                        }
+                        catch (exc) {
+                            // response should be JSON; if it's something else (e.g. HTML), load homepage
+                            console.log(exc);
+                            document.location = document.location.href.split('?')[0];  // reload page -> server will redirect to login dialog and remember the current url (for redirection after authenticated)
+                        }
                     }
-                    catch(exc)
-                    {
-                        // response should be JSON; if it's something else (e.g. HTML), load homepage
-                        console.log(exc);
-                        document.location = document.location.href.split('?')[0];  // reload page -> server will redirect to login dialog and remember the current url (for redirection after authenticated)
-                    }
-                }
-            };
-            pokeRequest.open('GET', '/poke', true);
-            pokeRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
-            pokeRequest.send();
+                };
+                pokeRequest.open('GET', document.baseURI + 'poke', true);
+                pokeRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+                pokeRequest.send();
+            }
         }
 
         this.doWakeUp = function(evt) {
@@ -244,7 +244,7 @@ class InputTag {
             };
 
             var httpGetTagNames = new XMLHttpRequest();
-            var xmlhttpUrl = input.dataset.url;
+            var xmlhttpUrl = document.baseURI + input.dataset.url;
             var maxNbrTags = parseInt( isNaN(input.dataset.limit) ? 999 : 1);
             httpGetTagNames.overrideMimeType("application/json");
             httpGetTagNames.open('GET', xmlhttpUrl + "/get/?tokens=" + tokens, true);
@@ -425,7 +425,7 @@ class InputTag {
 
         this.loadMenuContent = function (inputText) {
             var inputHidden = inputText.parentElement.parentElement.parentElement.querySelector('input.hidden-input-tag');
-            var xmlhttpUrl = inputHidden.dataset.url;
+            var xmlhttpUrl = document.baseURI + inputHidden.dataset.url;
             var inputTag = inputText.parentElement.parentElement;
             var menu = inputTag.querySelector('.menu');
 
@@ -545,7 +545,7 @@ class ProgressBar {
                     }
                 }
                 catch(exc) {
-                    document.location = "/";
+                    document.location = document.baseURI;
                 }
             }
         };
@@ -824,7 +824,7 @@ class Remarkup {
                     sessionStorage["remarkup-editor-text-before"] = textarea.Text.substring(0, selectionStart);
                     sessionStorage["remarkup-editor-text-after"] = textarea.Text.substring(selectionEnd);
                     sessionStorage["originURL"] = window.location;
-                    window.location = "/diagrams.net/new/";
+                    window.location = "diagrams.net/new/";
                 }
             };
         });
@@ -875,7 +875,7 @@ class Remarkup {
         data.append('referencedFiles', referencedFiles);
 
         var http = new XMLHttpRequest();
-        http.open('POST', "?action=cancel", true);
+        http.open('POST', document.location.pathname + "?action=cancel", true);
         http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         http.onreadystatechange = function () {
             if (http.readyState == 4) {
@@ -897,7 +897,7 @@ class Remarkup {
             data.append('data', remarkup);
             data.append('url', document.URL);
 
-            xmlhttp.open('POST', "/remarkup/", true);
+            xmlhttp.open('POST', "remarkup/", true);
             xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             xmlhttp.send(data);
         }, 300);
@@ -910,7 +910,7 @@ class Remarkup {
         if (form != null) {
             var data = new FormData(form);
             var http = new XMLHttpRequest();
-            http.open('POST', "?action=save", true);
+            http.open('POST', document.location.pathname + "?action=save", true);
             http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             http.onreadystatechange = function () {
                 if (http.readyState == 4) {
@@ -1043,7 +1043,7 @@ class Search {
             return;
         }
 
-        this.xmlhttp.open("GET", "/search/" + keyword + "/", true);
+        this.xmlhttp.open("GET", "search/" + keyword + "/", true);
         this.xmlhttp.send();
     }
 
@@ -1062,7 +1062,7 @@ class Synchronization {
     confirm() {
        var httpRequestNumberLocalUnfrozenChanges = new XMLHttpRequest();
        httpRequestNumberLocalUnfrozenChanges.overrideMimeType("application/json");
-       httpRequestNumberLocalUnfrozenChanges.open('GET', '/synchronize/prepare/', true);
+       httpRequestNumberLocalUnfrozenChanges.open('GET', document.baseURI + 'synchronize/prepare/', true);
        httpRequestNumberLocalUnfrozenChanges.onload  = function() {
            var jsonResponse = JSON.parse(httpRequestNumberLocalUnfrozenChanges.responseText);
            if (jsonResponse.NumberOfUnfrozenChanges == 0)
@@ -1120,13 +1120,13 @@ class Synchronization {
 
     start(frm,type) {
         phabrico.autoLogOff.disable();
-        postForm(frm, "/synchronize/" + type + "/");
+        postForm(frm, "synchronize/" + type + "/");
 
         btnCloseSyncErrorDialog.style.display = 'none';
         dlgRequestSynchronize.style.display = 'none';
         requestStackTrace.innerText = "";
         dlgSynchronizing.style.display = 'block';
-        phabrico.progressBar.show(syncProgress, "/synchronize/status/");
+        phabrico.progressBar.show(syncProgress, "synchronize/status/");
 
         var tmrSynchronizing = setInterval(function(e) {
             if (phabrico.progressBar.currentValue == 100) {
@@ -1146,7 +1146,7 @@ class Synchronization {
 
                         phabrico.autoLogOff.enable();
                         if (type == 'light') {
-                            window.location = "/configure/";
+                            window.location = "configure/";
                         } else {
                             window.location.reload();
                         }
@@ -1165,7 +1165,7 @@ class Synchronization {
         phabrico.autoLogOff.enable();
 
         if (phabrico.progressBar.status == "MERGE-CONFLICT") {
-            window.location = "/offline/changes/";
+            window.location = "offline/changes/";
         } else {
             window.location.reload();
         }
@@ -1641,7 +1641,7 @@ class TextAreaContextMenu {
                         var anchor = document.createElement('a');
                         me.autocomplete.list.appendChild(anchor);
 
-                        anchor.href = "#";
+                        anchor.href = document.location.pathname + "#";
                         if (me.PropertyReadableName == null) {
                             anchor.name = item[me.PropertyInternalName];
                         } else {
@@ -1736,7 +1736,7 @@ class TextAreaDropZone {
                 getIDForNewFile.currentFile = files[i];
                 getIDForNewFile.target = evt.target;
                 getIDForNewFile.overrideMimeType("application/json");
-                getIDForNewFile.open('POST', "/file/getIDForNewFile/", true);
+                getIDForNewFile.open('POST', "file/getIDForNewFile/", true);
                 getIDForNewFile.onload  = async function(evt) {
                     var currentFile = evt.target.currentFile;
                     var jsonResponse = JSON.parse(getIDForNewFile.responseText);
@@ -1818,7 +1818,7 @@ class TextAreaDropZone {
                         };
 
                         evt.nbrHttpUploadCalls++;
-                        uploadChunk.open('POST', "/file/uploadChunk/" + jsonResponse.ID + "/" + nbrSlices + "/" + (s + 1) + "/" + currentFile.name, true);
+                        uploadChunk.open('POST', "file/uploadChunk/" + jsonResponse.ID + "/" + nbrSlices + "/" + (s + 1) + "/" + currentFile.name, true);
                         uploadChunk.setRequestHeader('Content-type', 'application/octet-stream');
                         uploadChunk.send(blob);
                     }
@@ -1923,6 +1923,15 @@ class TextAreaDropZone {
 }
 
 // ************************************************************************************************
+function correctAnchorHrefsForUseBaseHtmlTag() {
+    document.querySelectorAll("a[href^='#']").forEach(function(anchor) {
+        anchor.href = document.location.pathname + anchor.attributes["href"].value;
+    });
+    document.querySelectorAll("a[href^='?']").forEach(function(anchor) {
+        anchor.href = document.location.pathname + anchor.attributes["href"].value;
+    });
+}
+
 function cumulativeOffset(element) {
     var top = 0, left = 0;
     do {
@@ -2174,18 +2183,18 @@ function postForm(form, url)
 
         if (this.statusText != "NOK" && this.responseURL.indexOf('/exception/?data=') == -1) {
             // add redirect code in case postForm was called from /auth/login
-            if (url.startsWith("/auth/login")) {
-                if (url == "/auth/login") url = "/auth/login/";
+            if (url.startsWith("auth/login")) {
+                if (url == "auth/login") url = "auth/login/";
 
                 var refererURL = url.indexOf("?ReturnURL=");
                 if (refererURL > -1) {
                     var redirectURL = refererURL + "?ReturnURL=".length;
-                    if (redirectURL == "/poke") redirectURL = "";
-                    url = "/auth/login" + url.substring(redirectURL);
+                    if (redirectURL == "poke") redirectURL = "";
+                    url = "auth/login" + url.substring(redirectURL);
                 }
 
                 var temp = document.createElement('script');
-                temp.innerHTML = 'window.location.replace("' + url.substring("/auth/login".length) + '");';
+                temp.innerHTML = 'window.location.replace("' + (document.baseURI + url.substring("auth/login/".length)).replace(/\/\/$/, "/") + '");';
 
                 document.body.appendChild(temp);
             }
@@ -2430,7 +2439,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         label.innerText = Locale.Translate('Assign / Claim');
                         var inputField = document.createElement('input');
                         inputField.name = 'owner';
-                        inputField.dataset.url="/user";
+                        inputField.dataset.url="user";
                         inputField.dataset.limit="1";
                         inputField.classList.add('input-tag');
                         transaction.appendChild(inputField);
@@ -2463,7 +2472,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         label.innerText = Locale.Translate('Change Project Tags');
                         var inputField = document.createElement('input');
                         inputField.name = 'project';
-                        inputField.dataset.url="/tag";
+                        inputField.dataset.url="tag";
                         inputField.classList.add('input-tag');
                         transaction.appendChild(inputField);
                         transaction.insertBefore(inputField, null);
@@ -2496,7 +2505,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         label.innerText = Locale.Translate('Change Subscribers');
                         var inputField = document.createElement('input');
                         inputField.name = 'subscriber';
-                        inputField.dataset.url="/subscriber";
+                        inputField.dataset.url="subscriber";
                         inputField.classList.add('input-tag');
                         transaction.appendChild(inputField);
                         transaction.insertBefore(inputField, null);
@@ -2750,4 +2759,9 @@ window.addEventListener('load', function() {
 
     // make sure all buttons in Phriction are visible when needed (e.g. codeblock buttons, diagram buttons)
     phrictionCorrectButtonLocations();
+
+    // convert href's which start with '?' to full relative paths
+    // we are using the HTML BASE tag and '?' and '#' links are not working as one would expect
+    // (they are pointing to the webserver's RootPath)
+    correctAnchorHrefsForUseBaseHtmlTag()
 }, false);

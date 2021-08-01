@@ -70,8 +70,8 @@ showHideCleanRepositories();
 // set page title
 document.title = Locale.Translate("Phabrico") + " - " + Locale.Translate("Local git repositories");
 
-
-var webSocket = new WebSocket("ws://" + document.location.host + "/gitanos/notification");
+var webSocketBaseURI = document.baseURI.replace(/https?:\/\//, "ws://");
+var webSocket = new WebSocket(webSocketBaseURI + "gitanos/notification");
 webSocket.onmessage = function(event) {
     // notification received: refresh table data
     populateTable(filter.value);
@@ -130,7 +130,7 @@ function populateTable(firstCharacters)
 {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.overrideMimeType("application/json");
-    xmlhttp.open('GET', "/gitanos/query/" + sortedColumn + "/" + firstCharacters, true);
+    xmlhttp.open('GET', "gitanos/query/" + sortedColumn + "/" + firstCharacters, true);
     xmlhttp.onload  = function() {
         document.querySelector('#tblGitanosRepositories tbody').innerHTML = "";
 
@@ -153,7 +153,7 @@ function populateTable(firstCharacters)
                 var cell = row.insertCell();
                 cell.classList.add('directory');
                 var anchorRepository = document.createElement('a');
-                anchorRepository.href = "/gitanos/data/" + record.Directory + "/";
+                anchorRepository.href = document.baseURI + "/gitanos/data/" + record.Directory + "/";
                 anchorRepository.style.minWidth = "70px";
 
                 var fontAwesome = document.createElement('i');

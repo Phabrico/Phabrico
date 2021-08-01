@@ -361,7 +361,7 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "api", existingAccount.ConduitAPIToken, Database.EncryptionMode.Private);
                     database.AddParameter(dbCommand, "parameters", JsonConvert.SerializeObject(existingAccount.Parameters));
                     database.AddParameter(dbCommand, "token", existingAccount.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "theme", existingAccount.Theme, Database.EncryptionMode.None);
+                    database.AddParameter(dbCommand, "theme", existingAccount.Theme ?? "light", Database.EncryptionMode.None);
                     if (dbCommand.ExecuteNonQuery() == 0)
                     {
                         Add(database, existingAccount);
@@ -439,7 +439,14 @@ namespace Phabrico.Storage
         /// <returns></returns>
         public Phabricator.Data.Account WhoAmI(Database database)
         {
-            return Get(database).FirstOrDefault();
+            if (database.EncryptionKey == null)
+            {
+                return null;
+            }
+            else
+            {
+                return Get(database).FirstOrDefault();
+            }
         }
     }
 }

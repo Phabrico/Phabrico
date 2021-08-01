@@ -194,13 +194,13 @@ namespace Phabrico.Http
 
             if (allowBrowserCaching)
             {
-                httpListenerContext.Response.Headers[HttpResponseHeader.CacheControl] = "public, max-age=31536000, immutable";
+                httpListenerContext.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
             }
             else
             {
-                httpListenerContext.Response.Headers[HttpResponseHeader.CacheControl] = "private, no-cache, must-revalidate";
-                httpListenerContext.Response.Headers[HttpResponseHeader.Pragma] = "no-cache";
-                httpListenerContext.Response.Headers[HttpResponseHeader.Expires] = "-1";
+                httpListenerContext.Response.Headers["Cache-Control"] = "private, no-cache, must-revalidate";
+                httpListenerContext.Response.Headers["Pragma"] = "no-cache";
+                httpListenerContext.Response.Headers["Expires"] = "-1";
             }
 
             httpListenerContext.Response.OutputStream.Flush();
@@ -247,7 +247,7 @@ namespace Phabrico.Http
         /// <returns></returns>
         public string GetCookie(string name)
         {
-            string cookieHeader = httpListenerContext.Response.Headers[HttpResponseHeader.SetCookie];
+            string cookieHeader = httpListenerContext.Response.Headers["Set-Cookie"];
             if (cookieHeader != null)
             {
                 Match cookieMatch = RegexSafe.Match(cookieHeader, "[,;]? *" + name + "=([^,;]*)", RegexOptions.None);
@@ -336,18 +336,18 @@ namespace Phabrico.Http
 
                 if (allowBrowserCaching)
                 {
-                    httpListenerContext.Response.Headers[HttpResponseHeader.CacheControl] = "public, max-age=31536000, immutable";
+                    httpListenerContext.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
                 }
                 else
                 {
-                    httpListenerContext.Response.Headers[HttpResponseHeader.CacheControl] = "private, no-cache, must-revalidate";
-                    httpListenerContext.Response.Headers[HttpResponseHeader.Pragma] = "no-cache";
-                    httpListenerContext.Response.Headers[HttpResponseHeader.Expires] = "-1";
+                    httpListenerContext.Response.Headers["Cache-Control"] = "private, no-cache, must-revalidate";
+                    httpListenerContext.Response.Headers["Pragma"] = "no-cache";
+                    httpListenerContext.Response.Headers["Expires"] = "-1";
                 }
 
                 // compress content with gzip
                 byte[] compressedData;
-                httpListenerContext.Response.Headers[HttpResponseHeader.ContentEncoding] = "gzip";
+                httpListenerContext.Response.Headers["Content-Encoding"] = "gzip";
                 using (var compressedStream = new MemoryStream())
                 {
                     using (var gzStream = new BufferedStream(new GZipStream(compressedStream, CompressionMode.Compress), 1000000))

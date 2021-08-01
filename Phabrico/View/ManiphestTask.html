@@ -32,10 +32,10 @@
 </div>
 
 <div class="crumbs">
-    <a href="/maniphest/">
+    <a href="maniphest/">
         <span class="phui-font-fa fa-anchor" style="padding-right: 5px;"></span>
-    </a><a href="/maniphest/">Maniphest</a><span>  &gt;  </span><a>T@@TASK-ID@@</a>
-    <a class="crumbsAction" href="/maniphest/?action=new" style="text-align: right;">
+    </a><a href="maniphest/">Maniphest</a><span>  &gt;  </span><a>T@@TASK-ID@@</a>
+    <a class="crumbsAction" href="maniphest/?action=new" style="text-align: right;">
         <span class="visual-only phui-icon-view phui-font-fa fa-plus-square"></span>
         <span class="phui-crumbs-action-name" style="margin-right: 18px;">Create Task</span>
     </a>
@@ -66,20 +66,23 @@
     <div class="app-side-window maniphest-task">
         <div class="app-window-body">
             <ul class="list-view">
+                @{IF @@ACCESS-READONLY@@=False@
                 <li class="list-item-view">
-                    <a href="?action=edit" class="list-item-href">
+                    <a href="maniphest/T@@TASK-ID@@/?action=edit" class="list-item-href">
                         <span class="phui-font-fa fa-pencil phui-list-item-icon">
                             <span class="phui-list-item-name">Edit Task</span>
                         </span>
                     </a>
                 </li>
+                }@
                 <li id="actionViewLocalChanges" data-task-state="@@TASK-UNSYNCED@@" class="list-item-view">
-                    <a href="/offline/changes/view/@@TASK-TOKEN@@/" class="list-item-href">
+                    <a href="offline/changes/view/@@TASK-TOKEN@@/" class="list-item-href">
                         <span class="compare phui-list-item-icon">
                             <span class="phui-list-item-name">View local changes</span>
                         </span>
                     </a>
                 </li>
+                @{IF @@ACCESS-READONLY@@=False@
                 <li id="actionUndoLocalChanges" data-task-state="@@TASK-UNSYNCED@@" class="list-item-view">
                     <a href="#@@TASK-TOKEN@@[edit]" class="list-item-href" onclick="showUndoConfirmation(this);">
                         <span class="phui-font-fa fa-times phui-list-item-icon">
@@ -87,6 +90,7 @@
                         </span>
                     </a>
                 </li>
+                }@
 
                 @{MANIPHEST-TASK-PLUGINS
                 <li class="plugin-action list-item-separator"></li>
@@ -99,46 +103,51 @@
                 </li>
                 }@
 
-                <li class="list-item-separator"></li>
-                <li class="list-item-view">
-                    <span class="list-item-head">Tags</span>
-                </li>
-                @{PROJECTS
-                <li class="list-item-view maniphest-list-item-project">
-                    <a class="project-reference phui-font-fa fa-briefcase" href="/project/info/@@TASK-PROJECT-TOKEN@@/" style="@@TASK-PROJECT-STYLE@@">@@TASK-PROJECT-NAME@@</a>
-                </li>
+                @{IF @@ACCESS-HIDE-PROJECTS@@=False@
+                    <li class="list-item-separator"></li>
+                    <li class="list-item-view">
+                        <span class="list-item-head">Tags</span>
+                    </li>
+                    @{PROJECTS
+                    <li class="list-item-view maniphest-list-item-project">
+                        <a class="project-reference phui-font-fa fa-briefcase" href="project/info/@@TASK-PROJECT-TOKEN@@/" style="@@TASK-PROJECT-STYLE@@">@@TASK-PROJECT-NAME@@</a>
+                    </li>
+                    }@
                 }@
-                <li class="list-item-separator"></li>
-                <li class="list-item-view">
-                    <span class="list-item-head">Subscribers</span>
-                </li>
-                @{SUBSCRIBERS
-                @{IF @@TASK-SUBSCRIBER-TOKEN-TYPE@@=user@
-                <li class="list-item-view list-item-link">
-                    <a href="/user/info/@@TASK-SUBSCRIBER-TOKEN@@/">@@TASK-SUBSCRIBER-NAME@@</a>
-                </li>
+
+                @{IF @@ACCESS-HIDE-USERS@@=False@
+                    <li class="list-item-separator"></li>
+                    <li class="list-item-view">
+                        <span class="list-item-head">Subscribers</span>
+                    </li>
+                    @{SUBSCRIBERS
+                        @{IF @@TASK-SUBSCRIBER-TOKEN-TYPE@@=user@
+                        <li class="list-item-view list-item-link">
+                            <a href="user/info/@@TASK-SUBSCRIBER-TOKEN@@/">@@TASK-SUBSCRIBER-NAME@@</a>
+                        </li>
+                        }@
+                        @{IF @@TASK-SUBSCRIBER-TOKEN-TYPE@@=proj@
+                        <li class="list-item-view maniphest-list-item-project">
+                            <a class="project-reference phui-font-fa fa-briefcase" href="project/info/@@TASK-SUBSCRIBER-TOKEN@@/" style="@@TASK-SUBSCRIBER-STYLE@@">@@TASK-SUBSCRIBER-NAME@@</a>
+                        </li>
+                        }@
+                    }@
+                    <li class="list-item-separator"></li>
+                    <li class="list-item-view">
+                        <span class="list-item-head">Assigned To</span>
+                    </li>
+                    <li class="list-item-view list-item-link">
+                        <a href="user/info/@@TASK-ASSIGNED-TOKEN@@/">@@TASK-ASSIGNED-NAME@@</a>
+                    </li>
+                    <li class="list-item-separator"></li>
+                    <li class="list-item-view">
+                        <span class="list-item-head">Authored By</span>
+                    </li>
+                    <li class="list-item-view list-item-link">
+                        <a href="user/info/@@TASK-AUTHOR-TOKEN@@/">@@TASK-AUTHOR-NAME@@</a>
+                        @@TASK-DATE@@
+                    </li>
                 }@
-                @{IF @@TASK-SUBSCRIBER-TOKEN-TYPE@@=proj@
-                <li class="list-item-view maniphest-list-item-project">
-                    <a class="project-reference phui-font-fa fa-briefcase" href="/project/info/@@TASK-SUBSCRIBER-TOKEN@@/" style="@@TASK-SUBSCRIBER-STYLE@@">@@TASK-SUBSCRIBER-NAME@@</a>
-                </li>
-                }@
-                }@
-                <li class="list-item-separator"></li>
-                <li class="list-item-view">
-                    <span class="list-item-head">Assigned To</span>
-                </li>
-                <li class="list-item-view list-item-link">
-                    <a href="/user/info/@@TASK-ASSIGNED-TOKEN@@/">@@TASK-ASSIGNED-NAME@@</a>
-                </li>
-                <li class="list-item-separator"></li>
-                <li class="list-item-view">
-                    <span class="list-item-head">Authored By</span>
-                </li>
-                <li class="list-item-view list-item-link">
-                    <a href="/user/info/@@TASK-AUTHOR-TOKEN@@/">@@TASK-AUTHOR-NAME@@</a>
-                    @@TASK-DATE@@
-                </li>
             </ul>
         </div>
     </div>
@@ -156,7 +165,7 @@
         </div>
         }@
     </div>
-    <form action="?action=transaction" method="POST">
+    <form action="maniphest/T@@TASK-ID@@/?action=transaction" method="POST">
         <input name="operation" type="hidden" value="comment" />
         <input name="token" type="hidden" value="@@TASK-TOKEN@@" />
         <div class="app-main-window">
@@ -196,7 +205,7 @@
                     <span class="phui-font-fa fa-code tooltip-top"><span class="tooltiptext">Code Block</span></span>
                     <span class="phui-font-fa fa-quote-right tooltip-top"><span class="tooltiptext">Quote</span></span>
                     <span class="phui-font-fa fa-table tooltip-top"><span class="tooltiptext">Table</span></span>
-                    <a href="/remarkup/syntax" target="_blank">
+                    <a href="remarkup/syntax" target="_blank">
                         <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
                     </a>
                 </div>
@@ -254,7 +263,7 @@
         dlgConfirmUndo.style.display = 'none';
 
         var elem = dlgConfirmUndo.tagElement;
-        submitItem(elem, "/offline/changes/undo");
+        submitItem(elem, "offline/changes/undo");
     }
 
     function inputChanged(value, right) {
@@ -304,7 +313,7 @@
                     var taskID = parseInt(document.location.pathname.split('/')[2].substring(1));
                     if (taskID < 0) {
                         // task does not exist anymore -> go to maniphest tasks overview
-                        document.location.href = "/maniphest/";
+                        document.location.href = "maniphest/";
                     } else {
                         document.location.href = document.location.pathname;
                     }
@@ -337,11 +346,11 @@
                     showHideConfirmationMessage( true, pluginName, jsonResponse.Message,
                                                     function() {
                                                         showHideConfirmationMessage(false);
-                                                        executeManiphestTaskPluginConfirmed('/' + pluginURL, data, true);
+                                                        executeManiphestTaskPluginConfirmed(pluginURL, data, true);
                                                     },
                                                     function() {
                                                         showHideConfirmationMessage(false);
-                                                        executeManiphestTaskPluginConfirmed('/' + pluginURL, data, false);
+                                                        executeManiphestTaskPluginConfirmed(pluginURL, data, false);
                                                     },
                                                     function() {
                                                         showHideConfirmationMessage(false);
@@ -351,11 +360,11 @@
 
                 if (jsonResponse.Status == 'Finished') {
                     showHideConfirmationMessage(false);
-                    executeManiphestTaskPluginConfirmed('/' + pluginURL, data, false);
+                    executeManiphestTaskPluginConfirmed(pluginURL, data, false);
                 }
             }
         }
-        xmlhttp.open('POST', '/' + pluginURL, true);
+        xmlhttp.open('POST', pluginURL, true);
         xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         xmlhttp.send(data);
     }
@@ -451,9 +460,9 @@
     // set page title
     window.addEventListener('load', function() {
         document.title = "Phabrico - " + fromHTML("@@TASK-HEADER@@");
-        new TextAreaContextMenu(textarea, "@", "user", "/user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
-        new TextAreaContextMenu(textarea, "#", "project", "/project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
-        new TextAreaContextMenu(textarea, ":", "emoji", "/remarkup/emoji/", "Code", "Name");
+        new TextAreaContextMenu(textarea, "@", "user", "user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
+        new TextAreaContextMenu(textarea, "#", "project", "project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
+        new TextAreaContextMenu(textarea, ":", "emoji", "remarkup/emoji/", "Code", "Name");
         remarkup = new Remarkup(() => { });
     }, false);
 

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net;
+using System.Web;
 
 namespace Phabrico.Miscellaneous
 {
@@ -10,6 +11,7 @@ namespace Phabrico.Miscellaneous
     public class HttpListenerRequest
     {
         System.Net.HttpListenerRequest internalHttpListenerRequest;
+        System.Web.HttpRequest internalHttpRequest;
 
         private CookieCollection internalCookies = new CookieCollection();
         private IPEndPoint internalRemoteEndPoint;
@@ -24,12 +26,19 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null  &&  internalHttpRequest == null)
                 {
                     return 0;
                 }
 
-                return internalHttpListenerRequest.ContentLength64;
+                if (internalHttpRequest != null)
+                {
+                    return internalHttpRequest.ContentLength;
+                }
+                else
+                {
+                    return internalHttpListenerRequest.ContentLength64;
+                }
             }
         }
 
@@ -40,12 +49,19 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
                     return "";
                 }
 
-                return internalHttpListenerRequest.ContentType;
+                if (internalHttpRequest != null)
+                {
+                    return internalHttpRequest.ContentType;
+                }
+                else
+                {
+                    return internalHttpListenerRequest.ContentType;
+                }
             }
         } 
 
@@ -56,12 +72,24 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
                     return internalCookies;
                 }
 
-                return internalHttpListenerRequest.Cookies;
+                if (internalHttpRequest != null)
+                {
+                    CookieCollection cookieCollection = new CookieCollection();
+                    foreach (string httpCookieName in internalHttpRequest.Cookies.AllKeys)
+                    {
+                        cookieCollection.Add(new Cookie(httpCookieName, internalHttpRequest.Cookies[httpCookieName].Value));
+                    }
+                    return cookieCollection;
+                }
+                else
+                {
+                    return internalHttpListenerRequest.Cookies;
+                }
             }
 
             set
@@ -77,12 +105,19 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
                     return "GET";
                 }
 
-                return internalHttpListenerRequest.HttpMethod;
+                if (internalHttpRequest != null)
+                {
+                    return internalHttpRequest.HttpMethod;
+                }
+                else
+                {
+                    return internalHttpListenerRequest.HttpMethod;
+                }
             }
         } 
 
@@ -93,12 +128,19 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
                     return new MemoryStream();
                 }
 
-                return internalHttpListenerRequest.InputStream;
+                if (internalHttpRequest != null)
+                {
+                    return internalHttpRequest.InputStream;
+                }
+                else
+                {
+                    return internalHttpListenerRequest.InputStream;
+                }
             }
         }
 
@@ -109,28 +151,19 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
                     return true;
                 }
 
-                return internalHttpListenerRequest.IsLocal;
-            }
-        }
-        
-        /// <summary>
-        /// Returns true if the request is a WebSocket request
-        /// </summary>
-        public bool IsWebSocketRequest
-        {
-            get
-            {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpRequest != null)
                 {
-                    return false;
+                    return internalHttpRequest.IsLocal;
                 }
-
-                return internalHttpListenerRequest.IsWebSocketRequest;
+                else
+                {
+                    return internalHttpListenerRequest.IsLocal;
+                }
             }
         }
 
@@ -141,12 +174,23 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                string rawUrl;
+
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
-                    return internalRequestUrl;
+                    rawUrl = internalRequestUrl;
+                }
+                else
+                if (internalHttpRequest != null)
+                {
+                    rawUrl = internalHttpRequest.RawUrl;
+                }
+                else
+                {
+                    rawUrl = internalHttpListenerRequest.RawUrl;
                 }
 
-                return internalHttpListenerRequest.RawUrl;
+                return "/" + rawUrl.Substring(Http.Server.RootPath.TrimEnd('/').Length).TrimStart('/');
             }
 
             set
@@ -162,13 +206,20 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
                     internalRemoteEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1234);
                     return internalRemoteEndPoint;
                 }
 
-                return internalHttpListenerRequest.RemoteEndPoint;
+                if (internalHttpRequest != null)
+                {
+                    return new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1234);
+                }
+                else
+                {
+                    return internalHttpListenerRequest.RemoteEndPoint;
+                }
             }
 
             set
@@ -184,13 +235,20 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
                     internalUserAgent = "";
                     return internalUserAgent;
                 }
 
-                return internalHttpListenerRequest.UserAgent;
+                if (internalHttpRequest != null)
+                {
+                    return internalHttpRequest.UserAgent;
+                }
+                else
+                {
+                    return internalHttpListenerRequest.UserAgent;
+                }
             }
 
             set
@@ -206,13 +264,20 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerRequest == null)
+                if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
                     internalUserLanguages = new string[] { "en-US" };
                     return internalUserLanguages;
                 }
 
-                return internalHttpListenerRequest.UserLanguages ?? new string[] { "en-US" };
+                if (internalHttpRequest != null)
+                {
+                    return internalHttpRequest.UserLanguages;
+                }
+                else
+                {
+                    return internalHttpListenerRequest.UserLanguages ?? new string[] { "en-US" };
+                }
             }
 
             set
@@ -229,6 +294,22 @@ namespace Phabrico.Miscellaneous
         }
 
         /// <summary>
+        /// Initializes a new HttpListenerRequest object with some properties
+        /// </summary>
+        /// <param name="request"></param>
+        public HttpListenerRequest(HttpListenerRequest request)
+        {
+            Cookies = request.Cookies;
+            RawUrl = request.RawUrl;
+            RemoteEndPoint = request.RemoteEndPoint;
+            UserAgent = request.UserAgent;
+            UserLanguages = request.UserLanguages;
+
+            internalHttpRequest = request.internalHttpRequest;
+            internalHttpListenerRequest = request.internalHttpListenerRequest;
+        }
+
+        /// <summary>
         /// Converts a System.Net.HttpListenerRequest object implicitly into a Phabrico.Miscellaneous.HttpListenerRequest object
         /// </summary>
         /// <param name="httpListenerRequest"></param>
@@ -236,6 +317,17 @@ namespace Phabrico.Miscellaneous
         {
             return new HttpListenerRequest {
                 internalHttpListenerRequest = httpListenerRequest
+            };
+        }
+
+        /// <summary>
+        /// Converts a System.Web.HttpRequest object implicitly into a Phabrico.Miscellaneous.HttpListenerRequest object
+        /// </summary>
+        /// <param name="httpListenerRequest"></param>
+        public static implicit operator HttpListenerRequest(System.Web.HttpRequest httpRequest)
+        {
+            return new HttpListenerRequest {
+                internalHttpRequest = httpRequest
             };
         }
     }

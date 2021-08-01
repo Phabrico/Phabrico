@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,34 +102,49 @@ namespace Phabrico
         {
             Program program = new Program();
 
-            Logging.WriteInfo(null, "*** Startup ***");
-
             if (Environment.UserInteractive)
             {
                 // program is running as process (i.e. non-service)
 
-                // only 1 instance of Phabrico is allowed 
-                if (singleInstanceMutex.WaitOne(TimeSpan.Zero, false) == false)
+                // check if we have any command line arguments
+                string[] arguments = Environment.GetCommandLineArgs().Skip(1).ToArray();
+                if (arguments.Any())
                 {
-                    Logging.WriteInfo(null, "ERROR: Phabrico is already running");
-                    Environment.Exit(-1);
+                    Commander commander = new Commander(program, arguments);
+                    if (commander.Action != Commander.CommanderAction.Nothing)
+                    {
+                        commander.Execute();
+                    }
                 }
-
-                Logging.WriteInfo(null, "press <Esc> to stop, <Ctrl+C> to abort.");
-                try
+                else
                 {
-                    program.ServiceMain();
+                    Logging.WriteInfo(null, "*** Startup ***");
 
-                    Logging.WriteInfo(null, "*** Shutdown ***");
-                }
-                catch (System.Exception e)
-                {
-                    Logging.WriteInfo(null, "*** Shutdown by {0} ***", e.ToString()); 
-                    Logging.WriteException(null, e);
+                    // only 1 instance of Phabrico is allowed 
+                    if (singleInstanceMutex.WaitOne(TimeSpan.Zero, false) == false)
+                    {
+                        Logging.WriteInfo(null, "ERROR: Phabrico is already running");
+                        Environment.Exit(-1);
+                    }
+
+                    Logging.WriteInfo(null, "press <Esc> to stop, <Ctrl+C> to abort.");
+                    try
+                    {
+                        program.ServiceMain();
+
+                        Logging.WriteInfo(null, "*** Shutdown ***");
+                    }
+                    catch (System.Exception e)
+                    {
+                        Logging.WriteInfo(null, "*** Shutdown by {0} ***", e.ToString());
+                        Logging.WriteException(null, e);
+                    }
                 }
             }
             else
             {
+                Logging.WriteInfo(null, "*** Startup ***");
+
                 // program is running  as a service
                 ServiceBase.Run(new WindowsService());
             }

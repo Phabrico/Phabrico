@@ -1,25 +1,27 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Collections.ObjectModel;
 using WebDriverManager.DriverConfigs.Impl;
 
-namespace Phabrico.UnitTests.Browser.Chrome
+namespace Phabrico.UnitTests.Selenium.Browser
 {
     [TestClass]
     public class DiagramsNetUnitTest : BrowserUnitTest
     {
-        public DiagramsNetUnitTest() : base(new ChromeConfig())
-        {
-            WebBrowser = new ChromeDriver();
-        }
-        
         [TestMethod]
-        public void OpenPhrictionAndAddDiagram()
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
+        // [DataRow(typeof(FirefoxConfig), "")]         // disabled: https://bugzilla.mozilla.org/show_bug.cgi?id=1722021
+        // [DataRow(typeof(FirefoxConfig), "phabrico")] // disabled: https://bugzilla.mozilla.org/show_bug.cgi?id=1722021
+        public void OpenPhrictionAndAddDiagram(Type browser, string httpRootPath)
         {
+            Initialize(browser, httpRootPath);
+
             Logon();
 
             // click on 'Phriction' in the menu navigator
@@ -28,7 +30,7 @@ namespace Phabrico.UnitTests.Browser.Chrome
 
             // wait a while
             WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
-            wait.Until(condition => condition.FindElement(By.ClassName("phui-document")));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
 
             // validate if Phriction was opened
             IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
@@ -52,11 +54,11 @@ namespace Phabrico.UnitTests.Browser.Chrome
 
             // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
-            wait.Until(condition => condition.FindElement(By.ClassName("phriction-edit")));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
 
             // add new line  in textarea
             IWebElement textarea = WebBrowser.FindElement(By.Id("textarea"));
-            textarea.SendKeys(OpenQA.Selenium.Keys.End);
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.End);
             textarea.SendKeys(OpenQA.Selenium.Keys.Enter);
 
             // click on Diagrams button in Remarkup editor toolbar
@@ -67,31 +69,23 @@ namespace Phabrico.UnitTests.Browser.Chrome
             WebBrowser.SwitchTo().Alert().Accept(); 
 
             // wait until DiagramsNet IFrame content is fully loaded
-            wait.Until(condition => condition.FindElement(By.TagName("IFrame")));
+            wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
             IWebElement diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
             WebBrowser.SwitchTo().Frame(diagramsIFrame);
 
             WebDriverWait webDriverWait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
             webDriverWait.IgnoreExceptionTypes(typeof(StaleElementReferenceException), typeof(WebDriverException));
-            webDriverWait.Until(condition => condition.FindElement(By.XPath("//*[contains(@title, 'Shapes')]")));
+            webDriverWait.Until(condition => condition.FindElements(By.XPath("//*[contains(@title, 'Shapes')]")).Any());
 
             // show Shapes toolbox if invisible
             IWebElement shapes = null;
-            try
-            {
-                shapes = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Shapes')]"));
-            }
-            catch
-            {
-            }
-
-            if (shapes == null || shapes.Displayed == false)
+            if (WebBrowser.FindElements(By.XPath("//*[contains(text(), 'Shapes')]")).Any(shape => shape.Displayed) == false)
             {
                 IWebElement toolbarButtonShapes = WebBrowser.FindElement(By.XPath("//*[contains(@title, 'Shapes')]"));
                 toolbarButtonShapes.Click();
-                shapes = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Shapes')]"));
             }
 
+            shapes = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Shapes')]"));
             shapes = shapes.FindElement(By.XPath("../../../.."));
 
             // click on rectangle shape in Shapes toolbox
@@ -107,16 +101,16 @@ namespace Phabrico.UnitTests.Browser.Chrome
             save.Click();
 
             // verify if the page is reloaded with the new file name
-            wait.Until(condition => condition.FindElement(By.XPath("//*[contains(text(), 'F-1')]")));
+            wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'F-1')]")).Any());
             
             // wait until DiagramsNet IFrame content is fully loaded
-            wait.Until(condition => condition.FindElement(By.TagName("IFrame")));
+            wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
             diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
             WebBrowser.SwitchTo().Frame(diagramsIFrame);
 
             webDriverWait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
             webDriverWait.IgnoreExceptionTypes(typeof(StaleElementReferenceException), typeof(WebDriverException));
-            webDriverWait.Until(condition => condition.FindElement(By.XPath("//*[contains(@title, 'Shapes')]")));
+            webDriverWait.Until(condition => condition.FindElements(By.XPath("//*[contains(@title, 'Shapes')]")).Any());
 
             // click on exit button
             IWebElement exit = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Exit')]"));
@@ -124,12 +118,12 @@ namespace Phabrico.UnitTests.Browser.Chrome
 
              // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
-            wait.Until(condition => condition.FindElement(By.ClassName("phriction-edit")));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
 
             // verify if diagram-reference is added to Phriction's textarea content
             textarea = WebBrowser.FindElement(By.Id("textarea"));
             Assert.AreEqual("Once upon a time, I was reading this story over and over again\n{F-1, size=full}", textarea.GetAttribute("value").Replace("\r", ""));
-            wait.Until(condition => condition.FindElement(By.ClassName("diagram")));
+            wait.Until(condition => condition.FindElements(By.ClassName("diagram")).Any());
 
             // verify if image is presented on the right side
             IWebElement image = WebBrowser.FindElement(By.ClassName("diagram"));

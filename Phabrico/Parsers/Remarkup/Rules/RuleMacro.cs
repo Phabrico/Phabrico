@@ -48,7 +48,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         {
                             LinkedPhabricatorObjects.Add(fileObject);
 
-                            html = string.Format(@"<img alt='{0}' src='/file/data/{1}/'>", fileObject.FileName.Replace("'", ""), fileObject.ID);
+                            html = string.Format(@"<img alt='{0}' src='file/data/{1}/'>", fileObject.FileName.Replace("'", ""), fileObject.ID);
                             remarkup = "\r\n" + remarkup.Substring(match.Length);
 
                             Length = match.Length;

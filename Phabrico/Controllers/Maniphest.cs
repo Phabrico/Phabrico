@@ -250,6 +250,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/maniphest", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound();
+
             int firstIndex = 0;
             int previousIndex;
             int nextIndex;
@@ -295,24 +297,12 @@ namespace Phabrico.Controllers
             Storage.Stage stageStorage = new Storage.Stage();
             Storage.User userStorage = new Storage.User();
 
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 IEnumerable<Phabricator.Data.Maniphest> visibleManiphestTasks;
 
-                // unmask private encryption key
-                if (token.PrivateEncryptionKey != null)
-                {
-                    UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                    database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                }
+                // set private encryption key
+                database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                 // load all priority names
                 if (_maniphestPriorities == null)
@@ -867,19 +857,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/maniphest/count", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetTaskCount(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound();
+
             SessionManager.Token token = SessionManager.GetToken(browser);
             Storage.Account accountStorage = new Storage.Account();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Stage stageStorage = new Stage();
             IEnumerable<Phabricator.Data.Maniphest> availableManiphestTasks;
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -927,26 +911,16 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/maniphest")]
         public HttpMessage HttpPostSave(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound();
+
             Storage.Account accountStorage = new Storage.Account();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
 
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                // unmask private encryption key
-                if (token.PrivateEncryptionKey != null)
-                {
-                    UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                    database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                }
+                // set private encryption key
+                database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                 // invalidate cache for current URL
                 string url = browser.Request.RawUrl.Split('?')[0].TrimEnd('/');
@@ -1016,11 +990,11 @@ namespace Phabrico.Controllers
                     {
                         case "new":
                             CreateNewManiphestTask(database, token);
-                            return new Http.Response.HttpRedirect(httpServer, browser, "/maniphest/authored");
+                            return new Http.Response.HttpRedirect(httpServer, browser, "maniphest/authored");
 
                         case "comment":
                             CreateNewManiphestTaskMetadata(database, token);
-                            return new Http.Response.HttpRedirect(httpServer, browser, "/maniphest/" + parameters[0] + "/");
+                            return new Http.Response.HttpRedirect(httpServer, browser, "maniphest/" + parameters[0] + "/");
 
                         default:
                             ModifyExistingManiphestTask(database, token);
@@ -1044,15 +1018,6 @@ namespace Phabrico.Controllers
             RemarkupParserOutput remarkupParserOutput;
             Storage.ManiphestPriority maniphestPriorityStorage = new Storage.ManiphestPriority();
             Storage.Account accountStorage = new Storage.Account();
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "ManiphestTask", parameters);
 
@@ -1127,12 +1092,8 @@ namespace Phabrico.Controllers
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
-                    // unmask private encryption key
-                    if (browser.Token.PrivateEncryptionKey != null)
-                    {
-                        UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, browser.Token);
-                        database.PrivateEncryptionKey = Encryption.XorString(browser.Token.PrivateEncryptionKey, privateXorCipher);
-                    }
+                    // set private encryption key
+                    database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                     // load maniphest task
                     Phabricator.Data.Maniphest maniphestTask = null;
@@ -1266,7 +1227,7 @@ namespace Phabrico.Controllers
                             viewPage.SetText("TASK-ASSIGNED-TOKEN", maniphestTask.Owner);
                             viewPage.SetText("TASK-ASSIGNED-NAME", getAccountName(maniphestTask.Owner));
                             viewPage.SetText("TASK-RAW-DESCRIPTION", maniphestTask.Description, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            viewPage.SetText("TASK-DESCRIPTION", ConvertRemarkupToHTML(database, "/maniphest/" + maniphestTask.ID + "/", maniphestTask.Description, out remarkupParserOutput, true), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                            viewPage.SetText("TASK-DESCRIPTION", ConvertRemarkupToHTML(database, "maniphest/" + maniphestTask.ID + "/", maniphestTask.Description, out remarkupParserOutput, true), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                             viewPage.SetText("TASK-AUTHOR-NAME", getAccountName(maniphestTask.Author));
                             viewPage.SetText("TASK-AUTHOR-TOKEN", maniphestTask.Author);
                             viewPage.SetText("TASK-DATE", FormatDateTimeOffset(maniphestTask.DateModified, browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
@@ -1305,9 +1266,16 @@ namespace Phabrico.Controllers
                                 viewPage.SetText("TASK-CONFIRMATION-UNDO-LOCAL-CHANGES", "Are you sure you want to undo all your local changes for this task ?");
                             }
 
-
-                            Phabricator.Data.User whoAmI = userStorage.Get(database, accountStorage.WhoAmI(database).Parameters.UserToken);
-                            viewPage.SetText("COMMENT-AUTHOR", whoAmI.RealName);
+                            string whoAmiToken = accountStorage.WhoAmI(database).Parameters.UserToken;
+                            if (string.IsNullOrWhiteSpace(whoAmiToken))
+                            {
+                                viewPage.SetText("COMMENT-AUTHOR", "I");
+                            }
+                            else
+                            {
+                                Phabricator.Data.User whoAmI = userStorage.Get(database, accountStorage.WhoAmI(database).Parameters.UserToken);
+                                viewPage.SetText("COMMENT-AUTHOR", whoAmI.RealName);
+                            }
 
                             foreach (Plugin.PluginBase plugin in Server.Plugins)
                             {
@@ -1419,7 +1387,7 @@ namespace Phabrico.Controllers
                                         break;
 
                                     case "comment":
-                                        SetTransactionDataComment(transactionData, maniphestTransaction, maniphestTask.ID);
+                                        SetTransactionDataComment(transactionData, maniphestTransaction, maniphestTask.ID, database);
                                         break;
 
                                     case "status":
@@ -1604,19 +1572,16 @@ namespace Phabrico.Controllers
         /// <param name="transactionData"></param>
         /// <param name="maniphestTransaction"></param>
         /// <param name="maniphestTaskID"></param>
-        private void SetTransactionDataComment(HtmlPartialViewPage transactionData, Phabricator.Data.Transaction maniphestTransaction, string maniphestTaskID)
+        private void SetTransactionDataComment(HtmlPartialViewPage transactionData, Phabricator.Data.Transaction maniphestTransaction, string maniphestTaskID, Database database)
         {
-            using (Storage.Database database = new Storage.Database(EncryptionKey))
-            {
-                RemarkupParserOutput remarkupParserOutput;
+            RemarkupParserOutput remarkupParserOutput;
 
-                transactionData.SetText("TASK-TRANSACTION-TEXT",
-                    Locale.TranslateText("@@COMMENT-AUTHOR@@ added a comment.", browser.Session.Locale)
-                          .Replace("@@COMMENT-AUTHOR@@", getAccountName(maniphestTransaction.Author)));
-                transactionData.SetText("TASK-TRANSACTION-DETAIL",
-                        ConvertRemarkupToHTML(database, "/maniphest/T" + maniphestTaskID, maniphestTransaction.NewValue, out remarkupParserOutput, false),
-                        HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-            }
+            transactionData.SetText("TASK-TRANSACTION-TEXT",
+                Locale.TranslateText("@@COMMENT-AUTHOR@@ added a comment.", browser.Session.Locale)
+                      .Replace("@@COMMENT-AUTHOR@@", getAccountName(maniphestTransaction.Author)));
+            transactionData.SetText("TASK-TRANSACTION-DETAIL",
+                    ConvertRemarkupToHTML(database, "maniphest/T" + maniphestTaskID, maniphestTransaction.NewValue, out remarkupParserOutput, false),
+                    HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
         }
 
         /// <summary>
@@ -1642,6 +1607,8 @@ namespace Phabrico.Controllers
                                     ),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding
                 );
+
+                transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
             else
             {
@@ -1664,6 +1631,8 @@ namespace Phabrico.Controllers
                                   ),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding
                 );
+
+                transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
         }
 
@@ -1710,6 +1679,8 @@ namespace Phabrico.Controllers
                           .Replace("@@PRIORITY2@@", string.Format("<b>{0}</b>", translatedNewPriorityText)),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding
                 );
+
+                transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
             else
             {
@@ -1730,6 +1701,8 @@ namespace Phabrico.Controllers
                           .Replace("@@PRIORITY@@", string.Format("<b>{0}</b>", translatedNewPriorityText)),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding
                 );
+
+                transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
         }
 
@@ -1792,6 +1765,8 @@ namespace Phabrico.Controllers
                           .Replace("@@PROJECT-NAMES@@", projectList),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding
                 );
+
+                transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
             else
             {
@@ -1806,6 +1781,8 @@ namespace Phabrico.Controllers
                           .Replace("@@PROJECT-NAME@@", projectList),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding
                 );
+
+                transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
         }
 
@@ -1853,6 +1830,8 @@ namespace Phabrico.Controllers
                               .Replace("@@OLDSTATE@@", string.Format("<b>{0}</b>", translatedOldStatusText))
                               .Replace("@@NEWSTATE@@", string.Format("<b>{0}</b>", translatedNewStatusText)),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+
+                transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
             else
             {
@@ -1877,6 +1856,8 @@ namespace Phabrico.Controllers
                                                                  )
                                       ),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+
+                transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
         }
 
@@ -1956,6 +1937,8 @@ namespace Phabrico.Controllers
                               .Replace("@@PERSONS@@", subscriberList),
                         HtmlViewPage.ArgumentOptions.NoHtmlEncoding
             );
+
+            transactionData.SetText("TASK-TRANSACTION-DETAIL", "", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
             return true;
         }

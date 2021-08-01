@@ -162,7 +162,7 @@
         <span class="repository-name"></span>
         <span class="branch-name"></span>
         <i class="phui-font-fa fa-spinner fa-pulse" id="spinPush" style="display:none; margin-left: auto; top: 0px;"></i>
-        <a id="btnPush" class="button button-green push" onclick="return showGlobalSpinner(this, '/gitanos/push/@@REPOSITORY-INDEX@@/')">PUSH</a>
+        <a id="btnPush" class="button button-green push" onclick="return showGlobalSpinner(this, 'gitanos/push/@@REPOSITORY-INDEX@@/')">PUSH</a>
     </div>
     <div id="cleanGitRepository" style="display:none;">This git repository is clean</div>
     <form id="frmGitanosRepositoryModifications" action="" method="POST">
@@ -263,6 +263,7 @@
 </div>
 
 <script>
+    var tmrPopulateTableModifications = null;
     var selectedModifications = [];
     if (typeof localStorage["selectedModifications"] !== 'undefined') {
         selectedModifications = localStorage["selectedModifications"].split(',');
@@ -312,12 +313,13 @@
 
     document.querySelector('div.wait').style.display = 'block';
     populateTableUnpushedCommits();
-    populateTableModifications(filter.value);
+    populateTableModifications(filter.value, true);
 
     // set page title
     document.title = "Phabrico - Git repository @@REPOSITORY-NAME@@";
 
-    var webSocket = new WebSocket("ws://" + document.location.host + "/gitanos/notification");
+    var webSocketBaseURI = document.baseURI.replace(/https?:\/\//, "ws://");
+    var webSocket = new WebSocket(webSocketBaseURI + "gitanos/notification");
     webSocket.onmessage = function(event) {
         // notification received: refresh tables
         populateTableModifications(filter.value);
@@ -331,7 +333,7 @@
         var data = new FormData(frmGitanosRepositoryModifications);
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.overrideMimeType("application/json");
-        xmlhttp.open('POST', "/gitanos/repository/commit/", true);
+        xmlhttp.open('POST', "gitanos/repository/commit/", true);
         xmlhttp.onload = function() {
             if (xmlhttp.readyState == 4) {
                 try {
@@ -368,7 +370,7 @@
         var data = new FormData(frmGitanosRepositoryModifications);
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.overrideMimeType("application/json");
-        xmlhttp.open('POST', "/gitanos/repository/resetHEAD1/", true);
+        xmlhttp.open('POST', "gitanos/repository/resetHEAD1/", true);
         xmlhttp.onload = function() {
             if(xmlhttp.readyState == 4) {
                 document.querySelector('div.wait').style.display = null;
@@ -401,7 +403,7 @@
 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.overrideMimeType("application/json");
-        xmlhttp.open('POST', "/gitanos/repository/undo/", true);
+        xmlhttp.open('POST', "gitanos/repository/undo/", true);
         xmlhttp.onload = function() {
             if(xmlhttp.readyState == 4) {
                 document.querySelector('div.wait').style.display = null;
@@ -509,193 +511,202 @@
         return false;
     }
 
-    function populateTableModifications(firstCharacters)
-    {
-        sessionStorage["GitanosRepositoryModifications_filter"] = firstCharacters;
-
-        var data = new FormData(frmGitanosRepositoryModifications);
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.overrideMimeType("application/json");
-        xmlhttp.open('POST', "/gitanos/repository/modifications/@@REPOSITORY-INDEX@@/" + sortedColumn + "/" + firstCharacters, true);
-        xmlhttp.onload = function() {
-            if(xmlhttp.readyState == 4) {
-                if (firstTimePopulatingTableModifications) {
-                    firstTimePopulatingTableModifications = false;
-
-                    // there are no modifications: do not show search filter and select/commit buttons
-                    document.querySelectorAll('.modifications').forEach(function(elem) {
-                        elem.style.display = 'none';
-                    });
-
-                    btnPush.style.display = 'none';
-
-                    if (document.querySelector('div.unpushed-commits').style.display == 'none') {
-                        cleanGitRepository.style.display = 'block';
-                    }
-                }
-
-                document.querySelector('#tblGitanosModifications tbody').innerHTML = "";
-
-                try
-                {
-                    var repositoryRootDirectoryNameLength = document.querySelector('span.repository-name').innerText.length;
-                    var jsonResponse = JSON.parse(xmlhttp.responseText);
-                    jsonResponse.forEach(function(record) {
-                        cleanGitRepository.style.display = 'none';
-
-                        document.querySelectorAll('.modifications').forEach(function (elem) {
-                            elem.style.display = 'flex';
-                        });
-
-                        var tbody = document.querySelector('#tblGitanosModifications tbody');
-                        var row = tbody.insertRow();
-                        if (selectedModifications.indexOf(record.ID) >= 0) {
-                            row.classList.add('selected');
-                        }
-
-                        var cell = row.insertCell();
-                        cell.classList.add('modification-type');
-                        var text = document.createTextNode(record.ModificationTypeText);
-                        cell.appendChild(text);
-
-                        var cell = row.insertCell();
-                        cell.classList.add('timestamp');
-                        cell.innerHTML = record.Timestamp;
-
-                        var cell = row.insertCell();
-                        cell.classList.add('wide');
-                        cell.classList.add('file');
-                        if (record.ModificationType == "Renamed"  ||  record.ModificationType == "ModifiedTooLarge") {
-                            var text = document.createTextNode(record.File.substr(repositoryRootDirectoryNameLength + 1));
-                            cell.appendChild(text);
-                        } else {
-                            var anchorRepository = document.createElement('a');
-                            anchorRepository.href = "/gitanos/file/" + record.File + "/";
-                            anchorRepository.style.minWidth = "70px";
-                            text = document.createTextNode(record.File.substr(repositoryRootDirectoryNameLength + 1));
-                            anchorRepository.appendChild(text);
-                            cell.appendChild(anchorRepository);
-                        }
-
-                        // add action buttons to row
-                        var text = null;
-                        var cell = row.insertCell();
-                        cell.classList.add('action');
-
-                        var anchorUndoModification = document.createElement('a');
-                        anchorUndoModification.href = "#" + record.ID;
-                        anchorUndoModification.classList.add("button");
-                        anchorUndoModification.classList.add("undo");
-                        anchorUndoModification.classList.add("small");
-                        var fontAwesome = document.createElement('i');
-                        fontAwesome.classList.add('phui-font-fa');
-                        fontAwesome.classList.add('fa-undo');
-                        anchorUndoModification.appendChild(fontAwesome);
-                        text = document.createTextNode(Locale.Translate("Undo"));
-                        anchorUndoModification.appendChild(text);
-                        anchorUndoModification.classList.add("button-red");
-                        cell.appendChild(anchorUndoModification);
-                        anchorUndoModification.addEventListener('click', function(e) {
-                            var title = Locale.Translate("Undo modification");
-                            var message = toHTML( Locale.Translate("Are you sure you want to discard your local changes for @@FILENAME@@ ?") );
-                            message = message.replace(/@@FILENAME@@/, "<span style='white-space: nowrap;'>" + toHTML( record.File ) + "</span>");
-                            showHideConfirmationMessage(true, title, message,
-                                                        function() {
-                                                            var modificationID = e.target.closest('tr').querySelector('.button.add').hash.substr(1);
-                                                            gitRestoreModification(modificationID);
-                                                        },
-                                                        function() {
-                                                            showHideConfirmationMessage(false);
-                                                        });
-                        });
-
-                        var anchorAddToGitIndex = document.createElement('a');
-                        anchorAddToGitIndex.href = "#" + record.ID;
-                        anchorAddToGitIndex.classList.add("button");
-                        anchorAddToGitIndex.classList.add("add");
-                        anchorAddToGitIndex.classList.add("small");
-                        var fontAwesome = document.createElement('i');
-                        fontAwesome.classList.add('phui-font-fa');
-                        fontAwesome.classList.add('fa-check');
-                        anchorAddToGitIndex.appendChild(fontAwesome);
-                        text = document.createTextNode(Locale.Translate("Select"));
-                        anchorAddToGitIndex.appendChild(text);
-                        cell.appendChild(anchorAddToGitIndex);
-                        anchorAddToGitIndex.addEventListener('click', function(e) {
-                            var row = e.target.closest('tr');
-                            row.classList.add('selected');
-
-                            var hash = row.querySelector('.button.add').hash.substr(1);
-                            selectedModifications.push( hash );
-                            localStorage["selectedModifications"] = selectedModifications;
-                            localStorage["clearSelectedModifications"] = currentTimestamp + 2 * 3600000;
-
-                            btnCommit.classList.remove('disabled');
-                            btnUnselectAll.style.display = 'inline-block';
-                            btnSelectAll.style.display = 'none';
-                        });
-
-                        var anchorRemoveFromGitIndex = document.createElement('a');
-                        anchorRemoveFromGitIndex.href = "#" + record.ID;
-                        anchorRemoveFromGitIndex.classList.add("button");
-                        anchorRemoveFromGitIndex.classList.add("remove");
-                        anchorRemoveFromGitIndex.classList.add("small");
-                        var fontAwesome = document.createElement('i');
-                        fontAwesome.classList.add('phui-font-fa');
-                        fontAwesome.classList.add('fa-check');
-                        anchorRemoveFromGitIndex.appendChild(fontAwesome);
-                        text = document.createTextNode(Locale.Translate("Unselect"));
-                        anchorRemoveFromGitIndex.appendChild(text);
-                        anchorRemoveFromGitIndex.classList.add("button-gray");
-                        cell.appendChild(anchorRemoveFromGitIndex);
-                        anchorRemoveFromGitIndex.addEventListener('click', function(e) {
-                            var row = e.target.closest('tr');
-                            row.classList.remove('selected');
-
-                            var hash = row.querySelector('.button.add').hash.substr(1);
-                            selectedModifications = selectedModifications.filter(item => item !== hash);
-                            localStorage["selectedModifications"] = selectedModifications;
-                            localStorage["clearSelectedModifications"] = currentTimestamp + 2 * 3600000;
-
-                            if (selectedModifications.filter(function(item) { return item != ""}).length == 0) {
-                                btnCommit.classList.add('disabled');
-                            }
-
-                            if (tblGitanosModifications.querySelectorAll('tr.selected').length == 0) {
-                                btnSelectAll.style.display = 'inline-block';
-                                btnUnselectAll.style.display = 'none';
-                            } else {
-                                btnSelectAll.style.display = 'none';
-                                btnUnselectAll.style.display = 'inline-block';
-                            }
-                        });
-                    });
-
-                    if (tblGitanosModifications.querySelectorAll('tbody tr:not(.selected)').length > 0) {
-                        btnSelectAll.style.display = 'inline-block';
-                        btnUnselectAll.style.display = 'none';
-                    } else {
-                        btnSelectAll.style.display = 'none';
-                        btnUnselectAll.style.display = 'inline-block';
-                    }
-
-                    if (selectedModifications.filter(function(item) { return item != ""}).length == 0) {
-                        btnCommit.classList.add('disabled');
-                    } else {
-                        btnCommit.classList.remove('disabled');
-                    }
-
-                    document.querySelector('div.wait').style.display = null;
-                }
-                catch(exc)
-                {
-                    // show logon dialog
-                    document.location.reload();
-                }
+    function populateTableModifications(firstCharacters, delayed = true) {
+        if (delayed) {
+            if (tmrPopulateTableModifications != null) {
+                clearTimeout(tmrPopulateTableModifications);
             }
-        };
-        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
-        xmlhttp.send(data);
+
+            tmrPopulateTableModifications = setTimeout(function () {
+                populateTableModifications(firstCharacters, false);
+            }, 300);
+        } else {
+            sessionStorage["GitanosRepositoryModifications_filter"] = firstCharacters;
+
+            var data = new FormData(frmGitanosRepositoryModifications);
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.overrideMimeType("application/json");
+            xmlhttp.open('POST', "gitanos/repository/modifications/@@REPOSITORY-INDEX@@/" + sortedColumn + "/" + firstCharacters, true);
+            xmlhttp.onload = function () {
+                if (xmlhttp.readyState == 4) {
+                    if (firstTimePopulatingTableModifications) {
+                        firstTimePopulatingTableModifications = false;
+
+                        if (filter.value == "") {
+                            // there are no modifications: do not show search filter and select/commit buttons
+                            document.querySelectorAll('.modifications').forEach(function (elem) {
+                                elem.style.display = 'none';
+                            });
+                        }
+
+                        btnPush.style.display = 'none';
+
+                        if (filter.value == "" && document.querySelector('div.unpushed-commits').style.display == 'none') {
+                            cleanGitRepository.style.display = 'block';
+                        }
+                    }
+
+                    document.querySelector('#tblGitanosModifications tbody').innerHTML = "";
+
+                    try {
+                        var repositoryRootDirectoryNameLength = document.querySelector('span.repository-name').innerText.length;
+                        var jsonResponse = JSON.parse(xmlhttp.responseText);
+                        jsonResponse.forEach(function (record) {
+                            cleanGitRepository.style.display = 'none';
+
+                            document.querySelectorAll('.modifications').forEach(function (elem) {
+                                elem.style.display = 'flex';
+                            });
+
+                            var tbody = document.querySelector('#tblGitanosModifications tbody');
+                            var row = tbody.insertRow();
+                            if (selectedModifications.indexOf(record.ID) >= 0) {
+                                row.classList.add('selected');
+                            }
+
+                            var cell = row.insertCell();
+                            cell.classList.add('modification-type');
+                            var text = document.createTextNode(record.ModificationTypeText);
+                            cell.appendChild(text);
+
+                            var cell = row.insertCell();
+                            cell.classList.add('timestamp');
+                            cell.innerHTML = record.Timestamp;
+
+                            var cell = row.insertCell();
+                            cell.classList.add('wide');
+                            cell.classList.add('file');
+                            if (record.ModificationType == "Renamed" || record.ModificationType == "ModifiedTooLarge") {
+                                var text = document.createTextNode(record.File.substr(repositoryRootDirectoryNameLength + 1));
+                                cell.appendChild(text);
+                            } else {
+                                var anchorRepository = document.createElement('a');
+                                anchorRepository.href = document.baseURI + "gitanos/file/" + record.File.replace(/:/g, '') + "/";
+                                anchorRepository.style.minWidth = "70px";
+                                text = document.createTextNode(record.File.substr(repositoryRootDirectoryNameLength + 1));
+                                anchorRepository.appendChild(text);
+                                cell.appendChild(anchorRepository);
+                            }
+
+                            // add action buttons to row
+                            var text = null;
+                            var cell = row.insertCell();
+                            cell.classList.add('action');
+
+                            var anchorUndoModification = document.createElement('a');
+                            anchorUndoModification.href = document.location.pathname + "#" + record.ID;
+                            anchorUndoModification.classList.add("button");
+                            anchorUndoModification.classList.add("undo");
+                            anchorUndoModification.classList.add("small");
+                            var fontAwesome = document.createElement('i');
+                            fontAwesome.classList.add('phui-font-fa');
+                            fontAwesome.classList.add('fa-undo');
+                            anchorUndoModification.appendChild(fontAwesome);
+                            text = document.createTextNode(Locale.Translate("Undo"));
+                            anchorUndoModification.appendChild(text);
+                            anchorUndoModification.classList.add("button-red");
+                            cell.appendChild(anchorUndoModification);
+                            anchorUndoModification.addEventListener('click', function (e) {
+                                var title = Locale.Translate("Undo modification");
+                                var message = toHTML(Locale.Translate("Are you sure you want to discard your local changes for @@FILENAME@@ ?"));
+                                message = message.replace(/@@FILENAME@@/, "<span style='white-space: nowrap;'>" + toHTML(record.File) + "</span>");
+                                showHideConfirmationMessage(true, title, message,
+                                    function () {
+                                        var modificationID = e.target.closest('tr').querySelector('.button.add').hash.substr(1);
+                                        gitRestoreModification(modificationID);
+                                    },
+                                    function () {
+                                        showHideConfirmationMessage(false);
+                                    });
+                            });
+
+                            var anchorAddToGitIndex = document.createElement('a');
+                            anchorAddToGitIndex.href = document.location.pathname + "#" + record.ID;
+                            anchorAddToGitIndex.classList.add("button");
+                            anchorAddToGitIndex.classList.add("add");
+                            anchorAddToGitIndex.classList.add("small");
+                            var fontAwesome = document.createElement('i');
+                            fontAwesome.classList.add('phui-font-fa');
+                            fontAwesome.classList.add('fa-check');
+                            anchorAddToGitIndex.appendChild(fontAwesome);
+                            text = document.createTextNode(Locale.Translate("Select"));
+                            anchorAddToGitIndex.appendChild(text);
+                            cell.appendChild(anchorAddToGitIndex);
+                            anchorAddToGitIndex.addEventListener('click', function (e) {
+                                var row = e.target.closest('tr');
+                                row.classList.add('selected');
+
+                                var hash = row.querySelector('.button.add').hash.substr(1);
+                                selectedModifications.push(hash);
+                                localStorage["selectedModifications"] = selectedModifications;
+                                localStorage["clearSelectedModifications"] = currentTimestamp + 2 * 3600000;
+
+                                btnCommit.classList.remove('disabled');
+                                btnUnselectAll.style.display = 'inline-block';
+                                btnSelectAll.style.display = 'none';
+                            });
+
+                            var anchorRemoveFromGitIndex = document.createElement('a');
+                            anchorRemoveFromGitIndex.href = document.location.pathname + "#" + record.ID;
+                            anchorRemoveFromGitIndex.classList.add("button");
+                            anchorRemoveFromGitIndex.classList.add("remove");
+                            anchorRemoveFromGitIndex.classList.add("small");
+                            var fontAwesome = document.createElement('i');
+                            fontAwesome.classList.add('phui-font-fa');
+                            fontAwesome.classList.add('fa-check');
+                            anchorRemoveFromGitIndex.appendChild(fontAwesome);
+                            text = document.createTextNode(Locale.Translate("Unselect"));
+                            anchorRemoveFromGitIndex.appendChild(text);
+                            anchorRemoveFromGitIndex.classList.add("button-gray");
+                            cell.appendChild(anchorRemoveFromGitIndex);
+                            anchorRemoveFromGitIndex.addEventListener('click', function (e) {
+                                var row = e.target.closest('tr');
+                                row.classList.remove('selected');
+
+                                var hash = row.querySelector('.button.add').hash.substr(1);
+                                selectedModifications = selectedModifications.filter(item => item !== hash);
+                                localStorage["selectedModifications"] = selectedModifications;
+                                localStorage["clearSelectedModifications"] = currentTimestamp + 2 * 3600000;
+
+                                if (selectedModifications.filter(function (item) { return item != "" }).length == 0) {
+                                    btnCommit.classList.add('disabled');
+                                }
+
+                                if (tblGitanosModifications.querySelectorAll('tr.selected').length == 0) {
+                                    btnSelectAll.style.display = 'inline-block';
+                                    btnUnselectAll.style.display = 'none';
+                                } else {
+                                    btnSelectAll.style.display = 'none';
+                                    btnUnselectAll.style.display = 'inline-block';
+                                }
+                            });
+                        });
+
+                        if (tblGitanosModifications.querySelectorAll('tbody tr:not(.selected)').length > 0) {
+                            btnSelectAll.style.display = 'inline-block';
+                            btnUnselectAll.style.display = 'none';
+                        } else {
+                            btnSelectAll.style.display = 'none';
+                            btnUnselectAll.style.display = 'inline-block';
+                        }
+
+                        if (selectedModifications.filter(function (item) { return item != "" }).length == 0) {
+                            btnCommit.classList.add('disabled');
+                        } else {
+                            btnCommit.classList.remove('disabled');
+                        }
+
+                        document.querySelector('div.wait').style.display = null;
+                    }
+                    catch (exc) {
+                        // show logon dialog
+                        document.location.reload();
+                    }
+                }
+            };
+            xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            xmlhttp.send(data);
+        }
     }
 
 
@@ -703,7 +714,7 @@
     {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.overrideMimeType("application/json");
-        xmlhttp.open('GET', "/gitanos/repository/unpushed/@@REPOSITORY-INDEX@@/", true);
+        xmlhttp.open('GET', "gitanos/repository/unpushed/@@REPOSITORY-INDEX@@/", true);
         xmlhttp.onload = function() {
             document.querySelector('#tblGitanosUnpushedCommits tbody').innerHTML = "";
 
@@ -739,7 +750,7 @@
                     cell.classList.add('action');
                     if (firstRow) {
                         var anchorResetHEAD1 = document.createElement('a');
-                        anchorResetHEAD1.href = "#" + record.ID;
+                        anchorResetHEAD1.href = document.location.href + "#" + record.ID;
                         anchorResetHEAD1.classList.add("button");
                         anchorResetHEAD1.classList.add("undo");
                         anchorResetHEAD1.classList.add("small");
@@ -794,7 +805,7 @@
             var data = new FormData(frmGitanosRepositoryModifications);
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.overrideMimeType("application/json");
-            xmlhttp.open('POST', "/gitanos/repository/push/", true);
+            xmlhttp.open('POST', "gitanos/repository/push/", true);
             xmlhttp.onload = function() {
                 if(xmlhttp.readyState == 4) {
                     try {

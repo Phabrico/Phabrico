@@ -16,114 +16,152 @@
         }@
     }, false);
 
-    function updateManiphestTaskCount() {
-        var getManiphestCount = new XMLHttpRequest();
-        getManiphestCount.overrideMimeType("application/json");
-        getManiphestCount.open('GET', "/maniphest/count/", true);
-        getManiphestCount.onload  = async function() {
-            var jsonResponse = JSON.parse(getManiphestCount.responseText);
-            var maniphestCount = document.querySelector('.maniphest-count');
-            if (jsonResponse.Count == 0) {
-                maniphestCount.innerText = "";
-            } else {
-                maniphestCount.innerText = jsonResponse.Count;
-            }
-        };
-        getManiphestCount.send(null);
-    }
+    @{IF @@ACCESS-HIDE-MANIPHEST@@=False@
+        function updateManiphestTaskCount() {
+            var getManiphestCount = new XMLHttpRequest();
+            getManiphestCount.overrideMimeType("application/json");
+            getManiphestCount.open('GET', "maniphest/count/", true);
+            getManiphestCount.onload  = async function() {
+                var jsonResponse = JSON.parse(getManiphestCount.responseText);
+                var maniphestCount = document.querySelector('.maniphest-count');
+                if (jsonResponse.Count == 0) {
+                    maniphestCount.innerText = "";
+                } else {
+                    maniphestCount.innerText = jsonResponse.Count;
+                }
+            };
+            getManiphestCount.send(null);
+        }
 
-    updateManiphestTaskCount();
+        updateManiphestTaskCount();
+    }@
 </script>
 
 <nav>
     <ul class="phui-list-view">
+    @{IF @@ACCESS-HIDE-MANIPHEST@@=False@
         <li class="phui-list-item-view">
-            <a href="/maniphest/" class="phui-list-item-href tooltip-right">
+            <a href="maniphest/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa fa-anchor phui-list-item-icon">
                     <span class="phui-list-item-name">Maniphest<span class="navigator-menuitem-notification information maniphest-count"></span>
-                        <span class="tooltiptext">Tasks and Bugs</span>
+                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                            <span class="tooltiptext">Tasks and Bugs</span>
+                        }@
                     </span>
                 </span>
             </a>
         </li>
+    }@
 
+    @{IF @@ACCESS-HIDE-PHRICTION@@=False@
         <li class="phui-list-item-view">
-            <a href="/w/" class="phui-list-item-href tooltip-right">
+            <a href="w/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa fa-book phui-list-item-icon">
                     <span class="phui-list-item-name">Phriction
-                    <span class="tooltiptext">Wiki Documents</span>
-                </span>
+                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                            <span class="tooltiptext">Wiki Documents</span>
+                        }@
+                    </span>
             </span></a>
         </li>
+    }@
+
     @{PLUGINS
         <li class="phui-list-item-view">
-            <a href="/@@PLUGIN-URL@@/" class="phui-list-item-href tooltip-right">
+            <a href="@@PLUGIN-URL@@/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa @@PLUGIN-ICON@@ phui-list-item-icon">
                     <span class="phui-list-item-name">@@PLUGIN-NAME@@<span class="navigator-menuitem-notification @@PLUGIN-URL@@-notifier"></span>
-                        <span class="tooltiptext">@@PLUGIN-DESCRIPTION@@</span>
+                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                            <span class="tooltiptext">@@PLUGIN-DESCRIPTION@@</span>
+                        }@
                     </span>
                 </span>
             </a>
         </li>
     }@
-    
 
     @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
+        @{IF @@ACCESS-HIDE-PROJECTS@@=False@
         <li class="phui-list-item-view">
-            <a href="/project/" class="phui-list-item-href tooltip-right">
+            <a href="project/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa fa-briefcase phui-list-item-icon">
                     <span class="phui-list-item-name">Projects
-                        <span class="tooltiptext">Projects to be synchronized</span>
+                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                            <span class="tooltiptext">Projects to be synchronized</span>
+                        }@
                     </span>
                 </span>
             </a>
         </li>
+        }@
 
+        @{IF @@ACCESS-HIDE-USERS@@=False@
         <li class="phui-list-item-view">
-            <a href="/user/" class="phui-list-item-href tooltip-right">
+            <a href="user/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa fa-users phui-list-item-icon">
                     <span class="phui-list-item-name">Users
-                        <span class="tooltiptext">User accounts to be synchronized</span>
+                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                            <span class="tooltiptext">User accounts to be synchronized</span>
+                        }@
                     </span>
                 </span>
             </a>
         </li>
+        }@
     }@
+
+    @{IF @@ACCESS-HIDE-USERS@@=False@
         <li class="phui-list-item-view">
-            <a href="/file/" class="phui-list-item-href tooltip-right">
+            <a href="file/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa fa-file-image-o phui-list-item-icon">
                     <span class="phui-list-item-name">File objects
-                        <span class="tooltiptext">Referenced file objects</span>
-                    </span>
-                </span>
-            </a>
-        </li>
-    @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
-        <li class="phui-list-item-view">
-            <a href="/configure/" class="phui-list-item-href tooltip-right">
-                <span class="phui-font-fa fa-sliders phui-list-item-icon">
-                    <span class="phui-list-item-name">Config
-                        <span class="tooltiptext">Configure Phabrico</span>
+                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                            <span class="tooltiptext">Referenced file objects</span>
+                        }@
                     </span>
                 </span>
             </a>
         </li>
     }@
+
+    @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
+        @{IF @@ACCESS-HIDE-CONFIG@@=False@
         <li class="phui-list-item-view">
-            <a href="/offline/changes/" class="phui-list-item-href tooltip-right">
-                <span class="phui-font-fa fa-pencil phui-list-item-icon">
-                    <span class="phui-list-item-name">Offline changes
-                        <span class="tooltiptext">View local changes</span>
+            <a href="configure/" class="phui-list-item-href tooltip-right">
+                <span class="phui-font-fa fa-sliders phui-list-item-icon">
+                    <span class="phui-list-item-name">Config
+                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                            <span class="tooltiptext">Configure Phabrico</span>
+                        }@
                     </span>
                 </span>
             </a>
         </li>
+        }@
+    }@
+
+    @{IF @@ACCESS-HIDE-OFFLINE-CHANGES@@=False@
+        <li class="phui-list-item-view">
+            <a href="offline/changes/" class="phui-list-item-href tooltip-right">
+                <span class="phui-font-fa fa-pencil phui-list-item-icon">
+                    <span class="phui-list-item-name">Offline changes
+                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                            <span class="tooltiptext">View local changes</span>
+                        }@
+                    </span>
+                </span>
+            </a>
+        </li>
+    }@
+
     @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
+        @{IF @@ACCESS-MASTER-DATA@@=True@
         <li class="phui-list-item-view">
             <div style="margin:20px 5px; text-align:center;">
                 <button class="button-green" name="__synchronize__" type="button" onclick="phabrico.synchronization.confirm()">Synchronize</button>
             </div>
         </li>
+        }@
     }@
     </ul>
 </nav>
@@ -180,8 +218,9 @@
 
     // configure notification for navigator elements
     document.querySelectorAll('.navigator-menuitem-notification').forEach(function(notifier) {
-        var link = notifier.closest('a.phui-list-item-href').pathname.replace(/\/*$/, "");
-        var webSocket = new WebSocket("ws://" + document.location.host + link + "/notification");
+        var link = notifier.closest('a.phui-list-item-href').getAttribute('href').replace(/\/*$/, "");
+        var virtualRootPath = document.baseURI.replace(/^https?:\/\//, "").replace(/\/$/, "");
+        var webSocket = new WebSocket("ws://" + virtualRootPath + "/" + link + "/notification");
         webSocket.onmessage = function(event) {
             var notification = JSON.parse(event.data);
             notifier.innerText = notification.Message;

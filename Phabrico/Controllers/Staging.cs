@@ -83,17 +83,9 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes")]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+
             SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -143,21 +135,14 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/data")]
         public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
             Storage.Stage stage = new Storage.Stage();
             if (stage != null)
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
-
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -262,14 +247,14 @@ namespace Phabrico.Controllers
                             crumbDescriptions += document.Name;
 
                             record.Title = crumbDescriptions;
-                            record.URL = "/w/" + document.Path;
+                            record.URL = "w/" + document.Path;
                             record.Type = "fa-book";
                         }
                         if (unknownToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
                         {
                             Phabricator.Data.Maniphest task = JsonConvert.DeserializeObject<Phabricator.Data.Maniphest>(stageData.HeaderData);
                             record.Title = "T" + task.ID.ToString() + ": " + task.Name;
-                            record.URL = "/maniphest/T" + task.ID.ToString() + "/";
+                            record.URL = "maniphest/T" + task.ID.ToString() + "/";
                             record.Type = "fa-anchor";
                         }
                         if (unknownToken.StartsWith(Phabricator.Data.File.Prefix))
@@ -281,11 +266,11 @@ namespace Phabrico.Controllers
 
                             if (file.ContentType.Equals("image/drawio") && Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.DiagramsNet")))
                             {
-                                record.URL = "/diagrams.net/F" + file.ID + "/";
+                                record.URL = "diagrams.net/F" + file.ID + "/";
                             }
                             else
                             {
-                                record.URL = "/file/data/" + file.ID + "/";
+                                record.URL = "file/data/" + file.ID + "/";
                             }
                         }
 
@@ -312,18 +297,11 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/freeze")]
         public void HttpPostFreeze(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+
             Match input = RegexSafe.Match(browser.Session.FormVariables["item"], @"^([^[]*)\[.*\]$", RegexOptions.None);
             string phabricatorObjectToken = input.Groups[1].Value;
             SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -423,18 +401,11 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/unfreeze")]
         public void HttpPostUnfreeze(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+
             Match input = RegexSafe.Match(browser.Session.FormVariables["item"], @"^([^[]*)\[.*\]$", RegexOptions.None);
             string phabricatorObjectToken = input.Groups[1].Value;
             SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -534,6 +505,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/undo")]
         public void HttpPostUndo(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound();
+
             Match input = RegexSafe.Match(browser.Session.FormVariables["item"], @"^([^[]*)\[(.*)\]$", RegexOptions.None);
             string phabricatorObjectToken = input.Groups[1].Value;
             string operation = input.Groups[2].Value;
@@ -542,15 +515,6 @@ namespace Phabrico.Controllers
             if (phabricatorObjectToken.StartsWith("PHID-NEWTOKEN-"))
             {
                 operation = "new";
-            }
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
             }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -627,6 +591,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/view", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpPostSaveChanges(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+
             if (parameters.Length >= 2)
             {
                 if (parameters[1].StartsWith("?action=save"))
@@ -636,16 +602,6 @@ namespace Phabrico.Controllers
 
                     if (browser.Session.FormVariables.TryGetValue("newVersion", out newContent))
                     {
-                        using (Storage.Database database = new Storage.Database(null))
-                        {
-                            Storage.Account accountStorage = new Storage.Account();
-                            SessionManager.Token token = SessionManager.GetToken(browser);
-                            UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                            // unmask encryption key
-                            EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                        }
-
                         using (Storage.Database database = new Storage.Database(EncryptionKey))
                         {
                             Storage.Stage stageStorage = new Storage.Stage();
@@ -693,21 +649,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/view", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetViewChanges(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound();
+
             string title = "";
             string url = "";
             string originalText = "";
             string modifiedText = "";
             string phabricatorObjectToken = parameters[0];
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -729,7 +677,7 @@ namespace Phabrico.Controllers
                     originalText = originalPhrictionDocument.Content;
                     modifiedText = modifiedPhrictionDocument.Content;
                     title = modifiedPhrictionDocument.Name;
-                    url = "/w/" + modifiedPhrictionDocument.Path;
+                    url = "w/" + modifiedPhrictionDocument.Path;
                 }
 
                 if (modifiedManiphestTask != null)
@@ -745,7 +693,7 @@ namespace Phabrico.Controllers
                     originalText = originalManiphestTask.Description;
                     modifiedText = modifiedManiphestTask.Description;
                     title = modifiedManiphestTask.Name;
-                    url = "/maniphest/T" + modifiedManiphestTask.ID.ToString() + "/";
+                    url = "maniphest/T" + modifiedManiphestTask.ID.ToString() + "/";
                 }
             }
 

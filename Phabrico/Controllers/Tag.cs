@@ -57,32 +57,28 @@ namespace Phabrico.Controllers
                 Storage.Project projectStorage = new Storage.Project();
                 Storage.User userStorage = new Storage.User();
 
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
                     foreach (string token in tokens)
                     {
-                        Phabricator.Data.User user = userStorage.Get(database, token);
-                        if (user != null)
+                        if (httpServer.Customization.HideUsers == false)
                         {
-                            records.Add(new JsonRecordData { Token = user.Token, Name = user.RealName, FontAwesomeIcon = "fa-user" });
-                            continue;
+                            Phabricator.Data.User user = userStorage.Get(database, token);
+                            if (user != null)
+                            {
+                                records.Add(new JsonRecordData { Token = user.Token, Name = user.RealName, FontAwesomeIcon = "fa-user" });
+                                continue;
+                            }
                         }
 
-                        Phabricator.Data.Project project = projectStorage.Get(database, token);
-                        if (project != null)
+                        if (httpServer.Customization.HideProjects == false)
                         {
-                            records.Add(new JsonRecordData { Token = project.Token, Name = project.Name, FontAwesomeIcon = "fa-briefcase" });
-                            continue;
+                            Phabricator.Data.Project project = projectStorage.Get(database, token);
+                            if (project != null)
+                            {
+                                records.Add(new JsonRecordData { Token = project.Token, Name = project.Name, FontAwesomeIcon = "fa-briefcase" });
+                                continue;
+                            }
                         }
                     }
                 }
@@ -105,39 +101,36 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/subscriber/search")]
         public void HttpGetPopulateInputTagSubscriberData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             Dictionary<string, string> parameterValues = parameterActions.Split('&').ToDictionary(key => key.Split('=')[0], value => value.Split('=')[1]);
             Storage.Project projectStorage = new Storage.Project();
             Storage.User userStorage = new Storage.User();
-            List<Phabricator.Data.Project> projects;
-            List<Phabricator.Data.User> users;
+            List<Phabricator.Data.Project> projects = new List<Phabricator.Data.Project>();
+            List<Phabricator.Data.User> users = new List<Phabricator.Data.User>();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                users = userStorage.Get(database)
-                                   .Where(user => System.Web.HttpUtility.UrlDecode(parameterValues["keyword"])
-                                                                        .Split(' ')
-                                                                        .All(part => user.RealName
-                                                                                         .Split(' ')
-                                                                                         .Any(keywordPart => keywordPart.StartsWith(part, System.StringComparison.OrdinalIgnoreCase))))
-                                   .Where(token => parameterValues.ContainsKey("tags") == false ||
-                                                   parameterValues["tags"].Contains(token.Token) == false)
-                                   .Take(5)
-                                   .ToList();
-                projects = projectStorage.Get(database)
-                                         .Where(project => project.Name.Split(' ', '-', '_').All(part => System.Web.HttpUtility.UrlDecode(parameterValues["keyword"]).Split(' ', '-', '_').Any(keywordPart => part.StartsWith(keywordPart, System.StringComparison.OrdinalIgnoreCase))))
-                                         .Where(token => parameterValues.ContainsKey("tags") == false ||
-                                                         parameterValues["tags"].Contains(token.Token) == false)
-                                         .Take(5)
-                                         .ToList();
+                if (httpServer.Customization.HideUsers == false)
+                {
+                    users = userStorage.Get(database)
+                                       .Where(user => System.Web.HttpUtility.UrlDecode(parameterValues["keyword"])
+                                                                            .Split(' ')
+                                                                            .All(part => user.RealName
+                                                                                             .Split(' ')
+                                                                                             .Any(keywordPart => keywordPart.StartsWith(part, System.StringComparison.OrdinalIgnoreCase))))
+                                       .Where(token => parameterValues.ContainsKey("tags") == false ||
+                                                       parameterValues["tags"].Contains(token.Token) == false)
+                                       .Take(5)
+                                       .ToList();
+                }
+
+                if (httpServer.Customization.HideUsers == false)
+                {
+                    projects = projectStorage.Get(database)
+                                             .Where(project => project.Name.Split(' ', '-', '_').All(part => System.Web.HttpUtility.UrlDecode(parameterValues["keyword"]).Split(' ', '-', '_').Any(keywordPart => part.StartsWith(keywordPart, System.StringComparison.OrdinalIgnoreCase))))
+                                             .Where(token => parameterValues.ContainsKey("tags") == false ||
+                                                             parameterValues["tags"].Contains(token.Token) == false)
+                                             .Take(5)
+                                             .ToList();
+                }
             }
 
             List<JsonRecordData> records = new List<JsonRecordData>();
@@ -173,21 +166,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/tag/get")]
         public void HttpGetInputTagTagData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+
             string tokensString;
             List<JsonRecordData> records = new List<JsonRecordData>();
             Dictionary<string, string> parameterValues = parameterActions.Split('&').ToDictionary(key => key.Split('=')[0], value => System.Web.HttpUtility.UrlDecode(value.Split('=')[1]));
             if (parameterValues.TryGetValue("tokens", out tokensString))
             {
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 string[] tokens = tokensString.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 Storage.Project projectStorage = new Storage.Project();
 
@@ -222,15 +207,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/tag/search")]
         public void HttpGetPopulateInputTagTagData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
 
             Dictionary<string,string> parameterValues = parameterActions.Split('&').ToDictionary(key => key.Split('=')[0], value => value.Split('=')[1]);
             Storage.Project projectStorage = new Storage.Project();
@@ -274,6 +251,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/get")]
         public void HttpGetInputTagUserData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
+
             string tokensString;
             List<JsonRecordData> records = new List<JsonRecordData>();
             Dictionary<string, string> parameterValues = parameterActions.Split('&')
@@ -282,16 +261,6 @@ namespace Phabrico.Controllers
                                                                                       );
             if (parameterValues.TryGetValue("tokens", out tokensString))
             {
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 string[] tokens = tokensString.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 Storage.User userStorage = new Storage.User();
 
@@ -326,15 +295,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/search")]
         public void HttpGetPopulateInputTagUserData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
 
             Dictionary<string, string> parameterValues = parameterActions.Split('&').ToDictionary(key => key.Split('=')[0], value => value.Split('=')[1]);
             Storage.User userStorage = new Storage.User();

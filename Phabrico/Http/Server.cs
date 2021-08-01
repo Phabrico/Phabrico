@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +13,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-
 using Newtonsoft.Json;
 
 using Phabrico.Controllers;
@@ -92,9 +90,18 @@ namespace Phabrico.Http
         private static Dictionary<string,string> currentNotifications = new Dictionary<string, string>();
 
         /// <summary>
-        /// Number of browser connections + 1 thread for accepting a new connection
+        /// True if Phabrico is executed as IIS Http module
+        /// False is Phabrico is executed as a Windows service
         /// </summary>
-        private int nbrBrowserConnectionThreads = 0;
+        public bool IsHttpModule { get; private set; }
+
+        /// <summary>
+        /// Only 1 instance of the Http.Server can be created.
+        /// Each time the constructor is executed, this variable is increased.
+        /// Each time Stop() is executed, this variable is decreased.
+        /// If set to 1 and the constructor is executed again, an exception will be thrown
+        /// </summary>
+        private static int numberOfInstancesCreated = 0;
 
         /// <summary>
         /// Contains all the url paths which point to an unsecured controller method
@@ -108,6 +115,11 @@ namespace Phabrico.Http
         public string Address { get; private set; }
 
         /// <summary>
+        /// Configuration for customizing Phabrico
+        /// </summary>
+        public ApplicationCustomization Customization { get; private set; } = new ApplicationCustomization();
+
+        /// <summary>
         /// List of available and loaded Phabrico plugins
         /// </summary>
         public static List<Plugin.PluginBase> Plugins { get; } = new List<Plugin.PluginBase>();
@@ -118,22 +130,46 @@ namespace Phabrico.Http
         public bool RemoteAccessEnabled { get; private set; }
 
         /// <summary>
+        /// URL of the Phabrico application
+        /// Start with a '/' and ends with a '/'
+        /// E.g. "/phabrico/"
+        /// </summary>
+        public static string RootPath { get; private set; }
+
+        /// <summary>
         /// Session manager object which manages all the browser session tokens.
         /// Contains 
         /// </summary>
         public SessionManager Session { get; } = new SessionManager();
 
         /// <summary>
+        /// TCP portnr for webserver listener
+        /// </summary>
+        public int TcpPortNr { get; private set; }
+
+        /// <summary>
         /// List of active WebSockets
         /// </summary>
-        public static List<HttpListenerWebSocketContext> WebSockets = new List<HttpListenerWebSocketContext>();
+        public static List<WebSocketContext> WebSockets = new List<WebSocketContext>();
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public Server(bool remoteAccessEnabled, int listenTcpPortNr)
+        public Server(bool remoteAccessEnabled, int listenTcpPortNr, string rootPath, bool isHttpModule = false)
         {
+            if (numberOfInstancesCreated > 0)
+            {
+                throw new System.Exception("Only one instance of Http.Server is allowed");
+            }
+
+            numberOfInstancesCreated++;
+
+            this.TcpPortNr = listenTcpPortNr;
             this.RemoteAccessEnabled = remoteAccessEnabled;
+            this.IsHttpModule = isHttpModule;
+
+            RootPath = "/" + rootPath.Trim('/') + "/";
+            RootPath = RegexSafe.Replace(RootPath, "//+", "/");
 
             cacheStatusHttpMessages = CacheState.Invalid;
 
@@ -157,7 +193,8 @@ namespace Phabrico.Http
                                         );
 
             // load plugin DLLs
-            foreach (string pluginFileName in System.IO.Directory.EnumerateFiles(".", "Phabrico.Plugin.*.dll"))
+            string rootDirectory = AppDomain.CurrentDomain.RelativeSearchPath ?? AppDomain.CurrentDomain.BaseDirectory;
+            foreach (string pluginFileName in System.IO.Directory.EnumerateFiles(rootDirectory, "Phabrico.Plugin.*.dll"))
             {
                 try
                 {
@@ -207,15 +244,30 @@ namespace Phabrico.Http
                 }
             }
 
-            Address = string.Format("http://{0}:{1}/", Environment.MachineName, listenTcpPortNr);
+            Address = string.Format("http://{0}:{1}{2}", Environment.MachineName, listenTcpPortNr, RootPath);
 
-            // start listener
-            httpListener = new HttpListener();
-            httpListener.Prefixes.Add(string.Format("http://+:{0}/", listenTcpPortNr));
-            httpListener.AuthenticationSchemeSelectorDelegate = new AuthenticationSchemeSelector(AuthenticationSchemeForBrowser);
-            httpListener.Start();
+            if (isHttpModule)
+            {
+                // event for stopping Phabrico when IIS is about to stop
+                AppDomain.CurrentDomain.DomainUnload += new EventHandler(delegate (object sender, EventArgs args)  {
+                    Stop();
+                });
+            }
+            else
+            {
+                // start listener
+                httpListener = new HttpListener();
+                httpListener.Prefixes.Add(string.Format("http://+:{0}{1}", listenTcpPortNr, RootPath));
+                httpListener.AuthenticationSchemeSelectorDelegate = new AuthenticationSchemeSelector(AuthenticationSchemeForBrowser);
+                httpListener.Start();
 
-            httpListener.BeginGetContext(ProcessHttpRequest, httpListener);
+                httpListener.BeginGetContext(ProcessHttpRequest, httpListener);
+            }
+        }
+
+        private void CurrentDomain_DomainUnload(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -252,7 +304,7 @@ namespace Phabrico.Http
         /// </summary>
         public void CleanUpSessions()
         {
-            foreach (SessionManager.Token activeToken in Session.ActiveTokens.Where(token => token.Key != "temp").ToArray())
+            foreach (SessionManager.Token activeToken in SessionManager.ActiveTokens.Where(token => token.Key != "temp").ToArray())
             {
                 if (activeToken.Invalid)
                 {
@@ -274,7 +326,7 @@ namespace Phabrico.Http
                 Match shortenedManiphestTaskUrl = RegexSafe.Match(cmdGetUrl, "^/T[0-9]+/?(\\?.*)?", RegexOptions.None);
                 if (shortenedManiphestTaskUrl.Success)
                 {
-                    cmdGetUrl = "/maniphest/" + shortenedManiphestTaskUrl.Value;
+                    cmdGetUrl = "maniphest/" + shortenedManiphestTaskUrl.Value;
                     return true;
                 }
             }
@@ -584,25 +636,9 @@ namespace Phabrico.Http
             string encryptionKey = token?.EncryptionKey;
             if (string.IsNullOrEmpty(encryptionKey) == false)
             {
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    encryptionKey = Encryption.XorString(encryptionKey, publicXorCipher);
-                }
-
                 using (Storage.Database database = new Storage.Database(encryptionKey))
                 {
                     Storage.Account accountStorage = new Storage.Account();
-
-                    // unmask private encryption key
-                    if (token.PrivateEncryptionKey != null)
-                    {
-                        UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                        database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                    }
 
                     Phabricator.Data.Account accountData = accountStorage.Get(database).FirstOrDefault();
                     if (accountData != null)
@@ -620,6 +656,33 @@ namespace Phabrico.Http
             }
 
             return "Unknown";
+        }
+
+        /// <summary>
+        /// Processes a Phabrico request from IIS
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void IISApplication_AuthenticateRequest(object sender, EventArgs e)
+        {
+            HttpApplication application = (HttpApplication)sender;
+            HttpContext context = application.Context;
+
+            if (context.Request.RawUrl.StartsWith(RootPath) || context.Request.RawUrl.Equals(RootPath.TrimEnd('/')))
+            {
+                Phabrico.Miscellaneous.HttpListenerContext httpListenerContext = context;
+                ProcessHttpRequest(httpListenerContext);
+                application.CompleteRequest();
+            }
+        }
+
+        /// <summary>
+        /// Prepares the request from a IIS module
+        /// </summary>
+        /// <param name="application"></param>
+        public void Init(HttpApplication application)
+        {
+            application.AuthenticateRequest += IISApplication_AuthenticateRequest;
         }
 
         /// <summary>
@@ -754,11 +817,9 @@ namespace Phabrico.Http
                             string[] parameters = phrictionDocument.Path.Trim('/').Split('/');
                             Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "Phriction", parameters);
 
-                            phrictionController.EncryptionKey = Encryption.XorString(encryptionKey, whoAmI.PublicXorCipher);
+                            phrictionController.EncryptionKey = encryptionKey;
 
                             phrictionController.HttpGetLoadParameters(this, clonedBrowser, ref viewPage, parameters, "");
-
-                            phrictionController.EncryptionKey = Encryption.XorString(encryptionKey, whoAmI.PublicXorCipher);
 
                             viewPage.Theme = theme;
                             htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
@@ -797,11 +858,9 @@ namespace Phabrico.Http
                             string[] parameters = new string[] { "T" + assignedManiphestTask.ID.ToString() };
                             Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "ManiphestTask", parameters);
 
-                            maniphestController.EncryptionKey = Encryption.XorString(encryptionKey, whoAmI.PublicXorCipher);
+                            maniphestController.EncryptionKey = encryptionKey;
 
                             maniphestController.HttpGetLoadParameters(this, clonedBrowser, ref viewPage, parameters, "");
-
-                            maniphestController.EncryptionKey = Encryption.XorString(encryptionKey, whoAmI.PublicXorCipher);
 
                             viewPage.Theme = theme;
                             htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
@@ -829,7 +888,7 @@ namespace Phabrico.Http
             using (Storage.Database database = new Storage.Database(null))
             {
                 Response.HtmlViewPage htmlViewPage = new Response.HtmlViewPage(browser);
-                htmlViewPage.SetContent(htmlViewPage.GetViewData("AccessDenied"));
+                htmlViewPage.SetContent(browser, htmlViewPage.GetViewData("AccessDenied"));
                 htmlViewPage.SetText("INVALID-LOCAL-URL", accessDeniedException.URL);
                 htmlViewPage.SetText("PHABRICATOR-URL", accessDeniedException.URL);
                 htmlViewPage.SetText("THEME", database.ApplicationTheme);
@@ -859,7 +918,7 @@ namespace Phabrico.Http
             }
 
             Http.Response.HttpRedirect httpResponse = null;
-            httpResponse = new Http.Response.HttpRedirect(this, browser, "/?ReturnURL=" + browser.Request.RawUrl.Split('?')[0]);
+            httpResponse = new Http.Response.HttpRedirect(this, browser, RootPath + "?ReturnURL=" + browser.Request.RawUrl.Split('?')[0]);
             httpResponse.Send(browser);
         }
 
@@ -890,18 +949,6 @@ namespace Phabrico.Http
             {
                 token = Session.GetToken(tokenId);
                 encryptionKey = token?.EncryptionKey;
-
-                if (encryptionKey != null)
-                {
-                    using (Storage.Database database = new Storage.Database(null))
-                    {
-                        Storage.Account accountStorage = new Storage.Account();
-                        UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                        // unmask encryption key
-                        encryptionKey = Encryption.XorString(encryptionKey, publicXorCipher);
-                    }
-                }
             }
 
             using (Storage.Database database = new Storage.Database(encryptionKey))
@@ -910,13 +957,6 @@ namespace Phabrico.Http
 
                 try
                 {
-                    // unmask private encryption key
-                    if (token?.PrivateEncryptionKey != null)
-                    {
-                        UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                        database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                    }
-
                     if (unsecuredUrlPaths.All(path => cmdGetUrl.StartsWith(path) == false) &&
                         (needAuthorization || cmdGetUrl.Split('?')[0].Equals("/") || cmdGetUrl.Split('?')[0].Equals(""))
                        )
@@ -1091,7 +1131,7 @@ namespace Phabrico.Http
                     // search for view
                     string[] urlParts = cmdGetUrl.Split('/');
                     string urlPath = urlParts[1];
-                    if (Http.Response.HttpMessage.ViewExists(urlPath) == false &&
+                    if (Http.Response.HttpMessage.ViewExists(this, urlPath) == false &&
                         controllerUrlAlias != null &&
                         controllerUrlAlias.Trim('/').Equals(urlPath.Split('?', '&').FirstOrDefault()))
                     {
@@ -1100,7 +1140,7 @@ namespace Phabrico.Http
                     }
 
                     Http.Response.HtmlViewPage viewPage = null;
-                    if (Http.Response.HttpMessage.ViewExists(urlPath))
+                    if (Http.Response.HttpMessage.ViewExists(this, urlPath))
                     {
                         try
                         {
@@ -1138,6 +1178,7 @@ namespace Phabrico.Http
                     string parameterActions = string.Join("&", browser.Request.RawUrl.Split('?', '&').Skip(1));
                     if (string.IsNullOrEmpty(parameterActions) == false && 
                         controllerParameters != null && 
+                        controllerParameters.Any() &&
                         controllerParameters.LastOrDefault().Equals(parameterActions)
                        )
                     {
@@ -1171,7 +1212,11 @@ namespace Phabrico.Http
                             if (viewPage != null)
                             {
                                 var outputParameter = controllerMethod.GetParameters().ElementAt(2).ParameterType;
-                                if (outputParameter.FullName.StartsWith(typeof(Http.Response.HtmlViewPage).FullName) == false)
+                                if (outputParameter.FullName.StartsWith(typeof(Http.Response.HtmlViewPage).FullName) == false &&
+                                    outputParameter.FullName.StartsWith(typeof(Http.Response.HtmlPage).FullName) == false &&
+                                    outputParameter.FullName.StartsWith(typeof(Http.Response.HttpFound).FullName) == false &&
+                                    outputParameter.FullName.StartsWith(typeof(Http.Response.HttpMessage).FullName) == false
+                                   )
                                 {
                                     viewPage = null;
                                 }
@@ -1204,10 +1249,21 @@ namespace Phabrico.Http
                             {
                                 if (targetInvocationException.InnerException != null)
                                 {
-                                    ExceptionDispatchInfo.Capture(targetInvocationException.InnerException).Throw();
+                                    if (targetInvocationException.InnerException is Exception.HttpNotFound)
+                                    {
+                                        httpResponse = null;
+                                        methodArguments = new object[5];
+                                    }
+                                    else
+                                    {
+                                        ExceptionDispatchInfo.Capture(targetInvocationException.InnerException).Throw();
+                                        return;
+                                    }
                                 }
-
-                                throw targetInvocationException;
+                                else
+                                {
+                                    throw targetInvocationException;
+                                }
                             }
                             finally
                             {
@@ -1436,13 +1492,15 @@ namespace Phabrico.Http
                         tokenId = existingAccount.Token;
                         token = Session.CreateToken(tokenId, browser);
                         browser.SetCookie("token", token.ID);
-                        token.EncryptionKey = Encryption.XorString(database.EncryptionKey, existingAccount.PublicXorCipher);
-                        token.PrivateEncryptionKey = Encryption.XorString(database.PrivateEncryptionKey, existingAccount.PrivateXorCipher);
+                        token.EncryptionKey = database.EncryptionKey;
+                        token.PrivateEncryptionKey = database.PrivateEncryptionKey;
                         token.AuthenticationFactor = AuthenticationFactor.Ownership;
                         Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
 
                         // store AuthenticationFactor in database
                         database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
+
+                        database.UpgradeIfNeeded();
                         break;
                 }
             }
@@ -1638,21 +1696,141 @@ namespace Phabrico.Http
             }
         }
 
+        public void ProcessHttpRequest(Miscellaneous.HttpListenerContext httpListenerContext)
+        {
+            try
+            {
+                if (httpListenerContext.IsWebSocketRequest)
+                {
+                    httpListenerContext.AcceptWebSocket();
+                }
+                else
+                {
+                    using (Browser browser = new Browser(this, httpListenerContext))
+                    {
+                        if (RemoteAccessEnabled == false)
+                        {
+                            if (httpListenerContext.Request.IsLocal == false)
+                            {
+                                bool isStaticData = httpListenerContext.Request.RawUrl.StartsWith("/favicon.ico", StringComparison.OrdinalIgnoreCase)
+                                                 || httpListenerContext.Request.RawUrl.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase)
+                                                 || httpListenerContext.Request.RawUrl.StartsWith("/css/", StringComparison.OrdinalIgnoreCase)
+                                                 || httpListenerContext.Request.RawUrl.StartsWith("/scripts/", StringComparison.OrdinalIgnoreCase);
+                                if (isStaticData == false)
+                                {
+                                    AccessDeniedException accessDeniedException = new AccessDeniedException("/", "Remote access is disabled");
+                                    ProcessAccessDeniedException(browser, accessDeniedException);
+                                    return;
+                                }
+                            }
+                        }
+
+                        // copy WindowsIdentity from context to browser object
+                        browser.WindowsIdentity = httpListenerContext.WindowsIdentity;
+
+                        try
+                        {
+                            browser.Conduit = new Conduit(this, browser);
+
+                            // === Process GET commando ==================================================================================================================================
+                            if (browser.Request.HttpMethod.Equals("GET"))
+                            {
+                                ProcessHttpGetRequest(browser);
+                            }
+                            else
+                            // === Process POST commando =================================================================================================================================
+                            if (browser.Request.HttpMethod.Equals("POST"))
+                            {
+                                ProcessHttpPostRequest(browser);
+                            }
+                        }
+                        catch (AuthorizationException authorizationException)
+                        {
+                            ProcessAuthorizationException(browser, authorizationException);
+                        }
+                        catch (AccessDeniedException accessDeniedException)
+                        {
+                            ProcessAccessDeniedException(browser, accessDeniedException);
+                        }
+                        catch (HttpListenerException)
+                        {
+                            throw;
+                        }
+                        catch (CryptographicException)
+                        {
+                            // unable to decode database -> access denied
+                            AccessDeniedException accessDeniedException = new AccessDeniedException("/", "Invalid credentials");
+                            ProcessAccessDeniedException(browser, accessDeniedException);
+                        }
+                        catch (System.Exception exception)
+                        {
+                            Logging.WriteException(browser.Token.ID, exception);
+                            SendExceptionToBrowser(browser, exception);
+                        }
+                    }
+                }
+            }
+            catch (System.Exception exception)
+            {
+                HttpListenerException httpListenerException = exception as HttpListenerException;
+                if (httpListenerException != null)
+                {
+                    if (httpListenerException.ErrorCode == 995)
+                    {
+                        // The I/O operation has been aborted because of either a thread exit or an application request
+                        return;
+                    }
+                }
+
+                AuthorizationException authorizationException = exception as AuthorizationException;
+                if (authorizationException != null)
+                {
+                    using (Browser browser = new Browser(this, httpListenerContext))
+                    {
+                        ProcessAuthorizationException(browser, authorizationException);
+                        return;
+                    }
+                }
+
+                Logging.WriteException(null, exception);
+            }
+        }
+
         /// <summary>
         /// This method is executed for each HTTP request received from the web browser
         /// </summary>
         /// <param name="ar">asyncResult</param>
         private void ProcessHttpRequest(IAsyncResult asyncResult)
         {
-            Miscellaneous.HttpListenerContext context;
+            Miscellaneous.HttpListenerContext context = null;
 
             try
             {
                 context = httpListener.EndGetContext(asyncResult);
             }
-            catch
+            catch (System.Exception exception)
             {
-                return;
+                HttpListenerException httpListenerException = exception as HttpListenerException;
+                if (httpListenerException != null)
+                {
+                    if (httpListenerException.ErrorCode == 995)
+                    {
+                        // The I/O operation has been aborted because of either a thread exit or an application request
+                        return;
+                    }
+                }
+
+                AuthorizationException authorizationException = exception as AuthorizationException;
+                if (authorizationException != null)
+                {
+                    using (Browser browser = new Browser(this, context))
+                    {
+                        ProcessAuthorizationException(browser, authorizationException);
+                        return;
+                    }
+                }
+
+                Logging.WriteException(null, exception);
             }
 
             Task.Factory.StartNew((Object obj) =>
@@ -1662,139 +1840,13 @@ namespace Phabrico.Http
 
                 try
                 {
-
                     httpListener.BeginGetContext(ProcessHttpRequest, httpListenerContext);
-
-                    if (httpListenerContext.Request.IsWebSocketRequest)
-                    {
-                        ProcessWebSocketRequestAsync(httpListenerContext);
-                    }
-                    else
-                    {
-                        using (Browser browser = new Browser(this, httpListenerContext))
-                        {
-                            if (RemoteAccessEnabled == false)
-                            {
-                                if (httpListenerContext.Request.IsLocal == false)
-                                {
-                                    bool isStaticData = httpListenerContext.Request.RawUrl.StartsWith("/favicon.ico", StringComparison.OrdinalIgnoreCase)
-                                                     || httpListenerContext.Request.RawUrl.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase)
-                                                     || httpListenerContext.Request.RawUrl.StartsWith("/css/", StringComparison.OrdinalIgnoreCase)
-                                                     || httpListenerContext.Request.RawUrl.StartsWith("/scripts/", StringComparison.OrdinalIgnoreCase);
-                                    if (isStaticData == false)
-                                    {
-                                        AccessDeniedException accessDeniedException = new AccessDeniedException("/", "Remote access is disabled");
-                                        ProcessAccessDeniedException(browser, accessDeniedException);
-                                        return;
-                                    }
-                                }
-                            }
-
-                            // copy WindowsIdentity from context to browser object
-                            browser.WindowsIdentity = httpListenerContext.WindowsIdentity;
-
-                            try
-                            {
-                                browser.Conduit = new Conduit(this, browser);
-
-                                // === Process GET commando ==================================================================================================================================
-                                if (browser.Request.HttpMethod.Equals("GET"))
-                                {
-                                    ProcessHttpGetRequest(browser);
-                                }
-                                else
-                                // === Process POST commando =================================================================================================================================
-                                if (browser.Request.HttpMethod.Equals("POST"))
-                                {
-                                    ProcessHttpPostRequest(browser);
-                                }
-                            }
-                            catch (AuthorizationException authorizationException)
-                            {
-                                ProcessAuthorizationException(browser, authorizationException);
-                            }
-                            catch (AccessDeniedException accessDeniedException)
-                            {
-                                ProcessAccessDeniedException(browser, accessDeniedException);
-                            }
-                            catch (HttpListenerException)
-                            {
-                                throw;
-                            }
-                            catch (CryptographicException)
-                            {
-                                // unable to decode database -> access denied
-                                AccessDeniedException accessDeniedException = new AccessDeniedException("/", "Invalid credentials");
-                                ProcessAccessDeniedException(browser, accessDeniedException);
-                            }
-                            catch (System.Exception exception)
-                            {
-                                Logging.WriteException(browser.Token.ID, exception);
-                                SendExceptionToBrowser(browser, exception);
-                            }
-                        }
-                    }
+                    ProcessHttpRequest(httpListenerContext);
                 }
-                catch (System.Exception exception)
+                catch
                 {
-                    HttpListenerException httpListenerException = exception as HttpListenerException;
-                    if (httpListenerException != null)
-                    {
-                        if (httpListenerException.ErrorCode == 995)
-                        {
-                            // The I/O operation has been aborted because of either a thread exit or an application request
-                            return;
-                        }
-                    }
-
-                    AuthorizationException authorizationException = exception as AuthorizationException;
-                    if (authorizationException != null)
-                    {
-                        using (Browser browser = new Browser(this, httpListenerContext))
-                        {
-                            ProcessAuthorizationException(browser, authorizationException);
-                            return;
-                        }
-                    }
-
-                    Logging.WriteException(null, exception);
                 }
             }, new { context });
-        }
-
-        private async void ProcessWebSocketRequestAsync(Miscellaneous.HttpListenerContext httpListenerContext)
-        {
-            byte[] buffer = new byte[8192];
-            HttpListenerWebSocketContext context = await httpListenerContext.AcceptWebSocketAsync(null, 8192, TimeSpan.FromMilliseconds(500));
-            WebSockets.Add(context);
-
-            try
-            {
-                if (context.WebSocket.State == WebSocketState.Open)
-                {
-                    SendLatestNotifications();
-                }
-
-                while (context.WebSocket.State == WebSocketState.Open)
-                {
-                    var response = await context.WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-                    if (response.MessageType == WebSocketMessageType.Close)
-                    {
-                        await
-                            context.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close response received",
-                                CancellationToken.None);
-                    }
-                    else
-                    {
-                        var result = Encoding.UTF8.GetString(buffer);
-                    }
-                }
-            }
-            catch
-            {
-                WebSockets.Remove(context);
-            }
         }
 
         /// <summary>
@@ -1819,7 +1871,7 @@ namespace Phabrico.Http
                                   + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(redirectReasonField2)) + "/"
                                   + Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(redirectReasonField3));
 
-            string url = "/exception/" + redirectReason;
+            string url = RootPath + "exception/" + redirectReason;
             Http.Response.HttpRedirect httpResponse = null;
             httpResponse = new Http.Response.HttpRedirect(this, browser, url);
             httpResponse.Send(browser);
@@ -1833,15 +1885,22 @@ namespace Phabrico.Http
         {
             foreach (string webSocketMessageIdentifier in currentNotifications.Keys.ToArray())
             {
-                foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
-                                                                                                     && websocket.RequestUri.LocalPath.TrimEnd('/')
-                                                                                                                 .Equals(webSocketMessageIdentifier.TrimEnd('/'), 
-                                                                                                                         StringComparison.OrdinalIgnoreCase))
-                                                                                    .ToArray())
+                foreach (WebSocketContext webSocketContext in WebSockets.ToArray().Where(websocket => websocket != null).ToArray())
                 {
-                    Logging.WriteInfo("Notify", webSocketContext.RequestUri.LocalPath);
-                    byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
-                    webSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+                    try
+                    {
+                        if (webSocketContext.RequestUri.LocalPath.TrimEnd('/')
+                                            .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase))
+                        {
+                            Logging.WriteInfo("Notify", webSocketContext.RequestUri.LocalPath);
+                            byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
+                            webSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+                        }
+                    }
+                    catch
+                    {
+                        WebSockets.Remove(webSocketContext);
+                    }
                 }
             }
         }
@@ -1862,9 +1921,19 @@ namespace Phabrico.Http
                 Message = message,
                 Type = "info"
             });
+
+            // prepend root-path
+            webSocketMessageIdentifier = RootPath.TrimEnd('/') + webSocketMessageIdentifier;
+
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket =>  websocket != null && websocket.RequestUri.LocalPath.TrimEnd('/').Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)))
+            foreach (WebSocketContext webSocketContext in WebSockets.Where(websocket =>  websocket != null
+                                                                                     && websocket.RequestUri
+                                                                                                 .LocalPath
+                                                                                                 .TrimEnd('/')
+                                                                                                 .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                                          )
+                                                                    .ToArray())
             {
                 Logging.WriteInfo("Notify-Info", webSocketContext.RequestUri.LocalPath);
                 byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
@@ -1888,9 +1957,19 @@ namespace Phabrico.Http
                 Message = message,
                 Type = "error"
             });
+
+            // prepend root-path
+            webSocketMessageIdentifier = RootPath.TrimEnd('/') + webSocketMessageIdentifier;
+
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket.RequestUri.LocalPath.TrimEnd('/').Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)))
+            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null 
+                                                                                                 && websocket.RequestUri
+                                                                                                             .LocalPath
+                                                                                                             .TrimEnd('/')
+                                                                                                             .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                                                      )
+                                                                                .ToArray())
             {
                 Logging.WriteInfo("Notify-Error", webSocketContext.RequestUri.LocalPath);
                 byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
@@ -1903,20 +1982,17 @@ namespace Phabrico.Http
         /// </summary>
         public void Stop()
         {
-            // wait until all threads are finished
-            while (this.nbrBrowserConnectionThreads > 0)
-            {
-                Thread.Sleep(250);
-            }
-
             // terminates all the plugins
             foreach (Plugin.PluginBase plugin in Plugins)
             {
                 plugin.UnlLoad();
             }
 
-            // terminates the TCP socket listener
-            this.httpListener.Stop();
+            if (IsHttpModule == false)
+            {
+                // terminates the TCP socket listener
+                this.httpListener.Stop();
+            }
 
             // wait until we're not caching any more
             while (cacheStatusHttpMessages == CacheState.Busy)
@@ -1930,6 +2006,8 @@ namespace Phabrico.Http
                 plugin.Dispose();
             }
             Plugins.Clear();
+
+            numberOfInstancesCreated--;
         }
 
         /// <summary>

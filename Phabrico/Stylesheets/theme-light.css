@@ -216,6 +216,8 @@
     --remarkup-nav-sequence-item-background: #468;
     --remarkup-nav-sequence-item-border: solid 1px #fff;
     --remarkup-nav-sequence-item-color: #fff;
+    --select-background-color: #fffe;
+    --select-color: #000;
     --select-border: 1px solid #ccc;
     --select-after-color: #000;
     --span-remarkup-highlight-background-color: #ecdff1;

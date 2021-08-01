@@ -1,4 +1,4 @@
-﻿var url = '/diagrams.net/webapp/?embed=1&noSaveBtn=1&spin=1&modified=unsavedChanges&proto=json';
+﻿var url = 'diagrams.net/webapp/?embed=1&noSaveBtn=1&spin=1&modified=unsavedChanges&proto=json';
 var source = evt.srcElement || evt.target;
 
 if (source.nodeName == 'IMG' && source.className == 'drawio')

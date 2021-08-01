@@ -47,20 +47,11 @@ namespace Phabrico.Http.Response
             string phabricatorUrl = "";
             if (encryptionKey != null)
             {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    System.UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    encryptionKey = Miscellaneous.Encryption.XorString(token.EncryptionKey, publicXorCipher);
-                }
-
                 // try to form URL on Phabricator server
                 using (Storage.Database database = new Storage.Database(encryptionKey))
                 {
-                    Phabricator.Data.Account accountData = accountStorage.Get(database, token);
+                    Storage.Account accountStorage = new Storage.Account();
+                    Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
                     if (accountData != null)
                     {
                         if (Url.StartsWith("/maniphest/"))
@@ -82,12 +73,17 @@ namespace Phabrico.Http.Response
 
             // return HTML page
             HtmlViewPage notFound = new HtmlViewPage(browser);
-            string html = notFound.GetViewData("HttpNotFound")
-                                  .Replace("@@THEME@@", Theme)
-                                  .Replace("@@INVALID-LOCAL-URL@@", Url)
-                                  .Replace("@@PHABRICATOR-URL@@", phabricatorUrl);
+            notFound.SetContent(browser, GetViewData("HttpNotFound"));
+            notFound.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            notFound.SetText("INVALID-LOCAL-URL", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            notFound.SetText("PHABRICATOR-URL", phabricatorUrl, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            notFound.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            notFound.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            notFound.SetText("THEME-STYLE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            notFound.Customize(browser);
+            notFound.Merge();
 
-            data = UTF8Encoding.UTF8.GetBytes(html);
+            data = UTF8Encoding.UTF8.GetBytes(notFound.Content);
             base.Send(browser, data);
         }
     }

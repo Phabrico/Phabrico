@@ -76,7 +76,7 @@ namespace Phabrico.Http
                             return privateEncryptionKey;
 
                         case AuthenticationFactor.Ownership:
-                            return Encryption.GetDPAPIKey();
+                            return privateEncryptionKey;
 
                         default:
                             return null;
@@ -155,7 +155,7 @@ namespace Phabrico.Http
         /// <summary>
         /// List of active client tokens
         /// </summary>
-        public List<Token> ActiveTokens { get; } = new List<Token>();
+        public static List<Token> ActiveTokens { get; } = new List<Token>();
 
         /// <summary>
         /// Active client sessions per token-id

@@ -53,17 +53,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user")]
         public Http.Response.HttpMessage HttpPostLoadUsersScreen(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                Storage.Account accountStorage = new Storage.Account();
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user", "You don't have sufficient rights to configure Phabrico");
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
 
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user", "You don't have sufficient rights to configure Phabrico");
 
             Storage.User userStorage = new Storage.User();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -113,19 +106,12 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/query")]
         public JsonMessage HttpPostPopulateTableData(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
+
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/query", "You don't have sufficient rights to configure Phabrico");
-
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/query", "You don't have sufficient rights to configure Phabrico");
 
             int totalNumberSelected;
             bool noneUserSelected;
@@ -187,17 +173,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/select")]
         public void HttpPostSelectUser(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/select", "You don't have sufficient rights to configure Phabrico");
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
 
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/select", "You don't have sufficient rights to configure Phabrico");
 
             string userToken = browser.Session.FormVariables["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -216,17 +195,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/unselect")]
         public void HttpPostUnselectUser(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/unselect", "You don't have sufficient rights to configure Phabrico");
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
 
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/unselect", "You don't have sufficient rights to configure Phabrico");
 
             string userToken = browser.Session.FormVariables["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))

@@ -22,7 +22,7 @@ namespace Phabrico.Plugin
         }
 
         /// <summary>
-        /// Retuns if the plugin should be visible and accessible
+        /// Retuns if the plugin should be visible and accessible via the navigator menu
         /// </summary>
         /// <param name="browser"></param>
         /// <returns></returns>

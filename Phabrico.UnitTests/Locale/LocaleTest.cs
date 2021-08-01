@@ -36,6 +36,8 @@ namespace Phabrico.UnitTests.Locale
         [TestMethod]
         public void TestCheckIfEverythingIsTranslated()
         {
+            Initialize();
+
             Assembly phabrico = Assembly.LoadFrom("Phabrico.exe");
             Type locale = phabrico.GetType("Phabrico.Miscellaneous.Locale");
             MethodInfo translateHTML = locale.GetMethod("TranslateHTML", new Type[] { typeof(string), typeof(string), typeof(List<string>).MakeByRefType() });
@@ -94,6 +96,8 @@ namespace Phabrico.UnitTests.Locale
         [TestMethod]
         public void TestCheckIfAllLocaleFilesAreSynchronized()
         {
+            Initialize();
+
             Assembly phabrico = Assembly.LoadFrom("Phabrico.exe");
             Type locale = phabrico.GetType("Phabrico.Miscellaneous.Locale");
 

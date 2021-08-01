@@ -34,6 +34,8 @@ RD /S /Q bin
     <None Include="09-FileObjects\README.md" />
     <None Include="10-Diagrams\README.md" />
     <None Include="11-Gitanos\README.md" />
+    <None Include="12-Customization\README.md" />
+    <None Include="13-CommandLineInterfacing\README.md" />
     <None Include="assets\css\style.scss" />
     <None Include="README.md" />
   </ItemGroup>
@@ -97,6 +99,7 @@ RD /S /Q bin
     <Content Include="11-Gitanos\Gitanos-05.png" />
     <Content Include="11-Gitanos\Gitanos-06.png" />
     <Content Include="11-Gitanos\Gitanos-07.png" />
+    <Content Include="12-Customization\Customization-01.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -86,15 +86,6 @@ namespace Phabrico.Plugin
             Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
 
-            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
-            {
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             List<string> underlyingPhrictionTokens = new List<string>();
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
@@ -322,15 +313,6 @@ namespace Phabrico.Plugin
 
             Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
-
-            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
-            {
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             List<string> underlyingPhrictionTokens = new List<string>();
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))

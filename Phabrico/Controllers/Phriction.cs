@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Phabrico.Data.References;
@@ -11,7 +10,6 @@ using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
-using Phabrico.Phabricator.Data;
 using Phabrico.Storage;
 
 namespace Phabrico.Controllers
@@ -119,6 +117,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction", Alias = "/w", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.Project projectStorage = new Storage.Project();
             Storage.Stage stageStorage = new Storage.Stage();
@@ -126,15 +126,6 @@ namespace Phabrico.Controllers
             Storage.Account accountStorage = new Storage.Account();
             string subscriberTokens = "";
             string projectTokens = "";
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -331,18 +322,40 @@ namespace Phabrico.Controllers
 
                 if (phrictionDocument.Token != null && phrictionDocument.Token.StartsWith(Phabricator.Data.Phriction.PrefixCoverPage))
                 {
+                    viewPage.SetText("IS-COVERPAGE", "yes");
                     viewPage.SetText("SHOW-SIDE-WINDOW", "no");
                     viewPage.SetText("HIDE-NEW-DOCUMENT-ACTION", "yes");
+                    viewPage.SetText("ONLY-PHRICTION", "True");
                 }
                 else
                 {
+                    viewPage.SetText("IS-COVERPAGE", "no");
                     viewPage.SetText("SHOW-SIDE-WINDOW", "yes");
                     viewPage.SetText("HIDE-NEW-DOCUMENT-ACTION", "no");
                     viewPage.SetText("DOCUMENT-STATE", documentState, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     viewPage.SetText("DOCUMENT-TIMESTAMP", phrictionDocument.DateModified.ToUnixTimeSeconds().ToString(), editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     viewPage.SetText("DOCUMENT-RAW-CONTENT", phrictionDocument.Content, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    viewPage.SetText("DOCUMENT-DATE", FormatDateTimeOffset(phrictionDocument.DateModified, browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    viewPage.SetText("DOCUMENT-DATE", FormatDateTimeOffset(phrictionDocument.DateModified, browser.Session.Locale ?? browser.Language ?? "en"), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     viewPage.SetText("DOCUMENT-LAST-MODIFIED-BY", getAccountName(phrictionDocument.LastModifiedBy), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+
+                    // verify if only Phriction should be visible
+                    if (httpServer.Customization.HideConfig &&
+                        httpServer.Customization.HideFiles &&
+                        httpServer.Customization.HideManiphest &&
+                        httpServer.Customization.HideOfflineChanges &&
+                        httpServer.Customization.HideProjects &&
+                        httpServer.Customization.HideUsers &&
+                        httpServer.Customization.HidePhriction == false &&
+                        Http.Server.Plugins.All(plugin => plugin.IsVisible(browser) == false)
+                       )
+                    {
+                        viewPage.SetText("ONLY-PHRICTION", "True", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    }
+                    else
+                    {
+                        viewPage.SetText("ONLY-PHRICTION", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    }
+
 
                     Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database);
                     if (phrictionStorage.IsFavorite(database, phrictionDocument, currentAccount.UserName))
@@ -521,13 +534,13 @@ namespace Phabrico.Controllers
                             {
                                 if (phrictionDocumentReferencer != null)
                                 {
-                                    referencedData.SetText("REFERENCE-URL", "/w/" + phrictionDocumentReferencer.Path);
+                                    referencedData.SetText("REFERENCE-URL", "w/" + phrictionDocumentReferencer.Path);
                                     referencedData.SetText("REFERENCE-TEXT", phrictionDocumentReferencer.Name);
                                 }
 
                                 if (maniphestTaskReferencer != null)
                                 {
-                                    referencedData.SetText("REFERENCE-URL", string.Format("/maniphest/T{0}/", maniphestTaskReferencer.ID));
+                                    referencedData.SetText("REFERENCE-URL", string.Format("maniphest/T{0}/", maniphestTaskReferencer.ID));
                                     referencedData.SetText("REFERENCE-TEXT", maniphestTaskReferencer.Name);
                                 }
                             }
@@ -556,16 +569,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction/addToFavorites")]
         public Http.Response.HttpMessage HttpPostAddToFavorites(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+
             SessionManager.Token token = SessionManager.GetToken(browser);
             Storage.Account accountStorage = new Storage.Account();
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -602,16 +609,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction/changeOrderFavorites")]
         public Http.Response.HttpMessage HttpPostChangeOrderFavorites(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+
             SessionManager.Token token = SessionManager.GetToken(browser);
             Storage.Account accountStorage = new Storage.Account();
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -652,16 +653,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction/removeFromFavorites")]
         public Http.Response.HttpMessage HttpPostRemoveFromFavorites(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+
             SessionManager.Token token = SessionManager.GetToken(browser);
             Storage.Account accountStorage = new Storage.Account();
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -691,18 +686,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction", Alias = "/w")]
         public Http.Response.HttpMessage HttpPostSaveParameters(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+
             try
             {
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-                    Storage.Account accountStorage = new Storage.Account();
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 Storage.Phriction phrictionStorage = new Storage.Phriction();
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -818,6 +805,9 @@ namespace Phabrico.Controllers
                                 // make sure we have no url ending with multiple slashes
                                 redirectUrl = redirectUrl.Substring(0, redirectUrl.Length - 1);
                             }
+
+                            redirectUrl = Http.Server.RootPath + redirectUrl;
+                            redirectUrl = redirectUrl.Replace("//", "/");
 
                             return new Http.Response.HttpRedirect(httpServer, browser, redirectUrl);
                         }

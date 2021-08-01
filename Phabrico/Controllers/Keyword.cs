@@ -57,21 +57,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/search")]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideSearch) throw new Phabrico.Exception.HttpNotFound();
+
             if (parameters.Any())
             {
                 Storage.Keyword keywordStorage = new Storage.Keyword();
                 Storage.Maniphest maniphestStorage = new Storage.Maniphest();
                 Storage.Phriction phrictionStorage = new Storage.Phriction();
-
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -88,19 +80,19 @@ namespace Phabrico.Controllers
                         switch (token)
                         {
                             case string maniphestTask when maniphestTask.StartsWith(Phabricator.Data.Maniphest.Prefix):
-                                searchResult = ProcessManiphestTask(database, maniphestStorage, token, parameters);
+                                searchResult = ProcessManiphestTask(httpServer, database, maniphestStorage, token, parameters);
                                 break;
 
                             case string newPhabricatorObject when newPhabricatorObject.StartsWith("PHID-NEWTOKEN-"):
-                                searchResult = ProcessPhrictionDocument(database, phrictionStorage, token, parameters);
+                                searchResult = ProcessPhrictionDocument(httpServer, database, phrictionStorage, token, parameters);
                                 if (searchResult == null)
                                 {
-                                    searchResult = ProcessManiphestTask(database, maniphestStorage, token, parameters);
+                                    searchResult = ProcessManiphestTask(httpServer, database, maniphestStorage, token, parameters);
                                 }
                                 break;
 
                             case string phrictionDocument when phrictionDocument.StartsWith(Phabricator.Data.Phriction.Prefix):
-                                searchResult = ProcessPhrictionDocument(database, phrictionStorage, token, parameters);
+                                searchResult = ProcessPhrictionDocument(httpServer, database, phrictionStorage, token, parameters);
                                 break;
 
                             default:
@@ -133,33 +125,38 @@ namespace Phabrico.Controllers
         /// <summary>
         /// Creates a new SearchResult record for a given Maniphest task
         /// </summary>
+        /// <param name="database">reference to Http.Server</param>
         /// <param name="database">SQLite database</param>
         /// <param name="maniphestStorage">Maniphest storage</param>
         /// <param name="token">Maniphest task token</param>
         /// <param name="parameters">Extra parameters found in Remarkup code</param>
         /// <returns>SearchResult object or null</returns>
-        private SearchResult ProcessManiphestTask(Database database, Storage.Maniphest maniphestStorage, string token, string[] parameters)
+        private SearchResult ProcessManiphestTask(Http.Server httpServer, Database database, Storage.Maniphest maniphestStorage, string token, string[] parameters)
         {
             SearchResult searchResult = null;
-            Phabricator.Data.Maniphest data = maniphestStorage.Get(database, token);
-            if (data != null)
+
+            if (httpServer.Customization.HideManiphest == false)
             {
-                searchResult = new SearchResult();
-                searchResult.Description = string.Format("T{0}: {1}", data.ID, data.Name);
-                searchResult.Path = "T" + data.ID;
-                searchResult.URL = "/maniphest/" + searchResult.Path;
-
-                // if the word is in the task's title, increase the priority of the keyword
-                string title = searchResult.Path + " " + data.Name.ToUpper();
-                if (parameters.All(word => title.Split(' ').Contains(word.ToUpper())))
+                Phabricator.Data.Maniphest data = maniphestStorage.Get(database, token);
+                if (data != null)
                 {
-                    searchResult.Priority += 5;
-                }
+                    searchResult = new SearchResult();
+                    searchResult.Description = string.Format("T{0}: {1}", data.ID, data.Name);
+                    searchResult.Path = "T" + data.ID;
+                    searchResult.URL = "maniphest/" + searchResult.Path;
 
-                // if the word is partially in the task's title, increase the priority of the keyword
-                if (parameters.All(word => title.Split(' ').Any(w => w.StartsWith(word.ToUpper()))))
-                {
-                    searchResult.Priority++;
+                    // if the word is in the task's title, increase the priority of the keyword
+                    string title = searchResult.Path + " " + data.Name.ToUpper();
+                    if (parameters.All(word => title.Split(' ').Contains(word.ToUpper())))
+                    {
+                        searchResult.Priority += 5;
+                    }
+
+                    // if the word is partially in the task's title, increase the priority of the keyword
+                    if (parameters.All(word => title.Split(' ').Any(w => w.StartsWith(word.ToUpper()))))
+                    {
+                        searchResult.Priority++;
+                    }
                 }
             }
 
@@ -169,33 +166,38 @@ namespace Phabrico.Controllers
         /// <summary>
         /// Creates a new SearchResult record for a given Phriction document
         /// </summary>
+        /// <param name="database">reference to Http.Server</param>
         /// <param name="database">SQLite database</param>
         /// <param name="phrictionStorage">Phriction storage</param>
         /// <param name="token">Phriction document token</param>
         /// <param name="parameters">Extra parameters found in Remarkup code</param>
         /// <returns>SearchResult object or null</returns>
-        private SearchResult ProcessPhrictionDocument(Database database, Storage.Phriction phrictionStorage, string token, string[] parameters)
+        private SearchResult ProcessPhrictionDocument(Http.Server httpServer, Database database, Storage.Phriction phrictionStorage, string token, string[] parameters)
         {
             SearchResult searchResult = null;
-            Phabricator.Data.Phriction data = phrictionStorage.Get(database, token);
-            if (data != null)
+
+            if (httpServer.Customization.HidePhriction == false)
             {
-                searchResult = new SearchResult();
-                searchResult.Description = data.Name;
-                searchResult.Path = data.Path;
-                searchResult.URL = "/w/" + data.Path;
-                searchResult.Priority = 0;
-
-                // if the word is in the document's title, increase the priority of the keyword
-                if (parameters.All(word => data.Name.ToUpper().Split(' ').Contains(word.ToUpper())))
+                Phabricator.Data.Phriction data = phrictionStorage.Get(database, token);
+                if (data != null)
                 {
-                    searchResult.Priority++;
-                }
+                    searchResult = new SearchResult();
+                    searchResult.Description = data.Name;
+                    searchResult.Path = data.Path;
+                    searchResult.URL = "w/" + data.Path;
+                    searchResult.Priority = 0;
 
-                // if the word is partial in the document's title increase the priority of the keyword
-                if (parameters.All(word => data.Name.ToUpper().Split(' ').Any(partial => partial.StartsWith(word.ToUpper()))))
-                {
-                    searchResult.Priority++;
+                    // if the word is in the document's title, increase the priority of the keyword
+                    if (parameters.All(word => data.Name.ToUpper().Split(' ').Contains(word.ToUpper())))
+                    {
+                        searchResult.Priority++;
+                    }
+
+                    // if the word is partial in the document's title increase the priority of the keyword
+                    if (parameters.All(word => data.Name.ToUpper().Split(' ').Any(partial => partial.StartsWith(word.ToUpper()))))
+                    {
+                        searchResult.Priority++;
+                    }
                 }
             }
 

@@ -67,7 +67,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         {
                             html += string.Format("<span class='meme-above' style='width:{0}px'>{1}</span>", fileObject.ImagePropertyPixelWidth, textAbove);
                         }
-                        html += string.Format(@"<img alt='{0}' src='/file/data/{1}/'>", fileObject.FileName.Replace("'", ""), fileObject.ID);
+                        html += string.Format(@"<img alt='{0}' src='file/data/{1}/'>", fileObject.FileName.Replace("'", ""), fileObject.ID);
                         if (string.IsNullOrWhiteSpace(textBelow) == false)
                         {
                             int positionTextBelow = -38;

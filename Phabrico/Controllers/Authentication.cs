@@ -44,20 +44,20 @@ namespace Phabrico.Controllers
                     string accountDataUserName = browser.Session.FormVariables["username"];
                     string accountDataPassword = browser.Session.FormVariables["password"];
                     string tokenHash = Encryption.GenerateTokenKey(accountDataUserName, accountDataPassword);  // tokenHash is stored in the database
-                    string encryptionKey = Encryption.GenerateEncryptionKey(accountDataUserName, accountDataPassword);  // encryptionKey is not stored in database (except when security is disabled)
+                    string publicEncryptionKey = Encryption.GenerateEncryptionKey(accountDataUserName, accountDataPassword);  // encryptionKey is not stored in database (except when security is disabled)
                     string privateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(accountDataUserName, accountDataPassword);  // privateEncryptionKey is not stored in database
 
                     Http.Response.HomePage httpResponse = new Http.Response.HomePage(httpServer, browser, "/");
 
-                    using (Storage.Database database = new Storage.Database(encryptionKey))
+                    using (Storage.Database database = new Storage.Database(null))
                     {
                         Storage.Account accountStorage = new Storage.Account();
 
                         httpResponse.Theme = database.ApplicationTheme;
 
                         bool noUserConfigured;
-                        UInt64[] xorEncryptionKey = database.ValidateLogIn(tokenHash, out noUserConfigured);
-                        if (xorEncryptionKey == null)
+                        UInt64[] publicXorCipher = database.ValidateLogIn(tokenHash, out noUserConfigured);
+                        if (publicXorCipher == null)
                         {
                             if (noUserConfigured)
                             {
@@ -71,6 +71,7 @@ namespace Phabrico.Controllers
                                 newAccountData.Parameters.ColumnHeadersToHide = "".Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                                 newAccountData.Theme = "light";
 
+                                database.EncryptionKey = publicEncryptionKey;
                                 database.PrivateEncryptionKey = privateEncryptionKey;
 
                                 accountStorage.Add(database, newAccountData);
@@ -82,7 +83,7 @@ namespace Phabrico.Controllers
                                 browser.ResetToken(token);
 
                                 // copy form-variables from temporary session
-                                DictionarySafe<string,string> temporaryFormVariables = new DictionarySafe<string, string>( browser.HttpServer
+                                DictionarySafe<string, string> temporaryFormVariables = new DictionarySafe<string, string>(browser.HttpServer
                                                                                                                                   .Session
                                                                                                                                   .ClientSessions[SessionManager.TemporaryToken.ID]
                                                                                                                                   .FormVariables
@@ -94,11 +95,11 @@ namespace Phabrico.Controllers
                                        .Session
                                        .ClientSessions[SessionManager.TemporaryToken.ID]
                                        .FormVariables = new DictionarySafe<string, string>();
-                                
+
 
                                 browser.SetCookie("token", token.ID);
-                                token.EncryptionKey = Encryption.XorString(encryptionKey, newAccountData.PublicXorCipher);
-                                token.PrivateEncryptionKey = Encryption.XorString(privateEncryptionKey, newAccountData.PrivateXorCipher);
+                                token.EncryptionKey = publicEncryptionKey;
+                                token.PrivateEncryptionKey = privateEncryptionKey;
                             }
                             else
                             {
@@ -110,43 +111,47 @@ namespace Phabrico.Controllers
                         {
                             httpResponse.Status = Http.Response.HomePage.HomePageStatus.Authenticated;
                             SessionManager.Token token = httpServer.Session.CreateToken(tokenHash, browser);
-                            Phabricator.Data.Account account = accountStorage.Get(database, token);
-                            
+                            UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
+
                             browser.SetCookie("token", token.ID);
-                            token.EncryptionKey = Encryption.XorString(encryptionKey, account.PublicXorCipher);
-                            token.PrivateEncryptionKey = Encryption.XorString(privateEncryptionKey, account.PrivateXorCipher);
+                            token.EncryptionKey = Encryption.XorString(publicEncryptionKey, publicXorCipher);
+                            token.PrivateEncryptionKey = Encryption.XorString(privateEncryptionKey, privateXorCipher);
                             token.AuthenticationFactor = AuthenticationFactor.Knowledge;
                         }
 
                         // send content to browser
                         httpResponse.Send(browser, string.Join("/", parameters.Skip(1)));
 
-                        // postpone some after-initialization stuff to make te response the browser faster
-                        // E.g. Firefox has a slower visible response when this code is not executed in a postponed task
-                        Task.Delay(500)
-                            .ContinueWith((task, obj) =>
+                        if (httpResponse.Status == HomePage.HomePageStatus.Authenticated)
                         {
-                            object[] objects = (object[])obj;
-                            Browser localBrowser = (Browser)objects[0];
-                            Storage.Database localDatabase = (Storage.Database)objects[1];
-                            using (localDatabase = new Storage.Database(localDatabase.EncryptionKey))
+                            // postpone some after-initialization stuff to make te response the browser faster
+                            // E.g. Firefox has a slower visible response when this code is not executed in a postponed task
+                            Task.Delay(500)
+                                .ContinueWith((task, obj) =>
                             {
+                                object[] objects = (object[])obj;
+                                Browser localBrowser = (Browser)objects[0];
+                                Storage.Database localDatabase = (Storage.Database)objects[1];
+                                using (localDatabase = new Storage.Database(localDatabase.EncryptionKey))
+                                {
                                 // initialize some stuff after the first time we authenticate
                                 if (firstAuthentication && httpResponse.Status == Http.Response.HomePage.HomePageStatus.Authenticated)
-                                {
-                                    firstAuthentication = false;
+                                    {
+                                        firstAuthentication = false;
 
                                     // clean up unreferenced staged files
                                     Storage.Stage.DeleteUnreferencedFiles(localDatabase, localBrowser);
+                                    }
                                 }
-                            }
 
                             // start preloading
                             if (httpResponse.Status == Http.Response.HomePage.HomePageStatus.Authenticated)
-                            {
-                                httpServer.PreloadContent(localBrowser, encryptionKey, accountDataUserName);
-                            }
-                        }, new object[] { browser, database });
+                                {
+                                    string encryptionKey = Encryption.XorString(publicEncryptionKey, publicXorCipher);
+                                    httpServer.PreloadContent(localBrowser, encryptionKey, accountDataUserName);
+                                }
+                            }, new object[] { browser, database });
+                        }
                     }
 
                     return;
@@ -187,14 +192,6 @@ namespace Phabrico.Controllers
             browser.Session.Locale = newLanguage;
             browser.SetCookie("language", newLanguage);
 
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             // save new language into the database
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -226,24 +223,13 @@ namespace Phabrico.Controllers
 
             SessionManager.Token token = SessionManager.GetToken(browser);
 
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 string jsonData;
 
-                if (token.PrivateEncryptionKey != null)
-                {
-                    UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                    database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                }
-
+                // set private encryption key
+                database.PrivateEncryptionKey = token.PrivateEncryptionKey;
+                
 
                 Phabricator.Data.Account existingAccount = accountStorage.Get(database, token);
                 if (existingAccount != null)
@@ -252,8 +238,8 @@ namespace Phabrico.Controllers
                     string currentTokenHash = Encryption.GenerateTokenKey(existingAccount.UserName, currentPassword);
 
                     bool noUserConfigured;
-                    UInt64[] xorEncryptionKey = database.ValidateLogIn(currentTokenHash, out noUserConfigured);
-                    if (xorEncryptionKey != null)
+                    UInt64[] publicXorCipher = database.ValidateLogIn(currentTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
                     {
                         // old password is correct
 

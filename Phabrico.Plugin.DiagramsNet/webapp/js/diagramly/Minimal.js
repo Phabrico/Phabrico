@@ -241,8 +241,8 @@ EditorUi.initMinimalTheme = function()
 	
 	Editor.checkmarkImage = Graph.createSvgImage(22, 18, '<path transform="translate(4 0)" d="M7.181,15.007a1,1,0,0,1-.793-0.391L3.222,10.5A1,1,0,1,1,4.808,9.274L7.132,12.3l6.044-8.86A1,1,0,1,1,14.83,4.569l-6.823,10a1,1,0,0,1-.8.437H7.181Z" fill="' + fill + '"/>').src;
 	mxWindow.prototype.closeImage = Graph.createSvgImage(18, 10, '<path d="M 5 1 L 13 9 M 13 1 L 5 9" stroke="#C0C0C0" stroke-width="2"/>').src;
-	mxWindow.prototype.minimizeImage = Graph.createSvgImage(14, 10, '<path d="M 3 7 L 7 3 L 11 7" stroke="#C0C0C0" stroke-width="2" fill="#ffffff"/>').src;
-	mxWindow.prototype.normalizeImage = Graph.createSvgImage(14, 10, '<path d="M 3 3 L 7 7 L 11 3" stroke="#C0C0C0" stroke-width="2" fill="#ffffff"/>').src;
+	mxWindow.prototype.minimizeImage = Graph.createSvgImage(14, 10, '<path d="M 3 7 L 7 3 L 11 7" stroke="#C0C0C0" stroke-width="2" fill="none"/>').src;
+	mxWindow.prototype.normalizeImage = Graph.createSvgImage(14, 10, '<path d="M 3 3 L 7 7 L 11 3" stroke="#C0C0C0" stroke-width="2" fill="none"/>').src;
 	mxConstraintHandler.prototype.pointImage = Graph.createSvgImage(5, 5, '<path d="m 0 0 L 5 5 M 0 5 L 5 0" stroke="' + fill + '"/>');
 	mxOutline.prototype.sizerImage = null;
 	
@@ -721,6 +721,11 @@ EditorUi.initMinimalTheme = function()
 		{
 			if (graph.isEnabled())
 			{
+				if (graph.getSelectionCount() == 1)
+	        	{
+					this.addMenuItems(menu, ['editTooltip'], null, evt);
+				}
+				
 				menu.addSeparator();
 				
 				if (graph.getSelectionCount() == 1)
@@ -1914,9 +1919,9 @@ EditorUi.initMinimalTheme = function()
 						' (' +  Editor.ctrlKey + '+Shift+X' + ')');
 					addElt(ui.sidebar.createVertexTemplate('shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;' +
 						'fontColor=#000000;darkOpacity=0.05;fillColor=#FFF9B2;strokeColor=none;fillStyle=solid;' +
-						'direction=west;gradientDirection=north;gradientColor=#FFF2A1;sketch=1;shadow=1;size=20;' +
-						'fontSize=24;jiggle=2;pointerEvents=1;', 140, 160, '', mxResources.get('note'), true, true,
-						null, true), mxResources.get('note'));
+						'direction=west;gradientDirection=north;gradientColor=#FFF2A1;shadow=1;size=20;fontSize=24;' +
+						'pointerEvents=1;' + ((urlParams['rough'] != '0') ? 'sketch=1;jiggle=2;' : ''),
+						140, 160, '', mxResources.get('note'), true, true, null, true), mxResources.get('note'));
 					addElt(ui.sidebar.createVertexTemplate('rounded=0;whiteSpace=wrap;html=1;', 160, 80,
 						'', mxResources.get('rectangle'), true, true, null, true), mxResources.get('rectangle') +
 						' (' +  Editor.ctrlKey + '+K' + ')');
@@ -1926,8 +1931,9 @@ EditorUi.initMinimalTheme = function()
 					(function()
 					{
 						var cell = new mxCell('', new mxGeometry(0, 0, graph.defaultEdgeLength, 0),
-							'edgeStyle=none;curved=1;rounded=0;sketch=1;orthogonalLoop=1;jettySize=auto;html=1;' +
-							'endArrow=open;sourcePerimeterSpacing=8;targetPerimeterSpacing=8;fontSize=16;');
+							'edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;' +
+							'endArrow=open;sourcePerimeterSpacing=8;targetPerimeterSpacing=8;fontSize=16;' +
+							((urlParams['rough'] != '0') ? 'sketch=1;' : ''));
 						cell.geometry.setTerminalPoint(new mxPoint(0, 0), true);
 						cell.geometry.setTerminalPoint(new mxPoint(cell.geometry.width, 0), false);
 						cell.geometry.points = [];
@@ -2182,7 +2188,7 @@ EditorUi.initMinimalTheme = function()
 				
 				window.setTimeout(function()
 				{
-					mxUtils.setPrefixedStyle(picker.style, 'transition', 'all .3s ease-out');
+					mxUtils.setPrefixedStyle(picker.style, 'transition', 'transform .3s ease-out');
 				}, 0);
 				
 				if (urlParams['format-toolbar'] == '1')

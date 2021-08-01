@@ -150,6 +150,7 @@ namespace Phabrico.Plugin
             // load content
             HtmlViewPage htmlViewPage = new HtmlViewPage(browser.HttpServer, browser, true);
             htmlViewPage.Content = htmlViewPage.GetViewData(viewName, GetType().Assembly);
+            htmlViewPage.Customize(browser);
 
             return htmlViewPage;
         }
@@ -161,7 +162,7 @@ namespace Phabrico.Plugin
         public abstract void Initialize();
 
         /// <summary>
-        /// Retuns if the plugin should be visible and accessible
+        /// Retuns if the plugin should be visible and accessible via the navigator menu
         /// </summary>
         /// <param name="browser"></param>
         /// <returns></returns>

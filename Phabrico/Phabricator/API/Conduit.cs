@@ -95,25 +95,11 @@ namespace Phabrico.Phabricator.API
                 string encryptionKey = token.EncryptionKey;
                 if (encryptionKey != null)
                 {
-                    using (Storage.Database database = new Storage.Database(null))
-                    {
-                        Storage.Account accountStorage = new Storage.Account();
-                        UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                        // unmask encryption key
-                        encryptionKey = Encryption.XorString(encryptionKey, publicXorCipher);
-                    }
-
                     using (Storage.Database database = new Storage.Database(encryptionKey))
                     {
-                        Storage.Account accountStorage = new Storage.Account();
+                        database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
-                        // unmask private encryption key
-                        if (token.PrivateEncryptionKey != null)
-                        {
-                            UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                            database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                        }
+                        Storage.Account accountStorage = new Storage.Account();
 
                         Data.Account currentAccount = accountStorage.Get(database, token);
                         if (currentAccount != null)

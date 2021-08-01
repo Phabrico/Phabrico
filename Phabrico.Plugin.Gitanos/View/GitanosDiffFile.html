@@ -125,7 +125,7 @@
     } 
 </style>
 
-<script defer src="/scripts/codejar.js?version=@@PHABRICO-VERSION@@">
+<script defer src="scripts/codejar.js?version=@@PHABRICO-VERSION@@">
     /***************************************************************************************************************
         MIT License
 
@@ -150,7 +150,7 @@
         SOFTWARE.
     ***************************************************************************************************************/
 </script>
-<script defer src="/scripts/linenumbers.js?version=@@PHABRICO-VERSION@@">
+<script defer src="scripts/linenumbers.js?version=@@PHABRICO-VERSION@@">
     /***************************************************************************************************************
         MIT License
 
@@ -320,7 +320,7 @@
 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.overrideMimeType("application/json");
-        xmlhttp.open('POST', "/gitanos/repository/editfile/", true);
+        xmlhttp.open('POST', "gitanos/repository/editfile/", true);
         xmlhttp.onload = function () {
             if (xmlhttp.readyState == 4) {
                 var editor = document.querySelector(".editor");
@@ -355,7 +355,7 @@
         
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.overrideMimeType("application/json");
-        xmlhttp.open('POST', "/gitanos/repository/savefile/", true);
+        xmlhttp.open('POST', "gitanos/repository/savefile/", true);
         xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         xmlhttp.onload = function () {
             if (xmlhttp.readyState == 4) {
@@ -447,7 +447,7 @@
 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.overrideMimeType("application/json");
-        xmlhttp.open('POST', "/gitanos/repository/undo/", true);
+        xmlhttp.open('POST', "gitanos/repository/undo/", true);
         xmlhttp.onload = function () {
             if (xmlhttp.readyState == 4) {
                 showHideConfirmationMessage(false);

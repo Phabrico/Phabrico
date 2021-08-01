@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -74,7 +76,7 @@ namespace Phabrico.Http.Response
             /// <summary>
             /// The content is shown in an IFrame: header and global treeview are not shown and no Phabrico CSS is put in the view
             /// </summary>
-            IFrame = 1 + 4 + 8
+            IFrame = 1 + 4 + 8,
         }
 
         /// <summary>
@@ -107,6 +109,7 @@ namespace Phabrico.Http.Response
             DoTranslateContent = doTranslateContent;
 
             Content = GetViewData(url);
+            Customize(browser);
         }
 
 
@@ -169,6 +172,131 @@ namespace Phabrico.Http.Response
                 }
             }
         }
+        
+        public void Customize(Browser browser)
+        {
+            string customApplicationLogo = HttpServer.Customization.CustomApplicationLogoBase64; // "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACHUExURf////7+/tnZ2bKysq6urtjY2Pv7+4aGhjY2NjU1NampqTc3N6ampmJiYl5eXlFRUT09PaioqKqqqk1NTUJCQvn5+UxMTEBAQNfX19ra2tXV1S0tLS4uLjg4ODs7O4ODg4SEhIKCgvr6+lJSUjk5OUVFRfz8/MTExLOzs7i4uP39/bm5uQAAABWpZDEAAAAtdFJOU///////////////////////////////////////////////////////////AKXvC/0AAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEUSURBVDhPlZLZcsIwDEWdsiUYypSlewZaXDA0//99leMrR4YqDOfBtnzPCI2JaTIMQAlkCQHgMtCdkQkQdBLuL+AQmwLSuKrEuN+JVlhQKtwhoTDFgx8yy8GowHUwkjSelFVVRqyt7WSMIEg4mmllM8oZAlKSNA9BgopHBEIqFta5pyWYkbTiqVKfINn1GYXZUKvnNHqilXhWs6EBb0t6p5fXN/BOMymS/WA+e6QMTaoTVKQn6CCpdtsd+MoHF49p1wcU5ltK2Ytr76RK1En8LfypXEvcSXxPxd65n26m2jnu1Eqwjt6f+AfM+df7Yzze8Y33W20elh4rxu2qWkjjplgcYv9PQyClSw2XAXkmIGS3TfMHQuFBJLX8RqsAAAAASUVORK5CYII=";
+            string customApplicationName = HttpServer.Customization.ApplicationName;
+
+            bool useDefaultApplicationName = string.IsNullOrWhiteSpace(customApplicationLogo) && string.IsNullOrWhiteSpace(customApplicationName);
+
+            SetText("DEFAULT-APPLICATION-NAME", useDefaultApplicationName ? "True" : "False", ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
+            SetText("GLOBAL-CSS", HttpServer.Customization.ApplicationCSS, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
+
+            // do we need to rename the application ?
+            if (useDefaultApplicationName == false)
+            {
+                // custom name and/or logo using instead of "Phabrico"
+                // check for missing css styles
+                if (HttpServer.Customization.ApplicationLogoStyle.ContainsKey("max-height") == false)
+                {
+                    HttpServer.Customization.ApplicationLogoStyle["max-height"] = "36px";
+                }
+
+                if (HttpServer.Customization.ApplicationLogoStyle.ContainsKey("margin-right") == false)
+                {
+                    HttpServer.Customization.ApplicationLogoStyle["margin-right"] = "8px";
+                }
+
+                // set or overwrite line-height of custom name element (to limit the height of the header bar on top)
+                HttpServer.Customization.ApplicationNameStyle["line-height"] = "44px";
+
+                // correct css strings
+                string customApplicationLogoStyle = string.Join(";", HttpServer.Customization.ApplicationLogoStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value));
+                string customApplicationNameStyle = string.Join(";", HttpServer.Customization.ApplicationNameStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value));
+
+                SetText("CUSTOM-APPLICATION-LOGO", customApplicationLogo, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
+                SetText("CUSTOM-APPLICATION-LOGO-STYLE", customApplicationLogoStyle, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
+                SetText("CUSTOM-APPLICATION-NAME", customApplicationName, ArgumentOptions.AllowEmptyParameterValue);
+                SetText("CUSTOM-APPLICATION-NAME-STYLE", customApplicationNameStyle, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
+            }
+
+            // do we need to check periodically if we have the latest Phabrico version installed ?
+            if (HttpServer.IsHttpModule)
+            {
+                SetText("CHECK-FOR-LATEST-VERSION", "False", ArgumentOptions.AllowEmptyParameterValue);
+                SetText("IIS-MODULE", "True", ArgumentOptions.AllowEmptyParameterValue);
+            }
+            else
+            {
+                SetText("CHECK-FOR-LATEST-VERSION", "True", ArgumentOptions.AllowEmptyParameterValue);
+                SetText("IIS-MODULE", "False", ArgumentOptions.AllowEmptyParameterValue);
+            }
+
+            // configure access management
+            bool hideChangeLanguage = string.IsNullOrWhiteSpace(HttpServer.Customization.Language) == false;
+            SetText("ACCESS-HIDE-CHANGE-LANGUAGE", hideChangeLanguage.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-CONFIG", HttpServer.Customization.HideConfig.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-FILES", HttpServer.Customization.HideFiles.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-MANIPHEST", HttpServer.Customization.HideManiphest.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-NAVIGATOR-TOOLTIPS", HttpServer.Customization.HideNavigatorTooltips.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-OFFLINE-CHANGES", HttpServer.Customization.HideOfflineChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PHRICTION", HttpServer.Customization.HidePhriction.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PHRICTION-CHANGES", HttpServer.Customization.HidePhrictionChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PHRICTION-FAVORITES", HttpServer.Customization.HidePhrictionFavorites.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PROJECTS", HttpServer.Customization.HideProjects.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-SEARCH", HttpServer.Customization.HideSearch.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-USERS", HttpServer.Customization.HideUsers.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-READONLY", HttpServer.Customization.IsReadonly.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-MASTER-DATA", HttpServer.Customization.MasterDataIsAccessible.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+
+            // show/hide user menu next to search field in case there are no visible menu items
+            bool hideUserMenu = hideChangeLanguage
+                             && browser.Token.AuthenticationFactor == AuthenticationFactor.Ownership;
+            SetText("HIDE-USER-MENU", hideUserMenu.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+
+            // override visibility action menu in Phriction
+            // if not needed to be hidden, take original visibility functionality
+            if (HttpServer.Customization.HidePhrictionActionMenu)
+            {
+                SetText("SHOW-SIDE-WINDOW", "No", ArgumentOptions.AllowEmptyParameterValue);
+            }
+
+            // override theme if needed
+            if (HttpServer.Customization.Theme != ApplicationCustomization.ApplicationTheme.Auto)
+            {
+                string theme = typeof(ApplicationCustomization.ApplicationTheme).GetMember(HttpServer.Customization.Theme.ToString())
+                                                                                .FirstOrDefault(member => member.MemberType == MemberTypes.Field)
+                                                                                .GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                                                                .Cast<DescriptionAttribute>()
+                                                                                .FirstOrDefault()
+                                                                                .Description;
+
+                SetText("THEME", theme, ArgumentOptions.AllowEmptyParameterValue);
+                SetText("THEME-STYLE", "", ArgumentOptions.AllowEmptyParameterValue);
+                SetText("ACCESS-HIDE-THEME-CONFIG", HttpServer.Customization.HideSearch.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            }
+            else
+            {
+                SetText("ACCESS-HIDE-THEME-CONFIG", "False", ArgumentOptions.AllowEmptyParameterValue);
+            }
+
+            // override language if needed
+            if (string.IsNullOrEmpty(HttpServer.Customization.Language) == false)
+            {
+                SetText("LOCALE", HttpServer.Customization.Language, ArgumentOptions.AllowEmptyParameterValue);
+                browser.Language = HttpServer.Customization.Language;
+                browser.Session.Locale = HttpServer.Customization.Language;
+            }
+
+            // verify if only Maniphest should be visible
+            if (HttpServer.Customization.HideConfig &&
+                HttpServer.Customization.HideFiles &&
+                HttpServer.Customization.HideManiphest &&
+                HttpServer.Customization.HideOfflineChanges &&
+                HttpServer.Customization.HideProjects &&
+                HttpServer.Customization.HideUsers &&
+                HttpServer.Customization.HidePhriction == false &&
+                Http.Server.Plugins.All(plugin => plugin.IsVisible(browser) == false)
+               )
+            {
+                SetText("ONLY-MANIPHEST", "True", ArgumentOptions.AllowEmptyParameterValue);
+            }
+            else
+            {
+                SetText("ONLY-MANIPHEST", "False", ArgumentOptions.AllowEmptyParameterValue);
+            }
+        }
 
         /// <summary>
         /// Returns a given partial view
@@ -213,38 +341,27 @@ namespace Phabrico.Http.Response
         /// <returns></returns>
         public string GetFullContent(Browser browser, ContentOptions contentOptions)
         {
+            string themeStyle = "";
+            string userName = "";
+            string authenticationFactor = "";
+            string encryptionKey = null;
+            int autoLogOutAfterMinutesOfInactivity = 60;
+
             string html = Content;
             SessionManager.Token token = SessionManager.GetToken(browser);
             if (token != null)
             {
-                string encryptionKey = token?.EncryptionKey;
-
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    encryptionKey = Encryption.XorString(encryptionKey, publicXorCipher);
-                }
+                encryptionKey = token?.EncryptionKey;
 
                 using (Storage.Database database = new Storage.Database(encryptionKey))
                 {
-                    // unmask private encryption key
-                    Storage.Account accountStorage = new Storage.Account();
-                    if (token.PrivateEncryptionKey != null)
-                    {
-                        UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                        database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                    }
+                    // set private encryption key
+                    database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
-                    HtmlViewPage htmlViewPage = new HtmlViewPage(browser);
-                    HtmlViewPage htmlPartialViewPage = new HtmlViewPage(browser);
-                    HtmlViewPage htmlPartialHeaderViewPage = new HtmlViewPage(browser);
+                    Storage.Account accountStorage = new Storage.Account();
 
                     Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
 
-                    string themeStyle = "";
                     switch (accountData.Parameters.DarkenBrightImages)
                     {
                         case Phabricator.Data.Account.DarkenImageStyle.Extreme:
@@ -261,83 +378,108 @@ namespace Phabrico.Http.Response
                             break;
                     }
 
-                    if (contentOptions.HasFlag(ContentOptions.UseLocalTreeView))
+                    userName = accountData.UserName;
+                    authenticationFactor = database.GetAuthenticationFactor();
+                    autoLogOutAfterMinutesOfInactivity = database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity ?? 60;
+                }
+            }
+
+            HtmlViewPage htmlViewPage = new HtmlViewPage(browser);
+            HtmlViewPage htmlPartialViewPage = new HtmlViewPage(browser);
+            HtmlViewPage htmlPartialHeaderViewPage = new HtmlViewPage(browser);
+
+            if (contentOptions.HasFlag(ContentOptions.UseLocalTreeView))
+            {
+                if (contentOptions.HasFlag(ContentOptions.HideHeader))
+                {
+                    htmlViewPage.SetContent(browser, GetViewData("HomePage.NoHeaderLocalTreeView.Template"));
+                    htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.Merge();
+                    html = htmlViewPage.Content;
+                }
+                else
+                {
+                    // IMPOSSIBLE: should not happen
+                    html = "You should not see this";
+                }
+            }
+            else
+            {
+
+                if (contentOptions.HasFlag(ContentOptions.IFrame))
+                {
+                    htmlViewPage.SetContent(browser, GetViewData("HomePage.IFrameContent"));
+                    htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.Merge();
+                    html = htmlViewPage.Content;
+                }
+                else
+                if (contentOptions.HasFlag(ContentOptions.HideGlobalTreeView))
+                {
+                    if (contentOptions.HasFlag(ContentOptions.HideHeader))
                     {
-                        if (contentOptions.HasFlag(ContentOptions.HideHeader))
-                        {
-                            htmlViewPage.SetContent(GetViewData("HomePage.NoHeaderLocalTreeView.Template"));
-                            htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.Merge();
-                            html = htmlViewPage.Content;
-                        }
-                        else
-                        {
-                            // IMPOSSIBLE: should not happen
-                            html = "You should not see this";
-                        }
+                        htmlViewPage.SetContent(browser, GetViewData("HomePage.NoHeaderTreeView.Template"));
+                        htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.Merge();
+                        html = htmlViewPage.Content;
                     }
                     else
                     {
-                        string userName = accountData.UserName;
-                        string authenticationFactor = database.GetAuthenticationFactor();
+                        htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.NoTreeView.Template"));
+                        htmlPartialViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", autoLogOutAfterMinutesOfInactivity.ToString(), ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.Merge();
 
-                        if (contentOptions.HasFlag(ContentOptions.IFrame))
-                        {
-                            htmlViewPage.SetContent(GetViewData("HomePage.IFrameContent"));
-                            htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.Merge();
-                            html = htmlViewPage.Content;
-                        }
-                        else
-                        if (contentOptions.HasFlag(ContentOptions.HideGlobalTreeView))
-                        {
-                            if (contentOptions.HasFlag(ContentOptions.HideHeader))
-                            {
-                                htmlViewPage.SetContent(GetViewData("HomePage.NoHeaderTreeView.Template"));
-                                htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
-                                htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
-                                htmlViewPage.Merge();
-                                html = htmlViewPage.Content;
-                            }
-                            else
-                            {
-                                htmlPartialViewPage.SetContent(GetViewData("HomePage.NoTreeView.Template"));
-                                htmlPartialViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity.ToString(), ArgumentOptions.NoHtmlEncoding);
-                                htmlPartialViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
-                                htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                                htmlPartialViewPage.Merge();
+                        htmlPartialHeaderViewPage.SetContent(browser, GetViewData("HomePage.Authenticated.HeaderActions"));
+                        htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialHeaderViewPage.Merge();
 
-                                htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
-                                htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                                htmlPartialHeaderViewPage.Merge();
+                        htmlViewPage.SetContent(browser, GetViewData("HomePage.Template"));
+                        htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("SYNCHRONIZE", "", ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("HEADERACTIONS", htmlPartialHeaderViewPage.Content, ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.Merge();
+                        html = htmlViewPage.Content;
+                    }
+                }
+                else
+                {
+                    htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.TreeView.Template"));
+                    htmlPartialViewPage.Customize(browser);
+                    htmlPartialViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", autoLogOutAfterMinutesOfInactivity.ToString(), ArgumentOptions.NoHtmlEncoding);
+                    htmlPartialViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
+                    htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
-                                htmlViewPage.SetContent(GetViewData("HomePage.Template"));
-                                htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
-                                htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                htmlViewPage.SetText("SYNCHRONIZE", "", ArgumentOptions.AllowEmptyParameterValue);
-                                htmlViewPage.SetText("HEADERACTIONS", htmlPartialHeaderViewPage.Content, ArgumentOptions.NoHtmlEncoding);
-                                htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), ArgumentOptions.NoHtmlEncoding);
-                                htmlViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                                htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, ArgumentOptions.NoHtmlEncoding);
-                                htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                htmlViewPage.Merge();
-                                html = htmlViewPage.Content;
-                            }
-                        }
-                        else
+                    if (encryptionKey != null)
+                    {
+                        using (Storage.Database database = new Storage.Database(encryptionKey))
                         {
-                            htmlPartialViewPage.SetContent(GetViewData("HomePage.TreeView.Template"));
-                            htmlPartialViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity.ToString(), ArgumentOptions.NoHtmlEncoding);
-                            htmlPartialViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
-                            htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                            // set private encryption key
+                            database.PrivateEncryptionKey = token.PrivateEncryptionKey;
+
+                            Storage.Account accountStorage = new Storage.Account();
+
                             foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                             {
                                 if (plugin.State == Plugin.PluginBase.PluginState.Loaded)
@@ -359,26 +501,29 @@ namespace Phabrico.Http.Response
                                     }
                                 }
                             }
-                            htmlPartialViewPage.Merge();
-
-                            htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
-                            htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                            htmlPartialHeaderViewPage.Merge();
-
-                            htmlViewPage.SetContent(GetViewData("HomePage.Template"));
-                            htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlViewPage.SetText("SYNCHRONIZE", "", ArgumentOptions.AllowEmptyParameterValue);
-                            htmlViewPage.SetText("HEADERACTIONS", htmlPartialHeaderViewPage.Content, ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, ArgumentOptions.NoHtmlEncoding);
-                            htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlViewPage.Merge();
-                            html = htmlViewPage.Content;
                         }
                     }
+
+                    htmlPartialViewPage.Merge();
+
+                    htmlPartialHeaderViewPage.SetContent(browser, GetViewData("HomePage.Authenticated.HeaderActions"));
+                    htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    htmlPartialHeaderViewPage.Merge();
+
+                    htmlViewPage.SetContent(browser, GetViewData("HomePage.Template"));
+                    htmlViewPage.Customize(browser);
+                    htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("SYNCHRONIZE", "", ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("HEADERACTIONS", htmlPartialHeaderViewPage.Content, ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.Merge();
+                    html = htmlViewPage.Content;
                 }
             }
 
@@ -453,36 +598,42 @@ namespace Phabrico.Http.Response
             }
 
             // Process conditional IF statements
-            foreach (Match conditionalStatement in regConditionalStatements.Matches(Content).OfType<Match>().OrderByDescending(m => m.Index).ToList())
+            while (true)
             {
-                string[] conditionValues = conditionalStatement.Groups[2].Value.Split('=');
-                bool positiveCondition = conditionValues[0].Equals(conditionValues[1]);
-                if (conditionalStatement.Groups[1].Value.Equals("NOT"))
-                {
-                    positiveCondition = !positiveCondition;
-                }
+                List<Match> conditionalStatements = regConditionalStatements.Matches(Content).OfType<Match>().OrderByDescending(m => m.Index).ToList();
+                if (conditionalStatements.Any() == false) break;
 
-                if (positiveCondition)
+                foreach (Match conditionalStatement in conditionalStatements)
                 {
-                    // conditional IF statement returned true -> remove IF statement, but keep content
-                    Content = Content.Substring(0, conditionalStatement.Index)
-                            + conditionalStatement.Groups[3].Value
-                            + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
-                }
-                else
-                {
-                    if (conditionalStatement.Groups[5].Success)
+                    string[] conditionValues = conditionalStatement.Groups[2].Value.Split('=');
+                    bool positiveCondition = conditionValues[0].Equals(conditionValues[1]);
+                    if (conditionalStatement.Groups[1].Value.Equals("NOT"))
                     {
-                        // conditional IF statement returned false -> remove IF statement, but keep ELSE content
+                        positiveCondition = !positiveCondition;
+                    }
+
+                    if (positiveCondition)
+                    {
+                        // conditional IF statement returned true -> remove IF statement, but keep content
                         Content = Content.Substring(0, conditionalStatement.Index)
-                                + conditionalStatement.Groups[5].Value
+                                + conditionalStatement.Groups[3].Value
                                 + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
                     }
                     else
                     {
-                        // conditional IF statement returned false -> remove IF statement and content
-                        Content = Content.Substring(0, conditionalStatement.Index)
-                                + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
+                        if (conditionalStatement.Groups[5].Success)
+                        {
+                            // conditional IF statement returned false -> remove IF statement, but keep ELSE content
+                            Content = Content.Substring(0, conditionalStatement.Index)
+                                    + conditionalStatement.Groups[5].Value
+                                    + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
+                        }
+                        else
+                        {
+                            // conditional IF statement returned false -> remove IF statement and content
+                            Content = Content.Substring(0, conditionalStatement.Index)
+                                    + Content.Substring(conditionalStatement.Index + conditionalStatement.Length);
+                        }
                     }
                 }
             }
@@ -577,9 +728,10 @@ namespace Phabrico.Http.Response
         /// Overwrites the content of this HtmlViewPage with new content
         /// </summary>
         /// <param name="newContent"></param>
-        public void SetContent(string newContent)
+        public void SetContent(Browser browser, string newContent)
         {
             Content = newContent;
+            Customize(browser);
         }
 
         /// <summary>

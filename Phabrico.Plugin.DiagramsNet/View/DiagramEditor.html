@@ -3,7 +3,7 @@
 </div>
 
 <script>
-	var editor = '/diagrams.net/webapp/?embed=1&spin=1&proto=json';
+    var editor = document.baseURI + 'diagrams.net/webapp/?embed=1&spin=1&proto=json';
 	var initial = null;
 	var name = null;
 
@@ -80,7 +80,7 @@
 
 	    var xmlhttp = new XMLHttpRequest();
 	    xmlhttp.overrideMimeType("application/json");
-	    xmlhttp.open('POST', "/diagrams.net/save/", true);
+	    xmlhttp.open('POST', "diagrams.net/save/", true);
 	    xmlhttp.onload = function () {
 	        if (xmlhttp.readyState == 4) {
 	            var errorMessage = null;
@@ -97,7 +97,7 @@
 	                    }), '*');
 
 	                    if (isStaged == false) {
-	                        document.location.pathname = "/diagrams.net/F" + result.FileToken;  // reload with new File-ID
+	                        document.location = document.baseURI + "diagrams.net/F" + result.FileToken;  // reload with new File-ID
 	                    }
 	                }
 	            } catch(exc) {
@@ -137,10 +137,10 @@
 </script>
 
 <div class="crumbs" style="top:28px; margin-left: -4px;">
-    <a href="/diagrams.net/">
+    <a href="diagrams.net/">
         <span class="phui-font-fa fa-sitemap" style="padding-right: 5px;"></span>
     </a>
-    <a href="/diagrams.net/">Diagram</a>
+    <a href="diagrams.net/">Diagram</a>
     <span>  &gt;  </span>
     <a id="diagramName">@@DIAGRAM-NAME@@</a>
 </div>

@@ -59,7 +59,7 @@ function populateTable(filterText)
 {
     var xmlhttp = new XMLHttpRequest();
 
-    var url = "/synchronization/search/" + encodeURI(filterText).split('/').join('%2F');  // encode characters in URL and make sure that all '/' characters are also encoded
+    var url = document.baseURI + "synchronization/search/" + encodeURI(filterText).split('/').join('%2F');  // encode characters in URL and make sure that all '/' characters are also encoded
     if (url.endsWith('/') == false) url += '/';
 
     xmlhttp.overrideMimeType("application/json");
@@ -138,7 +138,7 @@ function populateTable(filterText)
                 var textNewObject = document.createElement('div');
                 var anchorViewChanges = document.createElement('a');
                 textNewObject.appendChild(anchorViewChanges);
-                anchorViewChanges.href = "/synchronization/data/" + record.Token + "/";
+                anchorViewChanges.href = "synchronization/data/" + record.Token + "/";
                 anchorViewChanges.classList.add("button");
                 anchorViewChanges.classList.add("button-gray");
                 anchorViewChanges.classList.add("small");

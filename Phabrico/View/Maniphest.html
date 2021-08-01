@@ -5,14 +5,14 @@
                 <li>Queries</li>
                 <li>
                     <ul class="no-print">
-                        <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/assigned/">Assigned</a></li>
-                        <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/authored/">Authored</a></li>
-                        <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/subscribed/">Subscribed</a></li>
-                        <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/opentasks/">Open Tasks</a></li>
+                        <li><a class="@@MANIPHESTFILTER@@" href="maniphest/assigned/">Assigned</a></li>
+                        <li><a class="@@MANIPHESTFILTER@@" href="maniphest/authored/">Authored</a></li>
+                        <li><a class="@@MANIPHESTFILTER@@" href="maniphest/subscribed/">Subscribed</a></li>
+                        <li><a class="@@MANIPHESTFILTER@@" href="maniphest/opentasks/">Open Tasks</a></li>
                         <li>
                             <ul class="no-print">
-                                <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/opentasks/perproject/">Per Project</a></li>
-                                <li><a class="@@MANIPHESTFILTER@@" href="/maniphest/opentasks/peruser/">Per User</a></li>
+                                <li><a class="@@MANIPHESTFILTER@@" href="maniphest/opentasks/perproject/">Per Project</a></li>
+                                <li><a class="@@MANIPHESTFILTER@@" href="maniphest/opentasks/peruser/">Per User</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -22,10 +22,10 @@
     </div>
     <div>
         <div class="crumbs">
-            <a href="/maniphest">
+            <a href="maniphest">
                 <span class="phui-font-fa fa-anchor" style="padding-right: 5px"><b>Maniphest</b></span>
             </a>
-            <a class="crumbsAction" href="/maniphest/?action=new" style="text-align: right;">
+            <a class="crumbsAction" href="maniphest/?action=new" style="text-align: right;">
                 <span class="visual-only phui-icon-view phui-font-fa fa-plus-square"></span>
                 <span class="phui-crumbs-action-name">Create Task</span>
             </a>
@@ -61,7 +61,7 @@
                                         </td>
                                         <td style="width: 100%;">
                                             <span class="maniphest-list-item-title">T@@TASK-ID@@
-                                                <a href="/maniphest/T@@TASK-ID@@/" title="@@TASK-TITLE@@">@@TASK-TITLE@@</a>
+                                                <a href="maniphest/T@@TASK-ID@@/" title="@@TASK-TITLE@@">@@TASK-TITLE@@</a>
                                             </span>
                                         </td>
                                         <td>
@@ -75,7 +75,7 @@
                                                 <ul class="maniphest-list-item-projects">
                                                     @{TASKDETAIL-PROJECTS
                                                     <li class="maniphest-list-item-project">
-                                                        <a class="project-reference phui-font-fa fa-briefcase" href="/project/info/@@PROJECT-TOKEN@@/"/ style="@@PROJECT-STYLE@@">@@PROJECT-NAME@@</a>
+                                                        <a class="project-reference phui-font-fa fa-briefcase" href="project/info/@@PROJECT-TOKEN@@/"/ style="@@PROJECT-STYLE@@">@@PROJECT-NAME@@</a>
                                                     </li>
                                                     }@
                                                 </ul>
@@ -84,7 +84,7 @@
                                         <td>
                                             <span class="maniphest-list-item-assigned">
                                                 Assigned<span>:</span>
-                                                <a href="/user/info/@@TASK-USER-TOKEN@@/">@@TASK-USER@@</a>
+                                                <a href="user/info/@@TASK-USER-TOKEN@@/">@@TASK-USER@@</a>
                                             </span>
                                         </td>
                                     </tr>
@@ -123,9 +123,9 @@
 <script>
     function navigate(position) {
         if (position == 0) {
-            document.location = ".";
+            document.location = document.location.pathname;
         } else  {
-            document.location = "?after=" + position;
+            document.location = document.location.pathname + "?after=" + position;
         }
     }
 

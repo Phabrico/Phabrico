@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -22,16 +23,26 @@ namespace Phabrico.Controllers
         /// <param name="httpMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
-        [UrlController(URL = "/exception", Unsecure = true)]
+        [UrlController(URL = "/exception", Unsecure = true, HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView | Http.Response.HtmlViewPage.ContentOptions.HideHeader)]
         public void HttpGetException(Http.Server httpServer, Browser browser, ref Http.Response.HttpMessage httpMessage, string[] parameters, string parameterActions)
         {
             try
             {
                 Http.Response.HtmlViewPage htmlViewPage = httpMessage as Http.Response.HtmlViewPage;
 
-                string base64ExceptionName = parameters[2].Substring("?data=".Length).Split('/')[0];
-                string base64ExceptionMessage = parameters[0];
-                string base64ExceptionStackTrace = parameters[1];
+                string[] parameterArray;
+                if (parameters.Any())
+                {
+                    parameterArray = parameters[0].Substring("?data=".Length).Split('/');
+                }
+                else
+                {
+                    parameterArray = parameterActions.Substring("data=".Length).Split('/');
+                }
+
+                string base64ExceptionName = parameterArray[0];
+                string base64ExceptionMessage = parameterArray[1];
+                string base64ExceptionStackTrace = parameterArray[2];
 
                 string exceptionName = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(base64ExceptionName));
                 string exceptionMessage = UTF8Encoding.UTF8.GetString(Convert.FromBase64String(base64ExceptionMessage));
@@ -67,6 +78,8 @@ namespace Phabrico.Controllers
                 htmlViewPage.SetText("EXCEPTION-NAME", exceptionName);
                 htmlViewPage.SetText("EXCEPTION-MESSAGE", exceptionMessage);
                 htmlViewPage.SetText("EXCEPTION-STACKTRACE", exceptionStackTrace, Http.Response.HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+
+                httpMessage = htmlViewPage;
             }
             catch (System.Exception badException)
             {

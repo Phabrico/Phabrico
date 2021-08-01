@@ -38,16 +38,6 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/remarkup")]
         public void HttpPostTranslateToHTML(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 string remarkupData = browser.Session.FormVariables["data"];
@@ -1752,16 +1742,6 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/remarkup/syntax", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.UseLocalTreeView | HtmlViewPage.ContentOptions.HideHeader)]
         public void HttpGetRemarkupSyntaxHelp(Http.Server httpServer, Browser browser, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 RemarkupParserOutput remarkupParserOutput;
@@ -1770,7 +1750,8 @@ namespace Phabrico.Controllers
                 string htmlData = ConvertRemarkupToHTML(database, remarkupViewPage.Url, remarkupViewPage.Content, out remarkupParserOutput, false);
 
                 htmlViewPage = new HtmlViewPage(browser);
-                htmlViewPage.SetContent(htmlData);
+                htmlViewPage.SetContent(browser, htmlData);
+                htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
             }
         }
     }

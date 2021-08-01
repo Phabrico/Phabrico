@@ -1,5 +1,5 @@
 <div id="crumbsContainer" class="crumbs">
-    <a href="/w/">
+    <a href="w/">
         <span class="phui-font-fa fa-book" style="padding-right: 5px;"></span>
     </a>
 </div>
@@ -8,6 +8,12 @@
     window.addEventListener('load', function() {
         phabrico.crumbsHeader = new CrumbsHeader(crumbsContainer, 'Phriction', @@DOCUMENT-CRUMBS@@);
     }, false);
+
+    function createThisDocument() {
+        window.location.href = document.location.pathname 
+                             + '?action=new&title='
+                             + encodeURIComponent(crumbsContainer.lastElementChild.innerText);
+    }
 </script>
 
 <div class="phui-document" style="width: calc(100vw - 60px); left: 0px; text-align: center;height: calc(100vh - 160px);">
@@ -17,6 +23,6 @@
         <h2>No Document Here</h2>
         <div>There is no document here, but you may create it.</div>
         <p>&nbsp;</p>
-        <button class="button-green" name="__synchronize__" type="button" onclick="window.location.href='?action=new&title=' + encodeURIComponent(crumbsContainer.lastElementChild.innerText);">Create this Document</button>
+        <button class="button-green" name="__synchronize__" type="button" onclick="createThisDocument()">Create this Document</button>
     </div>
 </div>

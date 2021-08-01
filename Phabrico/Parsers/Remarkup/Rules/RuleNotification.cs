@@ -44,7 +44,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string notificationType = match.Groups[1].Value.ToLower();
 
 
-                if (NotificationTextShouldBeTranslated(browser))
+                if (NotificationTextShouldBeTranslated(database))
                 {
                     notificationText = Locale.TranslateText("Notification." + notificationType.ToUpper(), browser.Session.Locale);
                 }
@@ -85,38 +85,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// </summary>
         /// <param name="browser"></param>
         /// <returns></returns>
-        private bool NotificationTextShouldBeTranslated(Browser browser)
+        private bool NotificationTextShouldBeTranslated(Storage.Database database)
         {
             Storage.Account accountStorage = new Storage.Account();
-
-            SessionManager.Token token = SessionManager.GetToken(browser);
-            string encryptionKey = token?.EncryptionKey;
-
-            if (string.IsNullOrEmpty(encryptionKey) == false)
-            {
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    encryptionKey = Encryption.XorString(encryptionKey, publicXorCipher);
-                }
-
-                using (Storage.Database database = new Storage.Database(encryptionKey))
-                {
-                    // unmask private encryption key
-                    if (token.PrivateEncryptionKey != null)
-                    {
-                        UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                        database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                    }
-
-                    Phabricator.Data.Account account = accountStorage.Get(database, SessionManager.GetToken(browser));
-                    return account.Parameters.UITranslation;
-                }
-            }
-
-            return false;
+            
+            Phabricator.Data.Account account = accountStorage.WhoAmI(database);
+            return account.Parameters.UITranslation;
         }
     }
 }

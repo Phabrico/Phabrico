@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Linq;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Web.WebSockets;
 
 namespace Phabrico.Miscellaneous
 {
@@ -9,6 +14,7 @@ namespace Phabrico.Miscellaneous
     /// </summary>
     public class HttpListenerContext
     {
+        private System.Web.HttpContext internalHttpContext;
         private System.Net.HttpListenerContext internalHttpListenerContext;
         private HttpListenerResponse internalHttpListenerResponse;
         private HttpListenerRequest internalHttpListenerRequest;
@@ -20,7 +26,8 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                return internalHttpListenerContext == null;
+                return internalHttpListenerContext == null
+                    && internalHttpContext == null;
             }
         }
 
@@ -31,19 +38,29 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerContext == null)
+                if (internalHttpListenerRequest == null)
                 {
-                    if (internalHttpListenerRequest == null)
+                    if (internalHttpListenerContext == null)
                     {
-                        internalHttpListenerRequest = new HttpListenerRequest();
+                        if (internalHttpContext == null)
+                        {
+                            if (internalHttpListenerRequest == null)
+                            {
+                                internalHttpListenerRequest = new HttpListenerRequest();
+                            }
+                        }
+                        else
+                        {
+                            internalHttpListenerRequest = internalHttpContext.Request;
+                        }
                     }
+                    else
+                    {
+                        internalHttpListenerRequest = internalHttpListenerContext.Request;
+                    }
+                }
 
-                    return internalHttpListenerRequest;
-                }
-                else
-                {
-                    return internalHttpListenerContext.Request;
-                }
+                return internalHttpListenerRequest;
             }
         }
 
@@ -56,12 +73,19 @@ namespace Phabrico.Miscellaneous
             {
                 if (internalHttpListenerContext == null)
                 {
-                    if (internalHttpListenerResponse == null)
+                    if (internalHttpContext == null)
                     {
-                        internalHttpListenerResponse = new HttpListenerResponse();
-                    }
+                        if (internalHttpListenerResponse == null)
+                        {
+                            internalHttpListenerResponse = new HttpListenerResponse();
+                        }
 
-                    return internalHttpListenerResponse;
+                        return internalHttpListenerResponse;
+                    }
+                    else
+                    {
+                        return internalHttpContext.Response;
+                    }
                 }
                 else
                 {
@@ -77,16 +101,50 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                if (internalHttpListenerContext == null)
+                if (internalHttpListenerContext == null && internalHttpContext == null)
                 {
                     return null;
                 }
                 else
                 {
-                    System.Security.Principal.WindowsPrincipal windowsPrincipal = internalHttpListenerContext.User as System.Security.Principal.WindowsPrincipal;
+                    System.Security.Principal.WindowsPrincipal windowsPrincipal = null;
+
+                    if (internalHttpContext != null)
+                    {
+                        windowsPrincipal = internalHttpContext.User as System.Security.Principal.WindowsPrincipal;
+                    }
+                    else
+                    {
+                        windowsPrincipal = internalHttpListenerContext.User as System.Security.Principal.WindowsPrincipal;
+                    }
+
                     if (windowsPrincipal == null) return null;
 
                     return windowsPrincipal.Identity as System.Security.Principal.WindowsIdentity;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the request is a WebSocket request
+        /// </summary>
+        public bool IsWebSocketRequest
+        {
+            get
+            {
+                if (internalHttpListenerContext == null && internalHttpContext == null)
+                {
+                    return false;
+                }
+
+                if (internalHttpContext != null)
+                {
+                    return internalHttpContext.IsWebSocketRequest
+                        || internalHttpContext.Request.Headers.AllKeys.Any(key => key.Equals("Sec-WebSocket-Key"));  // HttpContext.IsWebSocketRequest is not always working ?!?
+                }
+                else
+                {
+                    return internalHttpListenerContext.Request.IsWebSocketRequest;
                 }
             }
         }
@@ -105,12 +163,7 @@ namespace Phabrico.Miscellaneous
         /// <param name="request"></param>
         public HttpListenerContext(HttpListenerRequest request)
         {
-            internalHttpListenerRequest = new HttpListenerRequest();
-            internalHttpListenerRequest.Cookies = request.Cookies;
-            internalHttpListenerRequest.RawUrl = request.RawUrl;
-            internalHttpListenerRequest.RemoteEndPoint = request.RemoteEndPoint;
-            internalHttpListenerRequest.UserAgent = request.UserAgent;
-            internalHttpListenerRequest.UserLanguages = request.UserLanguages;
+            internalHttpListenerRequest = new HttpListenerRequest(request);
 
             internalHttpListenerResponse = new HttpListenerResponse();
         }
@@ -127,20 +180,71 @@ namespace Phabrico.Miscellaneous
         }
 
         /// <summary>
-        /// Accept a WebSocket connection specifying the supported WebSocket sub-protocol,
-        /// receive buffer size, and WebSocket keep-alive interval as an asynchronous operation.
+        /// Converts a System.Web.HttpContext object implicitly into a Phabrico.Miscellaneous.HttpListenerContext object
         /// </summary>
-        /// <param name="subProtocol">The supported WebSocket sub-protocol</param>
-        /// <param name="receiveBufferSize">The receive buffer size in bytes</param>
-        /// <param name="keepAliveInterval">The WebSocket protocol keep-alive interval in milliseconds</param>
-        /// <returns>
-        /// Returns System.Threading.Tasks.Task`1.The task object representing the asynchronous
-        /// operation. The System.Threading.Tasks.Task`1.Result property on the task object
-        /// returns an System.Net.WebSockets.HttpListenerWebSocketContext object.
-        /// </returns>
-        public Task<System.Net.WebSockets.HttpListenerWebSocketContext> AcceptWebSocketAsync(string subProtocol, int receiveBufferSize, TimeSpan keepAliveInterval)
+        /// <param name="httpListenerContext"></param>
+        public static implicit operator HttpListenerContext(System.Web.HttpContext httpContext)
         {
-            return internalHttpListenerContext.AcceptWebSocketAsync(subProtocol, receiveBufferSize, keepAliveInterval);
+            return new HttpListenerContext {
+                internalHttpContext = httpContext
+            };
+        }
+
+        /// <summary>
+        /// Accept an incoming WebSocket connection
+        /// The communication of the websocket is executed in AcceptWebSocketAsync
+        /// </returns>
+        public void AcceptWebSocket()
+        {
+            if (internalHttpContext != null)
+            {
+                internalHttpContext.AcceptWebSocketRequest(AcceptWebSocketAsync);
+            }
+
+            if (internalHttpListenerContext != null)
+            {
+                Task<HttpListenerWebSocketContext> result = internalHttpListenerContext.AcceptWebSocketAsync(null, 8192, TimeSpan.FromMilliseconds(500));
+                result.ContinueWith(task =>  AcceptWebSocketAsync(result.Result) );
+            }
+        }
+
+        /// <summary>
+        /// Processes the communication of a websocket
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        private async Task AcceptWebSocketAsync(WebSocketContext context)
+        {
+            byte[] buffer = new byte[8192];
+            Http.Server.WebSockets.Add(context);
+
+            try
+            {
+                if (context.WebSocket.State == WebSocketState.Open)
+                {
+                    Http.Server.SendLatestNotifications();
+                }
+
+                while (context.WebSocket.State == WebSocketState.Open)
+                {
+                    var response = await context.WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+                    if (response.MessageType == WebSocketMessageType.Close)
+                    {
+                        await
+                            context.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close response received",
+                                CancellationToken.None);
+                    }
+                    else
+                    {
+                        var result = Encoding.UTF8.GetString(buffer);
+                    }
+                }
+            }
+            finally
+            {
+                Http.Server.WebSockets.Remove(context);
+            }
         }
     }
 }

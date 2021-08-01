@@ -13,6 +13,7 @@ using Phabrico.Http;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Base64;
 using Phabrico.Parsers.Remarkup;
+using Phabrico.Parsers.Remarkup.Rules;
 using static Phabrico.Phabricator.Data.Account;
 
 [assembly: InternalsVisibleTo("Phabrico.UnitTests")]
@@ -31,11 +32,15 @@ namespace Phabrico.Storage
             throw new NotImplementedException();
         }
 
-        private static int _dbVersionInApplication = 2;
+        private static int _dbVersionInApplication = 3;
         private static DateTime _utcNextTimeToVacuum = DateTime.MinValue;
 
         private string encryptionKey;
         private PolyCharacterCipherEncryption keywordEncryptor = null;
+
+        public delegate void InvalidUrlEventHandler(object sender, string origin, string invalidUrl);
+
+        public event InvalidUrlEventHandler InvalidUrlFound = null;
 
         /// <summary>
         /// Represents how the column of a table should be encrypted/decrypted
@@ -105,7 +110,12 @@ namespace Phabrico.Storage
                 if (_datasource == null)
                 {
                     _datasource = (string)System.Configuration.ConfigurationManager.AppSettings["DatabaseDirectory"];
-                    _datasource += "\\Phabrico.data";
+
+                    FileAttributes fileAttributes = System.IO.File.GetAttributes(_datasource);
+                    if (fileAttributes.HasFlag(FileAttributes.Directory))
+                    {
+                        _datasource += "\\Phabrico.data";
+                    }
                 }
 
                 return _datasource;
@@ -1116,6 +1126,18 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
+        /// Executes the Database.InvalidUrlFound event for each invalid url found during Remarkup decoding
+        /// The Database.InvalidUrlFound can be used to collect invalid urls.
+        /// </summary>
+        /// <param name="remarkupRule"></param>
+        /// <param name="origin"></param>
+        /// <param name="urlHyperlink"></param>
+        public void MarkUrlAsInvalid(RemarkupRule remarkupRule, string origin, string urlHyperlink)
+        {
+            InvalidUrlFound?.Invoke(remarkupRule, origin, urlHyperlink);
+        }
+
+        /// <summary>
         /// Decrypts a PolyCharacterCipherEncrypted (Vigenère) string
         /// </summary>
         /// <param name="encryptedString"></param>
@@ -1403,6 +1425,19 @@ namespace Phabrico.Storage
                 }
             }
 
+            if (dbVersion == 3)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                           UPDATE accountInfo
+                             SET publicXorCipher  = @publicXorCipher,
+                                 privateXorCipher = @privateXorCipher;
+                       ", Connection))
+                {
+                    AddParameter(dbCommand, "publicXorCipher", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                    AddParameter(dbCommand, "privateXorCipher", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
 
             // store version number in database
             SetConfigurationParameter("version", dbVersion.ToString());

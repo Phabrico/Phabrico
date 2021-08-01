@@ -32,14 +32,16 @@
 </div>
 
 <div id="crumbsContainer" class="crumbs">
-    <a href="/w/">
+    <a href="w/">
         <span class="phui-font-fa fa-book" style="padding-right: 5px;"></span>
     </a>
-@{IF @@HIDE-NEW-DOCUMENT-ACTION@@=no@
-    <a class="crumbsAction" href="?action=new">
-        <span class="visual-only phui-icon-view phui-font-fa fa-plus-square"></span>
-        <span class="phui-crumbs-action-name">New Document</span>
-    </a>
+@{IF @@ACCESS-READONLY@@=False@
+    @{IF @@HIDE-NEW-DOCUMENT-ACTION@@=no@
+        <a id="actionNewDocument" class="crumbsAction" href="?action=new">
+            <span class="visual-only phui-icon-view phui-font-fa fa-plus-square"></span>
+            <span class="phui-crumbs-action-name">New Document</span>
+        </a>
+    }@
 }@
 </div>
 
@@ -51,6 +53,16 @@
 <script>
     window.addEventListener('load', function() {
         phabrico.crumbsHeader = new CrumbsHeader(crumbsContainer, 'Phriction', @@DOCUMENT-CRUMBS@@);
+        @{IF @@ONLY-PHRICTION@@=True@
+            if (crumbsContainer.children.length <= 3) {
+                crumbsContainer.style.display = 'none';
+                document.querySelector('.phui-document').style.top = '44px';
+                document.querySelector('.toc').style.top = '44px';
+            } else {
+                crumbsContainer.removeChild(crumbsContainer.children[2]);
+                crumbsContainer.removeChild(crumbsContainer.children[1]);
+            }
+        }@
     }, false);
 </script>
 
@@ -59,12 +71,10 @@
     <div id="remarkupContent" class="content remarkupContent">@@DOCUMENT-CONTENT@@</div>
     <div class="toc">
         <a class="phui-document-toc-header" href="#top">Contents</a>
-@{IF @@SHOW-SIDE-WINDOW@@=yes@
         <div>
             <ul id="phui-navigator" class="no-print">
             </ul>
         </div>
-}@
     </div>
 
     <div id="dlgYesNoCancel" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 90px; left: calc(50vw - 300px); z-index: 5;">
@@ -95,27 +105,31 @@
     <div class="app-side-window phriction">
         <div class="app-window-body">
             <ul class="list-view">
-                <li class="list-item-view">
-                    <a href="?action=edit" class="list-item-href">
-                        <span class="phui-font-fa fa-pencil phui-list-item-icon">
-                            <span class="phui-list-item-name">Edit Document</span>
-                        </span>
-                    </a>
-                </li>
+                @{IF @@ACCESS-READONLY@@=False@
+                    <li class="list-item-view">
+                        <a id="actionEditDocument" href="?action=edit" class="list-item-href">
+                            <span class="phui-font-fa fa-pencil phui-list-item-icon">
+                                <span class="phui-list-item-name">Edit Document</span>
+                            </span>
+                        </a>
+                    </li>
+                }@
+                @{IF @@ACCESS-HIDE-PHRICTION-CHANGES@@=False@
                 <li id="actionViewLocalChanges" data-document-state="@@DOCUMENT-STATE@@" class="list-item-view">
-                    <a href="/offline/changes/view/@@DOCUMENT-TOKEN@@/" class="list-item-href">
+                    <a href="offline/changes/view/@@DOCUMENT-TOKEN@@/" class="list-item-href">
                         <span class="compare phui-list-item-icon">
                             <span class="phui-list-item-name">View local changes</span>
                         </span>
                     </a>
                 </li>
                 <li id="actionUndoLocalChanges" data-document-state="@@DOCUMENT-STATE@@" class="list-item-view">
-                    <a href="#@@DOCUMENT-TOKEN@@[edit]" class="list-item-href" onclick="showUndoConfirmation(this);">
+                    <a href="#@@DOCUMENT-TOKEN@@[edit]" class="list-item-href" onclick="showUndoConfirmation(this,event);">
                         <span class="phui-font-fa fa-times phui-list-item-icon">
                             <span class="phui-list-item-name">Dismiss local changes</span>
                         </span>
                     </a>
                 </li>
+                }@
                 <li class="list-item-view">
                     <a href="javascript:printable(true)" class="list-item-href">
                         <span class="phui-font-fa fa-print phui-list-item-icon">
@@ -123,7 +137,8 @@
                         </span>
                     </a>
                 </li>
-@{IF @@IS-MEMBER-OF-FAVORITES@@=no@
+@{IF @@ACCESS-HIDE-PHRICTION-FAVORITES@@=False@
+    @{IF @@IS-MEMBER-OF-FAVORITES@@=no@
                 <li class="list-item-view">
                     <a href="#" class="list-item-href" onclick="addToFavorites();">
                         <span class="phui-font-fa fa-heart phui-list-item-icon">
@@ -131,8 +146,8 @@
                         </span>
                     </a>
                 </li>
-}@                
-@{IF @@IS-MEMBER-OF-FAVORITES@@=yes@
+    }@
+    @{IF @@IS-MEMBER-OF-FAVORITES@@=yes@
                 <li class="list-item-view" style="height:20px; margin: 2px 0.5px;">
                     <a href="#" class="list-item-href" onclick="removeFromFavorites();">
                         <span class="phui-font-fa fa-heart fa-stack-2x phui-list-item-icon" style="font-size: 100%;"></span>
@@ -140,6 +155,7 @@
                         <span class="phui-list-item-name" style="font-size: 1em; margin: -2px 13px;">Remove from favorites</span>
                     </a>
                 </li>
+    }@
 }@
 @{IF @@HAS-REFERENCES@@=yes@
                 <li class="list-item-view">
@@ -182,39 +198,45 @@ dateModified won't change when a subscription is added or removed
                     @@DOCUMENT-DATE@@
                 </li>
 
-                <li class="list-item-separator"></li>
-                <li class="list-item-view no-hover">
-                    <span class="list-item-head">Last modified by</span>
-                </li>
-                <li class="list-item-view list-item-link" style="white-space: normal;">
-                    @@DOCUMENT-LAST-MODIFIED-BY@@
-                </li>
-
-                <li class="list-item-separator"></li>
-            
-                <li class="list-item-view no-hover">
-                    <span class="list-item-head">Tags</span>
-                </li>
-                @{IF @@PROJECTS-ASSIGNED@@=yes@
-                    @{PROJECTS
-                    <li class="list-item-view maniphest-list-item-project">
-                        <a class="project-reference phui-font-fa fa-briefcase" href="/project/info/@@DOCUMENT-PROJECT-TOKEN@@/" style="@@DOCUMENT-PROJECT-STYLE@@">@@DOCUMENT-PROJECT-NAME@@</a>
+                @{IF @@ACCESS-HIDE-USERS@@=False@
+                    <li class="list-item-separator"></li>
+                    <li class="list-item-view no-hover">
+                        <span class="list-item-head">Last modified by</span>
                     </li>
+                    <li class="list-item-view list-item-link" style="white-space: normal;">
+                        @@DOCUMENT-LAST-MODIFIED-BY@@
+                    </li>
+                }@
+
+                @{IF @@ACCESS-HIDE-PROJECTS@@=False@
+                    <li class="list-item-separator"></li>
+            
+                    <li class="list-item-view no-hover">
+                        <span class="list-item-head">Tags</span>
+                    </li>
+                    @{IF @@PROJECTS-ASSIGNED@@=yes@
+                        @{PROJECTS
+                        <li class="list-item-view maniphest-list-item-project">
+                            <a class="project-reference phui-font-fa fa-briefcase" href="project/info/@@DOCUMENT-PROJECT-TOKEN@@/" style="@@DOCUMENT-PROJECT-STYLE@@">@@DOCUMENT-PROJECT-NAME@@</a>
+                        </li>
+                        }@
+                    }@
+                    @{IF @@PROJECTS-ASSIGNED@@=no@
+                        <li class="list-item-view maniphest-list-item-project">No projects assigned</li>
                     }@
                 }@
-                @{IF @@PROJECTS-ASSIGNED@@=no@
-                    <li class="list-item-view maniphest-list-item-project">No projects assigned</li>
-                }@
 
-                <li class="list-item-separator"></li>
+                @{IF @@ACCESS-HIDE-USERS@@=False@
+                    <li class="list-item-separator"></li>
                 
-                <li class="list-item-view no-hover">
-                    <span class="list-item-head">Subscribers</span>
-                </li>
-                @{SUBSCRIBERS
-                <li class="list-item-view list-item-link">
-                    <a href="/user/info/@@DOCUMENT-SUBSCRIBER-TOKEN@@/">@@DOCUMENT-SUBSCRIBER-NAME@@</a>
-                </li>
+                    <li class="list-item-view no-hover">
+                        <span class="list-item-head">Subscribers</span>
+                    </li>
+                    @{SUBSCRIBERS
+                    <li class="list-item-view list-item-link">
+                        <a href="user/info/@@DOCUMENT-SUBSCRIBER-TOKEN@@/">@@DOCUMENT-SUBSCRIBER-NAME@@</a>
+                    </li>
+                    }@
                 }@
 }@
             </ul>
@@ -286,11 +308,11 @@ dateModified won't change when a subscription is added or removed
             
             if (yes)
             {
-               addToFavoritesRequest.open('POST', '/phriction/addToFavorites', true);
+               addToFavoritesRequest.open('POST', 'phriction/addToFavorites', true);
             }
             else
             {
-                addToFavoritesRequest.open('POST', '/phriction/removeFromFavorites', true);
+                addToFavoritesRequest.open('POST', 'phriction/removeFromFavorites', true);
             }
             addToFavoritesRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             addToFavoritesRequest.send(data);
@@ -328,7 +350,8 @@ dateModified won't change when a subscription is added or removed
             // get path
             var path = crumbs[crumbs.length - 1].pathname;
             path = path.replace('//', '/');
-            data.append('path', path.substring('/w/'.length));
+            var rootPath = document.baseURI.replace(/^http.?:\/\/[^\/]+/, "");
+            data.append('path', path.substring((rootPath + 'w/').length));
 
             return data;
         }
@@ -348,11 +371,11 @@ dateModified won't change when a subscription is added or removed
                         showHideConfirmationMessage( true, pluginName, jsonResponse.Message,
                                                         function() {
                                                             showHideConfirmationMessage(false);
-                                                            executePhrictionPluginConfirmed('/' + pluginURL, data, true);
+                                                            executePhrictionPluginConfirmed(document.baseURI + pluginURL, data, true);
                                                         },
                                                         function() {
                                                             showHideConfirmationMessage(false);
-                                                            executePhrictionPluginConfirmed('/' + pluginURL, data, false);
+                                                            executePhrictionPluginConfirmed(document.baseURI + pluginURL, data, false);
                                                         },
                                                         function() {
                                                             showHideConfirmationMessage(false);
@@ -370,7 +393,7 @@ dateModified won't change when a subscription is added or removed
                     }
                 }
             }
-            xmlhttp.open('POST', '/' + pluginURL, true);
+            xmlhttp.open('POST', pluginURL, true);
             xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             xmlhttp.send(data);
         }
@@ -427,7 +450,7 @@ dateModified won't change when a subscription is added or removed
                 }
             };
 
-            xmlhttp.open('POST', '/' + pluginURL, true);
+            xmlhttp.open('POST', pluginURL, true);
             xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             xmlhttp.send(data);
         }
@@ -594,11 +617,11 @@ dateModified won't change when a subscription is added or removed
             
             if (yes)
             {
-               subscribeRequest.open('POST', '/phriction/subscribe', true);
+               subscribeRequest.open('POST', 'phriction/subscribe', true);
             }
             else
             {
-                subscribeRequest.open('POST', '/phriction/unsubscribe', true);
+                subscribeRequest.open('POST', 'phriction/unsubscribe', true);
             }
             subscribeRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             subscribeRequest.send(data);
@@ -615,7 +638,7 @@ dateModified won't change when a subscription is added or removed
            dlgConfirmUndo.style.display = 'none';
 
            var elem = dlgConfirmUndo.tagElement;
-           submitItem(elem, "/offline/changes/undo");
+           submitItem(elem, "offline/changes/undo");
         }
     
         function hideReferences()
@@ -672,8 +695,10 @@ dateModified won't change when a subscription is added or removed
             document.querySelector('.phriction-references').style.display = 'block';
         }
 
-        function showUndoConfirmation(elem)
+        function showUndoConfirmation(elem,ev)
         {
+           ev.preventDefault();
+
            dlgConfirmUndo.tagElement = elem;
            dlgConfirmUndo.style.display = 'block';
         }
@@ -720,7 +745,7 @@ dateModified won't change when a subscription is added or removed
 
         function viewLocalChanges(elem)
         {
-           submitItem(elem, "/offline/changes/view");
+           submitItem(elem, "offline/changes/view");
         }
 
         if ('@@DOCUMENT-STATE@@' === 'created')
@@ -731,53 +756,53 @@ dateModified won't change when a subscription is added or removed
         {
             documentState.title = Locale.Translate("This modified page hasn't been uploaded yet to the Phabricator server");
         }
-
-        // create navigation-tree based on header tags
-        var navigationTree = Array.prototype.slice.call( 
-                                    document.querySelector('.phui-document .content')
-                                            .querySelectorAll("h1, h2, h3")
-                                    , 0 
-                                )
-                                .map( function(item) {
-                                    var anchor = '#' + item.children[0].name;
-                                    switch (item.tagName)
-                                    {
-                                        case "H1":
-                                            return "<h1><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h1>";
-                                        case "H2":
-                                            return "<h2><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h2>";
-                                        case "H3":
-                                            return "<h3><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h3>";
-                                        default:
-                                            return "";
-                                    }
-                                })
-                                .join()
-                                .replace(/<\/h1>,<h[23]>/g, '<ul>')
-                                .replace(/<\/h2>,<h3>/g, '<ul>')
-                                .replace(/<\/h3>,<h2>/g, '</ul>')
-                                .replace(/<\/h[23]>,<h1>/g, '</ul>')
-                                .replace(/<\/h2>,<h1>/g, '</ul>')
-                                .replace(/<\/h.>,<h.>/g, '')
-                                .replace(/<\/?h.>/g, '')
-                                .replace(/<ul>/g, '<li><ul>')
-                                .replace(/<\/ul>/g, '</ul></li>');
-                                
-        document.getElementById('phui-navigator').innerHTML = navigationTree;
-    
-        // hide 'Contents' label if there's no navigation tree
-        var toc = document.querySelector('.toc');
-        toc.dataset.display = 'block';
-        if (navigationTree == "") {
-            toc.style.display = 'none';
-            toc.dataset.display = 'none';
-        
-            var doc = document.querySelector('.phui-document');
-            doc.classList.add('no-side-window');
-        }
 }@
 
-@{IF NOT @@SHOW-SIDE-WINDOW@@=yes@
+    // create navigation-tree based on header tags
+    var navigationTree = Array.prototype.slice.call( 
+                                document.querySelector('.phui-document .content')
+                                        .querySelectorAll("h1, h2, h3")
+                                , 0 
+                            )
+                            .map( function(item) {
+                                var anchor = document.location + '#' + item.children[0].name;
+                                switch (item.tagName)
+                                {
+                                    case "H1":
+                                        return "<h1><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h1>";
+                                    case "H2":
+                                        return "<h2><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h2>";
+                                    case "H3":
+                                        return "<h3><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h3>";
+                                    default:
+                                        return "";
+                                }
+                            })
+                            .join()
+                            .replace(/<\/h1>,<h[23]>/g, '<ul>')
+                            .replace(/<\/h2>,<h3>/g, '<ul>')
+                            .replace(/<\/h3>,<h2>/g, '</ul>')
+                            .replace(/<\/h[23]>,<h1>/g, '</ul>')
+                            .replace(/<\/h2>,<h1>/g, '</ul>')
+                            .replace(/<\/h.>,<h.>/g, '')
+                            .replace(/<\/?h.>/g, '')
+                            .replace(/<ul>/g, '<li><ul>')
+                            .replace(/<\/ul>/g, '</ul></li>');
+                                
+    document.getElementById('phui-navigator').innerHTML = navigationTree;
+    
+    // hide 'Contents' label if there's no navigation tree
+    var toc = document.querySelector('.toc');
+    toc.dataset.display = 'block';
+    if (navigationTree == "") {
+        toc.style.display = 'none';
+        toc.dataset.display = 'none';
+        
+        var doc = document.querySelector('.phui-document');
+        doc.classList.add('no-side-window');
+    }
+
+@{IF @@IS-COVERPAGE@@=yes@
     var toc = document.querySelector('.toc');
     toc.style.display = 'none';
     toc.dataset.display = 'none';
@@ -787,7 +812,7 @@ dateModified won't change when a subscription is added or removed
 
     var hierarchyWindow = document.querySelector('.phui-document-hierarchy-border');
     hierarchyWindow.style.width = '100%';
-}@    
+}@
 
     window.addEventListener('load', function() {
         // set page title

@@ -48,6 +48,12 @@ namespace Phabrico.Miscellaneous
         private StreamWriter streamWriter = null;
 
         /// <summary>
+        /// event handler for logging messages
+        /// If not null, all logging messages will be sent to this method and nothing will be written to disk or screen automatically
+        /// </summary>
+        private Action<string> loggingEventHandler = null;
+
+        /// <summary>
         /// Static property which determines if a RollFile should be executed
         /// </summary>
         private static Logging Instance
@@ -109,7 +115,7 @@ namespace Phabrico.Miscellaneous
 
             // delete old logfiles
             string oldestLogFileToKeep = logDirectory + "\\" + DateTime.Now.AddDays(-5).ToString("yyyy-MM-dd") + ".log";  // keep log files for maximum 5 days
-            foreach (string oldLogFileName in Directory.EnumerateFiles(logDirectory, "????-??-??.log", SearchOption.TopDirectoryOnly).ToList())
+            foreach (string oldLogFileName in Directory.EnumerateFiles(logDirectory, "????-??-??*.log", SearchOption.TopDirectoryOnly).ToList())
             {
                 if (oldLogFileName.CompareTo(oldestLogFileToKeep) <= 0)
                 {
@@ -118,9 +124,10 @@ namespace Phabrico.Miscellaneous
             }
 
             // create new logfile
-            string logFileName = string.Format("{0}\\{1}.log", 
+            string logFileName = string.Format("{0}\\{1}-[{2}].log", 
                                     logDirectory,
-                                    DateTime.Now.ToString("yyyy-MM-dd"));
+                                    DateTime.Now.ToString("yyyy-MM-dd"),
+                                    Process.GetCurrentProcess().Id);
             fileStream = File.Open(logFileName, FileMode.Append, FileAccess.Write, FileShare.Read);
             streamWriter = new StreamWriter(fileStream);
             streamWriter.AutoFlush = true;
@@ -149,14 +156,30 @@ namespace Phabrico.Miscellaneous
             string data = string.Format(formatter, args);
             data = data.Replace("\n", "\n" + new string(' ', formatter.Length - infoMessage.Length));
 
-            if (foregroundColor != _currentConsoleForegroundColor)
+            if (loggingEventHandler == null)
             {
-                Console.ForegroundColor = foregroundColor;
-                _currentConsoleForegroundColor = foregroundColor;
-            }
+                if (foregroundColor != _currentConsoleForegroundColor)
+                {
+                    Console.ForegroundColor = foregroundColor;
+                    _currentConsoleForegroundColor = foregroundColor;
+                }
 
-            Console.WriteLine(data);
-            streamWriter.WriteLine(data);
+                Console.WriteLine(data);
+                streamWriter.WriteLine(data);
+            }
+            else
+            {
+                loggingEventHandler.Invoke(data);
+            }
+        }
+
+        /// <summary>
+        /// Redirects all logging to a given action method
+        /// </summary>
+        /// <param name="loggingEvent">Action method which will be invoked for each line of logging</param>
+        public static void SetLoggingEventHandler(Action<string> loggingEvent)
+        {
+            Instance.loggingEventHandler = loggingEvent;
         }
 
         /// <summary>
@@ -168,7 +191,7 @@ namespace Phabrico.Miscellaneous
         {
             lock (_synchronizationObject)
             {
-                if (Instance.NewDay)
+                if (Instance.loggingEventHandler == null && _instance.NewDay)
                 {
                     Instance.RollFile();
                 }
@@ -185,7 +208,7 @@ namespace Phabrico.Miscellaneous
         {
             lock (_synchronizationObject)
             {
-                if (Instance.NewDay)
+                if (Instance.loggingEventHandler == null && _instance.NewDay)
                 {
                     Instance.RollFile();
                 }
@@ -224,7 +247,7 @@ namespace Phabrico.Miscellaneous
         {
             lock (_synchronizationObject)
             {
-                if (Instance.NewDay)
+                if (Instance.loggingEventHandler == null && _instance.NewDay)
                 {
                     Instance.RollFile();
                 }

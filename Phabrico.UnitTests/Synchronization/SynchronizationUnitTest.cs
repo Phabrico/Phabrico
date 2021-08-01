@@ -18,9 +18,11 @@ namespace Phabrico.UnitTests.Synchronization
     {
         Phabrico.Controllers.Synchronization synchronizationController;
         DummyPhabricatorWebServer phabricatorWebServer;
-
-        public SynchronizationUnitTest()
+        
+        protected override void Initialize(string httpRootPath)
         {
+            base.Initialize(httpRootPath);
+
             Miscellaneous.HttpListenerContext httpListenerContext = new Miscellaneous.HttpListenerContext();
 
             synchronizationController = new Phabrico.Controllers.Synchronization();
@@ -43,8 +45,12 @@ namespace Phabrico.UnitTests.Synchronization
         }
 
         [TestMethod]
-        public void TestSynchronizationConduitAPI()
+        [DataRow("")]
+        [DataRow("phabrico")]
+        public void TestSynchronizationConduitAPI(string rootPath)
         {
+            Initialize(rootPath);
+
             string[] testFileNames = Directory.EnumerateFiles(@".\Synchronization\TestData", "*.*", SearchOption.TopDirectoryOnly)
                                               .OrderBy(fileName => fileName)
                                               .ToArray();

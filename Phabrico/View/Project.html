@@ -20,21 +20,21 @@ tr.disallowed a.disallow {
 
         <div class="aphront-form-input" style="display: flex;">
             <i class="phui-font-fa fa-spinner fa-pulse" id="spinShowAll"></i>
-            <a id="btnShowAll" href="#" onclick="showGlobalSpinner(this, '/project/showAll/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: none;">
+            <a id="btnShowAll" href="#" onclick="showGlobalSpinner(this, 'project/showAll/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: none;">
                 <i class="phui-font-fa fa-eye"></i>Show all projects
             </a>
-            <a id="btnShowSelectedOnly" href="#" onclick="showGlobalSpinner(this, '/project/showSelected/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: inline-block;">
+            <a id="btnShowSelectedOnly" href="#" onclick="showGlobalSpinner(this, 'project/showSelected/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: inline-block;">
                 <i class="phui-font-fa fa-eye"></i>Show selected projects
             </a>
             <i class="phui-font-fa fa-spinner fa-pulse" id="spinSelectAll"></i>
-            <a id="btnSelectAll" href="#" onclick="showGlobalSpinner(this, '/project/selectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: inline-block">
+            <a id="btnSelectAll" href="#" onclick="showGlobalSpinner(this, 'project/selectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: inline-block">
                 <i class="phui-font-fa fa-check"></i>Select all projects
             </a>
-            <a id="btnUnselectAll" href="#" onclick="showGlobalSpinner(this, '/project/unselectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: none;">
+            <a id="btnUnselectAll" href="#" onclick="showGlobalSpinner(this, 'project/unselectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: none;">
                 <i class="phui-font-fa fa-check"></i>Unselect all projects
             </a>
             <i class="phui-font-fa fa-spinner fa-pulse" id="spinDisallowAll"></i>
-            <a id="btnDisallowAll" href="#" onclick="showGlobalSpinner(this, '/project/disallowAll/')" class="button small button-red" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px;">
+            <a id="btnDisallowAll" href="#" onclick="showGlobalSpinner(this, 'project/disallowAll/')" class="button small button-red" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px;">
                 <i class="phui-font-fa fa-ban"></i>Disallow all projects
             </a>
 
@@ -156,7 +156,7 @@ function disallowProject(ev)
     if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
     anchor.style.display = 'none';
     anchor.inprogress.style.display = 'inline-block';
-    submitItem(anchor, "/project/disallow");
+    submitItem(anchor, "project/disallow");
 }
 
 function selectProject(ev)
@@ -165,7 +165,7 @@ function selectProject(ev)
     if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
     anchor.style.display = 'none';
     anchor.inprogress.style.display = 'inline-block';
-    submitItem(anchor, "/project/select");
+    submitItem(anchor, "project/select");
 }
 
 function unselectProject(ev)
@@ -174,7 +174,7 @@ function unselectProject(ev)
     if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
     anchor.style.display = 'none';
     anchor.inprogress.style.display = 'inline-block';
-    submitItem(anchor, "/project/unselect");
+    submitItem(anchor, "project/unselect");
 }
 
 function populateTable(firstCharacters)
@@ -184,7 +184,7 @@ function populateTable(firstCharacters)
         tblProjects.xmlhttp.abort();
     }
 
-    var url = "/project/query/" + encodeURI(firstCharacters).split('/').join('%2F');  // encode characters in URL and make sure that all '/' characters are also encoded
+    var url = "project/query/" + encodeURI(firstCharacters).split('/').join('%2F');  // encode characters in URL and make sure that all '/' characters are also encoded
     if (url.endsWith('/') == false) url += '/';
 
     var data = new FormData();
@@ -221,7 +221,7 @@ function populateTable(firstCharacters)
                 var cell = row.insertCell();
                 cell.classList.add('action');
                 var anchorSelect = document.createElement('a');
-                anchorSelect.href = "#" + record.Token;
+                anchorSelect.href = document.location.pathname + "#" + record.Token;
                 anchorSelect.classList.add("button");
                 anchorSelect.classList.add("small");
                 anchorSelect.classList.add(record.Token);
@@ -262,7 +262,7 @@ function populateTable(firstCharacters)
                 var cell = row.insertCell();
                 cell.classList.add('action');
                 var anchorDisallow = document.createElement('a');
-                anchorDisallow.href = "#" + record.Token;
+                anchorDisallow.href = document.location.pathname + "#" + record.Token;
                 anchorDisallow.classList.add("button");
                 anchorDisallow.classList.add("disallow");
                 anchorDisallow.classList.add("small");
@@ -330,7 +330,7 @@ function populateTable(firstCharacters)
                                           </td>
                                           <td>
                                              <div class ="picker_doneforall">
-                                                <button class ="btnSetColorForAll button button-gray" href="#" onclick="showGlobalSpinner(this, '/project/setColorForAll/')" class ="button button-gray">Set color for all shown project tags</button>
+                                                <button class ="btnSetColorForAll button button-gray" href="#" onclick="showGlobalSpinner(this, 'project/setColorForAll/')" class ="button button-gray">Set color for all shown project tags</button>
                                              </div>
                                           </td>
                                           <td>
@@ -418,7 +418,7 @@ function populateTable(firstCharacters)
         catch(exc)
         {
             // show logon dialog
-            document.location = "/";
+            document.location = document.baseURI;
         }
     };
     xmlhttp.send(data);
@@ -431,7 +431,7 @@ function saveColorForToken(colorRectangle, token, rgbaString) {
 
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.overrideMimeType("application/json");
-    xmlhttp.open('POST', '/project/setcolor/', true);
+    xmlhttp.open('POST', 'project/setcolor/', true);
     xmlhttp.onload = function () {
         if (xmlhttp.readyState == 4) {
             try {

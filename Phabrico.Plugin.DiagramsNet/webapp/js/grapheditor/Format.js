@@ -2296,7 +2296,7 @@ ArrangePanel.prototype.addGeometry = function(container)
 			
 			if (constrainCheckbox.checked)
 			{
-				geo.height = Math.round((geo.height  * value * 100) / geo.width) / 100;
+				geo.height = Math.round((geo.height * value * 100) / geo.width) / 100;
 			}
 			
 			geo.width = value;
@@ -4550,7 +4550,8 @@ StyleFormatPanel.prototype.addFill = function(container)
 		ss.fill && ss.style.shape != 'image') ? '' : 'none';
 
 	var directions = [mxConstants.DIRECTION_NORTH, mxConstants.DIRECTION_EAST,
-	                  mxConstants.DIRECTION_SOUTH, mxConstants.DIRECTION_WEST];
+	                  mxConstants.DIRECTION_SOUTH, mxConstants.DIRECTION_WEST,
+					  mxConstants.DIRECTION_RADIAL];
 
 	for (var i = 0; i < directions.length; i++)
 	{
@@ -4609,12 +4610,16 @@ StyleFormatPanel.prototype.addFill = function(container)
 	mxEvent.addListener(gradientSelect, 'change', function(evt)
 	{
 		graph.setCellStyles(mxConstants.STYLE_GRADIENT_DIRECTION, gradientSelect.value, ss.cells);
+		ui.fireEvent(new mxEventObject('styleChanged', 'keys', [mxConstants.STYLE_GRADIENT_DIRECTION],
+			'values', [gradientSelect.value], 'cells', ss.cells));
 		mxEvent.consume(evt);
 	});
 	
 	mxEvent.addListener(fillStyleSelect, 'change', function(evt)
 	{
 		graph.setCellStyles('fillStyle', fillStyleSelect.value, ss.cells);
+		ui.fireEvent(new mxEventObject('styleChanged', 'keys', [mxConstants.STYLE_GRADIENT_DIRECTION],
+			'values', [gradientSelect.value], 'cells', ss.cells));
 		mxEvent.consume(evt);
 	});
 	
@@ -5372,7 +5377,7 @@ StyleFormatPanel.prototype.addLineJumps = function(container)
 		styleSelect.style.right = '76px';
 		styleSelect.style.width = '62px';
 
-		var styles = ['none', 'arc', 'gap', 'sharp'];
+		var styles = ['none', 'arc', 'gap', 'sharp', 'line'];
 
 		for (var i = 0; i < styles.length; i++)
 		{

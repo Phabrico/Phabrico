@@ -5,7 +5,7 @@
             <div class="staging-diff-head">
                 <span class="title"></span>
                 <span style="float: right;">
-                    <a href="/offline/changes/" class="button button-blue" style="min-width: 50px;">Overview offline changes</a>
+                    <a href="offline/changes/" class="button button-blue" style="min-width: 50px;">Overview offline changes</a>
                     <button id="btnDismissLocalChanges" class="button-red" type="button" onclick="showUndoConfirmation(this);">Dismiss local version</button>
                     <button id="btnSaveLocalChanges" class="button-green" type="submit" disabled="disabled">Save local version</button>
                 </span>
@@ -84,7 +84,7 @@
         var data = new FormData();
         data.append('item',  token);
 
-        xmlhttp.open('POST', "/offline/changes/undo", true);
+        xmlhttp.open('POST', "offline/changes/undo", true);
         xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4)
@@ -338,11 +338,11 @@
 
         var data = new FormData(frmStagingDiff);
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('POST', '?action=save', true);
+        xmlhttp.open('POST', document.location + '?action=save', true);
         xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         xmlhttp.onload = function () {
             if (xmlhttp.readyState == 4) {
-                document.location = '/offline/changes/';
+                document.location = document.baseURI + 'offline/changes/';
             }
         };
         xmlhttp.send(data);

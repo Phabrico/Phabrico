@@ -20,17 +20,17 @@
 
         <div class="aphront-form-input" style="display: flex;">
             <i class="phui-font-fa fa-spinner fa-pulse" id="spinShowAll" style="display: none; min-width: 13px; position: relative;"></i>
-            <a id="btnShowAll" href="#" onclick="showGlobalSpinner(this, '/user/showAll/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: none;">
+            <a id="btnShowAll" href="#" onclick="showGlobalSpinner(this, 'user/showAll/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: none;">
                 <i class="phui-font-fa fa-eye"></i>Show all users
             </a>
-            <a id="btnShowSelectedOnly" href="#" onclick="showGlobalSpinner(this, '/user/showSelected/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: inline-block;">
+            <a id="btnShowSelectedOnly" href="#" onclick="showGlobalSpinner(this, 'user/showSelected/')" class="button small button-gray" style="height: 23px; margin-top: 4px; padding-top: 4px; display: inline-block;">
                 <i class="phui-font-fa fa-eye"></i>Show selected users
             </a>
             <i class="phui-font-fa fa-spinner fa-pulse" id="spinSelectAll" style="display: none; width: 13px; position: relative;"></i>
-            <a id="btnSelectAll" href="#" onclick="showGlobalSpinner(this, '/user/selectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: inline-block;">
+            <a id="btnSelectAll" href="#" onclick="showGlobalSpinner(this, 'user/selectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: inline-block;">
                 <i class="phui-font-fa fa-check"></i>Select all users
             </a>
-            <a id="btnUnselectAll" href="#" onclick="showGlobalSpinner(this, '/user/unselectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: none;">
+            <a id="btnUnselectAll" href="#" onclick="showGlobalSpinner(this, 'user/unselectAll/')" class="button small button-blue" style="height: 23px; margin-left: 3px; margin-top: 4px; padding-top: 4px; display: none;">
                 <i class="phui-font-fa fa-check"></i>Unselect all users
             </a>
 
@@ -137,7 +137,7 @@ function selectUser(ev)
     if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
     anchor.style.display = 'none';
     anchor.inprogress.style.display = 'inline-block';
-    submitItem(anchor, "/user/select");
+    submitItem(anchor, "user/select");
 }
 
 function unselectUser(ev)
@@ -146,7 +146,7 @@ function unselectUser(ev)
     if (ev.target.tagName == 'I') anchor = ev.target.parentNode;
     anchor.style.display = 'none';
     anchor.inprogress.style.display = 'inline-block';
-    submitItem(anchor, "/user/unselect");
+    submitItem(anchor, "user/unselect");
 }
 
 function populateTable(firstCharacters)
@@ -156,7 +156,7 @@ function populateTable(firstCharacters)
         tblUsers.xmlhttp.abort();
     }
 
-    var url = "/user/query/" + encodeURI(firstCharacters).split('/').join('%2F');  // encode characters in URL and make sure that all '/' characters are also encoded
+    var url = "user/query/" + encodeURI(firstCharacters).split('/').join('%2F');  // encode characters in URL and make sure that all '/' characters are also encoded
     if (url.endsWith('/') == false) url += '/';
 
     var data = new FormData();
@@ -186,7 +186,7 @@ function populateTable(firstCharacters)
                 var cell = row.insertCell();
                 cell.classList.add('action');
                 var anchorSelect = document.createElement('a');
-                anchorSelect.href = "#" + record.Token;
+                anchorSelect.href = document.location.pathname + "#" + record.Token;
                 anchorSelect.classList.add("button");
                 anchorSelect.classList.add("small");
                 anchorSelect.classList.add(record.Token);
@@ -226,7 +226,7 @@ function populateTable(firstCharacters)
                 cell = row.insertCell();
                 cell.classList.add('wide');
                 var anchorUserTasks = document.createElement('a');
-                anchorUserTasks.href = "/user/info/" + record.Token;
+                anchorUserTasks.href = "user/info/" + record.Token;
                 text = document.createTextNode("  " + record.RealName);
                 anchorUserTasks.appendChild(text);
                 cell.appendChild(anchorUserTasks);
@@ -262,7 +262,7 @@ function populateTable(firstCharacters)
         catch(exc)
         {
             // show logon dialog
-            document.location = "/";
+            document.location = document.baseURI;
         }
     };
     xmlhttp.send(data);

@@ -1,5 +1,5 @@
 <div id="crumbsContainer" class="crumbs">
-    <a href="/w/">
+    <a href="w/">
         <span class="phui-font-fa fa-book" style="padding-right: 5px;"></span>
     </a>
 </div>
@@ -17,16 +17,20 @@
                     <input id="path" name="path" type="hidden" value="@@DOCUMENT-PATH@@" />
                 </div>
                 <label id="titleAlreadyExists" class="phriction-edit-error" style="display:none">Title already exists</label>
-            @{IF @@SHOW-PHRICTION-METADATA@@=yes@
-                <div>
-                    <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="tags">Tags</label>
-                    <input id="tags" name="tags" class="input-tag" data-url="/tag" placeholder="Type a project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-TAGS@@" />
-                </div>
-                <div>
-                    <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="subscribers">Subscribers</label>
-                    <input id="subscribers" name="subscribers" class="input-tag" data-url="/subscriber" placeholder="Type a user or project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-SUBSCRIBERS@@" />
-                </div>
-            }@
+                @{IF @@SHOW-PHRICTION-METADATA@@=yes@
+                    @{IF @@ACCESS-HIDE-PROJECTS@@=False@
+                    <div>
+                        <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="tags">Tags</label>
+                        <input id="tags" name="tags" class="input-tag" data-url="/tag" placeholder="Type a project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-TAGS@@" />
+                    </div>
+                    }@
+                    @{IF @@ACCESS-HIDE-USERS@@=False@
+                    <div>
+                        <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="subscribers">Subscribers</label>
+                        <input id="subscribers" name="subscribers" class="input-tag" data-url="/subscriber" placeholder="Type a user or project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-SUBSCRIBERS@@" />
+                    </div>
+                    }@
+                }@
                 <div id="edit" class="app-window-body edit">
                     <div class="app-edit-window-head">
                         <span class="phui-font-fa fa-bold tooltip-top"><span class="tooltiptext">Bold</span></span>
@@ -40,7 +44,7 @@
                         @{IF @@PLUGIN-DIAGRAM-AVAILABLE@@=yes@
                             <span class="phui-font-fa fa-sitemap tooltip-top"><span class="tooltiptext">Diagram</span></span>
                         }@
-                        <a href="/remarkup/syntax" target="_blank">
+                        <a href="remarkup/syntax" target="_blank">
                             <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
                         </a>
                     </div>
@@ -63,9 +67,10 @@
         @@DOCUMENT-CONTENT@@
     </div>
 
-    <script src="/scripts/simpledrag.js?version=@@PHABRICO-VERSION@@"></script>
+    <script src="scripts/simpledrag.js?version=@@PHABRICO-VERSION@@"></script>
     <script>
         var remarkup = null;
+        var newPath = ""
 
         window.addEventListener('load', function() {
             var textAreaUserContextMenu = new TextAreaContextMenu(textarea, "@", "user", "/user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
@@ -100,6 +105,14 @@
         function init() {
             phabrico.autoLogOff.disable();
             phabrico.crumbsHeader = new CrumbsHeader(crumbsContainer, 'Phriction', @@DOCUMENT-CRUMBS@@);
+            @{IF @@ONLY-PHRICTION@@=True@
+                if (crumbsContainer.children.length <= 2) {
+                    crumbsContainer.style.display = 'none';
+                } else {
+                    crumbsContainer.removeChild(crumbsContainer.children[2]);
+                    crumbsContainer.removeChild(crumbsContainer.children[1]);
+                }
+            }@
         }
 
         function inputChanged(value, right) {
@@ -108,6 +121,10 @@
         }
 
         function saveInputData(button) {
+            if (newPath != "") {
+                path.value = newPath;
+            }
+
             inputHasBeenChanged = false;
             remarkup.Save(button);
         }
@@ -130,13 +147,16 @@
 
             var url = "";
             if (path.value == ""  ||  path.value == "/") {
-                path.value = getPath();
+                newPath = getPath();
 
-                url = document.location.pathname + path.value;
-                url = url.replace(/\/\//g, "/");
+                url = document.location.pathname + "/" + newPath;
             } else {
-                url = path.value;
+                newPath = path.value;
+                url = "w/" + newPath;
             }
+
+            // remove duplicated /'s
+            url = url.replace(/\/\//g, "/");
 
             var http = new XMLHttpRequest();
             http.open('GET', url, true);

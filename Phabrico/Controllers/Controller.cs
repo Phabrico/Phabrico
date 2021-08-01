@@ -89,6 +89,8 @@ namespace Phabrico.Controllers
             // make sure we don't have a line at the end containing some spaces (which would might a code block)
             remarkupText = RegexSafe.Replace(remarkupText, "\n +$", "\n", System.Text.RegularExpressions.RegexOptions.None);
 
+            browser.Token.EncryptionKey = database.EncryptionKey;
+            browser.Token.PrivateEncryptionKey = database.PrivateEncryptionKey;
             string result = remarkupEngine.ToHTML(null, database, browser, url, "\n" + remarkupText + "\n", out remarkupParserOutput, includeLineNumbers);
 
             result = CorrectInvalidHTML(result);

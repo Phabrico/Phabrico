@@ -105,8 +105,12 @@ namespace Phabrico.Phabricator.API
 
                 foreach (JObject phrictionDocument in phrictionData["result"]["data"].OfType<JObject>())
                 {
+                    string phrictionToken = phrictionDocument["phid"].ToString();
+
+                    if (dateModifiedPerPhrictionDocumentToken.ContainsKey(phrictionToken) == false) continue;
+
                     Data.Phriction newPhriction = new Data.Phriction();
-                    newPhriction.Token = phrictionDocument["phid"].ToString();
+                    newPhriction.Token = phrictionToken;
                     newPhriction.Content = phrictionDocument["attachments"]["content"]["content"]["raw"].ToString();
                     newPhriction.Name = phrictionDocument["attachments"]["content"]["title"].ToString();
                     newPhriction.Author = phrictionDocument["attachments"]["content"]["authorPHID"].ToString();
@@ -131,6 +135,71 @@ namespace Phabrico.Phabricator.API
                     // in case there's a time difference between Phabricator and Phabrico: correct timestamp from Phabricator
                     newPhriction.DateModified = newPhriction.DateModified.Subtract(TimeDifferenceBetweenPhabricatorAndLocalComputer);
 
+                    yield return newPhriction;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Downloads all Phriction documents based on constraints (e.g. projects or users)
+        /// Unlike the GetAll() method, this GetPhrictionDocuments() method does not work with incremental downloads
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="conduit"></param>
+        /// <param name="constraints"></param>
+        /// <returns></returns>
+        public IEnumerable<Data.Phriction> GetPhrictionDocuments(Database database, Conduit conduit, Constraint[] constraints)
+        {
+            string firstItemId = "";
+
+            bool searchForModifications = true;
+            while (searchForModifications)
+            {
+                // get list of phriction documents
+                string jsonDocument = conduit.Query("phriction.document.search",
+                                            constraints,
+                                            new Attachment[] {
+                                                new Attachment("content"),
+                                                new Attachment("projects"),
+                                                new Attachment("subscribers")
+                                            },
+                                            "oldest",
+                                            firstItemId
+                                           );
+                JObject phrictionData = JsonConvert.DeserializeObject(jsonDocument) as JObject;
+                JObject[] phrictionDocuments = phrictionData["result"]["data"].OfType<JObject>().ToArray();
+                searchForModifications = phrictionDocuments.Length == 100;
+
+                foreach (JObject phrictionDocument in phrictionDocuments)
+                {
+                    string phrictionToken = phrictionDocument["phid"].ToString();
+
+                    Data.Phriction newPhriction = new Data.Phriction();
+                    newPhriction.Token = phrictionToken;
+                    newPhriction.Content = phrictionDocument["attachments"]["content"]["content"]["raw"].ToString();
+                    newPhriction.Name = phrictionDocument["attachments"]["content"]["title"].ToString();
+                    newPhriction.Author = phrictionDocument["attachments"]["content"]["authorPHID"].ToString();
+                    newPhriction.Subscribers = string.Join(",", phrictionDocument["attachments"]["subscribers"]["subscriberPHIDs"].Select(c => c.ToString()));
+
+                    Data.Transaction latestTransaction = Transaction.Get(database, conduit, newPhriction.Token).FirstOrDefault();
+                    if (latestTransaction != null)
+                    {
+                        newPhriction.DateModified = latestTransaction.DateModified;
+                        newPhriction.LastModifiedBy = latestTransaction.Author;
+                    }
+                    else
+                    {
+                        newPhriction.DateModified = DateTimeOffset.Now;
+                    }
+
+                    newPhriction.Projects = string.Join(",", phrictionDocument["attachments"]["projects"]["projectPHIDs"].Select(c => c.ToString()));
+                    newPhriction.Path = phrictionDocument["fields"]["path"].ToString();
+
+                    // make sure we don't have any trailing spaces (to make the diff-functionality a little easier)
+                    string[] lines = newPhriction.Content.Split('\n');
+                    newPhriction.Content = string.Join("\n",
+                                                        lines.Select(line => line.TrimEnd(' ', '\r', '\t'))
+                                                      );
                     yield return newPhriction;
                 }
             }

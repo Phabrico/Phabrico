@@ -16,6 +16,33 @@ namespace Phabrico.Http.Response
         private static Dictionary<string,string> cachedViewData = new Dictionary<string, string>();
 
         /// <summary>
+        /// List of view names which can not be accessed directly
+        /// </summary>
+        private static string[] internalViewNames = new string[] {
+            "AccessDenied",
+            "BrowserNotSupported",
+            "HomePage.Authenticated.HeaderActions",
+            "HomePage.Authenticated",
+            "HomePage.AuthenticationDialog",
+            "HomePage.AuthenticationDialogCreateUser",
+            "HomePage.IFrameContent",
+            "HomePage.NoHeaderLocalTreeView.Template",
+            "HomePage.NoHeaderTreeView.Template",
+            "HomePage.NoTreeView.Template",
+            "HomePage.Template",
+            "HomePage.TreeView.Template",
+            "HttpNotFound",
+            "ManiphestTask",
+            "ManiphestTaskEdit",
+            "PhrictionEdit",
+            "PhrictionHierarchy",
+            "PhrictionNoDocumentFound",
+            "Staging",
+            "StagingDiff",
+            "SynchronizationDiff",
+        };
+
+        /// <summary>
         /// HTTP marker used by the server to advertise its support of partial requests
         /// </summary>
         public string AcceptRanges { get; set; }
@@ -218,10 +245,21 @@ namespace Phabrico.Http.Response
         /// <summary>
         /// True if a given view exists
         /// </summary>
+        /// <param name="httpServer"></param>
         /// <param name="viewName"></param>
         /// <returns></returns>
-        public static bool ViewExists(string viewName)
+        public static bool ViewExists(Http.Server httpServer, string viewName)
         {
+            if (internalViewNames.Any(internalViewName => internalViewName.Equals(viewName, StringComparison.OrdinalIgnoreCase))) return false;
+
+            if (httpServer.Customization.HideConfig && viewName.Equals("configure", StringComparison.OrdinalIgnoreCase)) return false;
+            if (httpServer.Customization.HideFiles && viewName.Equals("file", StringComparison.OrdinalIgnoreCase)) return false;
+            if (httpServer.Customization.HideManiphest && viewName.Equals("maniphest", StringComparison.OrdinalIgnoreCase)) return false;
+            if (httpServer.Customization.HideOfflineChanges && viewName.Equals("staging", StringComparison.OrdinalIgnoreCase)) return false;
+            if (httpServer.Customization.HidePhriction && viewName.Equals("phriction", StringComparison.OrdinalIgnoreCase)) return false;
+            if (httpServer.Customization.HideProjects && viewName.Equals("projects", StringComparison.OrdinalIgnoreCase)) return false;
+            if (httpServer.Customization.HideUsers && viewName.Equals("user", StringComparison.OrdinalIgnoreCase)) return false;
+
             // in case url has parameters, skip parameters
             viewName = viewName.Split('?').FirstOrDefault();
 
@@ -259,13 +297,13 @@ namespace Phabrico.Http.Response
 
                 if (EnableBrowserCache)
                 {
-                    browser.Response.Headers.Add(System.Net.HttpResponseHeader.CacheControl, "public, max-age=31536000, immutable");
+                    browser.Response.Headers.Add("Cache-Control", "public, max-age=31536000, immutable");
                 }
                 else
                 {
-                    browser.Response.Headers[System.Net.HttpResponseHeader.CacheControl] = "private, no-cache, must-revalidate";
-                    browser.Response.Headers[System.Net.HttpResponseHeader.Pragma] = "no-cache";
-                    browser.Response.Headers[System.Net.HttpResponseHeader.Expires] = "-1";
+                    browser.Response.Headers["Cache-Control"] = "private, no-cache, must-revalidate";
+                    browser.Response.Headers["Pragma"] = "no-cache";
+                    browser.Response.Headers["Expires"] = "-1";
                 }
 
                 // remove Server header tag

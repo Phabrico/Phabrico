@@ -182,18 +182,28 @@ namespace Phabrico.Miscellaneous
             // translate HTML
             foreach (var itemToBeTranslated in itemsToBeTranslated.OrderByDescending(item => item.Match.Index))
             {
-                string translation = currentDictionary[itemToBeTranslated.Content];
+                string untranslated = itemToBeTranslated.Content;
+                int ifStatementPosition = untranslated.IndexOf("@{IF");
+                string ifStatement = "";
+                if (ifStatementPosition >= 0)
+                {
+                    ifStatement = untranslated.Substring(ifStatementPosition);
+                    untranslated = untranslated.Substring(0, ifStatementPosition).Trim(' ', '\t', '\r', '\n');
+                }
+
+                string translation = currentDictionary[untranslated];
                 if (translation != null)
                 {
                     htmlContent = htmlContent.Substring(0, itemToBeTranslated.Match.Index)
                             + translation
+                            + ifStatement
                             + htmlContent.Substring(itemToBeTranslated.Match.Index + itemToBeTranslated.Match.Length);
                 }
                 else
                 {
-                    missingMsgIds.Add(itemToBeTranslated.Content);
+                    missingMsgIds.Add(untranslated);
 
-                    Logging.WriteError(null, "### No translation found for \"{0}\"", itemToBeTranslated.Content);
+                    Logging.WriteError(null, "### No translation found for \"{0}\"", untranslated);
                 }
             }
 

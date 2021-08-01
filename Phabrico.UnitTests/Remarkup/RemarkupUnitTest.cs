@@ -19,8 +19,10 @@ namespace Phabrico.UnitTests.Remarkup
     { 
         Phabrico.Controllers.Remarkup remarkupController;
 
-        public RemarkupUnitTest()
+        protected override void Initialize(string httpRootPath)
         {
+            base.Initialize(httpRootPath);
+
             remarkupController = new Phabrico.Controllers.Remarkup();
             remarkupController.browser = new Http.Browser(HttpServer, HttpListenerContext);
             remarkupController.EncryptionKey = EncryptionKey;
@@ -32,8 +34,12 @@ namespace Phabrico.UnitTests.Remarkup
         }
 
         [TestMethod]
-        public void TestRemarkupEngine()
+        [DataRow("")]
+        [DataRow("phabrico")]
+        public void TestRemarkupEngine(string httpRootPath)
         {
+            Initialize(httpRootPath);
+
             string[] testFileNames = Directory.EnumerateFiles(@".\Remarkup\TestData", "*.*", SearchOption.TopDirectoryOnly)
                                               .OrderBy(fileName => fileName)
                                               .ToArray();

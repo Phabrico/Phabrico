@@ -58,17 +58,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project")]
         public Http.Response.HttpMessage HttpPostLoadProjectScreen(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                Storage.Account accountStorage = new Storage.Account();
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project", "You don't have sufficient rights to configure Phabrico");
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
 
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project", "You don't have sufficient rights to configure Phabrico");
 
             Storage.Project projectStorage = new Storage.Project();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -143,19 +136,12 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/query")]
         public JsonMessage HttpPostPopulateTableData(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/query", "You don't have sufficient rights to configure Phabrico");
-
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/query", "You don't have sufficient rights to configure Phabrico");
 
             int totalNumberSelected;
             bool noneProjectSelected;
@@ -217,18 +203,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/disallow")]
         public void HttpPostDisallowProject(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+
             SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/disallow", "You don't have sufficient rights to configure Phabrico");
-
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/disallow", "You don't have sufficient rights to configure Phabrico");
 
             string projectToken = browser.Session.FormVariables["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -247,17 +225,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/select")]
         public void HttpPostSelectProject(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/select", "You don't have sufficient rights to configure Phabrico");
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
 
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/select", "You don't have sufficient rights to configure Phabrico");
 
             string projectToken = browser.Session.FormVariables["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -276,18 +247,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/unselect")]
         public void HttpPostUnselectProject(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+
             SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/unselect", "You don't have sufficient rights to configure Phabrico");
-
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/unselect", "You don't have sufficient rights to configure Phabrico");
 
             string projectToken = browser.Session.FormVariables["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -315,20 +278,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/setcolor")]
         public JsonMessage HttpPostSetColor(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project", "You don't have sufficient rights to configure Phabrico");
+
             try
             {
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-                    Storage.Account accountStorage = new Storage.Account();
-                    if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project", "You don't have sufficient rights to configure Phabrico");
-
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
                     string projectToken = browser.Session.FormVariables["token"];

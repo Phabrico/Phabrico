@@ -30,7 +30,7 @@
                         "view": "no-one",
                         "edit": "no-one"
                     }
-                },
+                }
             }, {
                 "id": 2,
                 "type": "FILE",

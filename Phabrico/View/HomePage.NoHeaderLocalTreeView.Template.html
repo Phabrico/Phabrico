@@ -5,29 +5,30 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
       <meta name="google" content="notranslate">
+      <base href="@@PHABRICO-ROOTPATH@@" />
       <title>Phabrico</title>
-      <link rel="preload" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="preload" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="preload" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="preload" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css">
-      <link rel="preload" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="preload" href="/css/theme.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="stylesheet" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
-      <link rel="stylesheet" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
-      <link rel="shortcut icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
-      <script src="/scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
-      <script defer src="/scripts/highlight.min.js?version=@@PHABRICO-VERSION@@"></script>
+      <link rel="preload" href="css/font-faces.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="css/font-awesome.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="css/phabrico.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="css/responsive.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css">
+      <link rel="preload" href="css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="css/theme.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="stylesheet" href="css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="icon" href="favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="shortcut icon" href="favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <script src="scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+      <script defer src="scripts/highlight.min.js?version=@@PHABRICO-VERSION@@"></script>
       <script>
           window.addEventListener('load', function() {
                  var hljsCssFile = 'vs-modified.css';
                  if ('@@THEME@@' == 'dark') hljsCssFile = 'vs2015-modified.css';
                  var link = document.createElement( "link" );
-                 link.href = '/css/highlight.js/' + hljsCssFile;
+                 link.href = 'css/highlight.js/' + hljsCssFile;
                  link.type = "text/css";
                  link.rel = "stylesheet";
                  link.media = "screen,print";

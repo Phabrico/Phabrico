@@ -55,9 +55,6 @@ namespace Phabrico.Plugin.Model
                     {
                         Branch = repo.Head.FriendlyName;
 
-                        var x = repo.Branches.ElementAt(0).Commits.ToArray();
-                        var y = repo.Branches.ElementAt(0).TrackingDetails;
-
                         LibGit2Sharp.StatusOptions statusOptions = new LibGit2Sharp.StatusOptions();
                         statusOptions.IncludeUnaltered = true;
                         statusOptions.ExcludeSubmodules = true;
@@ -67,14 +64,6 @@ namespace Phabrico.Plugin.Model
                         NumberOfRemovedFiles = Status.Removed.Count() + Status.Missing.Count();
                         NumberOfRenamedFiles = Status.RenamedInIndex.Count() + Status.RenamedInWorkDir.Count();
                         NumberOfUntrackedFiles = Status.Untracked.Count();
-
-                        var qx = repo.Branches.ToList();
-                        var qy = repo.Branches.Select(c => new
-                        {
-                            name = c.FriendlyName,
-                            aheadBy = c.TrackingDetails.AheadBy
-                        })
-                        .ToList();
 
                         HasUnpushedCommits = repo.Branches.Any(branch => branch.TrackingDetails.AheadBy.HasValue && branch.TrackingDetails.AheadBy.Value > 0);
 

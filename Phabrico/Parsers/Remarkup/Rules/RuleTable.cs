@@ -134,7 +134,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     remarkup = remarkup.Substring(match.Length);
 
                     // process HTML further
-                    if (ProcessHtmlTable(browser, url, ref tableContent, out html))
+                    if (ProcessHtmlTable(browser, database, url, ref tableContent, out html))
                     {
                         Length = match.Length;
                         return true;
@@ -146,7 +146,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             else
             {
                 // If content is a HTML table, process it further
-                return ProcessHtmlTable(browser, url, ref remarkup, out html);
+                return ProcessHtmlTable(browser, database, url, ref remarkup, out html);
             }
         }
 
@@ -154,11 +154,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// Do some post-processing on the table data (e.g. formatting of table cells, ...)
         /// </summary>
         /// <param name="browser">Reference to browser</param>
+        /// <param name="database">Reference to database</param>
         /// <param name="url">URL from where the content origins from</param>
         /// <param name="remarkup">Content to be validated</param>
         /// <param name="html">Generated HTML (if success)</param>
         /// <returns>True if content was HTML table</returns>
-        private bool ProcessHtmlTable(Browser browser, string url, ref string remarkup, out string html)
+        private bool ProcessHtmlTable(Browser browser, Storage.Database database, string url, ref string remarkup, out string html)
         {
             html = "";
 
@@ -173,111 +174,84 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
             else
             {
-                string tokenId = browser.GetCookie("token");
-                if (tokenId != null)
+                Storage.Account accountStorage = new Storage.Account();
+                Account existingAccount = accountStorage.WhoAmI(database);
+
+                string[] concealedHeaders = existingAccount.Parameters.ColumnHeadersToHide.Select(columnHeaderToHide => columnHeaderToHide.ToLower()).ToArray();
+                List<int> concealedColumnIndices = new List<int>();
+                List<int> concealedHeaderIndices = new List<int>();
+
+                tableContent = "<table class='remarkup-table'>\n";
+                foreach (Match row in rows.OfType<Match>())
                 {
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-                    string encryptionKey = token?.EncryptionKey;
+                    List<Match> tableRowData = RegexSafe.Matches(row.Value, "<(th)>([^<]*)</th>|<(td)>([^<]*)</td>", RegexOptions.Singleline).OfType<Match>().ToList();
+                    bool firstCellIsHeader = false;
+                    bool allCellsAreHeaders = false;
 
-                    if (string.IsNullOrEmpty(encryptionKey) == false)
+                    if (tableRowData.Any())
                     {
-                        Storage.Account accountStorage = new Storage.Account();
-                        using (Storage.Database database = new Storage.Database(null))
+                        firstCellIsHeader = tableRowData[0].Groups[1].Value.Equals("th");
+                        allCellsAreHeaders = tableRowData.All(cellData => cellData.Groups[1].Value.Equals("th"));
+
+                        if (allCellsAreHeaders)
                         {
-                            UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
+                            concealedColumnIndices.AddRange(tableRowData.Where(headerData => concealedHeaders.Contains(headerData.Groups[2].Value.Trim().ToLower()))
+                                                                        .Select(headerData => tableRowData.IndexOf(headerData))
+                                                                        .ToArray());
 
-                            // unmask encryption key
-                            encryptionKey = Encryption.XorString(encryptionKey, publicXorCipher);
+                            concealedHeaderIndices.AddRange(concealedColumnIndices);
                         }
-
-                        using (Storage.Database database = new Storage.Database(encryptionKey))
+                        else
+                        if (firstCellIsHeader && concealedHeaders.Contains(tableRowData[0].Groups[2].Value.Trim().ToLower()))
                         {
-                            // unmask private encryption key
-                            if (token.PrivateEncryptionKey != null)
-                            {
-                                UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                                database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                            }
-
-                            Account existingAccount = accountStorage.Get(database, SessionManager.GetToken(browser));
-
-                            string[] concealedHeaders = existingAccount.Parameters.ColumnHeadersToHide.Select(columnHeaderToHide => columnHeaderToHide.ToLower()).ToArray();
-                            List<int> concealedColumnIndices = new List<int>();
-                            List<int> concealedHeaderIndices = new List<int>();
-
-                            tableContent = "<table class='remarkup-table'>\n";
-                            foreach (Match row in rows.OfType<Match>())
-                            {
-                                List<Match> tableRowData = RegexSafe.Matches(row.Value, "<(th)>([^<]*)</th>|<(td)>([^<]*)</td>", RegexOptions.Singleline).OfType<Match>().ToList();
-                                bool firstCellIsHeader = false;
-                                bool allCellsAreHeaders = false;
-
-                                if (tableRowData.Any())
-                                {
-                                    firstCellIsHeader = tableRowData[0].Groups[1].Value.Equals("th");
-                                    allCellsAreHeaders = tableRowData.All(cellData => cellData.Groups[1].Value.Equals("th"));
-
-                                    if (allCellsAreHeaders)
-                                    {
-                                        concealedColumnIndices.AddRange(tableRowData.Where(headerData => concealedHeaders.Contains(headerData.Groups[2].Value.Trim().ToLower()))
-                                                                                    .Select(headerData => tableRowData.IndexOf(headerData))
-                                                                                    .ToArray());
-
-                                        concealedHeaderIndices.AddRange(concealedColumnIndices);
-                                    }
-                                    else
-                                    if (firstCellIsHeader && concealedHeaders.Contains(tableRowData[0].Groups[2].Value.Trim().ToLower()))
-                                    {
-                                        concealedHeaderIndices.AddRange(tableRowData.Where(cellData => cellData.Groups[3].Value.Equals("td"))
-                                                                                    .Select(cellData => tableRowData.IndexOf(cellData))
-                                                                                    .ToArray());
-                                    }
-                                }
-
-                                tableContent += "  <tr>\n";
-
-                                int cellIndex = 0;
-                                MatchCollection rowCells = RegexSafe.Matches(row.Value, @"(\<(td|th)[^>]*\>)(.*?(?<!\</(td|th)\>))\</(td|th)\>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-                                RemarkupParserOutput remarkupParserOutput;
-                                foreach (Match cell in rowCells.OfType<Match>())
-                                {
-                                    string cellType = HttpUtility.HtmlEncode(cell.Groups[2].Value);
-                                    string cellValue = Engine.ToHTML(this, database, browser, url, cell.Groups[3].Value.Trim(' ', '\r'), out remarkupParserOutput, false);
-                                    string cellConcealed = cellType.Equals("td") && concealedHeaderIndices.Contains(cellIndex) ? " class='concealed'" : "";
-
-                                    LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-
-                                    tableContent += string.Format("    <{0}{1}>{2}</{0}>\n", cellType, cellConcealed, cellValue.Replace("\r", "").Replace("\n", "<br>"));
-                                    cellIndex++;
-                                }
-
-                                tableContent += "  </tr>\n";
-
-                                concealedHeaderIndices.Clear();
-                                concealedHeaderIndices.AddRange(concealedColumnIndices);
-                            }
-
-                            tableContent += "</table>\n";
+                            concealedHeaderIndices.AddRange(tableRowData.Where(cellData => cellData.Groups[3].Value.Equals("td"))
+                                                                        .Select(cellData => tableRowData.IndexOf(cellData))
+                                                                        .ToArray());
                         }
-
-                        Match regexTableContentWithFirstRowAsHeaders = RegexSafe.Match(tableContent, "(<table[^>]*>)([^<]*<tr>([^<]*<th>[^<]*</th>)*[^<]*</tr>)[^<]+((<tr>.+?</tr>[^<]*)*)", RegexOptions.Singleline);
-                        if (regexTableContentWithFirstRowAsHeaders.Success)
-                        {
-                            tableContent = regexTableContentWithFirstRowAsHeaders.Groups[1].Value
-                                         + "\n<thead>" + regexTableContentWithFirstRowAsHeaders.Groups[2].Value + "\n</thead>"
-                                         + "\n<tbody>\n  " + regexTableContentWithFirstRowAsHeaders.Groups[4].Value + "</tbody>\n"
-                                         + "</table>\n";
-                        }
-
-                        remarkup = remarkup.Substring(match.Length);
-
-                        html = tableContent;
-
-                        Length = match.Length;
-
-                        return true;
                     }
+
+                    tableContent += "  <tr>\n";
+
+                    int cellIndex = 0;
+                    MatchCollection rowCells = RegexSafe.Matches(row.Value, @"(\<(td|th)[^>]*\>)(.*?(?<!\</(td|th)\>))\</(td|th)\>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                    RemarkupParserOutput remarkupParserOutput;
+                    foreach (Match cell in rowCells.OfType<Match>())
+                    {
+                        string cellType = HttpUtility.HtmlEncode(cell.Groups[2].Value);
+                        string cellValue = Engine.ToHTML(this, database, browser, url, cell.Groups[3].Value.Trim(' ', '\r'), out remarkupParserOutput, false);
+                        string cellConcealed = cellType.Equals("td") && concealedHeaderIndices.Contains(cellIndex) ? " class='concealed'" : "";
+
+                        LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+
+                        tableContent += string.Format("    <{0}{1}>{2}</{0}>\n", cellType, cellConcealed, cellValue.Replace("\r", "").Replace("\n", "<br>"));
+                        cellIndex++;
+                    }
+
+                    tableContent += "  </tr>\n";
+
+                    concealedHeaderIndices.Clear();
+                    concealedHeaderIndices.AddRange(concealedColumnIndices);
                 }
+
+                tableContent += "</table>\n";
+
+
+                Match regexTableContentWithFirstRowAsHeaders = RegexSafe.Match(tableContent, "(<table[^>]*>)([^<]*<tr>([^<]*<th>[^<]*</th>)*[^<]*</tr>)[^<]+((<tr>.+?</tr>[^<]*)*)", RegexOptions.Singleline);
+                if (regexTableContentWithFirstRowAsHeaders.Success)
+                {
+                    tableContent = regexTableContentWithFirstRowAsHeaders.Groups[1].Value
+                                 + "\n<thead>" + regexTableContentWithFirstRowAsHeaders.Groups[2].Value + "\n</thead>"
+                                 + "\n<tbody>\n  " + regexTableContentWithFirstRowAsHeaders.Groups[4].Value + "</tbody>\n"
+                                 + "</table>\n";
+                }
+
+                remarkup = remarkup.Substring(match.Length);
+
+                html = tableContent;
+
+                Length = match.Length;
+
+                return true;
             }
 
             return false;

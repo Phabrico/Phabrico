@@ -29,26 +29,19 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/configure", ServerCache = false)]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound();
+
             Storage.Account accountStorage = new Storage.Account();
             if (accountStorage != null)
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
 
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
                     if (token.AuthenticationFactor == AuthenticationFactor.Public) throw new Phabrico.Exception.AccessDeniedException("/configure", "You don't have sufficient rights to configure Phabrico");
 
-                    // unmask private encryption key
-                    UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                    database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
+                    // set private encryption key
+                    database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                     Account existingAccount = accountStorage.Get(database, token);
                     if (existingAccount != null)
@@ -127,6 +120,8 @@ namespace Phabrico.Controllers
                         viewPage.SetText("SHOW-FIRSTTIME-HELP", "No");
                     }
 
+                    viewPage.Customize(browser);
+
                     foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                     {
                         if (plugin.State == Plugin.PluginBase.PluginState.Loaded)
@@ -198,27 +193,20 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/configure")]
         public void HttpPostSave(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound();
+
             try
             {
                 Storage.Account accountStorage = new Storage.Account();
 
                 SessionManager.Token token = SessionManager.GetToken(browser);
 
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
-
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
                     if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "You don't have sufficient rights to configure Phabrico");
 
-                    // unmask private encryption key
-                    UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                    database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
+                    // set private encryption key
+                    database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                     Account existingAccount = accountStorage.Get(database, token);
                     if (existingAccount != null)
@@ -306,7 +294,12 @@ namespace Phabrico.Controllers
 
                         existingAccount.Theme = browser.Session.FormVariables["theme"];
 
-                        existingAccount.Parameters.DarkenBrightImages = (DarkenImageStyle)Enum.Parse(typeof(DarkenImageStyle), (string)browser.Session.FormVariables["darkenImages"]);
+                        string darkenImages = "Disabled";
+                        if (browser.Session.FormVariables.ContainsKey("darkenImages"))
+                        {
+                            darkenImages = (string)browser.Session.FormVariables["darkenImages"];
+                        }
+                        existingAccount.Parameters.DarkenBrightImages = (DarkenImageStyle)Enum.Parse(typeof(DarkenImageStyle), darkenImages);
 
                         existingAccount.Parameters.ClipboardCopyForCodeBlock = bool.Parse((string)browser.Session.FormVariables["clipboardCopyForCodeBlock"]);
                         existingAccount.Parameters.UITranslation = bool.Parse((string)browser.Session.FormVariables["uiTranslation"]);
@@ -357,25 +350,18 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/configure/table-headers")]
         public void HttpPostSaveConfidentialTableHeaders(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound();
+
             Storage.Account accountStorage = new Storage.Account();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "You don't have sufficient rights to configure Phabrico");
 
-                // unmask private encryption key
-                UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
+                // set private encryption key
+                database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                 Account existingAccount = accountStorage.Get(database, token);
                 if (existingAccount != null)

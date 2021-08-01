@@ -5,19 +5,33 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
       <meta name="google" content="notranslate">
+      <base href="@@PHABRICO-ROOTPATH@@" />
       <title>Phabrico</title>
-      <link rel="stylesheet" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css">
-      <link rel="stylesheet" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css">
-      <link rel="stylesheet" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
-      <link rel="icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
-      <link rel="shortcut icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="stylesheet" href="css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="icon" href="favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="shortcut icon" href="favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <style>@@GLOBAL-CSS@@</style>
     </head>
     <body>
         <div id="headerBar" style="background-color: #4a5f88; color: #fff;">
-            <a style="text-decoration: none;">
+            <a href="" style="text-decoration: none;">
+                @{IF @@DEFAULT-APPLICATION-NAME@@=True@
                 <span class="phabrico-logo" style=""></span>
                 <span class="phabrico-wordmark">Phabrico</span>
+                }@
+                @{ELSE
+                    <div style="display:flex; align-items : center;">
+                        @{IF NOT @@CUSTOM-APPLICATION-LOGO@@=@
+                        <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@">
+                        }@
+                        @{IF NOT @@CUSTOM-APPLICATION-NAME@@=@
+                        <span style="@@CUSTOM-APPLICATION-NAME-STYLE@@">@@CUSTOM-APPLICATION-NAME@@</span>
+                        }@
+                    </div>
+                }@
             </a>
         </div>
 

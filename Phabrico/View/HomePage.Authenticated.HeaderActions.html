@@ -1,12 +1,13 @@
 <div style="float:right;display: table; position: absolute; top: 0; right: 0; height: 100%;">
     <div style="display: table-cell; vertical-align: middle;">
-        <div style="margin-left: auto; margin-right: auto;padding-right: 10px;">
+        <div style="margin-left: auto; margin-right: auto;padding-right: 10px;height: 44px; display: flex;justify-content: center;align-items: center;">
 
+        @{IF @@HIDE-USER-MENU@@=False@
             <div class="user-menu" tabindex="-1">
                 <div class="link">
                     <div class="icon">
                         @{IF @@AUTHENTICATION-FACTOR@@=Public@
-                            <span><img alt="configuration" src="/images/cogwheel.png?version=@@PHABRICO-VERSION@@" width="17" height="17" style="margin-top:3px"></span>
+                            <span><img alt="configuration" src="images/cogwheel.png?version=@@PHABRICO-VERSION@@" width="17" height="17" style="margin-top:3px"></span>
                         }@
                         @{ELSE
                             <span>@@ICON-USERNAME@@</span>
@@ -16,11 +17,13 @@
                 </div>
                 <div class="content">
                     <ul>
+                        @{IF @@ACCESS-HIDE-CHANGE-LANGUAGE@@=False@
                         <li class="change-language">
                             <a href="#" style="margin-top:15px;" onclick="showChangeLanguageDialog();">
                                 <span>Change language</span>
                             </a>
                         </li>
+                        }@
                         @{IF @@AUTHENTICATION-FACTOR@@=Knowledge@
                         <li class="change-password">
                             <a href="#" style="margin-top:15px;" onclick="showChangePasswordDialog();">
@@ -30,7 +33,7 @@
                         }@
                         @{IF NOT @@AUTHENTICATION-FACTOR@@=Ownership@
                         <li class="logout">
-                            <a href="/logout" style="margin-top:15px;">
+                            <a href="logout" style="margin-top:15px;">
                                 <span>Log out</span>
                             </a>
                         </li>
@@ -38,7 +41,9 @@
                     </ul>
                 </div>
             </div>
+        }@
 
+        @{IF @@ACCESS-HIDE-SEARCH@@=False@
             <input id="searchPhabrico" aria-label="Search" autocomplete="off" type="text" placeholder="Search" class="form-control search-box" min-length="4" oninput="phabrico.search.Show(this.value);" onfocus="select();" onmouseup="return false;" onblur="phabrico.search.Hide();" />
 
             <span style="position: absolute; top: 50%; right: 25px; margin-top: -12px; text-decoration:none;">
@@ -46,7 +51,7 @@
             </span>
 
             <span>&nbsp;</span>                
-
+        }@
         </div>
     </div>
 </div>
@@ -119,6 +124,7 @@
 </form>
 
 <script>
+@{IF @@ACCESS-HIDE-CHANGE-LANGUAGE@@=False@
     function showChangeLanguageDialog()
     {
         var dlgChangeLanguage = document.querySelector(".dlgChangeLanguage");
@@ -140,7 +146,7 @@
     function submitNewLanguage(form) {
         var data = new FormData(form);
         var http = new XMLHttpRequest();
-        http.open('POST', "/auth/language/", true);
+        http.open('POST', "auth/language/", true);
         http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         http.onload = function () {
             if (this.responseText.length > 0) {
@@ -157,7 +163,8 @@
         http.send(data);
     }
 
-    newLanguage.addEventListener('input', newLanguageInputChanged);
+    newLanguage.addEventListener('change', newLanguageInputChanged);
+}@
 
 @{IF @@AUTHENTICATION-FACTOR@@=Knowledge@
     function showChangePasswordDialog()
@@ -207,15 +214,17 @@
     }
 
     function submitNewPassword(form) {
+        phabrico.autoLogOff.disable();
+
         var data = new FormData(form);
         var http = new XMLHttpRequest();
-        http.open('POST', "/auth/password/", true);
+        http.open('POST', "auth/password/", true);
         http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         http.onload = function () {
             if (this.responseText.length > 0) {
                 var jsonResponse = JSON.parse(this.responseText);
                 if (jsonResponse.Status === "OK") {
-                    window.location = "/logout";
+                    window.location = "logout";
                     return;
                 }
 

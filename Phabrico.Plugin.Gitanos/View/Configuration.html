@@ -195,7 +195,7 @@
         configuration.append('gitStates', checkedGitStates);
 
         // send to HTTP server
-        xmlhttp.open('POST', "/gitanos/configuration/save/", true);
+        xmlhttp.open('POST', "gitanos/configuration/save/", true);
         xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         xmlhttp.send(configuration);
     }

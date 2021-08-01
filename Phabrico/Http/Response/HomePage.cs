@@ -21,9 +21,6 @@ namespace Phabrico.Http.Response
             /// </summary>
             Initialized,
 
-
-            InitializationError,
-
             /// <summary>
             /// Username and password are valid
             /// </summary>
@@ -136,34 +133,25 @@ namespace Phabrico.Http.Response
 
                     string encryptionKey = token.EncryptionKey;
 
-                    using (Storage.Database database = new Storage.Database(null))
-                    {
-                        UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                        // unmask public encryption key
-                        encryptionKey = Encryption.XorString(encryptionKey, publicXorCipher);
-                    }
-
                     using (Storage.Database database = new Storage.Database(encryptionKey))
                     {
-                        if (token.PrivateEncryptionKey != null)
-                        {
-                            // unmask private encryption key
-                            UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                            database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
-                        }
-
                         authenticationFactor = database.GetAuthenticationFactor();
 
                         database.ClearOldSessionVariables(browser);
 
                         accountData = accountStorage.WhoAmI(database);
 
+                        // get favorites
                         string htmlFavoriteObjects = "";
                         long previousFavoriteIndex = 0;
                         Storage.Phriction phrictionStorage = new Storage.Phriction();
                         Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
-                        List<Phabricator.Data.Phriction> favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, accountData.UserName).ToList();
+                        List<Phabricator.Data.Phriction> favoritePhrictionDocuments = new List<Phabricator.Data.Phriction>();
+                        if (HttpServer.Customization.HidePhrictionFavorites == false)
+                        {
+                            favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, accountData.UserName).ToList();
+                        }
+
                         foreach (Phabricator.Data.Phriction favoritePhrictionDocument in favoritePhrictionDocuments)
                         {
                             // check if we have a splitter
@@ -234,7 +222,7 @@ namespace Phabrico.Http.Response
                                                                     <span class='cut-favorite-item fa fa-cut'></span>
                                                                 </span>
                                                                 <span class='link'>
-                                                                    <a href=""/w/{2}"">{3}</a>
+                                                                    <a href=""w/{2}"">{3}</a>
                                                                 </span>
                                                             </div>",
                                                         previousItemIsSplitter ? " first-of-fav-group" : "",
@@ -246,7 +234,8 @@ namespace Phabrico.Http.Response
                             previousFavoriteIndex = favoritePhrictionDocument.DisplayOrderInFavorites;
                         }
 
-                        htmlPartialViewPage.SetContent(GetViewData("HomePage.Authenticated"));
+                        htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.Authenticated"));
+                        htmlPartialViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PHABRICO-BUILD-DATE", Controllers.Controller.FormatDateTimeOffset(VersionInfo.BuildDateTimeUtc.ToLocalTime(), browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.SetText("LAST-SYNCHRONIZATION-TIME", HttpServer.GetLatestSynchronizationTime(token, browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
@@ -262,15 +251,18 @@ namespace Phabrico.Http.Response
                         htmlPartialViewPage.SetText("PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE", ConvertFileSizeIntoReadableString(Storage.File.MaximumSize(database)), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PHABRICO-NUMBER-UNCOMMITTED-OBJECTS", Storage.Stage.CountUncommitted(database).ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PHABRICO-NUMBER-FROZEN-OBJECTS", Storage.Stage.CountFrozen(database).ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        htmlPartialViewPage.SetText("AUTENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.SetText("HAS-FAVORITES", htmlFavoriteObjects.Any() ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.SetText("FAVORITES", htmlFavoriteObjects, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.Customize(browser);
                         htmlPartialViewPage.Merge();
 
-                        htmlViewPage.SetContent(GetViewData("HomePage.TreeView.Template"));
+                        htmlViewPage.SetContent(browser, GetViewData("HomePage.TreeView.Template"));
                         htmlViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity.ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.Customize(browser);
+
                         foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                         {
                             Plugin.PluginTypeAttribute pluginType = plugin.GetType().GetCustomAttributes(typeof(Plugin.PluginTypeAttribute), true).FirstOrDefault() as Plugin.PluginTypeAttribute;
@@ -295,6 +287,7 @@ namespace Phabrico.Http.Response
                                 }
                             }
                         }
+
                         htmlViewPage.Merge();
                         htmlPartialViewPage = htmlViewPage;
 
@@ -311,14 +304,16 @@ namespace Phabrico.Http.Response
                             browser.Session.Locale = languageCookie;
                         }
 
-                        htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
+                        htmlPartialHeaderViewPage.SetContent(browser, GetViewData("HomePage.Authenticated.HeaderActions"));
                         htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialHeaderViewPage.Customize(browser);
                         htmlPartialHeaderViewPage.Merge();
                     }
 
                     htmlViewPage = new HtmlViewPage(browser);
-                    htmlViewPage.SetContent(GetViewData("HomePage.Template"));
+                    htmlViewPage.SetContent(browser, GetViewData("HomePage.Template"));
                     htmlViewPage.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("THEME-STYLE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("HEADERACTIONS", htmlPartialHeaderViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -327,6 +322,7 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-Authenticated", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.Merge();
                     return htmlViewPage.Content;
 
@@ -335,7 +331,7 @@ namespace Phabrico.Http.Response
                     {
                         authenticationFactor = database.GetAuthenticationFactor();
 
-                        htmlPartialViewPage.SetContent(GetViewData("HomePage.AuthenticationDialog"));
+                        htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.AuthenticationDialog"));
                         htmlPartialViewPage.SetText("REDIRECT", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("USERNAME", browser.Session.FormVariables["username"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PASSWORD", browser.Session.FormVariables["password"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -344,14 +340,17 @@ namespace Phabrico.Http.Response
                         htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.Merge();
 
-                        htmlViewPage.SetContent(GetViewData("HomePage.Template"));
+                        htmlViewPage.SetContent(browser, GetViewData("HomePage.Template"));
+                        htmlViewPage.Customize(browser);
                         htmlViewPage.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("THEME-STYLE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("HEADERACTIONS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-AuthenticationError", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.Merge();
                     }
                     return htmlViewPage.Content;
@@ -369,30 +368,29 @@ namespace Phabrico.Http.Response
                     {
                         authenticationFactor = database.GetAuthenticationFactor();
                         token = HttpServer.Session.GetToken(configurationController.TokenId);
-                        UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
-                        database.PrivateEncryptionKey = Encryption.XorString(token.PrivateEncryptionKey, privateXorCipher);
+                        database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
                         Phabricator.Data.Account newAccount = accountStorage.Get(database, token);
-                        token.EncryptionKey = Encryption.XorString(database.EncryptionKey, newAccount.PublicXorCipher);
 
                         accountStorage.UpdateToken(database, newAccount.Token, newAccount.Token, newAccount.PublicXorCipher, newAccount.PrivateXorCipher);
 
                         configurationViewPage = new HtmlViewPage(HttpServer, browser, true, "configure", null);
-                        configurationController.EncryptionKey = Encryption.XorString(configurationController.EncryptionKey, newAccount.PublicXorCipher);
                         configurationController.HttpGetLoadParameters(HttpServer, browser, ref configurationViewPage, null, null);
                     }
 
-                    htmlPartialViewPage.SetContent(GetViewData("HomePage.TreeView.Template"));
+                    htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.TreeView.Template"));
                     htmlPartialViewPage.SetText("CONTENT", configurationViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlPartialViewPage.Merge();
 
-                    htmlPartialHeaderViewPage.SetContent(GetViewData("HomePage.Authenticated.HeaderActions"));
+                    htmlPartialHeaderViewPage.SetContent(browser, GetViewData("HomePage.Authenticated.HeaderActions"));
                     htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlPartialHeaderViewPage.Merge();
 
-                    htmlViewPage.SetContent(GetViewData("HomePage.Template"));
+                    htmlViewPage.SetContent(browser, GetViewData("HomePage.Template"));
+                    htmlViewPage.Customize(browser);
                     htmlViewPage.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("THEME-STYLE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("HEADERACTIONS", htmlPartialHeaderViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -402,33 +400,12 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("SYNCHRONIZE", "True", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-EmptyDatabase", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlViewPage.Merge();
-                    return htmlViewPage.Content;
-
-                case HomePageStatus.InitializationError:
-                    htmlPartialViewPage.SetContent(GetViewData("HomePage.AuthenticationDialogCreateUser"));
-                    htmlPartialViewPage.SetText("USERNAME", browser.Session.FormVariables["username"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlPartialViewPage.SetText("PASSWORD", browser.Session.FormVariables["password"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlPartialViewPage.SetText("CONDUITAPITOKEN", browser.Session.FormVariables["conduitApiToken"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlPartialViewPage.SetText("PHABRICATORURL", browser.Session.FormVariables["phabricatorUrl"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlPartialViewPage.SetText("STYLE.DISPLAY.ERROR", "flex", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlPartialViewPage.SetText("ERRORMESSAGE", "Username or password are incorrect.", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlPartialViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                    htmlPartialViewPage.Merge();
-
-                    htmlViewPage.SetContent(GetViewData("HomePage.Template"));
-                    htmlViewPage.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlViewPage.SetText("HEADERACTIONS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                    htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-InitializationError");
-                    htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.Merge();
                     return htmlViewPage.Content;
 
                 case HomePageStatus.Initialized:
-                    htmlPartialViewPage.SetContent(GetViewData("HomePage.AuthenticationDialogCreateUser"));
+                    htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.AuthenticationDialogCreateUser"));
                     htmlPartialViewPage.SetText("USERNAME", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlPartialViewPage.SetText("PASSWORD", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlPartialViewPage.SetText("CONDUITAPITOKEN", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -438,14 +415,17 @@ namespace Phabrico.Http.Response
                     htmlPartialViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlPartialViewPage.Merge();
 
-                    htmlViewPage.SetContent(GetViewData("HomePage.Template"));
+                    htmlViewPage.SetContent(browser, GetViewData("HomePage.Template"));
+                    htmlViewPage.Customize(browser);
                     htmlViewPage.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("THEME-STYLE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("HEADERACTIONS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-Initialized", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.Merge();
                     return htmlViewPage.Content;
 
@@ -455,7 +435,7 @@ namespace Phabrico.Http.Response
                     {
                         authenticationFactor = database.GetAuthenticationFactor();
 
-                        htmlPartialViewPage.SetContent(GetViewData("HomePage.AuthenticationDialog"));
+                        htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.AuthenticationDialog"));
                         htmlPartialViewPage.SetText("REDIRECT", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("USERNAME", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PASSWORD", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -466,14 +446,17 @@ namespace Phabrico.Http.Response
                         htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.Merge();
 
-                        htmlViewPage.SetContent(GetViewData("HomePage.Template"));
+                        htmlViewPage.SetContent(browser, GetViewData("HomePage.Template"));
+                        htmlViewPage.Customize(browser);
                         htmlViewPage.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("THEME-STYLE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("HEADERACTIONS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("SYNCHRONIZE", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-AuthenticationDialog", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.Merge();
                     }
                     return htmlViewPage.Content;
@@ -497,18 +480,56 @@ namespace Phabrico.Http.Response
             if (Status == HomePageStatus.Authenticated && string.IsNullOrEmpty(redirectUrl) == false)
             {
                 HtmlViewPage htmlViewPage = new HtmlViewPage(browser);
-                htmlViewPage.SetContent(GetViewData("HomePage.Template"));
+                htmlViewPage.SetContent(browser, GetViewData("HomePage.Template"));
                 htmlViewPage.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                htmlViewPage.SetText("THEME-STYLE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("LOCALE", browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("HEADERACTIONS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("CONTENT", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("CONTENT-VIEW-NAME", "HomePage-Template", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                htmlViewPage.Merge();
                 html = htmlViewPage.Content;
             }
             else
             {
-                html = GetPageContent(browser);
+
+                if (Status == HomePageStatus.Authenticated &&
+                    HttpServer.Customization.HideConfig &&
+                    HttpServer.Customization.HideFiles &&
+                    HttpServer.Customization.HideManiphest &&
+                    HttpServer.Customization.HideOfflineChanges &&
+                    HttpServer.Customization.HideProjects &&
+                    HttpServer.Customization.HideUsers &&
+                    HttpServer.Customization.HidePhriction == false &&
+                    Http.Server.Plugins.All(plugin => plugin.IsVisible(browser) == false)
+                   )
+                {
+                    HttpRedirect httpRedirect = new HttpRedirect(HttpServer, Browser, Http.Server.RootPath + "w");
+                    httpRedirect.Send(Browser);
+                    return;
+                }
+                else
+                if (Status == HomePageStatus.Authenticated &&
+                    HttpServer.Customization.HideConfig &&
+                    HttpServer.Customization.HideFiles &&
+                    HttpServer.Customization.HidePhriction &&
+                    HttpServer.Customization.HideOfflineChanges &&
+                    HttpServer.Customization.HideProjects &&
+                    HttpServer.Customization.HideUsers &&
+                    HttpServer.Customization.HideManiphest == false &&
+                    Http.Server.Plugins.All(plugin => plugin.IsVisible(browser) == false)
+                   )
+                {
+                    HttpRedirect httpRedirect = new HttpRedirect(HttpServer, Browser, Http.Server.RootPath + "maniphest");
+                    httpRedirect.Send(Browser);
+                    return;
+                }
+                else
+                {
+                    html = GetPageContent(browser);
+                }
             }
 
             // send data

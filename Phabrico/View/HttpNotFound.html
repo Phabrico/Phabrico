@@ -5,16 +5,17 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
       <meta name="google" content="notranslate">
+      <base href="@@PHABRICO-ROOTPATH@@" />
       <title>Phabrico</title>
-      <link rel="stylesheet" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
-      <link rel="stylesheet" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
-      <link rel="shortcut icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
-      <script src="/scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+      <link rel="stylesheet" href="css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="icon" href="favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="shortcut icon" href="favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <script src="scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
 
       <style>
         .container {
@@ -33,6 +34,8 @@
             text-align: center;
             font-size: 2em;
         }
+      
+        @@GLOBAL-CSS@@
       </style>
     </head>
     <body>
@@ -42,9 +45,21 @@
             document.body.dataset.locale = '@@LOCALE@@';
         </script>
         <div id="headerBar">
-            <a href="/" style="text-decoration: none;">
+            <a href="" style="text-decoration: none;">
+                @{IF @@DEFAULT-APPLICATION-NAME@@=True@
                 <span class="phabrico-logo" style=""></span>
                 <span class="phabrico-wordmark">Phabrico</span>
+                }@
+                @{ELSE
+                    <div style="display:flex; align-items : center;">
+                        @{IF NOT @@CUSTOM-APPLICATION-LOGO@@=@
+                        <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@">
+                        }@
+                        @{IF NOT @@CUSTOM-APPLICATION-NAME@@=@
+                        <span style="@@CUSTOM-APPLICATION-NAME-STYLE@@">@@CUSTOM-APPLICATION-NAME@@</span>
+                        }@
+                    </div>
+                }@
             </a>
         </div>
 
@@ -53,7 +68,9 @@
                 <p style="font-size: 10em">404</p>
                 <p>Url not found:</p>
                 <pre style="max-width: unset">@@INVALID-LOCAL-URL@@</pre>
+                @{IF @@ACCESS-MASTER-DATA@@=True@
                 <p><a href="@@PHABRICATOR-URL@@">Show content in Phabricator instead</a></p>
+                }@
             </div>
         </div>
     </body>

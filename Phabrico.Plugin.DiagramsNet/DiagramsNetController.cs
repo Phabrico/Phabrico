@@ -66,15 +66,6 @@ namespace Phabrico.Plugin
             bool openedFromRemarkupEditor = false;
             Phabricator.Data.Account.DarkenImageStyle darkenImageStyle;
 
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 if (parameters.Any())
@@ -293,15 +284,6 @@ namespace Phabrico.Plugin
                     }
 
                     Storage.Account accountStorage = new Storage.Account();
-
-                    using (Storage.Database database = new Storage.Database(null))
-                    {
-                        SessionManager.Token token = SessionManager.GetToken(browser);
-                        UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                        // unmask encryption key
-                        EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                    }
 
                     Phabricator.Data.File file;
                     using (Storage.Database database = new Storage.Database(EncryptionKey))

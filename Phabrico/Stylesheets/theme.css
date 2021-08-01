@@ -549,8 +549,8 @@ img.darkness-moderate {
 }
 
 select {
-    background: var(--textarea-background-color);
-    color: var(--textarea-color);
+    background: var(--select-background-color);
+    color: var(--select-color);
 }
 
 select:-moz-focusring {

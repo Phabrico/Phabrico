@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 
 using Newtonsoft.Json;
 using Phabrico.Miscellaneous;
@@ -12,10 +11,10 @@ namespace Phabrico.UnitTests
         public Storage.Database Database;
         public Http.Server HttpServer;
         public Miscellaneous.HttpListenerContext HttpListenerContext;
-        public string EncryptionKey = "q%9#kpdw8,dp%k/+&hs3/<spt%-|//e;";
+        public string EncryptionKey = "p%9#kpdw:,dp%k/+%hs3/<spp%-|//e;";
         public static string Username = "johnny";
         public static string Password = "My-Secret-Password-0123456789";
-        public static string PrivateEncryptionKey = "enrr%8.rzwjc1s;4,#jitt/=\"f2w1ru9";
+        public static string PrivateEncryptionKey = "`nrr%8.r|wjc1s;4+#jitt/=*f2w1ru9";
         public Http.SessionManager.Token Token;
         public Phabricator.Data.User userWhoAmI;
         public Phabricator.Data.Account accountWhoAmI;
@@ -24,6 +23,33 @@ namespace Phabrico.UnitTests
 
         public PhabricoUnitTest()
         {
+        }
+
+        protected string ExecuteCMD(string directory, string cmd)
+        {
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo.FileName = Environment.SystemDirectory + "\\cmd.exe";
+            startInfo.Arguments = "/C CD \"" + directory + "\""
+                                + " & " + cmd
+                                + " & exit"
+                                ;
+            process.StartInfo = startInfo;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            return output;
+        }
+
+        protected virtual void Initialize(string httpRootPath = "")
+        {
+            // make sure httpRootPath is set in the correct format
+            httpRootPath = ("/" + httpRootPath).TrimEnd('/') + "/";
+
             // set local database filename
             Storage.Database.DataSource = ".\\TestRemarkupEngine";
 
@@ -37,7 +63,7 @@ namespace Phabrico.UnitTests
             Storage.Database._dbVersionInDataFile = 0;
             Database = new Storage.Database(EncryptionKey);
             Database.PrivateEncryptionKey = PrivateEncryptionKey;
-            HttpServer = new Http.Server(false, 13468);
+            HttpServer = new Http.Server(false, 13468, httpRootPath);
             HttpListenerContext = new Miscellaneous.HttpListenerContext();
             Token = HttpServer.Session.CreateToken(EncryptionKey, null);
             Token.EncryptionKey = Encryption.XorString(EncryptionKey, PublicXorCipher);
@@ -76,6 +102,7 @@ namespace Phabrico.UnitTests
             accountWhoAmI.Token = "a'=jm+ul#`~9'&mb;\" ;k,dqkowxo4,5";
             accountWhoAmI.PublicXorCipher = PublicXorCipher;
             accountWhoAmI.PrivateXorCipher = PrivateXorCipher;
+            accountWhoAmI.UserName = userWhoAmI.UserName;
             accountStorage.Add(Database, accountWhoAmI);
 
             Phabricator.Data.Project project = new Phabricator.Data.Project();
@@ -118,7 +145,7 @@ namespace Phabrico.UnitTests
             daddysPhrictionDocument.Content = "Once upon a time, I was reading my dad's story over and over again";
             daddysPhrictionDocument.DateModified = DateTimeOffset.Now;
             daddysPhrictionDocument.Name = "Story of my dad's life";
-            daddysPhrictionDocument.Path = "x/";
+            daddysPhrictionDocument.Path = "daddy/";
             daddysPhrictionDocument.Projects = project.Token;
             daddysPhrictionDocument.Subscribers = userWhoAmI.Token + "," + project.Token;
             daddysPhrictionDocument.Token = "PHID-WIKI-DADSSTORY";
@@ -130,7 +157,7 @@ namespace Phabrico.UnitTests
             grandaddysPhrictionDocument.Content = "Once upon a time, I was reading my grandfather's story over and over again";
             grandaddysPhrictionDocument.DateModified = DateTimeOffset.Now;
             grandaddysPhrictionDocument.Name = "Story of my grandfather's life";
-            grandaddysPhrictionDocument.Path = "herald/transcript/";
+            grandaddysPhrictionDocument.Path = "daddy/grandaddy/";
             grandaddysPhrictionDocument.Projects = project.Token;
             grandaddysPhrictionDocument.Subscribers = userWhoAmI.Token + "," + project.Token;
             grandaddysPhrictionDocument.Token = "PHID-WIKI-GRANDADDYSSTORY";
@@ -293,8 +320,17 @@ namespace Phabrico.UnitTests
         /// </summary>
         public virtual void Dispose()
         {
-            Database.Dispose();
-            HttpServer.Stop();
+            if (Database != null)
+            {
+                Database.Dispose();
+                Database = null;
+            }
+
+            if (HttpServer != null)
+            {
+                HttpServer.Stop();
+                HttpServer = null;
+            }
 
             System.IO.File.Delete(Storage.Database.DataSource);
         }

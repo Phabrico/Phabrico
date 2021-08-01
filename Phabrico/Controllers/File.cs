@@ -48,6 +48,7 @@ namespace Phabrico.Controllers
 
         /// <summary>
         /// This method is fired when the user clicks on the 'File Object' id in the File-objects screen
+        /// or when a file is referenced in a Phriction document or Maniphest task
         /// </summary>
         /// <param name="httpServer"></param>
         /// <param name="browser"></param>
@@ -65,15 +66,6 @@ namespace Phabrico.Controllers
                 Storage.Stage stageStorage = new Storage.Stage();
 
                 SessionManager.Token token = SessionManager.GetToken(browser);
-
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -117,21 +109,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/file/getIDForNewFile")]
         public void HttpPostIDForNewFile(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound();
+
             string jsonData;
             Storage.File fileStorage = new Storage.File();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
 
-            using (Storage.Database database = new Storage.Database(null))
-            {
-                Storage.Account accountStorage = new Storage.Account();
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
-            
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 jsonData = JsonConvert.SerializeObject(new { ID = fileStorage.GetNewID(database) });
@@ -153,21 +137,14 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/file/query")]
         public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
+            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound();
+
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
             Storage.File fileStorage = new Storage.File();
             if (fileStorage != null)
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
-
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -273,6 +250,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/file/uploadChunk")]
         public void HttpPostUploadChunk(Http.Server httpServer, Browser browser, string[] parameters)
         {
+            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound();
+
             lock (ReentrancyLock)
             {
                 int fileID = Int32.Parse(parameters[0]);
@@ -292,15 +271,6 @@ namespace Phabrico.Controllers
                                    .Replace('*', '_');
 
                 SessionManager.Token token = SessionManager.GetToken(browser);
-
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Storage.Account accountStorage = new Storage.Account();
-                    UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                    // unmask encryption key
-                    EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-                }
 
                 Storage.File fileStorage = new Storage.File();
                 using (Storage.Database database = new Storage.Database(EncryptionKey))

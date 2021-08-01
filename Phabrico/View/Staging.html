@@ -65,14 +65,18 @@ function confirmUndo()
    dlgConfirmUndo.style.display = 'none';
 
    var elem = dlgConfirmUndo.tagElement;
-   submitItem(elem, "/offline/changes/undo");
+   submitItem(elem, "offline/changes/undo");
 }
 
 function populateTable()
 {
+    if (typeof frmStaging == "undefined") {
+        return;
+    }
+
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.overrideMimeType("application/json");
-    xmlhttp.open('GET', "/offline/changes/data/", true);
+    xmlhttp.open('GET', "offline/changes/data/", true);
     xmlhttp.onload  = function() {
         var tbody = document.querySelector('#tblOfflineChanges tbody');
 
@@ -156,7 +160,7 @@ function populateTable()
             // add undo button
             cell = row.insertCell();
             cell.classList.add('action');
-            if (record.URL.startsWith('/file/data/') == false)
+            if (record.URL.startsWith('file/data/') == false)
             {
                 anchorUndo = document.createElement('a');
                 anchorUndo.href = "#" + record.Token + "[" + record.TransactionModifier + "]";
@@ -177,7 +181,7 @@ function populateTable()
             // add Freeze/Unfreeze button
             cell = row.insertCell();
             cell.classList.add('action');
-            if (record.URL.startsWith('/file/data/') == false)
+            if (record.URL.startsWith('file/data/') == false)
             {
                 anchorFreeze = document.createElement('a');
                 anchorFreeze.href = "#" + record.Token + "[" + record.TransactionModifier + "]";
@@ -207,7 +211,7 @@ function populateTable()
             // add modification action (can be a 'View changes' button or some text)
             cell = row.insertCell();
             cell.classList.add('action');
-            if (record.URL.startsWith('/file/data/') == false)
+            if (record.URL.startsWith('file/data/') == false)
             {
                 cell.style.textAlign = 'center';
 
@@ -228,7 +232,7 @@ function populateTable()
                     cell.appendChild(textNewObject);
                 } else {
                     var anchorViewChanges = document.createElement('a');
-                    anchorViewChanges.href = "/offline/changes/view/" + record.Token + "/";
+                    anchorViewChanges.href = "offline/changes/view/" + record.Token + "/";
                     anchorViewChanges.classList.add("button");
                     anchorViewChanges.classList.add("button-gray");
                     anchorViewChanges.classList.add("small");
@@ -285,7 +289,9 @@ function submitItem(item, url)
             {
                 populateTable();
 
-                updateManiphestTaskCount();
+                @{IF @@ACCESS-HIDE-MANIPHEST@@=False@
+                    updateManiphestTaskCount();
+                }@
             }
         }
         xmlhttp.open('POST', url, true);
@@ -296,16 +302,19 @@ function submitItem(item, url)
 
 function freeze(ev)
 {
-    submitItem(ev.target, "/offline/changes/freeze");
+    ev.preventDefault();
+    submitItem(ev.target, "offline/changes/freeze");
 }
 
 function undo(ev)
 {
+    ev.preventDefault();
     showUndoConfirmation(ev.target);
 }
 
 function unfreeze(ev)
 {
-    submitItem(ev.target, "/offline/changes/unfreeze");
+    ev.preventDefault();
+    submitItem(ev.target, "offline/changes/unfreeze");
 }
 </script>

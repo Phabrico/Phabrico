@@ -1,239 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Net.Sockets;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Phabrico.Miscellaneous;
 
 namespace Phabrico.UnitTests.Synchronization
 {
+    /// <summary>
+    /// Simulates a Phabricator webserver.
+    /// It will accept Conduit requests and reply to these requests
+    /// </summary>
     public class DummyPhabricatorWebServer
     {
-        private TcpListener tcpListener;
-        private bool stopAllBrowserConnectionThreads;
-        
+        private HttpListener httpListener;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public DummyPhabricatorWebServer()
         {
+            httpListener = new HttpListener();
+            httpListener.Prefixes.Add("http://127.0.0.2:46975/");
+            httpListener.Start();
 
-            tcpListener = new TcpListener(System.Net.IPAddress.Parse("127.0.0.2"), 46975);
-            tcpListener.Start();
-
-            Thread thrListener = new Thread(this.ListenerThread);
-            thrListener.Start();
+            httpListener.BeginGetContext(ProcessHttpRequest, httpListener);
         }
 
-        public void Stop()
-        {
-            stopAllBrowserConnectionThreads = true;
-            tcpListener.Stop();
-        }
-
-        private void ListenerThread()
-        {
-            Socket browser = null;
-            byte[] rcvBuffer = new byte[32767];
-
-            // wait for connection
-            while (!this.stopAllBrowserConnectionThreads)
-            {
-                if (tcpListener.Pending())
-                {
-                    browser = tcpListener.AcceptSocket();
-                    browser.ReceiveBufferSize = rcvBuffer.Length;
-                    browser.ReceiveTimeout = 60000;
-
-                    Thread thrListener = new Thread(this.ListenerThread);
-                    thrListener.Start();
-                    break;
-                }
-            }
-
-            while (stopAllBrowserConnectionThreads == false)
-            {
-                // has browser sent any data ?
-                if (browser.Available > 0)
-                {
-                    // peek into socketbuffer
-                    int bytesRead = browser.Receive(rcvBuffer, 0, browser.Available, SocketFlags.Peek);
-                    if (bytesRead > 0)
-                    {
-                        // is ETX available ?
-                        int posETX = bytesRead - 4;
-                        for (; posETX >= 0; posETX--)
-                        {
-                            if (rcvBuffer[posETX + 0] == '\r' &&
-                                rcvBuffer[posETX + 1] == '\n' &&
-                                rcvBuffer[posETX + 2] == '\r' &&
-                                rcvBuffer[posETX + 3] == '\n')
-                            {
-                                break;
-                            }
-                        }
-
-                        if (posETX >= 0)
-                        {
-                            // read data between STX and ETX out of socket buffer (STX and ETX included)
-                            bytesRead = browser.Receive(rcvBuffer, 0, 4 + posETX, SocketFlags.None);
-
-                            // convert bytes between STX and ETX to readable string
-                            string httpMessage;
-                            bool useUTF7 = rcvBuffer.Take(posETX).Any(c => c > 127);
-                            if (useUTF7)
-                            {
-                                httpMessage = Encoding.UTF7.GetString(rcvBuffer, 0, posETX);
-                            }
-                            else
-                            {
-                                httpMessage = Encoding.UTF8.GetString(rcvBuffer, 0, posETX);
-                            }
-
-                            // parse commando
-                            if (httpMessage.StartsWith("GET"))
-                            {
-                                // decode requested url from browser
-                                var httpParameters = httpMessage.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                                string url = httpParameters.Where(httpParameter => httpParameter.StartsWith("GET "))
-                                                           .Select(httpGetParameter => httpGetParameter.Substring("GET ".Length))
-                                                           .Select(httpGetParameter => httpGetParameter.Substring(0, httpGetParameter.LastIndexOf("HTTP") - 1))
-                                                           .FirstOrDefault();
-
-                                Match matchFileData = RegexSafe.Match(url, "/file/data/[^/]*/PHID-FILE-[^/]*/(.*)", System.Text.RegularExpressions.RegexOptions.None);
-                                if (matchFileData.Success)
-                                {
-                                    string fileName = matchFileData.Groups[1].Value;
-                                    string resultFileName = "Synchronization\\PhabricatorConduitResults\\Get\\" + fileName;
-                                    if (System.IO.File.Exists(resultFileName))
-                                    {
-                                        byte[] fileData = System.IO.File.ReadAllBytes(resultFileName);
-
-                                        int httpStatusCode = 200;
-                                        string httpStatusMessage = "OK";
-                                        string contentType = "image/png";
-                                        int contentLength = fileData.Length;
-                                        string acceptRanges = "bytes";
-
-                                        string tcpSocketResponseData = string.Format("HTTP/1.1 {0} {1}\r\n" +
-                                                                                  "Content-Type: {2}\r\n" +
-                                                                                  "Content-Length: {3}\r\n" +
-                                                                                  "Accept-Ranges: {4}\r\n" +
-                                                                                  "Cache-Control: no-cache, no-store, must-revalidate\r\n" +
-                                                                                  "Pragma: no-cache\r\n" +
-                                                                                  "Expires: 0\r\n" +
-                                                                                  "\r\n",
-                                                                                  httpStatusCode, httpStatusMessage,
-                                                                                  contentType,
-                                                                                  contentLength,
-                                                                                  acceptRanges);
-
-                                        browser.SendBufferSize = tcpSocketResponseData.Length + contentLength;
-                                        browser.Send(UTF8Encoding.UTF8.GetBytes(tcpSocketResponseData));
-                                        browser.Send(fileData);
-                                    }
-                                }
-
-                                Match matchHomepage = RegexSafe.Match(url, "/", System.Text.RegularExpressions.RegexOptions.None);
-                                if (matchHomepage.Success)
-                                {
-                                    int httpStatusCode = 200;
-                                    string httpStatusMessage = "OK";
-                                    string contentType = "text/html";
-                                    int contentLength = 0;
-                                    string acceptRanges = "bytes";
-
-                                    string tcpSocketResponseData = string.Format("HTTP/1.1 {0} {1}\r\n" +
-                                                                              "Content-Type: {2}\r\n" +
-                                                                              "Content-Length: {3}\r\n" +
-                                                                              "Accept-Ranges: {4}\r\n" +
-                                                                              "Date: Sun, 25 Oct 2020 15:49:37 GMT\r\n" +
-                                                                              "Cache-Control: no-cache, no-store, must-revalidate\r\n" +
-                                                                              "Pragma: no-cache\r\n" +
-                                                                              "Expires: 0\r\n" +
-                                                                              "\r\n",
-                                                                              httpStatusCode, httpStatusMessage,
-                                                                              contentType,
-                                                                              contentLength,
-                                                                              acceptRanges);
-
-                                    browser.SendBufferSize = tcpSocketResponseData.Length + contentLength;
-                                    browser.Send(UTF8Encoding.UTF8.GetBytes(tcpSocketResponseData));
-                                }
-
-                                continue;
-                            }
-
-                            if (httpMessage.StartsWith("POST"))
-                            {
-                                // decode requested url from browser
-                                var httpParameters = httpMessage.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                                string url = httpParameters.Where(httpParameter => httpParameter.StartsWith("POST "))
-                                                          .Select(httpGetParameter => httpGetParameter.Substring("POST ".Length))
-                                                          .Select(httpGetParameter => httpGetParameter.Substring(0, httpGetParameter.LastIndexOf("HTTP") - 1))
-                                                          .FirstOrDefault();
-
-                                if (url.StartsWith("/")) url = url.Substring("/".Length);
-                                if (url.StartsWith("api/")) url = url.Substring("api/".Length);
-
-                                Dictionary<string,string> formVariables;
-                                byte[] binaryData;
-                                if (ProcessPostParameters(browser, httpMessage, httpParameters, out formVariables, out binaryData))
-                                {
-                                    string resultFileName = "Synchronization\\PhabricatorConduitResults\\Post\\" + url + ".json";
-                                    if (System.IO.File.Exists(resultFileName))
-                                    {
-                                        string originalJsonData = System.IO.File.ReadAllText(resultFileName);
-                                        string jsonData = ProcessConduitParameters(originalJsonData, formVariables);
-
-                                        int httpStatusCode = 200;
-                                        string httpStatusMessage = "OK";
-                                        string contentType = "application/json";
-                                        int contentLength = jsonData.Length;
-                                        string acceptRanges = "bytes";
-
-                                        string tcpSocketResponseData = string.Format("HTTP/1.1 {0} {1}\r\n" +
-                                                                                  "Content-Type: {2}\r\n" +
-                                                                                  "Content-Length: {3}\r\n" +
-                                                                                  "Accept-Ranges: {4}\r\n" +
-                                                                                  "Cache-Control: no-cache, no-store, must-revalidate\r\n" +
-                                                                                  "Pragma: no-cache\r\n" +
-                                                                                  "Expires: 0\r\n" +
-                                                                                  "\r\n" +
-                                                                                  "{5}",
-                                                                                  httpStatusCode, httpStatusMessage,
-                                                                                  contentType,
-                                                                                  contentLength,
-                                                                                  acceptRanges,
-                                                                                  jsonData);
-
-                                        browser.SendBufferSize = tcpSocketResponseData.Length;
-                                        browser.Send(UTF8Encoding.UTF8.GetBytes(tcpSocketResponseData));
-
-                                        // wait a while before closing the connection so the browser has enough time to read the answer
-                                        Thread.Sleep(250);
-                                        continue;
-                                    }
-                                }
-
-                                // invalid POST url received
-                                throw new ArgumentException(url);
-                            }
-
-                            // invalid HTTP command received
-                            throw new InvalidOperationException();
-                        }
-                    }
-                }
-
-                Thread.Sleep(50);
-            }
-        }
-
+        /// <summary>
+        /// Processes the Conduit parameters from the POST data
+        /// If the request does not contain an "after" or a "before" parameter, the content of the corresponding JSON test file 
+        /// will be sent back as is.
+        /// If the request does not contain these parameters, the result/data from the JSON test file will be emptied before it's
+        /// sent back
+        /// </summary>
+        /// <param name="originalJsonData">Original JSON data</param>
+        /// <param name="formVariables">Form variables found in POST data</param>
+        /// <returns>Modified JSON data</returns>
         private string ProcessConduitParameters(string originalJsonData, Dictionary<string, string> formVariables)
         {
             string conduitParameters;
@@ -294,80 +104,167 @@ namespace Phabrico.UnitTests.Synchronization
             return originalJsonData;
         }
 
-        private bool ProcessPostParameters(Socket browser, string httpMessage, string[] httpParameters, out Dictionary<string,string> formVariables, out byte[] binaryData)
+        /// <summary>
+        /// Processes incoming HTTP requests for the dummy Phabricator webserver
+        /// </summary>
+        /// <param name="asyncResult"></param>
+        private void ProcessHttpRequest(IAsyncResult asyncResult)
         {
-            formVariables = new Dictionary<string, string>();
-            binaryData = null;
+            System.Net.HttpListenerContext context;
 
-            string contentType = httpParameters.FirstOrDefault(httpParameter => httpParameter.StartsWith("Content-Type:", StringComparison.OrdinalIgnoreCase));
-            if (string.IsNullOrEmpty(contentType))
+            try
             {
-                // invalid content
-                return false;
+                context = httpListener.EndGetContext(asyncResult);
             }
-            else
+            catch
             {
-                contentType = contentType.Substring("Content-Type:".Length).Trim();
+                return;
             }
 
-            int contentLength=0;
-            string contentLengthParameter = httpParameters.FirstOrDefault(httpParameter => httpParameter.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase));
-            if (string.IsNullOrEmpty(contentLengthParameter) ||
-                Int32.TryParse(contentLengthParameter.Substring("Content-Length:".Length).Trim(), out contentLength) == false ||
-                (contentLength > browser.Available && contentType.Equals("application/x-www-form-urlencoded")))
+            Task.Factory.StartNew((Object obj) =>
             {
-                // check if the remaining data is still being sent
-                for (int i = 0; i < 10; i++)
+                var data = (dynamic)obj;
+                System.Net.HttpListenerContext httpListenerContext = data.context;
+
+                try
                 {
-                    if (contentLength <= browser.Available) break;
-                    Thread.Sleep(250);
+                    httpListener.BeginGetContext(ProcessHttpRequest, httpListenerContext);
+                    ProcessHttpRequest(httpListenerContext);
+                }
+                catch
+                {
+                }
+            }, new { context });
+        }
+
+        /// <summary>
+        /// Processes incoming HTTP messages for the dummy Phabricator webserver
+        /// </summary>
+        /// <param name="context"></param>
+        public void ProcessHttpRequest(System.Net.HttpListenerContext context)
+        {
+            string url = context.Request.RawUrl;
+
+            // parse commando
+            if (context.Request.HttpMethod.StartsWith("GET"))
+            {
+                // decode requested url from browser
+                Debug.WriteLine("GET {0}", (object)url);
+
+                // is incoming message a download request of a file 
+                Match matchFileData = RegexSafe.Match(url, "/file/data/[^/]*/PHID-FILE-[^/]*/(.*)", System.Text.RegularExpressions.RegexOptions.None);
+                if (matchFileData.Success)
+                {
+                    string fileName = matchFileData.Groups[1].Value;
+                    string resultFileName = "Synchronization\\PhabricatorConduitResults\\Get\\" + fileName;
+                    if (System.IO.File.Exists(resultFileName))
+                    {
+                        byte[] fileData = System.IO.File.ReadAllBytes(resultFileName);
+
+                        // send image
+                        context.Response.StatusCode = 200;
+                        context.Response.StatusDescription = "OK";
+                        context.Response.ContentType = "image/png";
+                        context.Response.ContentLength64 = fileData.Length;
+                        context.Response.AppendHeader("Accept-Ranges", "bytes");
+                        context.Response.AppendHeader("Pragma", "no-cache");
+                        context.Response.AppendHeader("Expires", "0");
+                        context.Response.OutputStream.Write(fileData, 0, fileData.Length);
+                        context.Response.OutputStream.Flush();
+                        context.Response.OutputStream.Close();
+                    }
+
+                    return;
                 }
 
-                if (string.IsNullOrEmpty(contentLengthParameter) ||
-                    Int32.TryParse(contentLengthParameter.Substring("Content-Length:".Length).Trim(), out contentLength) == false ||
-                    (contentLength > browser.Available && contentType.Equals("application/x-www-form-urlencoded")))
+                Match matchHomepage = RegexSafe.Match(url, "/", System.Text.RegularExpressions.RegexOptions.None);
+                if (matchHomepage.Success)
                 {
-                    // invalid content
-                    return false;
+                    // send empty page
+                    context.Response.StatusCode = 200;
+                    context.Response.StatusDescription = "OK";
+                    context.Response.ContentType = "text/html";
+                    context.Response.ContentLength64 = 0;
+                    context.Response.AppendHeader("Accept-Ranges", "bytes");
+                    context.Response.AppendHeader("Pragma", "no-cache");
+                    context.Response.AppendHeader("Expires", "0");
+                    context.Response.OutputStream.Write(new byte[0], 0, 0);
+                    context.Response.OutputStream.Flush();
+                    context.Response.OutputStream.Close();
                 }
+
+                return;
             }
 
-            // read POST parameters
-            if (contentLength > 0)
+            if (context.Request.HttpMethod.StartsWith("POST"))
             {
-                byte[] rcvBuffer = new byte[32767];
-                int bytesRead = browser.Receive(rcvBuffer, 0, contentLength, SocketFlags.None);
+                // decode requested url from browser
+                Debug.WriteLine("POST {0}", (object)context.Request.RawUrl);
 
-                if (contentType.Equals("application/x-www-form-urlencoded"))
+                // parse url
+                if (url.StartsWith("/")) url = url.Substring("/".Length);
+                if (url.StartsWith("api/")) url = url.Substring("api/".Length);
+
+                // read POST data
+                string rcvBuffer;
+                using (StreamReader streamReader = new StreamReader(context.Request.InputStream))
                 {
-                    formVariables = UTF8Encoding.UTF8.GetString(rcvBuffer.Take(bytesRead).ToArray())
-                                                   .Split('&')
-                                                   .ToDictionary(key => key.Split('=')[0],
-                                                                 value => HttpUtility.UrlDecode(value.Substring(value.IndexOf('=') + 1)));
+                    rcvBuffer = streamReader.ReadToEnd();
                 }
 
-                if (contentType.StartsWith("multipart/form-data"))
+                Dictionary<string,string> formVariables = new Dictionary<string, string>();
+                if (context.Request.ContentType.Equals("application/x-www-form-urlencoded"))
                 {
-                    httpMessage = httpMessage + "\r\n\r\n" + UTF8Encoding.UTF8.GetString(rcvBuffer.Take(bytesRead).ToArray());
-
-                    string mimeSeparator = httpMessage.Split(new string[] { "\r\n" }, StringSplitOptions.None).FirstOrDefault(line => line.StartsWith("---"));
-                    string[] mimeParts = httpMessage.Split(new string[] { mimeSeparator }, StringSplitOptions.None).Skip(1).ToArray();
-                    formVariables = mimeParts.Select(part => part.Trim('\r', '\n'))
-                                               .Where(part => RegexSafe.IsMatch(part.Split('\r', '\n').FirstOrDefault(), "(^|; )name=\"[^\"]*\"", System.Text.RegularExpressions.RegexOptions.None))
-                                               .ToDictionary(key => RegexSafe.Match(key, "name=\"([^\"]*)\"", System.Text.RegularExpressions.RegexOptions.None).Groups[1].Value,
-                                                             value => value.IndexOf("\r\n\r\n") == -1
-                                                                        ? ""
-                                                                        : value.Substring(value.IndexOf("\r\n\r\n") + "\r\n\r\n".Length)
-                                                            );
+                    formVariables = rcvBuffer.Split('&')
+                                             .ToDictionary(key => key.Split('=')[0],
+                                                           value => HttpUtility.UrlDecode(value.Substring(value.IndexOf('=') + 1)));
                 }
 
-                if (contentType.Equals("application/octet-stream"))
+                if (context.Request.ContentType.StartsWith("multipart/form-data"))
                 {
-                    binaryData = rcvBuffer.Take(bytesRead).ToArray();
+                    throw new NotImplementedException();
                 }
+
+                if (context.Request.ContentType.Equals("application/octet-stream"))
+                {
+                    throw new NotImplementedException();
+                }
+
+                // process POST request
+                string resultFileName = "Synchronization\\PhabricatorConduitResults\\Post\\" + url + ".json";
+                if (System.IO.File.Exists(resultFileName))
+                {
+                    string jsonData = System.IO.File.ReadAllText(resultFileName);
+
+                    jsonData = ProcessConduitParameters(jsonData, formVariables);
+
+                    context.Response.StatusCode = 200;
+                    context.Response.StatusDescription = "OK";
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength64 = jsonData.Length;
+                    context.Response.AppendHeader("Accept-Ranges", "bytes");
+                    context.Response.AppendHeader("Pragma", "no-cache, no-store, must-revalidate");
+                    context.Response.AppendHeader("Expires", "0");
+                    context.Response.OutputStream.Write(UTF8Encoding.UTF8.GetBytes(jsonData), 0, jsonData.Length);
+                    context.Response.OutputStream.Flush();
+                    context.Response.OutputStream.Close();
+                    return;
+                }
+
+                // invalid POST url received
+                throw new ArgumentException(url);
             }
 
-            return true;
+            // invalid HTTP command received
+            throw new InvalidOperationException();
+        }
+
+        /// <summary>
+        /// Stops the dummy Phabricator webserver
+        /// </summary>
+        public void Stop()
+        {
+            httpListener.Stop();
         }
     }
 }

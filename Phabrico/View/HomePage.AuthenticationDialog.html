@@ -1,4 +1,4 @@
-<form action="" method="POST" onsubmit="postForm(this, '/auth/login@@REDIRECT@@'); return false;" class="aphront-dialog-view" style="display:block">
+<form action="" method="POST" onsubmit="postForm(this, 'auth/login@@REDIRECT@@'); return false;" class="aphront-dialog-view" style="display:block">
     <div class="aphront-dialog-head">
         <span class="phui-header-header">Log In</span>
     </div>
@@ -31,7 +31,7 @@
         <div class="phui-font-fa fa-sign-in" style="height: 1px;overflow: hidden;"></div> <!-- stupid hack to preload font-awesome font for Firefox -->
         <button class="button-blue" id="btnLogIn" type="submit" style="cursor: not-allowed;" disabled="">Log In</button>
         @{IF @@AUTHENTICATION-FACTOR@@=Public@
-            <a href="/" class="button button-blue" style="float: right">Cancel</a>
+            <a href="" class="button button-blue" style="float: right">Cancel</a>
         }@
     </div>
 

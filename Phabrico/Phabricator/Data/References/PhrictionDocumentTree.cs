@@ -140,7 +140,7 @@ namespace Phabrico.Data.References
                     encodedUrl = HttpUtility.UrlEncode(encodedUrl);
                 }
 
-                return "/w/" + encodedUrl.Replace("%2f", "/")   // make sure we don't have encoded '/' characters
+                return "w/" + encodedUrl.Replace("%2f", "/")   // make sure we don't have encoded '/' characters
                                          .Replace("%2F", "/");  //
             }
 

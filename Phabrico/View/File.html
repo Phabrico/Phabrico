@@ -67,7 +67,7 @@ function populateTable(firstCharacters)
 {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.overrideMimeType("application/json");
-    xmlhttp.open('GET', "/file/query/" + sortedColumn + "/" + firstCharacters, true);
+    xmlhttp.open('GET', "file/query/" + sortedColumn + "/" + firstCharacters, true);
     xmlhttp.onload  = function() {
         document.querySelector('#tblFiles tbody').innerHTML = "";
 
@@ -85,7 +85,7 @@ function populateTable(firstCharacters)
                 var cell = row.insertCell();
                 cell.classList.add('action');
                 var anchorSelect = document.createElement('a');
-                anchorSelect.href = "/file/data/" + record.ID + "/";
+                anchorSelect.href = "file/data/" + record.ID + "/";
                 anchorSelect.style.minWidth = "70px";
                 anchorSelect.target="_blank";
 

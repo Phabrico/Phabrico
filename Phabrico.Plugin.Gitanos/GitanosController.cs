@@ -133,17 +133,15 @@ namespace Phabrico.Plugin
 
             SessionManager.Token token = SessionManager.GetToken(browser);
 
-            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 string repositoryDirectory = string.Join("\\", parameters.Skip(1));  // skip "data"-part in url
+                if (string.IsNullOrWhiteSpace(repositoryDirectory) == false)
+                {
+                    // add colon character
+                    repositoryDirectory = string.Format("{0}:{1}", repositoryDirectory[0], repositoryDirectory.Substring(1));
+                }
+
                 if (string.IsNullOrWhiteSpace(repositoryDirectory) || Directory.Exists(repositoryDirectory) == false)  // if invalid directory -> show overview screen
                 {
                     // show overview screen
@@ -212,8 +210,11 @@ namespace Phabrico.Plugin
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
+                if (parameters.Any() == false) throw new Exception.HttpNotFound();
+
                 string filePath = string.Join("\\", parameters);
                 filePath = System.Web.HttpUtility.UrlDecode(filePath);
+                filePath = string.Format("{0}:{1}", filePath[0], filePath.Substring(1));
                 GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories.FirstOrDefault(repo => filePath.StartsWith(repo.Directory));
 
                 if (currentRepository == null)
@@ -248,8 +249,9 @@ namespace Phabrico.Plugin
                     viewPage = new HtmlViewPage(httpServer, browser, true, "GitanosDiffFile", parameters);
 
                     int repositoryIndex = Array.IndexOf(DirectoryMonitor.Repositories, currentRepository);
+                    string repositoryUrl = Http.Server.RootPath + "gitanos/data/" + currentRepository.Directory.Replace("\\", "/").Replace(":", "") + "/";
                     viewPage.SetText("REPOSITORY-INDEX", repositoryIndex.ToString(), HtmlViewPage.ArgumentOptions.JavascriptEncoding);
-                    viewPage.SetText("REPO-URL", "/gitanos/data/" + currentRepository.Directory.Replace("\\", "/") + "/", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    viewPage.SetText("REPO-URL", repositoryUrl, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     viewPage.SetText("REPO-PATH", currentRepository.Directory, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     viewPage.SetText("FILE-PATH", filePath.Substring(currentRepository.Directory.Length + 1), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     viewPage.SetText("FILE-ID", fileID, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -387,7 +389,7 @@ namespace Phabrico.Plugin
 
                     record.Added = repository.NumberOfAddedFiles;
                     record.Branch = repository.Branch;
-                    record.Directory = repository.Directory;
+                    record.Directory = repository.Directory.Replace(":", "");
                     record.Modified = repository.NumberModified;
                     record.Removed = repository.NumberOfRemovedFiles;
                     record.Renamed = repository.NumberOfRenamedFiles;
@@ -424,21 +426,28 @@ namespace Phabrico.Plugin
 
                     if (parameters.Any())
                     {
-                        GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories[Int32.Parse(parameters[0])];
-                        using (var repo = new LibGit2Sharp.Repository(currentRepository.Directory))
+                        int repoIndex = Int32.Parse(parameters[0]);
+                        if (DirectoryMonitor.Repositories.Length > repoIndex)
                         {
-                            GitanosUnpushedCommitsJsonRecordData unpushedCommit;
-
-                            LibGit2Sharp.Commit[] pushedCommits = repo.Head.TrackedBranch.Commits.ToArray();
-                            foreach (LibGit2Sharp.Commit commit in repo.Commits)
+                            GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories[repoIndex];
+                            using (var repo = new LibGit2Sharp.Repository(currentRepository.Directory))
                             {
-                                if (pushedCommits.Contains(commit)) break;
+                                GitanosUnpushedCommitsJsonRecordData unpushedCommit;
 
-                                unpushedCommit = new GitanosUnpushedCommitsJsonRecordData();
-                                unpushedCommit.CommitHash = commit.Id.Sha;
-                                unpushedCommit.Description = commit.Message;
-                                unpushedCommit.Timestamp = Controller.FormatDateTimeOffset(commit.Author.When, browser.Session.Locale);
-                                unpushedCommits.Add(unpushedCommit);
+                                if (repo.Head.TrackedBranch != null)
+                                {
+                                    LibGit2Sharp.Commit[] pushedCommits = repo.Head.TrackedBranch.Commits.ToArray();
+                                    foreach (LibGit2Sharp.Commit commit in repo.Commits)
+                                    {
+                                        if (pushedCommits.Contains(commit)) break;
+
+                                        unpushedCommit = new GitanosUnpushedCommitsJsonRecordData();
+                                        unpushedCommit.CommitHash = commit.Id.Sha;
+                                        unpushedCommit.Description = commit.Message;
+                                        unpushedCommit.Timestamp = Controller.FormatDateTimeOffset(commit.Author.When, browser.Session.Locale);
+                                        unpushedCommits.Add(unpushedCommit);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1021,14 +1030,6 @@ namespace Phabrico.Plugin
 
             SessionManager.Token token = SessionManager.GetToken(browser);
 
-            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
-
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 string result;
@@ -1113,14 +1114,6 @@ namespace Phabrico.Plugin
             Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(null))
-            {
-                UInt64[] publicXorCipher = accountStorage.GetPublicXorCipher(database, token);
-
-                // unmask encryption key
-                EncryptionKey = Encryption.XorString(EncryptionKey, publicXorCipher);
-            }
 
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {

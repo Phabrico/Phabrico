@@ -1,4 +1,4 @@
-<form action="" method="POST" onsubmit="postForm(this, '/auth/login'); return false;" class="aphront-dialog-view ">
+<form action="" method="POST" onsubmit="postForm(this, 'auth/login'); return false;" class="aphront-dialog-view ">
     <div class="aphront-dialog-head" style="display: flex;flex-direction: row;justify-content: space-between;">
         <span class="phui-header-header">Create New User</span>
         <select id="newLanguage" style="min-width:0px; width: auto; border-width: 0px 0px 1px 1px; border-color: #ccc; border-style: solid;">
@@ -90,7 +90,7 @@ const inputChanged = function(e) {
 const newLanguageInputChanged = function (e) {
     var language = newLanguage.options[newLanguage.selectedIndex].value;
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('POST', "/auth/setLanguage/" + language + "/", true);
+    xmlhttp.open('POST', "auth/setLanguage/" + language + "/", true);
     xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4) {
@@ -126,7 +126,7 @@ conduitApiToken.addEventListener('input', inputChanged);
 phabricatorUrl.addEventListener('input', inputChanged);
 phabricatorUrl.addEventListener('blur', urlEntered);
 
-newLanguage.addEventListener('input', newLanguageInputChanged);
+newLanguage.addEventListener('change', newLanguageInputChanged);
 
 document.addEventListener('DOMContentLoaded', function () {
     inputChanged();

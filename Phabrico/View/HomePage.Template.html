@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="@@LOCALE@@" class="notranslate" translate="no">
     <head>
       <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
@@ -6,31 +6,34 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
       <meta name="google" content="notranslate">
+      <base href="@@PHABRICO-ROOTPATH@@" />
       <title>Phabrico</title>
       <style>
             .phui-font-fa::before {
                 content: "\200B";
             }
+      
+            @@GLOBAL-CSS@@
       </style>
-      <link rel="preload" href="/fonts/icomoon.woff?version=@@PHABRICO-VERSION@@" as="font" type="font/woff" crossorigin>
-      <link rel="preload" href="/fonts/NotoSans-Regular-latin.woff2?version=@@PHABRICO-VERSION@@" as="font" type="font/woff2" crossorigin>
-      <link rel="preload" href="/fonts/fontawesome-webfont.woff2?version=@@PHABRICO-VERSION@@" as="font" type="font/woff2" crossorigin>
-      <link rel="preload" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="preload" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="preload" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="preload" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css">
-      <link rel="preload" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="preload" href="/css/theme.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
-      <link rel="stylesheet" href="/css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
-      <link rel="stylesheet" href="/css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="stylesheet" href="/css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
-      <link rel="icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
-      <link rel="shortcut icon" href="/favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
-      <script defer src="/scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
-      <script defer src="/scripts/highlight.min.js?version=@@PHABRICO-VERSION@@">
+      <link rel="preload" href="fonts/icomoon.woff?version=@@PHABRICO-VERSION@@" as="font" type="font/woff" crossorigin>
+      <link rel="preload" href="fonts/NotoSans-Regular-latin.woff2?version=@@PHABRICO-VERSION@@" as="font" type="font/woff2" crossorigin>
+      <link rel="preload" href="fonts/fontawesome-webfont.woff2?version=@@PHABRICO-VERSION@@" as="font" type="font/woff2" crossorigin>
+      <link rel="preload" href="css/font-faces.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="css/font-awesome.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="css/phabrico.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="css/responsive.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css">
+      <link rel="preload" href="css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="preload" href="css/theme.css?version=@@PHABRICO-VERSION@@" as="style" type="text/css" />
+      <link rel="stylesheet" href="css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/phabrico.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/responsive.css?version=@@PHABRICO-VERSION@@" type="text/css">
+      <link rel="stylesheet" href="css/theme-@@THEME@@.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="stylesheet" href="css/theme.css?version=@@PHABRICO-VERSION@@" type="text/css" />
+      <link rel="icon" href="favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <link rel="shortcut icon" href="favicon.ico?version=@@PHABRICO-VERSION@@" type="image/x-icon" />
+      <script defer src="scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+      <script defer src="scripts/highlight.min.js?version=@@PHABRICO-VERSION@@">
       /***************************************************************************************************************
           BSD 3-Clause License
 
@@ -63,7 +66,7 @@
           OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       ***************************************************************************************************************/
       </script>
-      <script defer="" src="/scripts/vanilla-picker.min.js">
+      <script defer="" src="scripts/vanilla-picker.min.js">
       /***************************************************************************************************************
           ISC License (ISC)
       
@@ -84,7 +87,7 @@
              var hljsCssFile = 'vs-modified.css';
              if ('@@THEME@@' == 'dark') hljsCssFile = 'vs2015-modified.css';
              var link = document.createElement( "link" );
-             link.href = '/css/highlight.js/' + hljsCssFile;
+             link.href = 'css/highlight.js/' + hljsCssFile;
              link.type = "text/css";
              link.rel = "stylesheet";
              link.media = "screen,print";
@@ -102,9 +105,21 @@
         </script>
         <header>
             <div id="headerBar">
-                <a href="/" style="text-decoration: none;">
+                <a href="" style="text-decoration: none;">
+                    @{IF @@DEFAULT-APPLICATION-NAME@@=True@
                     <span class="phabrico-logo" style=""></span>
                     <span class="phabrico-wordmark">Phabrico</span>
+                    }@
+                    @{ELSE
+                        <div style="display:flex; align-items : center;">
+                            @{IF NOT @@CUSTOM-APPLICATION-LOGO@@=@
+                            <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@" loading="lazy">
+                            }@
+                            @{IF NOT @@CUSTOM-APPLICATION-NAME@@=@
+                            <span style="@@CUSTOM-APPLICATION-NAME-STYLE@@">@@CUSTOM-APPLICATION-NAME@@</span>
+                            }@
+                        </div>
+                    }@
                 </a>
                 @@HEADERACTIONS@@
             </div>
@@ -116,78 +131,82 @@
         @@CONTENT@@
 
         <script>
-            @{IF @@SYNCHRONIZE@@=True@
-                async function startSynchronization() {
-                    while (typeof phabrico == 'undefined'  ||  typeof phabrico.synchronization == 'undefined') {
+            @{IF @@ACCESS-MASTER-DATA@@=True@
+                @{IF @@SYNCHRONIZE@@=True@
+                    async function startSynchronization() {
+                        while (typeof phabrico == 'undefined'  ||  typeof phabrico.synchronization == 'undefined') {
+                            await sleep(50);
+                        }
+
                         await sleep(50);
+
+                        phabrico.synchronization.start(dlgRequestSynchronize, 'light');
                     }
 
-                    await sleep(50);
-
-                    phabrico.synchronization.start(dlgRequestSynchronize, 'light');
-                }
-
-                window.onload = function() {
-                    // Call start synchronization
-                    (async() => {
+                    window.onload = function() {
+                        // Call start synchronization
+                        (async() => {
                     
-                        await startSynchronization();
+                            await startSynchronization();
   
-                    })();
+                        })();
                 
-                };
+                    };
+                }@
             }@
 
 
-            // check for latest Phabrico version on Github
-            var currentTimestamp = (new Date()).getTime();
-            var timestampLatestCheckForNewVersion = parseInt(localStorage["phabrico-new-version-check"]);
-            if (isNaN(timestampLatestCheckForNewVersion) ||  timestampLatestCheckForNewVersion < currentTimestamp) {
-                githubRepository = new XMLHttpRequest();
-                githubRepository.overrideMimeType("application/json");
-                githubRepository.open('GET', "https://api.github.com/repos/phabrico/phabrico/releases/latest", true);
-                githubRepository.onload = function () {
-                    if (githubRepository.readyState == 4 && githubRepository.status == 200) {
-                        try {
-                            var jsonResponse = JSON.parse(githubRepository.responseText);
-                            var githubRepositoryVersion = jsonResponse.tag_name.split('.').map(function (el) { return parseInt(el); });
-                            var localPhabricoVersion = "@@PHABRICO-VERSION@@".split('.').map(function (el) { return parseInt(el); });
-                            var newerVersionAvailable = false;
+            @{IF @@CHECK-FOR-LATEST-VERSION@@=True@
+                // check for latest Phabrico version on Github
+                var currentTimestamp = (new Date()).getTime();
+                var timestampLatestCheckForNewVersion = parseInt(localStorage["phabrico-new-version-check"]);
+                if (isNaN(timestampLatestCheckForNewVersion) ||  timestampLatestCheckForNewVersion < currentTimestamp) {
+                    githubRepository = new XMLHttpRequest();
+                    githubRepository.overrideMimeType("application/json");
+                    githubRepository.open('GET', "https://api.github.com/repos/phabrico/phabrico/releases/latest", true);
+                    githubRepository.onload = function () {
+                        if (githubRepository.readyState == 4 && githubRepository.status == 200) {
+                            try {
+                                var jsonResponse = JSON.parse(githubRepository.responseText);
+                                var githubRepositoryVersion = jsonResponse.tag_name.split('.').map(function (el) { return parseInt(el); });
+                                var localPhabricoVersion = "@@PHABRICO-VERSION@@".split('.').map(function (el) { return parseInt(el); });
+                                var newerVersionAvailable = false;
 
-                            if (githubRepositoryVersion.length == 4  &&  localPhabricoVersion.length == 4) {
-                                for (i = 0; i < 4; i++) {
-                                    if (githubRepositoryVersion[i] > localPhabricoVersion[i]) {
-                                        newerVersionAvailable = true;
-                                        break;
-                                    } else {
-                                        if (githubRepositoryVersion[i] < localPhabricoVersion[i]) {
-                                            // might be a development version
+                                if (githubRepositoryVersion.length == 4  &&  localPhabricoVersion.length == 4) {
+                                    for (i = 0; i < 4; i++) {
+                                        if (githubRepositoryVersion[i] > localPhabricoVersion[i]) {
+                                            newerVersionAvailable = true;
                                             break;
+                                        } else {
+                                            if (githubRepositoryVersion[i] < localPhabricoVersion[i]) {
+                                                // might be a development version
+                                                break;
+                                            }
                                         }
+                                    }
+
+                                    if (newerVersionAvailable) {
+                                        document.body.classList.add("new-version-available");
+                                        localStorage["phabrico-new-version-available"] = githubRepositoryVersion.join('.');
+                                    } else {
+                                        localStorage.removeItem("phabrico-new-version-available");
                                     }
                                 }
 
-                                if (newerVersionAvailable) {
-                                    document.body.classList.add("new-version-available");
-                                    localStorage["phabrico-new-version-available"] = githubRepositoryVersion.join('.');
-                                } else {
-                                    localStorage.removeItem("phabrico-new-version-available");
-                                }
+                                // set timestamp for next check
+                                localStorage["phabrico-new-version-check"] = currentTimestamp + 3600000;
                             }
-
-                            // set timestamp for next check
-                            localStorage["phabrico-new-version-check"] = currentTimestamp + 3600000;
+                            catch (exc) {
+                            }
                         }
-                        catch (exc) {
-                        }
+                    };
+                    githubRepository.send(null);
+                } else {
+                    if (localStorage.getItem("phabrico-new-version-available") != null  &&  localStorage.getItem("phabrico-new-version-available") != "@@PHABRICO-VERSION@@") {
+                        document.body.classList.add("new-version-available");
                     }
-                };
-                githubRepository.send(null);
-            } else {
-                if (localStorage.getItem("phabrico-new-version-available") != null  &&  localStorage.getItem("phabrico-new-version-available") != "@@PHABRICO-VERSION@@") {
-                    document.body.classList.add("new-version-available");
                 }
-            }
+            }@
         </script>
     </body>
 </html>

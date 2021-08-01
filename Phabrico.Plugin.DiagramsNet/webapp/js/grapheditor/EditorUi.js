@@ -162,7 +162,7 @@ EditorUi = function(editor, container, lightbox)
 						 ['startSize', 'endSize'],
 						 ['sourcePerimeterSpacing', 'targetPerimeterSpacing'],
 		                 ['strokeColor', 'strokeWidth'],
-		                 ['fillColor', 'gradientColor'],
+		                 ['fillColor', 'gradientColor', 'gradientDirection'],
 		                 ['align', 'verticalAlign'],
 		                 ['opacity'],
 		                 ['html']];
@@ -2284,7 +2284,7 @@ EditorUi.prototype.initCanvas = function()
 				for (var i = 0; i < this.lightboxToolbarActions.length; i++)
 				{
 					var lbAction = this.lightboxToolbarActions[i];
-					addButton(lbAction.fn, lbAction.icon, lbAction.tooltip);
+					lbAction.elem = addButton(lbAction.fn, lbAction.icon, lbAction.tooltip);
 				}
 			}
 
