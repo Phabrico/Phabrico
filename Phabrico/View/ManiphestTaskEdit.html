@@ -121,7 +121,10 @@
 
         window.addEventListener('load', function() {
             // set page title
-            document.title = "Phabrico - Editing " + fromHTML("@@TASK-HEADER@@");
+            var documentTitle = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - ";
+            documentTitle += Locale.Translate("Editing ##OBJECT##")
+                                   .replace("##OBJECT##", fromHTML("@@TASK-HEADER@@"));
+            document.title = documentTitle;
 
             // if this screen returned from the DiagramsNet plugin, insert the diagram object in the textarea
             if (sessionStorage.getItem("remarkup-editor-text-before") != null && sessionStorage.getItem("remarkup-editor-text-after") != null) {

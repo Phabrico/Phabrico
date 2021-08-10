@@ -318,6 +318,9 @@ msgstr "Fehlgeschlagen";
 msgid "Create Task"
 msgstr "Aufgabe erstellen"
 
+msgid "Editing ##OBJECT##"
+msgstr "Bearbeiten von ##OBJECT##"
+
 msgid "Assigned"
 msgstr "Zugewiesen"
 
@@ -845,8 +848,8 @@ msgid "Click on the Synchronize button to download all requested data from Phabr
 msgstr "Klicken Sie auf die Schaltfläche Synchronisieren, um alle angeforderten Daten von Phabricator herunterzuladen"
 
 # Offline changes
-msgid "Offline changes for @@STAGED-ITEM@@"
-msgstr "Lokale Änderungen für @@STAGED-ITEM@@"
+msgid "Offline changes for $$ITEM$$"
+msgstr "Lokale Änderungen für $$ITEM$$"
 
 msgid "Overview offline changes"
 msgstr "Übersicht lokale Änderungen"
@@ -997,8 +1000,8 @@ msgstr "Herunterladen"
 msgid "Browser not supported"
 msgstr "Browser nicht unterstützt"
 
-msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access Phabrico"
-msgstr "Benutzen Sie Mozilla Firefox, Opera, Google Chrome oder Microsoft Edge, um auf Phabrico zuzugreifen"
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access @@CUSTOM-APPLICATION-NAME@@"
+msgstr "Benutzen Sie Mozilla Firefox, Opera, Google Chrome oder Microsoft Edge, um auf @@CUSTOM-APPLICATION-NAME@@ zuzugreifen"
 
 # URL Not Found
 msgid "404"
@@ -1031,3 +1034,16 @@ msgstr "Sie haben nicht genügend Rechte, um Phabrico mit Phabricator zu synchro
 
 msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
 msgstr "Dieses Phriction-Dokument oder diese Maniphest-Aufgabe wurde nicht vom Phabricator-Server heruntergeladen, weil es mit einem oder mehreren abgelehnten Projekten oder Benutzern getaggt wurde."
+
+# Invalid configuration
+msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
+msgstr "Überprüfen Sie den Inhalt von @@APP-CONFIG-FILENAME@@"
+
+msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
+msgstr "Überprüfen Sie, ob @@APP-CONFIG-FILENAME@@ existiert"
+
+msgid "Error:"
+msgstr "Fehler:"
+
+msgid "CONFIGURATION INVALID OR MISSING"
+msgstr "KONFIGURATION UNGÜLTIG ODER FEHLEND"

@@ -29,11 +29,11 @@ http://xyz/               # Link to web
 ~~~~~~~~~~
 <h1 class='remarkup-header'><a name='hdrRemarkup_Syntax_Reference' style='padding-top: 80px;'></a>Remarkup Syntax Reference </h1>
 Phabricator uses a lightweight markup language called &quot;Remarkup&quot;, similar to<br>
-other lightweight markup languages like Markdown and Wiki markup.<br>
+other lightweight markup languages like Markdown and Wiki markup.<p class='paragraph'></p>
 This document describes how to format text using Remarkup.<br>
 <h1 class='remarkup-header'><a name='hdrQuick_Reference' style='padding-top: 80px;'></a>Quick Reference </h1>
 All the syntax is explained in more detail below, but this is a quick guide to<br>
-formatting text in Remarkup.<br>
+formatting text in Remarkup.<p class='paragraph'></p>
 These are inline styles, and can be applied to most text:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>**bold** //italic// `monospaced` ##monospaced## ~~deleted~~ __underlined__
 !!highlighted!!

@@ -459,7 +459,7 @@
 
     // set page title
     window.addEventListener('load', function() {
-        document.title = "Phabrico - " + fromHTML("@@TASK-HEADER@@");
+        document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + "@@TASK-HEADER@@";
         new TextAreaContextMenu(textarea, "@", "user", "user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
         new TextAreaContextMenu(textarea, "#", "project", "project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
         new TextAreaContextMenu(textarea, ":", "emoji", "remarkup/emoji/", "Code", "Name");

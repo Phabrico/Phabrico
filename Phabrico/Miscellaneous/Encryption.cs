@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Phabrico.Exception;
+using Phabrico.Http;
+using Phabrico.Parsers.Base64;
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
-
-using Phabrico.Exception;
-using Phabrico.Http;
-using Phabrico.Parsers.Base64;
 
 namespace Phabrico.Miscellaneous
 {

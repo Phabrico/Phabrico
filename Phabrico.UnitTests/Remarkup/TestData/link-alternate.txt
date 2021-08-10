@@ -3,6 +3,6 @@
 x[0][1](**ptr);
 
 ~~~~~~~~~~
-<a class='phriction-link' href='http://www.example.com/'>Example</a><br>
+<a class='phriction-link' href='http://www.example.com/'>Example</a><p class='paragraph'></p>
 x[0][1](**ptr);
 ~~~~~~~~~~

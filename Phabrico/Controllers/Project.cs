@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Newtonsoft.Json;
-
+﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Http.Response;
-using Phabrico.Miscellaneous;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Phabrico.Controllers
 {

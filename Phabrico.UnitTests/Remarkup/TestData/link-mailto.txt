@@ -5,7 +5,7 @@
 [[mailto:alincoln@example.com]]
 
 ~~~~~~~~~~
-<a class='email-link' href='mailto:alincoln@example.com'>mail me</a><br>
-<a class='email-link' href='mailto:alincoln@example.com'>mail me</a><br>
+<a class='email-link' href='mailto:alincoln@example.com'>mail me</a><p class='paragraph'></p>
+<a class='email-link' href='mailto:alincoln@example.com'>mail me</a><p class='paragraph'></p>
 <a class='email-link' href='mailto:alincoln@example.com'>alincoln@example.com</a>
 ~~~~~~~~~~

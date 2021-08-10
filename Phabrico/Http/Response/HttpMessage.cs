@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Phabrico.Parsers.Base64;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Web;
-using Phabrico.Parsers.Base64;
 
 namespace Phabrico.Http.Response
 {

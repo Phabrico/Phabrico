@@ -318,6 +318,9 @@ msgstr "失败";
 msgid "Create Task"
 msgstr "创建一个任务"
 
+msgid "Editing ##OBJECT##"
+msgstr "编辑 ##OBJECT##"
+
 msgid "Assigned"
 msgstr "分配"
 
@@ -845,8 +848,8 @@ msgid "Click on the Synchronize button to download all requested data from Phabr
 msgstr "点击同步按钮，从Phabricator下载所有要求的数据。"
 
 # Offline changes
-msgid "Offline changes for @@STAGED-ITEM@@"
-msgstr "@@STAGED-ITEM@@的本地改编"
+msgid "Offline changes for $$ITEM$$"
+msgstr "$$ITEM$$的本地改编"
 
 msgid "Overview offline changes"
 msgstr "当地改编概况"
@@ -997,8 +1000,8 @@ msgstr "下载"
 msgid "Browser not supported"
 msgstr "浏览器不支持"
 
-msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access Phabrico"
-msgstr "使用火狐 Firefox、Opera、谷歌 Chrome或微软 Edge访问法布日蔻"
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access @@CUSTOM-APPLICATION-NAME@@"
+msgstr "使用火狐 Firefox、Opera、谷歌 Chrome或微软 Edge访问@@CUSTOM-APPLICATION-NAME@@"
 
 # URL Not Found
 msgid "404"
@@ -1031,3 +1034,16 @@ msgstr "您没有足够的权限来同步法布日蔻和Phabricator。"
 
 msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
 msgstr "这个维基文档或任务没有从Phabricator服务器下载，因为它被标记了一个或多个被拒绝的项目或用户。"
+
+# Invalid configuration
+msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
+msgstr "验证@@APP-CONFIG-FILENAME@@的内容"
+
+msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
+msgstr "验证@@APP-CONFIG-FILENAME@@是否存在"
+
+msgid "Error:"
+msgstr "錯誤:"
+
+msgid "CONFIGURATION INVALID OR MISSING"
+msgstr "配置无效或缺失"

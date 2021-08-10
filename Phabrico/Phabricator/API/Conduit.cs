@@ -1,15 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Phabrico.Http;
+using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-using Phabrico.Http;
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Phabricator.API
 {

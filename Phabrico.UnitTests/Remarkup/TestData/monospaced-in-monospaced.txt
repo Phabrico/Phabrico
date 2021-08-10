@@ -5,7 +5,7 @@ query ##SELECT * FROM `table`##
 `**x**`
 
 ~~~~~~~~~~
-query <tt class='remarkup-monospaced'>SELECT * FROM `table`</tt><br>
-<tt class='remarkup-monospaced'>SELECT * FROM ##table##</tt><br>
+query <tt class='remarkup-monospaced'>SELECT * FROM `table`</tt><p class='paragraph'></p>
+<tt class='remarkup-monospaced'>SELECT * FROM ##table##</tt><p class='paragraph'></p>
 <tt class='remarkup-monospaced'>**x**</tt>
 ~~~~~~~~~~

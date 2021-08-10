@@ -318,6 +318,9 @@ msgstr "Fallido";
 msgid "Create Task"
 msgstr "Crear tarea"
 
+msgid "Editing ##OBJECT##"
+msgstr "Editando ##OBJECT##"
+
 msgid "Assigned"
 msgstr "Asignado"
 
@@ -845,8 +848,8 @@ msgid "Click on the Synchronize button to download all requested data from Phabr
 msgstr "Haga clic en el botón Sincronizar para descargar todos los datos solicitados de Phabricator"
 
 # Offline changes
-msgid "Offline changes for @@STAGED-ITEM@@"
-msgstr "Cambios locales para @@STAGED-ITEM@@"
+msgid "Offline changes for $$ITEM$$"
+msgstr "Cambios locales para $$ITEM$$"
 
 msgid "Overview offline changes"
 msgstr "Resumen de los cambios locales"
@@ -997,8 +1000,8 @@ msgstr "Descargue"
 msgid "Browser not supported"
 msgstr "El navegador no es compatible"
 
-msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access Phabrico"
-msgstr "Usa Mozilla Firefox, Opera, Google Chrome o Microsoft Edge para acceder a Phabrico"
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access @@CUSTOM-APPLICATION-NAME@@"
+msgstr "Usa Mozilla Firefox, Opera, Google Chrome o Microsoft Edge para acceder a @@CUSTOM-APPLICATION-NAME@@"
 
 # URL Not Found
 msgid "404"
@@ -1031,3 +1034,16 @@ msgstr "No tienes suficientes derechos para sincronizar Phabrico con Phabricator
 
 msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
 msgstr "Este documento de Phriction o tarea de Maniphest no fue descargado del servidor de Phabricator porque fue etiquetado con uno o más proyectos o usuarios rechazados."
+
+# Invalid configuration
+msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
+msgstr "Validar el contenido de @@APP-CONFIG-FILENAME@@"
+
+msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
+msgstr "Verificar si @@APP-CONFIG-FILENAME@@ existe"
+
+msgid "Error:"
+msgstr "Error:"
+
+msgid "CONFIGURATION INVALID OR MISSING"
+msgstr "CONFIGURACIÓN INVÁLIDA O FALTANTE"

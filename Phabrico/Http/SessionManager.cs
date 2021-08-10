@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Http
 {
@@ -96,12 +95,18 @@ namespace Phabrico.Http
 
             /// <summary>
             /// Returns true if the session hasn't been poked recently (see Poke method)
+            /// If AuthenticationFactor is not Knowledge, the session will always remain valid
             /// </summary>
             public bool Invalid
             {
                 get
                 {
-                    return DateTime.UtcNow.Subtract(lastPokeTime).TotalSeconds >= 120;
+                    if (AuthenticationFactor == AuthenticationFactor.Knowledge)
+                    {
+                        return DateTime.UtcNow.Subtract(lastPokeTime).TotalSeconds >= 120;
+                    }
+
+                    return false;
                 }
             }
 

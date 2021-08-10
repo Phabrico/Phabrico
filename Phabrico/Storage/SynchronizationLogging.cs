@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Globalization;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Storage
 {

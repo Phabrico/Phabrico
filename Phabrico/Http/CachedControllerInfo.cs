@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Phabrico.Http.Response;
+using System.Collections.Generic;
 using System.Reflection;
-using Phabrico.Http.Response;
 
 namespace Phabrico.Http
 {

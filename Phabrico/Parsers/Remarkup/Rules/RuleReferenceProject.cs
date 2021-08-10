@@ -1,9 +1,7 @@
-﻿using System;
-using System.Text.RegularExpressions;
-
-using Phabrico.Http;
+﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
 using Phabrico.Phabricator.Data;
+using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {
@@ -13,6 +11,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// </summary>
     public class RuleReferenceProject : RemarkupRule
     {
+        public string ProjectName { get; private set; }
+        public string ProjectToken { get; private set; }
+
         /// <summary>
         /// Converts Remarkup encoded text into HTML
         /// </summary>
@@ -33,45 +34,62 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 Match matchProjectName = RegexSafe.Match(match.Groups[1].Value, "[a-z0-9._-]*[a-z0-9_-]", RegexOptions.IgnoreCase);
                 if (matchProjectName.Success == false) return false;
 
-                string tokenId = browser.GetCookie("token");
-                if (tokenId != null)
+                string encryptionKey = browser.Token?.EncryptionKey;
+
+                if (string.IsNullOrEmpty(encryptionKey) == false)
                 {
-                    SessionManager.Token token = SessionManager.GetToken(browser);
-                    string encryptionKey = token?.EncryptionKey;
+                    Storage.Account accountStorage = new Storage.Account();
+                    Storage.Project projectStorage = new Storage.Project();
+                    Project project = projectStorage.Get(database, matchProjectName.Value);
+                    if (project == null) return false;
 
-                    if (string.IsNullOrEmpty(encryptionKey) == false)
+                    LinkedPhabricatorObjects.Add(project);
+
+                    string rgbColor = "rgb(0, 128, 255)";
+                    if (project != null && string.IsNullOrWhiteSpace(project.Color) == false)
                     {
-                        Storage.Account accountStorage = new Storage.Account();
-                        Storage.Project projectStorage = new Storage.Project();
-                        Project project = projectStorage.Get(database, matchProjectName.Value);
-                        if (project == null) return false;
+                        rgbColor = project.Color;
+                    }
 
-                        LinkedPhabricatorObjects.Add(project);
+                    string style = string.Format("background: {0}; color: {1}; border-color: {1}",
+                                        rgbColor,
+                                        ColorFunctionality.WhiteOrBlackTextOnBackground(rgbColor));
 
-                        string rgbColor = "rgb(0, 128, 255)";
-                        if (project != null && string.IsNullOrWhiteSpace(project.Color) == false)
-                        {
-                            rgbColor = project.Color;
-                        }
-
-                        string style = string.Format("background: {0}; color: {1}; border-color: {1}",
-                                            rgbColor,
-                                            ColorFunctionality.WhiteOrBlackTextOnBackground(rgbColor));
-
-                        html = string.Format("<a class='project-reference phui-icon-view phui-font-fa fa-briefcase' href='/project/info/{0}/' style='{1}'>{2}</a>",
+                    if (browser.HttpServer.Customization.HideManiphest || browser.HttpServer.Customization.HideUsers)
+                    {
+                        html = string.Format("<span class='project-reference'>{0}</span>",
+                                        System.Web.HttpUtility.HtmlEncode(project.Name));
+                    }
+                    else
+                    {
+                        html = string.Format("<a class='project-reference phui-icon-view phui-font-fa fa-briefcase' href='project/info/{0}/' style='{1}'>{2}</a>",
                                         project.InternalName,
                                         style,
-                                        project.Name);
-                        remarkup = remarkup.Substring(match.Length);
-
-                        Length = match.Length;
-
-                        return true;
+                                        System.Web.HttpUtility.HtmlEncode(project.Name));
                     }
+                    remarkup = remarkup.Substring(match.Length);
+
+                    Length = match.Length;
+
+                    ProjectName = project.Name;
+                    ProjectToken = project.Token;
+
+                    return true;
                 }
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Deep copy clone
+        /// </summary>
+        /// <param name="originalRemarkupRule"></param>
+        public override void Clone(RemarkupRule originalRemarkupRule)
+        {
+            RuleReferenceProject originalRuleReferenceProject = originalRemarkupRule as RuleReferenceProject;
+            ProjectName = originalRuleReferenceProject.ProjectName;
+            ProjectToken = originalRuleReferenceProject.ProjectToken;
         }
     }
 }

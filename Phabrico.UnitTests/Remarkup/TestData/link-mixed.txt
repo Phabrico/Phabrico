@@ -4,7 +4,7 @@
 
 <http://www.example.com/ [[http://www.example.net/ | Example]]>
 ~~~~~~~~~~
-<a class='phriction-link' href='http://www.example.com/'>Example</a>(<a class='phriction-link' href='http://www.alternate.org/'>http://www.alternate.org/</a>)<br>
-(<a class='phriction-link' href='http://www.alternate.org/'>http://www.alternate.org/</a>)<a class='phriction-link' href='http://www.example.com/'>Example</a><br>
+<a class='phriction-link' href='http://www.example.com/'>Example</a>(<a class='phriction-link' href='http://www.alternate.org/'>http://www.alternate.org/</a>)<p class='paragraph'></p>
+(<a class='phriction-link' href='http://www.alternate.org/'>http://www.alternate.org/</a>)<a class='phriction-link' href='http://www.example.com/'>Example</a><p class='paragraph'></p>
 &lt;<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a> <a class='phriction-link' href='http://www.example.net/'>Example</a>&gt;
 ~~~~~~~~~~

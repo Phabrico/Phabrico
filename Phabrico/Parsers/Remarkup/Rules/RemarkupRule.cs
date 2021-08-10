@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Phabrico.Http;
+using System;
 using System.Collections.Generic;
-
-using Phabrico.Http;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {
@@ -11,14 +10,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
     public abstract class RemarkupRule
     {
         /// <summary>
-        /// Start position where current RemarkupRule is positioned
+        /// Decoded HTML
         /// </summary>
-        public int Start { get; set; }
+        public string Html { get; set; }
 
         /// <summary>
         /// Length of current RemarkupRule
         /// </summary>
         public int Length { get; set; }
+
+        /// <summary>
+        /// Start position where current RemarkupRule is positioned
+        /// </summary>
+        public int Start { get; set; }
 
         /// <summary>
         /// Content of RemarkupRule
@@ -94,6 +98,17 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public List<Phabricator.Data.PhabricatorObject> LinkedPhabricatorObjects = new List<Phabricator.Data.PhabricatorObject>();
 
         /// <summary>
+        /// Some Remarkup rules can be executed in another Remarkup rule (e.g. bold text in a table cell)
+        /// This property represents the outer Remarkup rule
+        /// </summary>
+        public RemarkupRule ParentRemarkupRule { get; set; }
+
+        /// <summary>
+        /// List of processed tokens
+        /// </summary>
+        public List<Rules.RemarkupRule> TokenList { get; set; }
+
+        /// <summary>
         /// Creates a copy of the current RemarkupRule
         /// </summary>
         /// <returns></returns>
@@ -101,12 +116,22 @@ namespace Phabrico.Parsers.Remarkup.Rules
         {
             RemarkupRule clonedRemarkupRule = GetType().GetConstructor(Type.EmptyTypes).Invoke(null) as RemarkupRule;
 
-            clonedRemarkupRule.Start = Start;
+            clonedRemarkupRule.Html = Html;
             clonedRemarkupRule.Length = Length;
+            clonedRemarkupRule.Start = Start;
             clonedRemarkupRule.Text = Text;
+            clonedRemarkupRule.Clone(this);
             clonedRemarkupRule.LinkedPhabricatorObjects.AddRange(LinkedPhabricatorObjects);
 
             return clonedRemarkupRule;
+        }
+
+        /// <summary>
+        /// Virtual method which allows to do a deeper clone of RemarkupRule
+        /// </summary>
+        /// <param name="originalRemarkupRule"></param>
+        public virtual void Clone(RemarkupRule originalRemarkupRule)
+        {
         }
 
         /// <summary>

@@ -1,5 +1,5 @@
 #myproject The expected outcome is not that good at the moment
 ~~~~~~~~~~
-<a class='project-reference phui-icon-view phui-font-fa fa-briefcase' href='/project/info/myproject/' style='background: rgb(0, 128, 255); color: white; border-color: white'>Johnny was a joker</a>
+<a class='project-reference phui-icon-view phui-font-fa fa-briefcase' href='project/info/myproject/' style='background: rgb(0, 128, 255); color: white; border-color: white'>Johnny was a joker</a>
 The expected outcome is not that good at the moment
 ~~~~~~~~~~

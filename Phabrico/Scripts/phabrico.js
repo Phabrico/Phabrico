@@ -166,6 +166,10 @@ class CrumbsHeader {
             slug += '/' + crumbs[crumb].slug;
             a.href = slug + '/';
             a.innerText = crumbs[crumb].name;
+            if (crumbs[crumb].inexistant) {
+                a.style.pointerEvents = 'none';
+            }
+
             lastCrumbObject.insertAdjacentElement('afterEnd', a)
             lastCrumbObject = a;
         }
@@ -2053,12 +2057,6 @@ function diffResizeLocationPane(evt) {
 
 function diffRestoreFocusLocationPane(evt) {
     fileLeft.focus();
-}
-
-function fromHTML(html) {
-   var div = document.createElement('div');
-   div.innerHTML = html;
-   return div.innerText;
 }
 
 function getElementOverlappingElement(elementBelow) {

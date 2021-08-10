@@ -1,6 +1,5 @@
-﻿using System;
-
-using Phabrico.Storage;
+﻿using Phabrico.Storage;
+using System;
 
 namespace Phabrico.Phabricator.Data
 {

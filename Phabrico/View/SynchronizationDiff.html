@@ -51,7 +51,7 @@
 
 <script>
     // set page title
-    document.title = "Phabrico - Offline changes for @@ITEM@@";
+    document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Offline changes for $$ITEM$$").replace("$$ITEM$$", fromHTML("@@ITEM@@"));
 
     // correct widths of table cells
     var widthLeft = fileLeft.scrollWidth;

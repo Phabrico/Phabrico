@@ -7,6 +7,7 @@ using Phabrico.Parsers.Remarkup;
 using Phabrico.Parsers.Remarkup.Rules;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -308,6 +309,14 @@ namespace Phabrico.Plugin
                             file = new Phabricator.Data.File();
                             file.Data = buffer;
                             file.TemplateFileName = "diagram ({0}).png";
+
+                            using (MemoryStream memoryStream = new MemoryStream(file.Data))
+                            {
+                                Bitmap bitmap = new Bitmap(memoryStream);
+                                file.ImagePropertyPixelHeight = bitmap.Height;
+                                file.ImagePropertyPixelWidth = bitmap.Width;
+                            }
+
 
                             stageStorage.Create(database, file);
 

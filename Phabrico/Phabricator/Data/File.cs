@@ -1,15 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Base64;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Windows.Media.Imaging;
-using Newtonsoft.Json;
-
-using Phabrico.Miscellaneous;
-using Phabrico.Parsers.Base64;
 
 namespace Phabrico.Phabricator.Data
 {

@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Globalization;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Storage
 {
@@ -131,6 +130,23 @@ namespace Phabrico.Storage
                 }
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Removes a project from the database
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="project"></param>
+        public void Remove(Database database, Phabricator.Data.Project project)
+        {
+            using (SQLiteCommand cmdDeleteProjectInfo = new SQLiteCommand(@"
+                       DELETE FROM projectInfo
+                       WHERE token = @token;
+                   ", database.Connection))
+            {
+                database.AddParameter(cmdDeleteProjectInfo, "token", project.Token, Database.EncryptionMode.None);
+                cmdDeleteProjectInfo.ExecuteNonQuery();
             }
         }
 

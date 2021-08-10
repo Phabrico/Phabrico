@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Data.SQLite;
-using System;
-
-using Newtonsoft.Json;
-
+﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using System;
+using System.Collections.Generic;
+using System.Data.SQLite;
+using System.Linq;
 
 namespace Phabrico.Storage
 {
@@ -23,7 +21,7 @@ namespace Phabrico.Storage
         public override void Add(Database database, Phabricator.Data.Account account)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       INSERT INTO accountInfo(token, userName, publicXorCipher, privateXorCipher, dpapiXorCipher1, dpapiXorCipher2, url, api, theme, parameters)
+                       INSERT OR REPLACE INTO accountInfo(token, userName, publicXorCipher, privateXorCipher, dpapiXorCipher1, dpapiXorCipher2, url, api, theme, parameters)
                        VALUES (@tokenHash, @userName, @publicXorCipher, @privateXorCipher, @dpapiXorCipher1, @dpapiXorCipher2, @phabricatorUrl, @conduitAPiToken, @theme, @parameters);
                    ", database.Connection))
             {

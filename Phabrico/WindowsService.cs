@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -6,8 +7,6 @@ using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico
 {

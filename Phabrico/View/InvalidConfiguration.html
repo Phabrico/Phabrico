@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="notranslate" translate="no">
+    <head>
+      <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
+      <meta name="google" content="notranslate">
+      <title>@@CUSTOM-APPLICATION-NAME@@</title>
+      <style>
+          #headerBar {
+              position: fixed;
+              width: 100vw;
+              top: 0px;
+              left: 0px;
+              padding-left: 5px;
+              z-index: 4;
+              background: #4a5f88;
+          }
+
+          body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, p, blockquote, th, td, button {
+              margin: 0;
+              padding: 0;
+              padding-left: 0px;
+              border: 0;
+          }
+
+          body, textarea {
+              font-family: "Noto Sans", "Noto Sans SC", sans-serif;
+              font-size: 14px;
+              direction: ltr;
+              text-align: left;
+              -webkit-text-size-adjust: none;
+              color: #000;
+          }
+
+        @@GLOBAL-CSS@@
+      </style>
+    </head>
+    <body>
+        <script>
+            document.body.dataset.theme = 'light';
+            document.body.dataset.themestyle = '';
+            document.body.dataset.locale = 'en';
+        </script>
+        <div id="headerBar">
+            <a href="" style="text-decoration: none;">
+                @{IF @@DEFAULT-APPLICATION-NAME@@=True@
+                <span class="phabrico-logo" style=""></span>
+                <span class="phabrico-wordmark">Phabrico</span>
+                }@
+                @{ELSE
+                    <div style="display:flex; align-items : center;">
+                        @{IF NOT @@CUSTOM-APPLICATION-LOGO@@=@
+                        <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@">
+                        }@
+                        @{IF NOT @@CUSTOM-APPLICATION-NAME@@=@
+                        <span style="@@CUSTOM-APPLICATION-NAME-STYLE@@">@@CUSTOM-APPLICATION-NAME@@</span>
+                        }@
+                    </div>
+                }@
+            </a>
+        </div>
+
+        <div style="width:800px; margin-left: calc(50% - 400px); position:absolute; top: 150px; border:solid 1px #ccc;">
+            <div style="text-align:left; font-size: 24px; background:red; background: linear-gradient(0deg, rgba(255,100,100,1) 0%, rgba(255,0,0,1) 100%); color: #fff; height: 66px;">
+                <h1 class="phui-font-fa fa-exclamation-triangle" style="display:block; padding:10px; margin-top:0px;"><b style="font-size: 28px; display:inline-block; position:absolute; margin-top: 10px; margin-left:20px;">CONFIGURATION INVALID OR MISSING</b></h1>
+            </div>
+            <div style="text-align:left; margin-top:10px; font-size: 18px; margin-left:20px; min-height: 100px; padding:10px;">
+                <div><b>Details:</b></div>
+                <table>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Error:</td>
+                        <td>@@ERROR-MESSAGE@@</td>
+                    </tr>
+                </table>
+                <ul style="margin: 20px 20px;">
+                    <li>Verify if @@APP-CONFIG-FILENAME@@ exists</li>
+                    <li>Validate the contents of @@APP-CONFIG-FILENAME@@</li>
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>

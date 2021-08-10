@@ -1,21 +1,29 @@
 <div id="tabConfigure" class="tab">
     <div class="tab-head">
+        @{IF @@ACCESS-HIDE-CONFIG-GENERAL@@=False@
         <button data-tab-page-id="General" onclick="tabChanged(this)">General</button>
+        }@
         @{IF @@ACCESS-HIDE-MANIPHEST@@=False@
         <button data-tab-page-id="Maniphest" onclick="tabChanged(this)">Maniphest</button>
         }@
+        @{IF @@ACCESS-MASTER-DATA@@=True@
         @{IF @@ACCESS-HIDE-PHRICTION@@=False@
         <button data-tab-page-id="Phriction" onclick="tabChanged(this)">Phriction</button>
+        }@
         }@
         @{CONFIGURABLE-PLUGIN-TAB-HEADER
         <button data-tab-page-id="@@PLUGIN-NAME@@" onclick="tabChanged(this)">@@PLUGIN-NAME@@</button>
         }@
         <button data-tab-page-id="UI Controls" onclick="tabChanged(this)">UI Controls</button>
+        @{IF @@ACCESS-MASTER-DATA@@=True@
         <button data-tab-page-id="Phabricator" onclick="tabChanged(this)">Phabricator</button>
+        }@
     </div>
     <form action="configure?action=save" method="POST">
+        @{IF @@ACCESS-HIDE-CONFIG-GENERAL@@=False@
         <div class="tab-page" id="General">
             <table>
+                @{IF @@IIS-MODULE@@=False@
                 <tr class="setting AutoLogon">
                     <td class="aphront-form-label">
                         <label class="aphront-form-label" for="autoLogon">Auto log on</label>
@@ -44,7 +52,8 @@
                         <input id="autoLogOutAfterMinutesOfInactivity" name="autoLogOutAfterMinutesOfInactivity" class="input-integer-only" type="number" autofocus="" style="width: 100px">
                     </td>
                 </tr>
-            @{IF @@ACCESS-HIDE-THEME-CONFIG@@=False@
+                }@
+                @{IF @@ACCESS-HIDE-THEME-CONFIG@@=False@
                 <tr class="setting Theme">
                     <td class="aphront-form-label">
                         <label class="aphront-form-label" for="theme">Theme</label>
@@ -72,13 +81,14 @@
                         </label>
                     </td>
                 </tr>
-            }@
+                }@
             </table>
         </div>
-
+        }@
         @{IF @@ACCESS-HIDE-MANIPHEST@@=False@
         <div class="tab-page" id="Maniphest">
             <table>
+                @{IF @@ACCESS-MASTER-DATA@@=True@
                 <tr class="setting SyncMethodManiphest">
                     <td class="aphront-form-label">
                         <label class="aphront-form-label" for="syncMethodManiphest">Synchronize Maniphest tasks for</label>
@@ -107,6 +117,7 @@
                         </label>
                     </td>
                 </tr>
+                }@
                 <tr class="setting RemovalPeriodClosedManiphests">
                     <td class="aphront-form-label">
                         <label class="aphront-form-label" for="removalPeriodClosedManiphests">Maximum lifetime closed Maniphest tasks</label>
@@ -131,6 +142,7 @@
         </div>
         }@
 
+        @{IF @@ACCESS-MASTER-DATA@@=True@
         @{IF @@ACCESS-HIDE-PHRICTION@@=False@
         <div class="tab-page" id="Phriction">
             <table>
@@ -196,6 +208,7 @@
             </table>
         </div>
         }@
+        }@
 
         @{CONFIGURABLE-PLUGIN-TAB-CONTENT
         <div class="tab-page" id="@@PLUGIN-NAME@@">
@@ -219,6 +232,7 @@
                         </label>
                     </td>
                 </tr>
+                @{IF @@ACCESS-HIDE-CHANGE-LANGUAGE@@=False@
                 <tr class="setting UITranslation">
                     <td class="aphront-form-label">
                         <label class="aphront-form-label" for="uiTranslation">Translate notification block titles:</label>
@@ -233,6 +247,7 @@
                         </label>
                     </td>
                 </tr>
+                }@
                 <tr class="setting ConfidentialTableHeaders">
                     <td class="aphront-form-label">
                         <label class="aphront-form-label">Confidential Table Headers</label>
@@ -514,7 +529,7 @@
 }@
 <script>
     // set page title
-    document.title = "Phabrico - Configuration";
+    document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Config");
 
     function addConfidentialWordToTable(confidentialWord) {
         var newrow = document.createElement('tr');

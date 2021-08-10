@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Http.Response
 {
@@ -175,10 +174,10 @@ namespace Phabrico.Http.Response
         
         public void Customize(Browser browser)
         {
-            string customApplicationLogo = HttpServer.Customization.CustomApplicationLogoBase64; // "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAMAAADW3miqAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAACHUExURf////7+/tnZ2bKysq6urtjY2Pv7+4aGhjY2NjU1NampqTc3N6ampmJiYl5eXlFRUT09PaioqKqqqk1NTUJCQvn5+UxMTEBAQNfX19ra2tXV1S0tLS4uLjg4ODs7O4ODg4SEhIKCgvr6+lJSUjk5OUVFRfz8/MTExLOzs7i4uP39/bm5uQAAABWpZDEAAAAtdFJOU///////////////////////////////////////////////////////////AKXvC/0AAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEUSURBVDhPlZLZcsIwDEWdsiUYypSlewZaXDA0//99leMrR4YqDOfBtnzPCI2JaTIMQAlkCQHgMtCdkQkQdBLuL+AQmwLSuKrEuN+JVlhQKtwhoTDFgx8yy8GowHUwkjSelFVVRqyt7WSMIEg4mmllM8oZAlKSNA9BgopHBEIqFta5pyWYkbTiqVKfINn1GYXZUKvnNHqilXhWs6EBb0t6p5fXN/BOMymS/WA+e6QMTaoTVKQn6CCpdtsd+MoHF49p1wcU5ltK2Ytr76RK1En8LfypXEvcSXxPxd65n26m2jnu1Eqwjt6f+AfM+df7Yzze8Y33W20elh4rxu2qWkjjplgcYv9PQyClSw2XAXkmIGS3TfMHQuFBJLX8RqsAAAAASUVORK5CYII=";
+            string customApplicationLogo = HttpServer.Customization.CustomApplicationLogoBase64;
             string customApplicationName = HttpServer.Customization.ApplicationName;
 
-            bool useDefaultApplicationName = string.IsNullOrWhiteSpace(customApplicationLogo) && string.IsNullOrWhiteSpace(customApplicationName);
+            bool useDefaultApplicationName = string.IsNullOrWhiteSpace(customApplicationLogo) && customApplicationName.Equals("Phabrico");
 
             SetText("DEFAULT-APPLICATION-NAME", useDefaultApplicationName ? "True" : "False", ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
             SetText("GLOBAL-CSS", HttpServer.Customization.ApplicationCSS, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
@@ -207,15 +206,35 @@ namespace Phabrico.Http.Response
 
                 SetText("CUSTOM-APPLICATION-LOGO", customApplicationLogo, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
                 SetText("CUSTOM-APPLICATION-LOGO-STYLE", customApplicationLogoStyle, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
-                SetText("CUSTOM-APPLICATION-NAME", customApplicationName, ArgumentOptions.AllowEmptyParameterValue);
                 SetText("CUSTOM-APPLICATION-NAME-STYLE", customApplicationNameStyle, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
             }
 
-            // do we need to check periodically if we have the latest Phabrico version installed ?
+            // set the name of the Phabrico application
+            SetText("CUSTOM-APPLICATION-NAME", customApplicationName, ArgumentOptions.AllowEmptyParameterValue);
+
+            // set custom favicon (if any)
+            if (HttpServer.Customization.FavIcon == null)
+            {
+                SetText("CUSTOM-FAVICON", "", ArgumentOptions.AllowEmptyParameterValue);
+            }
+            else
+            {
+                SetText("CUSTOM-FAVICON", HttpServer.Customization.CustomFavIconBase64, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
+            }
+
             if (HttpServer.IsHttpModule)
             {
-                SetText("CHECK-FOR-LATEST-VERSION", "False", ArgumentOptions.AllowEmptyParameterValue);
                 SetText("IIS-MODULE", "True", ArgumentOptions.AllowEmptyParameterValue);
+
+                // disable periodical check to see if we have the latest Phabrico version installed
+                SetText("CHECK-FOR-LATEST-VERSION", "False", ArgumentOptions.AllowEmptyParameterValue);
+
+                // if public, ignore AuthenticationFactor from database (set to public)
+                if (HttpServer.Customization.AuthenticationFactor == ApplicationCustomization.ApplicationAuthenticationFactor.Public)
+                {
+                    browser.Token.AuthenticationFactor = AuthenticationFactor.Public;
+                    SetText("AUTHENTICATION-FACTOR", AuthenticationFactor.Public, ArgumentOptions.AllowEmptyParameterValue);
+                }
             }
             else
             {
@@ -240,9 +259,14 @@ namespace Phabrico.Http.Response
             SetText("ACCESS-READONLY", HttpServer.Customization.IsReadonly.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-MASTER-DATA", HttpServer.Customization.MasterDataIsAccessible.ToString(), ArgumentOptions.AllowEmptyParameterValue);
 
+            bool hideGeneralTabInConfiguration = HttpServer.IsHttpModule && HttpServer.Customization.Theme != ApplicationCustomization.ApplicationTheme.Auto;
+            SetText("ACCESS-HIDE-CONFIG-GENERAL", hideGeneralTabInConfiguration.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+
             // show/hide user menu next to search field in case there are no visible menu items
             bool hideUserMenu = hideChangeLanguage
-                             && browser.Token.AuthenticationFactor == AuthenticationFactor.Ownership;
+                             && ((HttpServer.IsHttpModule == false && browser.Token.AuthenticationFactor == AuthenticationFactor.Ownership)
+                             ||  (HttpServer.IsHttpModule == true && browser.Token.AuthenticationFactor == AuthenticationFactor.Public)
+                                );
             SetText("HIDE-USER-MENU", hideUserMenu.ToString(), ArgumentOptions.AllowEmptyParameterValue);
 
             // override visibility action menu in Phriction
@@ -264,7 +288,7 @@ namespace Phabrico.Http.Response
 
                 SetText("THEME", theme, ArgumentOptions.AllowEmptyParameterValue);
                 SetText("THEME-STYLE", "", ArgumentOptions.AllowEmptyParameterValue);
-                SetText("ACCESS-HIDE-THEME-CONFIG", HttpServer.Customization.HideSearch.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+                SetText("ACCESS-HIDE-THEME-CONFIG", "True", ArgumentOptions.AllowEmptyParameterValue);
             }
             else
             {
@@ -606,7 +630,10 @@ namespace Phabrico.Http.Response
                 foreach (Match conditionalStatement in conditionalStatements)
                 {
                     string[] conditionValues = conditionalStatement.Groups[2].Value.Split('=');
-                    bool positiveCondition = conditionValues[0].Equals(conditionValues[1]);
+                    string firstCondition = string.Join("=", conditionValues.Take(conditionValues.Length - 1));
+                    string secondCondition = conditionValues.Last();
+
+                    bool positiveCondition = firstCondition.Equals(secondCondition);
                     if (conditionalStatement.Groups[1].Value.Equals("NOT"))
                     {
                         positiveCondition = !positiveCondition;

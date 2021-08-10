@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Phabrico.Miscellaneous;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Interpreters
 {

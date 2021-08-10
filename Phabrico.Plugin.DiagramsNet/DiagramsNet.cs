@@ -1,6 +1,5 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
-using Phabrico.Phabricator.Data;
 
 namespace Phabrico.Plugin
 {

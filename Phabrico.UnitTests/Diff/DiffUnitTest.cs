@@ -1,8 +1,7 @@
-﻿using System.IO;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Phabrico.UnitTests.Diff
 {

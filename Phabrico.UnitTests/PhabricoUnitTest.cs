@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Phabrico.Miscellaneous;
+using System;
+using System.IO;
 
 namespace Phabrico.UnitTests
 {

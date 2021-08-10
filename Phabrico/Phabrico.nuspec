@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Phabrico</id>
+    <version>%version%</version>
+    <authors>Phabrico</authors>
+    <owners>Phabrico</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Offline editor for Phabricator documents and tasks</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2021</copyright>
+    <projectUrl>https://github.com/Phabrico/Phabrico</projectUrl>
+    <license type="expression">Apache-2.0</license>
+    <tags></tags>
+    <dependencies>
+      <dependency id="Newtonsoft.Json" version="13.0.1"  />
+      <dependency id="System.Data.SQLite.Core" version="1.0.114.3"  />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\nugetPackage\Phabrico.dll" target="lib\net461" />
+    <file src="..\nugetPackage\Phabrico.exe.config" target="lib\net461" />
+    <file src="..\nugetPackage\Phabrico.pdb" target="lib\net461" />
+  </files>
+</package>

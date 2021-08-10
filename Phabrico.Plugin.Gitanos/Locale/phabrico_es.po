@@ -64,6 +64,9 @@ msgid "There are some local commits which haven't been pushed yet"
 msgstr "Hay algunos commits locales que aún no han sido empujados"
 
 # Repository modifications overview
+msgid "Git repository"
+msgstr "Repositorio Git"
+
 msgid "File"
 msgstr "Archivo"
 

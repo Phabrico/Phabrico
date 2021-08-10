@@ -53,7 +53,7 @@
 populateTable("");
 
 // set page title
-document.title = "Phabrico - Latest synchronized data";
+document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Latest synchronized data");
 
 function populateTable(filterText)
 {

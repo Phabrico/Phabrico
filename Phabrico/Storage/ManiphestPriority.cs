@@ -1,11 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Storage
 {

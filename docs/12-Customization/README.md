@@ -77,27 +77,52 @@ namespace Phabrico
 
 ## Customization parameters
 
-| Parameter                                   | Description                                                                                                                         |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| ApplicationCSS                              | Global cascading style sheets which are injected in each page                                                                       |
-| ApplicationLogo                             | The logo that should be shown in the top left corner                                                                                |
-| ApplicationName                             | The name of the application that should be shown in the top left corner                                                             |
-| ApplicationNameStyle                        | CSS styles for formatting the ApplicationName                                                                                       |
-| HideChangeLanguage                          | If true, the menu item 'Change language' in the menu next to the search field will not be visible                                   |
-| HideConfig                                  | If true, Config screen will not be accessible                                                                                       |
-| HideFiles                                   | If true, Files screen will not be accessible                                                                                        |
-| HideOfflineChanges                          | If true, Offline Changes screen will not be accessible                                                                              |
-| HideManiphest                               | If true, Maniphest tasks will not be accessible                                                                                     |
-| HideNavigatorTooltips                       | If true, the tooltips for the menu items in the homepage will not be shown                                                          |
-| HidePhriction                               | If true, Phriction/wiki documents will not be accessible                                                                            |
-| HidePhrictionActionMenu                     | If true, the menu on the right side of the Phriction documents is no longer visible                                                 |
-| HidePhrictionChanges                        | If true, the changes made in Phriction/wiki documents can not be seen or undone                                                     |
-| HidePhrictionFavorites                      | If true, Phriction/wiki documents can not be marked as favorite                                                                     |
-| HideProjects                                | If true, Phabricator projects will not be accessible                                                                                |
-| HideUsers                                   | If true, Phabricator users will not be accessible                                                                                   |
-| HideSearch                                  | If true, Search field will not be accessible                                                                                        |
-| IsReadonly                                  | If true, no Phriction document or Maniphest task can be edited                                                                      |
-| Language                                    | Language code for Phabrico application.  (Content of Phriction documents or Maniphest tasks will not be translated)                 |
-| MasterDataIsAccessible                      | If false, the master data on Phabricator is not accessible via Phabrico. If IsReadonly is true, MasterDataIsAccessible wil be false |
-| Theme                                       | Auto, Light or Dark                                                                                                                 |
+| Parameter                                   | Description                                                                                                                                                             | Default
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------
+| ApplicationCSS                              | Global cascading style sheets which are injected in each page                                                                                                           | 
+| ApplicationLogo                             | The logo that should be shown in the top left corner                                                                                                                    | Phabrico logo
+| ApplicationLogoStyle                        | CSS styles for formatting the ApplicationLogo                                                                                                                           | 
+| ApplicationName                             | The name of the application that should be shown in the top left corner                                                                                                 | Phabrico
+| ApplicationNameStyle                        | CSS styles for formatting the ApplicationName                                                                                                                           | 
+| AuthenticationFactor                        | If Knowledge, one should authenticate with username and password to access Phabrico; If Public, no authentication is needed                                             | Knowledge
+| FavIcon                                     | If set to a PNG image, the PNG image will be used as icon in the browser tab; if not set, the default Phabrico icon will be used                                        | Phabrico icon
+| HideConfig                                  | If true, Config screen will not be accessible                                                                                                                           | false
+| HideFiles                                   | If true, Files screen will not be accessible                                                                                                                            | false
+| HideOfflineChanges                          | If true, Offline Changes screen will not be accessible                                                                                                                  | false
+| HideManiphest                               | If true, Maniphest tasks will not be accessible                                                                                                                         | false
+| HideNavigatorTooltips                       | If true, the tooltips for the menu items in the homepage will not be shown                                                                                              | false
+| HidePhriction                               | If true, Phriction/wiki documents will not be accessible                                                                                                                | false
+| HidePhrictionActionMenu                     | If true, the menu on the right side of the Phriction documents is no longer visible                                                                                     | false
+| HidePhrictionChanges                        | If true, the changes made in Phriction/wiki documents can not be seen or undone                                                                                         | false
+| HidePhrictionFavorites                      | If true, Phriction/wiki documents can not be marked as favorite                                                                                                         | false
+| HideProjects                                | If true, Phabricator projects will not be accessible                                                                                                                    | false
+| HideUsers                                   | If true, Phabricator users will not be accessible                                                                                                                       | false
+| HideSearch                                  | If true, Search field will not be accessible                                                                                                                            | false
+| IsReadonly                                  | If true, no Phriction document or Maniphest task can be edited                                                                                                          | false
+| Language                                    | Language code for Phabrico application.  (Content of Phriction documents or Maniphest tasks will not be translated). If set, the language cannot be changed by the user | Language of browser or English
+| MasterDataIsAccessible                      | If false, the master data on Phabricator is not accessible via Phabrico. If IsReadonly is true, MasterDataIsAccessible wil be false                                     | true
+| Theme                                       | Auto, Light or Dark; If Auto, the user can change the theme in the Config screen (if accessible)                                                                        | Auto
+
+## IIS Configuration
+* WebSocket protocol should be installed in IIS:
+
+![Customization-02](Customization-02.png) <br />
+
+* 2 extra lines should be added to the C:\inetpub\wwwroot\web.config:
+  * `probing/privatePath` points to the subdirectory in the C:\inetpub\wwwroot directory where the Phabrico IIS module is installed.
+  * `modules/add` should contain a reference to your Phabrico IIS module
+* a 3rd line is optional:
+  * if `httpErrors/existingResponse` is set to `PassThrough`, you will see Phabrico-styled error pages instead of the IIS ones
+
+![Customization-03](Customization-03.png) <br />
+
+You can make use of a symbolic link in case you want your Phabrico IIS module not installed in the C:\inetpub\wwwroot directory.
+If you execute the following statements in a command prompt window, you can keep your Phabrico IIS module in `C:\Program Files\PhabricoIIS`.
+For IIS they are accessible via `MyPhabrico`
+
+```
+c:
+cd c:\inetpub\wwwroot
+mklink /D MyPhabrico "C:\Program Files\PhabricoIIS"
+```
 

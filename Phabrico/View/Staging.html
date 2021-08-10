@@ -53,7 +53,7 @@
 populateTable();
 
 // set page title
-document.title = "Phabrico - Offline Changes";
+document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Offline changes");
 
 function cancelUndo()
 {

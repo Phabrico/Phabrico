@@ -2,6 +2,6 @@
 
 http://www.example.com/
 ~~~~~~~~~~
-<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a><br>
+<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a><p class='paragraph'></p>
 <a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a>
 ~~~~~~~~~~

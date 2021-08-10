@@ -1,4 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Phabrico.Controllers;
+using Phabrico.Exception;
+using Phabrico.Miscellaneous;
+using Phabrico.Phabricator.API;
+using Phabrico.Storage;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,13 +19,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Newtonsoft.Json;
-
-using Phabrico.Controllers;
-using Phabrico.Exception;
-using Phabrico.Miscellaneous;
-using Phabrico.Phabricator.API;
-using Phabrico.Storage;
 
 namespace Phabrico.Http
 {
@@ -193,7 +192,7 @@ namespace Phabrico.Http
                                         );
 
             // load plugin DLLs
-            string rootDirectory = AppDomain.CurrentDomain.RelativeSearchPath ?? AppDomain.CurrentDomain.BaseDirectory;
+            string rootDirectory = System.IO.Path.GetDirectoryName(AppConfigLoader.ConfigFileName );
             foreach (string pluginFileName in System.IO.Directory.EnumerateFiles(rootDirectory, "Phabrico.Plugin.*.dll"))
             {
                 try
@@ -668,7 +667,7 @@ namespace Phabrico.Http
             HttpApplication application = (HttpApplication)sender;
             HttpContext context = application.Context;
 
-            if (context.Request.RawUrl.StartsWith(RootPath) || context.Request.RawUrl.Equals(RootPath.TrimEnd('/')))
+            if (context.Request.RawUrl.StartsWith(RootPath, StringComparison.OrdinalIgnoreCase) || context.Request.RawUrl.Equals(RootPath.TrimEnd('/'), StringComparison.OrdinalIgnoreCase))
             {
                 Phabrico.Miscellaneous.HttpListenerContext httpListenerContext = context;
                 ProcessHttpRequest(httpListenerContext);
@@ -964,6 +963,7 @@ namespace Phabrico.Http
                         if (UserAgentIsSupported(browser.Request.UserAgent) == false)
                         {
                             Http.Response.HtmlViewPage browserNotSupportedPage = new Http.Response.HtmlViewPage(this, browser, true, "BrowserNotSupported", null);
+                            browserNotSupportedPage.Merge();
                             browserNotSupportedPage.Send(browser);
                             return;
                         }
@@ -1299,6 +1299,7 @@ namespace Phabrico.Http
                     {
                         // send HTML view result to browser
                         viewPage.Theme = database.ApplicationTheme;
+                        viewPage.Merge();
                         string dataSent = viewPage.Send(browser, controllerOptions);
 
                         if (viewPage.HttpStatusCode == 200 && parameterActions != null && parameterActions.Any() == false)
@@ -1410,7 +1411,26 @@ namespace Phabrico.Http
             else
             {
                 Storage.Account accountStorage = new Storage.Account();
-                string authenticationFactor = database.GetAuthenticationFactor();
+                string authenticationFactor;
+                if (browser.HttpServer.IsHttpModule)
+                {
+                    // take authentication factor over from Customization property
+                    switch (Customization.AuthenticationFactor)
+                    {
+                        case ApplicationCustomization.ApplicationAuthenticationFactor.Public:
+                            authenticationFactor = AuthenticationFactor.Public;
+                            break;
+
+                        default:
+                            authenticationFactor = AuthenticationFactor.Knowledge;
+                            break;
+                    }
+                }
+                else
+                {
+                    // take authentication factor from Configuration screen
+                    authenticationFactor = database.GetAuthenticationFactor();
+                }
 
                 switch (authenticationFactor)
                 {
@@ -1501,6 +1521,15 @@ namespace Phabrico.Http
                         database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
 
                         database.UpgradeIfNeeded();
+
+                        if (browser.Request.RawUrl.Contains("?ReturnURL="))
+                        {
+                            string redirectURL = RootPath + browser.Request.RawUrl.Substring((RootPath + "?ReturnURL=").Length);
+                            redirectURL = redirectURL.Replace("//", "/");
+                            Http.Response.HttpRedirect httpRedirect = new Http.Response.HttpRedirect(browser.HttpServer, browser, redirectURL);
+                            httpRedirect.Send(browser);
+                            return;
+                        }
                         break;
                 }
             }
@@ -1762,9 +1791,13 @@ namespace Phabrico.Http
                             AccessDeniedException accessDeniedException = new AccessDeniedException("/", "Invalid credentials");
                             ProcessAccessDeniedException(browser, accessDeniedException);
                         }
+                        catch (InvalidConfigurationException invalidConfigurationException)
+                        {
+                            ProcessInvalidConfigurationException(browser, invalidConfigurationException);
+                        }
                         catch (System.Exception exception)
                         {
-                            Logging.WriteException(browser.Token.ID, exception);
+                            Logging.WriteException(browser.Token?.ID, exception);
                             SendExceptionToBrowser(browser, exception);
                         }
                     }
@@ -1847,6 +1880,22 @@ namespace Phabrico.Http
                 {
                 }
             }, new { context });
+        }
+
+        /// <summary>
+        /// This method is executed when an InvalidConfigurationException is thrown.
+        /// This will trigger an InvalidConfiguration error screen
+        /// </summary>
+        /// <param name="browser"></param>
+        /// <param name="accessDeniedException"></param>
+        private void ProcessInvalidConfigurationException(Browser browser, InvalidConfigurationException invalidConfigurationException)
+        {
+            Response.HtmlViewPage htmlViewPage = new Response.HtmlViewPage(browser);
+            htmlViewPage.SetContent(browser, htmlViewPage.GetViewData("InvalidConfiguration"));
+            htmlViewPage.SetText("ERROR-MESSAGE", invalidConfigurationException.ErrorMessage);
+            htmlViewPage.SetText("APP-CONFIG-FILENAME", AppConfigLoader.ConfigFileName);
+            htmlViewPage.Merge();
+            htmlViewPage.Send(browser);
         }
 
         /// <summary>

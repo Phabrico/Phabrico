@@ -100,6 +100,8 @@ RD /S /Q bin
     <Content Include="11-Gitanos\Gitanos-06.png" />
     <Content Include="11-Gitanos\Gitanos-07.png" />
     <Content Include="12-Customization\Customization-01.png" />
+    <Content Include="12-Customization\Customization-02.png" />
+    <Content Include="12-Customization\Customization-03.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

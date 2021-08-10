@@ -1,9 +1,7 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Http.Response
 {

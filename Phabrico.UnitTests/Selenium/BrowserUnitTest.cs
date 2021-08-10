@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
+using System;
+using System.Linq;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;

@@ -31,12 +31,23 @@
                             </a>
                         </li>
                         }@
-                        @{IF NOT @@AUTHENTICATION-FACTOR@@=Ownership@
-                        <li class="logout">
-                            <a href="logout" style="margin-top:15px;">
-                                <span>Log out</span>
-                            </a>
-                        </li>
+                        @{IF @@IIS-MODULE@@=True@
+                            @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
+                            <li class="logout">
+                                <a href="logout" style="margin-top:15px;">
+                                    <span>Log out</span>
+                                </a>
+                            </li>
+                            }@
+                        }@
+                        @{ELSE
+                            @{IF NOT @@AUTHENTICATION-FACTOR@@=Ownership@
+                            <li class="logout">
+                                <a href="logout" style="margin-top:15px;">
+                                    <span>Log out</span>
+                                </a>
+                            </li>
+                            }@
                         }@
                     </ul>
                 </div>

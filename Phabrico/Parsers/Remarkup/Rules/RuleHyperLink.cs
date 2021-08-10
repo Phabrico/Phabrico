@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Phabrico.Http;
+using Phabrico.Miscellaneous;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
-
-using Phabrico.Http;
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {
@@ -71,7 +70,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
-                    html = string.Format("<a class='phriction-link' href='{1}'>{0}</a>", match.Groups[1].Value.Trim(), match.Groups[2].Value.Trim());
+                    html = string.Format("<a class='phriction-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), match.Groups[2].Value.Trim());
 
                     Length = match.Length;
 
@@ -82,7 +81,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
-                    html = string.Format("<a class='email-link' href='{1}'>{0}</a>", match.Groups[1].Value.Trim(), match.Groups[2].Value.Trim());
+                    html = string.Format("<a class='email-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), match.Groups[2].Value.Trim());
 
                     Length = match.Length;
 
@@ -104,7 +103,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
-                    html = string.Format("<a class='phone-link' href='{1}'>{0}</a>", match.Groups[1].Value.Trim(), match.Groups[2].Value.Trim());
+                    html = string.Format("<a class='phone-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), match.Groups[2].Value.Trim());
 
                     Length = match.Length;
 
@@ -153,7 +152,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         urlHyperlink = urlHyperlink.Substring("mailto:".Length);
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
-                        html = string.Format("<a class='email-link' href='mailto:{0}'>{1}</a>", urlHyperlink, urlHyperlinkText);
+                        html = string.Format("<a class='email-link' href='mailto:{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
                     }
                     else
                     if (urlHyperlink.StartsWith("tel:"))
@@ -161,7 +160,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         urlHyperlink = urlHyperlink.Substring("tel:".Length);
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
-                        html = string.Format("<a class='phone-link' href='tel:{0}'>{1}</a>", urlHyperlink, urlHyperlinkText);
+                        html = string.Format("<a class='phone-link' href='tel:{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
                     }
                     else
                     if (urlHyperlink.StartsWith("ftp://"))
@@ -169,118 +168,129 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         urlHyperlink = urlHyperlink.Substring("ftp://".Length);
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
-                        html = string.Format("<a class='phriction-link' href='{0}'>{1}</a>", urlHyperlink, urlHyperlinkText);
+                        html = string.Format("<a class='phriction-link' href='{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
                     }
                     else
                     {
-                        if (urlHyperlink.StartsWith("."))
-                        {
-                            string absoluteUrl = url.Replace("//", "/");
-                            while (true)
-                            {
-                                if (urlHyperlink.StartsWith("./"))
-                                {
-                                    urlHyperlink = urlHyperlink.Substring(2);
-                                    if (urlHyperlinkText != null && urlHyperlinkText.StartsWith("./"))
-                                    {
-                                        urlHyperlinkText = urlHyperlinkText.Substring(2);
-                                    }
-                                    continue;
-                                }
-                                else
-                                if (urlHyperlink.StartsWith("../"))
-                                {
-                                    string[] absoluteUrlParts = absoluteUrl.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                                    absoluteUrl = string.Join("/", absoluteUrlParts.Take(absoluteUrlParts.Any() ? absoluteUrlParts.Length - 1 : 0));
-                                    absoluteUrl = absoluteUrl + "/";
+                        bool malformedUrl = false;
+                        if (urlHyperlink.StartsWith("http://") && urlHyperlink.Substring("http://".Length).Contains(':')) malformedUrl = true;
+                        else 
+                        if (urlHyperlink.StartsWith("https://") && urlHyperlink.Substring("https://".Length).Contains(':')) malformedUrl = true;
+                        else
+                        if (urlHyperlink.Contains(':')) malformedUrl = true;
 
-                                    urlHyperlink = urlHyperlink.Substring(3);
-                                    if (urlHyperlinkParts.Length != 2 && urlHyperlinkText != null && urlHyperlinkText.StartsWith("../"))
-                                    {
-                                        urlHyperlinkText = urlHyperlinkText.Substring(3);
-                                    }
-                                    continue;
-                                }
-                                else
+                        if (malformedUrl == false)
+                        {
+                            if (urlHyperlink.StartsWith("."))
+                            {
+                                string absoluteUrl = url.Replace("//", "/");
+                                while (true)
                                 {
-                                    absoluteUrl = "/" + absoluteUrl + urlHyperlink;
-                                    absoluteUrl = absoluteUrl.Replace("//", "/");
-                                    break;
+                                    if (urlHyperlink.StartsWith("./"))
+                                    {
+                                        urlHyperlink = urlHyperlink.Substring(2);
+                                        if (urlHyperlinkText != null && urlHyperlinkText.StartsWith("./"))
+                                        {
+                                            urlHyperlinkText = urlHyperlinkText.Substring(2);
+                                        }
+                                        continue;
+                                    }
+                                    else
+                                    if (urlHyperlink.StartsWith("../"))
+                                    {
+                                        string[] absoluteUrlParts = absoluteUrl.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                                        absoluteUrl = string.Join("/", absoluteUrlParts.Take(absoluteUrlParts.Any() ? absoluteUrlParts.Length - 1 : 0));
+                                        absoluteUrl = absoluteUrl + "/";
+
+                                        urlHyperlink = urlHyperlink.Substring(3);
+                                        if (urlHyperlinkParts.Length != 2 && urlHyperlinkText != null && urlHyperlinkText.StartsWith("../"))
+                                        {
+                                            urlHyperlinkText = urlHyperlinkText.Substring(3);
+                                        }
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        absoluteUrl = "/" + absoluteUrl + urlHyperlink;
+                                        absoluteUrl = absoluteUrl.Replace("//", "/");
+                                        break;
+                                    }
                                 }
+
+                                urlHyperlink = absoluteUrl;
                             }
 
-                            urlHyperlink = absoluteUrl;
-                        }
-
-                        if (urlHyperlink.StartsWith("http://") == false && urlHyperlink.StartsWith("https://") == false)
-                        {
-                            string encryptionKey = browser.Token?.EncryptionKey;
-                            if (string.IsNullOrEmpty(encryptionKey) == false)
+                            if (urlHyperlink.StartsWith("http://") == false && urlHyperlink.StartsWith("https://") == false)
                             {
-                                Storage.Account accountStorage = new Storage.Account();
-                                Phabrico.Storage.Phriction phrictionStorage = new Storage.Phriction();
-
-                                if (urlHyperlink.StartsWith("/")) urlHyperlink = urlHyperlink.Substring(1);
-                                string linkedDocument = urlHyperlink.Split('#')[0];
-
-                                if (linkedDocument.StartsWith("w/")) linkedDocument = linkedDocument.Substring("w/".Length - 1);
-                                else
-                                if (linkedDocument.StartsWith("phriction/")) linkedDocument = linkedDocument.Substring("phriction/".Length - 1);
-
-                                // check if we have an hyperlink, wrongly formatted as a Windows file path, but somehow allowed by Phabricator
-                                // e.g. [[ Q:\blabla\document.docx | My document ]]
-                                if (RegexSafe.IsMatch(linkedDocument, @"[A-Za-z]:\.*", RegexOptions.None))
+                                string encryptionKey = browser.Token?.EncryptionKey;
+                                if (string.IsNullOrEmpty(encryptionKey) == false)
                                 {
-                                    linkedDocument = linkedDocument.Substring(3)
-                                                                   .Replace("\\", "_")
-                                                                   .ToLower();
-                                    urlHyperlink = linkedDocument;
-                                }
+                                    Storage.Account accountStorage = new Storage.Account();
+                                    Phabrico.Storage.Phriction phrictionStorage = new Storage.Phriction();
 
-                                // replace invalid characters in url by underscores
-                                linkedDocument = RegexSafe.Replace(linkedDocument, "[ ?]", "_");
+                                    if (urlHyperlink.StartsWith("/")) urlHyperlink = urlHyperlink.Substring(1);
+                                    string linkedDocument = urlHyperlink.Split('#')[0];
 
-                                // trim linkedDocument
-                                linkedDocument = linkedDocument.TrimEnd('_');
+                                    if (linkedDocument.StartsWith("w/")) linkedDocument = linkedDocument.Substring("w/".Length - 1);
+                                    else
+                                    if (linkedDocument.StartsWith("phriction/")) linkedDocument = linkedDocument.Substring("phriction/".Length - 1);
 
-                                linkedPhrictionDocument = phrictionStorage.Get(database, linkedDocument);
-                                if (linkedPhrictionDocument == null)
-                                {
-                                    Storage.Stage stageStorage = new Storage.Stage();
-                                    linkedPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database).FirstOrDefault(doc => doc.Path.Equals(linkedDocument));
-                                }
+                                    // check if we have an hyperlink, wrongly formatted as a Windows file path, but somehow allowed by Phabricator
+                                    // e.g. [[ Q:\blabla\document.docx | My document ]]
+                                    if (RegexSafe.IsMatch(linkedDocument, @"[A-Za-z]:\.*", RegexOptions.None))
+                                    {
+                                        linkedDocument = linkedDocument.Substring(3)
+                                                                       .Replace("\\", "_")
+                                                                       .ToLower();
+                                        urlHyperlink = linkedDocument;
+                                    }
 
-                                if (linkedPhrictionDocument != null)
-                                {
-                                    LinkedPhabricatorObjects.Add(linkedPhrictionDocument);
-                                    urlHyperlink = "w/" + urlHyperlink;
+                                    // replace invalid characters in url by underscores
+                                    linkedDocument = RegexSafe.Replace(linkedDocument, "[ ?]", "_");
 
+                                    // trim linkedDocument
+                                    linkedDocument = linkedDocument.TrimEnd('_');
+
+                                    linkedPhrictionDocument = phrictionStorage.Get(database, linkedDocument);
+                                    if (linkedPhrictionDocument == null)
+                                    {
+                                        Storage.Stage stageStorage = new Storage.Stage();
+                                        linkedPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database).FirstOrDefault(doc => doc.Path.Equals(linkedDocument));
+                                    }
+
+                                    if (linkedPhrictionDocument != null)
+                                    {
+                                        LinkedPhabricatorObjects.Add(linkedPhrictionDocument);
+                                        urlHyperlink = "w/" + urlHyperlink;
+
+                                        if (urlHyperlinkText == null)
+                                        {
+                                            urlHyperlinkText = linkedPhrictionDocument.Name;
+                                        }
+                                    }
+
+                                    if (linkedPhrictionDocument == null)
+                                    {
+                                        // check if linked document was banned
+                                        Storage.BannedObject bannedObjectStorage = new Storage.BannedObject();
+                                        bannedLinkedPhrictionDocument = bannedObjectStorage.Exists(database, urlHyperlink, ref urlHyperlinkText);
+                                    }
+
+                                    // in case linked document has no title, correct generated title
                                     if (urlHyperlinkText == null)
                                     {
-                                        urlHyperlinkText = linkedPhrictionDocument.Name;
+                                        urlHyperlinkText = urlHyperlink;
+                                        while (urlHyperlinkText.EndsWith("/"))
+                                        {
+                                            urlHyperlinkText = urlHyperlinkText.Substring(0, urlHyperlinkText.Length - 1);
+                                        }
+
+                                        urlHyperlinkText = urlHyperlinkText.Split('/').LastOrDefault();
                                     }
-                                }
-
-                                if (linkedPhrictionDocument == null)
-                                {
-                                    // check if linked document was banned
-                                    Storage.BannedObject bannedObjectStorage = new Storage.BannedObject();
-                                    bannedLinkedPhrictionDocument = bannedObjectStorage.Exists(database, urlHyperlink, ref urlHyperlinkText);
-                                }
-
-                                // in case linked document has no title, correct generated title
-                                if (urlHyperlinkText == null)
-                                {
-                                    urlHyperlinkText = urlHyperlink;
-                                    while (urlHyperlinkText.EndsWith("/"))
-                                    {
-                                        urlHyperlinkText = urlHyperlinkText.Substring(0, urlHyperlinkText.Length - 1);
-                                    }
-
-                                    urlHyperlinkText = urlHyperlinkText.Split('/').LastOrDefault();
                                 }
                             }
                         }
+
 
                         if (InvalidUrl(browser, url, ref urlHyperlink, ref urlHyperlinkText))
                         {
@@ -289,7 +299,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 urlHyperlinkText = urlHyperlink;
                             }
 
-                            html = GenerateInvalidUrlError(database, url, urlHyperlink, urlHyperlinkText);
+                            html = GenerateInvalidUrlError(database, browser, url, urlHyperlink, urlHyperlinkText);
                         }
                         else
                         {
@@ -313,16 +323,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 html = string.Format("<a class='phriction-link banned' href='{0}' title=\"{1}\">{2}</a>",
                                                 absolutePathToPhabricator,
                                                 Locale.TranslateText("This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users.", browser.Session.Locale),
-                                                urlHyperlinkText);
+                                                System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
                             }
                             else
                             if (inexistantLinkedPhrictionDocument)
                             {
-                                html = string.Format("<a class='phriction-link banned' href='{0}'>{1}</a>", urlHyperlink, urlHyperlinkText);
+                                html = string.Format("<a class='phriction-link banned' href='{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
                             }
                             else
                             {
-                                html = string.Format("<a class='phriction-link' href='{0}'>{1}</a>", urlHyperlink, urlHyperlinkText);
+                                html = string.Format("<a class='phriction-link' href='{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
                             }
                         }
                     }
@@ -344,17 +354,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     Match hrefAbsolutePath = RegexSafe.Match(html, "href='(https?://[^']*)'", RegexOptions.None);
                     if (hrefAbsolutePath.Success)
                     {
-                        Http.SessionManager.Token token = SessionManager.GetToken(browser);
-                        string encryptionKey = token?.EncryptionKey;
-
                         Storage.Account accountStorage = new Storage.Account();
                         Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
                         if (accountData == null) throw new Exception.AuthorizationException();
 
-                        if (hrefAbsolutePath.Groups[1].Value.StartsWith(accountData.PhabricatorUrl, StringComparison.OrdinalIgnoreCase))
+                        if (hrefAbsolutePath.Groups[1].Value.StartsWith(accountData.PhabricatorUrl.TrimEnd('/') + '/', StringComparison.OrdinalIgnoreCase))
                         {
                             // Phabricator url found
-                            string localPath = hrefAbsolutePath.Groups[1].Value.Substring(accountData.PhabricatorUrl.Length).TrimEnd('/');
+                            string localPath = hrefAbsolutePath.Groups[1].Value.Substring(accountData.PhabricatorUrl.TrimEnd('/').Length + 1).TrimEnd('/');
 
                             // check if url points to wiki document
                             if (localPath.StartsWith("w/"))
@@ -382,11 +389,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// Formats a non-existing URL into a "banned" URL
         /// </summary>
         /// <param name="database">reference to Phabrico database</param>
+        /// <param name="browser">reference to browser</param>
         /// <param name="urlOwner">URL where invalid URL is found in</param>
         /// <param name="urlHyperlink">non-existing relative URL</param>
         /// <param name="urlHyperlinkText">Hyperlink text</param>
         /// <returns>CSS-formatted banned hyperlink tag</returns>
-        private string GenerateInvalidUrlError(Storage.Database database, string urlOwner, string urlHyperlink, string urlHyperlinkText)
+        private string GenerateInvalidUrlError(Storage.Database database, Browser browser, string urlOwner, string urlHyperlink, string urlHyperlinkText)
         {
             if (urlOwner.Trim('/').Any())
             {
@@ -397,12 +405,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
             urlHyperlink = RegexSafe.Replace(urlHyperlink, "^/?w/", "");
 
             bool invalidUrl = RegexSafe.IsMatch(urlHyperlink, "[\r\n\\\\]", RegexOptions.Singleline);
-            if (invalidUrl)
+            if (invalidUrl || browser.HttpServer.Customization.IsReadonly)
             {
                 return string.Format("<a class=\"phriction-link banned\" href=\"w/{0}\">{1}</a>",
                     urlHyperlink.Replace("\r", "")         // hide newlines in url
                                 .Replace("\n", ""),        // hide newlines in url
-                    urlHyperlinkText);
+                    System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
             }
             else
             {
@@ -410,12 +418,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     urlHyperlink.Replace("\r", "")         // hide newlines in url
                                 .Replace("\n", ""),        // hide newlines in url
                     HttpUtility.UrlPathEncode(urlHyperlinkText),
-                    urlHyperlinkText);
+                    System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
             }
         }
 
         /// <summary>
-        /// VErifies if a given URL is valid
+        /// Verifies if a given URL is valid
         /// </summary>
         /// <param name="browser">Reference to browser</param>
         /// <param name="currentUrl">URL from where the relative URL to be validated origins from</param>

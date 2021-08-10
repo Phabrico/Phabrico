@@ -10,6 +10,19 @@ namespace Phabrico
 {
     public class ApplicationCustomization
     {
+        public enum ApplicationAuthenticationFactor
+        {
+            /// <summary>
+            /// No authentication is needed
+            /// </summary>
+            Public,
+
+            /// <summary>
+            /// Authentication happens by means of a username and a password
+            /// </summary>
+            Knowledge
+        }
+
         public enum ApplicationTheme
         {
             Auto,
@@ -27,6 +40,11 @@ namespace Phabrico
         private Image customApplicationLogo = null;
 
         /// <summary>
+        /// Icon that should be shown in the browser tab
+        /// </summary>
+        private Image customFavIcon = null;
+
+        /// <summary>
         /// If false, Phabricator is not accessible
         /// </summary>
         private bool masterDataIsAccessible = true;
@@ -35,6 +53,11 @@ namespace Phabrico
         /// Base64 data of logo of the application that should be shown in the top left corner
         /// </summary>
         internal string CustomApplicationLogoBase64 { get; private set; } = null;
+
+        /// <summary>
+        /// Base64 data of icon that should be shown in the browser tab
+        /// </summary>
+        internal string CustomFavIconBase64 { get; private set; } = null;
 
         /// <summary>
         /// Global cascading style sheets which are injected in each page
@@ -104,11 +127,7 @@ namespace Phabrico
         /// <summary>
         /// The name of the application that should be shown in the top left corner
         /// </summary>
-        public string ApplicationName 
-        {
-            get;
-            set;
-        }
+        public string ApplicationName { get; set; } = "Phabrico";
 
         /// <summary>
         /// CSS styles for formatting the ApplicationName
@@ -116,9 +135,63 @@ namespace Phabrico
         public Dictionary<string, string> ApplicationNameStyle { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
-        /// If true, the menu item 'Change language' in the menu next to the search field will not be visible
+        /// How a user can authenticate themselves in Phabrico
         /// </summary>
-        public bool HideChangeLanguage { get; set; } = false;
+        public ApplicationAuthenticationFactor AuthenticationFactor { get; set; } = ApplicationAuthenticationFactor.Knowledge;
+
+        /// <summary>
+        /// The icon that should be shown in the browser tab
+        /// </summary>
+        public Image FavIcon
+        {
+            get
+            {
+                return customFavIcon;
+            }
+
+            set
+            {
+                customFavIcon = value;
+
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    Image image = new Bitmap(customFavIcon);
+                    int newWidth = image.Width;
+                    int newHeight = image.Height;
+
+                    // resize image if height too large (height should be 2 x height header on top)
+                    if (newHeight > 2*36)
+                    {
+                        newWidth = (newWidth * 2*36) / newHeight;
+                        newHeight = 2*36;
+
+                        var destRect = new Rectangle(0, 0, newWidth, newHeight);
+                        var newImage = new Bitmap(newWidth, newHeight);
+
+                        newImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+                        using (Graphics graphics = Graphics.FromImage(newImage))
+                        {
+                            graphics.CompositingMode = CompositingMode.SourceCopy;
+                            graphics.CompositingQuality = CompositingQuality.HighQuality;
+                            graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+                            graphics.SmoothingMode = SmoothingMode.HighQuality;
+                            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                            graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+
+                            image.Dispose();
+                            image = new Bitmap(newImage);
+                        }
+                    }
+
+                    // convert image to base64
+                    image.Save(memoryStream, ImageFormat.Png);
+                    byte[] imageData = memoryStream.ToArray();
+                    CustomFavIconBase64 = "data:image/png;base64," + Convert.ToBase64String(imageData);
+                    image.Dispose();
+                }
+            }
+        }
 
         /// <summary>
         /// If true, Config screen will not be accessible

@@ -35,8 +35,8 @@
             </div>
 
             <script>
-                var title = Locale.Translate('Offline changes for @@STAGED-ITEM@@')
-                                  .replace("@@STAGED-ITEM@@", "<a style=\"margin-left:5px;\" href=\"@@URL@@\">@@ITEM@@</a>");
+                var title = Locale.Translate('Offline changes for $$ITEM$$')
+                                  .replace("$$ITEM$$", "<a style=\"margin-left:5px;\" href=\"@@URL@@\">@@ITEM@@</a>");
                 document.querySelector('.staging-diff-head .title')
                         .innerHTML = title;
             </script>
@@ -66,7 +66,7 @@
 
 <script>
     // set page title
-    document.title = "Phabrico - Offline changes for @@ITEM@@";
+    document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Offline changes for $$ITEM$$").replace("$$ITEM$$", fromHTML("@@ITEM@@"));
 
     function cancelUndo()
     {

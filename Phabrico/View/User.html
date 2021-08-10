@@ -77,7 +77,7 @@ populateTable("");
 document.getElementById('filterUser').focus();
 
 // set page title
-document.title = "Phabrico - Users";
+document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Users");
 
 function showGlobalSpinner(allButton, url)
 {

@@ -8,9 +8,9 @@
 
 [[#anchor | Anchors ]]
 ~~~~~~~~~~
-<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a><br>
-<a class='phriction-link' href='http://www.example.com/'>example.com</a><br>
-<a class='phriction-link' href='w/daddy/'>Story of my dad's life</a><br>
-<a class='phriction-link' href='w/#anchor'>Story of my life</a><br>
+<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a><p class='paragraph'></p>
+<a class='phriction-link' href='http://www.example.com/'>example.com</a><p class='paragraph'></p>
+<a class='phriction-link' href='w/daddy/'>Story of my dad&#39;s life</a><p class='paragraph'></p>
+<a class='phriction-link' href='w/#anchor'>Story of my life</a><p class='paragraph'></p>
 <a class='phriction-link' href='w/#anchor'>Anchors</a>
 ~~~~~~~~~~

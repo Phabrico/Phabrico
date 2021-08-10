@@ -1,12 +1,10 @@
-﻿using System;
+﻿using Phabrico.Http;
+using Phabrico.Parsers.Remarkup.Rules;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-
-using Phabrico.Http;
-using Phabrico.Parsers.Remarkup.Rules;
-using Phabrico.Plugin;
 
 namespace Phabrico.Parsers.Remarkup
 {
@@ -101,11 +99,14 @@ namespace Phabrico.Parsers.Remarkup
                             remarkupRule.RuleStartOnNewLine = ruleStartsOnNewLine;
                             remarkupRule.RuleStartAfterWhiteSpace = ruleStartsAfterWhiteSpace;
                             remarkupRule.LinkedPhabricatorObjects.Clear();
+                            remarkupRule.ParentRemarkupRule = currentRemarkupRule;
+                            remarkupRule.TokenList = remarkupParserOutput.TokenList;
                             success = remarkupRule.ToHTML(database, browser, url, ref unprocessedRemarkupText, out localHtml);
                             if (success)
                             {
                                 remarkupRule.Start = remarkupText.IndexOf(processedRemarkupText);
                                 remarkupRule.Text = processedRemarkupText.Substring(0, remarkupRule.Length);
+                                remarkupRule.Html = localHtml;
 
                                 RemarkupRule clonedRemarkupRule = remarkupRule.Clone();
                                 remarkupParserOutput.TokenList.Add(clonedRemarkupRule);

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Configuration;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.Net;
 using System.Reflection;
 using System.Threading;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico
 {
@@ -43,8 +41,8 @@ namespace Phabrico
             System.IO.Directory.SetCurrentDirectory(directory);
 
             // initialize HTTP server
-            bool remoteAccessEnabled = (bool)ConfigurationManager.AppSettings["RemoteAccess"]?.Equals("Yes");
-            int tcpListenPort = Int32.Parse((string)ConfigurationManager.AppSettings["TcpListenPort"]);
+            bool remoteAccessEnabled = (bool)AppConfigLoader.AppSettings["RemoteAccess"]?.Equals("Yes");
+            int tcpListenPort = Int32.Parse((string)AppConfigLoader.AppSettings["TcpListenPort"]);
 
             try
             {

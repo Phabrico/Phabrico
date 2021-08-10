@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Phabrico.UnitTests.Synchronization;
+using System;
+using System.Linq;
+using System.Threading;
 using WebDriverManager.DriverConfigs.Impl;
 
 namespace Phabrico.UnitTests.Selenium.Browser
@@ -109,6 +109,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(30));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
                 wait.Until(condition => condition.FindElements(By.Id("dlgSynchronizing")).Any(elem => elem.Displayed == false));
+                Thread.Sleep(1000);  // wait a while to make sure the General Overview has been refreshed
 
                 // click on synchronization logging link
                 IWebElement syncLogging = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Last synchronized with Phabricator at:')]"))

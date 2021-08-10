@@ -1775,6 +1775,7 @@
 			Menus.prototype.defaultFonts = config.defaultFonts || Menus.prototype.defaultFonts;
 			ColorDialog.prototype.presetColors = config.presetColors || ColorDialog.prototype.presetColors;
 			ColorDialog.prototype.defaultColors = config.defaultColors || ColorDialog.prototype.defaultColors;
+			ColorDialog.prototype.colorNames = config.colorNames || ColorDialog.prototype.colorNames;
 			StyleFormatPanel.prototype.defaultColorSchemes = config.defaultColorSchemes || StyleFormatPanel.prototype.defaultColorSchemes;
 			Graph.prototype.defaultEdgeLength = config.defaultEdgeLength || Graph.prototype.defaultEdgeLength;
 			DrawioFile.prototype.autosaveDelay = config.autosaveDelay || DrawioFile.prototype.autosaveDelay;
@@ -2125,8 +2126,7 @@
 				
 				if (bgImg != null)
 				{
-					bgImg = JSON.parse(bgImg);
-					this.graph.setBackgroundImage(new mxImage(bgImg.src, bgImg.width, bgImg.height));
+					this.graph.setBackgroundImage(this.graph.parseBackgroundImage(bgImg));
 				}
 				else
 				{
@@ -2197,11 +2197,13 @@
 		{
 			node.setAttribute('style', this.graph.currentStyle);
 		}
+
+		var bgImg = this.graph.getBackgroundImageObject(this.graph.backgroundImage);
 		
 		// Adds the background image
-		if (this.graph.backgroundImage != null)
+		if (bgImg != null)
 		{
-			node.setAttribute('backgroundImage', JSON.stringify(this.graph.backgroundImage));
+			node.setAttribute('backgroundImage', JSON.stringify(bgImg));
 		}
 		
 		node.setAttribute('math', (this.graph.mathEnabled) ? '1' : '0');
@@ -5241,6 +5243,11 @@
 						btn.style.backgroundColor = bg;
 						btn.style.border = '1px solid ' + bd;
 					}
+
+					if (colorset['title'] != null)
+					{
+						btn.setAttribute('title', colorset['title']);
+					}
 					
 					btn.style.borderRadius = '0';
 					
@@ -6112,19 +6119,7 @@
 
 	/**
 	 * Adds support for data:action/json,{"actions":[actions]} where actions is
-	 * a comma-separated list of JSON objects with the following possible keys:
-	 * 
-	 * "open": string - opens a standard or custom link (including page links)
-	 * "toggle"/"show"/"hide"/"highlight": cellset - toggles, shows, hides or
-	 * highlights the given cells
-	 * "select": cellset - selects the given cells if the graph is editable
-	 * "scroll": cellset - scrolls to the first cell in the given celllset
-	 * If no scroll action is specified, then the first cell of the select
-	 * or highlight action is scrolled to visible (select has precedence).
-	 * A cellset is an array of cell IDs or tags or both, eg.
-	 * {"cells": ["id1", "id2"], "tags": ["tag1", "tag2"]}
-	 * To specify all cells, use "cells": ["*"], to specify all cells with
-	 * a tag, use "tags": [] (empty array).
+	 * a comma-separated list of JSON objects.
 	 * 
 	 * An example action is:
 	 * 
@@ -6136,20 +6131,73 @@
 	{
 		if (href.substring(0, 17) == 'data:action/json,')
 		{
-			// Some actions are stateless and must be handled before the transaction
 			var link = JSON.parse(href.substring(17));
 
-			// When adding new actions that reference cell IDs support for updating
-			// those cell IDs must be handled in Graph.updateCustomLinkActions
 			if (link.actions != null)
 			{
-				// Executes open actions before starting transaction
-				for (var i = 0; i < link.actions.length; i++)
+				this.executeCustomActions(link.actions);
+			}
+		}
+	};
+		
+	/**
+	 * Runs the given actions and invokes done when all actions have been executed.
+	 * When adding new actions that reference cell IDs support for updating
+	 * those cell IDs must be handled in Graph.updateCustomLinkActions
+	 */
+	Graph.prototype.executeCustomActions = function(actions, done)
+	{
+		if (!this.executingCustomActions)
+		{
+			this.executingCustomActions = true;
+			var updatingModel = false;
+			var waitCounter = 0;
+			var index = 0;
+
+			var beginUpdate = mxUtils.bind(this, function()
+			{
+				if (!updatingModel)
 				{
-					var action = link.actions[i];
-					
+					updatingModel = true;
+					this.model.beginUpdate();
+				}
+			});
+
+			var endUpdate = mxUtils.bind(this, function()
+			{
+				if (updatingModel)
+				{
+					updatingModel = false;
+					this.model.endUpdate();
+				}
+			});
+
+			var waitAndExecute = mxUtils.bind(this, function()
+			{
+				if (waitCounter > 0)
+				{
+					waitCounter--;
+				}
+
+				if (waitCounter == 0)
+				{
+					executeNextAction()
+				}
+			});
+
+			var executeNextAction = mxUtils.bind(this, function()
+			{
+				if (index < actions.length)
+				{
+					var stop = this.stoppingCustomActions;
+					var action = actions[index++];
+					var animations = [];
+
+					// Executes open actions before starting transaction
 					if (action.open != null)
 					{
+						endUpdate();
+
 						if (this.isCustomLink(action.open))
 						{
 							if (!this.customLinkClicked(action.open))
@@ -6162,43 +6210,99 @@
 							this.openLink(action.open);
 						}
 					}
-				}
 
-				// Executes all actions that change cell states
-	    		this.model.beginUpdate();
-	    		try
-	    		{
-					for (var i = 0; i < link.actions.length; i++)
+					if (action.wait != null && !stop)
 					{
-						var action = link.actions[i];
-						
-						if (action.toggle != null)
+						this.pendingExecuteNextAction = mxUtils.bind(this, function()
 						{
-							this.toggleCells(this.getCellsForAction(action.toggle, true));
-						}
-						
-						if (action.show != null)
-						{
-							this.setCellsVisible(this.getCellsForAction(action.show, true), true);
-						}
-						
-						if (action.hide != null)
-						{
-							this.setCellsVisible(this.getCellsForAction(action.hide, true), false);
-						}
+							this.pendingExecuteNextAction = null;
+							this.pendingWaitThread = null;
+							waitAndExecute();
+						});
+
+						waitCounter++;
+						this.pendingWaitThread = window.setTimeout(this.pendingExecuteNextAction,
+							(action.wait != '') ? parseInt(action.wait) : 1000);
+						endUpdate();
 					}
-				}
-	    		finally
-	    		{
-	    			this.model.endUpdate();
-	    		}
-	    		
-				// Executes stateless actions on cells
-				for (var i = 0; i < link.actions.length; i++)
-				{
-					var action = link.actions[i];
-					var cells = [];
+
+					if (action.opacity != null && action.opacity.value != null)
+					{
+						Graph.setOpacityForNodes(this.getNodesForCells(
+							this.getCellsForAction(action.opacity, true)),
+							action.opacity.value);
+					}
+
+					if (action.fadeIn != null)
+					{
+						waitCounter++;
+						Graph.fadeNodes(this.getNodesForCells(
+							this.getCellsForAction(action.fadeIn, true)),
+							0, 1, waitAndExecute, (stop) ?
+							0 : action.fadeIn.delay);
+					}
+
+					if (action.fadeOut != null)
+					{
+						waitCounter++;
+						Graph.fadeNodes(this.getNodesForCells(
+							this.getCellsForAction(action.fadeOut, true)),
+							1, 0, waitAndExecute, (stop) ?
+							0 : action.fadeOut.delay);
+					}
+
+					if (action.wipeIn != null)
+					{
+						animations = animations.concat(this.createWipeAnimations(
+							this.getCellsForAction(action.wipeIn, true), true));
+					}
+
+					if (action.wipeOut != null)
+					{
+						animations = animations.concat(this.createWipeAnimations(
+							this.getCellsForAction(action.wipeOut, true), false));
+					}
+
+					// Executes all actions that change cell states
+					if (action.toggle != null)
+					{
+						beginUpdate();
+						this.toggleCells(this.getCellsForAction(action.toggle, true));
+					}
+
+					if (action.show != null)
+					{
+						beginUpdate();
+						var temp = this.getCellsForAction(action.show, true);
+						Graph.setOpacityForNodes(this.getNodesForCells(temp), 1);
+						this.setCellsVisible(temp, true);
+					}
+
+					if (action.hide != null)
+					{
+						beginUpdate();
+						var temp = this.getCellsForAction(action.hide, true);
+						Graph.setOpacityForNodes(this.getNodesForCells(temp), 0);
+						this.setCellsVisible(temp, false);
+					}
 					
+					if (action.toggleStyle != null && action.toggleStyle.key != null)
+					{
+						beginUpdate();
+						this.toggleCellStyles(action.toggleStyle.key, (action.toggleStyle.defaultValue != null) ?
+							action.toggleStyle.defaultValue : '0', this.getCellsForAction(action.toggleStyle, true));
+					}
+
+					if (action.style != null && action.style.key != null)
+					{
+						beginUpdate();
+						this.setCellStyles(action.style.key, action.style.value,
+							this.getCellsForAction(action.style, true));
+					}
+
+					// Executes stateless actions on cells
+					var cells = [];
+						
 					if (action.select != null && this.isEnabled())
 					{
 						cells = this.getCellsForAction(action.select);
@@ -6209,7 +6313,8 @@
 					{
 						cells = this.getCellsForAction(action.highlight);
 						this.highlightCells(cells, action.highlight.color,
-							action.highlight.duration, action.highlight.opacity);
+							action.highlight.duration,
+							action.highlight.opacity);
 					}
 
 					if (action.scroll != null)
@@ -6226,15 +6331,61 @@
 					{
 						this.scrollCellToVisible(cells[0]);
 					}
+
+					if (animations.length > 0)
+					{
+						waitCounter++;
+						this.executeAnimations(animations, waitAndExecute,
+							(stop) ? 1 : action.steps,
+							(stop) ? 0 : action.delay);
+					}
+
+					if (waitCounter == 0)
+					{
+						executeNextAction();
+					}
+					else
+					{
+						endUpdate();
+					}
 				}
+				else
+				{
+					this.executingCustomActions = false;
+					this.stoppingCustomActions = false;
+					endUpdate();
+
+					if (done != null)
+					{
+						done();
+					}
+				}
+			});
+
+			executeNextAction();
+		}
+		else
+		{
+			this.stoppingCustomActions = true;
+
+			if (this.pendingWaitThread != null)
+			{
+				window.clearTimeout(this.pendingWaitThread);
 			}
+
+			if (this.pendingExecuteNextAction != null)
+			{
+				this.pendingExecuteNextAction();
+			}
+
+			this.fireEvent(new mxEventObject('stopExecutingCustomActions'));
 		}
 	};
-	
+
 	/**
 	 * Updates cell IDs in custom links on the given cell and its label.
 	 */
-	Graph.prototype.updateCustomLinksForCell = function(mapping, cell)
+	Graph.prototype.doUpdateCustomLinksForCell = function(mapping, cell)
 	{
 		var href = this.getLinkForCell(cell);
 		
@@ -6277,7 +6428,6 @@
 		{
 			try
 			{
-				// Some actions are stateless and must be handled before the transaction
 				var link = JSON.parse(href.substring(17));
 
 				if (link.actions != null)
@@ -6303,34 +6453,33 @@
 		for (var i = 0; i < actions.length; i++)
 		{
 			var action = actions[i];
-			
-			this.updateCustomLinkAction(mapping, action.toggle);
-			this.updateCustomLinkAction(mapping, action.show);
-			this.updateCustomLinkAction(mapping, action.hide);
-			this.updateCustomLinkAction(mapping, action.select);
-			this.updateCustomLinkAction(mapping, action.highlight);
-			this.updateCustomLinkAction(mapping, action.scroll);
+
+			for (var name in action)
+			{
+				this.updateCustomLinkAction(mapping, action[name], 'cells');
+				this.updateCustomLinkAction(mapping, action[name], 'excludeCells');
+			}
 		}
 	};
 	
 	/**
 	 * Updates cell IDs in the given custom link action.
 	 */
-	Graph.prototype.updateCustomLinkAction = function(mapping, action)
+	Graph.prototype.updateCustomLinkAction = function(mapping, action, name)
 	{
-		if (action != null && action.cells != null)
+		if (action != null && action[name] != null)
 		{
 			var result = [];
 			
-			for (var i = 0; i < action.cells.length; i++)
+			for (var i = 0; i < action[name].length; i++)
 			{
-				if (action.cells[i] == '*')
+				if (action[name][i] == '*')
 				{
-					result.push(action.cells[i]);
+					result.push(action[name][i]);
 				}
 				else
 				{
-					var temp = mapping[action.cells[i]];
+					var temp = mapping[action[name][i]];
 					
 					if (temp != null)
 					{
@@ -6341,12 +6490,12 @@
 					}
 					else
 					{
-						result.push(action.cells[i]);
+						result.push(action[name][i]);
 					}
 				}
 			}
 			
-			action.cells = result;
+			action[name] = result;
 		}
 	};
 	
@@ -6356,8 +6505,27 @@
 	 */
 	Graph.prototype.getCellsForAction = function(action, includeLayers)
 	{
-		return this.getCellsById(action.cells).concat(
-			this.getCellsForTags(action.tags, null, null, includeLayers));
+		var result = this.getCellsById(action.cells).concat(
+			this.getCellsForTags(action.tags,
+				null, null, includeLayers));
+
+		// Removes excluded cells
+		if (action.excludeCells != null)
+		{
+			var temp = [];
+
+			for (var i = 0; i < result.length; i++)
+			{
+				if (action.excludeCells.indexOf(result[i].id) < 0)
+				{
+					temp.push(result[i]);
+				}
+			}
+
+			result = temp;
+		}
+
+		return result;
 	};
 	
 	/**
@@ -6374,7 +6542,7 @@
 			{
 				if (ids[i] == '*')
 				{
-					var parent = this.getDefaultParent();
+					var parent = this.model.getRoot();
 					
 					result = result.concat(this.model.filterDescendants(function(cell)
 					{
@@ -7556,7 +7724,14 @@
                 
                 if (!this.ignoreImage)
                 {
-                    this.page.viewState.backgroundImage = this.image;
+					var img = this.image;
+
+					if (img != null && img.src != null && img.src.substring(0, 13) == 'data:page/id,')
+					{
+						img = this.ui.createImageForPageLink(img.src);
+					}
+
+                    this.page.viewState.backgroundImage = img;
                 }
 
                 if (this.format != null)

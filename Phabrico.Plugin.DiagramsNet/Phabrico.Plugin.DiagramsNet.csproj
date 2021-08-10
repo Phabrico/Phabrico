@@ -39,6 +39,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -3447,8 +3448,14 @@
     <EmbeddedResource Include="Locale\phabrico_de.po" />
     <EmbeddedResource Include="Locale\phabrico_zh.po" />
     <EmbeddedResource Include="Locale\phabrico_es.po" />
+    <None Include="..\LICENSE">
+      <Link>LICENSE</Link>
+    </None>
     <None Include="packages.config" />
     <EmbeddedResource Include="webapp\images\manifest.json" />
+    <None Include="Phabrico.Plugin.DiagramsNet.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="webapp\img\LICENSE" />
     <None Include="webapp\js\deflate\README.md" />
     <None Include="webapp\js\mermaid\README.md" />
@@ -3537,4 +3544,28 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>SET plugin=$(TargetName)
+
+IF EXIST ..\nugetPackage RD /s /q ..\nugetPackage
+
+WHERE nuget 2&gt;nul || GOTO end
+
+    MKDIR ..\nugetPackage
+
+    COPY %25plugin%25.dll    ..\nugetPackage
+    COPY %25plugin%25.pdb    ..\nugetPackage
+
+    POWERSHELL "[system.io.file]::ReadAllText('%25plugin%25.nuspec').Replace('%25%25version%25%25', ((Get-Item -path '../nugetPackage/%25plugin%25.dll').VersionInfo.ProductVersion.Split('.') | Select-Object -First 4) -join '.')" &gt; VersionedPhabrico.nuspec
+
+    NUGET pack VersionedPhabrico.nuspec
+
+    DEL VersionedPhabrico.nuspec
+    DEL ..\nugetPackage\%25plugin%25.dll
+    DEL ..\nugetPackage\%25plugin%25.pdb
+
+    MOVE *.nupkg  ..\nugetPackage
+:end
+SET ERRORLEVEL = 0</PostBuildEvent>
+  </PropertyGroup>
 </Project>

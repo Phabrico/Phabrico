@@ -4,6 +4,6 @@
 /evil.com ]]
 
 ~~~~~~~~~~
-<a class="phriction-link banned" href="w/\evil.com">\evil.com</a><br>
+<a class="phriction-link banned" href="w/\evil.com">\evil.com</a><p class='paragraph'></p>
 <a class="phriction-link banned" href="w//evil.com">evil.com</a>
 ~~~~~~~~~~

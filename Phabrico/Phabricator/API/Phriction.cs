@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using Phabrico.Http;
 using Phabrico.Storage;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Phabrico.Phabricator.API
 {
@@ -129,7 +127,18 @@ namespace Phabrico.Phabricator.API
                     // make sure we don't have any trailing spaces (to make the diff-functionality a little easier)
                     string[] lines = newPhriction.Content.Split('\n');
                     newPhriction.Content = string.Join( "\n", 
-                                                        lines.Select(line => line.TrimEnd(' ', '\r', '\t'))
+                                                        lines.Select(line =>
+                                                        {
+                                                            // in case we have a table, do not trim spaces at the end
+                                                            if (line.StartsWith("|"))
+                                                            {
+                                                                return line.TrimEnd('\r', '\t');
+                                                            }
+                                                            else
+                                                            {
+                                                                return line.TrimEnd(' ', '\r', '\t');
+                                                            }
+                                                        })
                                                       );
 
                     // in case there's a time difference between Phabricator and Phabrico: correct timestamp from Phabricator
@@ -198,7 +207,18 @@ namespace Phabrico.Phabricator.API
                     // make sure we don't have any trailing spaces (to make the diff-functionality a little easier)
                     string[] lines = newPhriction.Content.Split('\n');
                     newPhriction.Content = string.Join("\n",
-                                                        lines.Select(line => line.TrimEnd(' ', '\r', '\t'))
+                                                        lines.Select(line =>
+                                                        {
+                                                            // in case we have a table, do not trim spaces at the end
+                                                            if (line.StartsWith("|"))
+                                                            {
+                                                                return line.TrimEnd('\r', '\t');
+                                                            }
+                                                            else
+                                                            {
+                                                                return line.TrimEnd(' ', '\r', '\t');
+                                                            }
+                                                        })
                                                       );
                     yield return newPhriction;
                 }

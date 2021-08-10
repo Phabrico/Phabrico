@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Phabrico.Http;
+using Phabrico.Miscellaneous;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-
-using Phabrico.Http;
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {
@@ -63,7 +62,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         html = string.Format("<a class='maniphest-link {0}' href='/maniphest/T{1}/'>T{1}: {2}</a>",
                                         maniphestTask.IsOpen ? "" : "closed",
                                         maniphestTask.ID,
-                                        maniphestTask.Name);
+                                        System.Web.HttpUtility.HtmlEncode(maniphestTask.Name));
                         remarkup = remarkup.Substring(match.Length);
                     }
                     else

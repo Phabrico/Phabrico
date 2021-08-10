@@ -92,6 +92,7 @@
     <Compile Include="Controllers\Synchronization.cs" />
     <Compile Include="Controllers\UrlControllerAttribute.cs" />
     <Compile Include="Controllers\User.cs" />
+    <Compile Include="Exception\InvalidConfigurationException.cs" />
     <Compile Include="Exception\AccessDeniedException.cs" />
     <Compile Include="ApplicationCustomization.cs" />
     <Compile Include="Http\CachedHttpMessage.cs" />
@@ -502,6 +503,9 @@
     <EmbeddedResource Include="Fonts\NotoSans-Regular-latin.woff2" />
     <EmbeddedResource Include="Fonts\NotoSans-Regular-vietnamese.woff2" />
     <None Include="packages.config" />
+    <None Include="Phabrico.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="View\HomePage.Template.html" />
@@ -579,6 +583,7 @@
     </Content>
     <Content Include="Fonts\icomoon.svg" />
     <Content Include="Fonts\SIL Open Font License.txt" />
+    <EmbeddedResource Include="View\InvalidConfiguration.html" />
     <EmbeddedResource Include="View\HomePage.IFrameContent.html" />
     <EmbeddedResource Include="Scripts\vanilla-picker.min.js" />
     <EmbeddedResource Include="Stylesheets\font-faces.css" />
@@ -628,4 +633,28 @@
   </Target>
   <Import Project="..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" />
   <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>IF EXIST ..\nugetPackage RD /s /q ..\nugetPackage
+
+WHERE nuget 2&gt;nul || GOTO end
+
+    MKDIR ..\nugetPackage
+
+    COPY Phabrico.exe           ..\nugetPackage\Phabrico.dll
+    COPY Phabrico.exe.config    ..\nugetPackage
+    COPY Phabrico.pdb           ..\nugetPackage
+
+    POWERSHELL "[system.io.file]::ReadAllText('Phabrico.nuspec').Replace('%25%25version%25%25', ((Get-Item -path '../nugetPackage/Phabrico.dll').VersionInfo.ProductVersion.Split('.') | Select-Object -First 4) -join '.')" &gt; VersionedPhabrico.nuspec
+
+    NUGET pack VersionedPhabrico.nuspec
+
+    DEL VersionedPhabrico.nuspec
+    DEL ..\nugetPackage\Phabrico.dll
+    DEL ..\nugetPackage\Phabrico.exe.config
+    DEL ..\nugetPackage\Phabrico.pdb
+
+    MOVE *.nupkg  ..\nugetPackage
+:end
+SET ERRORLEVEL = 0</PostBuildEvent>
+  </PropertyGroup>
 </Project>

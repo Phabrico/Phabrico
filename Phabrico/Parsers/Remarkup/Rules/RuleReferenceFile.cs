@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Phabrico.Http;
+using Phabrico.Miscellaneous;
+using Phabrico.Phabricator.Data;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
-using Phabrico.Http;
-using Phabrico.Miscellaneous;
-using Phabrico.Phabricator.Data;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {
@@ -299,6 +298,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             string imgStyles = "";
+            string imgLocatorStyles = "width: " + fileObject.ImagePropertyPixelWidth + "px;";
             string alternativeText = "";
             string clickAction = "";
 
@@ -318,11 +318,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     case "float":
                         if (fileObjectOptions["layout"].ToLower().Equals("center"))
                         {
-                            imgStyles += "display:block; margin-left: auto; margin-right: auto;";
+                            imgLocatorStyles += "display:block; margin-left: auto; margin-right: auto;";
                         }
                         else
                         {
-                            imgStyles += string.Format("float: {0};", fileObjectOptions["layout"]);
+                            imgLocatorStyles += string.Format("float: {0};", fileObjectOptions["layout"]);
                         }
                         break;
 
@@ -331,17 +331,17 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         {
                             if (fileObjectOptions["layout"].ToLower().Equals("center"))
                             {
-                                imgStyles += "margin-left: auto; margin-right: auto;";
+                                imgLocatorStyles += "margin-left: auto; margin-right: auto;";
                             }
                             else
                             if (fileObjectOptions["layout"].ToLower().Equals("right"))
                             {
-                                imgStyles += "margin-left: auto;";
+                                imgLocatorStyles += "margin-left: auto;";
                             }
                             else
                             if (fileObjectOptions["layout"].ToLower().Equals("inline"))
                             {
-                                imgStyles += "margin-top: 0px; margin-bottom: -20px;";
+                                imgLocatorStyles += "margin-top: 0px; margin-bottom: -20px;";
                             }
                         }
                         break;
@@ -396,45 +396,55 @@ namespace Phabrico.Parsers.Remarkup.Rules
             {
                 if (isFullSize)
                 {
-                    return string.Format(@"<div class='image-container allow-full-screen'>
-                                          <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>
-                                          {6}
-                                       </div>",
+                    /* TODO: margin-left aanpassen voor image-locator */
+                    return string.Format("<div class='image-locator' style='{7}'>\n" +
+                                         "  <div class='image-container allow-full-screen'>\n" +
+                                         "     <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>\n" +
+                                         "     {6}\n" +
+                                         "  </div>" +
+                                         "</div>",
                         fileObject.FileName.Replace("'", ""),
                         fileObject.ID,
                         imgClass,
                         imgStyles,
                         alternativeText,
                         clickAction,
-                        btnEditImageHtml);
+                        btnEditImageHtml,
+                        imgLocatorStyles);
                 }
                 else
                 {
-                    return string.Format(@"<div class='image-container'>
-                                          <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>
-                                          {6}
-                                       </div>",
+                    return string.Format("<div class='image-locator' style='{7}'>\n" +
+                                         "  <div class='image-container'>\n" +
+                                         "     <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>\n" +
+                                         "     {6}\n" +
+                                         "  </div>" +
+                                         "</div>",
                         fileObject.FileName.Replace("'", ""),
                         fileObject.ID,
                         imgClass,
                         imgStyles,
                         alternativeText,
                         clickAction,
-                        btnEditImageHtml);
+                        btnEditImageHtml,
+                        imgLocatorStyles);
                 }
             }
             else
             {
                 if (isFullSize)
                 {
-                    return string.Format(@"<div class='image-container allow-full-screen'>
-                                          <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}>
-                                       </div>",
+                    return string.Format("<div class='image-locator' style='{5}'>\n" +
+                                         "  <div class='image-container allow-full-screen'>\n" +
+                                         "     <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}>\n" +
+                                         "  </div>" +
+                                         "</div>",
                         fileObject.FileName.Replace("'", ""),
                         fileObject.ID,
                         imgClass,
                         imgStyles,
-                        alternativeText);
+                        alternativeText,
+                        imgLocatorStyles);
                 }
                 else
                 {
@@ -474,16 +484,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             return string.Format(
-                        @"<a class='remarkup-embed' href='file/data/{3}/'>
-                        <div class='remarkup-embed-border'>
-                            <span class='phui-font-fa {0}' style='top:0px'></span>
-                            <span>
-                                <span class='remarkup-embed-file-name'>{1}</span>
-                                <span class='remarkup-embed-file-size'>{2}</span>
-                            </span>
-                            <span class='remarkup-embed-download-link'>" + Locale.TranslateText("FileReference.Download", browser.Session.Locale) + @"</span>
-                        </div>
-                        </a>", fileObject.FontAwesomeIcon, fileObject.FileName, formattedFileSize, fileObject.ID);
+                        "<a class='remarkup-embed' href='file/data/{3}/'>\n" +
+                        "  <div class='remarkup-embed-border'>\n" +
+                        "      <span class='phui-font-fa {0}' style='top:0px'></span>\n" +
+                        "      <span>\n" +
+                        "          <span class='remarkup-embed-file-name'>{1}</span>\n" +
+                        "          <span class='remarkup-embed-file-size'>{2}</span>\n" +
+                        "      </span>\n" +
+                        "      <span class='remarkup-embed-download-link'>\n" + Locale.TranslateText("FileReference.Download", browser.Session.Locale) + @"</span>" +
+                        "  </div>\n" +
+                        "</a>", fileObject.FontAwesomeIcon, fileObject.FileName, formattedFileSize, fileObject.ID);
         }
 
         /// <summary>

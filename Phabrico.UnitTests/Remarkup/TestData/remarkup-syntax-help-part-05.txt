@@ -94,7 +94,7 @@ This produces a list like this:<br>
   <li class='remarkup-list-item'>bread</li>
 </ul>
 
-(Note that you need to put a space after the <tt class='remarkup-monospaced'>-</tt> or <tt class='remarkup-monospaced'>*</tt>.)<br>
+(Note that you need to put a space after the <tt class='remarkup-monospaced'>-</tt> or <tt class='remarkup-monospaced'>*</tt>.)<p class='paragraph'></p>
 You can make numbered lists with a <tt class='remarkup-monospaced'>#</tt> instead of <tt class='remarkup-monospaced'>-</tt> or <tt class='remarkup-monospaced'>*</tt>:<br>
 <ol class='remarkup-list'>
   <li class='remarkup-list-item'>Articuno</li>
@@ -108,7 +108,7 @@ than <tt class='remarkup-monospaced'>1</tt>, the list will start at that number 
 201) Created
 202) Accepted</code></pre></div>
 <br>
-...produces this:<br>
+...produces this:<p class='paragraph'></p>
 <ol start='200' class='remarkup-list'>
   <li class='remarkup-list-item'>OK</li>
   <li class='remarkup-list-item'>Created</li>

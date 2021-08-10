@@ -1,7 +1,6 @@
-﻿using System.Text.RegularExpressions;
-
-using Phabrico.Http;
+﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {

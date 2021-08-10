@@ -106,7 +106,7 @@ a.phriction-link-missing {
 }
 
 body, textarea {
-    font-family: "Noto Sans", "Noto Sans SC", sans-serif;
+    font-family: "Noto Sans", "Segoe UI Emoji","Segoe UI Symbol", "Noto Sans SC", sans-serif;
     font-size: 14px;
     direction: ltr;
     text-align: left;
@@ -140,6 +140,10 @@ body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, 
 br {
     line-height: 1.5em;
     vertical-align: top;
+}
+
+p.paragraph {
+    height: 1em;
 }
 
 ol {
@@ -2089,6 +2093,7 @@ a.remarkup-embed {
     left: 5px;
     padding: 5px;
     display: inline-block;
+    pointer-events: none;
 }
 
 .tooltip-right:hover .tooltiptext,

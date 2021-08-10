@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Phabrico.Http;
+using Phabrico.Http.Response;
+using System;
 using System.Linq;
 using System.Reflection;
-using Phabrico.Http;
-using Phabrico.Http.Response;
 
 namespace Phabrico.Plugin
 {

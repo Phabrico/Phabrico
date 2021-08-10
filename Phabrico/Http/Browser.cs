@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using Phabrico.Phabricator.API;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -7,9 +9,6 @@ using System.Net;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
-
-using Phabrico.Miscellaneous;
-using Phabrico.Phabricator.API;
 
 namespace Phabrico.Http
 {
@@ -150,32 +149,42 @@ namespace Phabrico.Http
                             + httpListenerContext.Request.RemoteEndPoint.Address.ToString();
             }
 
-            // set language based on language-cookie
-            if (httpListenerContext.Request.Cookies["language"] != null)
+            if (string.IsNullOrWhiteSpace(httpServer.Customization.Language))
             {
-                Language = httpListenerContext.Request.Cookies["language"].Value;
+                // set language based on language-cookie
+                if (httpListenerContext.Request.Cookies["language"] != null)
+                {
+                    Language = httpListenerContext.Request.Cookies["language"].Value;
+                }
+                else
+                {
+                    // no cookie-found: first time or in incognito-mode -> set language based on server-session-variable
+                    using (Storage.Database database = new Storage.Database(null))
+                    {
+                        Language = database.GetSessionVariable(this, "language");
+
+                        if (string.IsNullOrEmpty(Language))
+                        {
+                            // no session-variable found: set default language to the language of the browser
+                            Language = httpListenerContext.Request
+                                                          .UserLanguages
+                                                          .FirstOrDefault()
+                                                          .Split('-')
+                                                          .FirstOrDefault();
+
+                            database.SetSessionVariable(this, "language", Language);
+                        }
+                    }
+
+                    // set language cookie
+                    Session.Locale = Language;
+                    SetCookie("language", Language);
+                }
             }
             else
             {
-                // no cookie-found: first time or in incognito-mode -> set language based on server-session-variable
-                using (Storage.Database database = new Storage.Database(null))
-                {
-                    Language = database.GetSessionVariable(this, "language");
-
-                    if (string.IsNullOrEmpty(Language))
-                    {
-                        // no session-variable found: set default language to the language of the browser
-                        Language = httpListenerContext.Request
-                                                      .UserLanguages
-                                                      .FirstOrDefault()
-                                                      .Split('-')
-                                                      .FirstOrDefault();
-
-                        database.SetSessionVariable(this, "language", Language);
-                    }
-                }
-
                 // set language cookie
+                Language = httpServer.Customization.Language;
                 Session.Locale = Language;
                 SetCookie("language", Language);
             }

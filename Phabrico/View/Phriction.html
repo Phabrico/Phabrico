@@ -68,7 +68,10 @@
 
 <div class="phui-document">
     <h1><span id="documentState" class="@@DOCUMENT-STATE@@"></span>@@DOCUMENT-TITLE@@</h1>
-    <div id="remarkupContent" class="content remarkupContent">@@DOCUMENT-CONTENT@@</div>
+    <div style="display: flex;flex-direction: column;">
+        <div id="remarkupContent" class="content remarkupContent">@@DOCUMENT-CONTENT@@</div>
+        @@DOCUMENT-HIERARCHY@@
+    </div>
     <div class="toc">
         <a class="phui-document-toc-header" href="#top">Contents</a>
         <div>
@@ -816,7 +819,7 @@ dateModified won't change when a subscription is added or removed
 
     window.addEventListener('load', function() {
         // set page title
-        document.title = "Phabrico - " + fromHTML("@@DOCUMENT-TITLE@@");
+        document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + fromHTML("@@DOCUMENT-TITLE@@");
 
         // make sure all images fit on the page during after they have been loaded
         document.querySelectorAll('img')

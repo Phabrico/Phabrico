@@ -88,7 +88,7 @@ populateTable("");
 document.getElementById('filterProject').focus();
 
 // set page title
-document.title = "Phabrico - Projects";
+document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Projects");
 
 function showGlobalSpinner(allButton, url)
 {
@@ -379,7 +379,7 @@ function populateTable(firstCharacters)
                 cell = row.insertCell();
                 cell.classList.add('wide');
                 var anchorProjectTasks = document.createElement('a');
-                anchorProjectTasks.href = "/project/info/" + record.Token;
+                anchorProjectTasks.href = "project/info/" + record.Token;
                 text = document.createTextNode("  " + record.ProjectName);
                 anchorProjectTasks.appendChild(text);
                 cell.appendChild(anchorProjectTasks);

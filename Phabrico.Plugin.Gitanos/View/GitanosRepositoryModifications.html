@@ -316,7 +316,7 @@
     populateTableModifications(filter.value, true);
 
     // set page title
-    document.title = "Phabrico - Git repository @@REPOSITORY-NAME@@";
+    document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Git repository") + " " + fromHTML("@@REPOSITORY-NAME@@");
 
     var webSocketBaseURI = document.baseURI.replace(/https?:\/\//, "ws://");
     var webSocket = new WebSocket(webSocketBaseURI + "gitanos/notification");

@@ -30,20 +30,20 @@ You can highlight specific lines with the `highlight` option:
 
 ~~~~~~~~~~
 <h1 class='remarkup-header'><a name='hdrEmbedding_Mocks__Pholio_' style='padding-top: 80px;'></a>Embedding Mocks (Pholio) </h1>
-You can embed a Pholio mock by using braces to refer to it:<br>
-{M123}<br>
+You can embed a Pholio mock by using braces to refer to it:<p class='paragraph'></p>
+{M123}<p class='paragraph'></p>
 By default the first four images from the mock set are displayed. This behavior<br>
 can be overridden with the <strong>image</strong> option. With the <strong>image</strong> option you can<br>
-provide one or more image IDs to display.<br>
-You can set the image (or images) to display like this:<br>
+provide one or more image IDs to display.<p class='paragraph'></p>
+You can set the image (or images) to display like this:<p class='paragraph'></p>
 {M123, image=12345}<br>
 {M123, image=12345 &amp; 6789}<br>
 <h1 class='remarkup-header'><a name='hdrEmbedding_Pastes' style='padding-top: 80px;'></a>Embedding Pastes </h1>
-You can embed a Paste using braces:<br>
-{P123}<br>
-You can adjust the embed height with the <tt class='remarkup-monospaced'>lines</tt> option:<br>
-{P123, lines=15}<br>
-You can highlight specific lines with the <tt class='remarkup-monospaced'>highlight</tt> option:<br>
+You can embed a Paste using braces:<p class='paragraph'></p>
+{P123}<p class='paragraph'></p>
+You can adjust the embed height with the <tt class='remarkup-monospaced'>lines</tt> option:<p class='paragraph'></p>
+{P123, lines=15}<p class='paragraph'></p>
+You can highlight specific lines with the <tt class='remarkup-monospaced'>highlight</tt> option:<p class='paragraph'></p>
 {P123, highlight=15}<br>
 {P123, highlight=&quot;23-25, 31&quot;}
 ~~~~~~~~~~

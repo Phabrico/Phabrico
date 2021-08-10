@@ -1,10 +1,8 @@
-﻿using System.IO;
-using System.Linq;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
+using System.IO;
+using System.Linq;
 
 namespace Phabrico.UnitTests.Remarkup
 {

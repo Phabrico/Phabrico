@@ -1,4 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Phabrico.Http;
+using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Base64;
+using Phabrico.Parsers.Remarkup;
+using Phabrico.Parsers.Remarkup.Rules;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Globalization;
@@ -6,14 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-
-using Newtonsoft.Json;
-
-using Phabrico.Http;
-using Phabrico.Miscellaneous;
-using Phabrico.Parsers.Base64;
-using Phabrico.Parsers.Remarkup;
-using Phabrico.Parsers.Remarkup.Rules;
 using static Phabrico.Phabricator.Data.Account;
 
 [assembly: InternalsVisibleTo("Phabrico.UnitTests")]
@@ -109,7 +107,8 @@ namespace Phabrico.Storage
             {
                 if (_datasource == null)
                 {
-                    _datasource = (string)System.Configuration.ConfigurationManager.AppSettings["DatabaseDirectory"];
+                    _datasource = (string)AppConfigLoader.AppSettings["DatabaseDirectory"];
+                    if (_datasource == null) throw new Exception.InvalidConfigurationException("DatabaseDirectory not found");
 
                     FileAttributes fileAttributes = System.IO.File.GetAttributes(_datasource);
                     if (fileAttributes.HasFlag(FileAttributes.Directory))

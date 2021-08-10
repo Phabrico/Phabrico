@@ -206,6 +206,9 @@
     <Content Include="Remarkup\TestData\macro.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Remarkup\TestData\paragraphs.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Remarkup\TestData\reference-project.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

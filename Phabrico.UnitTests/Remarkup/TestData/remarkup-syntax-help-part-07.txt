@@ -110,7 +110,7 @@ You can use <tt class='remarkup-monospaced'>lines=N</tt> to limit the vertical s
 <tt class='remarkup-monospaced'>name=some_name.ext</tt> to give it a name. For example, this:<br>
 lang=text<br>
 lang=html, name=example.html, lines=12, counterexample<br>
-...<br>
+...<p class='paragraph'></p>
 ...produces this:<br>
 <div class='remarkup-code-header hljs counterexample'>example.html</div><div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='xml counterexample'>&lt;p&gt;Apple&lt;/p&gt;
 &lt;p&gt;Apricot&lt;/p&gt;
@@ -148,7 +148,7 @@ lang=html, name=example.html, lines=12, counterexample<br>
 &lt;p&gt;Mangostine&lt;/p&gt;
 &lt;p&gt;Melon&lt;/p&gt;</code></pre></div>
 You can use the <tt class='remarkup-monospaced'>NOTE:</tt>, <tt class='remarkup-monospaced'>WARNING:</tt> or <tt class='remarkup-monospaced'>IMPORTANT:</tt> elements to call attention<br>
-to an important idea.<br>
+to an important idea.<p class='paragraph'></p>
 For example, write this:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>NOTE: Hold regular meetings to keep your employees awake.</code></pre></div>
 <br>

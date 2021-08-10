@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Base64;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
-
-using Phabrico.Miscellaneous;
-using Phabrico.Parsers.Base64;
 
 namespace Phabrico.Storage
 {
@@ -171,6 +172,17 @@ namespace Phabrico.Storage
                         newFileObject.Size = (int)newFileObject.DataStream.Length;
                         newFileObject.ID = fileChunk.FileID;
                         newFileObject.DateModified = DateTimeOffset.UtcNow;
+                    }
+                }
+
+                // if image, set width and height
+                if (newFileObject.ContentType.StartsWith("image/"))
+                {
+                    using (MemoryStream memoryStream = new MemoryStream(newFileObject.Data))
+                    {
+                        Bitmap bitmap = new Bitmap(memoryStream);
+                        newFileObject.ImagePropertyPixelHeight = bitmap.Height;
+                        newFileObject.ImagePropertyPixelWidth = bitmap.Width;
                     }
                 }
 

@@ -14,19 +14,19 @@ phutil_fake_test_block_interpreter {{{ content }}}
 Content: (content)
 Argv: (foo=bar)
 
-<br>
+<p class='paragraph'></p>
 Content: ( content
 content )
 Argv: ()
 
-<br>
+<p class='paragraph'></p>
 Content: ( content )
 Argv: ()
 
-<br>
+<p class='paragraph'></p>
 Content: (content)
 Argv: (x=y)
 
-<br>
+<p class='paragraph'></p>
 <div class='remarkup-warning'>No interpreter found: phutil_fake_test_block_interpreter</div>
 ~~~~~~~~~~

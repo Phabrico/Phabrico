@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Remarkup.Rules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -220,6 +221,10 @@ namespace Phabrico
             using (Storage.Database database = new Storage.Database(null))
             {
                 Storage.Account accountStorage = new Storage.Account();
+                Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+                Storage.Phriction phrictionStorage = new Storage.Phriction();
+                Storage.Project projectStorage = new Storage.Project();
+                Storage.User userStorage = new Storage.User();
                 Http.Server httpServer = new Http.Server(false, -1, "/", true);
                 Miscellaneous.HttpListenerContext httpListenerContext = new Miscellaneous.HttpListenerContext();
                 Controllers.Synchronization synchronizationController = new Controllers.Synchronization();
@@ -249,6 +254,7 @@ namespace Phabrico
                                                                                       : (Configuration.phriction.tree && Configuration.phriction.combined == false) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree
                                                                                       : Phabricator.Data.Account.SynchronizationMethod.None;
                 synchronizationParameters.existingAccount.Parameters.ColumnHeadersToHide = new string[0];
+                synchronizationParameters.existingAccount.PhabricatorUrl = Configuration.source;
 
                 synchronizationParameters.incrementalDownload = false;
                 synchronizationParameters.lastDownloadTimestamp = new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan());
@@ -282,15 +288,17 @@ namespace Phabrico
                 if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnly))
                 {
                     // filter by projects
-                    Storage.Project projectStorage = new Storage.Project();
 
                     // unselect (None)
                     Phabricator.Data.Project project = projectStorage.Get(database, Phabricator.Data.Project.None);
                     project.Selected = Phabricator.Data.Project.Selection.Unselected;
                     projectStorage.Add(database, project);
 
+                    string[] maniphestProjectTags = Configuration.maniphest.projectTags ?? new string[0];
+                    string[] phrictionProjectTags = Configuration.phriction.projectTags ?? new string[0];
+
                     // select all projects from json config
-                    foreach (string projectTag in Configuration.maniphest.projectTags)
+                    foreach (string projectTag in maniphestProjectTags.Concat(phrictionProjectTags).Distinct())
                     {
                         project = projectStorage.Get(database, projectTag);
                         if (project != null)
@@ -305,15 +313,17 @@ namespace Phabrico
                 else
                 {
                     // filter by users
-                    Storage.User userStorage = new Storage.User();
 
                     // unselect (None)
                     Phabricator.Data.User user = userStorage.Get(database, Phabricator.Data.User.None);
                     user.Selected = false;
                     userStorage.Add(database, user);
 
+                    string[] maniphestUserTags = Configuration.maniphest.userTags ?? new string[0];
+                    string[] phrictionUserTags = Configuration.phriction.userTags ?? new string[0];
+
                     // select all users from json config
-                    foreach (string userTag in Configuration.maniphest.userTags)
+                    foreach (string userTag in maniphestUserTags.Concat(phrictionUserTags).Distinct())
                     {
                         user = userStorage.Get(database, userTag);
                         if (user != null)
@@ -327,15 +337,18 @@ namespace Phabrico
                 }
 
                 // continue download process - phase 2
-                if (Configuration.maniphest.projectTags.Any() || Configuration.maniphest.userTags.Any())
+                if ((Configuration.maniphest.projectTags != null && Configuration.maniphest.projectTags.Any()) || 
+                    (Configuration.maniphest.userTags != null && Configuration.maniphest.userTags.Any()))
                 {
                     ConsoleWriteStatus("Downloading Maniphest priorities and states...");
                     synchronizationController.ProgressMethod_DownloadManiphestPrioritiesAndStates(synchronizationParameters, 0, 0);
                     ConsoleWriteStatus("Downloading Maniphest tasks...");
                     synchronizationController.ProgressMethod_DownloadManiphestTasks(synchronizationParameters, 0, 0);
+
                 }
 
-                if (Configuration.phriction.projectTags.Any() || Configuration.phriction.userTags.Any())
+                if ((Configuration.phriction.projectTags != null && Configuration.phriction.projectTags.Any()) || 
+                    (Configuration.phriction.userTags != null && Configuration.phriction.userTags.Any()))
                 {
                     ConsoleWriteStatus("Downloading Phriction wiki documents...");
                     synchronizationController.ProgressMethod_DownloadPhrictionDocuments(synchronizationParameters, 0, 0);
@@ -351,19 +364,94 @@ namespace Phabrico
                 ConsoleWriteStatus("Finalizing...");
                 synchronizationController.ProgressMethod_Finalize(synchronizationParameters, 0, 0);
 
-                // validate downloaded content
-                ConsoleWriteStatus("Validating...");
-                Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                Storage.Phriction phrictionStorage = new Storage.Phriction();
-
+                // clear sensitive information in database (1)
+                List<string> referencedTokens = new List<string>();
                 Phabricator.Data.Maniphest[] downloadedManiphestTasks = maniphestStorage.Get(database).ToArray();
                 Phabricator.Data.Phriction[] downloadedPhrictionDocuments = phrictionStorage.Get(database).ToArray();
+
+                synchronizationParameters.existingAccount.PhabricatorUrl = "";
+                accountStorage.Add(database, synchronizationParameters.existingAccount);
+
+                if (downloadedManiphestTasks.Any() == false && downloadedPhrictionDocuments.Any() == true)
+                {
+                    // collect all referenced users and projects
+                    foreach (Phabricator.Data.Phriction phriction in downloadedPhrictionDocuments)
+                    {
+                        if (referencedTokens.Contains(phriction.Author) == false)
+                        {
+                            referencedTokens.Add(phriction.Author);
+                        }
+
+                        if (referencedTokens.Contains(phriction.LastModifiedBy) == false)
+                        {
+                            referencedTokens.Add(phriction.LastModifiedBy);
+                        }
+
+                        foreach (string referencedProject in phriction.Projects.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            if (referencedTokens.Contains(referencedProject) == false)
+                            {
+                                referencedTokens.Add(referencedProject);
+                            }
+                        }
+
+                        foreach (string referencedSubscriber in phriction.Subscribers.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            if (referencedTokens.Contains(referencedSubscriber) == false)
+                            {
+                                referencedTokens.Add(referencedSubscriber);
+                            }
+                        }
+                    }
+                }
+
+                // store public encryption key
+                database.SetConfigurationParameter("EncryptionKey", database.EncryptionKey);
+
+                // validate downloaded content
+                ConsoleWriteStatus("Validating...");
                 
                 informationalMessages.Add(string.Format("Number of Maniphest tasks    : {0}", downloadedManiphestTasks.Count()));
                 informationalMessages.Add(string.Format("Number of Phriction documents: {0}", downloadedPhrictionDocuments.Count()));
                 informationalMessages.Add(string.Format("Number of referenced files   : {0}", Storage.File.Count(database)));
                 informationalMessages.Add("");
 
+                // == validation - step 1: correct absolute URLs in Maniphest tasks and Phriction documents =============================================
+                // replace absolute URLs of our Phabricator server in Maniphest tasks into relative URLs
+                Phabricator.Data.Maniphest[] maniphestTasksMentioningPhabricatorUrl = downloadedManiphestTasks.Where(maniphest => maniphest.Description
+                                                                                                                                           .Contains(Configuration.source)
+                                                                                                                    )
+                                                                                                              .ToArray();
+                foreach (Phabricator.Data.Maniphest maniphestTask in maniphestTasksMentioningPhabricatorUrl)
+                {
+                    maniphestTask.Description = maniphestTask.Description.Replace(Configuration.source.TrimEnd('/') + "/T", "maniphest/T");
+                    maniphestTask.Description = maniphestTask.Description.Replace(Configuration.source.TrimEnd('/') + "/w/", "w/");
+                    if (maniphestTask.Description.Contains(Configuration.source))
+                    {
+                        informationalMessages.Add(string.Format("WARNING: \"{0}\" is mentioned in Maniphest task \"{1}\"", Configuration.source, maniphestTask.ID));
+                    }
+
+                    maniphestStorage.Add(database, maniphestTask);
+                }
+                // replace absolute URLs of our Phabricator server in Phriction documents into relative URLs
+                Phabricator.Data.Phriction[] phrictionDocumentsMentioningPhabricatorUrl = downloadedPhrictionDocuments.Where(phriction => phriction.Content
+                                                                                                                                                   .Contains(Configuration.source)
+                                                                                                                            )
+                                                                                                                      .ToArray();
+                foreach (Phabricator.Data.Phriction phrictionDocument in phrictionDocumentsMentioningPhabricatorUrl)
+                {
+                    phrictionDocument.Content = phrictionDocument.Content.Replace(Configuration.source.TrimEnd('/') + "/T", "maniphest/T");
+                    phrictionDocument.Content = phrictionDocument.Content.Replace(Configuration.source.TrimEnd('/') + "/w/", "w/");
+                    if (phrictionDocument.Content.Contains(Configuration.source))
+                    {
+                        informationalMessages.Add(string.Format("WARNING: \"{0}\" is mentioned in Maniphest task \"{1}\"", Configuration.source, phrictionDocument.Path));
+                    }
+
+                    phrictionStorage.Add(database, phrictionDocument);
+                }
+
+
+                // == validation - step 2: search for invalid URLs and collect them by means of the Database_InvalidUrlFound event ======================
                 foreach (Phabricator.Data.Maniphest maniphestTask in downloadedManiphestTasks)
                 {
                     Parsers.Remarkup.RemarkupParserOutput remarkupParserOutput;
@@ -372,10 +460,114 @@ namespace Phabrico
 
                 foreach (Phabricator.Data.Phriction phrictionDocument in downloadedPhrictionDocuments)
                 {
+                    // convert Remarkup content to HTML
+                    // in case any invalid URLs are found, the Database_InvalidUrlFound method will be executed
                     Parsers.Remarkup.RemarkupParserOutput remarkupParserOutput;
                     synchronizationController.ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+
+                    // collect all referenced users in Remarkup content
+                    foreach (RuleReferenceUser ruleReferenceUser in remarkupParserOutput.TokenList.OfType<RuleReferenceUser>().Distinct().ToArray())
+                    {
+                        if (referencedTokens.Contains(ruleReferenceUser.UserToken) == false)
+                        {
+                            Phabricator.Data.User user = userStorage.Get(database, ruleReferenceUser.UserToken);
+                            if (user != null)
+                            {
+                                userStorage.Remove(database, user);
+                            }
+                        }
+                    }
+
+                    // collect all referenced projects in Remarkup content
+                    foreach (RuleReferenceProject ruleReferenceProject in remarkupParserOutput.TokenList.OfType<RuleReferenceProject>().Distinct().ToArray())
+                    {
+                        if (referencedTokens.Contains(ruleReferenceProject.ProjectToken) == false)
+                        {
+                            Phabricator.Data.Project project = projectStorage.Get(database, ruleReferenceProject.ProjectToken);
+                            if (project != null)
+                            {
+                                projectStorage.Remove(database, project);
+                            }
+                        }
+                    }
+
+                    // validate tables (check if the number of header columns matches with the number of columns in the other rows)
+                    foreach (RuleTable ruleTable in remarkupParserOutput.TokenList.OfType<RuleTable>().Distinct().ToArray())
+                    {
+                        Match tableHeadBody = RegexSafe.Match(ruleTable.Html, "<thead>(.*?(?<!</thead>))\\s*<tr>(\\s*<th>(.*?(?<!</th>))</th>)+\\s*</tr>\\s*</thead>\\s*<tbody>(.*?(?<!</tbody>))(\\s*<tr>(\\s*<t[hd]>(.*?(?<!</t[hd]>))</t[hd]>)+\\s*</tr>)+\\s*</tbody>", RegexOptions.Singleline);
+                        if (tableHeadBody.Success)
+                        {
+                            int numberOfHeaderColumns = tableHeadBody.Groups[2].Captures.Count;
+                            foreach (Capture tableBodyRow in tableHeadBody.Groups[5].Captures)
+                            {
+                                Match row = RegexSafe.Match(tableBodyRow.Value, "<tr>(\\s*<t[hd]>(.*?(?<!</t[hd]>))</t[hd]>)+\\s*</tr>", RegexOptions.Singleline);
+                                if (row.Success)
+                                {
+                                    int numberOfColumns = row.Groups[1].Captures.Count;
+                                    if (numberOfHeaderColumns != numberOfColumns)
+                                    {
+                                        informationalMessages.Add(string.Format("WARNING: Table found in \"{0}\" with {1} header columns and a row with {2} columns", phrictionDocument.Path, numberOfHeaderColumns, numberOfColumns));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+
                 
+                // clear sensitive information in database (2)
+                // remove all users which are not referenced
+                foreach (Phabricator.Data.User user in userStorage.Get(database).ToArray())
+                {
+                    if (referencedTokens.Contains(user.Token) == false)
+                    {
+                        userStorage.Remove(database, user);
+                    }
+                }
+
+                // remove all projects which are not referenced
+                foreach (Phabricator.Data.Project project in projectStorage.Get(database).ToArray())
+                {
+                    if (referencedTokens.Contains(project.Token) == false)
+                    {
+                        projectStorage.Remove(database, project);
+                    }
+                }
+
+                // optimize database
+                database.Shrink();
+
+                // show all referenced projects
+                Phabricator.Data.Project[] referencedProjects = referencedTokens.Where(projectToken => projectToken.StartsWith(Phabricator.Data.Project.Prefix))
+                                                                                .Select(projectToken => projectStorage.Get(database, projectToken))
+                                                                                .Where(project => project != null)
+                                                                                .ToArray();
+                if (referencedProjects.Any())
+                {
+                    informationalMessages.Add("");
+                    informationalMessages.Add("The following project(s) were referenced:");
+                    foreach (Phabricator.Data.Project referencedProject in referencedProjects.OrderBy(project => project.InternalName))
+                    {
+                        informationalMessages.Add(string.Format(" - {0}  ({1})", referencedProject.InternalName, referencedProject.Name));
+                    }
+                }
+
+                // show all referenced users
+                Phabricator.Data.User[] referencedUsers = referencedTokens.Where(userToken => userToken.StartsWith(Phabricator.Data.User.Prefix))
+                                                                                .Select(userToken => userStorage.Get(database, userToken))
+                                                                                .Where(user => user != null)
+                                                                                .ToArray();
+                if (referencedUsers.Any())
+                {
+                    informationalMessages.Add("");
+                    informationalMessages.Add("The following user(s) were referenced:");
+                    foreach (Phabricator.Data.User referencedUser in referencedUsers.OrderBy(user => user.UserName))
+                    {
+                        informationalMessages.Add(string.Format(" - {0}  ({1})", referencedUser.UserName, referencedUser.RealName));
+                    }
+                }
+
                 ConsoleWriteStatus("");
             }
         }

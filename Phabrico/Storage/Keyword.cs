@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Phabrico.Controllers;
+using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Remarkup;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
 using System.Text.RegularExpressions;
-
-using Phabrico.Controllers;
-using Phabrico.Miscellaneous;
-using Phabrico.Parsers.Remarkup;
 
 namespace Phabrico.Storage
 {

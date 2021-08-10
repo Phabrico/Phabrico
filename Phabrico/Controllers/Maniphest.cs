@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
-
+﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
 using Phabrico.Storage;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Phabrico.Controllers
 {
@@ -1595,12 +1594,12 @@ namespace Phabrico.Controllers
             {
                 transactionData.SetText("TASK-TRANSACTION-TEXT",
                     Locale.TranslateText("@@PERSON1@@ assigned the task to @@PERSON2@@", browser.Session.Locale)
-                            .Replace("@@PERSON1@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                            .Replace("@@PERSON1@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                     maniphestTransaction.Author,
                                                                     getAccountName(maniphestTransaction.Author)
                                                                  )
                                     )
-                            .Replace("@@PERSON2@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                            .Replace("@@PERSON2@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                     maniphestTransaction.NewValue,
                                                                     getAccountName(maniphestTransaction.NewValue)
                                                                  )
@@ -1614,17 +1613,17 @@ namespace Phabrico.Controllers
             {
                 transactionData.SetText("TASK-TRANSACTION-TEXT",
                     Locale.TranslateText("@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@", browser.Session.Locale)
-                          .Replace("@@PERSON1@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                          .Replace("@@PERSON1@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                     maniphestTransaction.Author,
                                                                     getAccountName(maniphestTransaction.Author)
                                                                )
                                   )
-                          .Replace("@@PERSON2@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                          .Replace("@@PERSON2@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                     maniphestTransaction.OldValue,
                                                                     getAccountName(maniphestTransaction.OldValue)
                                                                )
                                   )
-                          .Replace("@@PERSON3@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                          .Replace("@@PERSON3@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                     maniphestTransaction.NewValue,
                                                                     getAccountName(maniphestTransaction.NewValue)
                                                                )
@@ -1670,7 +1669,7 @@ namespace Phabrico.Controllers
 
                 transactionData.SetText("TASK-TRANSACTION-TEXT",
                     Locale.TranslateText("@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@", browser.Session.Locale)
-                          .Replace("@@PERSON@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                          .Replace("@@PERSON@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                    maniphestTransaction.Author,
                                                                    getAccountName(maniphestTransaction.Author)
                                                               )
@@ -1693,7 +1692,7 @@ namespace Phabrico.Controllers
 
                 transactionData.SetText("TASK-TRANSACTION-TEXT",
                     Locale.TranslateText("@@PERSON@@ changed the task priority to @@PRIORITY@@", browser.Session.Locale)
-                          .Replace("@@PERSON@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                          .Replace("@@PERSON@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                    maniphestTransaction.Author,
                                                                    getAccountName(maniphestTransaction.Author)
                                                               )
@@ -1729,7 +1728,7 @@ namespace Phabrico.Controllers
                 if (project != null)
                 {
                     // translate project-token to project/tag name
-                    currentProjectHTML = string.Format("<a href='/project/info/{0}'>{1}</a>", project.Token, project.Name);
+                    currentProjectHTML = string.Format("<a href='project/info/{0}'>{1}</a>", project.Token, project.Name);
                 }
                 else
                 {
@@ -1757,7 +1756,7 @@ namespace Phabrico.Controllers
                 // multiple projects assigned
                 transactionData.SetText("TASK-TRANSACTION-TEXT",
                     Locale.TranslateText("@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@", browser.Session.Locale)
-                          .Replace("@@PERSON@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                          .Replace("@@PERSON@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                    maniphestTransaction.Author,
                                                                    getAccountName(maniphestTransaction.Author)
                                                               )
@@ -1773,7 +1772,7 @@ namespace Phabrico.Controllers
                 // only 1 project assigned
                 transactionData.SetText("TASK-TRANSACTION-TEXT",
                     Locale.TranslateText("@@PERSON@@ assigned the following project: @@PROJECT-NAME@@", browser.Session.Locale)
-                          .Replace("@@PERSON@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                          .Replace("@@PERSON@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                    maniphestTransaction.Author,
                                                                    getAccountName(maniphestTransaction.Author)
                                                               )
@@ -1820,7 +1819,7 @@ namespace Phabrico.Controllers
 
                 transactionData.SetText("TASK-TRANSACTION-TEXT",
                         Locale.TranslateText("@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@", browser.Session.Locale)
-                              .Replace("@@PERSON@@", string.Format("<i class='fa {0} {1}'></i><a href='/user/info/{2}'>{3}</a>",
+                              .Replace("@@PERSON@@", string.Format("<i class='fa {0} {1}'></i><a href='user/info/{2}'>{3}</a>",
                                                                     newStatus.Icon,
                                                                     newStatus.Closed ? "closed" : "open",
                                                                     maniphestTransaction.Author,
@@ -1844,7 +1843,7 @@ namespace Phabrico.Controllers
 
                 transactionData.SetText("TASK-TRANSACTION-TEXT",
                         Locale.TranslateText("@@PERSON@@ marked this task as @@STATE@@", browser.Session.Locale)
-                              .Replace("@@PERSON@@", string.Format("<i class='fa {0} {1}'></i><a href='/user/info/{2}'>{3}</a>",
+                              .Replace("@@PERSON@@", string.Format("<i class='fa {0} {1}'></i><a href='user/info/{2}'>{3}</a>",
                                                                     newStatus.Icon,
                                                                     newStatus.Closed ? "closed" : "open",
                                                                     maniphestTransaction.Author,
@@ -1886,7 +1885,7 @@ namespace Phabrico.Controllers
                 if (subscriberUser != null)
                 {
                     // translate subscriber-token to username
-                    currentSubscriberHTML = string.Format("<a href='/user/info/{0}'>{1}</a>", subscriberUser.Token, subscriberUser.RealName);
+                    currentSubscriberHTML = string.Format("<a href='user/info/{0}'>{1}</a>", subscriberUser.Token, subscriberUser.RealName);
                 }
                 else
                 {
@@ -1894,7 +1893,7 @@ namespace Phabrico.Controllers
                     if (subscriberProject != null)
                     {
                         // translate subscriber-token to project/tag name
-                        currentSubscriberHTML = string.Format(", <a href='/project/info/{0}'>{1}</a>", subscriberProject.Token, subscriberProject.Name);
+                        currentSubscriberHTML = string.Format(", <a href='project/info/{0}'>{1}</a>", subscriberProject.Token, subscriberProject.Name);
                     }
                     else
                     {
@@ -1929,7 +1928,7 @@ namespace Phabrico.Controllers
 
             transactionData.SetText("TASK-TRANSACTION-TEXT",
                         Locale.TranslateText("@@PERSON@@ arranged for @@PERSONS@@ to be subscribed", browser.Session.Locale)
-                              .Replace("@@PERSON@@", string.Format("<a href='/user/info/{0}'>{1}</a>",
+                              .Replace("@@PERSON@@", string.Format("<a href='user/info/{0}'>{1}</a>",
                                                                         maniphestTransaction.Author,
                                                                         getAccountName(maniphestTransaction.Author)
                                                                   )

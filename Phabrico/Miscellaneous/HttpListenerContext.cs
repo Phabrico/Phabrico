@@ -4,7 +4,6 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.WebSockets;
 
 namespace Phabrico.Miscellaneous
 {

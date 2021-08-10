@@ -1,6 +1,5 @@
-﻿using System.Data.SQLite;
-
-using Phabrico.Miscellaneous;
+﻿using Phabrico.Miscellaneous;
+using System.Data.SQLite;
 
 namespace Phabrico.Storage
 {

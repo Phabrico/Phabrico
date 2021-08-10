@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Web;
-using Newtonsoft.Json.Linq;
-
+﻿using Newtonsoft.Json.Linq;
 using Phabrico.Data.References;
 using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
 using Phabrico.Storage;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Phabrico.Controllers
 {
@@ -85,7 +84,8 @@ namespace Phabrico.Controllers
                 crumbs.Add(new JObject
                 {
                     new JProperty("slug", slug),
-                    new JProperty("name", crumbPhrictionReference?.Name ?? ConvertPhabricatorUrlPartToDescription(slug))
+                    new JProperty("name", crumbPhrictionReference?.Name ?? ConvertPhabricatorUrlPartToDescription(slug)),
+                    new JProperty("inexistant", crumbPhrictionReference == null)
                 });
             }
 
@@ -192,18 +192,25 @@ namespace Phabrico.Controllers
                         }
                         else
                         {
-                            phrictionDocument = new Phabricator.Data.Phriction();
-                            phrictionDocument.Path = url;
-                            if (parameterActions.StartsWith("title="))
+                            if (httpServer.Customization.IsReadonly)
                             {
-                                phrictionDocument.Path += "?" + parameterActions;
+                                throw new Phabrico.Exception.HttpNotFound();
                             }
+                            else
+                            {
+                                phrictionDocument = new Phabricator.Data.Phriction();
+                                phrictionDocument.Path = url;
+                                if (parameterActions.StartsWith("title="))
+                                {
+                                    phrictionDocument.Path += "?" + parameterActions;
+                                }
 
-                            viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionNoDocumentFound", parameters);
-                            viewPage.SetText("OPERATION", "new");
-                            viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                            viewPage.HttpStatusCode = 202;  // send notification to browser that document doesn't exist
-                            viewPage.HttpStatusMessage = "No Content";
+                                viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionNoDocumentFound", parameters);
+                                viewPage.SetText("OPERATION", "new");
+                                viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                                viewPage.HttpStatusCode = 202;  // send notification to browser that document doesn't exist
+                                viewPage.HttpStatusMessage = "No Content";
+                            }
                             return;
                         }
                     }
@@ -310,7 +317,11 @@ namespace Phabrico.Controllers
                     {
                         Http.Response.HtmlViewPage documentHierarchyViewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionHierarchy", parameters);
                         documentHierarchyViewPage.SetText("TREE-CONTENT", documentHierarchy.ToHTML(), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                        formattedDocumentContent += documentHierarchyViewPage.Content;
+                        viewPage.SetText("DOCUMENT-HIERARCHY", documentHierarchyViewPage.Content, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    }
+                    else
+                    {
+                        viewPage.SetText("DOCUMENT-HIERARCHY", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     }
                 }
 

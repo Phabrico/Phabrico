@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using System;
+using System.Linq;
 using WebDriverManager.DriverConfigs.Impl;
 
 namespace Phabrico.UnitTests.Selenium.Browser

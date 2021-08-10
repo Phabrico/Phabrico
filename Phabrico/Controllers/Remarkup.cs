@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
-
 using Phabrico.Http;
 using Phabrico.Http.Response;
-using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
 using System;
 using System.Collections.Generic;

@@ -318,6 +318,9 @@ msgstr "Gefaald";
 msgid "Create Task"
 msgstr "Maak taak aan"
 
+msgid "Editing ##OBJECT##"
+msgstr "##OBJECT## aan het bewerken"
+
 msgid "Assigned"
 msgstr "Toegewezen"
 
@@ -845,8 +848,8 @@ msgid "Click on the Synchronize button to download all requested data from Phabr
 msgstr "Klik op de knop Synchroniseren om alle gevraagde gegevens van Phabricator te downloaden"
 
 # Offline changes
-msgid "Offline changes for @@STAGED-ITEM@@"
-msgstr "Lokale aanpassingen voor @@STAGED-ITEM@@"
+msgid "Offline changes for $$ITEM$$"
+msgstr "Lokale aanpassingen voor $$ITEM$$"
 
 msgid "Overview offline changes"
 msgstr "Overzicht lokale aanpassingen"
@@ -997,8 +1000,8 @@ msgstr "Download"
 msgid "Browser not supported"
 msgstr "Browser wordt niet ondersteund"
 
-msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access Phabrico"
-msgstr "Gebruik Mozilla Firefox, Opera, Google Chrome of Microsoft Edge om toegang te krijgen tot Phabrico"
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access @@CUSTOM-APPLICATION-NAME@@"
+msgstr "Gebruik Mozilla Firefox, Opera, Google Chrome of Microsoft Edge om toegang te krijgen tot @@CUSTOM-APPLICATION-NAME@@"
 
 # URL Not Found
 msgid "404"
@@ -1031,3 +1034,16 @@ msgstr "U hebt niet genoeg rechten om Phabrico met Phabricator te kunnen synchro
 
 msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
 msgstr "Dit Phriction-document of Maniphest-taak werd niet gedownload van de Phabricator-server omdat het was getagged met een of meerdere afgekeurde projecten of gebruikers."
+
+# Invalid configuration
+msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
+msgstr "Controleer de inhoud van @@APP-CONFIG-FILENAME@@"
+
+msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
+msgstr "Controleer of @@APP-CONFIG-FILENAME@@ bestaat"
+
+msgid "Error:"
+msgstr "Probleem:"
+
+msgid "CONFIGURATION INVALID OR MISSING"
+msgstr "ONGELDIGE OF ONTBREKENDE CONFIGURATIE"

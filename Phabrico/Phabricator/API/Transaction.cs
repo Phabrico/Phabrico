@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using Phabrico.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Newtonsoft.Json.Linq;
-
-using Phabrico.Storage;
 
 namespace Phabrico.Phabricator.API
 {

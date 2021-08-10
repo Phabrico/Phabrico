@@ -63,8 +63,24 @@ namespace Phabrico.Http.Response
                             phabricatorUrl = accountData.PhabricatorUrl + "/" + Url;
                         }
 
-                        phabricatorUrl = phabricatorUrl.Substring(0, "http://".Length)
-                                       + phabricatorUrl.Substring("http://".Length).Replace("//", "/");
+                        if (phabricatorUrl.StartsWith("http://"))
+                        {
+                            phabricatorUrl = phabricatorUrl.Substring(0, "http://".Length)
+                                           + phabricatorUrl.Substring("http://".Length).Replace("//", "/");
+                        }
+                        else
+                        if (phabricatorUrl.StartsWith("https://"))
+                        {
+                            phabricatorUrl = phabricatorUrl.Substring(0, "https://".Length)
+                                           + phabricatorUrl.Substring("https://".Length).Replace("//", "/");
+                        }
+                        else
+                        {
+                            phabricatorUrl = Http.Server.RootPath.TrimEnd('/')
+                                           + "/"
+                                           + phabricatorUrl.Replace("//", "/").TrimStart('/');
+                        }
+
                         phabricatorUrl = phabricatorUrl.Split('?')[0];
                         phabricatorUrl = phabricatorUrl.TrimEnd('/');
                     }
@@ -75,7 +91,7 @@ namespace Phabrico.Http.Response
             HtmlViewPage notFound = new HtmlViewPage(browser);
             notFound.SetContent(browser, GetViewData("HttpNotFound"));
             notFound.SetText("THEME", Theme, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-            notFound.SetText("INVALID-LOCAL-URL", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            notFound.SetText("INVALID-LOCAL-URL", Http.Server.RootPath + Url.TrimStart('/'), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
             notFound.SetText("PHABRICATOR-URL", phabricatorUrl, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
             notFound.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
             notFound.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);

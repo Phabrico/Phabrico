@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Phabrico.Http.Response
+﻿namespace Phabrico.Http.Response
 {
     /// <summary>
     /// Represents the HTTP response to identify the browser that something very bad occurred (HTTP 500)

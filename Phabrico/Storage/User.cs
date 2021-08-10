@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Globalization;
-
-using Phabrico.Miscellaneous;
 
 namespace Phabrico.Storage
 {
@@ -147,6 +146,23 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, doSelectUser.ToString()));
                 dbCommand.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Removes a user from the database
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="user"></param>
+        public void Remove(Database database, Phabricator.Data.User user)
+        {
+            using (SQLiteCommand cmdDeleteUserInfo = new SQLiteCommand(@"
+                       DELETE FROM userInfo
+                       WHERE token = @token;
+                   ", database.Connection))
+            {
+                database.AddParameter(cmdDeleteUserInfo, "token", user.Token, Database.EncryptionMode.None);
+                cmdDeleteUserInfo.ExecuteNonQuery();
             }
         }
     }

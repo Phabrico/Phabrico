@@ -87,6 +87,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Locale\phabrico_en.po" />
+    <None Include="..\LICENSE">
+      <Link>LICENSE</Link>
+    </None>
     <None Include="app.config" />
     <EmbeddedResource Include="Locale\phabrico_de.po" />
     <EmbeddedResource Include="Locale\phabrico_zh.po" />

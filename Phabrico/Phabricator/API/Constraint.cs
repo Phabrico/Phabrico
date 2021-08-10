@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Linq;
-
-using Newtonsoft.Json.Linq;
 
 namespace Phabrico.Phabricator.API
 {

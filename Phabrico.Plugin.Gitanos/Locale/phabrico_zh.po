@@ -64,6 +64,9 @@ msgid "There are some local commits which haven't been pushed yet"
 msgstr "有一些本地的提交还没有被推送"
 
 # Repository modifications overview
+msgid "Git repository"
+msgstr "Git存储库"
+
 msgid "File"
 msgstr "文件"
 
