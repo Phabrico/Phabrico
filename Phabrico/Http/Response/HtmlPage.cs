@@ -55,11 +55,11 @@ namespace Phabrico.Http.Response
             {
                 if (availableLanguages[language].Equals(currentLanguageCode))
                 {
-                    htmlResult += string.Format("<option selected='selected' value='{0}'>{1}</option>\n", availableLanguages[language], language);
+                    htmlResult += string.Format("<option selected='selected' value='{0}'>&nbsp;{1}</option>\n", availableLanguages[language], language);
                 }
                 else
                 {
-                    htmlResult += string.Format("<option value='{0}'>{1}</option>\n", availableLanguages[language], language);
+                    htmlResult += string.Format("<option value='{0}'>&nbsp;{1}</option>\n", availableLanguages[language], language);
                 }
             }
 

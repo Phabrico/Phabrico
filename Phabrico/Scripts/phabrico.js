@@ -191,6 +191,7 @@ class InputTag {
             var settings = {};
 
             settings.placeholder = input.placeholder;
+            settings.tabIndex = input.tabIndex;
             settings.divInputTag = document.createElement('div');
             settings.divInputTag.classList.add('input-tag');
             input.parentElement.insertBefore(settings.divInputTag, input);
@@ -206,7 +207,7 @@ class InputTag {
             inputText.autocomplete = 'off';
             inputText.value = '';
             inputText.settings = settings;
-            me.setInputTextPlaceHolder(inputText);
+            me.setInputTextSettings(inputText);
             divFocusContainer.appendChild(inputText);
 
             var divMenu = document.createElement('div');
@@ -299,7 +300,7 @@ class InputTag {
             anchorClose.onclick = function () {
                 me.delTag(this);
                 if (divInputTagFirstChild.children.length == 1) {
-                    me.setInputTextPlaceHolder(divInputTagFirstChild.firstElementChild);
+                    me.setInputTextSetting(divInputTagFirstChild.firstElementChild);
                 }
             };
             anchorClose.innerHTML = '&times;';
@@ -333,13 +334,14 @@ class InputTag {
             if (divInputTagFirstChild.children.length == 2)
             {
                 var inputText = divInputTagFirstChild.lastElementChild;
-                me.setInputTextPlaceHolder(inputText);
+                me.setInputTextSettings(inputText);
             }
             anchorClose.parentElement.parentElement.removeChild(anchorClose.parentElement);
         }
 
-        this.setInputTextPlaceHolder = function (inputText) {
+        this.setInputTextSettings = function (inputText) {
             inputText.placeholder = inputText.settings.placeholder;
+            inputText.tabIndex = inputText.settings.tabIndex;
         }
 
         this.inputTextKeyDown = function (inputText, e) {
@@ -515,7 +517,7 @@ class InputTag {
         var inputTagInputs = document.querySelectorAll('input.input-tag');
         for (var i=0; i<inputTagInputs.length; i++) {
             var divInputTag = this.create(inputTagInputs[i]);
-            this.setInputTextPlaceHolder(divInputTag.firstElementChild.firstElementChild);
+            this.setInputTextSettings(divInputTag.firstElementChild.firstElementChild);
         };
     }
 }

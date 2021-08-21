@@ -232,7 +232,7 @@ namespace Phabrico
                 synchronizationController.browser = new Http.Browser(httpServer, httpListenerContext);
                 synchronizationController.EncryptionKey = Encryption.GenerateEncryptionKey(Configuration.username, Configuration.password);
                 Http.SessionManager.Token token = synchronizationController.browser.HttpServer.Session.CreateToken(synchronizationController.EncryptionKey, synchronizationController.browser);
-                synchronizationController.browser.SetCookie("token", token.ID);
+                synchronizationController.browser.SetCookie("token", token.ID, true);
 
                 synchronizationController.TokenId = httpServer.Session.ClientSessions.LastOrDefault().Key;
 

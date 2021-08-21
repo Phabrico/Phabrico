@@ -33,7 +33,7 @@
 
 <div class="crumbs">
     <a href="maniphest/">
-        <span class="phui-font-fa fa-anchor" style="padding-right: 5px;"></span>
+        <span class="phui-font-fa fa-anchor" style="padding-right: 5px;">&#x200B;</span>
     </a><a href="maniphest/">Maniphest</a><span>  &gt;  </span><a>T@@TASK-ID@@</a>
     <a class="crumbsAction" href="maniphest/?action=new" style="text-align: right;">
         <span class="visual-only phui-icon-view phui-font-fa fa-plus-square"></span>
@@ -168,6 +168,7 @@
     <form action="maniphest/T@@TASK-ID@@/?action=transaction" method="POST">
         <input name="operation" type="hidden" value="comment" />
         <input name="token" type="hidden" value="@@TASK-TOKEN@@" />
+        <input name="csrf_token" type="hidden" value="@@CSRF@@" />
         <div class="app-main-window">
             <div class="app-window-head">
                 <label class="select">
@@ -205,7 +206,7 @@
                     <span class="phui-font-fa fa-code tooltip-top"><span class="tooltiptext">Code Block</span></span>
                     <span class="phui-font-fa fa-quote-right tooltip-top"><span class="tooltiptext">Quote</span></span>
                     <span class="phui-font-fa fa-table tooltip-top"><span class="tooltiptext">Table</span></span>
-                    <a href="remarkup/syntax" target="_blank">
+                    <a href="remarkup/syntax" target="_blank">&#x200B;
                         <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
                     </a>
                 </div>
@@ -230,6 +231,7 @@
 
 <form id="frmManiphestTask" action="" method="POST">
     <input name="item" type="hidden" value="@@TASK-TOKEN@@" />
+    <input name="csrf_token" type="hidden" value="@@CSRF@@" />
     <div id="dlgConfirmUndo" class="aphront-dialog-view modal" style="display:none">
         <div class="aphront-dialog-overlay"></div>
         <div class="aphront-dialog-head">

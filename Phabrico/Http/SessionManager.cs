@@ -18,14 +18,20 @@ namespace Phabrico.Http
         public class ClientSession
         {
             /// <summary>
+            /// CSRF codes which are currently in use in the current session
+            /// Key=CSRF code, Value=UTC Timestamp when CSRF was created
+            /// </summary>
+            public Dictionary<string, DateTime> ActiveCSRF { get; internal set; } = new Dictionary<string, DateTime>();
+
+            /// <summary>
             /// Locale (language) for the current session
             /// </summary>
             public string Locale { get; set; } = null;
 
             /// <summary>
-            /// Web form variables being shared between client and server
+            /// Web form variables being shared between client and server per url
             /// </summary>
-            public DictionarySafe<string, string> FormVariables { get; internal set; } = new DictionarySafe<string, string>();
+            public DictionarySafe<string,DictionarySafe<string, string>> FormVariables { get; internal set; } = new DictionarySafe<string,DictionarySafe<string, string>>();
 
             /// <summary>
             /// Buffer for use of download and upload of files
@@ -192,9 +198,12 @@ namespace Phabrico.Http
         {
             ActiveTokens.RemoveAll(token => token.ID.Equals(tokenId));
 
-            if (ClientSessions.Any(token => token.Key.Equals(tokenId)))
+            lock (ClientSessions)
             {
-                ClientSessions.Remove(tokenId);
+                if (ClientSessions.ToArray().Any(token => token.Key.Equals(tokenId)))
+                {
+                    ClientSessions.Remove(tokenId);
+                }
             }
 
             Logging.WriteInfo(null, "SessionManager: token canceled: {0}", tokenId);
@@ -208,27 +217,30 @@ namespace Phabrico.Http
         /// <returns></returns>
         public Token CreateToken(string tokenHash, Browser browser)
         {
-            Token token = new Token(tokenHash);
-
-            ActiveTokens.Add(token);
-            ClientSessions[token.ID] = new ClientSession();
-
-            if (browser == null)
+            lock (ClientSessions)
             {
-                ClientSessions[token.ID].Locale = "en";
-            }
-            else
-            {
-                ClientSessions[token.ID].Locale = browser.Language;
-            }
+                Token token = new Token(tokenHash);
+
+                ActiveTokens.Add(token);
+                ClientSessions[token.ID] = new ClientSession();
+
+                if (browser == null)
+                {
+                    ClientSessions[token.ID].Locale = "en";
+                }
+                else
+                {
+                    ClientSessions[token.ID].Locale = browser.Language;
+                }
             
-            Logging.WriteInfo(token.ID, "SessionManager: new token created: {0}", token.ID);
-            if (browser != null)
-            {
-                Logging.WriteInfo(token.ID, "Browser: {0}", browser.Request.UserAgent);
-            }
+                Logging.WriteInfo(token.ID, "SessionManager: new token created: {0}", token.ID);
+                if (browser != null)
+                {
+                    Logging.WriteInfo(token.ID, "Browser: {0}", browser.Request.UserAgent);
+                }
 
-            return token;
+                return token;
+            }
         }
 
         /// <summary>
@@ -250,7 +262,8 @@ namespace Phabrico.Http
         /// <returns></returns>
         public Token GetToken(string tokenId)
         {
-            return ActiveTokens.Where(token => token != null && token.ID.Equals(tokenId))
+            return ActiveTokens.ToArray()
+                               .Where(token => token != null && token.ID.Equals(tokenId))
                                .OrderByDescending(token => token.PrivateEncryptionKey)
                                .FirstOrDefault();
         }
@@ -262,16 +275,22 @@ namespace Phabrico.Http
         /// <returns></returns>
         public bool TokenValid(string tokenId)
         {
-            Token activeToken = ActiveTokens.FirstOrDefault(token => token != null && token.ID.Equals(tokenId));
+            Token activeToken = ActiveTokens.ToArray()
+                                            .FirstOrDefault(token => token != null 
+                                                                  && token.ID.Equals(tokenId)
+                                                           );
             if (activeToken == null) return false;
 
             if (activeToken.Invalid)
             {
                 ActiveTokens.Remove(activeToken);
 
-                if (ClientSessions.Any(token => token.Key.Equals(tokenId)))
+                lock (ClientSessions)
                 {
-                    ClientSessions.Remove(tokenId);
+                    if (ClientSessions.Any(token => token.Key.Equals(tokenId)))
+                    {
+                        ClientSessions.Remove(tokenId);
+                    }
                 }
 
                 Logging.WriteInfo(null, "SessionManager: token invalidated: {0}", tokenId);

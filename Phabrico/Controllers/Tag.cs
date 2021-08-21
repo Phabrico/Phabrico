@@ -163,7 +163,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/tag/get")]
         public void HttpGetInputTagTagData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/tag/get");
 
             string tokensString;
             List<JsonRecordData> records = new List<JsonRecordData>();
@@ -204,7 +204,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/tag/search")]
         public void HttpGetPopulateInputTagTagData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/tag/search");
 
             Dictionary<string,string> parameterValues = parameterActions.Split('&').ToDictionary(key => key.Split('=')[0], value => value.Split('=')[1]);
             Storage.Project projectStorage = new Storage.Project();
@@ -248,7 +248,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/get")]
         public void HttpGetInputTagUserData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/get");
 
             string tokensString;
             List<JsonRecordData> records = new List<JsonRecordData>();
@@ -292,7 +292,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/search")]
         public void HttpGetPopulateInputTagUserData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/search");
 
             Dictionary<string, string> parameterValues = parameterActions.Split('&').ToDictionary(key => key.Split('=')[0], value => value.Split('=')[1]);
             Storage.User userStorage = new Storage.User();

@@ -251,7 +251,7 @@ namespace Phabrico.Plugin
                     foreach (Match askParameter in RegexSafe.Matches(pageHeaderHtml, "{ASK ([^}]*)}").OfType<Match>().OrderByDescending(match => match.Index).ToArray())
                     {
                         string parameterName = askParameter.Groups[1].Value;
-                        string parameterValue = browser.Session.FormVariables[parameterName];
+                        string parameterValue = browser.Session.FormVariables["PhrictionToPDF"][parameterName];
                         pageHeaderHtml = pageHeaderHtml.Replace(askParameter.Value, parameterValue);
                     }
                     htmlToPdf.PageHeaderHtml = pageHeaderHtml;
@@ -260,7 +260,7 @@ namespace Phabrico.Plugin
                     foreach (Match askParameter in RegexSafe.Matches(pageFooterHtml, "{ASK ([^}]*)}").OfType<Match>().OrderByDescending(match => match.Index).ToArray())
                     {
                         string parameterName = askParameter.Groups[1].Value;
-                        string parameterValue = browser.Session.FormVariables[parameterName];
+                        string parameterValue = browser.Session.FormVariables["PhrictionToPDF"][parameterName];
                         pageFooterHtml = pageFooterHtml.Replace(askParameter.Value, parameterValue);
                     }
 
@@ -304,10 +304,10 @@ namespace Phabrico.Plugin
         [UrlController(URL = "/PhrictionToPDF/confirm")]
         public JsonMessage HttpPostExportToPDFConfirmation(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            string content = browser.Session.FormVariables["content"];
-            string toc = browser.Session.FormVariables["toc"];
-            string crumbs = browser.Session.FormVariables["crumbs"];
-            string path = browser.Session.FormVariables["path"];
+            string content = browser.Session.FormVariables["PhrictionToPDF"]["content"];
+            string toc = browser.Session.FormVariables["PhrictionToPDF"]["toc"];
+            string crumbs = browser.Session.FormVariables["PhrictionToPDF"]["crumbs"];
+            string path = browser.Session.FormVariables["PhrictionToPDF"]["path"];
 
             Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
@@ -363,8 +363,9 @@ namespace Phabrico.Plugin
         [UrlController(URL = "/PhrictionToPDF/configuration/save")]
         public JsonMessage HttpPostSaveConfiguration(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            string headerLayout = browser.Session.FormVariables["headerLayout"];
-            string footerLayout = browser.Session.FormVariables["footerLayout"];
+            string headerLayout = browser.Session.FormVariables["/PhrictionToPDF/configuration/save/"]["headerLayout"];
+            string footerLayout = browser.Session.FormVariables["/PhrictionToPDF/configuration/save/"]["footerLayout"];
+            browser.Session.FormVariables["PhrictionToPDF"] = browser.Session.FormVariables["/PhrictionToPDF/configuration/save/"];
 
             Model.PhrictionToPDFConfiguration configuration = new Model.PhrictionToPDFConfiguration(null);
             configuration.PageHeaderJson = headerLayout;

@@ -266,7 +266,7 @@ namespace Phabrico.Storage
                         {
                             Storage.Phriction phrictionStorage = new Storage.Phriction();
                             Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, record.Token);
-                            if (phrictionDocument != null && phrictionDocument.DateModified > record.DateModified)
+                            if (phrictionDocument != null && phrictionDocument.DateModified.ToUnixTimeSeconds() > record.DateModified.ToUnixTimeSeconds())
                             {
                                 record.MergeConflict = true;
                             }
@@ -276,7 +276,7 @@ namespace Phabrico.Storage
                         {
                             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
                             Phabricator.Data.Maniphest maniphestTask = maniphestStorage.Get(database, record.Token);
-                            if (maniphestTask != null && maniphestTask.DateModified > record.DateModified)
+                            if (maniphestTask != null && maniphestTask.DateModified.ToUnixTimeSeconds() > record.DateModified.ToUnixTimeSeconds())
                             {
                                 record.MergeConflict = true;
                             }
@@ -673,7 +673,9 @@ namespace Phabrico.Storage
                         {
                             string newSubscriberList = "";
                             Storage.User userStorage = new Storage.User();
-                            foreach (string userId in newCommentsToUsers.Split(',').Select(comment => comment.Substring("@".Length)))
+                            foreach (string userId in newCommentsToUsers.Split(',').Where(comment => comment.StartsWith("@"))
+                                                                                   .Select(comment => comment.Substring("@".Length))
+                                    )
                             {
                                 Phabricator.Data.User user = userStorage.Get(database, userId);
                                 if (user != null)
@@ -827,6 +829,10 @@ namespace Phabrico.Storage
                     // delete links to phabricator object
                     database.UndescendTokenFrom(existingPhabricatorObject.Token);
                 }
+
+                // remove search keywords linked to phabricator object to be removed
+                Keyword keywordStorage = new Keyword();
+                keywordStorage.DeletePhabricatorObject(database, existingPhabricatorObject);
 
                 // delete phabricator object
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"

@@ -19,7 +19,8 @@ namespace Phabrico.Http.Response
         /// <param name="url"></param>
         public Font(Http.Server httpServer, Browser browser, string url) : base(httpServer, browser, url)
         {
-            ContentType = "fonts/" + url.Split('.').LastOrDefault();
+            ContentType = "font/" + url.Split('?', '/').FirstOrDefault()
+                                        .Split('.').LastOrDefault();
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             string resourceName = string.Format("Phabrico.Fonts.{0}", url.Replace('/', '.'))
@@ -29,7 +30,7 @@ namespace Phabrico.Http.Response
             Stream stream = assembly.GetManifestResourceStream(resourceName);
             if (stream == null)
             {
-                throw new Exception.HttpNotFound();
+                throw new Exception.HttpNotFound(url);
             }
 
             _content = new byte[stream.Length];

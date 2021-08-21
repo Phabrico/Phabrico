@@ -303,7 +303,9 @@ namespace Phabrico.Http
         /// </summary>
         public void CleanUpSessions()
         {
-            foreach (SessionManager.Token activeToken in SessionManager.ActiveTokens.Where(token => token.Key != "temp").ToArray())
+            foreach (SessionManager.Token activeToken in SessionManager.ActiveTokens
+                                                                       .ToArray()
+                                                                       .Where(token => token.Key != "temp"))
             {
                 if (activeToken.Invalid)
                 {
@@ -466,7 +468,7 @@ namespace Phabrico.Http
                             string currentControllerUrl = (string)urlControllerAttributeType.NamedArguments.FirstOrDefault(arg => arg.MemberName.Equals("URL")).TypedValue.Value;
                             string currentControllerUrlAlias = (string)urlControllerAttributeType.NamedArguments.FirstOrDefault(arg => arg.MemberName.Equals("Alias")).TypedValue.Value;
 
-                            if (urlPerControllerMethod.Values.Any(processedControllerUrl => processedControllerUrl.StartsWith(currentControllerUrl)
+                            if (urlPerControllerMethod.Values.Any(processedControllerUrl => processedControllerUrl.StartsWith(currentControllerUrl, StringComparison.OrdinalIgnoreCase)
                                                                                          && processedControllerUrl.Length > currentControllerUrl.Length
                                                                  ))
                             {
@@ -474,7 +476,7 @@ namespace Phabrico.Http
                             }
 
                             if (urlPerControllerMethod.Values.Any(processedControllerUrlAlias => currentControllerUrlAlias != null
-                                                                                              && processedControllerUrlAlias.StartsWith(currentControllerUrlAlias)
+                                                                                              && processedControllerUrlAlias.StartsWith(currentControllerUrlAlias, StringComparison.OrdinalIgnoreCase)
                                                                                               && processedControllerUrlAlias.Length > currentControllerUrlAlias.Length
                                                                 ))
                             {
@@ -487,9 +489,9 @@ namespace Phabrico.Http
                                 controllerOptions = Http.Response.HtmlViewPage.ContentOptions.Default;
                             }
 
-                            if (currentControllerUrl != null && baseUrl.StartsWith(currentControllerUrl.TrimEnd('/') + "/"))
+                            if (currentControllerUrl != null && baseUrl.StartsWith(currentControllerUrl.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (originalUrl.Equals(currentControllerUrl))
+                                if (originalUrl.Equals(currentControllerUrl, StringComparison.OrdinalIgnoreCase))
                                 {
                                     controllerParameters = new string[0];
                                 }
@@ -510,9 +512,9 @@ namespace Phabrico.Http
                                 }
                             }
                             else
-                            if (currentControllerUrlAlias != null && baseUrl.StartsWith(currentControllerUrlAlias.TrimEnd('/') + "/"))
+                            if (currentControllerUrlAlias != null && baseUrl.StartsWith(currentControllerUrlAlias.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (originalUrl.Equals(currentControllerUrlAlias))
+                                if (originalUrl.Equals(currentControllerUrlAlias, StringComparison.OrdinalIgnoreCase))
                                 {
                                     controllerParameters = new string[0];
                                 }
@@ -775,7 +777,7 @@ namespace Phabrico.Http
                 whoAmI = accountStorage.WhoAmI(database);
 
                 SessionManager.Token sessionToken = Session.CreateToken(whoAmI.Token, browser);
-                clonedBrowser.SetCookie("token", sessionToken.ID);
+                clonedBrowser.SetCookie("token", sessionToken.ID, true);
 
                 whoAmI.PublicXorCipher = accountStorage.GetPublicXorCipher(database, sessionToken);
 
@@ -823,7 +825,7 @@ namespace Phabrico.Http
                             viewPage.Theme = theme;
                             htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
 
-                            cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent));
+                            cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
                         }
 
                         Thread.Sleep(100);
@@ -864,7 +866,7 @@ namespace Phabrico.Http
                             viewPage.Theme = theme;
                             htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
 
-                            cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent));
+                            cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
                         }
 
                         Thread.Sleep(100);
@@ -891,8 +893,13 @@ namespace Phabrico.Http
                 htmlViewPage.SetText("INVALID-LOCAL-URL", accessDeniedException.URL);
                 htmlViewPage.SetText("PHABRICATOR-URL", accessDeniedException.URL);
                 htmlViewPage.SetText("THEME", database.ApplicationTheme);
+                htmlViewPage.SetText("THEME-STYLE", "", Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("LOCALE", browser.Session.Locale, Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 htmlViewPage.SetText("COMMENT", Locale.TranslateText(accessDeniedException.Comment, browser.Session.Locale));
+                htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                htmlViewPage.Merge();
+                htmlViewPage.HttpStatusCode = 403;
+                htmlViewPage.HttpStatusMessage = "Forbidden";
                 htmlViewPage.Send(browser);
             }
         }
@@ -909,11 +916,14 @@ namespace Phabrico.Http
         {
             Logging.WriteError(browser.Token?.ID, "AuthorizationException thrown:\r\n{0}", authorizationException.StackTrace);
 
-            // current session token was invalidated somehow -> redirect to the homepage
-            string token = browser.Request.Cookies["token"]?.Value;
-            if (token != null)
+            if (browser.Token != null && browser.Token.AuthenticationFactor != AuthenticationFactor.Ownership)
             {
-                Session.CancelToken(token);
+                // current session token was invalidated somehow -> redirect to the homepage
+                string token = browser.Request.Cookies["token"]?.Value;
+                if (token != null)
+                {
+                    Session.CancelToken(token);
+                }
             }
 
             Http.Response.HttpRedirect httpResponse = null;
@@ -963,6 +973,8 @@ namespace Phabrico.Http
                         if (UserAgentIsSupported(browser.Request.UserAgent) == false)
                         {
                             Http.Response.HtmlViewPage browserNotSupportedPage = new Http.Response.HtmlViewPage(this, browser, true, "BrowserNotSupported", null);
+                            browserNotSupportedPage.SetText("LOCALE", browser.Session.Locale, Http.Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            browserNotSupportedPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, Http.Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                             browserNotSupportedPage.Merge();
                             browserNotSupportedPage.Send(browser);
                             return;
@@ -1008,6 +1020,7 @@ namespace Phabrico.Http
                                 {
                                     CachedHttpMessage cachedHttpMessage = cachedHttpMessages[browser.Token?.ID + theme + browser.Language + cmdGetUrl];
                                     cachedHttpMessage.Timestamp = DateTime.UtcNow;
+                                    browser.Response.ContentType = cachedHttpMessage.ContentType;
                                     byte[] decryptedCachedData = UTF8Encoding.UTF8.GetBytes(Encryption.Decrypt(encryptionKey, cachedHttpMessage.EncryptedData));
                                     browser.Send(decryptedCachedData, cachedHttpMessage.EncryptedData.Length);
                                     return;
@@ -1026,7 +1039,10 @@ namespace Phabrico.Http
                                         }
                                         break;
 
-                                    case string favicon when favicon.StartsWith("/favicon.ico", StringComparison.OrdinalIgnoreCase):
+                                    case string favicon when favicon.Split('?')
+                                                                    .FirstOrDefault()
+                                                                    .TrimEnd('/')
+                                                                    .Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase):
                                         httpResponse = new Http.Response.FavIcon(this, browser, cmdGetUrl);
                                         cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
                                         httpResponse.Send(browser);
@@ -1114,12 +1130,6 @@ namespace Phabrico.Http
                     Http.Response.PlainTextMessage plainTextMessage = null;
                     Http.Response.Script script = null;
                     Http.Response.StyleSheet styleSheet = null;
-
-                    // check if session if still OK
-                    if (encryptionKey == null && unsecuredUrlPaths.All(path => cmdGetUrl.StartsWith(path) == false))
-                    {
-                        throw new Exception.AuthorizationException();
-                    }
 
                     // search for controller method
                     string controllerUrl;
@@ -1237,6 +1247,12 @@ namespace Phabrico.Http
                                 tokenToLog = browser.Token.ID;
                             }
 
+                            // check if session if still OK
+                            if (encryptionKey == null && unsecuredUrlPaths.All(path => cmdGetUrl.StartsWith(path) == false))
+                            {
+                                throw new Exception.AuthorizationException();
+                            }
+
                             // invoke method
                             Logging.WriteInfo(tokenToLog, "Invoking {0}.{1}", controller.GetType().Name, controllerMethod.Name);
                             object[] methodArguments = new object[] { this, browser, viewPage, controllerParameters, parameterActions };
@@ -1309,7 +1325,7 @@ namespace Phabrico.Http
                                 lock (cachedHttpMessages)
                                 {
                                     string theme = database.ApplicationTheme;
-                                    cachedHttpMessages[browser.Token?.ID + theme + browser.Language + cmdGetUrl] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(dataSent));
+                                    cachedHttpMessages[browser.Token?.ID + theme + browser.Language + cmdGetUrl] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(dataSent), "text/html");
                                 }
                             }
                         }
@@ -1465,7 +1481,7 @@ namespace Phabrico.Http
 
                             // create new session token (or reuse the one with the same tokenId)
                             token = Session.CreateToken(tokenId, browser);
-                            browser.SetCookie("token", token.ID);
+                            browser.SetCookie("token", token.ID, true);
 
                             // reinitialize session variables
                             publicEncryptionKey = Encryption.XorString(publicEncryptionKey, firstAccount.PublicXorCipher);
@@ -1486,8 +1502,8 @@ namespace Phabrico.Http
                         {
                             Storage.User userStorage = new Storage.User();
                             if (userStorage.Get(database).Any() == false &&
-                                browser.Session.FormVariables.ContainsKey("username") &&
-                                browser.Session.FormVariables.ContainsKey("password"))
+                                browser.Session.FormVariables["/auth/login"]?.ContainsKey("username") == true &&
+                                browser.Session.FormVariables["/auth/login"]?.ContainsKey("password") == true)
                             {
                                 // we have a local SQLite database, but there is no data in it => try to synchronize with Phabricator server
                                 httpResponse.Status = Http.Response.HomePage.HomePageStatus.EmptyDatabase;
@@ -1511,11 +1527,12 @@ namespace Phabrico.Http
                         Phabricator.Data.Account existingAccount = accountStorage.Get(database).FirstOrDefault();
                         tokenId = existingAccount.Token;
                         token = Session.CreateToken(tokenId, browser);
-                        browser.SetCookie("token", token.ID);
+                        browser.SetCookie("token", token.ID, true);
                         token.EncryptionKey = database.EncryptionKey;
                         token.PrivateEncryptionKey = database.PrivateEncryptionKey;
                         token.AuthenticationFactor = AuthenticationFactor.Ownership;
                         Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
+                        Session.ClientSessions[token.ID].Locale =  browser.Language;
 
                         // store AuthenticationFactor in database
                         database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
@@ -1564,7 +1581,7 @@ namespace Phabrico.Http
 
                 if (contentType.Equals("application/x-www-form-urlencoded"))
                 {
-                    browser.Session.FormVariables = UTF8Encoding.UTF8.GetString(rcvBuffer.Take(bytesRead).ToArray())
+                    browser.Session.FormVariables[browser.Request.RawUrl] = UTF8Encoding.UTF8.GetString(rcvBuffer.Take(bytesRead).ToArray())
                                                                    .Split('&')
                                                                    .ToDictionary(key => key.Split('=')[0],
                                                                                  value => HttpUtility.UrlDecode(value.Substring(value.IndexOf('=') + 1)));
@@ -1575,7 +1592,7 @@ namespace Phabrico.Http
                     string postData = UTF8Encoding.UTF8.GetString(rcvBuffer, 0, (int)browser.Request.ContentLength64);
                     string mimeSeparator = postData.Split(new string[] { "\r\n" }, StringSplitOptions.None).FirstOrDefault(line => line.StartsWith("---"));
                     string[] mimeParts = postData.Split(new string[] { mimeSeparator }, StringSplitOptions.None).Skip(1).ToArray();
-                    browser.Session.FormVariables = mimeParts.Select(part => part.Trim('\r', '\n'))
+                    browser.Session.FormVariables[browser.Request.RawUrl] = mimeParts.Select(part => part.Trim('\r', '\n'))
                                                                .Where(part => RegexSafe.IsMatch(part.Split('\r', '\n').FirstOrDefault(), "(^|; )name=\"[^\"]*\"", System.Text.RegularExpressions.RegexOptions.None))
                                                                .ToDictionary(key => RegexSafe.Match(key, "name=\"([^\"]*)\"", System.Text.RegularExpressions.RegexOptions.None).Groups[1].Value,
                                                                              value => value.IndexOf("\r\n\r\n") == -1
@@ -1593,27 +1610,12 @@ namespace Phabrico.Http
             // process POST request
             Logging.WriteInfo(browser.Token?.ID, "POST {0}", cmdPostUrl);
 
-            bool requestsProcessed = false;
-
-            if (cmdPostUrl.StartsWith("/auth/") == false)
-            {
-                // verify if session is still OK
-                string tokenId = browser.Request.Cookies["token"]?.Value;
-                if (tokenId != null)
-                {
-                    encryptionKey = Session.GetToken(tokenId)?.EncryptionKey;
-                    if (encryptionKey == null)
-                    {
-                        throw new Exception.AuthorizationException();
-                    }
-                }
-            }
-
             // search for controller method
             string controllerUrl;
             string controllerUrlAlias;
             Dictionary<MethodInfo, Http.Response.HtmlViewPage.ContentOptions> controllerMethods;
             string[] controllerParameters;
+            bool requestsProcessed = false;
             cmdPostUrl = RouteManager.GetInternalURL(cmdPostUrl);
             object controller = GetControllerInfo(browser, ref cmdPostUrl, out controllerUrl, out controllerUrlAlias, out controllerMethods, out controllerParameters);
             if (controller != null)
@@ -1651,6 +1653,20 @@ namespace Phabrico.Http
                         }
                     }
 
+                    if (cmdPostUrl.StartsWith("/auth/") == false)
+                    {
+                        // verify if session is still OK
+                        string tokenId = browser.Request.Cookies["token"]?.Value;
+                        if (tokenId != null)
+                        {
+                            encryptionKey = Session.GetToken(tokenId)?.EncryptionKey;
+                            if (encryptionKey == null)
+                            {
+                                throw new Exception.AuthorizationException();
+                            }
+                        }
+                    }
+
                     // invoke method
                     Http.Response.HttpMessage httpResponse = null;
                     Logging.WriteInfo(browser.Token?.ID, "Invoking {0}.{1}", controller.GetType().Name, controllerMethod.Name);
@@ -1659,7 +1675,7 @@ namespace Phabrico.Http
                         Plugin.PluginController pluginController = controller as Plugin.PluginController;
                         if (pluginController != null)
                         {
-                            if (browser.Session.FormVariables.ContainsKey("confirm"))
+                            if (browser.Session.FormVariables[browser.Request.RawUrl]?.ContainsKey("confirm") == true)
                             {
                                 // controller method belongs of plugin -> load app-specific formdata data from browser
                                 Plugin.PluginBase pluginClass = Plugins.FirstOrDefault(plugin => plugin.Assembly.Equals(controllerMethod.Module.Assembly));
@@ -1672,27 +1688,31 @@ namespace Phabrico.Http
                                 if (pluginUsages.Contains(Plugin.PluginTypeAttribute.UsageType.ManiphestTask))
                                 {
                                     pluginController.ManiphestTaskData = new Plugin.PluginController.ManiphestTaskDataType();
-                                    pluginController.ManiphestTaskData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables["confirm"]);
-                                    pluginController.ManiphestTaskData.TaskID = browser.Session.FormVariables["taskID"];
+                                    pluginController.ManiphestTaskData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables[browser.Request.RawUrl]["confirm"]);
+                                    pluginController.ManiphestTaskData.TaskID = browser.Session.FormVariables[browser.Request.RawUrl]["taskID"];
                                 }
 
                                 if (pluginUsages.Contains(Plugin.PluginTypeAttribute.UsageType.PhrictionDocument))
                                 {
                                     pluginController.PhrictionData = new Plugin.PluginController.PhrictionDataType();
-                                    pluginController.PhrictionData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables["confirm"]);
-                                    pluginController.PhrictionData.Content = browser.Session.FormVariables["content"];
-                                    pluginController.PhrictionData.Crumbs = browser.Session.FormVariables["crumbs"];
-                                    pluginController.PhrictionData.IsPrepared = bool.Parse(browser.Session.FormVariables["isPrepared"]);
-                                    pluginController.PhrictionData.Path = browser.Session.FormVariables["path"];
-                                    pluginController.PhrictionData.TOC = browser.Session.FormVariables["toc"];
+                                    pluginController.PhrictionData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables[browser.Request.RawUrl]["confirm"]);
+                                    pluginController.PhrictionData.Content = browser.Session.FormVariables[browser.Request.RawUrl]["content"];
+                                    pluginController.PhrictionData.Crumbs = browser.Session.FormVariables[browser.Request.RawUrl]["crumbs"];
+                                    pluginController.PhrictionData.IsPrepared = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["isPrepared"]);
+                                    pluginController.PhrictionData.Path = browser.Session.FormVariables[browser.Request.RawUrl]["path"];
+                                    pluginController.PhrictionData.TOC = browser.Session.FormVariables[browser.Request.RawUrl]["toc"];
                                 }
                             }
                         }
 
                         httpResponse = controllerMethod.Invoke(controller, new object[] { this, browser, controllerParameters }) as Http.Response.HttpMessage;
                     }
-                    catch
+                    catch (System.Exception httpResponseException)
                     {
+                        if (httpResponseException is InvalidCSRFException || httpResponseException.InnerException is InvalidCSRFException)
+                        {
+                            httpResponse = new Http.Response.InvalidCSRF(this, browser, cmdPostUrl);
+                        }
                     }
                     finally
                     {
@@ -1771,6 +1791,11 @@ namespace Phabrico.Http
                             if (browser.Request.HttpMethod.Equals("POST"))
                             {
                                 ProcessHttpPostRequest(browser);
+
+                                if (browser.Request.RawUrl.Equals("/auth/login") == false)  // we can't delete /auth/login immeditely because of the two-step authentication
+                                {
+                                    browser.Session.FormVariables.Remove(browser.Request.RawUrl);
+                                }
                             }
                         }
                         catch (AuthorizationException authorizationException)
@@ -1781,15 +1806,20 @@ namespace Phabrico.Http
                         {
                             ProcessAccessDeniedException(browser, accessDeniedException);
                         }
-                        catch (HttpListenerException)
-                        {
-                            throw;
-                        }
                         catch (CryptographicException)
                         {
                             // unable to decode database -> access denied
                             AccessDeniedException accessDeniedException = new AccessDeniedException("/", "Invalid credentials");
                             ProcessAccessDeniedException(browser, accessDeniedException);
+                        }
+                        catch (HttpListenerException)
+                        {
+                            throw;
+                        }
+                        catch (HttpNotFound notFoundException)
+                        {
+                            Http.Response.HttpNotFound notFound = new Http.Response.HttpNotFound(this, browser, notFoundException.Url);
+                            notFound.Send(browser);
                         }
                         catch (InvalidConfigurationException invalidConfigurationException)
                         {
@@ -1894,6 +1924,7 @@ namespace Phabrico.Http
             htmlViewPage.SetContent(browser, htmlViewPage.GetViewData("InvalidConfiguration"));
             htmlViewPage.SetText("ERROR-MESSAGE", invalidConfigurationException.ErrorMessage);
             htmlViewPage.SetText("APP-CONFIG-FILENAME", AppConfigLoader.ConfigFileName);
+            htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
             htmlViewPage.Merge();
             htmlViewPage.Send(browser);
         }

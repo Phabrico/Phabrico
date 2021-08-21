@@ -1,4 +1,12 @@
 <style>
+    #overview #btnPush {
+        display: inline-block;
+    }
+
+    #overview.no-pushable-commits #btnPush {
+        display: none;
+    }
+
     .title {
         padding: 8px 0px;
         font-weight: bold;
@@ -157,7 +165,7 @@
     <span class="message" style="display:block;">One moment please...</span>
 </div>
 
-<div class="app-window">
+<div id="overview" class="app-window no-pushable-commits">
     <div class="title">
         <span class="repository-name"></span>
         <span class="branch-name"></span>
@@ -539,8 +547,6 @@
                             });
                         }
 
-                        btnPush.style.display = 'none';
-
                         if (filter.value == "" && document.querySelector('div.unpushed-commits').style.display == 'none') {
                             cleanGitRepository.style.display = 'block';
                         }
@@ -780,10 +786,10 @@
                 });
 
                 if (jsonResponse.length == 0) {
-                    btnPush.style.display = 'none';
+                    overview.classList.add("no-pushable-commits");
                     spinPush.style.display = 'none';
                 } else {
-                    btnPush.style.display = 'block';
+                    overview.classList.remove("no-pushable-commits");
                     spinPush.style.display = 'none';
                 }
             }

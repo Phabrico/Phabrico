@@ -5,6 +5,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="Description" content="Phabrico, offline reader and editor for Phabricator tasks and documents">
       <meta name="google" content="notranslate">
+      <base href="@@PHABRICO-ROOTPATH@@" />
       <title>@@CUSTOM-APPLICATION-NAME@@</title>
       <link rel="stylesheet" href="css/font-faces.css?version=@@PHABRICO-VERSION@@" type="text/css" />
       <link rel="stylesheet" href="css/font-awesome.css?version=@@PHABRICO-VERSION@@" type="text/css" />
@@ -37,7 +38,7 @@
                 @{ELSE
                     <div style="display:flex; align-items : center;">
                         @{IF NOT @@CUSTOM-APPLICATION-LOGO@@=@
-                        <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@">
+                        <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@" alt="logo">
                         }@
                         @{IF NOT @@CUSTOM-APPLICATION-NAME@@=@
                         <span style="@@CUSTOM-APPLICATION-NAME-STYLE@@">@@CUSTOM-APPLICATION-NAME@@</span>
@@ -47,7 +48,7 @@
             </a>
         </div>
 
-        <div style="width:800px; margin-left: calc(50% - 400px); position:absolute; top: 150px; border:solid 1px #ccc;">
+        <div style="min-width:800px; margin-left: calc(50% - 400px); position:absolute; top: 150px; border:solid 1px #ccc;">
             <div style="text-align:left; font-size: 24px; background:red; background: linear-gradient(0deg, rgba(255,100,100,1) 0%, rgba(255,0,0,1) 100%); color: #fff;">
                 <h1 class="phui-font-fa fa-exclamation-triangle" style="display:block; padding:10px; margin-top:0px;"><b style="font-size: 28px; display:inline-block; position:absolute; margin-top: 10px; margin-left:20px;">ACCESS DENIED</b></h1>
             </div>

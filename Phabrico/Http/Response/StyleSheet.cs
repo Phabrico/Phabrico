@@ -33,12 +33,20 @@ namespace Phabrico.Http.Response
                                             .Split('?')
                                             .FirstOrDefault()
                                             .TrimEnd('.');
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+
+                try
                 {
-                    using (StreamReader reader = new StreamReader(stream))
+                    using (Stream stream = assembly.GetManifestResourceStream(resourceName))
                     {
-                        Content = reader.ReadToEnd();
+                        using (StreamReader reader = new StreamReader(stream))
+                        {
+                            Content = reader.ReadToEnd();
+                        }
                     }
+                }
+                catch
+                {
+                    throw new Exception.HttpNotFound(url);
                 }
             }
         }

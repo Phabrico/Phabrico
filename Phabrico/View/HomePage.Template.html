@@ -38,7 +38,7 @@
       <link rel="icon" href="@@CUSTOM-FAVICON@@" type="image/png" />
       <link rel="shortcut icon" href="@@CUSTOM-FAVICON@@" type="image/png" />
       }@
-      <script defer src="scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+      <script defer src="scripts/phabrico.js?version=@@PHABRICO-VERSION@@-@@LOCALE@@"></script>
       <script defer src="scripts/highlight.min.js?version=@@PHABRICO-VERSION@@">
       /***************************************************************************************************************
           BSD 3-Clause License
@@ -117,7 +117,7 @@
         </script>
         <header>
             <div id="headerBar">
-                <a href="" style="text-decoration: none;">
+                <a href="." style="text-decoration: none;">
                     @{IF @@DEFAULT-APPLICATION-NAME@@=True@
                     <span class="phabrico-logo" style=""></span>
                     <span class="phabrico-wordmark">Phabrico</span>
@@ -125,7 +125,7 @@
                     @{ELSE
                         <div style="display:flex; align-items : center;">
                             @{IF NOT @@CUSTOM-APPLICATION-LOGO@@=@
-                            <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@" loading="lazy">
+                            <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@" loading="lazy" alt="logo">
                             }@
                             @{IF NOT @@CUSTOM-APPLICATION-NAME@@=@
                             <span style="@@CUSTOM-APPLICATION-NAME-STYLE@@">@@CUSTOM-APPLICATION-NAME@@</span>

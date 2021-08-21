@@ -177,7 +177,7 @@ namespace Phabrico.Miscellaneous
 
                 if (internalHttpListenerRequest == null && internalHttpRequest == null)
                 {
-                    rawUrl = internalRequestUrl;
+                    rawUrl = internalRequestUrl ?? Http.Server.RootPath;
                 }
                 else
                 if (internalHttpRequest != null)

@@ -173,6 +173,7 @@
 </main>
 
 <form action="" method="POST" id="dlgRequestSynchronize" class="aphront-dialog-view modal" style="display:none" onsubmit="return phabrico.synchronization.start(this, 'full');">
+    <input name="csrf_token" type="hidden" value="@@CSRF@@" />
     <div class="aphront-dialog-overlay"></div>
     <div class="aphront-dialog-head">
         <span class="phui-header-header">Synchronizing</span>

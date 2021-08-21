@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using static Phabrico.Phabricator.Data.Account;
 
 namespace Phabrico.Controllers
@@ -28,12 +29,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/configure", ServerCache = false)]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound("/configure");
 
             Storage.Account accountStorage = new Storage.Account();
             if (accountStorage != null)
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "session expired");
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -136,13 +138,13 @@ namespace Phabrico.Controllers
                             HtmlPartialViewPage htmlPluginNavigatorTabHeader = viewPage.GetPartialView("CONFIGURABLE-PLUGIN-TAB-HEADER");
                             if (htmlPluginNavigatorTabHeader != null)
                             {
-                                htmlPluginNavigatorTabHeader.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                htmlPluginNavigatorTabHeader.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale ?? browser.Language), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                             }
 
                             HtmlPartialViewPage htmlPluginNavigatorTabContent = viewPage.GetPartialView("CONFIGURABLE-PLUGIN-TAB-CONTENT");
                             if (htmlPluginNavigatorTabContent != null)
                             {
-                                htmlPluginNavigatorTabContent.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                htmlPluginNavigatorTabContent.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale ?? browser.Language), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                 htmlPluginNavigatorTabContent.SetText("PLUGIN-SCREEN-CONTENT", configurationViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
                                 Type loadConfigurationParametersControllerType = plugin.Assembly.GetExportedTypes()
@@ -170,7 +172,7 @@ namespace Phabrico.Controllers
                                     }
                                     catch (System.Exception loadConfigurationParametersException)
                                     {
-                                        Logging.WriteException(plugin.GetName(browser.Session.Locale) + "::loadConfigurationParameters", loadConfigurationParametersException);
+                                        Logging.WriteException(plugin.GetName(browser.Session.Locale ?? browser.Language) + "::loadConfigurationParameters", loadConfigurationParametersException);
                                     }
                                 }
                             }
@@ -190,15 +192,22 @@ namespace Phabrico.Controllers
         /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/configure")]
-        public void HttpPostSave(Http.Server httpServer, Browser browser, string[] parameters)
+        public Http.Response.HttpMessage HttpPostSave(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound();
+            if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
+            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound("/configure");
+
+            if (ValidatePostSave(browser.Session.FormVariables[browser.Request.RawUrl]) == false)
+            {
+                return new Http.Response.HttpUnprocessableEntity(httpServer, browser, "/configure");
+            }
 
             try
             {
                 Storage.Account accountStorage = new Storage.Account();
 
                 SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "session expired");
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -210,17 +219,17 @@ namespace Phabrico.Controllers
                     Account existingAccount = accountStorage.Get(database, token);
                     if (existingAccount != null)
                     {
-                        existingAccount.ConduitAPIToken = browser.Session.FormVariables["conduitApiToken"];
-                        existingAccount.PhabricatorUrl = browser.Session.FormVariables["phabricatorUrl"];
+                        existingAccount.ConduitAPIToken = browser.Session.FormVariables[browser.Request.RawUrl]["conduitApiToken"];
+                        existingAccount.PhabricatorUrl = browser.Session.FormVariables[browser.Request.RawUrl]["phabricatorUrl"];
 
                         // determine synchronization method for Phriction and Maniphest
                         SynchronizationMethod newManiphestSynchronizationMethod, newPhrictionSynchronizationMethod;
-                        if (Enum.TryParse<SynchronizationMethod>(browser.Session.FormVariables["syncMethodManiphest"], out newManiphestSynchronizationMethod) == false)
+                        if (Enum.TryParse<SynchronizationMethod>(browser.Session.FormVariables[browser.Request.RawUrl]["syncMethodManiphest"], out newManiphestSynchronizationMethod) == false)
                         {
                             newManiphestSynchronizationMethod = SynchronizationMethod.PerUsers;
                         }
 
-                        if (Enum.TryParse<SynchronizationMethod>(browser.Session.FormVariables["syncMethodPhriction"], out newPhrictionSynchronizationMethod) == false)
+                        if (Enum.TryParse<SynchronizationMethod>(browser.Session.FormVariables[browser.Request.RawUrl]["syncMethodPhriction"], out newPhrictionSynchronizationMethod) == false)
                         {
                             newPhrictionSynchronizationMethod = SynchronizationMethod.PerUsers;
                         }
@@ -267,11 +276,11 @@ namespace Phabrico.Controllers
                         }
 
 
-                        existingAccount.Parameters.RemovalPeriodClosedManiphests = (RemovalPeriod)Enum.Parse(typeof(RemovalPeriod), (string)browser.Session.FormVariables["removalPeriodClosedManiphests"]);
+                        existingAccount.Parameters.RemovalPeriodClosedManiphests = (RemovalPeriod)Enum.Parse(typeof(RemovalPeriod), (string)browser.Session.FormVariables[browser.Request.RawUrl]["removalPeriodClosedManiphests"]);
 
                         try
                         {
-                            existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = Int32.Parse(browser.Session.FormVariables["autoLogOutAfterMinutesOfInactivity"].ToString());
+                            existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = Int32.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["autoLogOutAfterMinutesOfInactivity"].ToString());
                             if (existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity >= 1440)
                             {
                                 // set max inactivity to 1 day 
@@ -285,25 +294,26 @@ namespace Phabrico.Controllers
                             existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = 5;
                         }
 
-                        existingAccount.Parameters.DefaultStateModifiedManiphest = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables["defaultStateModifiedManiphest"]);
-                        existingAccount.Parameters.DefaultStateModifiedPhriction = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables["defaultStateModifiedPhriction"]);
+                        existingAccount.Parameters.DefaultStateModifiedManiphest = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables[browser.Request.RawUrl]["defaultStateModifiedManiphest"]);
+                        existingAccount.Parameters.DefaultStateModifiedPhriction = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables[browser.Request.RawUrl]["defaultStateModifiedPhriction"]);
 
-                        existingAccount.Parameters.ShowPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables["showPhrictionMetadata"]);
-                        existingAccount.Parameters.ForceDownloadAllPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables["forceDownloadAllPhrictionMetadata"]);
+                        existingAccount.Parameters.ShowPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables[browser.Request.RawUrl]["showPhrictionMetadata"]);
+                        existingAccount.Parameters.ForceDownloadAllPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables[browser.Request.RawUrl]["forceDownloadAllPhrictionMetadata"]);
 
-                        existingAccount.Theme = browser.Session.FormVariables["theme"];
+                        existingAccount.Theme = browser.Session.FormVariables[browser.Request.RawUrl]["theme"];
 
                         string darkenImages = "Disabled";
-                        if (browser.Session.FormVariables.ContainsKey("darkenImages"))
+                        if (browser.Session.FormVariables[browser.Request.RawUrl]?.ContainsKey("darkenImages") == true)
                         {
-                            darkenImages = (string)browser.Session.FormVariables["darkenImages"];
+                            darkenImages = (string)browser.Session.FormVariables[browser.Request.RawUrl]["darkenImages"];
                         }
+
                         existingAccount.Parameters.DarkenBrightImages = (DarkenImageStyle)Enum.Parse(typeof(DarkenImageStyle), darkenImages);
 
-                        existingAccount.Parameters.ClipboardCopyForCodeBlock = bool.Parse((string)browser.Session.FormVariables["clipboardCopyForCodeBlock"]);
-                        existingAccount.Parameters.UITranslation = bool.Parse((string)browser.Session.FormVariables["uiTranslation"]);
+                        existingAccount.Parameters.ClipboardCopyForCodeBlock = bool.Parse((string)browser.Session.FormVariables[browser.Request.RawUrl]["clipboardCopyForCodeBlock"]);
+                        existingAccount.Parameters.UITranslation = bool.Parse((string)browser.Session.FormVariables[browser.Request.RawUrl]["uiTranslation"]);
 
-                        string autoLogonValue = (string)browser.Session.FormVariables["autoLogon"];
+                        string autoLogonValue = (string)browser.Session.FormVariables[browser.Request.RawUrl]["autoLogon"];
                         switch (autoLogonValue)
                         {
                             case "Windows":
@@ -338,6 +348,8 @@ namespace Phabrico.Controllers
             {
                 // in case we requested too many save calls, we might get some exceptions because the FormVariables has been reinitialized (and some variables might be missing)
             }
+
+            return null;
         }
 
         /// <summary>
@@ -349,11 +361,12 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/configure/table-headers")]
         public void HttpPostSaveConfidentialTableHeaders(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound("/configure/table-headers");
 
             Storage.Account accountStorage = new Storage.Account();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "session expired");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -365,7 +378,7 @@ namespace Phabrico.Controllers
                 Account existingAccount = accountStorage.Get(database, token);
                 if (existingAccount != null)
                 {
-                    string jsonArrayConfidentialTableHeaders = browser.Session.FormVariables["data"];
+                    string jsonArrayConfidentialTableHeaders = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
                     JArray confidentialTableHeaders = JsonConvert.DeserializeObject(jsonArrayConfidentialTableHeaders) as JArray;
 
                     existingAccount.Parameters.ColumnHeadersToHide = confidentialTableHeaders.Select(jtoken => jtoken.ToString()).ToArray();
@@ -409,6 +422,109 @@ namespace Phabrico.Controllers
             {
                 selectedUser.DateSynchronized = DateTimeOffset.MinValue;
                 userStorage.Add(database, selectedUser);
+            }
+        }
+
+        /// <summary>
+        /// Verifies if all POST variables have valid data
+        /// </summary>
+        /// <param name="formVariables"></param>
+        private bool ValidatePostSave(DictionarySafe<string, string> formVariables)
+        {
+            try
+            {
+                if (formVariables == null)
+                {
+                    throw new System.Exception("no formvariables");
+                }
+
+                if (string.IsNullOrEmpty(formVariables["conduitApiToken"]) == false &&
+                    RegexSafe.IsMatch(formVariables["conduitApiToken"], "^api-[a-zA-Z0-9]{28}", RegexOptions.None) == false
+                   )
+                {
+                    throw new System.Exception("conduitAPIToken");
+                }
+
+                if (string.IsNullOrEmpty(formVariables["phabricatorUrl"]) == false &&
+                    RegexSafe.IsMatch(formVariables["phabricatorUrl"], "^https?://", RegexOptions.None) == false
+                   )
+                {
+                    throw new System.Exception("phabricatorUrl");
+                }
+
+                DefaultStateModification defaultStateModification;
+                if (Enum.TryParse<DefaultStateModification>(formVariables["defaultStateModifiedManiphest"], out defaultStateModification) == false)
+                {
+                    throw new System.Exception("defaultStateModifiedManiphest");
+                }
+
+                if (Enum.TryParse<DefaultStateModification>(formVariables["defaultStateModifiedPhriction"], out defaultStateModification) == false)
+                {
+                    throw new System.Exception("defaultStateModifiedPhriction");
+                }
+
+                bool boolValue;
+                if (bool.TryParse(formVariables["showPhrictionMetadata"], out boolValue) == false)
+                {
+                    throw new System.Exception("showPhrictionMetadata");
+                }
+
+                if (bool.TryParse(formVariables["forceDownloadAllPhrictionMetadata"], out boolValue) == false)
+                {
+                    throw new System.Exception("forceDownloadAllPhrictionMetadata");
+                }
+
+                if (bool.TryParse(formVariables["clipboardCopyForCodeBlock"], out boolValue) == false)
+                {
+                    throw new System.Exception("clipboardCopyForCodeBlock");
+                }
+
+                if (bool.TryParse(formVariables["uiTranslation"], out boolValue) == false)
+                {
+                    throw new System.Exception("uiTranslation");
+                }
+
+                RemovalPeriod removalPeriod;
+                if (Enum.TryParse<RemovalPeriod>(formVariables["removalPeriodClosedManiphests"], out removalPeriod) == false)
+                {
+                    throw new System.Exception("removalPeriodClosedManiphests");
+                }
+
+                SynchronizationMethod synchronizationMethod;
+                if (Enum.TryParse<SynchronizationMethod>(formVariables["syncMethodManiphest"], out synchronizationMethod) == false)
+                {
+                    throw new System.Exception("syncMethodManiphest");
+                }
+
+                if (Enum.TryParse<SynchronizationMethod>(formVariables["syncMethodPhriction"], out synchronizationMethod) == false)
+                {
+                    throw new System.Exception("syncMethodPhriction");
+                }
+
+                if (formVariables["autoLogon"].Equals("True") == false
+                    && formVariables["autoLogon"].Equals("False") == false
+                    && formVariables["autoLogon"].Equals("Windows") == false)
+                {
+                    throw new System.Exception("autoLogon");
+                }
+
+                int intValue;
+                if (int.TryParse(formVariables["autoLogOutAfterMinutesOfInactivity"], out intValue) == false)
+                {
+                    throw new System.Exception("autoLogOutAfterMinutesOfInactivity");
+                }
+
+                DarkenImageStyle darkenImageStyle;
+                if (Enum.TryParse<DarkenImageStyle>(formVariables["darkenImages"], out darkenImageStyle) == false)
+                {
+                    throw new System.Exception("darkenImages");
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

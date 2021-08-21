@@ -35,6 +35,39 @@ namespace Phabrico.Miscellaneous
         }
 
         /// <summary>
+        ///  Gets or sets the value associated with the specified key.
+        ///  If a key is not found in the collection, a default value (depending on the type of TValue) will be returned
+        /// </summary>
+        /// <param name="key">Name of the key to be retrieved</param>
+        /// <returns></returns>
+        public TValue this[TKey key]
+        {
+            get
+            {
+                TValue value;
+                if (internalDictionary.TryGetValue(key, out value) == false)
+                {
+                    if (typeof(TValue).IsGenericType && typeof(TValue).GetGenericTypeDefinition() == GetType().GetGenericTypeDefinition())
+                    {
+                        // value is another DictionarySafe
+                        value = (TValue)typeof(TValue).GetConstructors()[0].Invoke(new object[0]);
+                    }
+                    else
+                    {
+                        value = default(TValue);
+                    }
+                }
+
+                return value;
+            }
+
+            set
+            {
+                internalDictionary[key] = value;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of DictionarySafe
         /// </summary>
         public DictionarySafe()
@@ -68,28 +101,23 @@ namespace Phabrico.Miscellaneous
         }
 
         /// <summary>
-        ///  Gets or sets the value associated with the specified key.
-        ///  If a key is not found in the collection, a default value (depending on the type of TValue) will be returned
+        /// Determines whether the dictionary contains the specified key
         /// </summary>
-        /// <param name="key">Name of the key to be retrieved</param>
-        /// <returns></returns>
-        public TValue this[TKey key]
+        /// <param name="key">The key to locate in the dictionary</param>
+        /// <returns>True if the dictionary contains an element with the specified key</returns>
+        public bool ContainsKey(TKey key)
         {
-            get
-            {
-                TValue value;
-                if (internalDictionary.TryGetValue(key, out value) == false)
-                {
-                    value = default(TValue);
-                }
+            return internalDictionary.ContainsKey(key);
+        }
 
-                return value;
-            }
-
-            set
-            {
-                internalDictionary[key] = value;
-            }
+        /// <summary>
+        /// Removes the value with the specified key
+        /// </summary>
+        /// <param name="key">The key to locate in the dictionary</param>
+        /// <returns>True if the element is successfully found and removed</returns>
+        public bool Remove(TKey key)
+        {
+            return internalDictionary.Remove(key);
         }
 
         /// <summary>
@@ -122,16 +150,6 @@ namespace Phabrico.Miscellaneous
         public bool TryGetValue(TKey key, out TValue value)
         {
             return internalDictionary.TryGetValue(key, out value);
-        }
-
-        /// <summary>
-        /// Determines whether the dictionary contains the specified
-        /// </summary>
-        /// <param name="key">The key to locate in the dictionary</param>
-        /// <returns>True if the dictionary contains an element with the specified key</returns>
-        public bool ContainsKey(TKey key)
-        {
-            return internalDictionary.ContainsKey(key);
         }
     }
 }

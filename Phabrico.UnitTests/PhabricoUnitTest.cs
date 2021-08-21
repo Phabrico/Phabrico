@@ -331,7 +331,14 @@ namespace Phabrico.UnitTests
                 HttpServer = null;
             }
 
-            System.IO.File.Delete(Storage.Database.DataSource);
+            try
+            {
+                System.IO.File.Delete(Storage.Database.DataSource);
+            }
+            catch (Exception.InvalidConfigurationException)
+            {
+                // some unit tests don't use a SQLite database and might throw a InvalidConfigurationException
+            }
         }
     }
 }

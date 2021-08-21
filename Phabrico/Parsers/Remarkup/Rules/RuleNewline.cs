@@ -64,7 +64,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
             else
             {
-                html = "<br>";
+                if ((TokenList.LastOrDefault() is RuleHorizontalRule) == false &&
+                    (TokenList.LastOrDefault() is RuleTable) == false
+                   )
+                {
+                   html = "<br>";
+                }
             }
 
             Length = match.Length;

@@ -92,7 +92,7 @@ namespace Phabrico.Miscellaneous
                 Instance.regularExpressions[pattern + ((int)regexOptions).ToString()] = regex;
             }
 
-            return regex.Matches(input);
+            return regex.Matches(input ?? "");
         }
 
         /// <summary>

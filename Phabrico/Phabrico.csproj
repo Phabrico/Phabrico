@@ -92,6 +92,7 @@
     <Compile Include="Controllers\Synchronization.cs" />
     <Compile Include="Controllers\UrlControllerAttribute.cs" />
     <Compile Include="Controllers\User.cs" />
+    <Compile Include="Exception\InvalidCSRFException.cs" />
     <Compile Include="Exception\InvalidConfigurationException.cs" />
     <Compile Include="Exception\AccessDeniedException.cs" />
     <Compile Include="ApplicationCustomization.cs" />
@@ -99,6 +100,8 @@
     <Compile Include="Http\CachedControllerInfo.cs" />
     <Compile Include="Http\ImpersonationHelper.cs" />
     <Compile Include="Http\Response\HttpInternalServerError.cs" />
+    <Compile Include="Http\Response\HttpUnprocessableEntity.cs" />
+    <Compile Include="Http\Response\InvalidCSRF.cs" />
     <Compile Include="Http\Response\PlainTextMessage.cs" />
     <Compile Include="Http\RouteManager.cs" />
     <Compile Include="Miscellaneous\AppConfigLoader.cs" />
@@ -299,7 +302,6 @@
     <EmbeddedResource Include="Locale\RemarkupSyntax_zh.remarkup">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Fonts\NotoSans-Regular.woff2" />
     <EmbeddedResource Include="Fonts\CJK\noto-sans-cjk-sc-regular-004.woff2" />
     <EmbeddedResource Include="Fonts\CJK\noto-sans-cjk-sc-regular-005.woff2" />
     <EmbeddedResource Include="Fonts\CJK\noto-sans-cjk-sc-regular-006.woff2" />
@@ -502,9 +504,17 @@
     <EmbeddedResource Include="Fonts\NotoSans-Regular-latin-ext.woff2" />
     <EmbeddedResource Include="Fonts\NotoSans-Regular-latin.woff2" />
     <EmbeddedResource Include="Fonts\NotoSans-Regular-vietnamese.woff2" />
+    <EmbeddedResource Include="Fonts\NotoSans-Bold-cyrillic-ext.woff2" />
+    <EmbeddedResource Include="Fonts\NotoSans-Bold-cyrillic.woff2" />
+    <EmbeddedResource Include="Fonts\NotoSans-Bold-devanagari.woff2" />
+    <EmbeddedResource Include="Fonts\NotoSans-Bold-greek-ext.woff2" />
+    <EmbeddedResource Include="Fonts\NotoSans-Bold-greek.woff2" />
+    <EmbeddedResource Include="Fonts\NotoSans-Bold-latin-ext.woff2" />
+    <EmbeddedResource Include="Fonts\NotoSans-Bold-latin.woff2" />
+    <EmbeddedResource Include="Fonts\NotoSans-Bold-vietnamese.woff2" />
     <None Include="packages.config" />
     <None Include="Phabrico.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

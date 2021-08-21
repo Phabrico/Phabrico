@@ -211,7 +211,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                     }
                                     else
                                     {
-                                        absoluteUrl = "/" + absoluteUrl + urlHyperlink;
+                                        absoluteUrl = "/" + absoluteUrl.TrimEnd('/') + "/" + urlHyperlink;
                                         absoluteUrl = absoluteUrl.Replace("//", "/");
                                         break;
                                     }
@@ -250,6 +250,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                                     // trim linkedDocument
                                     linkedDocument = linkedDocument.TrimEnd('_');
+
+                                    if (linkedDocument.EndsWith("/") == false) linkedDocument += "/";
 
                                     linkedPhrictionDocument = phrictionStorage.Get(database, linkedDocument);
                                     if (linkedPhrictionDocument == null)

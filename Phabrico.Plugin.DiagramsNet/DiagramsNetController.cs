@@ -270,8 +270,8 @@ namespace Phabrico.Plugin
             {
                 const string base64Prefix = "data:image/png;base64,";
                 
-                string saveData = browser.Session.FormVariables["data"];
-                string fileID = browser.Session.FormVariables["fileID"];
+                string saveData = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
+                string fileID = browser.Session.FormVariables[browser.Request.RawUrl]["fileID"];
 
                 if (saveData.StartsWith(base64Prefix))
                 {

@@ -162,7 +162,7 @@ Remarkup supports simple table syntax. For example, this:<br>
 </tbody>
 </table>
 
-<br>
+
 Remarkup also supports a simplified HTML table syntax. For example, this:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>&lt;table&gt;
     &lt;tr&gt;
@@ -211,7 +211,7 @@ Remarkup also supports a simplified HTML table syntax. For example, this:<br>
 </tbody>
 </table>
 
-<br>
+
 Some general notes about this syntax:<br>
 <ul class='remarkup-list'>
   <li class='remarkup-list-item'>your tags must all be properly balanced;</li>

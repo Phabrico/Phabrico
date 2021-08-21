@@ -305,8 +305,9 @@ namespace Phabrico.Http.Response
                     browser.Response.Headers["Expires"] = "-1";
                 }
 
-                // remove Server header tag
+                // set some HTTP header tag for security
                 browser.Response.Headers.Add("Server", ""); 
+                browser.Response.Headers.Add("X-Content-Type-Options", "nosniff");
 
                 try
                 {

@@ -41,7 +41,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 Storage.Database._dbVersionInDataFile = 0;
                 Database = new Storage.Database(EncryptionKey);
                 Database.PrivateEncryptionKey = PrivateEncryptionKey;
-                HttpServer = new Http.Server(false, 13468, "/");
+                HttpServer = new Http.Server(false, 13468, httpRootPath);
                 HttpListenerContext = new Miscellaneous.HttpListenerContext();
 
                 // browse to Phabrico url
@@ -119,7 +119,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 Storage.Database._dbVersionInDataFile = 0;
                 Database = new Storage.Database(EncryptionKey);
                 Database.PrivateEncryptionKey = PrivateEncryptionKey;
-                HttpServer = new Http.Server(false, 13468, "/");
+                HttpServer = new Http.Server(false, 13468, httpRootPath);
                 HttpListenerContext = new Miscellaneous.HttpListenerContext();
 
                 // browse to Phabrico url
@@ -130,14 +130,14 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement language = WebBrowser.FindElement(By.Id("newLanguage"));
                 language.Click();
                 language.FindElements(By.TagName("option"))
-                                        .Single(option => option.Text == "Español")
+                                        .Single(option => option.Text == " Español")
                                         .Click();
                 Thread.Sleep(500);  // wait a while to make sure the javascript code has been finished
 
                 // verify new language selection (1)
                 language = WebBrowser.FindElement(By.Id("newLanguage"));
                 Assert.IsTrue( language.FindElements(By.TagName("option"))
-                                       .Single(option => option.Text == "Español")
+                                       .Single(option => option.Text == " Español")
                                        .Selected
                              );
 

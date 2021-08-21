@@ -2,18 +2,19 @@
     <div class="edit-left" id="left" style="width:50%;">
         <div>
             <form method="POST" style="display:flex; flex-direction:column; height:calc(100vh - 50px);">
+                <input name="csrf_token" type="hidden" value="@@CSRF@@" />
                 <div>
                     <label class="aphront-form-label" for="title">Title</label>
-                    <input id="title" name="title" placeholder="Type a title..." style="margin-top: 4px; width: calc(100% - var(--maniphest-editor-label-width) - 9px);" type="text" value="@@TASK-HEADER@@" oninput="titleChanged()" />
+                    <input id="title" name="title" tabindex="1" placeholder="Type a title..." style="margin-top: 4px; width: calc(100% - var(--maniphest-editor-label-width) - 9px);" type="text" value="@@TASK-HEADER@@" oninput="titleChanged()" />
                 </div>
                 <div>
                     <label class="aphront-form-label" for="assigned">Assigned To</label>
-                    <input id="assigned" name="assigned" class="input-tag" data-url="/user" data-limit="1" placeholder="Type a username..." style="margin-top: 4px; width: calc(100% - var(--maniphest-editor-label-width) - 10px);" type="text" value="@@TASK-ASSIGNED-TOKEN@@" />
+                    <input id="assigned" name="assigned" tabindex="2" class="input-tag" data-url="/user" data-limit="1" placeholder="Type a username..." style="margin-top: 4px; width: calc(100% - var(--maniphest-editor-label-width) - 10px);" type="text" value="@@TASK-ASSIGNED-TOKEN@@" />
                 </div>
                 <div style="margin-top: -3px;">
                     <label class="aphront-form-label" for="priority">Priority</label>
                     <label class="select" style="width:calc(100% - var(--maniphest-editor-label-width) - 11px);">
-                        <select id="priority" name="priority">
+                        <select id="priority" name="priority" tabindex="3">
                             @{TASK-PRIORITIES
                             <option value="@@TASK-PRIORITIES-PRIORITY-TOKEN@@" @@TASK-PRIORITIES-PRIORITY-SELECTED@@="">@@TASK-PRIORITIES-PRIORITY-NAME@@</option>
                             }@
@@ -22,11 +23,11 @@
                 </div>
                 <div style="margin-top: 6px;">
                     <label class="aphront-form-label" for="tags">Tags</label>
-                    <input id="tags" name="tags" class="input-tag" data-url="/tag" placeholder="Type a project name..." style="margin-top: 4px; width: calc(100% - var(--maniphest-editor-label-width) - 10px);" type="text" value="@@TASK-TAGS@@" />
+                    <input id="tags" name="tags" class="input-tag" data-url="/tag" tabindex="4" placeholder="Type a project name..." style="margin-top: 4px; width: calc(100% - var(--maniphest-editor-label-width) - 10px);" type="text" value="@@TASK-TAGS@@" />
                 </div>
                 <div style="margin-top: 1px;">
                     <label class="aphront-form-label" for="subscribers">Subscribers</label>
-                    <input id="subscribers" name="subscribers" class="input-tag" data-url="/subscriber" placeholder="Type a user or project name..." style="margin-top: 4px; width: calc(100% - var(--maniphest-editor-label-width) - 10px);" type="text" value="@@TASK-SUBSCRIBERS@@" />
+                    <input id="subscribers" name="subscribers" class="input-tag" data-url="/subscriber" tabindex="5" placeholder="Type a user or project name..." style="margin-top: 4px; width: calc(100% - var(--maniphest-editor-label-width) - 10px);" type="text" value="@@TASK-SUBSCRIBERS@@" />
                 </div>
                 <div id="edit" class="app-window-body edit" style="flex:1;">
                     <div class="app-edit-window-head">
@@ -41,19 +42,19 @@
                         @{IF @@PLUGIN-DIAGRAM-AVAILABLE@@=yes@
                             <span class="phui-font-fa fa-sitemap tooltip-top"><span class="tooltiptext">Diagram</span></span>
                         }@
-                        <a href="remarkup/syntax" target="_blank">
+                        <a href="remarkup/syntax" target="_blank" tabindex="9">&#x200B;
                             <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
                         </a>
                     </div>
-                    <textarea name="textarea" id="textarea" class="dropzone" oninput="inputChanged(this.value, right)">@@TASK-RAW-DESCRIPTION@@</textarea>
+                    <textarea name="textarea" id="textarea" class="dropzone" tabindex="6" oninput="inputChanged(this.value, right)">@@TASK-RAW-DESCRIPTION@@</textarea>
                     <input name="operation" type="hidden" value="@@OPERATION@@" />
                     <input name="token" type="hidden" value="@@TASK-TOKEN@@" />
                     <div id="editStatusBar"></div>
                 </div>
                 <div>
                     <div style="float: right;margin-right: 6px;">
-                        <button class="button-blue" id="btnSave" type="button" onclick="saveInputData(this)">Save Changes</button>
-                        <button class="button-gray" id="btnCancel" type="button" onclick="cancelInputData(this)">Cancel</button>
+                        <button class="button-blue" id="btnSave" type="button" tabindex="7" onclick="saveInputData(this)">Save Changes</button>
+                        <button class="button-gray" id="btnCancel" type="button" tabindex="8" onclick="cancelInputData(this)">Cancel</button>
                     </div>
                 </div>
             </form>

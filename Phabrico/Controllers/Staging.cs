@@ -81,9 +81,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes")]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -133,7 +134,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/data")]
         public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/data");
 
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
@@ -141,6 +142,7 @@ namespace Phabrico.Controllers
             if (stage != null)
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -233,7 +235,16 @@ namespace Phabrico.Controllers
                             {
                                 currentPath += crumb + "/";
                                 Phabricator.Data.Phriction parentDocument = phrictionStorage.Get(database, currentPath);
-                                crumbDescriptions += " > " + parentDocument.Name;
+                                if (parentDocument == null)
+                                {
+                                    string inexistantDocumentName = currentPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                                    inexistantDocumentName = Char.ToUpper(inexistantDocumentName[0]).ToString() + inexistantDocumentName.Substring(1);
+                                    crumbDescriptions += " > " + inexistantDocumentName;
+                                }
+                                else
+                                {
+                                    crumbDescriptions += " > " + parentDocument.Name;
+                                }
                             }
 
                             if (string.IsNullOrEmpty(crumbDescriptions) == false)
@@ -295,11 +306,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/freeze")]
         public void HttpPostFreeze(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/freeze");
 
-            Match input = RegexSafe.Match(browser.Session.FormVariables["item"], @"^([^[]*)\[.*\]$", RegexOptions.None);
+            Match input = RegexSafe.Match(browser.Session.FormVariables[browser.Request.RawUrl]["item"], @"^([^[]*)\[.*\]$", RegexOptions.None);
             string phabricatorObjectToken = input.Groups[1].Value;
+
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -399,11 +412,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/unfreeze")]
         public void HttpPostUnfreeze(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/unfreeze");
 
-            Match input = RegexSafe.Match(browser.Session.FormVariables["item"], @"^([^[]*)\[.*\]$", RegexOptions.None);
+            Match input = RegexSafe.Match(browser.Session.FormVariables[browser.Request.RawUrl]["item"], @"^([^[]*)\[.*\]$", RegexOptions.None);
             string phabricatorObjectToken = input.Groups[1].Value;
+
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -503,12 +518,14 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/undo")]
         public void HttpPostUndo(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/undo");
 
-            Match input = RegexSafe.Match(browser.Session.FormVariables["item"], @"^([^[]*)\[(.*)\]$", RegexOptions.None);
+            Match input = RegexSafe.Match(browser.Session.FormVariables[browser.Request.RawUrl]["item"], @"^([^[]*)\[(.*)\]$", RegexOptions.None);
             string phabricatorObjectToken = input.Groups[1].Value;
             string operation = input.Groups[2].Value;
+
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
             if (phabricatorObjectToken.StartsWith("PHID-NEWTOKEN-"))
             {
@@ -589,7 +606,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/view", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpPostSaveChanges(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/view");
 
             if (parameters.Length >= 2)
             {
@@ -598,7 +615,7 @@ namespace Phabrico.Controllers
                     string phabricatorObjectToken = parameters[0];
                     string newContent;
 
-                    if (browser.Session.FormVariables.TryGetValue("newVersion", out newContent))
+                    if (browser.Session.FormVariables[browser.Request.RawUrl].TryGetValue("newVersion", out newContent))
                     {
                         using (Storage.Database database = new Storage.Database(EncryptionKey))
                         {
@@ -647,7 +664,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/offline/changes/view", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetViewChanges(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/view");
+            if (parameters.Any() == false) throw new Phabrico.Exception.AccessDeniedException("/offline/changes/view", "invalid url");
 
             string title = "";
             string url = "";
@@ -665,7 +683,7 @@ namespace Phabrico.Controllers
                 if (modifiedPhrictionDocument != null)
                 {
                     Storage.Phriction phrictionStorage = new Storage.Phriction();
-                    Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, phabricatorObjectToken);
+                    Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, phabricatorObjectToken, true);
                     if (originalPhrictionDocument == null)
                     {
                         // IMPOSSIBLE: should not happen
@@ -695,6 +713,7 @@ namespace Phabrico.Controllers
                 }
             }
 
+            if (originalText == null || modifiedText == null) throw new Phabrico.Exception.AccessDeniedException("/offline/changes/view", "invalid url");
             Diff.GenerateDiffLeftRight(ref originalText, ref modifiedText, false, browser.Session.Locale);
 
             viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "StagingDiff", null);

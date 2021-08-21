@@ -210,7 +210,7 @@ namespace Phabrico.Plugin
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
-                if (parameters.Any() == false) throw new Exception.HttpNotFound();
+                if (parameters.Any() == false) throw new Exception.HttpNotFound("/gitanos/file");
 
                 string filePath = string.Join("\\", parameters);
                 filePath = System.Web.HttpUtility.UrlDecode(filePath);
@@ -477,9 +477,9 @@ namespace Phabrico.Plugin
             {
                 try
                 {
-                    int repositoryIndex = Int32.Parse(browser.Session.FormVariables["repositoryIndex"]);
-                    string[] modificationsForNewCommit = browser.Session.FormVariables["modificationsForNewCommit"].Split(',');
-                    string txtCommitMessage = browser.Session.FormVariables["txtCommitMessage"];
+                    int repositoryIndex = Int32.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["repositoryIndex"]);
+                    string[] modificationsForNewCommit = browser.Session.FormVariables[browser.Request.RawUrl]["modificationsForNewCommit"].Split(',');
+                    string txtCommitMessage = browser.Session.FormVariables[browser.Request.RawUrl]["txtCommitMessage"];
 
                     GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories[repositoryIndex];
 
@@ -642,7 +642,7 @@ namespace Phabrico.Plugin
         [UrlController(URL = "/gitanos/repository/editfile", IntegratedWindowsSecurity = true)]
         public PlainTextMessage HttpPostGetFileContent(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            string fileName = browser.Session.FormVariables["filepath"];
+            string fileName = browser.Session.FormVariables[browser.Request.RawUrl]["filepath"];
             try
             {
                 using (StreamReader streamReader = new StreamReader(fileName, true))
@@ -680,7 +680,7 @@ namespace Phabrico.Plugin
             {
                 try
                 {
-                    int repositoryIndex = Int32.Parse(browser.Session.FormVariables["repositoryIndex"]);
+                    int repositoryIndex = Int32.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["repositoryIndex"]);
 
                     GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories[repositoryIndex];
 
@@ -730,8 +730,8 @@ namespace Phabrico.Plugin
         [UrlController(URL = "/gitanos/repository/savefile", IntegratedWindowsSecurity = true)]
         public JsonMessage HttpPostSaveFileContent(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            string fileName = browser.Session.FormVariables["filepath"];
-            string content = browser.Session.FormVariables["content"];
+            string fileName = browser.Session.FormVariables[browser.Request.RawUrl]["filepath"];
+            string content = browser.Session.FormVariables[browser.Request.RawUrl]["content"];
 
             // remove stx and etx characters from content
             content = content.Substring(1, content.Length - 2);
@@ -877,30 +877,36 @@ namespace Phabrico.Plugin
                         filter = System.Web.HttpUtility.UrlDecode(string.Join("\\", parameters.Skip(2)));
                     }
 
-                    GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories[Int32.Parse(parameters[0])];
-                    List<GitanosModificationsJsonRecordData> modifications = GetRepositoryModifications(currentRepository.Directory).ToList();
-
-                    filteredModifications = modifications.Where(m => m.File.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
-
-                    switch (orderBy.TrimEnd('-'))
+                    try
                     {
-                        case "ModificationType":
-                            if (orderBy.Last() == '-')
-                                filteredModifications = filteredModifications.OrderByDescending(o => o.ModificationTypeText);
-                            else
+                        GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories[Int32.Parse(parameters[0])];
+                        List<GitanosModificationsJsonRecordData> modifications = GetRepositoryModifications(currentRepository.Directory).ToList();
+
+                        filteredModifications = modifications.Where(m => m.File.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                        switch (orderBy.TrimEnd('-'))
+                        {
+                            case "ModificationType":
+                                if (orderBy.Last() == '-')
+                                    filteredModifications = filteredModifications.OrderByDescending(o => o.ModificationTypeText);
+                                else
+                                    filteredModifications = filteredModifications.OrderBy(o => o.ModificationTypeText);
+                                break;
+
+                            case "FileName":
+                                if (orderBy.Last() == '-')
+                                    filteredModifications = filteredModifications.OrderByDescending(o => o.File);
+                                else
+                                    filteredModifications = filteredModifications.OrderBy(o => o.File);
+                                break;
+
+                            default:
                                 filteredModifications = filteredModifications.OrderBy(o => o.ModificationTypeText);
-                            break;
-
-                        case "FileName":
-                            if (orderBy.Last() == '-')
-                                filteredModifications = filteredModifications.OrderByDescending(o => o.File);
-                            else
-                                filteredModifications = filteredModifications.OrderBy(o => o.File);
-                            break;
-
-                        default:
-                            filteredModifications = filteredModifications.OrderBy(o => o.ModificationTypeText);
-                            break;
+                                break;
+                        }
+                    }
+                    catch
+                    {
                     }
                 }
 
@@ -923,7 +929,7 @@ namespace Phabrico.Plugin
             {
                 try
                 {
-                    int repositoryIndex = Int32.Parse(browser.Session.FormVariables["repositoryIndex"]);
+                    int repositoryIndex = Int32.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["repositoryIndex"]);
 
                     GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories[repositoryIndex];
 
@@ -965,8 +971,8 @@ namespace Phabrico.Plugin
             {
                 try
                 {
-                    int repositoryIndex = Int32.Parse(browser.Session.FormVariables["repositoryIndex"]);
-                    string modificationID = browser.Session.FormVariables["modificationID"];
+                    int repositoryIndex = Int32.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["repositoryIndex"]);
+                    string modificationID = browser.Session.FormVariables[browser.Request.RawUrl]["modificationID"];
 
                     GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories[repositoryIndex];
 
@@ -1037,7 +1043,7 @@ namespace Phabrico.Plugin
 
                 // == root-directories configuration ============================================================================================
                 List<GitanosConfigurationRootPath> rootPaths = new List<GitanosConfigurationRootPath>();
-                string jsonArrayRootDirectories = browser.Session.FormVariables["rootDirectories"];
+                string jsonArrayRootDirectories = browser.Session.FormVariables[browser.Request.RawUrl]["rootDirectories"];
                 JArray rootDirectories = JsonConvert.DeserializeObject(jsonArrayRootDirectories) as JArray;
                 foreach (var rootDirectory in rootDirectories)
                 {
@@ -1066,7 +1072,7 @@ namespace Phabrico.Plugin
                 }
 
                 // == notifications configuration ============================================================================================
-                string jsonArrayGitStates = browser.Session.FormVariables["gitStates"];
+                string jsonArrayGitStates = browser.Session.FormVariables[browser.Request.RawUrl]["gitStates"];
 
                 // == save data to database ==================================================================================================
                 try

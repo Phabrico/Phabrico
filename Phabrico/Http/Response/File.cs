@@ -83,7 +83,7 @@ namespace Phabrico.Http.Response
 
             if (stream == null)
             {
-                throw new Exception.HttpNotFound();
+                throw new Exception.HttpNotFound(url);
             }
 
             byte[] _content = new byte[stream.Length];

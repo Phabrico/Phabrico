@@ -9,7 +9,7 @@
     --aphront-dialog-body-background: #fff;
     --aphront-dialog-head-background: #fff;
     --aphront-dialog-head-border-bottom: 1px solid #DDE8EF;
-    --aphront-dialog-head-color: #464C5C;
+    --aphront-dialog-head-color: #363C4C;
     --aphront-dialog-overlay-background: #404040;
     --aphront-dialog-tail-background: #F7F7F7;
     --aphront-dialog-tail-border-top: 1px solid #DDE8EF;
@@ -26,7 +26,7 @@
     --app-edit-window-head-phui-font-fa-hover-color: #3498db;
     --app-window-head-background: #eff3fc;
     --app-window-head-background-collapsed: linear-gradient(to bottom, #eff3fc, #eff3fc, #bfc3cc);
-    --app-window-head-color: #6B748C;
+    --app-window-head-color: #5b647c;
     --autocomplete-background: #fff;
     --autocomplete-border-color: #C7CCD9;
     --autocomplete-head-background: #F7F7F7;
@@ -146,7 +146,7 @@
     --tab-head-button-selected-border-bottom: solid 2px #FFF;
     --tab-head-button-selected-color: #000;
     --a-color: #136CB2;
-    --phui-document-hierarchy-a-color: #136CB2;
+    --phui-document-hierarchy-a-color: #04b;
     --blockquote-background-color: #F8F9FC;
     --blockquote-border-left: 3px solid #a7b5bf;
     --blockquote-color: #464C5C;

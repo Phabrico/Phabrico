@@ -117,7 +117,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction", Alias = "/w", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction");
 
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.Project projectStorage = new Storage.Project();
@@ -194,7 +194,7 @@ namespace Phabrico.Controllers
                         {
                             if (httpServer.Customization.IsReadonly)
                             {
-                                throw new Phabrico.Exception.HttpNotFound();
+                                throw new Phabrico.Exception.HttpNotFound("/phriction");
                             }
                             else
                             {
@@ -528,7 +528,7 @@ namespace Phabrico.Controllers
                         HtmlPartialViewPage subscriberData = viewPage.GetPartialView("SUBSCRIBERS");
                         if (subscriberData != null)
                         {
-                            subscriberData.Content = Locale.TranslateText("No users assigned", browser.Session.Locale);
+                            subscriberData.Content = string.Format("<li class='list-item-view list-item-link' style='white-space: normal;'>{0}</li>", Locale.TranslateText("No users assigned", browser.Session.Locale));
                         }
                     }
 
@@ -580,15 +580,17 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction/addToFavorites")]
         public Http.Response.HttpMessage HttpPostAddToFavorites(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/addToFavorites");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+
             Storage.Account accountStorage = new Storage.Account();
 
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                string phrictionToken = browser.Session.FormVariables["token"];
+                string phrictionToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
                 Phabricator.Data.FavoriteObject[] allFavoriteObjects = favoriteObjectStorage.Get(database).ToArray();
                 Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
                 Phabricator.Data.FavoriteObject favoriteObject = allFavoriteObjects.FirstOrDefault(fav => fav.Token.Equals(phrictionToken) && fav.AccountUserName.Equals(accountData.UserName));
@@ -620,9 +622,11 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction/changeOrderFavorites")]
         public Http.Response.HttpMessage HttpPostChangeOrderFavorites(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/changeOrderFavorites");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+
             Storage.Account accountStorage = new Storage.Account();
 
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
@@ -630,7 +634,7 @@ namespace Phabrico.Controllers
             {
                 Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
 
-                string[] orderedFavoriteTokens = browser.Session.FormVariables["tokens"]
+                string[] orderedFavoriteTokens = browser.Session.FormVariables[browser.Request.RawUrl]["tokens"]
                                                                 .Split(',')
                                                                 .ToArray();
                 int displayOrder = 1;
@@ -664,9 +668,11 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction/removeFromFavorites")]
         public Http.Response.HttpMessage HttpPostRemoveFromFavorites(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/removeFromFavorites");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+
             Storage.Account accountStorage = new Storage.Account();
 
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
@@ -674,7 +680,7 @@ namespace Phabrico.Controllers
             {
                 Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
 
-                string phrictionToken = browser.Session.FormVariables["token"];
+                string phrictionToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
                 Phabricator.Data.FavoriteObject favoriteObject = favoriteObjectStorage.Get(database, accountData.UserName, phrictionToken);
                 if (favoriteObject != null)
                 {
@@ -697,7 +703,8 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/phriction", Alias = "/w")]
         public Http.Response.HttpMessage HttpPostSaveParameters(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound();
+            if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction");
 
             try
             {
@@ -705,7 +712,7 @@ namespace Phabrico.Controllers
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
                     Phabricator.Data.Phriction parentPhrictionDocument = null;
-                    string tokenCurrentDocument = browser.Session.FormVariables["token"];
+                    string tokenCurrentDocument = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
 
                     string action = parameters.FirstOrDefault(parameter => parameter.StartsWith("?action="));
                     if (action == null)
@@ -722,14 +729,14 @@ namespace Phabrico.Controllers
                         // cancel editing: remove all unreferenced files from database
                         Storage.Stage stageStorage = new Storage.Stage();
 
-                        string phrictionDocumentToken = browser.Session.FormVariables["token"];
+                        string phrictionDocumentToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
                         Phabricator.Data.Phriction originalPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phrictionDocumentToken);
                         if (originalPhrictionDocument == null)
                         {
                             originalPhrictionDocument = phrictionStorage.Get(database, phrictionDocumentToken);
                         }
 
-                        List<int> referencedFileIDs = browser.Session.FormVariables["referencedFiles"]
+                        List<int> referencedFileIDs = browser.Session.FormVariables[browser.Request.RawUrl]["referencedFiles"]
                                                                      .Split(',')
                                                                      .Where(fileID => string.IsNullOrEmpty(fileID) == false)
                                                                      .Select(fileID => Int32.Parse(fileID))
@@ -771,28 +778,73 @@ namespace Phabrico.Controllers
                         parentPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, false);
 
                         if (parentPhrictionDocument == null ||
-                            browser.Session.FormVariables["operation"] == "new")
+                            browser.Session.FormVariables[browser.Request.RawUrl]["operation"] == "new")
                         {
+                            Stage newStage = new Stage();
                             Phabricator.Data.Phriction newPhrictionDocument = new Phabricator.Data.Phriction();
 
-                            newPhrictionDocument.Name = browser.Session.FormVariables["title"];
-                            newPhrictionDocument.Content = browser.Session.FormVariables["textarea"];
+                            newPhrictionDocument.Name = browser.Session.FormVariables[browser.Request.RawUrl]["title"];
+                            newPhrictionDocument.Content = browser.Session.FormVariables[browser.Request.RawUrl]["textarea"];
                             newPhrictionDocument.DateModified = DateTimeOffset.UtcNow;
-                            newPhrictionDocument.Projects = browser.Session.FormVariables["tags"];
-                            newPhrictionDocument.Subscribers = browser.Session.FormVariables["subscribers"];
+                            newPhrictionDocument.Projects = browser.Session.FormVariables[browser.Request.RawUrl]["tags"];
+                            newPhrictionDocument.Subscribers = browser.Session.FormVariables[browser.Request.RawUrl]["subscribers"];
 
                             if (parentPhrictionDocument == null)
                             {
                                 newPhrictionDocument.Path = "/";
 
-                                Stage newStage = new Stage();
                                 newPhrictionDocument.Token = newStage.Create(database, newPhrictionDocument);
                             }
                             else
                             {
-                                newPhrictionDocument.Path += FormatPhabricatorSlug(parentPhrictionDocument.Path, browser.Session.FormVariables["path"]);
+                                newPhrictionDocument.Path = browser.Session.FormVariables[browser.Request.RawUrl]["path"];
+                                if (newPhrictionDocument.Path.StartsWith(parentPhrictionDocument.Path))
+                                {
+                                    // if working with an aliased coverpage
+                                    newPhrictionDocument.Path = FormatPhabricatorSlug("/", newPhrictionDocument.Path);
+                                }
+                                else
+                                {
+                                    // default
+                                    newPhrictionDocument.Path = FormatPhabricatorSlug(parentPhrictionDocument.Path, newPhrictionDocument.Path);
+                                }
 
-                                Stage newStage = new Stage();
+                                // verify parent document and build them if they are not existing
+                                // this can happen when a document is created by means of hyperlink
+                                List<Phabricator.Data.Phriction> inexistantParentDocuments = new List<Phabricator.Data.Phriction>();
+                                string[] pathElements = newPhrictionDocument.Path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                                while (true)
+                                {
+                                    pathElements = pathElements.Take(pathElements.Length - 1).ToArray();
+                                    if (pathElements.Any() == false) break;  // we're at the root -> stop
+
+                                    string parentPath = string.Join("/", pathElements) + "/";
+                                    parentPhrictionDocument = phrictionStorage.Get(database, parentPath, false);
+                                    if (parentPhrictionDocument != null) break;  // parent document found -> stop
+
+                                    Phabricator.Data.Phriction newParentPhrictionDocument = new Phabricator.Data.Phriction();
+                                    newParentPhrictionDocument.Name = pathElements.Last();
+                                    newParentPhrictionDocument.Path = parentPath;
+                                    newParentPhrictionDocument.Content = " ";
+                                    newParentPhrictionDocument.DateModified = DateTimeOffset.UtcNow;
+                                    newParentPhrictionDocument.Projects = "";
+                                    newParentPhrictionDocument.Subscribers = "";
+
+                                    inexistantParentDocuments.Add(newParentPhrictionDocument);
+                                }
+
+                                // create parent documents
+                                inexistantParentDocuments.Reverse();
+                                foreach (Phabricator.Data.Phriction newParentPhrictionDocument in inexistantParentDocuments)
+                                {
+                                    newParentPhrictionDocument.Token = newStage.Create(database, newParentPhrictionDocument);
+
+                                    database.DescendTokenFrom(parentPhrictionDocument.Token, newParentPhrictionDocument.Token);
+
+                                    parentPhrictionDocument = newParentPhrictionDocument;
+                                }
+
+                                // create document
                                 newPhrictionDocument.Token = newStage.Create(database, newPhrictionDocument);
 
                                 database.DescendTokenFrom(parentPhrictionDocument.Token, newPhrictionDocument.Token);
@@ -826,10 +878,10 @@ namespace Phabrico.Controllers
                         if (parentPhrictionDocument != null)
                         {
                             Phabricator.Data.Phriction modifiedPhrictionDocument = new Phabricator.Data.Phriction(parentPhrictionDocument);
-                            modifiedPhrictionDocument.Name = browser.Session.FormVariables["title"];
-                            modifiedPhrictionDocument.Content = browser.Session.FormVariables["textarea"];
-                            modifiedPhrictionDocument.Projects = browser.Session.FormVariables["tags"]?.Trim();
-                            modifiedPhrictionDocument.Subscribers = browser.Session.FormVariables["subscribers"]?.Trim();
+                            modifiedPhrictionDocument.Name = browser.Session.FormVariables[browser.Request.RawUrl]["title"];
+                            modifiedPhrictionDocument.Content = browser.Session.FormVariables[browser.Request.RawUrl]["textarea"];
+                            modifiedPhrictionDocument.Projects = browser.Session.FormVariables[browser.Request.RawUrl]["tags"]?.Trim();
+                            modifiedPhrictionDocument.Subscribers = browser.Session.FormVariables[browser.Request.RawUrl]["subscribers"]?.Trim();
                             modifiedPhrictionDocument.DateModified = DateTimeOffset.UtcNow;
 
                             Stage stageStorage = new Stage();

@@ -49,9 +49,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user")]
         public Http.Response.HttpMessage HttpPostLoadUsersScreen(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user", "You don't have sufficient rights to configure Phabrico");
 
             Storage.User userStorage = new Storage.User();
@@ -63,7 +64,7 @@ namespace Phabrico.Controllers
                 bool doUnselectAll = firstParameter.Equals("unselectAll");
                 bool doShowSelected = firstParameter.Equals("showSelected");
 
-                string[] filtersUser = browser.Session.FormVariables["filterUser"]
+                string[] filtersUser = browser.Session.FormVariables[browser.Request.RawUrl]["filterUser"]
                                                             .Split(' ');
                 IEnumerable<Phabricator.Data.User> users = userStorage.Get(database)
                                                                       .Where(user => filtersUser.All(filter => user.RealName
@@ -102,11 +103,12 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/query")]
         public JsonMessage HttpPostPopulateTableData(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/query");
 
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/query", "You don't have sufficient rights to configure Phabrico");
 
             int totalNumberSelected;
@@ -128,8 +130,8 @@ namespace Phabrico.Controllers
                                        );
                 }
 
-                bool showSelectedUsersOnly = browser.Session.FormVariables.ContainsKey("showusers") 
-                                           && browser.Session.FormVariables["showusers"].Equals("selected");
+                bool showSelectedUsersOnly = browser.Session.FormVariables[browser.Request.RawUrl]?.ContainsKey("showusers") == true
+                                           && browser.Session.FormVariables[browser.Request.RawUrl]["showusers"].Equals("selected");
 
                 foreach (Phabricator.Data.User userData in users)
                 {
@@ -169,12 +171,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/select")]
         public void HttpPostSelectUser(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/select");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/select", "You don't have sufficient rights to configure Phabrico");
 
-            string userToken = browser.Session.FormVariables["item"];
+            string userToken = browser.Session.FormVariables[browser.Request.RawUrl]["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.User userStorage = new Storage.User();
@@ -191,12 +194,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/user/unselect")]
         public void HttpPostUnselectUser(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/unselect");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/unselect", "You don't have sufficient rights to configure Phabrico");
 
-            string userToken = browser.Session.FormVariables["item"];
+            string userToken = browser.Session.FormVariables[browser.Request.RawUrl]["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.User userStorage = new Storage.User();

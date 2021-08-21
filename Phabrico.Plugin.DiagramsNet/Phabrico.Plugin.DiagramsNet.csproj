@@ -3454,7 +3454,7 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="webapp\images\manifest.json" />
     <None Include="Phabrico.Plugin.DiagramsNet.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="webapp\img\LICENSE" />
     <None Include="webapp\js\deflate\README.md" />

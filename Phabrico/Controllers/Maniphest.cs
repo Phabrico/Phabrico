@@ -53,7 +53,7 @@ namespace Phabrico.Controllers
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Stage stageStorage = new Storage.Stage();
 
-            string maniphestTaskToken = browser.Session.FormVariables["token"];
+            string maniphestTaskToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
             bool stagedManiphestTask = true;
             Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTaskToken);
             if (maniphestTask == null)
@@ -74,7 +74,7 @@ namespace Phabrico.Controllers
                 foreach (string transactionType in new string[] { "project", "subscriber" })
                 {
                     string newValues;
-                    if (browser.Session.FormVariables.TryGetValue(transactionType, out newValues))
+                    if (browser.Session.FormVariables[browser.Request.RawUrl].TryGetValue(transactionType, out newValues))
                     {
                         string[] newValueArray = newValues.Split(',').ToArray();
 
@@ -117,7 +117,7 @@ namespace Phabrico.Controllers
                 foreach (string transactionType in new string[] { "owner", "priority", "status", "comment" })
                 {
                     string newValue;
-                    if (browser.Session.FormVariables.TryGetValue(transactionType, out newValue))
+                    if (browser.Session.FormVariables[browser.Request.RawUrl].TryGetValue(transactionType, out newValue))
                     {
                         if (maniphestTaskToken.StartsWith("PHID-NEWTOKEN-"))
                         {
@@ -210,12 +210,12 @@ namespace Phabrico.Controllers
             }
 
             Phabricator.Data.Maniphest newManiphestTask = new Phabricator.Data.Maniphest();
-            newManiphestTask.Description = browser.Session.FormVariables["textarea"];
-            newManiphestTask.Name = browser.Session.FormVariables["title"];
-            newManiphestTask.Owner = browser.Session.FormVariables["assigned"];
-            newManiphestTask.Priority = browser.Session.FormVariables["priority"];
-            newManiphestTask.Projects = browser.Session.FormVariables["tags"];
-            newManiphestTask.Subscribers = browser.Session.FormVariables["subscribers"];
+            newManiphestTask.Description = browser.Session.FormVariables[browser.Request.RawUrl]["textarea"];
+            newManiphestTask.Name = browser.Session.FormVariables[browser.Request.RawUrl]["title"];
+            newManiphestTask.Owner = browser.Session.FormVariables[browser.Request.RawUrl]["assigned"];
+            newManiphestTask.Priority = browser.Session.FormVariables[browser.Request.RawUrl]["priority"];
+            newManiphestTask.Projects = browser.Session.FormVariables[browser.Request.RawUrl]["tags"];
+            newManiphestTask.Subscribers = browser.Session.FormVariables[browser.Request.RawUrl]["subscribers"];
             newManiphestTask.Author = tokenWhoAmI;
             newManiphestTask.IsOpen = true;
             newManiphestTask.DateModified = DateTimeOffset.UtcNow;
@@ -249,7 +249,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/maniphest", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound("/maiphest");
 
             int firstIndex = 0;
             int previousIndex;
@@ -262,6 +262,7 @@ namespace Phabrico.Controllers
             string category = "";
             string filterCategory = "";
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/maniphest", "session expired");
 
             if (parameterActions != null && parameterActions.Any())
             {
@@ -343,17 +344,20 @@ namespace Phabrico.Controllers
                     switch (parameter)
                     {
                         case "assigned":
-                            visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Owner.Equals(whoAmI.Parameters.UserToken)
+                            visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Owner != null
+                                                                                     && task.Owner.Equals(whoAmI.Parameters.UserToken)
                                                                                      && task.IsOpen).ToList();
                             break;
 
                         case "authored":
-                            visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Author.Equals(whoAmI.Parameters.UserToken)
+                            visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Author != null
+                                                                                     && task.Author.Equals(whoAmI.Parameters.UserToken)
                                                                                      && task.IsOpen);
                             break;
 
                         case "subscribed":
-                            visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Subscribers
+                            visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Subscribers != null
+                                                                                     && task.Subscribers
                                                                                             .Split(',')
                                                                                             .Any(subscriber => subscriber.Equals(whoAmI.Parameters.UserToken))
                                                                                      && task.IsOpen);
@@ -378,7 +382,9 @@ namespace Phabrico.Controllers
                 }
 
                 // load all projects again in case there's a task with an unknown project token
-                if (visibleManiphestTasks.Any(task => ProjectByToken.ContainsKey(task.Projects) == false))
+                if (visibleManiphestTasks.Any(task => task.Projects != null
+                                                   && ProjectByToken.ContainsKey(task.Projects) == false
+                                             ))
                 {
                     ProjectByToken = projectStorage.Get(database)
                                                     .ToDictionary(key => key.Token, value => value);
@@ -417,7 +423,9 @@ namespace Phabrico.Controllers
                                                         .OrderBy(project => project.Name)
                                                         .Select(project => new TaskGroup {
                                                             TaskGroupInfo = project,
-                                                            Tasks = visibleManiphestTasks.Where(task => task.Projects.Contains(project.Token))
+                                                            Tasks = visibleManiphestTasks.Where(task => task.Projects != null
+                                                                                                     && task.Projects.Contains(project.Token)
+                                                                                               )
                                                         })
                                                         .ToList();
 
@@ -504,7 +512,9 @@ namespace Phabrico.Controllers
                         taskGroups.AddRange(projectInfo.Select(project => project.TaskGroupInfo));
 
                         // reinitialize list of tasks to show
-                        visibleManiphestTasks = visibleManiphestTasks.Where(task => taskGroups.Any(taskProject => task.Projects.Contains(taskProject.Token)));
+                        visibleManiphestTasks = visibleManiphestTasks.Where(task => taskGroups.Any(taskProject => task.Projects != null
+                                                                                                               && task.Projects.Contains(taskProject.Token))
+                                                                                                  );
 
                         // remove all collected projects which have no tasks to be shown
                         taskGroups.RemoveAll(group => visibleManiphestTasks.All(task => task.Projects.Contains(group.Token) == false));
@@ -531,7 +541,9 @@ namespace Phabrico.Controllers
                                                   .OrderBy(user => user.RealName)
                                                   .Select(user => new TaskGroup {
                                                       TaskGroupInfo = user,
-                                                      Tasks = visibleManiphestTasks.Where(task => task.Owner.Equals(user.Token))
+                                                      Tasks = visibleManiphestTasks.Where(task => task.Owner != null
+                                                                                               && task.Owner.Equals(user.Token)
+                                                                                         )
                                                   })
                                                   .ToList();
 
@@ -616,10 +628,14 @@ namespace Phabrico.Controllers
                         taskGroups.AddRange(userInfo.Select(user => user.TaskGroupInfo));
 
                         // reinitialize list of tasks to show
-                        visibleManiphestTasks = visibleManiphestTasks.Where(task => taskGroups.Any(taskOwner => task.Owner.Equals(taskOwner.Token)));
+                        visibleManiphestTasks = visibleManiphestTasks.Where(task => taskGroups.Any(taskOwner => task.Owner != null
+                                                                                                             && task.Owner.Equals(taskOwner.Token))
+                                                                                                  );
 
                         // remove all collected owners which have no tasks to be shown
-                        taskGroups.RemoveAll(group => visibleManiphestTasks.All(task => task.Owner.Equals(group.Token) == false));
+                        taskGroups.RemoveAll(group => visibleManiphestTasks.All(task => task.Owner != null
+                                                                                     && task.Owner.Equals(group.Token) == false)
+                                                                               );
 
                         // overwrite firstIndex again so we won't skip tasks (we already skipped them)
                         firstIndex = 0;
@@ -856,9 +872,11 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/maniphest/count", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetTaskCount(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound("/maniphest/count");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/maniphest/count", "session expired");
+
             Storage.Account accountStorage = new Storage.Account();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Stage stageStorage = new Stage();
@@ -886,8 +904,11 @@ namespace Phabrico.Controllers
                     availableManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database)
                                                                                .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
                                                                                .ToList();
-                    availableManiphestTasks = availableManiphestTasks.Where(task => task.Owner.Equals(whoAmI.Parameters.UserToken)
-                                                                                && task.IsOpen).ToList();
+                    availableManiphestTasks = availableManiphestTasks.Where(task => task.Owner != null
+                                                                                 && task.Owner.Equals(whoAmI.Parameters.UserToken)
+                                                                                 && task.IsOpen
+                                                                           )
+                                                                     .ToList();
                 }
 
                 // return number of open tasks
@@ -910,11 +931,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/maniphest")]
         public HttpMessage HttpPostSave(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound();
+            if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
+            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound("/maniphest");
 
             Storage.Account accountStorage = new Storage.Account();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -941,14 +964,14 @@ namespace Phabrico.Controllers
                     Storage.Stage stageStorage = new Storage.Stage();
                     Storage.Maniphest maniphestStorage = new Storage.Maniphest();
 
-                    string maniphestTaskToken = browser.Session.FormVariables["token"];
+                    string maniphestTaskToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
                     Phabricator.Data.Maniphest originalManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTaskToken);
                     if (originalManiphestTask == null)
                     {
                         originalManiphestTask = maniphestStorage.Get(database, maniphestTaskToken);
                     }
 
-                    List<int> referencedFileIDs = browser.Session.FormVariables["referencedFiles"]
+                    List<int> referencedFileIDs = browser.Session.FormVariables[browser.Request.RawUrl]["referencedFiles"]
                                                                  .Split(',')
                                                                  .Where(fileID => string.IsNullOrEmpty(fileID) == false)
                                                                  .Select(fileID => Int32.Parse(fileID))
@@ -985,7 +1008,7 @@ namespace Phabrico.Controllers
                 }
                 else
                 {
-                    switch (browser.Session.FormVariables["operation"])
+                    switch (browser.Session.FormVariables[browser.Request.RawUrl]["operation"])
                     {
                         case "new":
                             CreateNewManiphestTask(database, token);
@@ -995,9 +1018,12 @@ namespace Phabrico.Controllers
                             CreateNewManiphestTaskMetadata(database, token);
                             return new Http.Response.HttpRedirect(httpServer, browser, "maniphest/" + parameters[0] + "/");
 
-                        default:
+                        case "edit":
                             ModifyExistingManiphestTask(database, token);
                             return null;
+
+                        default:
+                            throw new Phabrico.Exception.AccessDeniedException("/maniphest", "invalid url");
                     }
                 }
             }
@@ -1035,9 +1061,16 @@ namespace Phabrico.Controllers
                         operation = "new";
                         break;
 
-                    default:
+                    case "cancel":
+                    case "save":
+                    case "":
                         operation = "";
                         break;
+
+                    default:
+                        string invalidUrl = "/maniphest" + string.Join("/", parameters);
+                        invalidUrl = invalidUrl.Replace("//", "/").Replace("/?", "?");
+                        throw new Phabrico.Exception.AccessDeniedException(invalidUrl, "invalid URL");
                 }
             }
 
@@ -1059,6 +1092,10 @@ namespace Phabrico.Controllers
                 viewPage.SetText("TASK-HEADER", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("TASK-RAW-DESCRIPTION", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("TASK-DESCRIPTION", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                viewPage.SetText("TASK-TOKEN", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                viewPage.SetText("TASK-ASSIGNED-TOKEN", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                viewPage.SetText("TASK-TAGS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                viewPage.SetText("TASK-SUBSCRIBERS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
 
                 // complete Priority combobox
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -1078,6 +1115,7 @@ namespace Phabrico.Controllers
                             }
 
                             priorityData.SetText("TASK-PRIORITIES-PRIORITY-NAME", priorityName);
+                            priorityData.SetText("TASK-PRIORITIES-PRIORITY-SELECTED", "");
                         }
                     }
                 }
@@ -1494,7 +1532,8 @@ namespace Phabrico.Controllers
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Keyword keywordStorage = new Storage.Keyword();
 
-            string maniphestTaskToken = browser.Session.FormVariables["token"];
+            string maniphestTaskToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
+			if (maniphestTaskToken is null) throw new Phabrico.Exception.AccessDeniedException("/maniphest", "Invalid token");
             Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, maniphestTaskToken);
             if (originalManiphestTask == null)
             {
@@ -1513,13 +1552,13 @@ namespace Phabrico.Controllers
 
 
                 Phabricator.Data.Maniphest modifiedManiphestTask = new Phabricator.Data.Maniphest(originalManiphestTask);
-                modifiedManiphestTask.Name = browser.Session.FormVariables["title"];
-                modifiedManiphestTask.Description = browser.Session.FormVariables["textarea"];
-                modifiedManiphestTask.Owner = browser.Session.FormVariables["assigned"];
+                modifiedManiphestTask.Name = browser.Session.FormVariables[browser.Request.RawUrl]["title"];
+                modifiedManiphestTask.Description = browser.Session.FormVariables[browser.Request.RawUrl]["textarea"];
+                modifiedManiphestTask.Owner = browser.Session.FormVariables[browser.Request.RawUrl]["assigned"];
                 modifiedManiphestTask.Author = tokenWhoAmI;
-                modifiedManiphestTask.Priority = browser.Session.FormVariables["priority"];
-                modifiedManiphestTask.Projects = browser.Session.FormVariables["tags"];
-                modifiedManiphestTask.Subscribers = browser.Session.FormVariables["subscribers"];
+                modifiedManiphestTask.Priority = browser.Session.FormVariables[browser.Request.RawUrl]["priority"];
+                modifiedManiphestTask.Projects = browser.Session.FormVariables[browser.Request.RawUrl]["tags"];
+                modifiedManiphestTask.Subscribers = browser.Session.FormVariables[browser.Request.RawUrl]["subscribers"];
                 modifiedManiphestTask.DateModified = DateTimeOffset.UtcNow;
 
                 Stage stageStorage = new Stage();

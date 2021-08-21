@@ -167,6 +167,7 @@ namespace Phabrico.Miscellaneous
                                     .Trim(' ', '\r', '\n', '\t')
                      })
                      .Where(m => m.Content.Any()
+                              && m.Content.Equals("&#x200B;", System.StringComparison.OrdinalIgnoreCase) == false
                               && m.Content.StartsWith("@{") == false
                               && m.Content.StartsWith("}@") == false
                               && m.Content.EndsWith("}@") == false

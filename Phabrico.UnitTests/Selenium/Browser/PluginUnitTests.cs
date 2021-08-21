@@ -285,6 +285,29 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
                 wait.Until(condition => condition.FindElements(By.XPath("//a[contains(text(), 'dummy.txt')]")).Any(elem => elem.Displayed));
+
+                // undo local commit
+                IWebElement btnUndoCommit = WebBrowser.FindElement(By.XPath("//a[contains(text(), 'Undo')]"));
+                btnUndoCommit.Click();
+
+                // confirm undo push
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
+                wait.Until(condition => condition.FindElements(By.ClassName("aphront-dialog-view")).Any(elem => elem.Displayed));
+                IWebElement dlgConfirmUndoCommit = WebBrowser.FindElements(By.ClassName("aphront-dialog-view"))
+                                                           .Where(dialog => dialog.Displayed
+                                                                           && dialog.GetAttribute("class").Split(' ').Contains("modalview")
+                                                                   )
+                                                           .FirstOrDefault();
+                errorMessage = dlgConfirmUndoCommit.FindElement(By.XPath("//p[contains(text(), \"Are you sure you want to discard your local changes for\")]"));
+                Assert.IsNotNull(errorMessage);
+                btnYes = dlgConfirmUndoCommit.FindElement(By.XPath("//a[contains(text(), 'Yes')]"));
+                btnYes.Click();
+
+                // verify if 'dummy.txt' is back in the list of unpushed commits
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
+                wait.Until(condition => condition.FindElements(By.XPath("//a[contains(text(), 'dummy.txt')]")).Any() == false);
             }
             finally
             {

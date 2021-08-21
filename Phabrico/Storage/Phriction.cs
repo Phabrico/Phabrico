@@ -148,65 +148,85 @@ namespace Phabrico.Storage
         /// <returns></returns>
         public override Phabricator.Data.Phriction Get(Database database, string key, bool ignoreStageData = false)
         {
+            Phabricator.Data.Phriction result = null;
             string url = key;
             if (url.EndsWith("/") == false) url += "/";
 
-            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+            if (ignoreStageData == false)
+            {
+                Stage stageStorage = new Stage();
+                result = stageStorage.Get<Phabricator.Data.Phriction>(database)
+                                     .FirstOrDefault(phrictionDocument => (phrictionDocument.Token ?? "").Equals(key)
+                                                                       || phrictionDocument.Path.Equals(key)
+                                                    );
+            }
+
+            if (result == null)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token,
                               path,
                               info
                        FROM phrictionInfo
                        WHERE token = @key
-                          OR path = @encryptedKey
+                          OR path = @url
                        ORDER BY token;              -- first PHID-WIKI-, then PHID-WIKIALIAS, then PHID-WIKICOVER
                    ", database.Connection))
-            {
-                database.AddParameter(dbCommand, "key", key, Database.EncryptionMode.None);
-                database.AddParameter(dbCommand, "encryptedKey", Encryption.Encrypt(database.EncryptionKey, System.Web.HttpUtility.UrlDecode(url).ToLower().Replace(' ', '_')));
-                using (var reader = dbCommand.ExecuteReader())
                 {
-                    if (reader.Read())
+                    database.AddParameter(dbCommand, "key", key, Database.EncryptionMode.None);
+                    database.AddParameter(dbCommand, "url", Encryption.Encrypt(database.EncryptionKey, System.Web.HttpUtility.UrlDecode(url).ToLower().Replace(' ', '_')));
+                    using (var reader = dbCommand.ExecuteReader())
                     {
-                        Phabricator.Data.Phriction record = new Phabricator.Data.Phriction();
-                        record.Token = (string)reader["token"];
-                        if (record.Token.StartsWith(Phabricator.Data.Phriction.Prefix) || record.Token.StartsWith(Phabricator.Data.Phriction.PrefixCoverPage))
+                        if (reader.Read())
                         {
-                            record.Path = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["path"]);
-                            string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
-                            JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                            Phabricator.Data.Phriction record = new Phabricator.Data.Phriction();
+                            record.Token = (string)reader["token"];
+                            if (record.Token.StartsWith(Phabricator.Data.Phriction.Prefix) || record.Token.StartsWith(Phabricator.Data.Phriction.PrefixCoverPage))
+                            {
+                                record.Path = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["path"]);
+                                string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
+                                JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
 
-                            record.Content = (string)info["Content"];
-                            record.Author = (string)info["Author"];
-                            record.LastModifiedBy = (string)info["LastModifiedBy"];
-                            record.Name = (string)info["Name"];
-                            record.Projects = (string)info["Projects"];
-                            record.Subscribers = (string)info["Subscribers"];
-                            record.DateModified = DateTimeOffset.ParseExact((string)info["DateModified"], "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
+                                record.Content = (string)info["Content"];
+                                record.Author = (string)info["Author"];
+                                record.LastModifiedBy = (string)info["LastModifiedBy"];
+                                record.Name = (string)info["Name"];
+                                record.Projects = (string)info["Projects"];
+                                record.Subscribers = (string)info["Subscribers"];
+                                record.DateModified = DateTimeOffset.ParseExact((string)info["DateModified"], "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
 
-                            return record;
+                                result = record;
+                            }
+                            else
+                            {
+                                // document is an alias -> retrieve underlying document
+                                string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
+                                result = Get(database, decryptedInfo);
+                            }
                         }
-                        else
-                        {
-                            // document is an alias -> retrieve underlying document
-                            string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
-                            return Get(database, decryptedInfo);
-                        }
-                    }
-                    else
-                    if (ignoreStageData)
-                    {
-                        return  null;
-                    }
-                    else
-                    {
-                        Stage stageStorage = new Stage();
-                        return stageStorage.Get<Phabricator.Data.Phriction>(database)
-                                           .FirstOrDefault(phrictionDocument => (phrictionDocument.Token ?? "").Equals(key)
-                                                                             || phrictionDocument.Path.Equals(key)
-                                                          );
                     }
                 }
             }
+
+            if (result == null)
+            {
+                Phabricator.Data.Phriction[] aliases = GetAliases(database).ToArray();
+                foreach (Phabricator.Data.Phriction alias in aliases)
+                {
+                    if (alias.Path.Equals(key.TrimEnd('/') + "/")) continue;
+
+                    Phabricator.Data.Phriction reference = Get(database, alias.Content);
+                    if (reference != null)
+                    {
+                        if (key.StartsWith(reference.Path)) continue;
+
+                        result = Get(database, reference.Path + key.TrimEnd('/') + "/");
+                        if (result != null) break;
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

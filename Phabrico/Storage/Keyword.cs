@@ -26,8 +26,8 @@ namespace Phabrico.Storage
         {
             /// <summary>
             /// In case the search field contains multiple words, each word is searched separately in the database.
-            /// If a word is found, this a bit in this Bitmask property will be set to 1.
-            /// In the end, only the WordsArraySearchResult records where all bits of Bitmask are set to 1 are taken
+            /// For each word that is found, a bit in this Bitmask property will be set to 1.
+            /// In the end, only the WordsArraySearchResult records where all bits of Bitmask set to 1 are taken
             /// in the final result
             /// </summary>
             public Int64 Bitmask { get; set; }
@@ -45,7 +45,7 @@ namespace Phabrico.Storage
             /// <summary>
             /// First word in the search field.
             /// This is somehow used as a hack for searching maniphest tasks by their T-ID and sorting them numerically.
-            /// E.g. T5 should before after T34
+            /// E.g. T5 should show up before after T34
             /// </summary>
             public string FirstWord { get; set; }
 

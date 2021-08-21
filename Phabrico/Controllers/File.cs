@@ -63,6 +63,7 @@ namespace Phabrico.Controllers
                 Storage.Stage stageStorage = new Storage.Stage();
 
                 SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -106,12 +107,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/file/getIDForNewFile")]
         public void HttpPostIDForNewFile(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/getIDForNewFile");
 
             string jsonData;
             Storage.File fileStorage = new Storage.File();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -134,7 +136,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/file/query")]
         public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/query");
 
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
@@ -142,6 +144,7 @@ namespace Phabrico.Controllers
             if (fileStorage != null)
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
@@ -247,7 +250,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/file/uploadChunk")]
         public void HttpPostUploadChunk(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/uploadChunk");
 
             lock (ReentrancyLock)
             {
@@ -268,6 +271,7 @@ namespace Phabrico.Controllers
                                    .Replace('*', '_');
 
                 SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
                 Storage.File fileStorage = new Storage.File();
                 using (Storage.Database database = new Storage.Database(EncryptionKey))

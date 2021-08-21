@@ -331,8 +331,8 @@ namespace Phabrico.Http.Response
 
                         htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.AuthenticationDialog"));
                         htmlPartialViewPage.SetText("REDIRECT", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        htmlPartialViewPage.SetText("USERNAME", browser.Session.FormVariables["username"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        htmlPartialViewPage.SetText("PASSWORD", browser.Session.FormVariables["password"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlPartialViewPage.SetText("USERNAME", browser.Session.FormVariables[browser.Request.RawUrl]["username"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlPartialViewPage.SetText("PASSWORD", browser.Session.FormVariables[browser.Request.RawUrl]["password"], HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("STYLE.DISPLAY.ERROR", "flex", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("ERRORMESSAGE", Miscellaneous.Locale.TranslateText("Username or password are incorrect.", Browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
@@ -356,8 +356,14 @@ namespace Phabrico.Http.Response
                 case HomePageStatus.EmptyDatabase:
                     Controllers.Configuration configurationController = new Controllers.Configuration();
                     configurationController.TokenId = browser.GetCookie("token");
-                    userName = browser.Session.FormVariables["username"];
-                    string password = browser.Session.FormVariables["password"];
+                    userName = browser.Session.FormVariables["/auth/login"]["username"];
+                    string password = browser.Session.FormVariables["/auth/login"]["password"];
+
+                    // clean up auth FormVariables after 2nd authentication step
+                    if (browser.Request.RawUrl.StartsWith("/auth/login") == false)
+                    {
+                        browser.Session.FormVariables.Remove("/auth/login");
+                    }
 
                     configurationController.EncryptionKey = Encryption.GenerateEncryptionKey(userName, password);
 

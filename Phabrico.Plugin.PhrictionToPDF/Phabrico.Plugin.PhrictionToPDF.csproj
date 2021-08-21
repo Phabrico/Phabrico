@@ -79,7 +79,7 @@
     </None>
     <None Include="packages.config" />
     <None Include="Phabrico.Plugin.PhrictionToPDF.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

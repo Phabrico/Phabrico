@@ -53,7 +53,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/search")]
         public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideSearch) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideSearch) throw new Phabrico.Exception.HttpNotFound("/search");
 
             if (parameters.Any())
             {

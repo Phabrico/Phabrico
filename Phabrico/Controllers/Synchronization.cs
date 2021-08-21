@@ -362,9 +362,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronization/logging")]
         public void HttpGetLoadSyncLoggingScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/logging");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/logging", "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/logging", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
         }
 
@@ -381,7 +382,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronization/search")]
         public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/search");
 
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
@@ -391,6 +392,7 @@ namespace Phabrico.Controllers
             if (filterText == null) filterText = "";
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/search", "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/search", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -470,7 +472,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronization/data")]
         public void HttpGetLoadSynchronizedObject(Http.Server httpServer, Browser browser, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronization/data");
 
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
@@ -478,6 +480,7 @@ namespace Phabrico.Controllers
             Storage.SynchronizationLogging synchronizationLoggingStorage = new Storage.SynchronizationLogging();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/data", "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/data", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -536,7 +539,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronize/full")]
         public void HttpPostStartFullSynchronization(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+            if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/full");
+            if (browser.Conduit.PhabricatorUrl.StartsWith("http://") == false && browser.Conduit.PhabricatorUrl.StartsWith("https://") == false) throw new Phabrico.Exception.InvalidConfigurationException("Phabricator server not configured");
+            if (RegexSafe.IsMatch(browser.Conduit.Token, "api-[a-zA-Z0-9]{28}", RegexOptions.None) == false) throw new Phabrico.Exception.InvalidConfigurationException("Phabricator token not configured");
 
             if (Synchronization.InProgress)
             {
@@ -562,7 +568,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronize/light")]
         public void HttpPostStartLightSynchronization(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/light");
 
             if (Synchronization.InProgress)
             {
@@ -593,10 +599,11 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronize/prepare")]
         public void HttpGetSynchronizationPrepare(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/prepare");
 
             Storage.Account accountStorage = new Storage.Account();
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/prepare", "session expired");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -623,7 +630,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/synchronize/status")]
         public void HttpGetSynchronizationStatus(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/status");
 
             string jsonData = JsonConvert.SerializeObject(new {
                 Percentage = (int)SharedResource.Instance.ProgressPercentage,
@@ -649,6 +656,7 @@ namespace Phabrico.Controllers
             {
                 Storage.Account accountStorage = new Storage.Account();
                 SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization", "session expired");
                 if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronize", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -738,6 +746,7 @@ namespace Phabrico.Controllers
             {
                 Storage.Account accountStorage = new Storage.Account();
                 SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization", "session expired");
                 if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronize", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -2286,6 +2295,7 @@ namespace Phabrico.Controllers
             Phabricator.Data.User phabricatorAccount = phabricatorUserAPI.WhoAmI(synchronizationParameters.database, synchronizationParameters.browser.Conduit);
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization", "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/synchronize", "You don't have sufficient rights to synchronize Phabrico with Phabricator");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))

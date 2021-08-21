@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -178,7 +179,7 @@ namespace Phabrico.Http
 
                     // set language cookie
                     Session.Locale = Language;
-                    SetCookie("language", Language);
+                    SetCookie("language", Language, false);
                 }
             }
             else
@@ -186,7 +187,7 @@ namespace Phabrico.Http
                 // set language cookie
                 Language = httpServer.Customization.Language;
                 Session.Locale = Language;
-                SetCookie("language", Language);
+                SetCookie("language", Language, false);
             }
         }
 
@@ -221,22 +222,27 @@ namespace Phabrico.Http
         /// </summary>
         private void CopyCookiesFromRequestToResponse()
         {
-            Dictionary<string, string> cookies = httpListenerContext.Request
+            Dictionary<string, Cookie> cookies = httpListenerContext.Request
                                                                    .Cookies
                                                                    .OfType<Cookie>()
                                                                    .ToDictionary(c => c.Name,
-                                                                                 c => c.Value
+                                                                                 c => c
                                                                                 );
 
             if (cookies.Any())
             {
                 string cookieDate = DateTime.UtcNow.AddDays(1).ToString("ddd, dd-MMM-yyyy H:mm:ss");
-                string cookieSettings = ";SameSite=Strict;Path=/;Expires=" + cookieDate + " GMT";
+                string cookieSettings = ";SameSite=Strict;Path=" + Http.Server.RootPath +";Expires=" + cookieDate + " GMT";
 
-                httpListenerContext.Response.AddHeader("Set-Cookie", cookies.Keys.FirstOrDefault() + "=" + cookies.Values.FirstOrDefault() + cookieSettings);
+                string cookieValue = cookies.Values.FirstOrDefault().Value + cookieSettings;
+                if (cookies.FirstOrDefault().Value.HttpOnly) cookieValue += "; HttpOnly";
+
+                httpListenerContext.Response.AddHeader("Set-Cookie", cookies.Keys.FirstOrDefault() + "=" + cookieValue);
                 foreach (string cookieName in cookies.Keys.Skip(1))
                 {
-                    httpListenerContext.Response.AppendHeader("Set-Cookie", cookieName + "=" + cookies[cookieName] + cookieSettings);
+                    cookieValue = cookies[cookieName].Value + cookieSettings;
+                    if (cookies[cookieName].HttpOnly) cookieValue += "; HttpOnly";
+                    httpListenerContext.Response.AppendHeader("Set-Cookie", cookieName + "=" + cookieValue);
                 }
             }
         }
@@ -247,6 +253,45 @@ namespace Phabrico.Http
         public void Dispose()
         {
             Close();
+        }
+
+        /// <summary>
+        /// Creates a new CSRF (= a random string of 64 characters) for a given session
+        /// </summary>
+        /// <param name="session"></param>
+        /// <returns></returns>
+        private string GenerateCSRF(SessionManager.ClientSession session)
+        {
+            byte[] randomBytes = new byte[32];
+
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(randomBytes);
+            }
+
+            string result = "";
+            foreach (byte randomByte in randomBytes)
+            {
+                result += string.Format("{0:x2}", randomByte);
+            }
+
+            // remove old CSRFs
+            const int maximumConcurrentCSRFs = 10;
+            while (session.ActiveCSRF.Count >= maximumConcurrentCSRFs)
+            {
+                foreach (string oldCSRF in session.ActiveCSRF.OrderByDescending(kvp => kvp.Value)
+                                                             .Skip(maximumConcurrentCSRFs - 1)
+                                                             .Select(kvp => kvp.Key)
+                                                             .ToArray())
+                {
+                    session.ActiveCSRF.Remove(oldCSRF);
+                }
+            }
+
+            // store new CSRFs
+            session.ActiveCSRF[result] = DateTime.UtcNow;
+
+            return result;
         }
 
         /// <summary>
@@ -280,6 +325,16 @@ namespace Phabrico.Http
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns true if a CSRF required action, does not contain a valid CSRF form field
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public bool InvalidCSRF(string url)
+        {
+            return Session.ActiveCSRF.ContainsKey( Session.FormVariables[url]["csrf_token"] ?? "" ) == false;
         }
 
         /// <summary>
@@ -330,6 +385,13 @@ namespace Phabrico.Http
                     // update version in references
                     string content = UTF8Encoding.UTF8.GetString(bytes);
                     content = content.Replace("?version=@@PHABRICO-VERSION@@", "?version=" + VersionInfo.Version);
+
+                    // if content contains CSRF fields -> replace them with generated CSRFs
+                    if (content.Contains("@@CSRF@@"))
+                    {
+                        content = content.Replace("@@CSRF@@", GenerateCSRF(Session));
+                    }
+
                     bytes = UTF8Encoding.UTF8.GetBytes(content);
                     nbrBytesWrite = bytes.Length;
                 }
@@ -365,6 +427,18 @@ namespace Phabrico.Http
                     }
                     compressedData = compressedStream.ToArray();
                 }
+
+                httpListenerContext.Response.Headers["Server"] = "";
+                httpListenerContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                httpListenerContext.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+                httpListenerContext.Response.Headers["Content-Security-Policy"] = string.Join(";", new string[] {
+                    "default-src 'self' https://api.github.com/repos/phabrico/phabrico/releases/latest",
+                    "img-src 'self' data:",
+                    "style-src 'self' 'unsafe-inline'",
+                    "script-src 'self' 'unsafe-inline'",
+                    "frame-ancestors 'self'",
+                    "form-action 'self';"
+                });
 
                 // send data
                 httpListenerContext.Response.ContentLength64 = compressedData.Length;
@@ -423,34 +497,47 @@ namespace Phabrico.Http
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        public void SetCookie(string name, string value)
+        public void SetCookie(string name, string value, bool httpOnly)
         {
             DictionarySafe<string,string> originalFormVariables = null;
 
             if (Token != null)
             {
-                originalFormVariables = Session.FormVariables;
+                originalFormVariables = Session.FormVariables[Request.RawUrl];
             }
 
-            Dictionary<string,string> cookies = httpListenerContext.Request
+            Dictionary<string,Cookie> cookies = httpListenerContext.Request
                                                                    .Cookies
                                                                    .OfType<Cookie>()
+                                                                   .Where(c => c.Name.Equals(name) == false)
                                                                    .ToDictionary(c => c.Name, 
-                                                                                 c => c.Value
+                                                                                 c => c
                                                                                 );
-
-            cookies[name] = value;
             
+            string cookieValue;
             string cookieDate = DateTime.UtcNow.AddDays(1).ToString("ddd, dd-MMM-yyyy H:mm:ss");
-            string cookieSettings = ";SameSite=Strict;Path=/;Expires=" + cookieDate + " GMT";
+            string cookieSettings = ";SameSite=Strict;Path=" + Http.Server.RootPath + ";Expires=" + cookieDate + " GMT";
 
-            httpListenerContext.Response.AddHeader("Set-Cookie", cookies.Keys.FirstOrDefault() + "=" + cookies.Values.FirstOrDefault() + cookieSettings);
-            foreach (string cookieName in cookies.Keys.Skip(1))
+            if (cookies.Any())
             {
-                httpListenerContext.Response.AppendHeader("Set-Cookie", cookieName + "=" + cookies[cookieName] + cookieSettings);
+                cookieValue = cookies.Values.FirstOrDefault().Value + cookieSettings;
+                if (cookies.FirstOrDefault().Value.HttpOnly) cookieValue += "; HttpOnly";
+                httpListenerContext.Response.AddHeader("Set-Cookie", cookies.Keys.FirstOrDefault() + "=" + cookieValue);
+
+                foreach (string cookieName in cookies.Keys.Skip(1))
+                {
+                    cookieValue = cookies[cookieName].Value + cookieSettings;
+                    if (cookies[cookieName].HttpOnly) cookieValue += "; HttpOnly";
+                    httpListenerContext.Response.AppendHeader("Set-Cookie", cookieName + "=" + cookieValue);
+                }
             }
 
-            Session.FormVariables = originalFormVariables;
+            // add new cookie
+            cookieValue = value + cookieSettings;
+            if (httpOnly) cookieValue += "; HttpOnly";
+            httpListenerContext.Response.AppendHeader("Set-Cookie", name + "=" + cookieValue);
+
+            Session.FormVariables[Request.RawUrl] = originalFormVariables;
         }
     }
 }

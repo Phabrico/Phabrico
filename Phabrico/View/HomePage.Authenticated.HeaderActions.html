@@ -112,6 +112,7 @@
 }@
 
 <form class="dlgChangeLanguage aphront-dialog-view modalview" action="" method="POST" onsubmit="submitNewLanguage(this); return false;" style="display:none;position: absolute; width: 600px; left: calc(50vw - 300px);">
+    <input name="csrf_token" type="hidden" value="@@CSRF@@" />
     <div class="aphront-dialog-overlay"></div>
     <div class="aphront-dialog-head">
         <span class="phui-header-header">Change language</span>

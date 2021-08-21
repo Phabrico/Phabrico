@@ -36,16 +36,16 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement language = WebBrowser.FindElement(By.Id("newLanguage"));
             language.Click();
             language.FindElements(By.TagName("option"))
-                                    .Single(option => option.Text == "Español")
-                                    .Click();
+                    .Single(option => option.Text == " Español")
+                    .Click();
             language.Click();
 
             // verify new language selection
             language = WebBrowser.FindElement(By.Id("newLanguage"));
             Assert.IsTrue( language.FindElements(By.TagName("option"))
-                                    .Single(option => option.Text == "Español")
-                                    .Selected
-                            );
+                                   .Single(option => option.Text == " Español")
+                                   .Selected
+                         );
             language.SendKeys(Keys.Enter);
 
             // click 'Change language'

@@ -39,8 +39,8 @@ namespace Phabrico.Controllers
             {
                 if (parameters[0].Equals("login"))
                 {
-                    string accountDataUserName = browser.Session.FormVariables["username"];
-                    string accountDataPassword = browser.Session.FormVariables["password"];
+                    string accountDataUserName = browser.Session.FormVariables[browser.Request.RawUrl]["username"];
+                    string accountDataPassword = browser.Session.FormVariables[browser.Request.RawUrl]["password"];
                     string tokenHash = Encryption.GenerateTokenKey(accountDataUserName, accountDataPassword);  // tokenHash is stored in the database
                     string publicEncryptionKey = Encryption.GenerateEncryptionKey(accountDataUserName, accountDataPassword);  // encryptionKey is not stored in database (except when security is disabled)
                     string privateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(accountDataUserName, accountDataPassword);  // privateEncryptionKey is not stored in database
@@ -61,8 +61,8 @@ namespace Phabrico.Controllers
                             {
                                 httpResponse.Status = Http.Response.HomePage.HomePageStatus.EmptyDatabase;
                                 Account newAccountData = new Account();
-                                newAccountData.ConduitAPIToken = browser.Session.FormVariables["conduitApiToken"];
-                                newAccountData.PhabricatorUrl = browser.Session.FormVariables["phabricatorUrl"];
+                                newAccountData.ConduitAPIToken = browser.Session.FormVariables[browser.Request.RawUrl]["conduitApiToken"];
+                                newAccountData.PhabricatorUrl = browser.Session.FormVariables[browser.Request.RawUrl]["phabricatorUrl"];
                                 newAccountData.Token = tokenHash;
                                 newAccountData.UserName = accountDataUserName;
                                 newAccountData.Parameters = new Account.Configuration();
@@ -84,18 +84,18 @@ namespace Phabrico.Controllers
                                 DictionarySafe<string, string> temporaryFormVariables = new DictionarySafe<string, string>(browser.HttpServer
                                                                                                                                   .Session
                                                                                                                                   .ClientSessions[SessionManager.TemporaryToken.ID]
-                                                                                                                                  .FormVariables
+                                                                                                                                  .FormVariables[browser.Request.RawUrl]
                                                                                                                          );
-                                browser.Session.FormVariables = temporaryFormVariables;
+                                browser.Session.FormVariables[browser.Request.RawUrl] = temporaryFormVariables;
 
                                 // clean form-variables from temporary session
                                 browser.HttpServer
                                        .Session
                                        .ClientSessions[SessionManager.TemporaryToken.ID]
-                                       .FormVariables = new DictionarySafe<string, string>();
+                                       .FormVariables[browser.Request.RawUrl] = new DictionarySafe<string, string>();
 
 
-                                browser.SetCookie("token", token.ID);
+                                browser.SetCookie("token", token.ID, true);
                                 token.EncryptionKey = publicEncryptionKey;
                                 token.PrivateEncryptionKey = privateEncryptionKey;
                             }
@@ -111,7 +111,7 @@ namespace Phabrico.Controllers
                             SessionManager.Token token = httpServer.Session.CreateToken(tokenHash, browser);
                             UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
 
-                            browser.SetCookie("token", token.ID);
+                            browser.SetCookie("token", token.ID, true);
                             token.EncryptionKey = Encryption.XorString(publicEncryptionKey, publicXorCipher);
                             token.PrivateEncryptionKey = Encryption.XorString(privateEncryptionKey, privateXorCipher);
                             token.AuthenticationFactor = AuthenticationFactor.Knowledge;
@@ -182,13 +182,15 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/auth/language")]
         public JsonMessage HttpPostModifyLanguage(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            string newLanguage = browser.Session.FormVariables["newLanguage"];
+            if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
+
+            string newLanguage = browser.Session.FormVariables[browser.Request.RawUrl]["newLanguage"];
             Storage.Account accountStorage = new Storage.Account();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
 
             browser.Session.Locale = newLanguage;
-            browser.SetCookie("language", newLanguage);
+            browser.SetCookie("language", newLanguage, false);
 
             // save new language into the database
             using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -214,12 +216,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/auth/password")]
         public JsonMessage HttpPostModifyPassword(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            string currentPassword = browser.Session.FormVariables["oldPassword"];
-            string newPassword = browser.Session.FormVariables["newPassword1"];
+            string currentPassword = browser.Session.FormVariables[browser.Request.RawUrl]["oldPassword"];
+            string newPassword = browser.Session.FormVariables[browser.Request.RawUrl]["newPassword1"];
 
             Storage.Account accountStorage = new Storage.Account();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -254,7 +257,7 @@ namespace Phabrico.Controllers
                             // recreate session token
                             httpServer.Session.CancelToken(TokenId);
                             SessionManager.Token newToken = httpServer.Session.CreateToken(newPublicEncryptionKey, browser);
-                            browser.SetCookie("token", newToken.ID);
+                            browser.SetCookie("token", newToken.ID, true);
 
                             // password was successfully changed
                             jsonData = JsonConvert.SerializeObject(new

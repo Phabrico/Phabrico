@@ -12,6 +12,11 @@ namespace Phabrico.Http
     public class CachedHttpMessage
     {
         /// <summary>
+        /// ContentType of cached data
+        /// </summary>
+        public string ContentType { get; set; }
+
+        /// <summary>
         /// Encrypted content of the cached data
         /// </summary>
         public byte[] EncryptedData { get; set; }
@@ -31,10 +36,12 @@ namespace Phabrico.Http
         /// </summary>
         /// <param name="encryptionKey"></param>
         /// <param name="data"></param>
-        public CachedHttpMessage(string encryptionKey, byte[] data)
+        /// <param name="contentType"></param>
+        public CachedHttpMessage(string encryptionKey, byte[] data, string contentType)
         {
             EncryptedData = Encryption.Encrypt(encryptionKey, data);
             Size = EncryptedData.Length;
+            ContentType = contentType;
         }
     }
 }

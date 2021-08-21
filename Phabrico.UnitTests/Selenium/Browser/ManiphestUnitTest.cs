@@ -94,7 +94,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                     expandActionPane.Click();
                 }
 
-                // verify if no project tag is added to task
+                // verify if 'classic' project tag is added to task
                 Assert.IsTrue(WebBrowser.FindElements(By.ClassName("maniphest-list-item-project"))
                                         .Any(element => element.FindElements(By.TagName("a"))
                                                                .Any(anchor => anchor.GetAttribute("href").EndsWith(":" + HttpServer.TcpPortNr + Http.Server.RootPath + "project/info/PHID-PROJ-classic/"))
@@ -127,7 +127,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.Until(condition => condition.FindElement(By.Id("dlgSynchronizing")).Displayed);
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(30));
-                wait.Until(condition => condition.FindElement(By.Id("dlgSynchronizing")).Displayed == false);
+                wait.Until(condition => condition.FindElements(By.Id("dlgSynchronizing")).Any(dlg => dlg.Displayed) == false);
 
                 // verify if we don't have any local offline changes anymore
                 Thread.Sleep(500);  // wait some milliseconds to make sure the page has been reloaded

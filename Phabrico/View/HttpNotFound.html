@@ -21,7 +21,7 @@
       <link rel="icon" href="@@CUSTOM-FAVICON@@" type="image/png" />
       <link rel="shortcut icon" href="@@CUSTOM-FAVICON@@" type="image/png" />
       }@
-      <script src="scripts/phabrico.js?version=@@PHABRICO-VERSION@@"></script>
+      <script src="scripts/phabrico.js?version=@@PHABRICO-VERSION@@-@@LOCALE@@"></script>
 
       <style>
         .container {
@@ -59,7 +59,7 @@
                 @{ELSE
                     <div style="display:flex; align-items : center;">
                         @{IF NOT @@CUSTOM-APPLICATION-LOGO@@=@
-                        <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@">
+                        <img src="@@CUSTOM-APPLICATION-LOGO@@" style="@@CUSTOM-APPLICATION-LOGO-STYLE@@" alt="logo">
                         }@
                         @{IF NOT @@CUSTOM-APPLICATION-NAME@@=@
                         <span style="@@CUSTOM-APPLICATION-NAME-STYLE@@">@@CUSTOM-APPLICATION-NAME@@</span>

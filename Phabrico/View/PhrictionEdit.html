@@ -1,6 +1,6 @@
 <div id="crumbsContainer" class="crumbs">
     <a href="w/">
-        <span class="phui-font-fa fa-book" style="padding-right: 5px;"></span>
+        <span class="phui-font-fa fa-book" style="padding-right: 5px;">&#x200B;</span>
     </a>
 </div>
 
@@ -11,9 +11,10 @@
     <div class="edit-left" id="left" style="width:50%;">
         <div>
             <form method="POST">
+                <input name="csrf_token" type="hidden" value="@@CSRF@@" />
                 <div>
                     <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="title">Title</label>
-                    <input id="title" name="title" placeholder="Type a title..." style="margin-top: 4px; width: calc(90% - 8px);" type="text" autofocus="" value="@@DOCUMENT-TITLE@@" oninput="titleChanged()" onblur="verifyTitle()" />
+                    <input id="title" name="title" placeholder="Type a title..." style="margin-top: 4px; width: calc(90% - 8px);" tabindex="1" type="text" autofocus="" value="@@DOCUMENT-TITLE@@" oninput="titleChanged()" onblur="verifyTitle()" />
                     <input id="path" name="path" type="hidden" value="@@DOCUMENT-PATH@@" />
                 </div>
                 <label id="titleAlreadyExists" class="phriction-edit-error" style="display:none">Title already exists</label>
@@ -21,13 +22,13 @@
                     @{IF @@ACCESS-HIDE-PROJECTS@@=False@
                     <div>
                         <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="tags">Tags</label>
-                        <input id="tags" name="tags" class="input-tag" data-url="/tag" placeholder="Type a project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-TAGS@@" />
+                        <input id="tags" name="tags" class="input-tag" data-url="/tag" tabindex="2" placeholder="Type a project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-TAGS@@" />
                     </div>
                     }@
                     @{IF @@ACCESS-HIDE-USERS@@=False@
                     <div>
                         <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="subscribers">Subscribers</label>
-                        <input id="subscribers" name="subscribers" class="input-tag" data-url="/subscriber" placeholder="Type a user or project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-SUBSCRIBERS@@" />
+                        <input id="subscribers" name="subscribers" class="input-tag" data-url="/subscriber" tabindex="3" placeholder="Type a user or project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-SUBSCRIBERS@@" />
                     </div>
                     }@
                 }@
@@ -44,19 +45,19 @@
                         @{IF @@PLUGIN-DIAGRAM-AVAILABLE@@=yes@
                             <span class="phui-font-fa fa-sitemap tooltip-top"><span class="tooltiptext">Diagram</span></span>
                         }@
-                        <a href="remarkup/syntax" target="_blank">
+                        <a href="remarkup/syntax" target="_blank" tabindex="7">&#x200B;
                             <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
                         </a>
                     </div>
-                    <textarea id="textarea" name="textarea" class="dropzone" oninput="inputChanged(this.value, right)">@@DOCUMENT-RAW-CONTENT@@</textarea>
+                    <textarea id="textarea" name="textarea" tabindex="4" class="dropzone" oninput="inputChanged(this.value, right)">@@DOCUMENT-RAW-CONTENT@@</textarea>
                     <input name="operation" id="operation" type="hidden" value="@@OPERATION@@" />
                     <input name="token" type="hidden" value="@@DOCUMENT-TOKEN@@" />
                     <div id="editStatusBar"></div>
                 </div>
                 <div style="height: calc(100vh - 239px);">
                     <div style="float: right;margin-right: 6px;">
-                        <button class="button-blue" id="btnSave" type="button" onclick="saveInputData(this)">Save Changes</button>
-                        <button class="button-gray" id="btnCancel" type="button" onclick="cancelInputData(this)">Cancel</button>
+                        <button class="button-blue" id="btnSave" type="button" tabindex="5" onclick="saveInputData(this)">Save Changes</button>
+                        <button class="button-gray" id="btnCancel" type="button" tabindex="6" onclick="cancelInputData(this)">Cancel</button>
                     </div>
                 </div>
             </form>

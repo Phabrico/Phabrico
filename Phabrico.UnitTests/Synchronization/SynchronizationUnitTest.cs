@@ -29,7 +29,7 @@ namespace Phabrico.UnitTests.Synchronization
             synchronizationController.TokenId = HttpServer.Session.ClientSessions.LastOrDefault().Key;
             
             Http.SessionManager.Token token = synchronizationController.browser.HttpServer.Session.CreateToken(EncryptionKey, synchronizationController.browser);
-            synchronizationController.browser.SetCookie("token", token.ID);
+            synchronizationController.browser.SetCookie("token", token.ID, true);
             token.PrivateEncryptionKey = EncryptionKey;
 
             phabricatorWebServer = new DummyPhabricatorWebServer();

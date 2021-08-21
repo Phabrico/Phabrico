@@ -226,6 +226,16 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: .75em;
 }
 
+.phui-document h1,
+h1.remarkup-header,
+h2.remarkup-header,
+h3.remarkup-header,
+h4.remarkup-header,
+h5.remarkup-header,
+h6.remarkup-header {
+    margin-top: .25em;
+}
+
 select {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -475,6 +485,10 @@ select {
     -moz-osx-font-smoothing: grayscale;
 }
 
+#phui-navigator {
+    margin-bottom: 20px;
+}
+
 #phui-navigator li a {
     white-space: pre-wrap;
     text-indent: 1em;
@@ -492,7 +506,7 @@ select {
 }
 
 .phabrico-logo {
-    margin: 2px 1px;
+    margin: 5px 1px -2px 1px;
     height: 40px;
     display: block;
     width: max-content;
@@ -1496,20 +1510,20 @@ button.small, .small, a.small:visited {
     margin-top: 0px;
 }
 
-.phui-document h2.remarkup-header {
-    font-size:28px;
-}
-.phui-document h3.remarkup-header {
-    font-size:24px;
-}
-.phui-document h4.remarkup-header {
+h2.remarkup-header {
     font-size:22px;
 }
-.phui-document h5.remarkup-header {
+h3.remarkup-header {
+    font-size:20px;
+}
+h4.remarkup-header {
     font-size:18px;
 }
-.phui-document h6.remarkup-header {
+h5.remarkup-header {
     font-size:16px;
+}
+h6.remarkup-header {
+    font-size:14px;
 }
 
 .phui-document-create-message {
@@ -2808,6 +2822,7 @@ a.user-reference {
     margin-left: 3px;
     margin-right: 3px;
     margin-bottom: 2px;
+    line-height: 14px;
 }
 
 .project .button.disallow.PHID-PROJ-NONE {
@@ -2822,6 +2837,7 @@ a.project-reference {
     border-radius: 3px;
     text-decoration: none;
     white-space: break-spaces;
+    line-height: 14px;
 }
 
 a.project-reference::before {

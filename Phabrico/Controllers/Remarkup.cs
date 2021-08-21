@@ -38,8 +38,10 @@ namespace Phabrico.Controllers
         {
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                string remarkupData = browser.Session.FormVariables["data"];
-                string url = browser.Session.FormVariables["url"];
+                string remarkupData = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
+                string url = browser.Session.FormVariables[browser.Request.RawUrl]["url"];
+
+                if (remarkupData == null || url == null) throw new Phabrico.Exception.AccessDeniedException("/remarkup", "invalid url");
 
                 string relativeUrl = System.Text.RegularExpressions.Regex.Match(url, "(https?://[^/]*)(/.*)\\?.*").Groups[2].Value;
                 if (relativeUrl.StartsWith("/w/"))

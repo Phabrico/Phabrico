@@ -55,9 +55,10 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project")]
         public Http.Response.HttpMessage HttpPostLoadProjectScreen(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project", "You don't have sufficient rights to configure Phabrico");
 
             Storage.Project projectStorage = new Storage.Project();
@@ -71,7 +72,7 @@ namespace Phabrico.Controllers
                 bool doShowSelected = firstParameter.Equals("showSelected");
                 bool doSetColorForAll = firstParameter.Equals("setColorForAll");
 
-                string[] filtersProject = browser.Session.FormVariables["filterProject"]
+                string[] filtersProject = browser.Session.FormVariables[browser.Request.RawUrl]["filterProject"]
                                                          .Split(' ');
                 IEnumerable<Phabricator.Data.Project> projects = projectStorage.Get(database)
                                                                                 .Where(project => filtersProject.All(filter => project.Name
@@ -107,7 +108,7 @@ namespace Phabrico.Controllers
                 else
                 if (doSetColorForAll)
                 {
-                    string newColorForAll = browser.Session.FormVariables["colorForAll"];
+                    string newColorForAll = browser.Session.FormVariables[browser.Request.RawUrl]["colorForAll"];
 
                     foreach (Phabricator.Data.Project project in projects.ToArray())
                     {
@@ -133,11 +134,12 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/query")]
         public JsonMessage HttpPostPopulateTableData(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/query");
 
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/query", "You don't have sufficient rights to configure Phabrico");
 
             int totalNumberSelected;
@@ -160,8 +162,8 @@ namespace Phabrico.Controllers
                 }
 
                 // add all project-tag-records to the result
-                bool showSelectedProjectsOnly = browser.Session.FormVariables.ContainsKey("showprojects")
-                                              && browser.Session.FormVariables["showprojects"].Equals("selected");
+                bool showSelectedProjectsOnly = browser.Session.FormVariables[browser.Request.RawUrl]?.ContainsKey("showprojects") == true
+                                              && browser.Session.FormVariables[browser.Request.RawUrl]["showprojects"].Equals("selected");
                 foreach (Phabricator.Data.Project projectData in projects)
                 {
                     if (showSelectedProjectsOnly && projectData.Selected != Phabricator.Data.Project.Selection.Selected)
@@ -200,12 +202,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/disallow")]
         public void HttpPostDisallowProject(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/disallow");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/disallow", "You don't have sufficient rights to configure Phabrico");
 
-            string projectToken = browser.Session.FormVariables["item"];
+            string projectToken = browser.Session.FormVariables[browser.Request.RawUrl]["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.Project projectStorage = new Storage.Project();
@@ -222,12 +225,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/select")]
         public void HttpPostSelectProject(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/select");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/select", "You don't have sufficient rights to configure Phabrico");
 
-            string projectToken = browser.Session.FormVariables["item"];
+            string projectToken = browser.Session.FormVariables[browser.Request.RawUrl]["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.Project projectStorage = new Storage.Project();
@@ -244,12 +248,13 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/unselect")]
         public void HttpPostUnselectProject(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/unselect");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project/unselect", "You don't have sufficient rights to configure Phabrico");
 
-            string projectToken = browser.Session.FormVariables["item"];
+            string projectToken = browser.Session.FormVariables[browser.Request.RawUrl]["item"];
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.Project projectStorage = new Storage.Project();
@@ -275,17 +280,18 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/project/setcolor")]
         public JsonMessage HttpPostSetColor(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound();
+            if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/setcolor");
 
             SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
             if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/project", "You don't have sufficient rights to configure Phabrico");
 
             try
             {
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
-                    string projectToken = browser.Session.FormVariables["token"];
-                    string projectColor = browser.Session.FormVariables["color"];
+                    string projectToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
+                    string projectColor = browser.Session.FormVariables[browser.Request.RawUrl]["color"];
 
                     Storage.Project projectStorage = new Storage.Project();
                     Phabricator.Data.Project project = projectStorage.Get(database, projectToken);

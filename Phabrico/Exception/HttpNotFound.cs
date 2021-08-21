@@ -8,5 +8,15 @@ namespace Phabrico.Exception
     [Serializable]
     public class HttpNotFound : System.Exception
     {
+        public string Url { get; set; }
+
+        /// <summary>
+        /// Initializes an instance of a HttpNotFound exception
+        /// </summary>
+        /// <param name="url"></param>
+        public HttpNotFound(string url)
+        {
+            Url = url;
+        }
     }
 }
