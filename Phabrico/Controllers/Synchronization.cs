@@ -696,7 +696,7 @@ namespace Phabrico.Controllers
                     );
 
                     // store syncrhonization timestamp
-                    synchronizationParameters.existingAccount = accountStorage.WhoAmI(database);  // reload account again (because the WhoAmI call might have changed some settings)
+                    synchronizationParameters.existingAccount = accountStorage.WhoAmI(database, browser);  // reload account again (because the WhoAmI call might have changed some settings)
                     synchronizationParameters.existingAccount.Parameters.LastSynchronizationTimestamp = DateTimeOffset.UtcNow;
                     accountStorage.Set(database, synchronizationParameters.existingAccount);
 
@@ -2327,6 +2327,7 @@ namespace Phabrico.Controllers
         /// <param name="phabricatorObject"></param>
         private void UploadOfflineAttachments(SynchronizationParameters synchronizationParameters, Phabricator.Data.PhabricatorObject phabricatorObject)
         {
+            Dictionary<int,Phabricator.Data.File> cachedFileReferences = new Dictionary<int, Phabricator.Data.File>();
             Storage.Stage stageStorage = new Storage.Stage();
             Phabricator.API.File fileAPI = new Phabricator.API.File();
             Regex matchFileAttachments = new Regex("{F(-[0-9]+)[^}]*}");
@@ -2339,11 +2340,28 @@ namespace Phabrico.Controllers
                     int phabricoFileReference = Int32.Parse(match.Groups[1].Value);
                     if (synchronizationParameters.uploadedFileReferences.TryGetValue(phabricoFileReference, out phabricatorFileReference) == false)
                     {
-                        Phabricator.Data.File file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database).FirstOrDefault(f => f.ID == phabricoFileReference);
-                        if (file != null)
+                        Phabricator.Data.File file;
+                        Phabricator.Data.File fileWithoutContent;
+                        if (cachedFileReferences.TryGetValue(phabricatorFileReference, out fileWithoutContent) == false)
                         {
-                            // get content of file
-                            file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database, Phabricator.Data.File.Prefix, Int32.Parse(file.Token.Substring("PHID-NEWTOKEN".Length)), true);
+                            fileWithoutContent = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database)
+                                                             .FirstOrDefault(f => f.ID == phabricoFileReference);
+                        }
+
+                        if (fileWithoutContent != null)
+                        {
+                            if (cachedFileReferences.TryGetValue(phabricatorFileReference, out file) == false)
+                            {
+                                // get content of file
+                                file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database,
+                                                                               Phabricator.Data.File.Prefix,
+                                                                               Int32.Parse(fileWithoutContent.Token.Substring("PHID-NEWTOKEN".Length)),
+                                                                               true
+                                                                              );
+
+                                // cache file in case we have multiple references to this file in this document
+                                cachedFileReferences[phabricatorFileReference] = file;
+                            }
 
                             int? newFileReference = fileAPI.Edit(synchronizationParameters.browser.Conduit, file);
                             if (newFileReference.HasValue == false)
@@ -2376,11 +2394,28 @@ namespace Phabrico.Controllers
                     int phabricoFileReference = Int32.Parse(match.Groups[1].Value);
                     if (synchronizationParameters.uploadedFileReferences.TryGetValue(phabricoFileReference, out phabricatorFileReference) == false)
                     {
-                        Phabricator.Data.File file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database).FirstOrDefault(f => f.ID == phabricoFileReference);
-                        if (file != null)
+                        Phabricator.Data.File file;
+                        Phabricator.Data.File fileWithoutContent;
+                        if (cachedFileReferences.TryGetValue(phabricatorFileReference, out fileWithoutContent) == false)
                         {
-                            // get content of file
-                            file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database, Phabricator.Data.File.Prefix, Int32.Parse(file.Token.Substring("PHID-NEWTOKEN".Length)), true);
+                            fileWithoutContent = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database)
+                                                             .FirstOrDefault(f => f.ID == phabricoFileReference);
+                        }
+
+                        if (fileWithoutContent != null)
+                        {
+                            if (cachedFileReferences.TryGetValue(phabricatorFileReference, out file) == false)
+                            {
+                                // get content of file
+                                file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database,
+                                                                               Phabricator.Data.File.Prefix,
+                                                                               Int32.Parse(fileWithoutContent.Token.Substring("PHID-NEWTOKEN".Length)),
+                                                                               true
+                                                                              );
+
+                                // cache file in case we have multiple references to this file in this document
+                                cachedFileReferences[phabricatorFileReference] = file;
+                            }
 
                             int? newFileReference = fileAPI.Edit(synchronizationParameters.browser.Conduit, file);
                             if (newFileReference.HasValue == false)

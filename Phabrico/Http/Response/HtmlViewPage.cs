@@ -244,20 +244,36 @@ namespace Phabrico.Http.Response
 
             // configure access management
             bool hideChangeLanguage = string.IsNullOrWhiteSpace(HttpServer.Customization.Language) == false;
+            bool hideChangePassword = browser.Token.AuthenticationFactor != AuthenticationFactor.Knowledge && browser.Token.AuthenticationFactor != AuthenticationFactor.Experience;
+            bool hideConfig = HttpServer.Customization.HideConfig || browser.Token.AuthenticationFactor == AuthenticationFactor.Experience || browser.Token.AuthenticationFactor == AuthenticationFactor.Public;
+            bool hideFiles = HttpServer.Customization.HideFiles;
+            bool hideManiphest = HttpServer.Customization.HideManiphest;
+            bool hideNavigatorTooltips = HttpServer.Customization.HideNavigatorTooltips;
+            bool hideOfflineChanges = HttpServer.Customization.HideOfflineChanges;
+            bool hidePhriction = HttpServer.Customization.HidePhriction;
+            bool hidePhrictionChanges = HttpServer.Customization.HidePhrictionChanges;
+            bool hidePhrictionFavorites = HttpServer.Customization.HidePhrictionFavorites;
+            bool hideProjects = HttpServer.Customization.HideProjects || browser.Token.AuthenticationFactor == AuthenticationFactor.Experience || browser.Token.AuthenticationFactor == AuthenticationFactor.Public;
+            bool hideSearch = HttpServer.Customization.HideSearch;
+            bool hideUsers = HttpServer.Customization.HideUsers || browser.Token.AuthenticationFactor == AuthenticationFactor.Experience || browser.Token.AuthenticationFactor == AuthenticationFactor.Public;
+            bool isReadOnly = HttpServer.Customization.IsReadonly;
+            bool masterDataIsAccessible = HttpServer.Customization.MasterDataIsAccessible && browser.Token.AuthenticationFactor != AuthenticationFactor.Experience && browser.Token.AuthenticationFactor != AuthenticationFactor.Public;
+
             SetText("ACCESS-HIDE-CHANGE-LANGUAGE", hideChangeLanguage.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-CONFIG", HttpServer.Customization.HideConfig.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-FILES", HttpServer.Customization.HideFiles.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-MANIPHEST", HttpServer.Customization.HideManiphest.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-NAVIGATOR-TOOLTIPS", HttpServer.Customization.HideNavigatorTooltips.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-OFFLINE-CHANGES", HttpServer.Customization.HideOfflineChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-PHRICTION", HttpServer.Customization.HidePhriction.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-PHRICTION-CHANGES", HttpServer.Customization.HidePhrictionChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-PHRICTION-FAVORITES", HttpServer.Customization.HidePhrictionFavorites.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-PROJECTS", HttpServer.Customization.HideProjects.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-SEARCH", HttpServer.Customization.HideSearch.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-HIDE-USERS", HttpServer.Customization.HideUsers.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-READONLY", HttpServer.Customization.IsReadonly.ToString(), ArgumentOptions.AllowEmptyParameterValue);
-            SetText("ACCESS-MASTER-DATA", HttpServer.Customization.MasterDataIsAccessible.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-CHANGE-PASSWORD", hideChangePassword.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-CONFIG", hideConfig.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-FILES", hideFiles.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-MANIPHEST", hideManiphest.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-NAVIGATOR-TOOLTIPS", hideNavigatorTooltips.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-OFFLINE-CHANGES", hideOfflineChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PHRICTION", hidePhriction.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PHRICTION-CHANGES", hidePhrictionChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PHRICTION-FAVORITES", hidePhrictionFavorites.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PROJECTS", hideProjects.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-SEARCH", hideSearch.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-USERS", hideUsers.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-READONLY", isReadOnly.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-MASTER-DATA", masterDataIsAccessible.ToString(), ArgumentOptions.AllowEmptyParameterValue);
 
             bool hideGeneralTabInConfiguration = HttpServer.IsHttpModule && HttpServer.Customization.Theme != ApplicationCustomization.ApplicationTheme.Auto;
             SetText("ACCESS-HIDE-CONFIG-GENERAL", hideGeneralTabInConfiguration.ToString(), ArgumentOptions.AllowEmptyParameterValue);
@@ -384,7 +400,7 @@ namespace Phabrico.Http.Response
 
                     Storage.Account accountStorage = new Storage.Account();
 
-                    Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
+                    Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
 
                     switch (accountData.Parameters.DarkenBrightImages)
                     {
@@ -403,7 +419,7 @@ namespace Phabrico.Http.Response
                     }
 
                     userName = accountData.UserName;
-                    authenticationFactor = database.GetAuthenticationFactor();
+                    authenticationFactor = database.GetAuthenticationFactor(browser);
                     autoLogOutAfterMinutesOfInactivity = database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity ?? 60;
                 }
             }

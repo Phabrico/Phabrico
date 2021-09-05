@@ -353,6 +353,36 @@ namespace Phabrico.Miscellaneous
         }
 
         /// <summary>
+        /// This function will return the XOR value between 2 strings of the same length
+        /// It is used to calculate the XOR mask between the database encryption key and the (new) password.
+        /// The database encryption key is generated once, based on the first password.
+        /// When the password is changed, the database will not be re-encrypted.
+        /// The XOR-mask is stored in the AccountInfo table
+        /// </summary>
+        /// <param name="decodedString"></param>
+        /// <param name="encodedString"></param>
+        /// <returns></returns>
+        public static UInt64[] GetXorValue(string decodedString, string encodedString)
+        {
+            if (decodedString == null)
+            {
+                return null;
+            }
+
+            UInt64[] result = new UInt64[4];
+
+            for (int i = decodedString.Length - 1; i >= 0; i--)
+            {
+                int xorCharacter = decodedString[i] ^ encodedString[i];
+
+                result[i / 8] <<= 8;
+                result[i / 8] += (UInt64)xorCharacter;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// This function will XOR a string with a 64-bit value and return the result.
         /// It is used to XOR the database encryption key, which is constructed by means of the username and password.
         /// In case the user wants to change his password, only the XOR value will be changed; the database encryption

@@ -64,6 +64,9 @@ namespace Phabrico.Controllers
             Storage.Project projectStorage = new Storage.Project();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 // execute "(Un)Select All Projects" button actions
                 string firstParameter = parameters.FirstOrDefault() ?? "";
                 bool doSelectAll = firstParameter.Equals("selectAll");
@@ -147,6 +150,9 @@ namespace Phabrico.Controllers
             Storage.Project projectStorage = new Storage.Project();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 IEnumerable<Phabricator.Data.Project> projects = projectStorage.Get(database).OrderBy(project => project.Name);
                 totalNumberSelected = projects.Count(project => project.Selected == Phabricator.Data.Project.Selection.Selected);
                 noneProjectSelected = projects.Any(project => project.Selected == Phabricator.Data.Project.Selection.Selected && project.Token.Equals(Phabricator.Data.Project.None));
@@ -290,6 +296,9 @@ namespace Phabrico.Controllers
             {
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
+                    // set private encryption key
+                    database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                     string projectToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
                     string projectColor = browser.Session.FormVariables[browser.Request.RawUrl]["color"];
 

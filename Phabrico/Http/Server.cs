@@ -86,7 +86,7 @@ namespace Phabrico.Http
         /// Dictionary containing the latest notification messages sent to the browsers
         /// Key=WebSocket message identifier, Value=message content
         /// </summary>
-        private static Dictionary<string,string> currentNotifications = new Dictionary<string, string>();
+        private static Dictionary<string, string> currentNotifications = new Dictionary<string, string>();
 
         /// <summary>
         /// True if Phabrico is executed as IIS Http module
@@ -147,6 +147,11 @@ namespace Phabrico.Http
         public int TcpPortNr { get; private set; }
 
         /// <summary>
+        /// User roles per username
+        /// </summary>
+        public Dictionary<string, string[]> UserRoles { get; internal set; } = null;
+
+        /// <summary>
         /// List of active WebSockets
         /// </summary>
         public static List<WebSocketContext> WebSockets = new List<WebSocketContext>();
@@ -173,18 +178,20 @@ namespace Phabrico.Http
             cacheStatusHttpMessages = CacheState.Invalid;
 
             // search for unsecured controller methods in Phabrico
-            unsecuredUrlPaths.AddRange( Assembly.GetExecutingAssembly()
+            unsecuredUrlPaths.AddRange(Assembly.GetExecutingAssembly()
                                                 .GetExportedTypes()
                                                 .Where(controllerClass => controllerClass.IsSubclassOf(typeof(Phabrico.Controllers.Controller)))
                                                 .Select(controller => controller.GetMethods()
-                                                                                .Select(method => {
-                                                                                                    UrlControllerAttribute urlControllerAttribute = method.GetCustomAttribute<UrlControllerAttribute>();
-                                                                                                    return new {
-                                                                                                        Method = method,
-                                                                                                        UrlControllerAttribute = urlControllerAttribute,
-                                                                                                        Unsecure = urlControllerAttribute != null && urlControllerAttribute.Unsecure
-                                                                                                    };
-                                                                                                })
+                                                                                .Select(method =>
+                                                                                {
+                                                                                    UrlControllerAttribute urlControllerAttribute = method.GetCustomAttribute<UrlControllerAttribute>();
+                                                                                    return new
+                                                                                    {
+                                                                                        Method = method,
+                                                                                        UrlControllerAttribute = urlControllerAttribute,
+                                                                                        Unsecure = urlControllerAttribute != null && urlControllerAttribute.Unsecure
+                                                                                    };
+                                                                                })
                                                                                 .Where(method => method.Unsecure)
                                                                                 .Select(method => method.UrlControllerAttribute.URL)
                                                         )
@@ -192,7 +199,7 @@ namespace Phabrico.Http
                                         );
 
             // load plugin DLLs
-            string rootDirectory = System.IO.Path.GetDirectoryName(AppConfigLoader.ConfigFileName );
+            string rootDirectory = System.IO.Path.GetDirectoryName(AppConfigLoader.ConfigFileName);
             foreach (string pluginFileName in System.IO.Directory.EnumerateFiles(rootDirectory, "Phabrico.Plugin.*.dll"))
             {
                 try
@@ -213,23 +220,25 @@ namespace Phabrico.Http
                             plugin.State = Plugin.PluginBase.PluginState.Loaded;
 
                             // search for unsecured controller methods
-                            unsecuredUrlPaths.AddRange( pluginDLL.GetExportedTypes()
+                            unsecuredUrlPaths.AddRange(pluginDLL.GetExportedTypes()
                                                                  .Where(controllerClass => controllerClass.IsSubclassOf(typeof(Phabrico.Controllers.Controller)))
                                                                  .Select(controller => controller.GetMethods()
-                                                                                                 .Select(method => {
-                                                                                                                       UrlControllerAttribute urlControllerAttribute = method.GetCustomAttribute<UrlControllerAttribute>();
-                                                                                                                       return new {
-                                                                                                                           Method = method,
-                                                                                                                           UrlControllerAttribute = urlControllerAttribute,
-                                                                                                                           Unsecure = urlControllerAttribute != null && urlControllerAttribute.Unsecure
-                                                                                                                       };
-                                                                                                                   })
+                                                                                                 .Select(method =>
+                                                                                                 {
+                                                                                                     UrlControllerAttribute urlControllerAttribute = method.GetCustomAttribute<UrlControllerAttribute>();
+                                                                                                     return new
+                                                                                                     {
+                                                                                                         Method = method,
+                                                                                                         UrlControllerAttribute = urlControllerAttribute,
+                                                                                                         Unsecure = urlControllerAttribute != null && urlControllerAttribute.Unsecure
+                                                                                                     };
+                                                                                                 })
                                                                                                  .Where(method => method.Unsecure)
                                                                                                  .Select(method => method.UrlControllerAttribute.URL)
                                                                          )
                                                                  .SelectMany(url => url)
                                                       );
-                                
+
                         }
                         catch (System.Exception pluginException)
                         {
@@ -248,7 +257,8 @@ namespace Phabrico.Http
             if (isHttpModule)
             {
                 // event for stopping Phabrico when IIS is about to stop
-                AppDomain.CurrentDomain.DomainUnload += new EventHandler(delegate (object sender, EventArgs args)  {
+                AppDomain.CurrentDomain.DomainUnload += new EventHandler(delegate (object sender, EventArgs args)
+                {
                     Stop();
                 });
             }
@@ -774,7 +784,12 @@ namespace Phabrico.Http
             using (Storage.Database database = new Database(encryptionKey))
             {
                 Storage.Account accountStorage = new Storage.Account();
-                whoAmI = accountStorage.WhoAmI(database);
+                whoAmI = accountStorage.WhoAmI(database, browser);
+                if (whoAmI == null)
+                {
+                    // this can happen during unit tests which are running too fast -> this is not critical, so skip it
+                    return;
+                }
 
                 SessionManager.Token sessionToken = Session.CreateToken(whoAmI.Token, browser);
                 clonedBrowser.SetCookie("token", sessionToken.ID, true);
@@ -803,8 +818,8 @@ namespace Phabrico.Http
 
                     // preload favorite phriction documents
                     Storage.Phriction phrictionStorage = new Storage.Phriction();
-                    List<Phabricator.Data.Phriction> favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, username).ToList();
-                    favoritePhrictionDocuments.Add( phrictionStorage.Get(database, "/") );
+                    List<Phabricator.Data.Phriction> favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, browser, username).ToList();
+                    favoritePhrictionDocuments.Add(phrictionStorage.Get(database, "/"));
                     htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
                     Controllers.Phriction phrictionController = new Controllers.Phriction();
                     phrictionController.browser = clonedBrowser;
@@ -964,6 +979,8 @@ namespace Phabrico.Http
             {
                 Storage.Account accountStorage = new Storage.Account();
 
+                database.PrivateEncryptionKey = token?.PrivateEncryptionKey;
+
                 try
                 {
                     if (unsecuredUrlPaths.All(path => cmdGetUrl.StartsWith(path) == false) &&
@@ -1097,7 +1114,7 @@ namespace Phabrico.Http
 
                                         // get AutoLogOutAfterMinutesOfInactivity parameter
                                         string json;
-                                        Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
+                                        Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
                                         if (accountData == null)
                                         {
                                             json = "{\"AutoLogOutAfterMinutesOfInactivity\":1}";
@@ -1186,8 +1203,8 @@ namespace Phabrico.Http
 
                     // separate action parameters from controller parameters
                     string parameterActions = string.Join("&", browser.Request.RawUrl.Split('?', '&').Skip(1));
-                    if (string.IsNullOrEmpty(parameterActions) == false && 
-                        controllerParameters != null && 
+                    if (string.IsNullOrEmpty(parameterActions) == false &&
+                        controllerParameters != null &&
                         controllerParameters.Any() &&
                         controllerParameters.LastOrDefault().Equals(parameterActions)
                        )
@@ -1338,14 +1355,14 @@ namespace Phabrico.Http
                         jsonMessage.Send(browser);
                         return;
                     }
-                    
+
                     if (fileObject != null)
                     {
                         // send file data to browser
                         fileObject.Send(browser);
                         return;
                     }
-                    
+
                     if (script != null)
                     {
                         // send file data to browser
@@ -1445,7 +1462,7 @@ namespace Phabrico.Http
                 else
                 {
                     // take authentication factor from Configuration screen
-                    authenticationFactor = database.GetAuthenticationFactor();
+                    authenticationFactor = database.GetAuthenticationFactor(browser);
                 }
 
                 switch (authenticationFactor)
@@ -1476,15 +1493,16 @@ namespace Phabrico.Http
 
                             // get tokenId from accountinfo
                             database.EncryptionKey = publicEncryptionKey;
-                            Phabricator.Data.Account firstAccount = accountStorage.Get(database).FirstOrDefault();
-                            tokenId = firstAccount.Token;
+                            Phabricator.Data.Account primaryUserAccount = accountStorage.Get(database)
+                                                                                        .FirstOrDefault(account => account.Parameters.AccountType == Phabricator.Data.Account.AccountTypes.PrimaryUser);
+                            tokenId = primaryUserAccount.Token;
 
                             // create new session token (or reuse the one with the same tokenId)
                             token = Session.CreateToken(tokenId, browser);
                             browser.SetCookie("token", token.ID, true);
 
                             // reinitialize session variables
-                            publicEncryptionKey = Encryption.XorString(publicEncryptionKey, firstAccount.PublicXorCipher);
+                            publicEncryptionKey = Encryption.XorString(publicEncryptionKey, primaryUserAccount.PublicXorCipher);
                             token.EncryptionKey = publicEncryptionKey;
                             token.AuthenticationFactor = AuthenticationFactor.Public;
                             Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
@@ -1532,7 +1550,7 @@ namespace Phabrico.Http
                         token.PrivateEncryptionKey = database.PrivateEncryptionKey;
                         token.AuthenticationFactor = AuthenticationFactor.Ownership;
                         Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
-                        Session.ClientSessions[token.ID].Locale =  browser.Language;
+                        Session.ClientSessions[token.ID].Locale = browser.Language;
 
                         // store AuthenticationFactor in database
                         database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
@@ -1554,6 +1572,11 @@ namespace Phabrico.Http
             httpResponse.Theme = database.ApplicationTheme;
 
             httpResponse.Send(browser, "");
+
+            if (httpResponse.Status == Response.HomePage.HomePageStatus.Authenticated)
+            {
+                UpdateUserRoleConfiguration(database);
+            }
         }
 
         /// <summary>
@@ -2007,7 +2030,7 @@ namespace Phabrico.Http
 
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            foreach (WebSocketContext webSocketContext in WebSockets.Where(websocket =>  websocket != null
+            foreach (WebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
                                                                                      && websocket.RequestUri
                                                                                                  .LocalPath
                                                                                                  .TrimEnd('/')
@@ -2043,7 +2066,7 @@ namespace Phabrico.Http
 
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null 
+            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
                                                                                                  && websocket.RequestUri
                                                                                                              .LocalPath
                                                                                                              .TrimEnd('/')
@@ -2075,11 +2098,11 @@ namespace Phabrico.Http
             }
 
             // wait until we're not caching any more
-            while (cacheStatusHttpMessages == CacheState.Busy)
+            for (int timeout=100; timeout > 0 && cacheStatusHttpMessages == CacheState.Busy; timeout--)
             {
                 Thread.Sleep(100);
             }
-            
+
             // dispose all the plugins
             foreach (Plugin.PluginBase plugin in Plugins)
             {
@@ -2088,6 +2111,30 @@ namespace Phabrico.Http
             Plugins.Clear();
 
             numberOfInstancesCreated--;
+        }
+
+        /// <summary>
+        /// Updates the user role configuration in memory
+        /// </summary>
+        /// <param name="database"></param>
+        internal void UpdateUserRoleConfiguration(Storage.Database database)
+        {
+            if (UserRoles == null)
+            {
+                UserRoles = new Dictionary<string, string[]>();
+            }
+
+            lock (UserRoles)
+            {
+                Storage.Account accountStorage = new Storage.Account();
+
+                UserRoles = accountStorage.Get(database)
+                                          .ToDictionary(user => user.UserName,
+                                                        user => (user.Parameters.DefaultUserRoleTag ?? "")
+                                                                               .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+
+                                                       );
+            }
         }
 
         /// <summary>
@@ -2100,6 +2147,127 @@ namespace Phabrico.Http
             bool isMicrosoftInternetExplorer = RegexSafe.IsMatch(userAgent, "([,;(] ?MSIE |Trident)", System.Text.RegularExpressions.RegexOptions.None);
 
             return isMicrosoftInternetExplorer == false;
+        }
+
+        /// <summary>
+        /// Returns true if all given userRoleTags belong to the current user
+        /// </summary>
+        /// <param name="database">Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="phabricatorObject">PhabricatorObject to verify</param>
+        /// <returns></returns>
+        internal bool ValidUserRoles(Storage.Database database, Browser browser, Phabricator.Data.PhabricatorObject phabricatorObject)
+        {
+            Storage.Account accountStorage = new Storage.Account();
+            Phabricator.Data.Account whoAmI = accountStorage.WhoAmI(database, browser);
+            if (whoAmI == null)
+            {
+                // this can happen during unit tests which are running too fast -> this is not critical, so skip it
+                return false;
+            }
+
+            if (whoAmI.Parameters.AccountType == Phabricator.Data.Account.AccountTypes.PrimaryUser)
+            {
+                if (browser.Token.PrivateEncryptionKey != null)
+                {
+                    // primary user has all access
+                    return true;
+                }
+            }
+
+            if (UserRoles == null || UserRoles.ContainsKey(whoAmI.UserName) == false)
+            {
+                UpdateUserRoleConfiguration(database);
+            }
+
+            Dictionary<string, string[]> userRoles;
+            lock (UserRoles)
+            {
+                userRoles = new Dictionary<string, string[]>(UserRoles.Where(kvp => kvp.Value.Any())
+                                                                      .ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+                                                            );
+            }
+
+            if (userRoles.Any())
+            {
+                string[] availableUserRoles = userRoles.SelectMany(kvp => kvp.Value).ToArray();
+
+                string[] myUserRoles;
+                if (userRoles.TryGetValue(whoAmI.UserName, out myUserRoles) == false)
+                {
+                    // can happen when logging in with public account (which is linked to the primary user account)
+                    myUserRoles = new string[0];  // assign no user roles
+                }
+
+                Phabricator.Data.Phriction phrictionDocument = phabricatorObject as Phabricator.Data.Phriction;
+                if (phrictionDocument != null)
+                {
+                    Storage.Phriction phrictionStorage = new Storage.Phriction();
+
+                    string[] pathElements = phrictionDocument.Path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    while (true)
+                    {
+                        string[] phrictionDocumentUserRoleTags = phrictionDocument.Projects
+                                                                                  .Split(',')
+                                                                                  .Where(tag => string.IsNullOrWhiteSpace(tag) == false)
+                                                                                  .ToArray();
+
+                        foreach (string phrictionDocumentUserRoleTag in phrictionDocumentUserRoleTags)
+                        {
+                            if (availableUserRoles.Contains(phrictionDocumentUserRoleTag) &&
+                                myUserRoles.Contains(phrictionDocumentUserRoleTag) == false
+                               )
+                            {
+                                // access denied
+                                return false;
+                            }
+                        }
+
+                        // go to parent document
+                        pathElements = pathElements.Take(pathElements.Length - 1).ToArray();
+                        if (pathElements.Any() == false) break;  // we're at the root -> stop
+
+                        string parentPath = string.Join("/", pathElements) + "/";
+                        phrictionDocument = phrictionStorage.Get(database, parentPath, false);
+                        if (phrictionDocument == null) break;  // parent not document found -> stop
+                    }
+                }
+
+                Phabricator.Data.Maniphest maniphestTask = phabricatorObject as Phabricator.Data.Maniphest;
+                if (maniphestTask != null)
+                {
+                    string[] maniphestTaskUserRoleTags = maniphestTask.Projects
+                                                                      .Split(',')
+                                                                      .Where(tag => string.IsNullOrWhiteSpace(tag) == false)
+                                                                      .ToArray();
+
+                    foreach (string maniphestTaskUserRoleTag in maniphestTaskUserRoleTags)
+                    {
+                        if (availableUserRoles.Contains(maniphestTaskUserRoleTag) &&
+                            myUserRoles.Contains(maniphestTaskUserRoleTag) == false
+                           )
+                        {
+                            // access denied
+                            return false;
+                        }
+                    }
+                }
+
+                Phabricator.Data.Project project = phabricatorObject as Phabricator.Data.Project;
+                if (project != null)
+                {
+                    if (availableUserRoles.Contains(project.Token) &&
+                        myUserRoles.Contains(project.Token) == false
+                       )
+                    {
+                        // access denied
+                        return false;
+                    }
+                }
+            }
+
+            // default: everyone has access
+            return true;
         }
     }
 }

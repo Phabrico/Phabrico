@@ -4,6 +4,9 @@
 msgid "Phabrico"
 msgstr "Phabrico"
 
+msgid "There's a new Phabrico version available"
+msgstr "Er is een nieuwe Phabrico versie beschikbaar"
+
 msgid "Yes"
 msgstr "Ja"
 
@@ -409,7 +412,7 @@ msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
 msgstr "@@PERSON1@@ heeft de taak toegewezen aan @@PERSON2@@"
 
 msgid "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
-msgstr "@@PERSON1@@ de taak opnieuw toegewezen van @@PERSON2@@ naar @@PERSON3@@"
+msgstr "@@PERSON1@@ heeft de taak opnieuw toegewezen van @@PERSON2@@ naar @@PERSON3@@"
 
 msgid "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
 msgstr "@@PERSON@@ veranderde de taakprioriteit van @@PRIORITY1@@ naar @@PRIORITY2@@"
@@ -480,6 +483,9 @@ msgstr "Wordt geëvalueerd"
 msgid "ManiphestStatus.Wontfix"
 msgstr "Wordt niet opgelost"
 
+msgid "This modified task hasn't been uploaded yet to the Phabricator server"
+msgstr "Deze gewijzigde taak is nog niet geupload naar de Phabricator server"
+
 # Phriction
 msgid "Subscribers"
 msgstr "Volgers"
@@ -498,6 +504,9 @@ msgstr "Laatst aangepast door"
 
 msgid "Printable Page"
 msgstr "Afdrukbare pagina"
+
+msgid "Return to web view"
+msgstr "Terug naar webweergave"
 
 msgid "Add to favorites"
 msgstr "Voeg toe aan favorieten"
@@ -632,6 +641,12 @@ msgstr "Bestandsobject"
 
 msgid "Type some text to filter the list of file objects..."
 msgstr "Voer tekst in om de lijst met bestandsobjecten te filteren..."
+
+msgid "File @@FILEID@@ is referenced in:"
+msgstr "Er wordt naar bestand @@FILEID@@ verwezen in:"
+
+msgid "File references"
+msgstr "Bestandsverwijzingen"
 
 # Config
 msgid "Phabricator"
@@ -816,6 +831,30 @@ msgstr "Gematigd"
 
 msgid "Extreme"
 msgstr "Extreem"
+
+msgid "Select a user role tag..."
+msgstr "Selecteer een gebruikersrol tag..."
+
+msgid "User account"
+msgstr "Gebruikersaccount"
+
+msgid "Tag"
+msgstr "Tag"
+
+msgid "Add user"
+msgstr "Gebruiker toevoegen"
+
+msgid "Remove user"
+msgstr "Verwijderen"
+
+msgid "Are you sure you want to remove @@USER@@ ?"
+msgstr "Weet u zeker dat u @@USER@@ wilt verwijderen ?"
+
+msgid "Phabrico user accounts"
+msgstr "Phabrico gebruikersaccounts"
+
+msgid "Secondary User Accounts:"
+msgstr "Accounts voor secundaire gebruikers:"
 
 msgid "Getting started with Phabrico"
 msgstr "Aan de slag met Phabrico"

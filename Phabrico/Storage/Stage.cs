@@ -222,7 +222,7 @@ namespace Phabrico.Storage
         /// <param name="database"></param>
         /// <param name="fileObject"></param>
         /// <returns></returns>
-        public string Edit(Database database, Phabricator.Data.File fileObject)
+        public string Edit(Database database, Phabricator.Data.File fileObject, Browser browser)
         {
             if (fileObject.ID > 0)
             {
@@ -231,7 +231,7 @@ namespace Phabrico.Storage
             }
             else
             {
-                Modify(database, fileObject);
+                Modify(database, fileObject, browser);
                 return fileObject.Token;
             }
         }
@@ -637,7 +637,8 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database"></param>
         /// <param name="modifiedPhabricatorObject"></param>
-        public void Modify(Database database, Phabricator.Data.PhabricatorObject modifiedPhabricatorObject)
+        /// <param name="browser"></param>
+        public void Modify(Database database, Phabricator.Data.PhabricatorObject modifiedPhabricatorObject, Browser browser)
         {
             string operation = "edit";
 
@@ -726,7 +727,7 @@ namespace Phabrico.Storage
                 if (modifiedPhabricatorObject is Phabricator.Data.Phriction)
                 {
                     Storage.Account accountStorage = new Storage.Account();
-                    if (accountStorage.WhoAmI(database).Parameters.DefaultStateModifiedPhriction == Phabricator.Data.Account.DefaultStateModification.Frozen)
+                    if (accountStorage.WhoAmI(database, browser).Parameters.DefaultStateModifiedPhriction == Phabricator.Data.Account.DefaultStateModification.Frozen)
                     {
                         stageData.Frozen = true;
                     }
@@ -739,7 +740,7 @@ namespace Phabrico.Storage
                 if (modifiedPhabricatorObject is Phabricator.Data.Maniphest || modifiedPhabricatorObject is Phabricator.Data.Transaction)
                 {
                     Storage.Account accountStorage = new Storage.Account();
-                    if (accountStorage.WhoAmI(database).Parameters.DefaultStateModifiedManiphest == Phabricator.Data.Account.DefaultStateModification.Frozen)
+                    if (accountStorage.WhoAmI(database, browser).Parameters.DefaultStateModifiedManiphest == Phabricator.Data.Account.DefaultStateModification.Frozen)
                     {
                         stageData.Frozen = true;
                     }
@@ -769,7 +770,7 @@ namespace Phabrico.Storage
             if (stagedPhrictionDocument != null && stagedPhrictionDocument.Token.StartsWith("PHID-NEWTOKEN-"))
             {
                 Phriction phrictionStorage = new Phriction();
-                foreach (Phabricator.Data.Phriction underlyingStagedPhrictionDocument in phrictionStorage.GetHierarchy(database, stagedPhrictionDocument.Token).Children)
+                foreach (Phabricator.Data.Phriction underlyingStagedPhrictionDocument in phrictionStorage.GetHierarchy(database, browser, stagedPhrictionDocument.Token).Children)
                 {
                     Remove(browser, database, underlyingStagedPhrictionDocument);
                 }
@@ -818,7 +819,7 @@ namespace Phabrico.Storage
                         // change the name of this transaction item and save it again
                         indexStagedTransactionName--;
                         newerStagedTransaction.Type = prefixStagedTransactionName + indexStagedTransactionName.ToString();
-                        Modify(database, newerStagedTransaction);
+                        Modify(database, newerStagedTransaction, browser);
                     }
                 }
             }

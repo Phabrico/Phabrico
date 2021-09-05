@@ -66,6 +66,7 @@ namespace Phabrico.Controllers
                                 newAccountData.Token = tokenHash;
                                 newAccountData.UserName = accountDataUserName;
                                 newAccountData.Parameters = new Account.Configuration();
+                                newAccountData.Parameters.AccountType = Account.AccountTypes.PrimaryUser;
                                 newAccountData.Parameters.ColumnHeadersToHide = "".Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                                 newAccountData.Theme = "light";
 
@@ -109,12 +110,16 @@ namespace Phabrico.Controllers
                         {
                             httpResponse.Status = Http.Response.HomePage.HomePageStatus.Authenticated;
                             SessionManager.Token token = httpServer.Session.CreateToken(tokenHash, browser);
-                            UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
 
                             browser.SetCookie("token", token.ID, true);
                             token.EncryptionKey = Encryption.XorString(publicEncryptionKey, publicXorCipher);
-                            token.PrivateEncryptionKey = Encryption.XorString(privateEncryptionKey, privateXorCipher);
                             token.AuthenticationFactor = AuthenticationFactor.Knowledge;
+
+                            UInt64[] privateXorCipher = accountStorage.GetPrivateXorCipher(database, token);
+                            if (privateXorCipher != null)
+                            {
+                                token.PrivateEncryptionKey = Encryption.XorString(privateEncryptionKey, privateXorCipher);
+                            }
                         }
 
                         // send content to browser
@@ -249,8 +254,8 @@ namespace Phabrico.Controllers
                         string newPublicEncryptionKey = Encryption.GenerateEncryptionKey(existingAccount.UserName, newPassword);
                         string newPrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(existingAccount.UserName, newPassword);
                         
-                        UInt64[] newPublicXorValue = GetXorValue(EncryptionKey, newPublicEncryptionKey);
-                        UInt64[] newPrivateXorValue = GetXorValue(database.PrivateEncryptionKey, newPrivateEncryptionKey);
+                        UInt64[] newPublicXorValue = Encryption.GetXorValue(EncryptionKey, newPublicEncryptionKey);
+                        UInt64[] newPrivateXorValue = Encryption.GetXorValue(database.PrivateEncryptionKey, newPrivateEncryptionKey);
 
                         if (accountStorage.UpdateToken(database, currentTokenHash, newTokenHash, newPublicXorValue, newPrivateXorValue))
                         {
@@ -280,31 +285,6 @@ namespace Phabrico.Controllers
 
                 return new JsonMessage(jsonData);
             }
-        }
-
-        /// <summary>
-        /// This function will return the XOR value between 2 strings of the same length
-        /// It is used to calculate the XOR mask between the database encryption key and the (new) password.
-        /// The database encryption key is generated once, based on the first password.
-        /// When the password is changed, the database will not be re-encrypted.
-        /// The XOR-mask is stored in the AccountInfo table
-        /// </summary>
-        /// <param name="decodedString"></param>
-        /// <param name="encodedString"></param>
-        /// <returns></returns>
-        internal static UInt64[] GetXorValue(string decodedString, string encodedString)
-        {
-            UInt64[] result = new UInt64[4];
-
-            for (int i = decodedString.Length - 1; i >= 0; i--)
-            {
-                int xorCharacter = decodedString[i] ^ encodedString[i];
-
-                result[i / 8] <<= 8;
-                result[i / 8] += (UInt64)xorCharacter;
-            }
-
-            return result;
         }
     }
 }

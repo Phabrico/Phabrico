@@ -59,6 +59,10 @@ body {
     min-height: calc(100vh - 70px);
 }
 
+body.full-screen-image {
+    overflow: hidden;
+}
+
 ::-webkit-scrollbar {
     width: 6px;
 }
@@ -505,6 +509,14 @@ select {
     width: 231px;
 }
 
+.phabrico-tooltip {
+    width: 34px;
+    display: inline-block;
+    height: 36px;
+    position: absolute;
+    z-index: -1;
+}
+
 .phabrico-logo {
     margin: 5px 1px -2px 1px;
     height: 40px;
@@ -524,6 +536,10 @@ select {
     font-size: 30px;
 }
 
+.new-version-available .phabrico-tooltip {
+    z-index: 1;
+}
+
 .phabrico-version > a {
     display: none;
 }
@@ -535,6 +551,7 @@ select {
 .new-version-available .phabrico-version > span {
     display: none;
 }
+
 .phabrico-wordmark {
     font-size: 18px;
     position: absolute;
@@ -1645,9 +1662,16 @@ ul.phui-document-hierarchy {
 }
 
 .phui-document-hierarchy > li > a,
-.phui-document-hierarchy-item > li > a {
+.phui-document-hierarchy-item > li > a,
+.phui-document-hierarchy-item > li > span > a {
     text-decoration: none
 }
+
+    .phui-document-hierarchy > li > a:hover,
+    .phui-document-hierarchy-item > li > a:hover,
+    .phui-document-hierarchy-item > li > span > a:hover {
+        text-decoration: underline
+    }
 
 .phui-document-hierarchy-border {
     margin-top: 20px;
@@ -1922,6 +1946,10 @@ span.remarkup-highlight {
 
 .configure tr.setting td input {
     margin-top: 3px;
+}
+
+.configure tr.setting td > div.input-tag > div > input {
+    margin-top: -4px;
 }
 
 label.aphront-form-label
@@ -2223,6 +2251,10 @@ a:focus, a:active {
     display: block;
 }
 
+.configure tr.setting td > div.input-tag > .menu.opened {
+    display: inline-table;
+}
+
 .input-tag > .menu > a > div > .phui-icon-view.phui-font-fa {
     margin-right: 3px;
 }
@@ -2355,6 +2387,7 @@ kbd {
 
 .remarkup-nav-sequence {
     margin-top: 10px;
+    display: inline-block;
 }
 
 .remarkup-nav-sequence-item {
@@ -3122,10 +3155,10 @@ div.color-selector .btnSetColorForAll {
 .image-container.allow-full-screen.full-screen {
     position: fixed;
     overflow: auto;
-    min-width: 100vw;
-    min-height: 100vh;
-    max-width: 100vw;
-    max-height: 100vh;
+    min-width: min(calc(100vw), calc(100%));
+    min-height: min(calc(100vh), calc(100%));
+    max-width: min(calc(100vw), calc(100%));
+    max-height: min(calc(100vh), calc(100%));
     top: 0px;
     left: 0px;
     z-index: 999999;

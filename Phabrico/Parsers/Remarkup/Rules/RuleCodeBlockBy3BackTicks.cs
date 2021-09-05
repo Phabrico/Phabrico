@@ -23,7 +23,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html)
         {
             html = "";
-            Match match = RegexSafe.Match(remarkup, "^```((\\s*(((\\s*lang=([^\n,]*),?)|(\\s*name=([^\n,]*),?)|(\\s*lines=([^\n,]*),?)|(\\s*counterexample\\s*,?))*)?)\r?\n?(.+?(?=```))```)?( *\r?\n|$)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            Match match = RegexSafe.Match(remarkup, "^```(((((\\s*lang=([^\n,]*),?)|(\\s*name=([^\n,]*),?)|(\\s*lines=([^\n,]*),?)|(\\s*counterexample\\s*,?))*)?)\r?\n?(.+?(?=```))```)?( *\r?\n|$)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             if (match.Success == false) return false;
 
             string counterexample = match.Groups[11].Value.Trim(' ', '\r', '\n').ToLower();

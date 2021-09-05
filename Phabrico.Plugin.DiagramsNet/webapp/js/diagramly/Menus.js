@@ -330,7 +330,7 @@
 					!selection.checked, noPages || !pages.checked);
 			}), null, mxResources.get('export'));
 			
-			editorUi.showDialog(dlg.container, 300, 180, true, true);
+			editorUi.showDialog(dlg.container, 300, 200, true, true);
 		}));
 		
 		editorUi.actions.put('exportUrl', new Action(mxResources.get('url') + '...', function()
@@ -363,7 +363,8 @@
 								var result = '<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->\n' +
 									'<!DOCTYPE html>\n<html>\n<head>\n<title>' + mxUtils.htmlEntities(basename) + '</title>\n' +
 									'<meta charset="utf-8"/>\n</head>\n<body>' + html + '\n' + scriptTag + '\n</body>\n</html>';
-								editorUi.saveData(basename + '.html', 'html', result, 'text/html');
+								editorUi.saveData(basename + ((basename.substring(basename.lenth - 7) ==
+									'.drawio') ? '' : '.drawio') + '.html', 'html', result, 'text/html');
 							}));
 					});
 				});
@@ -405,20 +406,80 @@
 					}
 				};
 				
-				var dlgH = 180;
+				var dlgH = 200;
+				var pageCount = 1;
+				var currentPage = null;
 				
 				if (editorUi.pdfPageExport && !noPages)
 				{
 					var allPages = editorUi.addRadiobox(div, 'pages', mxResources.get('allPages'), true);
-					var currentPage = editorUi.addRadiobox(div, 'pages', mxResources.get('currentPage'), false);
+					var pagesRadio = editorUi.addRadiobox(div, 'pages', mxResources.get('pages') + ':', false, null, true);
+
+					var pagesFromInput = document.createElement('input');
+					pagesFromInput.style.cssText = 'margin:0 8px 0 8px;'
+					pagesFromInput.setAttribute('value', '1');
+					pagesFromInput.setAttribute('type', 'number');
+					pagesFromInput.setAttribute('min', '1');
+					pagesFromInput.style.width = '50px';
+					div.appendChild(pagesFromInput);
+					
+					var span = document.createElement('span');
+					mxUtils.write(span, mxResources.get('to'));
+					div.appendChild(span);
+					
+					var pagesToInput = pagesFromInput.cloneNode(true);
+					div.appendChild(pagesToInput);
+
+					mxEvent.addListener(pagesFromInput, 'focus', function()
+					{
+						pagesRadio.checked = true;
+					});
+					
+					mxEvent.addListener(pagesToInput, 'focus', function()
+					{
+						pagesRadio.checked = true;
+					});					
+
+					function validatePageRange()
+					{
+						pagesToInput.value = Math.max(1, Math.min(pageCount, Math.max(parseInt(pagesToInput.value), parseInt(pagesFromInput.value))));
+						pagesFromInput.value = Math.max(1, Math.min(pageCount, Math.min(parseInt(pagesToInput.value), parseInt(pagesFromInput.value))));
+					};
+					
+					mxEvent.addListener(pagesFromInput, 'change', validatePageRange);
+					mxEvent.addListener(pagesToInput, 'change', validatePageRange);
+					
+					if (editorUi.pages != null)
+					{
+						pageCount = editorUi.pages.length;
+			
+						if (editorUi.currentPage != null)
+						{
+							for (var i = 0; i < editorUi.pages.length; i++)
+							{
+								if (editorUi.currentPage == editorUi.pages[i])
+								{
+									currentPage = i + 1;
+									pagesFromInput.value = currentPage;
+									pagesToInput.value = currentPage;
+									break;
+								}
+							}
+						}
+					}
+					
+					pagesFromInput.setAttribute('max', pageCount);
+					pagesToInput.setAttribute('max', pageCount);
+					mxUtils.br(div);
+
 					var selection = editorUi.addRadiobox(div, 'pages', mxResources.get('selectionOnly'), false, graph.isSelectionEmpty());
 					var crop = editorUi.addCheckbox(div, mxResources.get('crop'), false, true);
 					var grid = editorUi.addCheckbox(div, mxResources.get('grid'), false, false);
 					
 					mxEvent.addListener(allPages, 'change', cropEnableFn);
-					mxEvent.addListener(currentPage, 'change', cropEnableFn);
+					mxEvent.addListener(pagesRadio, 'change', cropEnableFn);
 					mxEvent.addListener(selection, 'change', cropEnableFn);
-					dlgH += 60;
+					dlgH += 64;
 				}
 				else
 				{
@@ -440,11 +501,11 @@
 					editorUi.getServiceName() == 'draw.io';
 
 				var transparentBkg = null, include = null;
-					
+				
 				if (EditorUi.isElectronApp || isDrawioWeb)
 				{
-					include = editorUi.addCheckbox(div,
-							mxResources.get('includeCopyOfMyDiagram'), true);
+					include = editorUi.addCheckbox(div, mxResources.get('includeCopyOfMyDiagram'),
+						Editor.defaultIncludeDiagram);
 					dlgH += 30;
 				}
 				
@@ -455,12 +516,25 @@
 					
 					dlgH += 30;
 				}
-				
+
 				var dlg = new CustomDialog(editorUi, div, mxUtils.bind(this, function()
 				{
+					var pageRange = null;
+
+					if (!noPages)
+					{
+						var from = parseInt(pagesFromInput.value);
+						var to = parseInt(pagesToInput.value);
+						pageRange = (!allPages.checked &&
+							(from != currentPage || to != currentPage)) ?
+							{from: Math.max(0, Math.min(pageCount - 1, from - 1)),
+							to: Math.max(0, Math.min(pageCount - 1, to - 1))} : null;
+					}
+					
 					editorUi.downloadFile('pdf', null, null, !selection.checked,
-						noPages? true : !allPages.checked, !crop.checked, transparentBkg != null && transparentBkg.checked, null,
-						null, grid.checked, include != null && include.checked);
+						noPages? true : !allPages.checked && pageRange == null,
+						!crop.checked, transparentBkg != null && transparentBkg.checked, null,
+						null, grid.checked, include != null && include.checked, pageRange);
 				}), null, mxResources.get('export'));
 				editorUi.showDialog(dlg.container, 300, dlgH, true, true);
 			}
@@ -696,7 +770,7 @@
 								addShadow, editable, border, !cropImage, false, null, grid, null,
 								keepTheme, exportType);
 						}
-					}), true, true, 'png', true);
+					}), true, Editor.defaultIncludeDiagram, 'png', true);
 			}
 			else if (!editorUi.isOffline() && (!mxClient.IS_IOS || !navigator.standalone))
 			{
@@ -909,7 +983,7 @@
 					editorUi.exportVisio(!pages.checked);
 				}), null, mxResources.get('export'));
 				
-				editorUi.showDialog(dlg.container, 300, 110, true, true);
+				editorUi.showDialog(dlg.container, 300, 130, true, true);
 			}
 		}));
 		
@@ -1324,7 +1398,7 @@
 					doLayout();
 				});
 				
-				editorUi.showDialog(dlg.container, 355, 125, true, true);
+				editorUi.showDialog(dlg.container, 355, 140, true, true);
 			}, parent, null, isGraphEnabled());
 						
 			menu.addSeparator(parent);
@@ -2111,6 +2185,7 @@
 			}
 		});
 		
+		action.label = mxResources.get('searchShapes');
 		action.setToggleAction(true);
 		action.setSelectedCallback(function() { return editorUi.sidebar.isEntryVisible('search'); });
 		
@@ -2607,7 +2682,7 @@
 						
 						return false;
 					}, null, null, null, null, editorUi.editor.fileExtensions);
-					this.editorUi.showDialog(dlg.container, 340, 90, true, true);
+					this.editorUi.showDialog(dlg.container, 340, 96, true, true);
 					dlg.init();
 				}
 			}

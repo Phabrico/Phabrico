@@ -177,6 +177,11 @@ namespace Phabrico.Controllers
                 Phabricator.Data.Phriction data = phrictionStorage.Get(database, token);
                 if (data != null)
                 {
+                    if (httpServer.ValidUserRoles(database, browser, data) == false)
+                    {
+                        return null;
+                    }
+
                     searchResult = new SearchResult();
                     searchResult.Description = data.Name;
                     searchResult.Path = data.Path;

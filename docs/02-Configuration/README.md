@@ -10,9 +10,9 @@
 | Parameter                      | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
 | Auto log on                    | If set to *Yes*, you won't need to log in with a username and password.<br />However, you won't be able to open this *Config* screen and you won't be able to synchronize with Phabricator.<br />You still need to log in with your username and password.<br />By logging off, you can log in with a user name and password:<br />![image-20210411113417942](configuration-07.png) <br />By using the option *Yes (Windows Authentication)*, you will automatically log in with your Windows account. You won't be able to use the database file on another computer. |
-| Maximum Duration of inactivity | Phabrico disconnects the browser after a period of inactivity.<br />You can configure the time span in here. |
+| Maximum Duration of inactivity | If not configured for *Auto log on*, Phabrico disconnects the browser after a period of inactivity.<br />You can configure the time span in here. |
 | Theme                          | You can choose a light theme or a dark theme.<br />If you choose a dark theme, you get also the option to darken bright images:<br />![image-20210411113755859](configuration-08.png) <br />- *Disabled* keep the bright images as they are<br />- *Moderate* puts some kind of a dark shade over the images. White background will look gray.<br />- *Extreme* tries to invert the bright images but keeps the colors. White will be black, but green for example remains (lighter) green |
-
+| Phabrico user accounts         | You can add some secondary user accounts, which have no relation to Phabricator.<br />By assigning a tag to this user, you can for example limit some wiki pages to specific users.<br />The primary user still has access to everything.<br />The "user-role" tags should be configured in Phabricator.<br />When creating a new secondary user account, the initial password is empty and the user can change this if needed by means of the menu on top.<br />**IMPORTANT:** after assigning tags as user roles, these tags will no longer be visible to users who do not have these tags. |
 
 
 ## Maniphest settings

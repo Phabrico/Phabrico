@@ -44,6 +44,27 @@ namespace Phabrico.Controllers
         }
 
         /// <summary>
+        /// Model for table rows in the client backend
+        /// </summary>
+        public class JsonRecordReferenceData
+        {
+            /// <summary>
+            /// Represents the 'Content' column
+            /// </summary>
+            public string Title { get; set; }
+
+            /// <summary>
+            /// Represents the Fontawesome icon in the 'Content' column
+            /// </summary>
+            public string Type { get; set; }
+
+            /// <summary>
+            /// Link to the modified document or task
+            /// </summary>
+            public string URL { get; set; }
+        }
+
+        /// <summary>
         /// This method is fired when the user clicks on the 'File Object' id in the File-objects screen
         /// or when a file is referenced in a Phriction document or Maniphest task
         /// </summary>
@@ -91,6 +112,147 @@ namespace Phabrico.Controllers
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// This method is fired when the user clicks on the 'File Object' id in the File-objects screen
+        /// or when a file is referenced in a Phriction document or Maniphest task
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="fileObject"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/file/reference")]
+        public Http.Response.HttpMessage HttpGetFileReferences(Http.Server httpServer, Browser browser, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
+        {
+            int fileId;
+            if (parameters.Length == 1 &&
+                Int32.TryParse(parameters[0], out fileId))
+            {
+                Storage.File fileStorage = new Storage.File();
+                Storage.Stage stageStorage = new Storage.Stage();
+
+                SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+
+                using (Storage.Database database = new Storage.Database(EncryptionKey))
+                {
+                    // set private encryption key
+                    database.PrivateEncryptionKey = token.PrivateEncryptionKey;
+
+                    Phabricator.Data.File file = fileStorage.GetByID(database, fileId, true);
+                    if (file == null)
+                    {
+                        file = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileId, false);
+                    }
+
+                    if (file != null)
+                    {
+                        Phabricator.Data.PhabricatorObject[] dependentObjects = database.GetDependentObjects(file.Token).ToArray();
+                        if (dependentObjects.Length == 1)
+                        {
+                            Phabricator.Data.Phriction phrictionDocument = dependentObjects.First() as Phabricator.Data.Phriction;
+                            if (phrictionDocument != null)
+                            {
+                                return new Http.Response.HttpRedirect(httpServer, browser, Http.Server.RootPath + "w/" + phrictionDocument.Path);
+                            }
+
+                            Phabricator.Data.Maniphest maniphestTask = dependentObjects.First() as Phabricator.Data.Maniphest;
+                            if (maniphestTask != null)
+                            {
+                                return new Http.Response.HttpRedirect(httpServer, browser, Http.Server.RootPath + "maniphest/T" + maniphestTask.ID);
+                            }
+                        }
+
+                        htmlViewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "FileReferences", parameters);
+                        htmlViewPage.SetText("FILEID", file.ID.ToString());
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// This method is fired via javascript when the FileReferences detail screen is opened
+        /// It will load all objects which have a reference to a given file and convert them in to a JSON array.
+        /// This JSON array will be shown as a HTML table
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="resultHttpMessage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/file/references/search")]
+        public void HttpGetPopulateFileReferenceTableData(Http.Server httpServer, Browser browser, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
+        {
+            List<JsonRecordReferenceData> tableRows = new List<JsonRecordReferenceData>();
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/file/references/search", "session expired");
+
+            int fileId;
+            if (parameters.Length == 1 &&
+                Int32.TryParse(parameters[0], out fileId))
+            {
+                Storage.File fileStorage = new Storage.File();
+                Storage.Stage stageStorage = new Storage.Stage();
+
+                using (Storage.Database database = new Storage.Database(EncryptionKey))
+                {
+                    Phabricator.Data.File file = fileStorage.GetByID(database, fileId, true);
+                    if (file == null)
+                    {
+                        file = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileId, false);
+                    }
+
+                    if (file != null)
+                    {
+                        foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(file.Token).ToArray())
+                        {
+                            Phabricator.Data.Phriction phrictionDocument = dependentObject as Phabricator.Data.Phriction;
+                            if (phrictionDocument != null)
+                            {
+                                Storage.Phriction phrictionStorage = new Storage.Phriction();
+                                string translatedCrumbs = "";
+                                string internalCrumbs = "";
+                                foreach (string slug in phrictionDocument.Path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    internalCrumbs += slug + "/";
+
+                                    Phabricator.Data.Phriction crumbPhrictionReference = phrictionStorage.Get(database, internalCrumbs);
+                                    if (crumbPhrictionReference != null)  // can be null when parents are not downloaded in commander-export -> these should be ignored
+                                    {
+                                        translatedCrumbs += " > " + crumbPhrictionReference?.Name ?? ConvertPhabricatorUrlPartToDescription(slug);
+                                    }
+                                }
+
+                                JsonRecordReferenceData jsonRecordReferenceData = new JsonRecordReferenceData();
+                                jsonRecordReferenceData.Title = translatedCrumbs.Substring(" > ".Length);
+                                jsonRecordReferenceData.URL = Http.Server.RootPath + "w/" + phrictionDocument.Path;
+                                jsonRecordReferenceData.Type = "fa-book";
+                                tableRows.Add(jsonRecordReferenceData);
+                                continue;
+                            }
+
+                            Phabricator.Data.Maniphest maniphestTask = dependentObject as Phabricator.Data.Maniphest;
+                            if (maniphestTask != null)
+                            {
+                                JsonRecordReferenceData jsonRecordReferenceData = new JsonRecordReferenceData();
+                                jsonRecordReferenceData.Title = maniphestTask.Name;
+                                jsonRecordReferenceData.URL = Http.Server.RootPath + "maniphest/T" + maniphestTask.ID;
+                                jsonRecordReferenceData.Type = "fa-anchor";
+                                tableRows.Add(jsonRecordReferenceData);
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+
+            string jsonData = JsonConvert.SerializeObject(tableRows);
+            resultHttpMessage = new JsonMessage(jsonData);
         }
 
         /// <summary>

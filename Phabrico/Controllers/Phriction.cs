@@ -33,24 +33,6 @@ namespace Phabrico.Controllers
             /// </summary>
             public string Name { get; set; }
         }
-        
-        /// <summary>
-        /// Convert a Phabricator slug (URL) to a readable description.
-        /// This method will only be executed for referenced Phriction documents which haven't been downloaded
-        /// </summary>
-        /// <param name="slug"></param>
-        /// <returns></returns>
-        private string ConvertPhabricatorUrlPartToDescription(string slug)
-        {
-            string[] words = slug.Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-            string result = string.Join(" ", 
-                                        words.Select(
-                                                        word => char.ToUpper(word[0]) + word.Substring(1)
-                                                    )
-                                       );
-            
-            return HttpUtility.UrlDecode(result);
-        }
 
         /// <summary>
         /// Creates a path for a new Phriction document
@@ -135,6 +117,9 @@ namespace Phabrico.Controllers
                 string url = string.Join("/", parameters.TakeWhile(parameter => parameter.StartsWith("?action=") == false));
                 url = url.Split(new string[] { "?" }, StringSplitOptions.None).FirstOrDefault();
                 url = url.TrimEnd('/') + "/";
+
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 Phabricator.Data.Phriction phrictionDocument = null;
 
@@ -242,6 +227,11 @@ namespace Phabrico.Controllers
                     }
                 }
 
+                if (httpServer.ValidUserRoles(database, browser, phrictionDocument) == false)
+                {
+                    throw new Phabrico.Exception.HttpNotFound(phrictionDocument.Path);
+                }
+
                 RemarkupParserOutput remarkupParserOutput;
                 string formattedDocumentContent;
 
@@ -312,7 +302,7 @@ namespace Phabrico.Controllers
                     action.Equals("edit") == false
                    )
                 {
-                    PhrictionDocumentTree documentHierarchy = phrictionStorage.GetHierarchy(database, phrictionDocument.Token);
+                    PhrictionDocumentTree documentHierarchy = phrictionStorage.GetHierarchy(database, browser, phrictionDocument.Token);
                     if (documentHierarchy.Any())
                     {
                         Http.Response.HtmlViewPage documentHierarchyViewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionHierarchy", parameters);
@@ -368,7 +358,7 @@ namespace Phabrico.Controllers
                     }
 
 
-                    Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database);
+                    Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database, browser);
                     if (phrictionStorage.IsFavorite(database, phrictionDocument, currentAccount.UserName))
                     {
                         viewPage.SetText("IS-MEMBER-OF-FAVORITES", "yes");
@@ -590,9 +580,12 @@ namespace Phabrico.Controllers
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 string phrictionToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
                 Phabricator.Data.FavoriteObject[] allFavoriteObjects = favoriteObjectStorage.Get(database).ToArray();
-                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
+                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
                 Phabricator.Data.FavoriteObject favoriteObject = allFavoriteObjects.FirstOrDefault(fav => fav.Token.Equals(phrictionToken) && fav.AccountUserName.Equals(accountData.UserName));
                 if (favoriteObject == null)
                 {
@@ -632,7 +625,10 @@ namespace Phabrico.Controllers
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
+                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
 
                 string[] orderedFavoriteTokens = browser.Session.FormVariables[browser.Request.RawUrl]["tokens"]
                                                                 .Split(',')
@@ -678,7 +674,10 @@ namespace Phabrico.Controllers
             Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
+                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
 
                 string phrictionToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
                 Phabricator.Data.FavoriteObject favoriteObject = favoriteObjectStorage.Get(database, accountData.UserName, phrictionToken);
@@ -711,6 +710,9 @@ namespace Phabrico.Controllers
                 Storage.Phriction phrictionStorage = new Storage.Phriction();
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                     Phabricator.Data.Phriction parentPhrictionDocument = null;
                     string tokenCurrentDocument = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
 
@@ -885,7 +887,7 @@ namespace Phabrico.Controllers
                             modifiedPhrictionDocument.DateModified = DateTimeOffset.UtcNow;
 
                             Stage stageStorage = new Stage();
-                            stageStorage.Modify(database, modifiedPhrictionDocument);
+                            stageStorage.Modify(database, modifiedPhrictionDocument, browser);
 
                             bool doFreezeReferencedFiles = stageStorage.Get(database)
                                                                        .FirstOrDefault(stagedObject => stagedObject.Token.Equals(modifiedPhrictionDocument.Token))

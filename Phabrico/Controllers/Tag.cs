@@ -217,8 +217,9 @@ namespace Phabrico.Controllers
                                                                                  .All(keywordPart => keyword.Name
                                                                                                             .Split(' ', '-', '_')
                                                                                                             .Any(project => project.StartsWith(keywordPart, System.StringComparison.OrdinalIgnoreCase))))
-                                         .Where(token => parameterValues.ContainsKey("tags") == false ||
-                                                         parameterValues["tags"].Contains(token.Token) == false)
+                                         .Where(project => parameterValues.ContainsKey("tags") == false ||
+                                                           parameterValues["tags"].Contains(project.Token) == false)
+                                         .Where(project => httpServer.ValidUserRoles(database, browser, project))
                                          .Take(5)
                                          .ToList();
             }

@@ -9,10 +9,10 @@ class AcceleratorKeys {
             // check if focused element is not a textbox, passwordbox or a textarea field
             if ( Array.prototype.slice.call( document.querySelectorAll('input[type=text],input[type=password],textarea'), 0 ).indexOf( document.activeElement ) )
             {
-                var button = Array.prototype.slice.call(document.querySelectorAll('button', 0))
-                        .find( function(elem) {
-                            return (!!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length )) &&
-                                    elem.dataset.accesskey == evt.key.toUpperCase();
+                var button = Array.prototype.slice.call(document.querySelectorAll('button,a', 0))
+                                  .find( function(elem) {
+                                      return (!!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length )) &&
+                                              elem.dataset.accesskey == evt.key.toUpperCase();
                 });
 
                 if (button) {
@@ -182,6 +182,7 @@ class InputTag {
         var me = this;
 
         this.create = function(input) {
+            var maxNbrTags = parseInt(isNaN(input.dataset.limit) ? 999 : 1);
             input.type = 'hidden';
             input.classList = 'hidden-input-tag';
 
@@ -201,6 +202,10 @@ class InputTag {
                 divFocusContainer.querySelector('input').focus();
             };
             settings.divInputTag.appendChild(divFocusContainer);
+
+            if (maxNbrTags == 1) {
+                divFocusContainer.style.height = '30px';
+            }
 
             var inputText = document.createElement('input');
             inputText.type = 'text';
@@ -250,7 +255,6 @@ class InputTag {
 
             var httpGetTagNames = new XMLHttpRequest();
             var xmlhttpUrl = document.baseURI + input.dataset.url;
-            var maxNbrTags = parseInt( isNaN(input.dataset.limit) ? 999 : 1);
             httpGetTagNames.overrideMimeType("application/json");
             httpGetTagNames.open('GET', xmlhttpUrl + "/get/?tokens=" + tokens, true);
             httpGetTagNames.onload  = function() {
@@ -298,9 +302,16 @@ class InputTag {
 
             var anchorClose = document.createElement('a');
             anchorClose.onclick = function () {
+                var inputTag = this.closest('.input-tag');
+
                 me.delTag(this);
+
                 if (divInputTagFirstChild.children.length == 1) {
-                    me.setInputTextSetting(divInputTagFirstChild.firstElementChild);
+                    me.setInputTextSettings(divInputTagFirstChild.firstElementChild);
+                }
+
+                if (me.onChanged != null) {
+                    me.onChanged(inputTag, inputTag.nextSibling.value);
                 }
             };
             anchorClose.innerHTML = '&times;';
@@ -352,6 +363,10 @@ class InputTag {
                         inputText.selectionStart == 0)
                     {
                         this.delTag(inputText.previousElementSibling.lastElementChild);
+
+                        if (onChanged != null) {
+                            onChanged(inputTag, inputTag.nextSibling.value);
+                        }
                         return;
                     }
                     break;
@@ -365,6 +380,10 @@ class InputTag {
                         if (selectedMenuItem != null) {
                             inputText.value = "";
                             this.addTag(inputTag, selectedMenuItem.name, selectedMenuItem.rel, selectedMenuItem.dataset.icon);
+
+                            if (onChanged != null) {
+                                onChanged(inputTag, inputTag.nextSibling.value);
+                            }
                         }
                         menu.classList.remove('opened');
                     }
@@ -458,6 +477,10 @@ class InputTag {
                             me.addTag(inputTag, this.name, this.rel, this.dataset.icon);
                             inputText.value = '';
                             menu.classList.remove('opened');
+
+                            if (me.onChanged != null) {
+                                me.onChanged(inputTag, inputTag.nextSibling.value);
+                            }
                         };
                         anchor.onmousemove = function(ev) {
                             // remove 'hover' status from all menu items
@@ -513,6 +536,8 @@ class InputTag {
                 this.httpSearchTag.send(null);
             }
         }
+
+        this.onChanged = null;
 
         var inputTagInputs = document.querySelectorAll('input.input-tag');
         for (var i=0; i<inputTagInputs.length; i++) {
@@ -2177,6 +2202,10 @@ function postForm(form, url)
     http.open('POST', url, true);
     http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
     http.onload = function () {
+        if (http.status != 200) {
+            phabrico.autoLogOff.doLogOff();
+        }
+
         if (this.responseText.length > 0) {
             document.body.innerHTML = this.responseText;
         }
@@ -2242,8 +2271,12 @@ function tabChanged(tabButton) {
 }
 
 function toggleFullScreenImage(e) {
-    var imageContainer = e.target;
-    imageContainer.classList.toggle("full-screen");
+    var imageContainer = e.target.closest('div.image-container');
+    if (imageContainer.classList.toggle("full-screen")) {
+        document.body.classList.add('full-screen-image');
+    } else {
+        document.body.classList.remove('full-screen-image');
+    }
 }
 
 function toHTML(text) {

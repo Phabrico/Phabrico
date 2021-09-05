@@ -80,34 +80,32 @@
         </li>
     }@
 
-    @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
-        @{IF @@ACCESS-HIDE-PROJECTS@@=False@
-        <li class="phui-list-item-view">
-            <a href="project/" class="phui-list-item-href tooltip-right">
-                <span class="phui-font-fa fa-briefcase phui-list-item-icon">
-                    <span class="phui-list-item-name">Projects
-                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
-                            <span class="tooltiptext">Projects to be synchronized</span>
-                        }@
-                    </span>
+    @{IF @@ACCESS-HIDE-PROJECTS@@=False@
+    <li class="phui-list-item-view">
+        <a href="project/" class="phui-list-item-href tooltip-right">
+            <span class="phui-font-fa fa-briefcase phui-list-item-icon">
+                <span class="phui-list-item-name">Projects
+                    @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                        <span class="tooltiptext">Projects to be synchronized</span>
+                    }@
                 </span>
-            </a>
-        </li>
-        }@
+            </span>
+        </a>
+    </li>
+    }@
 
-        @{IF @@ACCESS-HIDE-USERS@@=False@
-        <li class="phui-list-item-view">
-            <a href="user/" class="phui-list-item-href tooltip-right">
-                <span class="phui-font-fa fa-users phui-list-item-icon">
-                    <span class="phui-list-item-name">Users
-                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
-                            <span class="tooltiptext">User accounts to be synchronized</span>
-                        }@
-                    </span>
+    @{IF @@ACCESS-HIDE-USERS@@=False@
+    <li class="phui-list-item-view">
+        <a href="user/" class="phui-list-item-href tooltip-right">
+            <span class="phui-font-fa fa-users phui-list-item-icon">
+                <span class="phui-list-item-name">Users
+                    @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                        <span class="tooltiptext">User accounts to be synchronized</span>
+                    }@
                 </span>
-            </a>
-        </li>
-        }@
+            </span>
+        </a>
+    </li>
     }@
 
     @{IF @@ACCESS-HIDE-FILES@@=False@
@@ -124,20 +122,18 @@
         </li>
     }@
 
-    @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
-        @{IF @@ACCESS-HIDE-CONFIG@@=False@
-        <li class="phui-list-item-view">
-            <a href="configure/" class="phui-list-item-href tooltip-right">
-                <span class="phui-font-fa fa-sliders phui-list-item-icon">
-                    <span class="phui-list-item-name">Config
-                        @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
-                            <span class="tooltiptext">Configure Phabrico</span>
-                        }@
-                    </span>
+    @{IF @@ACCESS-HIDE-CONFIG@@=False@
+    <li class="phui-list-item-view">
+        <a href="configure/" class="phui-list-item-href tooltip-right">
+            <span class="phui-font-fa fa-sliders phui-list-item-icon">
+                <span class="phui-list-item-name">Config
+                    @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                        <span class="tooltiptext">Configure Phabrico</span>
+                    }@
                 </span>
-            </a>
-        </li>
-        }@
+            </span>
+        </a>
+    </li>
     }@
 
     @{IF @@ACCESS-HIDE-OFFLINE-CHANGES@@=False@
@@ -154,14 +150,12 @@
         </li>
     }@
 
-    @{IF NOT @@AUTHENTICATION-FACTOR@@=Public@
-        @{IF @@ACCESS-MASTER-DATA@@=True@
+    @{IF @@ACCESS-MASTER-DATA@@=True@
         <li class="phui-list-item-view">
             <div style="margin:20px 5px; text-align:center;">
                 <button class="button-green" name="__synchronize__" type="button" onclick="phabrico.synchronization.confirm()">Synchronize</button>
             </div>
         </li>
-        }@
     }@
     </ul>
 </nav>

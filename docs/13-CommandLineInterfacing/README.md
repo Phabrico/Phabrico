@@ -23,8 +23,7 @@ An example of such JSON config file:
 
     "maniphest": {
         "projectTags": [
-            "PHID-PROJ-y6fw74c2d4z3hevx7eqe",
-            "PHID-PROJ-4qob7cmhhy3fonmsdllq"
+            "instrumental"
         ],
 
         "userTags": null,
@@ -32,30 +31,50 @@ An example of such JSON config file:
 
     "phriction": {
         "projectTags": [
-            "PHID-PROJ-y6fw74c2d4z3hevx7eqe",
-            "PHID-PROJ-4qob7cmhhy3fonmsdllq"
+            "lyrics",
+            "instrumental"
         ],
 
         "userTags": null,
 
         "combined": false,
         "tree": true
-    }
+    },
+
+    "users" : [
+        {
+            "name": "phil",
+            "password": "seymour",
+            "tags": [
+                "ace_of_spades"
+            ]
+        },
+        {
+            "name": "mikkey",
+            "password": "sonor",
+            "tags": [
+                "bomber"
+            ]
+        }
+    ]
 }
 ```
 
-| Parameter                  | Value                                                                                                     |
-|----------------------------|-----------------------------------------------------------------------------------------------------------|
-| `source`                   | address of Phabricator server                                                                             |
-| `destination`              | file which will contain the Phabrico database. You need to use regular slashes instead of backslashes (!) |
-| `username`                 | username to be used in Phabrico                                                                           |
-| `password`                 | password to be used in Phabrico                                                                           |
-| `maniphest/projectTags`    | array of project tags to which the maniphest tasks to be downloaded have to belong to (can be null)       |
-| `maniphest/userTags`       | array of users which are subscribed to the maniphest tasks to be downloaded (can be null)                 |
-| `phriction/projectTags`    | array of project tags to which the phriction documents to be downloaded have to belong to (can be null)   |
-| `phriction/userTags`       | array of users which are subscribed to the phriction documents to be downloaded (can be null)             |
-| `phriction/combined`       | if true, only phriction documents will be downloaded where ALL given projects/users are subscribed to     |
-| `phriction/tree`           | if true, underlying phriction documents will also be downloaded                                           |
+| Parameter                  | Value                                                                                                                                                    |
+|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `source`                   | address of Phabricator server                                                                                                                            |
+| `destination`              | file which will contain the Phabrico database. You need to use regular slashes instead of backslashes (!)                                                |
+| `username`                 | username to be used in Phabrico                                                                                                                          |
+| `password`                 | password to be used in Phabrico                                                                                                                          |
+| `maniphest/projectTags`    | array of project tags to which the maniphest tasks to be downloaded have to belong to (can be null)<br />Where to find these tags, see further below     |
+| `maniphest/userTags`       | array of users which are subscribed to the maniphest tasks to be downloaded (can be null)                                                                |
+| `phriction/projectTags`    | array of project tags to which the phriction documents to be downloaded have to belong to (can be null)<br />Where to find these tags, see further below |
+| `phriction/userTags`       | array of users which are subscribed to the phriction documents to be downloaded (can be null)                                                            |
+| `phriction/combined`       | if true, only phriction documents will be downloaded where ALL given projects/users are subscribed to                                                    |
+| `phriction/tree`           | if true, underlying phriction documents will also be downloaded                                                                                          |
+| `users/name`               | name of secondary user                                                                                                                                   |
+| `users/password`           | password of secondary user. The minimum password requirements are not validated here, but this will happen when you change the password in Phabrico.     |
+| `users/tags`               | array of user role tags. Currently, only 1 user role tag per user is supported.<br />Where to find these user role tags, see further below               |
 
 
 If the JSON data above is stored in a file `c:\temp\phabrico.json` and the command below is executed:
@@ -92,3 +111,9 @@ The newly created Phabrico database file can be configured in the `Phabrico.exe.
 ```
 
 After restarting Phabrico, the new database will be used.
+
+
+The project tags can be retrieved from the URL from the project page in Phabricator itself:
+
+![CommandLineInterfacing-01](CommandLineInterfacing-01.png) <br />
+

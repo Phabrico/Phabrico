@@ -50,7 +50,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     }
 
                     string urlHyperlinkText = "";
-                    if (InvalidUrl(browser, url, ref urlHyperlink, ref urlHyperlinkText))
+                    if (InvalidUrl(database, browser, url, ref urlHyperlink, ref urlHyperlinkText))
                     {
                         html = HttpUtility.HtmlEncode(urlHyperlink);
                     }
@@ -117,7 +117,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     remarkup = remarkup.Substring(match.Length);
 
                     string hyperlinkText = "";
-                    if (InvalidUrl(browser, url, ref hyperlink, ref hyperlinkText))
+                    if (InvalidUrl(database, browser, url, ref hyperlink, ref hyperlinkText))
                     {
                         html = HttpUtility.HtmlEncode(match.Value);
                     }
@@ -294,7 +294,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         }
 
 
-                        if (InvalidUrl(browser, url, ref urlHyperlink, ref urlHyperlinkText))
+                        if (InvalidUrl(database, browser, url, ref urlHyperlink, ref urlHyperlinkText))
                         {
                             if (urlHyperlinkText == null)
                             {
@@ -357,7 +357,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     if (hrefAbsolutePath.Success)
                     {
                         Storage.Account accountStorage = new Storage.Account();
-                        Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
+                        Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
                         if (accountData == null) throw new Exception.AuthorizationException();
 
                         if (hrefAbsolutePath.Groups[1].Value.StartsWith(accountData.PhabricatorUrl.TrimEnd('/') + '/', StringComparison.OrdinalIgnoreCase))
@@ -427,12 +427,13 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <summary>
         /// Verifies if a given URL is valid
         /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
         /// <param name="browser">Reference to browser</param>
         /// <param name="currentUrl">URL from where the relative URL to be validated origins from</param>
         /// <param name="urlHyperlink">Relative URL to be validated</param>
         /// <param name="urlHyperlinkText">Reference text to URL</param>
         /// <returns>True if not valid</returns>
-        private bool InvalidUrl(Browser browser, string currentUrl, ref string urlHyperlink, ref string urlHyperlinkText)
+        private bool InvalidUrl(Storage.Database database, Browser browser, string currentUrl, ref string urlHyperlink, ref string urlHyperlinkText)
         {
             if (bannedLinkedPhrictionDocument) return false;
 
@@ -486,6 +487,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (urlHyperlinkText == null && linkedPhrictionDocument != null)
             {
                 urlHyperlinkText = linkedPhrictionDocument.Name;
+            }
+
+            if (linkedPhrictionDocument != null)
+            {
+                if (browser.HttpServer.ValidUserRoles(database, browser, linkedPhrictionDocument) == false)
+                {
+                    return true;
+                }
             }
 
             return linkedPhrictionDocument == null

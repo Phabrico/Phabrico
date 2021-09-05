@@ -7,6 +7,19 @@ namespace Phabrico.Phabricator.Data
     /// </summary>
     public class Account : PhabricatorObject
     {
+        public enum AccountTypes
+        {
+            /// <summary>
+            /// Role for primary user (=administrator, all access)
+            /// </summary>
+            PrimaryUser = 0,
+
+            /// <summary>
+            /// Role for secondary users (=standard user, limmited access)
+            /// </summary>
+            SecondaryUser = 1
+        }
+
         /// <summary>
         /// How bright or light images in the Dark theme should be darkened
         /// </summary>
@@ -229,6 +242,11 @@ namespace Phabrico.Phabricator.Data
         public class Configuration
         {
             /// <summary>
+            /// Determines the access level of the account
+            /// </summary>
+            public AccountTypes AccountType { get; set; }
+            
+            /// <summary>
             /// If no mouse movement or keyboard activity is detected in the active Phabrico screen for a given number of minutes, the Log In dialog will be shown.
             /// The only exception is when an Edit screen is active (e.g. Edit Phriction Document, Edit Maniphest Task, ...)
             /// If set to 0 or lower, the auto log off functionality is disabled
@@ -262,6 +280,11 @@ namespace Phabrico.Phabricator.Data
             /// Initial state for new Phriction documents
             /// </summary>
             public DefaultStateModification DefaultStateModifiedPhriction { get; set; }
+
+            /// <summary>
+            /// Tag for secondary user accounts which identify the user role to which the user belongs to
+            /// </summary>
+            public string DefaultUserRoleTag { get; set; }
 
             /// <summary>
             /// Phabricator currently doesn't notify if a subscribers or a project tag has been added or removed via the Conduit API.

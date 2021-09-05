@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Phabrico.Data.References;
+using Phabrico.Http;
 using Phabrico.Miscellaneous;
 using System;
 using System.Collections.Generic;
@@ -266,9 +267,10 @@ namespace Phabrico.Storage
         /// Returns a all PhrictionInfo or StageInfo records which are marked as favorite for a given user
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="browser"></param>
         /// <param name="accountUserName"></param>
         /// <returns></returns>
-        public IEnumerable<Phabricator.Data.Phriction> GetFavorites(Database database, string accountUserName)
+        public IEnumerable<Phabricator.Data.Phriction> GetFavorites(Database database, Browser browser, string accountUserName)
         {
             List<Phabricator.Data.Phriction> result = new List<Phabricator.Data.Phriction>();
 
@@ -328,6 +330,7 @@ namespace Phabrico.Storage
 
             // make sure the first item(s) are not favorite-item splitters
             List<Phabricator.Data.Phriction> orderedResult = result.OrderBy(document => document.DisplayOrderInFavorites)
+                                                                   .Where(document => browser.HttpServer.ValidUserRoles(database, browser, document))
                                                                    .ToList();
             while (orderedResult.Any() && orderedResult.FirstOrDefault().DisplayOrderInFavorites > 1)  // first display order should be 1
             {
@@ -355,9 +358,10 @@ namespace Phabrico.Storage
         /// Returns the underlying tree of Phriction documents
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="browser"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public PhrictionDocumentTree GetHierarchy(Database database, string key)
+        public PhrictionDocumentTree GetHierarchy(Database database, Http.Browser browser, string key)
         {
             PhrictionDocumentTree result = new PhrictionDocumentTree();
 
@@ -365,6 +369,7 @@ namespace Phabrico.Storage
             {
                 Phabricator.Data.Phriction childDocument = Get(database, childToken);
                 if (childDocument == null) continue;
+                if (browser.HttpServer.ValidUserRoles(database, browser, childDocument) == false) continue;
 
                 PhrictionDocumentTree childTree = new PhrictionDocumentTree();
                 childTree.Data = childDocument;
@@ -374,6 +379,7 @@ namespace Phabrico.Storage
                 {
                     Phabricator.Data.Phriction grandchildDocument = Get(database, grandchildToken);
                     if (grandchildDocument == null) continue;
+                    if (browser.HttpServer.ValidUserRoles(database, browser, grandchildDocument) == false) continue;
 
                     PhrictionDocumentTree grandchildTree = new PhrictionDocumentTree();
                     grandchildTree.Data = grandchildDocument;

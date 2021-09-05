@@ -86,6 +86,7 @@
 	 * Shortcut for capability check.
 	 */
 	EditorUi.nativeFileSupport = !mxClient.IS_OP && !EditorUi.isElectronApp &&
+		urlParams['extAuth'] != '1' &&
 		'showSaveFilePicker' in window && 'showOpenFilePicker' in window;
 
 	/**
@@ -1196,14 +1197,14 @@
 	 * @param {number} dx X-coordinate of the translation.
 	 * @param {number} dy Y-coordinate of the translation.
 	 */
-	EditorUi.prototype.getXmlFileData = function(ignoreSelection, currentPage, uncompressed)
+	EditorUi.prototype.getXmlFileData = function(ignoreSelection, currentPage, uncompressed, resolveReferences)
 	{
 		ignoreSelection = (ignoreSelection != null) ? ignoreSelection : true;
 		currentPage = (currentPage != null) ? currentPage : false;
 		uncompressed = (uncompressed != null) ? uncompressed : !Editor.compressXml;
 		
 		// Generats graph model XML node for single page export
-		var node = this.editor.getGraphXml(ignoreSelection);
+		var node = this.editor.getGraphXml(ignoreSelection, resolveReferences);
 		
 		if (ignoreSelection && this.fileNode != null && this.currentPage != null)
 		{
@@ -1258,22 +1259,57 @@
 				// Restores order of pages
 				for (var i = 0; i < this.pages.length; i++)
 				{
-					if (this.currentPage != this.pages[i])
+					var page = this.pages[i];
+					var currNode = page.node;
+
+					if (page != this.currentPage)
 					{
-						if (this.pages[i].needsUpdate)
+						if (page.needsUpdate)
 						{
 							var enc = new mxCodec(mxUtils.createXmlDocument());
-							var temp = enc.encode(new mxGraphModel(this.pages[i].root));
-							this.editor.graph.saveViewState(this.pages[i].viewState, temp);
-							EditorUi.removeChildNodes(this.pages[i].node);
-							mxUtils.setTextContent(this.pages[i].node, Graph.compressNode(temp));
+							var temp = enc.encode(new mxGraphModel(page.root));
+							this.editor.graph.saveViewState(page.viewState,
+								temp, null, resolveReferences);
+							EditorUi.removeChildNodes(currNode);
+							mxUtils.setTextContent(currNode, Graph.compressNode(temp));
 
 							// Marks the page as up-to-date
-							delete this.pages[i].needsUpdate;
+							delete page.needsUpdate;
+						}
+						else if (resolveReferences)
+						{
+							this.updatePageRoot(page);
+
+							// Forces update of background page image in offscreen page
+							if (page.viewState.backgroundImage != null)
+							{
+								if (page.viewState.backgroundImage.originalSrc != null)
+								{
+									page.viewState.backgroundImage = this.createImageForPageLink(
+										page.viewState.backgroundImage.originalSrc, page);
+								}
+								else if (Graph.isPageLink(page.viewState.backgroundImage.src))
+								{
+									page.viewState.backgroundImage = this.createImageForPageLink(
+										page.viewState.backgroundImage.src, page);
+								}
+							}
+
+							// Updates the page node
+							if (page.viewState.backgroundImage != null &&
+								page.viewState.backgroundImage.originalSrc != null)
+							{
+								var enc = new mxCodec(mxUtils.createXmlDocument());
+								var temp = enc.encode(new mxGraphModel(page.root));
+								this.editor.graph.saveViewState(page.viewState,
+									temp, null, resolveReferences);
+								currNode = currNode.cloneNode(false);
+								mxUtils.setTextContent(currNode, Graph.compressNode(temp));
+							}
 						}
 					}
 					
-					appendPage(this.pages[i].node);
+					appendPage(currNode);
 				}
 			}
 		}
@@ -1543,8 +1579,8 @@
 	 * @param {number} dx X-coordinate of the translation.
 	 * @param {number} dy Y-coordinate of the translation.
 	 */
-	EditorUi.prototype.getFileData = function(forceXml, forceSvg, forceHtml, embeddedCallback, ignoreSelection,
-		currentPage, node, compact, file, uncompressed)
+	EditorUi.prototype.getFileData = function(forceXml, forceSvg, forceHtml, embeddedCallback,
+		ignoreSelection, currentPage, node, compact, file, uncompressed, resolveReferences)
 	{
 		ignoreSelection = (ignoreSelection != null) ? ignoreSelection : true;
 		currentPage = (currentPage != null) ? currentPage : false;
@@ -1553,9 +1589,9 @@
 		// Forces compression of embedded XML
 		if (forceSvg || (!forceXml && file != null && /(\.svg)$/i.test(file.getTitle())))
 		{
-			uncompressed = false;
 			var darkTheme = graph.themes != null && graph.defaultThemeName == 'darkTheme';
-			
+			uncompressed = false;
+
 			// Exports SVG for first page while other page is visible by creating a graph
 			// LATER: Add caching for the graph or SVG while not on first page
 			// Dark mode requires a refresh that would destroy all handlers
@@ -1584,8 +1620,9 @@
 				graph.model.setRoot(page.root);
 			}
 		}
-		
-		node = (node != null) ? node : this.getXmlFileData(ignoreSelection, currentPage, uncompressed);
+
+		node = (node != null) ? node : this.getXmlFileData(ignoreSelection,
+			currentPage, uncompressed, resolveReferences);
 		file = (file != null) ? file : this.getCurrentFile();
 
 		var result = this.createFileData(node, graph, file, window.location.href,
@@ -1856,8 +1893,12 @@
 		var basename = (file != null && file.getTitle() != null) ? file.getTitle() : this.defaultFilename;
 		
 		if (/(\.xml)$/i.test(basename) || /(\.html)$/i.test(basename) ||
-			/(\.svg)$/i.test(basename) || /(\.png)$/i.test(basename) ||
-			/(\.drawio)$/i.test(basename))
+			/(\.svg)$/i.test(basename) || /(\.png)$/i.test(basename))
+		{
+			basename = basename.substring(0, basename.lastIndexOf('.'));
+		}
+		
+		if (/(\.drawio)$/i.test(basename))
 		{
 			basename = basename.substring(0, basename.lastIndexOf('.'));
 		}
@@ -1879,13 +1920,14 @@
 	 * @param {number} dy Y-coordinate of the translation.
 	 */
 	EditorUi.prototype.downloadFile = function(format, uncompressed, addShadow, ignoreSelection, currentPage,
-		pageVisible, transparent, scale, border, grid, includeXml)
+		pageVisible, transparent, scale, border, grid, includeXml, pageRange)
 	{
 		try
 		{
 			ignoreSelection = (ignoreSelection != null) ? ignoreSelection : this.editor.graph.isSelectionEmpty();
 			var basename = this.getBaseFilename(!currentPage);
-			var filename = basename + '.' + format;
+			var filename = basename + ((format == 'xml' || (format == 'pdf' &&
+				includeXml)) ? '.drawio' : '') + '.' + format;
 			
 			if (format == 'xml')
 			{
@@ -1981,7 +2023,7 @@
 						}
 						
 						var req = this.createDownloadRequest(newTitle, format, ignoreSelection, base64,
-							transparent, currentPage, scale, border, grid, includeXml);
+							transparent, currentPage, scale, border, grid, includeXml, pageRange);
 						this.editor.graph.pageVisible = prev;
 						
 						return req;
@@ -2005,8 +2047,8 @@
 	 * @param {number} dx X-coordinate of the translation.
 	 * @param {number} dy Y-coordinate of the translation.
 	 */
-	EditorUi.prototype.createDownloadRequest = function(filename, format, ignoreSelection, base64, transparent,
-		currentPage, scale, border, grid, includeXml)
+	EditorUi.prototype.createDownloadRequest = function(filename, format, ignoreSelection,
+		base64, transparent, currentPage, scale, border, grid, includeXml, pageRange)
 	{
 		var graph = this.editor.graph;
 		var bounds = graph.getGraphBounds();
@@ -2014,10 +2056,12 @@
 		// Exports only current page for images that does not contain file data, but for
 		// the other formats with XML included or pdf with all pages, we need to send the complete data and use
 		// the from/to URL parameters to specify the page to be exported.
-		var data = this.getFileData(true, null, null, null, ignoreSelection, currentPage == false? false : format != 'xmlpng');
+		var data = this.getFileData(true, null, null, null, ignoreSelection,
+			currentPage == false ? false : format != 'xmlpng', null, null,
+			null, false, format == 'pdf');
 		var range = '';
 		var allPages = '';
-		
+
 		if (bounds.width * bounds.height > MAX_AREA || data.length > MAX_REQUEST_SIZE)
 		{
 			throw {message: mxResources.get('drawingTooLarge')};
@@ -2025,9 +2069,16 @@
 		
 		var embed = (includeXml) ? '1' : '0';
        	
-		if (format == 'pdf' && currentPage == false)
+		if (format == 'pdf')
 		{
-			allPages = '&allPages=1';
+			if (pageRange != null)
+			{
+				allPages = '&from=' + pageRange.from + '&to=' + pageRange.to;
+			}
+			else if (currentPage == false)
+			{
+				allPages = '&allPages=1';
+			}
 		}
 		
        	if (format == 'xmlpng')
@@ -3656,6 +3707,7 @@
 		// Implements the sketch-min UI
 		if (urlParams['sketch'] == '1')
 		{
+			Graph.zoomWheel = true;
 			Graph.prototype.defaultVertexStyle = {'pointerEvents': '0', 'hachureGap': '4'};
 			Graph.prototype.defaultEdgeStyle = {'edgeStyle': 'none', 'rounded': '0', 'curved': '1',
 				'jettySize': 'auto', 'orthogonalLoop': '1', 'endArrow': 'open', 'startSize': '14', 'endSize': '14',
@@ -3963,7 +4015,7 @@
 							{
 								this.loadFile(window.location.hash.substr(1), true);
 							}));
-							this.showDialog(dlg.container, 300, 75, true, true);
+							this.showDialog(dlg.container, 300, 100, true, true);
 						}), mxResources.get('cancel'), mxUtils.bind(this, function()
 						{
 							this.hideDialog();
@@ -4271,8 +4323,10 @@
 	EditorUi.prototype.saveCanvas = function(canvas, xml, format, ignorePageName, dpi)
 	{
 		var ext = ((format == 'jpeg') ? 'jpg' : format);
-		var filename = this.getBaseFilename(ignorePageName) + '.' + ext;
+		var filename = this.getBaseFilename(ignorePageName) +
+			((xml != null) ? '.drawio' : '') + '.' + ext;
    	    var data = this.createImageDataUri(canvas, xml, format, dpi);
+
    	    this.saveData(filename, ext, data.substring(data.lastIndexOf(',') + 1), 'image/' + format, true);
 	};
 	
@@ -4908,7 +4962,7 @@
 					this.editor.graph.addSvgShadow(svgRoot);
 				}
 				
-				var filename = this.getBaseFilename() + '.svg';
+				var filename = this.getBaseFilename() + ((editable) ? '.drawio' : '') + '.svg';
 	
 				var doSave = mxUtils.bind(this, function(svgRoot)
 				{
@@ -5508,7 +5562,7 @@
 				linkSection.getColor(), fit.checked, allPages.checked, layers.checked, lightbox.checked,
 				editSection.getLink());
 		}), null, btnLabel, helpLink);
-		this.showDialog(dlg.container, 340, 384, true, true);
+		this.showDialog(dlg.container, 340, 380, true, true);
 		copyRadio.focus();
 	};
 	
@@ -5665,7 +5719,7 @@
 				layers.checked, (widthInput != null) ? widthInput.value : null,
 				(heightInput != null) ? heightInput.value : null);
 		}), null, mxResources.get('create'), helpLink);
-		this.showDialog(dlg.container, 340, 254 + dy, true, true);
+		this.showDialog(dlg.container, 340, 260 + dy, true, true);
 		
 		if (widthInput != null)
 		{
@@ -5724,7 +5778,8 @@
 		
 		var selection = this.addCheckbox(div, mxResources.get('selectionOnly'), false,
 			this.editor.graph.isSelectionEmpty());
-		var include = (hideInclude) ? null : this.addCheckbox(div, mxResources.get('includeCopyOfMyDiagram'), true);
+		var include = (hideInclude) ? null : this.addCheckbox(div, mxResources.get('includeCopyOfMyDiagram'),
+			Editor.defaultIncludeDiagram);
 		
 		var graph = this.editor.graph;
 		var transparent = (hideInclude) ? null : this.addCheckbox(div, mxResources.get('transparentBackground'),
@@ -5752,12 +5807,12 @@
 	EditorUi.prototype.showExportDialog = function(title, embedOption, btnLabel, helpLink, callback,
 		cropOption, defaultInclude, format, exportOption)
 	{
-		defaultInclude = (defaultInclude != null) ? defaultInclude : true;
+		defaultInclude = (defaultInclude != null) ? defaultInclude : Editor.defaultIncludeDiagram;
 		
 		var div = document.createElement('div');
 		div.style.whiteSpace = 'nowrap';
 		var graph = this.editor.graph;
-		var height = (format == 'jpeg') ? 196 : 300;
+		var height = (format == 'jpeg') ? 200 : 280;
 		
 		var hd = document.createElement('h3');
 		mxUtils.write(hd, title);
@@ -6035,7 +6090,7 @@
 			fn(fit.checked, shadow.checked, image.checked, lightbox.checked,
 				editSection.getLink(), layers.checked);
 		}), null, mxResources.get('embed'), helpLink);
-		this.showDialog(dlg.container, 280, 280, true, true);
+		this.showDialog(dlg.container, 280, 290, true, true);
 	};
 
 	/**
@@ -6855,7 +6910,7 @@
 	 */
 	EditorUi.prototype.updatePageLink = function(mapping, href)
 	{
-		if (href.substring(0, 13) == 'data:page/id,')
+		if (Graph.isPageLink(href))
 		{
 			var newId = mapping[href.substring(href.indexOf(',') + 1)];
 			href = (newId != null) ? 'data:page/id,' + newId : null;
@@ -6872,7 +6927,7 @@
 					{
 						var action = link.actions[i];
 						
-						if (action.open != null && action.open.substring(0, 13) == 'data:page/id,')
+						if (action.open != null && Graph.isPageLink(action.open))
 						{
 							var oldId = action.open.substring(action.open.indexOf(',') + 1);
 							var newId = mapping[oldId];
@@ -8939,9 +8994,9 @@
 		{
 			var result = graphParseBackgroundImage.apply(this, arguments);
 
-			if (result != null && result.src != null && result.src.substring(0, 13) == 'data:page/id,')
+			if (result != null && result.src != null && Graph.isPageLink(result.src))
 			{
-				result = ui.createImageForPageLink(result.src);
+				result = {originalSrc: result.src};
 			}
 
 			return result;
@@ -8954,22 +9009,62 @@
 		{
 			if (img != null && img.originalSrc != null)
 			{
-				img = ui.createImageForPageLink(img.originalSrc);
+				img = ui.createImageForPageLink(img.originalSrc, ui.currentPage);
 			}
 
 			graphSetBackgroundImage.apply(this, arguments);
 		};
 
+		// Updates background to update placeholders for page title
+		this.editor.addListener('pageRenamed', mxUtils.bind(this, function()
+		{
+			graph.refreshBackgroundImage();
+		}));
+
+		// Updates background to update placeholders for page number
+		this.editor.addListener('pageMoved', mxUtils.bind(this, function()
+		{
+			graph.refreshBackgroundImage();
+		}));
+
+		// Updates background image after remote changes to the referenced page
+		this.editor.addListener('pagesPatched', mxUtils.bind(this, function(sender, evt)
+		{
+			var ref = (graph.backgroundImage != null) ? graph.backgroundImage.originalSrc : null;
+
+			if (ref != null)
+			{
+				var comma = ref.indexOf(',');
+				
+				if (comma > 0)
+				{
+					var id = ref.substring(comma + 1);
+					var patches = evt.getProperty('patches');
+
+					for (var i = 0; i < patches.length; i++)
+					{
+						if (patches[i][EditorUi.DIFF_UPDATE][id] != null)
+						{
+							graph.refreshBackgroundImage();
+							graph.view.validateBackgroundImage();
+
+							break;
+						}
+					}
+				}
+			}
+		}));
+
 		// Restores background page references in output data
 		var graphGetBackgroundImageObject = graph.getBackgroundImageObject;
 		
-		graph.getBackgroundImageObject = function(obj)
+		graph.getBackgroundImageObject = function(obj, resolveReferences)
 		{
 			var result = graphGetBackgroundImageObject.apply(this, arguments);
 
-			if (result != null && result.originalSrc != null)
+			if (result != null && result.originalSrc != null && !resolveReferences)
 			{
-				result = {src: result.originalSrc, width: result.width, height: result.height};
+				result = {src: result.originalSrc};
 			}
 
 			return result;
@@ -9866,7 +9961,7 @@
 	{
 		var title = Graph.prototype.getLinkTitle.apply(this, arguments);
 
-		if (href.substring(0, 13) == 'data:page/id,')
+		if (Graph.isPageLink(href))
 		{
 			var comma = href.indexOf(',');
 	
@@ -9897,7 +9992,7 @@
 	 */
 	EditorUi.prototype.handleCustomLink = function(href)
 	{
-		if (href.substring(0, 13) == 'data:page/id,')
+		if (Graph.isPageLink(href))
 		{
 			var comma = href.indexOf(',');
 			var page = this.getPageById(href.substring(comma + 1));
@@ -9999,14 +10094,15 @@
 			/**
 			 * Persists default page format.
 			 */
-			this.editor.graph.pageFormat = mxSettings.getPageFormat();
-			
+			this.editor.graph.pageFormat = (this.editor.graph.defaultPageFormat != null) ?
+				this.editor.graph.defaultPageFormat : mxSettings.getPageFormat();
+
 			this.addListener('pageFormatChanged', mxUtils.bind(this, function(sender, evt)
 			{
 				mxSettings.setPageFormat(this.editor.graph.pageFormat);
 				mxSettings.save();
 			}));
-			
+
 			/**
 			 * Persists default grid color.
 			 */
@@ -13447,7 +13543,7 @@
 			
 			if (pendingLibs == 0) this.spinner.stop();
 		}), null, null, 'https://www.diagrams.net/doc/faq/custom-libraries-confluence-cloud');
-		this.showDialog(dlg.container, 340, 375, true, true, null, null, null, null, true);
+		this.showDialog(dlg.container, 340, 390, true, true, null, null, null, null, true);
 	};
 	
 	//Remote invokation, currently limited to functions in EditorUi (and its sub objects) for security reasons
@@ -13625,7 +13721,7 @@
 		}
 		catch(e)
 		{
-			sendResponse(null, 'Invalid Call: An error occured, ' + e.message);
+			sendResponse(null, 'Invalid Call: An error occurred, ' + e.message);
 		}
 	};
 	

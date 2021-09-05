@@ -910,7 +910,7 @@ EditorUi.initMinimalTheme = function()
 		ui.actions.get('forkme').visible = urlParams['sketch'] != '1';
 		ui.actions.get('downloadDesktop').visible = urlParams['sketch'] != '1';
 
-        var toggleDarkModeAction = ui.actions.put('toggleDarkMode', new Action(mxResources.get('dark'), function()
+        var toggleDarkModeAction = ui.actions.put('toggleDarkMode', new Action(mxResources.get('dark'), function(e)
         {
             ui.setDarkMode(!Editor.darkMode);
         }));
@@ -1308,7 +1308,23 @@ EditorUi.initMinimalTheme = function()
 				ui.menus.addLinkToItem(item, 'https://www.diagrams.net/doc/faq/math-typesetting');
 			}
 			
-            ui.menus.addMenuItems(menu, ['copyConnect', 'collapseExpand', '-', 'pageScale'], parent);
+            ui.menus.addMenuItems(menu, ['copyConnect', 'collapseExpand', '-'], parent);
+
+			var file = ui.getCurrentFile();
+
+			if (file != null && ui.fileNode != null)
+			{
+				var filename = (file.getTitle() != null) ?
+					file.getTitle() : ui.defaultFilename;
+				
+				if (!/(\.html)$/i.test(filename) &&
+					!/(\.svg)$/i.test(filename))
+				{
+					this.addMenuItems(menu, ['properties'], parent);
+				}
+			}
+			
+            ui.menus.addMenuItems(menu, ['pageScale'], parent);
 
 			if (urlParams['sketch'] != '1')
 			{
@@ -1316,7 +1332,7 @@ EditorUi.initMinimalTheme = function()
 			}
 			else
 			{
-				ui.menus.addMenuItems(menu, ['-', 'layers'], parent);
+				ui.menus.addMenuItems(menu, ['pageSetup', '-', 'layers'], parent);
 			}
         })));
 	};
@@ -1362,12 +1378,6 @@ EditorUi.initMinimalTheme = function()
 		if (urlParams['sketch'] == '1')
 		{
 			this.toggleScratchpad();
-			
-			this.editor.graph.isZoomWheelEvent = function(evt)
-			{
-				return !mxEvent.isShiftDown(evt) && !mxEvent.isMetaDown(evt) && !mxEvent.isAltDown(evt) &&
-					(!mxEvent.isControlDown(evt) || mxClient.IS_MAC);
-			};
 		}
 
 		if ((urlParams['sketch'] != '1' && iw >= 1000) || urlParams['clibs'] != null ||
@@ -1732,18 +1742,11 @@ EditorUi.initMinimalTheme = function()
 				{
 					this.scratchpad = null;
 					this.toggleScratchpad();
-					
-					// Refreshes outline window
-					var wnd = ui.actions.outlineWindow;
-					
-					if (wnd != null)
-		            {
-						//ui.actions.outlineWindow.update(true);
-		            }
 				}
 			}
-			
+
 			graph.refresh();
+			graph.refreshBackgroundImage();
 			graph.view.validateBackground()
 		}));
 
@@ -1878,7 +1881,19 @@ EditorUi.initMinimalTheme = function()
 			elt.style.padding = '6px';
 			elt.style.margin = '0px';
 			toolbar.appendChild(elt);
-			
+
+			mxEvent.disableContextMenu(elt);
+
+			mxEvent.addGestureListeners(elt, mxUtils.bind(this, function(evt)
+			{
+				if (mxEvent.isShiftDown(evt) || mxEvent.isAltDown(evt) ||
+					mxEvent.isMetaDown(evt) || mxEvent.isControlDown(evt) ||
+					mxEvent.isPopupTrigger(evt))
+				{
+					this.appIconClicked(evt);
+				}
+			}), null, null);
+
 			ui.statusContainer.style.position = '';
 			ui.statusContainer.style.display = 'none';
 			ui.statusContainer.style.margin = '0px';
@@ -1968,7 +1983,7 @@ EditorUi.initMinimalTheme = function()
 						var elt = addElt(ui.sidebar.createEdgeTemplateFromCells([cell],
 							cell.geometry.width, 40, mxResources.get('arrow'),
 							false, null, true), mxResources.get('arrow'));
-						elt.style.borderBottom = '1px solid lightgray';
+						elt.style.borderBottom = '1px solid ' + (Editor.isDarkMode() ? '#505050' : 'lightgray');
 						elt.style.paddingBottom = '14px';
 						elt.style.marginBottom = '14px';
 				 	})();
@@ -2297,10 +2312,11 @@ EditorUi.initMinimalTheme = function()
         	before = menubar.firstChild;
 	        iw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 	        var small = iw < 1000 || urlParams['sketch'] == '1';
+			var appElt = null;
 	 
 	        if (!small)
 	        {
-	        	addMenu('diagram');
+	        	appElt = addMenu('diagram');
 	        }
 
 			if (urlParams['sketch'] == '1')
@@ -2309,9 +2325,15 @@ EditorUi.initMinimalTheme = function()
 			}
 			else
 			{
-		        createGroup([((small) ? addMenu('diagram', null, IMAGE_PATH + '/drawlogo.svg') : null),
-		        	addMenuItem(mxResources.get('shapes'), ui.actions.get('toggleShapes').funct, null, mxResources.get('shapes'), ui.actions.get('image'),
-	        		(small) ? shapesImage : null),
+				var temp = (small) ? addMenu('diagram', null, IMAGE_PATH + '/drawlogo.svg') : null;
+
+				if (temp != null)
+				{
+					appElt = temp;
+				}
+
+		        createGroup([appElt, addMenuItem(mxResources.get('shapes'), ui.actions.get('toggleShapes').funct, null,
+					mxResources.get('shapes'), ui.actions.get('image'), (small) ? shapesImage : null),
 	       			addMenuItem(mxResources.get('format'), ui.actions.get('toggleFormat').funct, null,
 	       			mxResources.get('format') + ' (' + ui.actions.get('formatPanel').shortcut + ')', ui.actions.get('image'),
 	   				(small) ? formatImage : null)],
@@ -2356,6 +2378,21 @@ EditorUi.initMinimalTheme = function()
 						}
 			        }
 		        }
+			}
+			
+			if (appElt != null)
+			{
+				mxEvent.disableContextMenu(appElt);
+
+				mxEvent.addGestureListeners(appElt, mxUtils.bind(this, function(evt)
+				{
+					if (mxEvent.isShiftDown(evt) || mxEvent.isAltDown(evt) ||
+						mxEvent.isMetaDown(evt) || mxEvent.isControlDown(evt) ||
+						mxEvent.isPopupTrigger(evt))
+					{
+						ui.appIconClicked(evt);
+					}
+				}), null, null);
 			}
 	        
 	        var langMenu = ui.menus.get('language');

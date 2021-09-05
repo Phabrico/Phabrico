@@ -173,9 +173,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
             else
             {
                 Storage.Account accountStorage = new Storage.Account();
-                Account existingAccount = accountStorage.WhoAmI(database);
+                Account existingAccount = accountStorage.WhoAmI(database, browser);
 
-                string[] concealedHeaders = existingAccount.Parameters.ColumnHeadersToHide.Select(columnHeaderToHide => columnHeaderToHide.ToLower()).ToArray();
+                string[] concealedHeaders = existingAccount.Parameters.ColumnHeadersToHide?.Select(columnHeaderToHide => columnHeaderToHide.ToLower()).ToArray() ?? new string[0];
                 List<int> concealedColumnIndices = new List<int>();
                 List<int> concealedHeaderIndices = new List<int>();
 

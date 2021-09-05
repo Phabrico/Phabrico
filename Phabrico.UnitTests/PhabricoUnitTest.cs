@@ -64,9 +64,6 @@ namespace Phabrico.UnitTests
             Database.PrivateEncryptionKey = PrivateEncryptionKey;
             HttpServer = new Http.Server(false, 13468, httpRootPath);
             HttpListenerContext = new Miscellaneous.HttpListenerContext();
-            Token = HttpServer.Session.CreateToken(EncryptionKey, null);
-            Token.EncryptionKey = Encryption.XorString(EncryptionKey, PublicXorCipher);
-            
 
             // initialize database with test content
             Storage.Account accountStorage = new Storage.Account();
@@ -103,6 +100,9 @@ namespace Phabrico.UnitTests
             accountWhoAmI.PrivateXorCipher = PrivateXorCipher;
             accountWhoAmI.UserName = userWhoAmI.UserName;
             accountStorage.Add(Database, accountWhoAmI);
+
+            Token = HttpServer.Session.CreateToken(accountWhoAmI.Token, null);
+            Token.EncryptionKey = Encryption.XorString(EncryptionKey, PublicXorCipher);
 
             Phabricator.Data.Project project = new Phabricator.Data.Project();
             project.DateSynchronized = DateTimeOffset.MinValue;

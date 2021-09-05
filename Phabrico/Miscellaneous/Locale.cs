@@ -209,19 +209,19 @@ namespace Phabrico.Miscellaneous
             }
 
             // translate access keys in buttons
-            MatchCollection buttonTags = RegexSafe.Matches(htmlContent, "[<]button[^>]*data-accesskey=[\"']([^\"'>]*).");
+            MatchCollection buttonTags = RegexSafe.Matches(htmlContent, "[<](a|button)[^>]*data-accesskey=[\"']([^\"'>]*).");
             foreach (Match buttonTag in buttonTags.OfType<Match>().OrderByDescending(m => m.Index))
             {
                 bool noTranslationFound;
-                string translation = TranslateText(buttonTag.Groups[1].Value, locale, out noTranslationFound);
+                string translation = TranslateText(buttonTag.Groups[2].Value, locale, out noTranslationFound);
 
-                htmlContent = htmlContent.Substring(0, buttonTag.Groups[1].Index)
+                htmlContent = htmlContent.Substring(0, buttonTag.Groups[2].Index)
                             + translation
-                            + htmlContent.Substring(buttonTag.Groups[1].Index + buttonTag.Groups[1].Length);
+                            + htmlContent.Substring(buttonTag.Groups[2].Index + buttonTag.Groups[2].Length);
 
                 if (noTranslationFound)
                 {
-                    missingMsgIds.Add(buttonTag.Groups[1].Value);
+                    missingMsgIds.Add(buttonTag.Groups[2].Value);
                 }
             }
 
@@ -239,6 +239,25 @@ namespace Phabrico.Miscellaneous
                 if (noTranslationFound)
                 {
                     missingMsgIds.Add(inputTag.Groups[1].Value);
+                }
+            }
+
+            // translate tooltips
+            MatchCollection tooltips = RegexSafe.Matches(htmlContent, "[<](span|div|a)[^>]*title=\\\"([^\\\">]*)", RegexOptions.Singleline);
+            foreach (Match tooltip in tooltips.OfType<Match>().OrderByDescending(m => m.Index))
+            {
+                if (RegexSafe.IsMatch(tooltip.Groups[2].Value, "^@@[^@]+@@$", RegexOptions.None)) continue;
+
+                bool noTranslationFound;
+                string translation = TranslateText(tooltip.Groups[2].Value, locale, out noTranslationFound);
+
+                htmlContent = htmlContent.Substring(0, tooltip.Groups[2].Index)
+                            + TranslateText(tooltip.Groups[2].Value, locale)
+                            + htmlContent.Substring(tooltip.Index + tooltip.Length);
+
+                if (noTranslationFound)
+                {
+                    missingMsgIds.Add(tooltip.Groups[2].Value);
                 }
             }
 

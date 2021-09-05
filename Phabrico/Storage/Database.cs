@@ -69,22 +69,29 @@ namespace Phabrico.Storage
         {
             get
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (IsConnected)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT theme
                        FROM accountinfo 
                    ", Connection))
-                {
-                    using (var reader = dbCommand.ExecuteReader())
                     {
-                        if (reader.Read() == false)
+                        using (var reader = dbCommand.ExecuteReader())
                         {
-                            return "light";
-                        }
-                        else
-                        {
-                            return (string)reader["theme"];
+                            if (reader.Read() == false)
+                            {
+                                return "light";
+                            }
+                            else
+                            {
+                                return (string)reader["theme"];
+                            }
                         }
                     }
+                }
+                else
+                {
+                    return "light";
                 }
             }
         }
@@ -144,6 +151,11 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
+        /// True if connected to SQLite database
+        /// </summary>
+        public bool IsConnected { get; private set; }
+
+        /// <summary>
         /// The private key for encrypting/decrypting secure parts of the SQLite database
         /// </summary>
         public string PrivateEncryptionKey { get; set; }
@@ -172,24 +184,33 @@ namespace Phabrico.Storage
             sqliteConnectionString.CacheSize = 16777216;
             sqliteConnectionString.FailIfMissing = false;
             sqliteConnectionString.ReadOnly = false;
-            
-            this.Connection = new SQLiteConnection(sqliteConnectionString.ConnectionString);
-            this.Connection.Open();
 
-            if (_dbVersionInDataFile == 0)
+            try
             {
-                string version = GetConfigurationParameter("version");
-                if (string.IsNullOrEmpty(version) == false)
+                this.Connection = new SQLiteConnection(sqliteConnectionString.ConnectionString);
+                this.Connection.Open();
+                this.IsConnected = true;
+
+                if (_dbVersionInDataFile == 0)
                 {
-                    _dbVersionInDataFile = Int32.Parse(version);
+                    string version = GetConfigurationParameter("version");
+                    if (string.IsNullOrEmpty(version) == false)
+                    {
+                        _dbVersionInDataFile = Int32.Parse(version);
+                    }
+                }
+
+                if (_dbVersionInDataFile == 0)
+                {
+                    Initialize();
+
+                    UpgradeIfNeeded();
                 }
             }
-
-            if (_dbVersionInDataFile == 0)
+            catch
             {
-                Initialize();
-
-                UpgradeIfNeeded();
+                // ignore exception, so we can continue to show stacktrace
+                this.IsConnected = false;
             }
         }
 
@@ -448,8 +469,15 @@ namespace Phabrico.Storage
             switch (encryptionMode)
             {
                 case EncryptionMode.None:
-                    dbCommand.Parameters.Add(parameterName, System.Data.DbType.Binary, parameterValue.Length);
-                    dbCommand.Parameters[parameterName].Value = parameterValue;
+                    if (parameterValue == null)
+                    {
+                        dbCommand.Parameters.Add(new SQLiteParameter(parameterName, DBNull.Value));
+                    }
+                    else
+                    {
+                        dbCommand.Parameters.Add(parameterName, System.Data.DbType.Binary, parameterValue.Length);
+                        dbCommand.Parameters[parameterName].Value = parameterValue;
+                    }
                     break;
 
                 case EncryptionMode.Default:
@@ -561,6 +589,7 @@ namespace Phabrico.Storage
         {
             try
             {
+                IsConnected = false;
                 Connection.Close();
             }
             catch
@@ -595,13 +624,22 @@ namespace Phabrico.Storage
         /// <summary>
         /// Returns the way how authentication to Phabrico should be handled
         /// </summary>
+        /// <param name="browser">Reference to browser</param>
         /// <returns></returns>
-        internal AuthenticationFactor GetAuthenticationFactor()
+        internal AuthenticationFactor GetAuthenticationFactor(Browser browser)
         {
             AuthenticationFactor result = GetConfigurationParameter("AuthenticationFactor") ?? AuthenticationFactor.Knowledge;
             if (result == AuthenticationFactor.Public && PrivateEncryptionKey != null)
             {
                 result = AuthenticationFactor.Knowledge;
+            }
+
+            Storage.Account accountStorage = new Storage.Account();
+            Phabricator.Data.Account whoAmI = accountStorage.WhoAmI(this, browser);
+            if (whoAmI != null && whoAmI.Parameters.AccountType == AccountTypes.SecondaryUser)
+            {
+                result = AuthenticationFactor.Experience;
+                browser.Token.AuthenticationFactor = result;
             }
 
             return result;
@@ -1246,7 +1284,7 @@ namespace Phabrico.Storage
                                 referencingManiphestTask.Description = remarkupContent;
 
                                 Stage stageStorage = new Stage();
-                                stageStorage.Modify(this, referencingManiphestTask);
+                                stageStorage.Modify(this, referencingManiphestTask, browser);
                             }
 
                             if (referencingPhrictionDocument != null)
@@ -1254,7 +1292,7 @@ namespace Phabrico.Storage
                                 referencingPhrictionDocument.Content = remarkupContent;
 
                                 Stage stageStorage = new Stage();
-                                stageStorage.Modify(this, referencingPhrictionDocument);
+                                stageStorage.Modify(this, referencingPhrictionDocument, browser);
                             }
                         }
                     }
@@ -1278,7 +1316,7 @@ namespace Phabrico.Storage
                                 referencingManiphestTask.Description = remarkupContent;
 
                                 Stage stageStorage = new Stage();
-                                stageStorage.Modify(this, referencingManiphestTask);
+                                stageStorage.Modify(this, referencingManiphestTask, browser);
                             }
 
                             if (referencingPhrictionDocument != null)
@@ -1286,7 +1324,7 @@ namespace Phabrico.Storage
                                 referencingPhrictionDocument.Content = remarkupContent;
 
                                 Stage stageStorage = new Stage();
-                                stageStorage.Modify(this, referencingPhrictionDocument);
+                                stageStorage.Modify(this, referencingPhrictionDocument, browser);
                             }
                         }
                     }

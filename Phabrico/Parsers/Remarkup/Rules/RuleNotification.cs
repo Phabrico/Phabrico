@@ -42,7 +42,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string notificationType = match.Groups[1].Value.ToLower();
 
 
-                if (NotificationTextShouldBeTranslated(database))
+                if (NotificationTextShouldBeTranslated(database, browser))
                 {
                     notificationText = Locale.TranslateText("Notification." + notificationType.ToUpper(), browser.Session.Locale);
                 }
@@ -83,12 +83,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// </summary>
         /// <param name="browser"></param>
         /// <returns></returns>
-        private bool NotificationTextShouldBeTranslated(Storage.Database database)
+        private bool NotificationTextShouldBeTranslated(Storage.Database database, Browser browser)
         {
             Storage.Account accountStorage = new Storage.Account();
             
-            Phabricator.Data.Account account = accountStorage.WhoAmI(database);
-            return account.Parameters.UITranslation;
+            Phabricator.Data.Account account = accountStorage.WhoAmI(database, browser);
+            if (account == null)
+            {
+                return false;
+            }
+            else
+            {
+                return account.Parameters.UITranslation;
+            }
         }
     }
 }

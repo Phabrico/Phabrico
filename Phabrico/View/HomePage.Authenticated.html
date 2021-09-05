@@ -47,7 +47,7 @@
                             <label class="aphront-form-label">Last synchronized with Phabricator at:</label>
                         </td>
                         <td>
-                            @{IF @@AUTHENTICATION-FACTOR@@=Public@
+                            @{IF @@ACCESS-MASTER-DATA@@=False@
                             @@LAST-SYNCHRONIZATION-TIME@@
                             }@
                             @{ELSE

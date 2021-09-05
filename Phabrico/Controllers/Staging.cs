@@ -88,6 +88,9 @@ namespace Phabrico.Controllers
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 Storage.Stage stage = new Storage.Stage();
                 HtmlPartialViewPage dataViewPage = null;
                 viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "Staging", null);
@@ -146,6 +149,9 @@ namespace Phabrico.Controllers
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
+                    // set private encryption key
+                    database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                     Storage.Project projectStorage = new Storage.Project();
                     Storage.User userStorage = new Storage.User();
 
@@ -316,6 +322,9 @@ namespace Phabrico.Controllers
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 Storage.Stage stageStorage = new Storage.Stage();
                 Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken);
                 Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken);
@@ -422,6 +431,9 @@ namespace Phabrico.Controllers
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 Storage.Stage stageStorage = new Storage.Stage();
                 Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken);
                 Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken);
@@ -534,6 +546,9 @@ namespace Phabrico.Controllers
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 Storage.Stage stageStorage = new Storage.Stage();
                 Phabricator.Data.PhabricatorObject phabricatorObject = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, phabricatorObjectToken, operation);
                 if (phabricatorObject != null)
@@ -619,6 +634,9 @@ namespace Phabrico.Controllers
                     {
                         using (Storage.Database database = new Storage.Database(EncryptionKey))
                         {
+                            // set private encryption key
+                            database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                             Storage.Stage stageStorage = new Storage.Stage();
 
                             if (phabricatorObjectToken.StartsWith(Phabricator.Data.Phriction.Prefix))
@@ -628,7 +646,7 @@ namespace Phabrico.Controllers
                                 {
                                     phrictionDocument.Content = newContent;
 
-                                    stageStorage.Modify(database, phrictionDocument);
+                                    stageStorage.Modify(database, phrictionDocument, browser);
                                 }
 
                                 return;
@@ -641,7 +659,7 @@ namespace Phabrico.Controllers
                                 {
                                     maniphestTask.Description = newContent;
 
-                                    stageStorage.Modify(database, maniphestTask);
+                                    stageStorage.Modify(database, maniphestTask, browser);
                                 }
 
                                 return;

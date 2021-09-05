@@ -22,13 +22,13 @@
                     @{IF @@ACCESS-HIDE-PROJECTS@@=False@
                     <div>
                         <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="tags">Tags</label>
-                        <input id="tags" name="tags" class="input-tag" data-url="/tag" tabindex="2" placeholder="Type a project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-TAGS@@" />
+                        <input id="tags" name="tags" class="input-tag" data-url="tag" tabindex="2" placeholder="Type a project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-TAGS@@" />
                     </div>
                     }@
                     @{IF @@ACCESS-HIDE-USERS@@=False@
                     <div>
                         <label class="aphront-form-label" style="display:inline-block; width:10%; text-align: right; " for="subscribers">Subscribers</label>
-                        <input id="subscribers" name="subscribers" class="input-tag" data-url="/subscriber" tabindex="3" placeholder="Type a user or project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-SUBSCRIBERS@@" />
+                        <input id="subscribers" name="subscribers" class="input-tag" data-url="subscriber" tabindex="3" placeholder="Type a user or project name..." style="margin-top: 4px; width: 89%;" type="text" autofocus="" value="@@DOCUMENT-SUBSCRIBERS@@" />
                     </div>
                     }@
                 }@

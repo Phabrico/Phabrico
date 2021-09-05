@@ -133,11 +133,13 @@ namespace Phabrico.Http.Response
 
                     using (Storage.Database database = new Storage.Database(encryptionKey))
                     {
-                        authenticationFactor = database.GetAuthenticationFactor();
+                        database.PrivateEncryptionKey = token.PrivateEncryptionKey;
+
+                        authenticationFactor = database.GetAuthenticationFactor(browser);
 
                         database.ClearOldSessionVariables(browser);
 
-                        accountData = accountStorage.WhoAmI(database);
+                        accountData = accountStorage.WhoAmI(database, browser);
 
                         // get favorites
                         string htmlFavoriteObjects = "";
@@ -147,7 +149,7 @@ namespace Phabrico.Http.Response
                         List<Phabricator.Data.Phriction> favoritePhrictionDocuments = new List<Phabricator.Data.Phriction>();
                         if (HttpServer.Customization.HidePhrictionFavorites == false)
                         {
-                            favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, accountData.UserName).ToList();
+                            favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, browser, accountData.UserName).ToList();
                         }
 
                         foreach (Phabricator.Data.Phriction favoritePhrictionDocument in favoritePhrictionDocuments)
@@ -289,7 +291,7 @@ namespace Phabrico.Http.Response
                         htmlViewPage.Merge();
                         htmlPartialViewPage = htmlViewPage;
 
-                        accountData = accountStorage.WhoAmI(database);
+                        accountData = accountStorage.WhoAmI(database, browser);
                         userName = accountData.UserName;
 
                         string languageCookie = browser.GetCookie("language");
@@ -327,7 +329,7 @@ namespace Phabrico.Http.Response
                 case HomePageStatus.AuthenticationError:
                     using (Storage.Database database = new Storage.Database(null))
                     {
-                        authenticationFactor = database.GetAuthenticationFactor();
+                        authenticationFactor = database.GetAuthenticationFactor(browser);
 
                         htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.AuthenticationDialog"));
                         htmlPartialViewPage.SetText("REDIRECT", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -370,7 +372,7 @@ namespace Phabrico.Http.Response
                     HtmlViewPage configurationViewPage;
                     using (Storage.Database database = new Storage.Database(configurationController.EncryptionKey))
                     {
-                        authenticationFactor = database.GetAuthenticationFactor();
+                        authenticationFactor = database.GetAuthenticationFactor(browser);
                         token = HttpServer.Session.GetToken(configurationController.TokenId);
                         database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
@@ -437,7 +439,7 @@ namespace Phabrico.Http.Response
                 default:
                     using (Storage.Database database = new Storage.Database(null))
                     {
-                        authenticationFactor = database.GetAuthenticationFactor();
+                        authenticationFactor = database.GetAuthenticationFactor(browser);
 
                         htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.AuthenticationDialog"));
                         htmlPartialViewPage.SetText("REDIRECT", Url, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);

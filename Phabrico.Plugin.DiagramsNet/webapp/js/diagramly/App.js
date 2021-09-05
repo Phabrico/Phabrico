@@ -275,7 +275,7 @@ App.TRELLO_URL = 'https://api.trello.com/1/client.js';
 /**
  * Trello JQuery dependency
  */
-App.TRELLO_JQUERY_URL = 'https://code.jquery.com/jquery-1.7.1.min.js';
+App.TRELLO_JQUERY_URL = 'https://code.jquery.com/jquery-3.3.1.min.js';
 
 /**
  * Specifies the key for the pusher project.
@@ -2092,29 +2092,26 @@ App.prototype.showRatingBanner = function()
 };
 
 /**
- * 
+ * Checks license in the case of Google Drive storage.
+ * IMPORTANT: Do not change this function without consulting 
+ * the privacy lead. No personal information must be sent.
  */
 App.prototype.checkLicense = function()
 {
 	var driveUser = this.drive.getUser();
-	var email = ((urlParams['dev'] == '1') ? urlParams['lic'] : null) ||
-		((driveUser != null) ? driveUser.email : null);
+	var email = (driveUser != null) ? driveUser.email : null;
 	
-	if (!this.isOffline() && !this.editor.chromeless && email != null)
+	if (!this.isOffline() && !this.editor.chromeless && email != null && driveUser.id != null)
 	{
-		// Anonymises the local part of the email address
+		// Only the domain and hashed user ID are transmitted. This code was reviewed and deemed
+		// compliant by dbenson 2021-09-01.
 		var at = email.lastIndexOf('@');
-		var domain = email;
+		var domain = (at >= 0) ? email.substring(at + 1) : '';
+		var userId = Editor.crc32(driveUser.id);
 		
-		if (at >= 0)
-		{
-			domain = email.substring(at + 1);
-			email = Editor.crc32(email.substring(0, at)) + '@' + domain;
-		}
-
 		// Timestamp is workaround for cached response in certain environments
-		mxUtils.post('/license', 'domain=' + encodeURIComponent(domain) + '&email=' + encodeURIComponent(email) + 
-				'&lc=' + encodeURIComponent(driveUser.locale) + '&ts=' + new Date().getTime(),
+		mxUtils.post('/license', 'domain=' + encodeURIComponent(domain) + '&id=' + encodeURIComponent(userId) + 
+				'&ts=' + new Date().getTime(),
 			mxUtils.bind(this, function(req)
 			{
 				try
@@ -2357,7 +2354,8 @@ App.prototype.getThumbnail = function(width, fn)
 		}
 		
 		var graph = this.editor.graph;
-		
+		var bgImg = graph.backgroundImage;
+
 		// Exports PNG for first page while other page is visible by creating a graph
 		// LATER: Add caching for the graph or SVG while not on first page
 		// To avoid refresh during save dark theme uses separate graph instance
@@ -2368,7 +2366,17 @@ App.prototype.getThumbnail = function(width, fn)
 			var graphGetGlobalVariable = graph.getGlobalVariable;
 			graph = this.createTemporaryGraph((darkTheme) ? graph.getDefaultStylesheet() : graph.getStylesheet());
 			var page = this.pages[0];
-			
+
+			if (page.viewState != null && page.viewState != null)
+			{
+				bgImg = page.viewState.backgroundImage;
+				graph.backgroundImage = bgImg;
+			}
+			else if (this.currentPage == this.pages[0])
+			{
+				graph.backgroundImage = bgImg;
+			}
+
 			// Avoids override of stylesheet in getSvg for dark mode
 			if (darkTheme)
 			{
@@ -2417,7 +2425,8 @@ App.prototype.getThumbnail = function(width, fn)
 		   	{
 		   		// Continues with null in error case
 		   		success();
-		   	}, null, null, null, null, null, null, graph);
+		   	}, null, null, null, null, null, null, graph, null, null, null,
+			   null, 'diagram', null);
 		   	
 		   	result = true;
 		}
@@ -2425,8 +2434,18 @@ App.prototype.getThumbnail = function(width, fn)
 		{
 			var canvas = document.createElement('canvas');
 			var bounds = graph.getGraphBounds();
+			var t = graph.view.translate;
+			var s = graph.view.scale;
+
+			if (bgImg != null)
+			{
+				bounds.add(new mxRectangle(
+					(t.x + bgImg.x) * s, (t.y + bgImg.y) * s,
+					bgImg.width * s, bgImg.height * s));
+			}
+
 			var scale = width / bounds.width;
-			
+
 			// Limits scale to 1 or 2 * width / height
 			scale = Math.min(1, Math.min((width * 3) / (bounds.height * 4), scale));
 			
@@ -2456,6 +2475,16 @@ App.prototype.getThumbnail = function(width, fn)
 			ctx.fillRect(x0, y0, Math.ceil(bounds.width + 4), Math.ceil(bounds.height + 4));
 			ctx.restore();
 			
+			// Paints background image
+			if (bgImg != null)
+			{
+				var img = new Image();
+				img.src = bgImg.src;
+
+				ctx.drawImage(img, bgImg.x * scale, bgImg.y * scale,
+					bgImg.width * scale, bgImg.height * scale);
+			}
+			
 			var htmlCanvas = new mxJsCanvas(canvas);
 			
 			// NOTE: htmlCanvas passed into async canvas is only used for image
@@ -2469,7 +2498,7 @@ App.prototype.getThumbnail = function(width, fn)
 			
 			// Render graph
 			var imgExport = new mxImageExport();
-			
+
 			imgExport.drawShape = function(state, canvas)
 			{
 				if (state.shape instanceof mxShape && state.shape.checkBounds())
@@ -7583,5 +7612,8 @@ Editor.prototype.resetGraph = function()
 	editorResetGraph.apply(this, arguments);
 	
 	// Overrides default with persisted value
-	this.graph.pageFormat = mxSettings.getPageFormat();
+	if (this.graph.defaultPageFormat == null)
+	{
+		this.graph.pageFormat = mxSettings.getPageFormat();
+	}
 };

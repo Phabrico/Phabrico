@@ -71,6 +71,24 @@ namespace Phabrico.Controllers
         /// This property is set by means of reflection
         /// </summary>
         public string EncryptionKey { get; set; }
+        
+        /// <summary>
+        /// Convert a Phabricator slug (URL) to a readable description.
+        /// This method will only be executed for referenced Phriction documents which haven't been downloaded
+        /// </summary>
+        /// <param name="slug"></param>
+        /// <returns></returns>
+        protected string ConvertPhabricatorUrlPartToDescription(string slug)
+        {
+            string[] words = slug.Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            string result = string.Join(" ", 
+                                        words.Select(
+                                                        word => char.ToUpper(word[0]) + word.Substring(1)
+                                                    )
+                                       );
+            
+            return HttpUtility.UrlDecode(result);
+        }
 
         /// <summary>
         /// Converts a given Remarkup text to HTML
@@ -219,7 +237,7 @@ namespace Phabrico.Controllers
                     {
                         Storage.User phabricatorUsers = new Storage.User();
                         AccountByToken = phabricatorUsers.Get(database)
-                                                          .ToDictionary(key => key.Token, value => value);
+                                                         .ToDictionary(key => key.Token, value => value);
                     }
                 }
 
@@ -255,7 +273,7 @@ namespace Phabrico.Controllers
                     {
                         Storage.Project phabricatorProjects = new Storage.Project();
                         ProjectByToken = phabricatorProjects.Get(database)
-                                                             .ToDictionary(key => key.Token, value => value);
+                                                            .ToDictionary(key => key.Token, value => value);
                     }
                 }
 

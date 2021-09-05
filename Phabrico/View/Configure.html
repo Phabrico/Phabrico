@@ -83,6 +83,33 @@
                     </td>
                 </tr>
                 }@
+                <tr class="setting PhabricoAccounts" style="visibility:collapse">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label">Phabrico user accounts</label>
+                    </td>
+                    <td colspan="3">
+                        <p class="instructions">Secondary User Accounts:</p>
+                        <div class="config-tables-header">
+                            <div class="config-tables-body">
+                                <a id="btnAddPhabricoAccount" class="button button-gray" style="float:right; padding: 4px 30px 4px 10px;margin-right: 4px;">
+                                    <span class="phui-list-item-icon phui-font-fa fa-plus" style="float:left; margin-top:2px;"></span>
+                                    <div>Add user</div>
+                                </a>
+                            </div>
+                            <div class="scrollableTable" style="height:calc(100vh - 430px);">
+                                <table id="tblPhabricoAccounts" class="aphront-table-view">
+                                    <tbody>
+                                        <tr>
+                                            <th class="wide">User account</th>
+                                            <th class="wide">Tag</th>
+                                            <th class="action">Remove</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
             </table>
         </div>
         }@
@@ -305,6 +332,23 @@
     </form>
 </div>
 
+<div id="dlgYesNo" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 0px; left: calc(50vw - 300px);">
+    <div class="aphront-dialog-overlay"></div>
+    <div class="aphront-dialog-head">
+        <span class="phui-header-header title"></span>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup">
+        <div class="phabrico-remarkup">
+            <p class="message"></p>
+        </div>
+        <br>
+    </div>
+    <div class="aphront-dialog-tail grouped" style="text-align: right;">
+        <a data-accesskey="Button-AccessKey-Yes" href="#" class="button button-blue yes">Yes</a>
+        <a data-accesskey="Button-AccessKey-No" href="#" class="button button-gray no">No</a>
+    </div>
+</div>
+
 @{IF @@IIS-MODULE@@=False@
     @{IF @@SHOW-FIRSTTIME-HELP@@=Yes@
     <style>
@@ -428,6 +472,7 @@
             </div>
         </div>
     </div>
+
     <script>
         var currentHelpPage = 0;
 
@@ -592,21 +637,193 @@
         tblConfidentialHeaders.appendChild(newrow);
     }
 
+
+    function addPhabricoAccountToTable(phabricoAccount) {
+        var newrow = document.createElement('tr');
+        var tdUser = document.createElement('td');
+        var tdTag = document.createElement('td');
+        var tdAction = document.createElement('td');
+        var aAction = document.createElement('a');
+
+        newrow.appendChild(tdUser);
+        newrow.appendChild(tdTag);
+        newrow.appendChild(tdAction);
+        tdAction.appendChild(aAction);
+
+        newrow.classList.add('alternate');
+        tdTag.classList.add('wide');
+        tdTag.style.marginTop = "-1px";
+        tdTag.style.marginBottom = "-8px";
+        tdTag.style.display = "block";
+        tdTag.style.paddingTop = "6px";
+        tdTag.style.paddingBottom = "0px";
+        tdTag.style.paddingLeft = "0px";
+        tdTag.style.paddingRight = "0px";
+        if (typeof phabricoAccount.tagName != "undefined") {
+            phabricoAccount.style.width = "100%";
+            tdUser.appendChild(phabricoAccount);
+            tdUser.colSpan = 3;
+            tdTag.style.display = 'none'
+            tdAction.style.display = 'none';
+
+            setTimeout(function () {
+                phabricoAccount.focus()
+            }, 250);
+
+            phabricoAccount.onblur = function (item) {
+                if (item.target.value == "") {
+                    var tr = item.target.closest('tr');
+                    tr.parentElement.removeChild(tr);
+                } else {
+                    tdUser = item.target.parentElement;
+                    tdTag = tdUser.nextSibling;
+                    tdAction = tdTag.nextSibling;
+
+                    tdUser.removeChild(item.target);
+                    tdUser.innerText = item.target.value;
+                    tdUser.colSpan = 1;
+                    tdTag.style.display = 'table-cell';
+                    tdAction.style.display = 'table-cell';
+
+                    sendUserAccountsToServer();
+
+                    tdTag.querySelector('input').focus();
+                }
+            };
+        }
+
+        var inputTag = document.createElement('input');
+        tdTag.appendChild(inputTag);
+        inputTag.classList.add('input-tag');
+        inputTag.dataset.url = 'tag';
+        inputTag.dataset.limit = 1;
+        inputTag.placeholder = Locale.Translate("Select a user role tag...");
+        inputTag.style.marginTop = "4px";
+        inputTag.style.width = "calc(100% - var(--maniphest-editor-label-width) - 10px);";
+        inputTag.style.type = "text";
+
+        if (typeof phabricoAccount.tagName === "undefined") {
+            tdUser.innerText = phabricoAccount[0];
+            inputTag.value = phabricoAccount[1];
+        }
+
+        tdAction.classList.add('action');
+        aAction.classList.add('button');
+        aAction.classList.add('small');
+        aAction.classList.add('button-gray');
+        aAction.href = '/';
+        aAction.style.minWidth = '50px';
+        aAction.style.position = 'relative';
+        aAction.style.top = '-2px';
+        aAction.innerText = 'Remove';
+        aAction.onclick = function (item) {
+            var button = item.target;
+            var tr = button.closest('tr');
+
+            var title = Locale.Translate("Remove user");
+            var message = toHTML( Locale.Translate("Are you sure you want to remove @@USER@@ ?") );
+            message = message.replace(/@@USER@@/, "<span style='white-space: nowrap;'>" + tdUser.innerHTML + "</span>");
+            showHideConfirmationMessage(true, title, message,
+                                        function() {
+                                            tblPhabricoAccounts.removeChild(tr);
+                                            sendUserAccountsToServer();
+                                            showHideConfirmationMessage(false);
+                                        },
+                                        function() {
+                                            showHideConfirmationMessage(false);
+                                        });
+            return false;
+        };
+
+        tblPhabricoAccounts.appendChild(newrow);
+
+        if (typeof document.body.inputTag != "undefined") {
+            // convert input tag to inputTag
+            var divInputTag = document.body.inputTag.create(inputTag);
+            document.body.inputTag.setInputTextSettings(divInputTag.firstElementChild.firstElementChild);
+        }
+    }
+
+    function inputTagChanged(inputTag, value) {
+        if (inputTag.closest('table').id == "tblPhabricoAccounts") {
+            sendUserAccountsToServer();
+        }
+    }
+
     function sendConfidentialHeadersToServer() {
         // collect all words from configuration-table
-        var allWords =  Array.from( document.querySelectorAll('#tblConfidentialHeaders td.wide') )
-                                .map(function(td) {
-                                    return td.innerText;
-                                });
+        var allWords = Array.from(document.querySelectorAll('#tblConfidentialHeaders td.wide'))
+            .map(function (td) {
+                return td.innerText;
+            });
 
         // send all words to HTTP server
         var xmlhttp = new XMLHttpRequest();
         var data = new FormData();
-        data.append('data',  JSON.stringify(allWords));
+        data.append('data', JSON.stringify(allWords));
 
         xmlhttp.open('POST', "configure/table-headers/", true);
         xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         xmlhttp.send(data);
+    }
+
+    function sendUserAccountsToServer() {
+        // collect all user-accounts from configuration-table
+        var allUserAccounts = Array.from(document.querySelectorAll('#tblPhabricoAccounts > tr'))
+            .map(function (tr) {
+                var cells = Array.prototype.slice.call(tr.querySelectorAll('td'), 0);
+                return {
+                    "user": cells[0].innerText,
+                    "role": cells[1].querySelector('input.hidden-input-tag').value
+                };
+            });
+
+        // send all words to HTTP server
+        var xmlhttp = new XMLHttpRequest();
+        var data = new FormData();
+        data.append('data', JSON.stringify(allUserAccounts));
+
+        xmlhttp.open('POST', "configure/table-useraccounts/", true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }
+
+    function showHideConfirmationMessage(show, title, text, fnYes, fnNo) {
+        if (show) {
+            dlgYesNo.style.display = 'block';
+            document.querySelector('html').style.overflow = 'hidden';
+
+            var btnNo = dlgYesNo.querySelector('.no');
+            var btnYes = dlgYesNo.querySelector('.yes');
+
+            // set title and text
+            dlgYesNo.querySelector('.title').innerText = title;
+            dlgYesNo.querySelector('.message').innerHTML = text;
+
+            // disable all TABs
+            document.querySelectorAll('input, button, a, textarea').forEach(function (input) {
+                input.setAttribute('tabindex', '-1');
+            });
+
+            // fix TABs for dialog
+            btnNo.setAttribute('tabindex', '1');
+            btnYes.setAttribute('tabindex', '2');
+
+            // set functions to buttons
+            btnNo.onclick = function () { fnNo(); return false; }
+            btnYes.onclick = function () { fnYes(); return false; }
+
+            // set focus
+            btnNo.focus();
+        } else {
+            dlgYesNo.style.display = 'none';
+            document.querySelector('html').style.overflow = 'unset';
+
+            // restore all TABs
+            document.querySelectorAll('input, button, a, textarea').forEach(function (input) {
+                input.removeAttribute('tabindex');
+            });
+        }
     }
 
     function inputFieldModified(item) {
@@ -647,6 +864,13 @@
                 document.querySelector('tr.setting.AutoLogOutAfterMinutesOfInactivity').style.visibility = 'collapse';
             } else  {
                 document.querySelector('tr.setting.AutoLogOutAfterMinutesOfInactivity').style.visibility = null;
+            }
+
+            // hide/show "secondary users" parameter
+            if (autoLogon.value == "Windows") {
+                document.querySelector('tr.setting.PhabricoAccounts').style.visibility = 'collapse';
+            } else {
+                document.querySelector('tr.setting.PhabricoAccounts').style.visibility = null;
             }
 
             // hide/show "change password" in user menu
@@ -788,4 +1012,29 @@
 
         addConfidentialWordToTable( textInputField );
     };
+
+    var secondaryUsers = [@@CONFIG-SECONDARY-USERS@@];
+    for (var u in secondaryUsers) {
+        addPhabricoAccountToTable(secondaryUsers[u]);
+    }
+
+    btnAddPhabricoAccount.onclick = function (e) {
+        e.preventDefault();
+
+        // create text input field
+        var textInputField = document.createElement('input');
+        textInputField.addEventListener("keypress", function (e) {
+            var ch = (e.which) ? e.which : event.keyCode;
+            if (ch == 13) {
+                e.preventDefault();
+                e.target.blur();
+            }
+        });
+
+        addPhabricoAccountToTable(textInputField);
+    }
+
+    window.addEventListener('load', function () {
+        document.body.inputTag.onChanged = inputTagChanged;
+    });
 </script>

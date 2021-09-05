@@ -224,6 +224,12 @@
 	Editor.enableCustomProperties = true;
 	
 	/**
+	 * Sets the default value for including a copy of the diagram.
+	 * Default is true.
+	 */
+	 Editor.defaultIncludeDiagram = true;
+
+	/**
 	 * Specifies if custom properties should be enabled.
 	 */
 	Editor.enableServiceWorker = urlParams['pwa'] != '0' &&
@@ -1800,6 +1806,11 @@
 				Editor.compressXml = config.compressXml;
 			}
 			
+			if (config.includeDiagram != null)
+			{
+				Editor.defaultIncludeDiagram = config.includeDiagram;
+			}
+			
 			if (config.simpleLabels != null)
 			{
 				Editor.simpleLabels = config.simpleLabels;
@@ -1876,6 +1887,12 @@
 				Graph.prototype.defaultEdgeStyle = config.defaultEdgeStyle;
 			}
 
+			// Overrides mouse wheel function
+			if (config.zoomWheel != null)
+			{
+				Graph.zoomWheel = config.zoomWheel;
+			}
+
 			// Overrides zoom factor
 			if (config.zoomFactor != null)
 			{
@@ -1897,10 +1914,17 @@
 					mxGraphView.prototype.gridSteps = val;
 				}
 			}
-			
-			if (config.emptyDiagramXml)
+
+			if (config.pageFormat != null)
 			{
-				EditorUi.prototype.emptyDiagramXml = config.emptyDiagramXml;
+				var w = parseInt(config.pageFormat.width);
+				var h = parseInt(config.pageFormat.height);
+
+				if (!isNaN(w) && w > 0 && !isNaN(h) && h > 0)
+				{
+					mxGraph.prototype.defaultPageFormat = new mxRectangle(0, 0, w, h);
+					mxGraph.prototype.pageFormat = mxGraph.prototype.defaultPageFormat;
+				}
 			}
 			
 			if (config.thumbWidth)
@@ -2187,7 +2211,7 @@
 	 * Adds persistent style to file
 	 */
 	var editorGetGraphXml = Editor.prototype.getGraphXml;	
-	Editor.prototype.getGraphXml = function(ignoreSelection)
+	Editor.prototype.getGraphXml = function(ignoreSelection, resolveReferences)
 	{
 		ignoreSelection = (ignoreSelection != null) ? ignoreSelection : true;
 		var node = editorGetGraphXml.apply(this, arguments);
@@ -2198,7 +2222,9 @@
 			node.setAttribute('style', this.graph.currentStyle);
 		}
 
-		var bgImg = this.graph.getBackgroundImageObject(this.graph.backgroundImage);
+		var bgImg = this.graph.getBackgroundImageObject(
+			this.graph.backgroundImage,
+			resolveReferences);
 		
 		// Adds the background image
 		if (bgImg != null)
@@ -5234,6 +5260,11 @@
 							btn.style.border = b + ' ' + (colorset['stroke'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
 									mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff'));
 						}
+
+						if (colorset['title'] != null)
+						{
+							btn.setAttribute('title', colorset['title']);
+						}
 					}
 					else
 					{
@@ -5244,11 +5275,6 @@
 						btn.style.border = '1px solid ' + bd;
 					}
 
-					if (colorset['title'] != null)
-					{
-						btn.setAttribute('title', colorset['title']);
-					}
-					
 					btn.style.borderRadius = '0';
 					
 					picker.appendChild(btn);
@@ -6103,6 +6129,18 @@
 				
 				this.webKitForceRepaintNode = null;
 			}
+		}
+	};
+
+					
+	/**
+	 * Updates the SVG for the background image if it references another page.
+	 */
+	Graph.prototype.refreshBackgroundImage = function()
+	{
+		if (this.backgroundImage != null && this.backgroundImage.originalSrc != null)
+		{
+			this.setBackgroundImage(this.backgroundImage);
 		}
 	};
 	
@@ -7726,9 +7764,9 @@
                 {
 					var img = this.image;
 
-					if (img != null && img.src != null && img.src.substring(0, 13) == 'data:page/id,')
+					if (img != null && img.src != null && Graph.isPageLink(img.src))
 					{
-						img = this.ui.createImageForPageLink(img.src);
+						img = {originalSrc: img.src};
 					}
 
                     this.page.viewState.backgroundImage = img;

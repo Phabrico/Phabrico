@@ -38,6 +38,9 @@ namespace Phabrico.Controllers
         {
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 string remarkupData = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
                 string url = browser.Session.FormVariables[browser.Request.RawUrl]["url"];
 
@@ -1744,6 +1747,9 @@ namespace Phabrico.Controllers
         {
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 RemarkupParserOutput remarkupParserOutput;
                 string remarkupSyntaxLocalizedViewName = "RemarkupSyntax_" + browser.Session.Locale + ".remarkup";
                 HtmlViewPage remarkupViewPage = new HtmlViewPage(httpServer, browser, false, remarkupSyntaxLocalizedViewName, null);

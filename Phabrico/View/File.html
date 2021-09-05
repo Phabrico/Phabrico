@@ -102,8 +102,12 @@ function populateTable(firstCharacters)
                 cell = row.insertCell();
                 cell.classList.add('wide');
                 cell.classList.add('numberOfReferences');
+                anchorSelect = document.createElement('a');
+                anchorSelect.href = "file/reference/" + record.ID + "/";
+                anchorSelect.style.minWidth = "70px";
                 text = document.createTextNode(record.NumberOfReferences);
-                cell.appendChild(text);
+                anchorSelect.appendChild(text);
+                cell.appendChild(anchorSelect);
 
                 cell = row.insertCell();
                 cell.classList.add('wide');

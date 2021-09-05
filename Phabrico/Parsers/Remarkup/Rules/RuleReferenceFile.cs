@@ -34,7 +34,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Storage.File fileStorage = new Storage.File();
             Storage.Stage stageStorage = new Storage.Stage();
 
-            Account existingAccount = accountStorage.WhoAmI(database);
+            Account existingAccount = accountStorage.WhoAmI(database, browser);
 
             int fileObjectID = Int32.Parse(match.Groups[1].Value);
             Dictionary<string, string> fileObjectOptions = match.Groups[2]
@@ -246,7 +246,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Storage.File fileStorage = new Storage.File();
             string imgClass = "";
 
-            if (existingAccount.Theme == "dark" && existingAccount.Parameters.DarkenBrightImages != Account.DarkenImageStyle.Disabled)
+            if (existingAccount != null && existingAccount.Theme == "dark" && existingAccount.Parameters.DarkenBrightImages != Account.DarkenImageStyle.Disabled)
             {
                 // check if file content was also loaded, if not load it
                 if (fileObject.DataStream == null)

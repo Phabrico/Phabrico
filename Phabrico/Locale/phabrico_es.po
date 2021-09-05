@@ -4,6 +4,9 @@
 msgid "Phabrico"
 msgstr "Phabrico"
 
+msgid "There's a new Phabrico version available"
+msgstr "Hay una nueva versión de Phabrico disponible"
+
 msgid "Yes"
 msgstr "Si"
 
@@ -480,6 +483,9 @@ msgstr "Para ser evaluada"
 msgid "ManiphestStatus.Wontfix"
 msgstr "No se resolverá"
 
+msgid "This modified task hasn't been uploaded yet to the Phabricator server"
+msgstr "Esta tarea modificada aún no se ha subido al servidor de Phabricator"
+
 # Phriction
 msgid "Subscribers"
 msgstr "Supervisores"
@@ -498,6 +504,9 @@ msgstr "Modificado por"
 
 msgid "Printable Page"
 msgstr "Página imprimible"
+
+msgid "Return to web view"
+msgstr "Volver a la vista de la web"
 
 msgid "Add to favorites"
 msgstr "Añadir a los favoritos"
@@ -632,6 +641,12 @@ msgstr "Objeto de archivo"
 
 msgid "Type some text to filter the list of file objects..."
 msgstr "Introduce el texto para filtrar la lista de objetos del archivo..."
+
+msgid "File @@FILEID@@ is referenced in:"
+msgstr "El archivo @@FILEID@@ está referenciado en:"
+
+msgid "File references"
+msgstr "Referencias de archivos"
 
 # Config
 msgid "Phabricator"
@@ -816,6 +831,30 @@ msgstr "Moderado "
 
 msgid "Extreme"
 msgstr "Extremo"
+
+msgid "Select a user role tag..."
+msgstr "Seleccione una etiqueta de rol de usuario..."
+
+msgid "User account"
+msgstr "Cuenta de usuario"
+
+msgid "Tag"
+msgstr "Etiqueta"
+
+msgid "Add user"
+msgstr "Añadir usuario"
+
+msgid "Remove user"
+msgstr "Eliminar"
+
+msgid "Are you sure you want to remove @@USER@@ ?"
+msgstr "¿Estás seguro de que quieres eliminar @@USER@@?"
+
+msgid "Phabrico user accounts"
+msgstr "Cuentas de usuario de Phabrico"
+
+msgid "Secondary User Accounts:"
+msgstr "Cuentas de usuario secundarias:"
 
 msgid "Getting started with Phabrico"
 msgstr "Introducción a Phabrico"

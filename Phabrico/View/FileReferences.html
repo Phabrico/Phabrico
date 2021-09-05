@@ -1,0 +1,71 @@
+<div class="app-window">
+    <form id="frmFileSelection" action="" method="POST">
+        <input type="hidden" id="item" name="item">
+        <div class="scrollableTable" style="height:calc(100vh - 173px);">
+            <table id="tblFileReferences" class="aphront-table-view">
+                <thead>
+                    <tr>
+                        <th class="wide">File @@FILEID@@ is referenced in:</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script>
+    populateTable("");
+
+    // set page title
+    document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("File references");
+
+    function populateTable(filterText) {
+        var xmlhttp = new XMLHttpRequest();
+
+        var url = document.baseURI + "file/references/search/@@FILEID@@/";
+
+        xmlhttp.overrideMimeType("application/json");
+        xmlhttp.open('GET', url, true);
+        xmlhttp.onload = function () {
+            if (xmlhttp.readyState != 4) return;
+
+            if (xmlhttp.status != 200) {
+                phabrico.autoLogOff.doLogOff();
+            }
+
+            var tbody = document.querySelector('#tblFileReferences tbody');
+
+            if (tbody == null) return;
+            tbody.innerHTML = "";
+
+            var jsonResponse = JSON.parse(xmlhttp.responseText);
+            jsonResponse.forEach(function (record) {
+                var tbody = document.querySelector('#tblFileReferences tbody');
+
+                // create new row
+                var row = tbody.insertRow();
+                row.classList.add('alternate');
+
+                // add object-icon (maniphest or phriction icon)
+                cell = row.insertCell();
+                cell.classList.add('wide');
+                var anchorURL = document.createElement('a');
+                anchorURL.href = record.URL;
+                anchorURL.className = "url";
+                fontAwesome = document.createElement('i');
+                fontAwesome.classList.add('phui-font-fa');
+                if (record.Type) {
+                    fontAwesome.classList.add(record.Type);
+                }
+                anchorURL.appendChild(fontAwesome);
+
+                // add object title
+                var text = document.createTextNode("  " + record.Title);
+                anchorURL.appendChild(text);
+                cell.appendChild(anchorURL);
+            });
+        };
+        xmlhttp.send(null);
+    }
+</script>

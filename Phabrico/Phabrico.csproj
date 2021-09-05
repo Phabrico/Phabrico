@@ -54,8 +54,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.114.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    <Reference Include="System.Data.SQLite, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\lib\net46\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Security" />
@@ -593,6 +593,7 @@
     </Content>
     <Content Include="Fonts\icomoon.svg" />
     <Content Include="Fonts\SIL Open Font License.txt" />
+    <EmbeddedResource Include="View\FileReferences.html" />
     <EmbeddedResource Include="View\InvalidConfiguration.html" />
     <EmbeddedResource Include="View\HomePage.IFrameContent.html" />
     <EmbeddedResource Include="Scripts\vanilla-picker.min.js" />
@@ -639,10 +640,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets'))" />
-    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
   </Target>
   <Import Project="..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" />
-  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST ..\nugetPackage RD /s /q ..\nugetPackage
 
@@ -667,4 +667,5 @@ WHERE nuget 2&gt;nul || GOTO end
 :end
 SET ERRORLEVEL = 0</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
 </Project>

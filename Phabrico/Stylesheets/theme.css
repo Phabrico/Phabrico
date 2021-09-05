@@ -734,6 +734,16 @@ kbd {
     color: var(--input-tag-div-nth-child-2-a-color);
 }
 
+table.aphront-table-view tr td div.input-tag div.menu a:not(.button) {
+    background: var(--input-tag-div-nth-child-2-a-background);
+    color: var(--input-tag-div-nth-child-2-a-color) !important;
+}
+
+    table.aphront-table-view tr td div.input-tag div.menu a:not(.button):hover {
+        background: var(--input-tag-div-nth-child-2-a-hover-background);
+        color: var(--input-tag-div-nth-child-2-a-hover-color);
+    }
+
 .input-tag > div.menu {
     border-color: var(--menu-border-color);
 }

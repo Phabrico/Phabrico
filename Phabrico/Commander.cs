@@ -32,12 +32,20 @@ namespace Phabrico
                 public bool tree { get; set; } = true;
             }
 
+            public class SecondaryUser
+            {
+                public string name { get; set; }
+                public string password { get; set; }
+                public string[] tags { get; set; }
+            }
+
             public string source { get; set; }
             public string destination { get; set; }
             public string username { get; set; }
             public string password { get; set; }
             public Maniphest maniphest { get; set; }
             public Phriction phriction { get; set; }
+            public SecondaryUser[] users { get; set; }
         }
 
         /// <summary>
@@ -186,6 +194,11 @@ namespace Phabrico
                     // correct file path
                     Configuration.destination = Configuration.destination.Replace("/", "\\");
                 }
+
+                if (Configuration.users == null)
+                {
+                    Configuration.users = new CommanderConfiguration.SecondaryUser[0];
+                }
             }
 
             switch (Action)
@@ -231,8 +244,6 @@ namespace Phabrico
 
                 synchronizationController.browser = new Http.Browser(httpServer, httpListenerContext);
                 synchronizationController.EncryptionKey = Encryption.GenerateEncryptionKey(Configuration.username, Configuration.password);
-                Http.SessionManager.Token token = synchronizationController.browser.HttpServer.Session.CreateToken(synchronizationController.EncryptionKey, synchronizationController.browser);
-                synchronizationController.browser.SetCookie("token", token.ID, true);
 
                 synchronizationController.TokenId = httpServer.Session.ClientSessions.LastOrDefault().Key;
 
@@ -263,15 +274,20 @@ namespace Phabrico
                 synchronizationController.browser.Conduit = new Phabricator.API.Conduit(httpServer, synchronizationParameters.browser);
                 synchronizationController.browser.Conduit.PhabricatorUrl = Configuration.source;
                 synchronizationController.browser.Conduit.Token = ConduitAPIToken;
-                
+
                 database.EncryptionKey = synchronizationController.EncryptionKey;
                 database.PrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(Configuration.username, Configuration.password);
 
+                Http.SessionManager.Token token = synchronizationController.browser.HttpServer.Session.CreateToken(synchronizationParameters.existingAccount.Token, synchronizationController.browser);
+                synchronizationController.browser.SetCookie("token", token.ID, true);
+                token.EncryptionKey = Encryption.XorString(synchronizationParameters.database.EncryptionKey, synchronizationParameters.existingAccount.PublicXorCipher);
+                token.PrivateEncryptionKey = Encryption.XorString(synchronizationParameters.database.PrivateEncryptionKey, synchronizationParameters.existingAccount.PrivateXorCipher);
+                synchronizationController.TokenId = token.ID;
+                synchronizationController.browser.ResetToken(token);
+
                 database.InvalidUrlFound += Database_InvalidUrlFound;
 
-
                 accountStorage.Add(database, synchronizationParameters.existingAccount);
-
 
                 // start download process - phase 1
                 Console.WriteLine();
@@ -282,6 +298,42 @@ namespace Phabrico
                 ConsoleWriteStatus("Downloading users...");
                 synchronizationController.ProgressMethod_DownloadUsers(synchronizationParameters, 0, 0);
 
+                // start create secondary users
+                foreach (CommanderConfiguration.SecondaryUser secondaryUser in Configuration.users)
+                {
+                    string newTokenHash = Encryption.GenerateTokenKey(secondaryUser.name, secondaryUser.password ?? "");
+                    string newPublicEncryptionKey = Encryption.GenerateEncryptionKey(secondaryUser.name, secondaryUser.password ?? "");
+
+                    Phabricator.Data.Account newUserAccount = new Phabricator.Data.Account();
+                    newUserAccount.UserName = secondaryUser.name;
+                    newUserAccount.Token = newTokenHash;
+                    newUserAccount.PublicXorCipher = Encryption.GetXorValue(database.EncryptionKey, newPublicEncryptionKey);
+                    newUserAccount.PrivateXorCipher = null;
+                    newUserAccount.DpapiXorCipher1 = null;
+                    newUserAccount.DpapiXorCipher2 = null;
+                    newUserAccount.ConduitAPIToken = "";
+                    newUserAccount.PhabricatorUrl = "";
+                    newUserAccount.Theme = "light";
+                    newUserAccount.Parameters = new Phabricator.Data.Account.Configuration();
+                    newUserAccount.Parameters.AccountType = Phabricator.Data.Account.AccountTypes.SecondaryUser;
+                    newUserAccount.Parameters.DefaultUserRoleTag = "";
+                    if (secondaryUser.tags != null)
+                    {
+                        foreach (string tag in secondaryUser.tags)
+                        {
+                            Phabricator.Data.Project userRoleTag = projectStorage.Get(database, tag);
+                            if (userRoleTag != null)
+                            {
+                                newUserAccount.Parameters.DefaultUserRoleTag += userRoleTag.Token + ",";
+                            }
+                        }
+
+                        newUserAccount.Parameters.DefaultUserRoleTag = newUserAccount.Parameters.DefaultUserRoleTag.TrimEnd(',');
+                    }
+                    accountStorage.Add(database, newUserAccount);
+                }
+
+                // continue download process - phase 2
                 synchronizationParameters.projectSelected[Phabricator.Data.Project.None] = Phabricator.Data.Project.Selection.Unselected;
                 synchronizationParameters.userSelected[Phabricator.Data.User.None] = false;
 
@@ -336,7 +388,7 @@ namespace Phabrico
                     }
                 }
 
-                // continue download process - phase 2
+                // continue download process - phase 3
                 if ((Configuration.maniphest.projectTags != null && Configuration.maniphest.projectTags.Any()) || 
                     (Configuration.maniphest.userTags != null && Configuration.maniphest.userTags.Any()))
                 {

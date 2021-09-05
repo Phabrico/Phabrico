@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\LibGit2Sharp.NativeBinaries.2.0.312\build\net46\LibGit2Sharp.NativeBinaries.props" Condition="Exists('..\packages\LibGit2Sharp.NativeBinaries.2.0.312\build\net46\LibGit2Sharp.NativeBinaries.props')" />
+  <Import Project="..\packages\LibGit2Sharp.NativeBinaries.2.0.314\build\net46\LibGit2Sharp.NativeBinaries.props" Condition="Exists('..\packages\LibGit2Sharp.NativeBinaries.2.0.314\build\net46\LibGit2Sharp.NativeBinaries.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -43,15 +43,15 @@
       <HintPath>..\packages\CredentialManagement.1.0.2\lib\net35\CredentialManagement.dll</HintPath>
     </Reference>
     <Reference Include="LibGit2Sharp, Version=0.27.0.0, Culture=neutral, PublicKeyToken=7cbde695407f0333, processorArchitecture=MSIL">
-      <HintPath>..\packages\LibGit2Sharp.0.27.0-preview-0096\lib\netstandard2.0\LibGit2Sharp.dll</HintPath>
+      <HintPath>..\packages\LibGit2Sharp.0.27.0-preview-0116\lib\netstandard2.0\LibGit2Sharp.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.114.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    <Reference Include="System.Data.SQLite, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\lib\net46\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
@@ -122,9 +122,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets'))" />
-    <Error Condition="!Exists('..\packages\LibGit2Sharp.NativeBinaries.2.0.312\build\net46\LibGit2Sharp.NativeBinaries.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LibGit2Sharp.NativeBinaries.2.0.312\build\net46\LibGit2Sharp.NativeBinaries.props'))" />
-    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+    <Error Condition="!Exists('..\packages\LibGit2Sharp.NativeBinaries.2.0.314\build\net46\LibGit2Sharp.NativeBinaries.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\LibGit2Sharp.NativeBinaries.2.0.314\build\net46\LibGit2Sharp.NativeBinaries.props'))" />
+    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
   </Target>
   <Import Project="..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" />
-  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
 </Project>

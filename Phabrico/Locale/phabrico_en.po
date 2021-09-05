@@ -4,6 +4,9 @@
 msgid "Phabrico"
 msgstr "Phabrico"
 
+msgid "There's a new Phabrico version available"
+msgstr "There's a new Phabrico version available"
+
 msgid "Yes"
 msgstr "Yes"
 
@@ -480,6 +483,9 @@ msgstr "To be QAd"
 msgid "ManiphestStatus.Wontfix"
 msgstr "Wontfix"
 
+msgid "This modified task hasn't been uploaded yet to the Phabricator server"
+msgstr "This modified task hasn't been uploaded yet to the Phabricator server"
+
 # Phriction
 msgid "Subscribers"
 msgstr "Subscribers"
@@ -498,6 +504,9 @@ msgstr "Last modified by"
 
 msgid "Printable Page"
 msgstr "Printable Page"
+
+msgid "Return to web view"
+msgstr "Return to web view"
 
 msgid "Add to favorites"
 msgstr "Add to favorites"
@@ -632,6 +641,12 @@ msgstr "File object"
 
 msgid "Type some text to filter the list of file objects..."
 msgstr "Type some text to filter the list of file objects..."
+
+msgid "File @@FILEID@@ is referenced in:"
+msgstr "File @@FILEID@@ is referenced in:"
+
+msgid "File references"
+msgstr "File references"
 
 # Config
 msgid "Phabricator"
@@ -816,6 +831,30 @@ msgstr "Moderate"
 
 msgid "Extreme"
 msgstr "Extreme"
+
+msgid "Select a user role tag..."
+msgstr "Select a user role tag..."
+
+msgid "User account"
+msgstr "User account"
+
+msgid "Tag"
+msgstr "Tag"
+
+msgid "Add user"
+msgstr "Add user"
+
+msgid "Remove user"
+msgstr "Remove user"
+
+msgid "Are you sure you want to remove @@USER@@ ?"
+msgstr "Are you sure you want to remove @@USER@@ ?"
+
+msgid "Phabrico user accounts"
+msgstr "Phabrico user accounts"
+
+msgid "Secondary User Accounts:"
+msgstr "Secondary User Accounts:"
 
 msgid "Getting started with Phabrico"
 msgstr "Getting started with Phabrico"

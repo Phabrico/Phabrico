@@ -1,9 +1,10 @@
 ﻿# Customization
 
-Phabrico can be installed as a customizable HTTP module in IIS.
+Phabrico can be installed as a customizable HTTP module in IIS by means of Nuget packages.
 
 ## Quick guide
 Basically you need to implement the following things:
+- a NuGet reference to the Phabrico package (and Phabrico plugin packages if needed)
 - a class that inherits from `IHttpModule`
 - a static reference to `Phabrico.Http.Server`
 - a static constructor in which you initialize and customize Phabrico by means of the `Customization` object
@@ -22,10 +23,11 @@ The parameters for the `Phabrico.Http.Server` constuctor should be:
 An exampe in C#:
 
 ``` cs
+using Phabrico;
 using System.Drawing;
 using System.Web;
 
-namespace Phabrico
+namespace My.Wiki
 {
     public class IISModule : IHttpModule
     {

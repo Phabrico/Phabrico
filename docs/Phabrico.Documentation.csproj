@@ -102,6 +102,7 @@ RD /S /Q bin
     <Content Include="12-Customization\Customization-01.png" />
     <Content Include="12-Customization\Customization-02.png" />
     <Content Include="12-Customization\Customization-03.png" />
+    <Content Include="13-CommandLineInterfacing\CommandLineInterfacing-01.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using Phabrico.Phabricator.Data;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -28,14 +29,38 @@ namespace Phabrico.Storage
                 byte[] publicXorCipherBytes = new byte[account.PublicXorCipher.Length * 8];
                 Buffer.BlockCopy(account.PublicXorCipher, 0, publicXorCipherBytes, 0, publicXorCipherBytes.Length);
 
-                byte[] privateXorCipherBytes = new byte[account.PrivateXorCipher.Length * 8];
-                Buffer.BlockCopy(account.PrivateXorCipher, 0, privateXorCipherBytes, 0, privateXorCipherBytes.Length);
+                byte[] privateXorCipherBytes;
+                if (account.PrivateXorCipher == null)
+                {
+                    privateXorCipherBytes = null;
+                }
+                else
+                {
+                    privateXorCipherBytes = new byte[account.PrivateXorCipher.Length * 8];
+                    Buffer.BlockCopy(account.PrivateXorCipher, 0, privateXorCipherBytes, 0, privateXorCipherBytes.Length);
+                }
 
-                byte[] dpapiXorCipher1Bytes = new byte[account.DpapiXorCipher1.Length * 8];
-                Buffer.BlockCopy(account.DpapiXorCipher1, 0, dpapiXorCipher1Bytes, 0, dpapiXorCipher1Bytes.Length);
+                byte[] dpapiXorCipher1Bytes;
+                if (account.DpapiXorCipher1 == null)
+                {
+                    dpapiXorCipher1Bytes = null;
+                }
+                else
+                {
+                    dpapiXorCipher1Bytes = new byte[account.DpapiXorCipher1.Length * 8];
+                    Buffer.BlockCopy(account.DpapiXorCipher1, 0, dpapiXorCipher1Bytes, 0, dpapiXorCipher1Bytes.Length);
+                }
 
-                byte[] dpapiXorCipher2Bytes = new byte[account.DpapiXorCipher2.Length * 8];
-                Buffer.BlockCopy(account.DpapiXorCipher2, 0, dpapiXorCipher2Bytes, 0, dpapiXorCipher2Bytes.Length);
+                byte[] dpapiXorCipher2Bytes;
+                if (account.DpapiXorCipher2 == null)
+                {
+                    dpapiXorCipher2Bytes = null;
+                }
+                else
+                {
+                    dpapiXorCipher2Bytes = new byte[account.DpapiXorCipher2.Length * 8];
+                    Buffer.BlockCopy(account.DpapiXorCipher2, 0, dpapiXorCipher2Bytes, 0, dpapiXorCipher2Bytes.Length);
+                }
 
                 database.AddParameter(dbCommand, "tokenHash", account.Token, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "userName", account.UserName);
@@ -151,7 +176,10 @@ namespace Phabrico.Storage
         /// <returns></returns>
         public Phabricator.Data.Account Get(Database database, SessionManager.Token token)
         {
-            if (token != null)
+            if (token != null && 
+                token.AuthenticationFactor != AuthenticationFactor.Public && 
+                token.AuthenticationFactor != AuthenticationFactor.Experience
+               )
             {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            SELECT token, userName, publicXorCipher, privateXorCipher, dpapiXorCipher1, dpapiXorCipher2, url, api, parameters, theme
@@ -170,17 +198,41 @@ namespace Phabrico.Storage
                             record.PublicXorCipher = new UInt64[publicXorCipherBytes.Length / 8];
                             Buffer.BlockCopy(publicXorCipherBytes, 0, record.PublicXorCipher, 0, publicXorCipherBytes.Length);
 
-                            byte[] privateXorCipherBytes = (byte[])reader["privateXorCipher"];
-                            record.PrivateXorCipher = new UInt64[privateXorCipherBytes.Length / 8];
-                            Buffer.BlockCopy(privateXorCipherBytes, 0, record.PrivateXorCipher, 0, privateXorCipherBytes.Length);
+                            object dbPrivateXorCipherBytes = reader["privateXorCipher"];
+                            if (dbPrivateXorCipherBytes is DBNull)
+                            {
+                                record.PrivateXorCipher = null;
+                            }
+                            else
+                            {
+                                byte[] privateXorCipherBytes = (byte[])dbPrivateXorCipherBytes;
+                                record.PrivateXorCipher = new UInt64[privateXorCipherBytes.Length / 8];
+                                Buffer.BlockCopy(privateXorCipherBytes, 0, record.PrivateXorCipher, 0, privateXorCipherBytes.Length);
+                            }
 
-                            byte[] dpapiXorCipher1Bytes = (byte[])reader["dpapiXorCipher1"];
-                            record.DpapiXorCipher1 = new UInt64[dpapiXorCipher1Bytes.Length / 8];
-                            Buffer.BlockCopy(dpapiXorCipher1Bytes, 0, record.DpapiXorCipher1, 0, dpapiXorCipher1Bytes.Length);
+                            object dbDpapiXorCipher1Bytes = reader["privateXorCipher"];
+                            if (dbDpapiXorCipher1Bytes is DBNull)
+                            {
+                                record.PrivateXorCipher = null;
+                            }
+                            else
+                            {
+                                byte[] dpapiXorCipher1Bytes = (byte[])dbDpapiXorCipher1Bytes;
+                                record.DpapiXorCipher1 = new UInt64[dpapiXorCipher1Bytes.Length / 8];
+                                Buffer.BlockCopy(dpapiXorCipher1Bytes, 0, record.DpapiXorCipher1, 0, dpapiXorCipher1Bytes.Length);
+                            }
 
-                            byte[] dpapiXorCipher2Bytes = (byte[])reader["dpapiXorCipher2"];
-                            record.DpapiXorCipher2 = new UInt64[dpapiXorCipher2Bytes.Length / 8];
-                            Buffer.BlockCopy(dpapiXorCipher2Bytes, 0, record.DpapiXorCipher2, 0, dpapiXorCipher2Bytes.Length);
+                            object dbDpapiXorCipher2Bytes = reader["dpapiXorCipher2"];
+                            if (dbDpapiXorCipher2Bytes is DBNull)
+                            {
+                                record.PrivateXorCipher = null;
+                            }
+                            else
+                            {
+                                byte[] dpapiXorCipher2Bytes = (byte[])dbDpapiXorCipher2Bytes;
+                                record.DpapiXorCipher2 = new UInt64[dpapiXorCipher2Bytes.Length / 8];
+                                Buffer.BlockCopy(dpapiXorCipher2Bytes, 0, record.DpapiXorCipher2, 0, dpapiXorCipher2Bytes.Length);
+                            }
 
                             record.Token = (string)reader["token"];
                             record.Theme = (string)reader["theme"];
@@ -228,11 +280,19 @@ namespace Phabrico.Storage
                         {
                             if (reader.Read())
                             {
-                                byte[] privateXorCipherBytes = (byte[])reader["privateXorCipher"];
-                                UInt64[] privateXorCipher = new UInt64[privateXorCipherBytes.Length / 8];
-                                Buffer.BlockCopy(privateXorCipherBytes, 0, privateXorCipher, 0, privateXorCipherBytes.Length);
+                                object dbPrivateXorCipher = reader["privateXorCipher"];
+                                if (dbPrivateXorCipher is DBNull)
+                                {
+                                    return null;
+                                }
+                                else
+                                {
+                                    byte[] privateXorCipherBytes = (byte[])dbPrivateXorCipher;
+                                    UInt64[] privateXorCipher = new UInt64[privateXorCipherBytes.Length / 8];
+                                    Buffer.BlockCopy(privateXorCipherBytes, 0, privateXorCipher, 0, privateXorCipherBytes.Length);
 
-                                return privateXorCipher;
+                                    return privateXorCipher;
+                                }
                             }
                         }
                     }
@@ -318,6 +378,23 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
+        /// Deletes a record from the AccountInfo table
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="account"></param>
+        public void Remove(Database database, Phabricator.Data.Account account)
+        {
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       DELETE FROM accountInfo
+                       WHERE token = @tokenHash;
+                   ", database.Connection))
+            {
+                database.AddParameter(dbCommand, "tokenHash", account.Token, Database.EncryptionMode.None);
+                dbCommand.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
         /// Updates an accountInfo record
         /// </summary>
         /// <param name="database"></param>
@@ -391,8 +468,12 @@ namespace Phabrico.Storage
                 byte[] publicXorCipherBytes = new byte[newPublicXorValue.Length * 8];
                 Buffer.BlockCopy(newPublicXorValue, 0, publicXorCipherBytes, 0, publicXorCipherBytes.Length);
 
-                byte[] privateXorCipherBytes = new byte[newPrivateXorValue.Length * 8];
-                Buffer.BlockCopy(newPrivateXorValue, 0, privateXorCipherBytes, 0, privateXorCipherBytes.Length);
+                byte[] privateXorCipherBytes = null;
+                if (newPrivateXorValue != null)
+                {
+                    privateXorCipherBytes = new byte[newPrivateXorValue.Length * 8];
+                    Buffer.BlockCopy(newPrivateXorValue, 0, privateXorCipherBytes, 0, privateXorCipherBytes.Length);
+                }
 
                 database.AddParameter(dbCommand, "newPublicXorValue", publicXorCipherBytes, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "newPrivateXorValue", privateXorCipherBytes, Database.EncryptionMode.None);
@@ -434,8 +515,9 @@ namespace Phabrico.Storage
         /// Returns the first record of the accountInfo table
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="browser"></param>
         /// <returns></returns>
-        public Phabricator.Data.Account WhoAmI(Database database)
+        public Phabricator.Data.Account WhoAmI(Database database, Browser browser)
         {
             if (database.EncryptionKey == null)
             {
@@ -443,7 +525,7 @@ namespace Phabrico.Storage
             }
             else
             {
-                return Get(database).FirstOrDefault();
+                return Get(database).FirstOrDefault(user => user.Token.Equals(browser.Token.Key));
             }
         }
     }

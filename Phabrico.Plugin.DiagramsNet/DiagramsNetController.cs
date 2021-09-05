@@ -130,7 +130,7 @@ namespace Phabrico.Plugin
                     diagramName = Locale.TranslateText("(New)", browser.Session.Locale);
                 }
 
-                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
+                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
                 theme = accountData.Theme;
                 darkenImageStyle = accountData.Parameters.DarkenBrightImages;
             }
@@ -301,7 +301,7 @@ namespace Phabrico.Plugin
                             }
 
                             file.Data = buffer;
-                            stageStorage.Edit(database, file);
+                            stageStorage.Edit(database, file, browser);
                         }
                         else
                         {
@@ -359,7 +359,7 @@ namespace Phabrico.Plugin
                                         }
 
                                         // stage document
-                                        stageStorage.Modify(database, phrictionDocument);
+                                        stageStorage.Modify(database, phrictionDocument, browser);
                                     }
 
                                     // rename file object in referencing maniphest task
@@ -386,7 +386,7 @@ namespace Phabrico.Plugin
                                         }
 
                                         // stage maniphest task
-                                        stageStorage.Modify(database, maniphestTask);
+                                        stageStorage.Modify(database, maniphestTask, browser);
                                     }
                                 }
                             }

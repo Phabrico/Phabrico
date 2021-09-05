@@ -317,7 +317,7 @@ EditorUi.prototype.getPageById = function(id)
 /**
  * Returns the background image for the given page link.
  */
-EditorUi.prototype.createImageForPageLink = function(src)
+EditorUi.prototype.createImageForPageLink = function(src, sourcePage)
 {
 	var comma = src.indexOf(',');
 	var result = null;
@@ -326,15 +326,16 @@ EditorUi.prototype.createImageForPageLink = function(src)
 	{
 		var page = this.getPageById(src.substring(comma + 1));
 
-		if (page != null)
+		if (page != null && page != sourcePage)
 		{
-			var svgRoot = this.getSvgForPage(page);
-
-			result = new mxImage(Editor.createSvgDataUri(mxUtils.getXml(svgRoot)),
-				parseInt(svgRoot.getAttribute('width')),
-				parseInt(svgRoot.getAttribute('height')));
+			result = this.getImageForPage(page);
 			result.originalSrc = src;
 		}
+	}
+
+	if (result == null)
+	{
+		result = {originalSrc: src};
 	}
 
 	return result;
@@ -343,7 +344,7 @@ EditorUi.prototype.createImageForPageLink = function(src)
 /**
  * Returns true if the given string contains an mxfile.
  */
-EditorUi.prototype.getSvgForPage = function(page)
+EditorUi.prototype.getImageForPage = function(page)
 {
 	var graphGetGlobalVariable = this.editor.graph.getGlobalVariable;
 	var graph = this.createTemporaryGraph(this.editor.graph.getStylesheet());
@@ -358,9 +359,11 @@ EditorUi.prototype.getSvgForPage = function(page)
 	this.updatePageRoot(page);
 	graph.model.setRoot(page.root);
 	var svgRoot = graph.getSvg();
+	var bounds = graph.getGraphBounds();
 	document.body.removeChild(graph.container);
 
-	return svgRoot;
+	return new mxImage(Editor.createSvgDataUri(mxUtils.getXml(svgRoot)),
+		bounds.width, bounds.height, bounds.x, bounds.y);
 };
  
 /**
@@ -577,7 +580,9 @@ Graph.prototype.createViewState = function(node)
 		background: (bg != null && bg.length > 0) ? bg : null,
 		backgroundImage: bgImg,
 		pageScale: (!isNaN(ps)) ? ps : mxGraph.prototype.pageScale,
-		pageFormat: (!isNaN(pw) && !isNaN(ph)) ? new mxRectangle(0, 0, pw, ph) : (typeof mxSettings === 'undefined'? mxGraph.prototype.pageFormat : mxSettings.getPageFormat()),
+		pageFormat: (!isNaN(pw) && !isNaN(ph)) ? new mxRectangle(0, 0, pw, ph) :
+			((typeof mxSettings === 'undefined' || this.defaultPageFormat != null) ?
+				mxGraph.prototype.pageFormat : mxSettings.getPageFormat()),
 		tooltips: node.getAttribute('tooltips') != '0',
 		connect: node.getAttribute('connect') != '0',
 		arrows: node.getAttribute('arrows') != '0',
@@ -593,7 +598,7 @@ Graph.prototype.createViewState = function(node)
 /**
  * Writes the graph properties from the realtime model to the given mxGraphModel node.
  */
-Graph.prototype.saveViewState = function(vs, node, ignoreTransient)
+Graph.prototype.saveViewState = function(vs, node, ignoreTransient, resolveReferences)
 {
 	if (!ignoreTransient)
 	{
@@ -612,7 +617,9 @@ Graph.prototype.saveViewState = function(vs, node, ignoreTransient)
 
 	node.setAttribute('pageScale', (vs != null && vs.pageScale != null) ? vs.pageScale : mxGraph.prototype.pageScale);
 	
-	var pf = (vs != null) ? vs.pageFormat : (typeof mxSettings === 'undefined'? mxGraph.prototype.pageFormat : mxSettings.getPageFormat());
+	var pf = (vs != null) ? vs.pageFormat : (typeof mxSettings === 'undefined' ||
+		this.defaultPageFormat != null) ? mxGraph.prototype.pageFormat :
+			mxSettings.getPageFormat();
 	
 	if (pf != null)
 	{
@@ -625,7 +632,7 @@ Graph.prototype.saveViewState = function(vs, node, ignoreTransient)
 		node.setAttribute('background', vs.background);
 	}
 
-	var bgImg = this.getBackgroundImageObject(vs.backgroundImage);
+	var bgImg = this.getBackgroundImageObject(vs.backgroundImage, resolveReferences);
 
 	if (bgImg != null)
 	{
@@ -764,7 +771,8 @@ Graph.prototype.setViewState = function(state, removeOldExtFonts)
 		this.gridEnabled = this.defaultGridEnabled;
 		this.gridSize = mxGraph.prototype.gridSize;
 		this.pageScale = mxGraph.prototype.pageScale;
-		this.pageFormat = (typeof mxSettings === 'undefined'? mxGraph.prototype.pageFormat : mxSettings.getPageFormat());
+		this.pageFormat = (typeof mxSettings === 'undefined' || this.defaultPageFormat != null) ?
+			mxGraph.prototype.pageFormat : mxSettings.getPageFormat();
 		this.pageVisible = this.defaultPageVisible;
 		this.background = null;
 		this.backgroundImage = null;
@@ -1470,6 +1478,11 @@ EditorUi.prototype.createPageMenuTab = function(hoverEnabled)
 					{
 						this.selectPage(this.pages[index]);
 					}), parent);
+
+					var id = this.pages[index].getId();
+					item.setAttribute('title', this.pages[index].getName() +
+						((id != null) ? ' (' + id + ')' : '') +
+						' [' + (index + 1)+ ']');
 					
 					// Adds checkmark to current page
 					if (this.pages[index] == this.currentPage)

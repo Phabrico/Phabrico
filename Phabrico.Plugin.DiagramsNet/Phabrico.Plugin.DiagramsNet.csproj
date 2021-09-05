@@ -3531,7 +3531,6 @@
     <EmbeddedResource Include="webapp\WEB-INF\pusher.properties" />
     <EmbeddedResource Include="webapp\workbox-9fe249eb.js.map" />
     <EmbeddedResource Include="webapp\workbox-f163abaa.js.map" />
-    <EmbeddedResource Include="webapp\package-lock.json" />
     <EmbeddedResource Include="webapp\yarn.lock" />
     <EmbeddedResource Include="webapp\WEB-INF\github_client_secret" />
   </ItemGroup>

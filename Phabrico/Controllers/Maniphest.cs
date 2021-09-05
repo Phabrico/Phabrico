@@ -98,7 +98,7 @@ namespace Phabrico.Controllers
                                                                    .Where(tran => tran.Type.Equals(transactionType))
                                                                    .OrderBy(tran => tran.DateModified)
                                                                    .LastOrDefault()?.NewValue;
-                            stageStorage.Modify(database, newTransaction);
+                            stageStorage.Modify(database, newTransaction, browser);
 
                             if (transactionType.Equals("project")) maniphestTask.Projects += "," + newTransaction.NewValue;
                             if (transactionType.Equals("subscriber")) maniphestTask.Subscribers += "," + newTransaction.NewValue;
@@ -109,7 +109,7 @@ namespace Phabrico.Controllers
                             maniphestTask.Projects = maniphestTask.Projects.TrimStart(',');  // remove first comma (if existing)
                             maniphestTask.Subscribers = maniphestTask.Subscribers.TrimStart(',');  // remove first comma (if existing)
 
-                            stageStorage.Modify(database, maniphestTask);
+                            stageStorage.Modify(database, maniphestTask, browser);
                         }
                     }
                 }
@@ -153,7 +153,7 @@ namespace Phabrico.Controllers
                                     break;
                             }
 
-                            stageStorage.Modify(database, maniphestTask);
+                            stageStorage.Modify(database, maniphestTask, browser);
                         }
                         else
                         {
@@ -184,7 +184,7 @@ namespace Phabrico.Controllers
                             if (stagedManiphestTask  ||  newTransaction.OldValue.Equals(newTransaction.NewValue) == false)
                             {
                                 // add new transaction only if old value and new value are different
-                                stageStorage.Modify(database, newTransaction);
+                                stageStorage.Modify(database, newTransaction, browser);
                             }
                         }
                     }
@@ -224,7 +224,7 @@ namespace Phabrico.Controllers
             Stage newStage = new Stage();
             newManiphestTask.Token = newStage.Create(database, newManiphestTask);
             newManiphestTask.ID = string.Format("-{0}", Int32.Parse(newManiphestTask.Token.Substring("PHID-NEWTOKEN-".Length)));
-            newStage.Modify(database, newManiphestTask);
+            newStage.Modify(database, newManiphestTask, browser);
 
             keywordStorage.AddPhabricatorObject(this, database, newManiphestTask);
 
@@ -302,7 +302,7 @@ namespace Phabrico.Controllers
                 IEnumerable<Phabricator.Data.Maniphest> visibleManiphestTasks;
 
                 // set private encryption key
-                database.PrivateEncryptionKey = token.PrivateEncryptionKey;
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 // load all priority names
                 if (_maniphestPriorities == null)
@@ -321,7 +321,7 @@ namespace Phabrico.Controllers
                 }
 
                 // determine the user's account record
-                Phabricator.Data.Account whoAmI = accountStorage.WhoAmI(database);
+                Phabricator.Data.Account whoAmI = accountStorage.WhoAmI(database, browser);
                 if (whoAmI == null)
                 {
                     // this should not happen
@@ -333,6 +333,7 @@ namespace Phabrico.Controllers
                     List<Phabricator.Data.Maniphest> stagedTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database).ToList();
                     visibleManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database)
                                                                                .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
+                                                                               .Where(task => httpServer.ValidUserRoles(database, browser, task))
                                                                                .ToList();
 
                     foreach (Phabricator.Data.Maniphest stagedTask in visibleManiphestTasks)
@@ -387,7 +388,7 @@ namespace Phabrico.Controllers
                                              ))
                 {
                     ProjectByToken = projectStorage.Get(database)
-                                                    .ToDictionary(key => key.Token, value => value);
+                                                   .ToDictionary(key => key.Token, value => value);
                 }
 
                 // load all users again in case there's a task with an unknown author user token
@@ -884,8 +885,11 @@ namespace Phabrico.Controllers
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                 // determine the user's account record
-                Phabricator.Data.Account whoAmI = accountStorage.WhoAmI(database);
+                Phabricator.Data.Account whoAmI = accountStorage.WhoAmI(database, browser);
                 if (whoAmI == null)
                 {
                     // this should not happen
@@ -908,6 +912,7 @@ namespace Phabrico.Controllers
                                                                                  && task.Owner.Equals(whoAmI.Parameters.UserToken)
                                                                                  && task.IsOpen
                                                                            )
+                                                                     .Where(task => httpServer.ValidUserRoles(database, browser, task))
                                                                      .ToList();
                 }
 
@@ -942,7 +947,7 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 // set private encryption key
-                database.PrivateEncryptionKey = token.PrivateEncryptionKey;
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 // invalidate cache for current URL
                 string url = browser.Request.RawUrl.Split('?')[0].TrimEnd('/');
@@ -1100,6 +1105,9 @@ namespace Phabrico.Controllers
                 // complete Priority combobox
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
+                    // set private encryption key
+                    database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
                     foreach (Phabricator.Data.ManiphestPriority maniphestPriority in maniphestPriorityStorage.Get(database).OrderByDescending(priority => priority.Priority))
                     {
                         HtmlPartialViewPage priorityData = viewPage.GetPartialView("TASK-PRIORITIES");
@@ -1303,14 +1311,14 @@ namespace Phabrico.Controllers
                                 viewPage.SetText("TASK-CONFIRMATION-UNDO-LOCAL-CHANGES", "Are you sure you want to undo all your local changes for this task ?");
                             }
 
-                            string whoAmiToken = accountStorage.WhoAmI(database).Parameters.UserToken;
+                            string whoAmiToken = accountStorage.WhoAmI(database, browser).Parameters.UserToken;
                             if (string.IsNullOrWhiteSpace(whoAmiToken))
                             {
                                 viewPage.SetText("COMMENT-AUTHOR", "I");
                             }
                             else
                             {
-                                Phabricator.Data.User whoAmI = userStorage.Get(database, accountStorage.WhoAmI(database).Parameters.UserToken);
+                                Phabricator.Data.User whoAmI = userStorage.Get(database, accountStorage.WhoAmI(database, browser).Parameters.UserToken);
                                 viewPage.SetText("COMMENT-AUTHOR", whoAmI.RealName);
                             }
 
@@ -1562,7 +1570,7 @@ namespace Phabrico.Controllers
                 modifiedManiphestTask.DateModified = DateTimeOffset.UtcNow;
 
                 Stage stageStorage = new Stage();
-                stageStorage.Modify(database, modifiedManiphestTask);
+                stageStorage.Modify(database, modifiedManiphestTask, browser);
 
                 bool doFreezeReferencedFiles = stageStorage.Get(database)
                                                            .FirstOrDefault(stagedObject => stagedObject.Token.Equals(modifiedManiphestTask.Token))

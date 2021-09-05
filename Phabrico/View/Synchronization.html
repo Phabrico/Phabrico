@@ -64,7 +64,13 @@ function populateTable(filterText)
 
     xmlhttp.overrideMimeType("application/json");
     xmlhttp.open('GET', url, true);
-    xmlhttp.onload  = function() {
+    xmlhttp.onload = function () {
+        if (xmlhttp.readyState != 4) return;
+
+        if (xmlhttp.status != 200) {
+            phabrico.autoLogOff.doLogOff();
+        }
+
         var tbody = document.querySelector('#tblLatestSynchronizedData tbody');
 
         document.getElementById('no-data-found').style.display = 'block';

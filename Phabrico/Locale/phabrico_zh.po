@@ -4,6 +4,9 @@
 msgid "Phabrico"
 msgstr "法布日蔻"
 
+msgid "There's a new Phabrico version available"
+msgstr "有一个新的法布日蔻版本可用"
+
 msgid "Yes"
 msgstr "是"
 
@@ -480,6 +483,9 @@ msgstr "正在评估"
 msgid "ManiphestStatus.Wontfix"
 msgstr "将不会得到解决"
 
+msgid "This modified task hasn't been uploaded yet to the Phabricator server"
+msgstr "这个修改后的任务还没有被上传到Phabricator服务器上"
+
 # Phriction
 msgid "Subscribers"
 msgstr "订阅者"
@@ -498,6 +504,9 @@ msgstr "最后修改者为"
 
 msgid "Printable Page"
 msgstr "可打印页面"
+
+msgid "Return to web view"
+msgstr "返回到网页视图"
 
 msgid "Add to favorites"
 msgstr "添加到收藏夹"
@@ -632,6 +641,12 @@ msgstr "文件对象"
 
 msgid "Type some text to filter the list of file objects..."
 msgstr "输入文本以过滤文件对象列表"
+
+msgid "File @@FILEID@@ is referenced in:"
+msgstr "文件@@FILEID@@被引用到了。"
+
+msgid "File references"
+msgstr "文件参考"
 
 # Config
 msgid "Phabricator"
@@ -816,6 +831,30 @@ msgstr "中度"
 
 msgid "Extreme"
 msgstr "极端"
+
+msgid "Select a user role tag..."
+msgstr "选择一个用户角色标签..."
+
+msgid "User account"
+msgstr "用户账户"
+
+msgid "Tag"
+msgstr "标签"
+
+msgid "Add user"
+msgstr "添加用户"
+
+msgid "Remove user"
+msgstr "删除用户"
+
+msgid "Are you sure you want to remove @@USER@@ ?"
+msgstr "你确定你要删除@@USER@@吗？"
+
+msgid "Phabrico user accounts"
+msgstr "法布日蔻用户账户"
+
+msgid "Secondary User Accounts:"
+msgstr "二级用户账户。"
 
 msgid "Getting started with Phabrico"
 msgstr "开始使用法布日蔻"

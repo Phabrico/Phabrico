@@ -101,13 +101,29 @@ namespace Phabrico.Controllers
                         string confidentialTableHeaders = "";
                         if (existingAccount.Parameters.ColumnHeadersToHide.Any())
                         {
-                            confidentialTableHeaders = "'" + string.Join("', '", existingAccount.Parameters.ColumnHeadersToHide) + "'";
+                            confidentialTableHeaders = "'" + string.Join("', '", existingAccount.Parameters
+                                                                                                .ColumnHeadersToHide
+                                                                                                .Select(header => header.Replace("\\", "\\\\'")
+                                                                                                                        .Replace("'", "\\'")
+                                                                                                       ))
+                                                           + "'";
                         }
-                        viewPage.SetText("CONFIG-CONFIDENTIAL-TABLE-HEADERS", confidentialTableHeaders, HtmlViewPage.ArgumentOptions.JavascriptEncoding);
+                        viewPage.SetText("CONFIG-CONFIDENTIAL-TABLE-HEADERS", confidentialTableHeaders, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+
+                        string secondaryUserAccounts = "";
+                        foreach (Phabricator.Data.Account secondaryAccount in accountStorage.Get(database).Where(account => account.Parameters.AccountType == AccountTypes.SecondaryUser))
+                        {
+                            secondaryUserAccounts += ", ['" + secondaryAccount.UserName.Replace("\\", "\\\\'")
+                                                                                      .Replace("'", "\\'") 
+                                                   + "', '" + (secondaryAccount.Parameters.DefaultUserRoleTag ?? "") + "']";
+                        }
+                        secondaryUserAccounts = secondaryUserAccounts.TrimStart(',', ' ');
+                        viewPage.SetText("CONFIG-SECONDARY-USERS", secondaryUserAccounts, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     }
                     else
                     {
-                        viewPage.SetText("CONFIG-CONFIDENTIAL-TABLE-HEADERS", "", HtmlViewPage.ArgumentOptions.JavascriptEncoding);
+                        viewPage.SetText("CONFIG-CONFIDENTIAL-TABLE-HEADERS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        viewPage.SetText("CONFIG-SECONDARY-USERS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     }
 
                     // check if we need to show some help for the first time
@@ -321,8 +337,8 @@ namespace Phabrico.Controllers
                                 database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
 
                                 string newPassword = Encryption.GetDPAPIKey();
-                                UInt64[] newPublicDpapiXorValue = Authentication.GetXorValue(EncryptionKey, newPassword);
-                                UInt64[] newPrivateDpapiXorValue = Authentication.GetXorValue(database.PrivateEncryptionKey, newPassword);
+                                UInt64[] newPublicDpapiXorValue = Encryption.GetXorValue(EncryptionKey, newPassword);
+                                UInt64[] newPrivateDpapiXorValue = Encryption.GetXorValue(database.PrivateEncryptionKey, newPassword);
 
                                 accountStorage.UpdateDpapiXorCipher(database, newPublicDpapiXorValue, newPrivateDpapiXorValue);
                                 break;
@@ -384,6 +400,92 @@ namespace Phabrico.Controllers
                     existingAccount.Parameters.ColumnHeadersToHide = confidentialTableHeaders.Select(jtoken => jtoken.ToString()).ToArray();
                     accountStorage.Set(database, existingAccount);
                 }
+            }
+        }
+
+        /// <summary>
+        /// This method is fired when one or more confidential table headers are modified in the Configuration screen
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        [UrlController(URL = "/configure/table-useraccounts")]
+        public void HttpPostSaveUserAccounts(Http.Server httpServer, Browser browser, string[] parameters)
+        {
+            if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound("/configure/table-useraccounts");
+
+            Storage.Account accountStorage = new Storage.Account();
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "session expired");
+
+            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            {
+                if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/configure", "You don't have sufficient rights to configure Phabrico");
+
+                // set private encryption key
+                database.PrivateEncryptionKey = token.PrivateEncryptionKey;
+
+                Account existingAccount = accountStorage.Get(database, token);
+                if (existingAccount != null)
+                {
+                    string jsonArrayConfidentialTableHeaders = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
+                    JArray userAccounts = JsonConvert.DeserializeObject(jsonArrayConfidentialTableHeaders) as JArray;
+                    Dictionary<string, bool> accountsToRemove = accountStorage.Get(database).ToDictionary(user => user.UserName, user => true);
+
+                    accountsToRemove[existingAccount.UserName] = false;  // do not remove myself
+
+                    foreach (var user in userAccounts.OfType<JObject>()
+                                                     .Select(userAccount => new
+                                                     {
+                                                         Name = userAccount["user"].Value<string>(),
+                                                         Role = userAccount["role"].Value<string>()
+                                                     }))
+                    {
+                        if (accountsToRemove.ContainsKey(user.Name) == false)  // is user not known in database ?
+                        {
+                            // create new token and encryption keys with empty password
+                            string newTokenHash = Encryption.GenerateTokenKey(user.Name, "");
+                            string newPublicEncryptionKey = Encryption.GenerateEncryptionKey(user.Name, "");
+
+                            Account newUserAccount = new Account();
+                            newUserAccount.UserName = user.Name;
+                            newUserAccount.Token = newTokenHash;
+                            newUserAccount.PublicXorCipher = Encryption.GetXorValue(EncryptionKey, newPublicEncryptionKey);
+                            newUserAccount.PrivateXorCipher = null;
+                            newUserAccount.DpapiXorCipher1 = null;
+                            newUserAccount.DpapiXorCipher2 = null;
+                            newUserAccount.ConduitAPIToken = "";
+                            newUserAccount.PhabricatorUrl = "";
+                            newUserAccount.Theme = "light";
+                            newUserAccount.Parameters = new Account.Configuration();
+                            newUserAccount.Parameters.AccountType = AccountTypes.SecondaryUser;
+                            newUserAccount.Parameters.DefaultUserRoleTag = user.Role;
+                            accountStorage.Add(database, newUserAccount);
+                        }
+                        else
+                        {
+                            existingAccount = accountStorage.Get(database)
+                                                            .FirstOrDefault(account => account.UserName.Equals(user.Name, StringComparison.OrdinalIgnoreCase));
+                            existingAccount.Parameters.DefaultUserRoleTag = user.Role;
+                            accountStorage.Set(database, existingAccount);
+                        }
+
+                        accountsToRemove[user.Name] = false;  // mark user as 'do not delete'
+                    }
+
+                    foreach (string userNameToRemove in accountsToRemove.Where(kvp => kvp.Value == true).Select(kvp => kvp.Key))
+                    {
+                        Account oldUserAccount = accountStorage.Get(database).FirstOrDefault(user => user.UserName.Equals(userNameToRemove, StringComparison.OrdinalIgnoreCase));
+                        if (oldUserAccount != null)
+                        {
+                            accountStorage.Remove(database, oldUserAccount);
+                        }
+                    }
+                }
+
+                // keep user role configuration up to date in memory
+                httpServer.UpdateUserRoleConfiguration(database);
             }
         }
 

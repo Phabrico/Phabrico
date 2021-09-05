@@ -51,7 +51,7 @@ namespace Phabrico.Http.Response
                 using (Storage.Database database = new Storage.Database(encryptionKey))
                 {
                     Storage.Account accountStorage = new Storage.Account();
-                    Phabricator.Data.Account accountData = accountStorage.WhoAmI(database);
+                    Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
                     if (accountData != null)
                     {
                         if (Url.StartsWith("/maniphest/"))
