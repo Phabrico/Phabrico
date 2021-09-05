@@ -23,6 +23,7 @@ An example of such JSON config file:
 
     "maniphest": {
         "projectTags": [
+            "lyrics",
             "instrumental"
         ],
 
@@ -84,7 +85,7 @@ Phabrico /download  c:\temp\phabrico.json  /token:api-abc4a4opqxyzijka3q2azo8apa
 
 Phabrico will connect to Phabricator at http://phabby.coburg.org using the `api-abc4a4opqxyzijka3q2azo8apaos` Conduit API token.
 It will create a Phabrico database file `c:\temp\custom-phabrico.data` which can be accessed by means of user `lemmy` and password `K1lm1ster!!!`.
-All Phriction documents and Maniphest tasks will be downloaded where `PHID-PROJ-y6fw74c2d4z3hevx7eqe` or `PHID-PROJ-4qob7cmhhy3fonmsdllq` is tagged in.
+All Phriction documents and Maniphest tasks will be downloaded where `instrumental` or `lyrics` is tagged in.
 For Phriction, all underlying documents are also downloaded.
 
 The newly created Phabrico database file can be configured in the `Phabrico.exe.config` file (`DatabaseDirectory`)
