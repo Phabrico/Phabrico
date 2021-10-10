@@ -2,6 +2,7 @@
 using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -59,6 +60,7 @@ namespace Phabrico.Controllers
             {
                 Storage.Keyword keywordStorage = new Storage.Keyword();
                 Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+                Storage.PhamePost phamePostStorage = new Storage.PhamePost();
                 Storage.Phriction phrictionStorage = new Storage.Phriction();
 
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -89,6 +91,10 @@ namespace Phabrico.Controllers
 
                             case string phrictionDocument when phrictionDocument.StartsWith(Phabricator.Data.Phriction.Prefix):
                                 searchResult = ProcessPhrictionDocument(httpServer, database, phrictionStorage, token, parameters);
+                                break;
+
+                            case string blogPost when blogPost.StartsWith(Phabricator.Data.PhamePost.Prefix):
+                                searchResult = ProcessPhameBlogPost(httpServer, database, phamePostStorage, token, parameters);
                                 break;
 
                             default:
@@ -150,6 +156,52 @@ namespace Phabrico.Controllers
 
                     // if the word is partially in the task's title, increase the priority of the keyword
                     if (parameters.All(word => title.Split(' ').Any(w => w.StartsWith(word.ToUpper()))))
+                    {
+                        searchResult.Priority++;
+                    }
+                }
+            }
+
+            return searchResult;
+        }
+
+        /// <summary>
+        /// Creates a new SearchResult record for a given Phame blog post
+        /// </summary>
+        /// <param name="database">reference to Http.Server</param>
+        /// <param name="database">SQLite database</param>
+        /// <param name="phrictionStorage">Phriction storage</param>
+        /// <param name="token">Phame blog post token</param>
+        /// <param name="parameters">Extra parameters found in Remarkup code</param>
+        /// <returns>SearchResult object or null</returns>
+        private SearchResult ProcessPhameBlogPost(Server httpServer, Database database, PhamePost phamePostStorage, string token, string[] parameters)
+        {
+            SearchResult searchResult = null;
+
+            if (httpServer.Customization.HidePhame == false)
+            {
+                Phabricator.Data.PhamePost data = phamePostStorage.Get(database, token);
+                if (data != null)
+                {
+                    if (httpServer.ValidUserRoles(database, browser, data) == false)
+                    {
+                        return null;
+                    }
+
+                    searchResult = new SearchResult();
+                    searchResult.Description = data.Title;
+                    searchResult.Path = "J" + data.ID;
+                    searchResult.URL = "phame/post/" + data.ID;
+                    searchResult.Priority = 0;
+
+                    // if the word is in the blog post's title, increase the priority of the keyword
+                    if (parameters.All(word => data.Title.ToUpper().Split(' ').Contains(word.ToUpper())))
+                    {
+                        searchResult.Priority++;
+                    }
+
+                    // if the word is partial in the blog post's title increase the priority of the keyword
+                    if (parameters.All(word => data.Title.ToUpper().Split(' ').Any(partial => partial.StartsWith(word.ToUpper()))))
                     {
                         searchResult.Priority++;
                     }

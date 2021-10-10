@@ -219,6 +219,11 @@ namespace Phabrico
         public bool HideNavigatorTooltips { get; set; } = false;
 
         /// <summary>
+        /// If true, Phame blog postswill not be accessible
+        /// </summary>
+        public bool HidePhame { get; set; } = false;
+
+        /// <summary>
         /// If true, Phriction/wiki documents will not be accessible
         /// </summary>
         public bool HidePhriction { get; set; } = false;

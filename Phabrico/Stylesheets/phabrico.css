@@ -695,7 +695,8 @@ select {
 }
 
 .phabrico-page-content {
-    height: 100%;
+    height: auto;
+    min-height: 100%;
 }
 
 .remarkupContent * {
@@ -1086,7 +1087,7 @@ width: 30px;
 .phabrico-standard-treeitem-body {
     padding: 0px 5px 0px;
     width: calc(100% - var(--navigator-width) - 10px);
-    height: calc(100vh - 44px);
+    min-height: calc(100vh - 44px);
     top: 44px;
     display: flex;
     flex-direction: row;
@@ -3169,4 +3170,83 @@ div.color-selector .btnSetColorForAll {
 .image-container.allow-full-screen.full-screen img {
     margin: 0 auto;
     max-width: unset !important;
+}
+
+.color-selector:focus,
+.phabrico-page-content.tabkey a:focus {
+    outline-style: dotted;
+    outline-width: 2px;
+    outline-offset: -3px;
+}
+
+.collapsibleList li > input + * {
+    display: none;
+}
+ 
+.collapsibleList li > input:checked + * {
+    display: block;
+}
+
+.collapsibleList li > input {
+    display: none;
+}
+
+.collapsibleList label {
+    cursor: pointer;
+}
+
+ul.collapsibleList li a span.phui-list-item-name {
+    width:100%;
+    text-align:left;
+    height:100%;
+    margin-top:-9px;
+    padding-top:9px;
+}
+
+span.anchor,
+.collapsibleList li ul li {
+    cursor: pointer;
+}
+
+.phame-blog > div > .remarkupContent,
+.phame-blog-read-more {
+    margin-left: 30px;
+}
+
+.phame-blog-read-more {
+    margin-bottom: 12px;
+}
+
+.post-info {
+    margin-bottom: 16px;
+}
+
+.post-info span {
+    margin-right: 7px;
+}
+
+a.phame-reference {
+    border-style: solid;
+    border-width: 1px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    text-decoration: none;
+}
+
+.phame .phabrico-page-content {
+    margin-top: -1px;
+    min-height: calc(100% + 40px);
+}
+
+.phame-blog #remarkupContent {
+    padding: 0px 16px;
+}
+
+.phame-blog #remarkupContent h1,
+.phame-blog #remarkupContent h2,
+.phame-blog #remarkupContent h3,
+.phame-blog #remarkupContent h4,
+.phame-blog #remarkupContent h5,
+.phame-blog #remarkupContent h6 {
+    font-size: 18px;
 }

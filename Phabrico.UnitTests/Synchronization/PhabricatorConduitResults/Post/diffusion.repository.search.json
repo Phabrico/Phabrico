@@ -1,0 +1,289 @@
+{
+  "result": {
+    "data": [
+      {
+        "id": 3,
+        "type": "REPO",
+        "phid": "PHID-REPO-drhqfrgqtue7446frjd4",
+        "fields": {
+          "name": "libgit2sharp",
+          "vcs": "git",
+          "callsign": null,
+          "shortName": null,
+          "status": "active",
+          "isImporting": false,
+          "almanacServicePHID": null,
+          "refRules": {
+            "fetchRules": [],
+            "trackRules": [],
+            "permanentRefRules": []
+          },
+          "defaultBranch": "master",
+          "description": {
+            "raw": ""
+          },
+          "spacePHID": null,
+          "dateCreated": 1632488679,
+          "dateModified": 1632488938,
+          "policy": {
+            "view": "users",
+            "edit": "admin",
+            "diffusion.push": "users"
+          }
+        },
+        "attachments": {
+          "uris": {
+            "uris": [
+              {
+                "id": "32",
+                "type": "RURI",
+                "phid": "PHID-RURI-54fnumwl4jcbv6tkq4y1",
+                "fields": {
+                  "repositoryPHID": "PHID-REPO-drhqfrgqtue7446frjd4",
+                  "uri": {
+                    "raw": "https://github.com/libgit2/libgit2sharp.git",
+                    "display": "https://github.com/libgit2/libgit2sharp.git",
+                    "effective": "https://github.com/libgit2/libgit2sharp.git",
+                    "normalized": "github.com/libgit2/libgit2sharp"
+                  },
+                  "io": {
+                    "raw": "observe",
+                    "default": "none",
+                    "effective": "observe"
+                  },
+                  "display": {
+                    "raw": "always",
+                    "default": "never",
+                    "effective": "always"
+                  },
+                  "credentialPHID": null,
+                  "disabled": false,
+                  "builtin": {
+                    "protocol": null,
+                    "identifier": null
+                  },
+                  "dateCreated": "1632488791",
+                  "dateModified": "1632488822"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "REPO",
+        "phid": "PHID-REPO-c3txrtojnmo42yb6txb2",
+        "fields": {
+          "name": "Diagrams.Net",
+          "vcs": "git",
+          "callsign": "DRAWIO",
+          "shortName": "drawio",
+          "status": "active",
+          "isImporting": false,
+          "almanacServicePHID": null,
+          "refRules": {
+            "fetchRules": [],
+            "trackRules": [],
+            "permanentRefRules": []
+          },
+          "defaultBranch": "master",
+          "description": {
+            "raw": "mydescription"
+          },
+          "spacePHID": null,
+          "dateCreated": 1560797320,
+          "dateModified": 1632423388,
+          "policy": {
+            "view": "users",
+            "edit": "admin",
+            "diffusion.push": "users"
+          }
+        },
+        "attachments": {
+          "uris": {
+            "uris": [
+              {
+                "id": "22",
+                "type": "RURI",
+                "phid": "PHID-RURI-yfowbljpbjcunckk2vc3",
+                "fields": {
+                  "repositoryPHID": "PHID-REPO-c3txrtojnmo42yb6txb2",
+                  "uri": {
+                    "raw": "http://github.com/jgraph/drawio.git",
+                    "display": "http://github.com/jgraph/drawio.git",
+                    "effective": "http://github.com/jgraph/drawio.git",
+                    "normalized": "github.com/jgraph/drawio"
+                  },
+                  "io": {
+                    "raw": "default",
+                    "default": "none",
+                    "effective": "none"
+                  },
+                  "display": {
+                    "raw": "default",
+                    "default": "never",
+                    "effective": "never"
+                  },
+                  "credentialPHID": null,
+                  "disabled": false,
+                  "builtin": {
+                    "protocol": null,
+                    "identifier": null
+                  },
+                  "dateCreated": "1632423388",
+                  "dateModified": "1632423388"
+                }
+              },
+              {
+                "id": "21",
+                "type": "RURI",
+                "phid": "PHID-RURI-rgwxpzkbc447xnybddz4",
+                "fields": {
+                  "repositoryPHID": "PHID-REPO-c3txrtojnmo42yb6txb2",
+                  "uri": {
+                    "raw": "https://github.com/jgraph/drawio.git",
+                    "display": "https://github.com/jgraph/drawio.git",
+                    "effective": "https://github.com/jgraph/drawio.git",
+                    "normalized": "github.com/jgraph/drawio"
+                  },
+                  "io": {
+                    "raw": "observe",
+                    "default": "none",
+                    "effective": "observe"
+                  },
+                  "display": {
+                    "raw": "always",
+                    "default": "never",
+                    "effective": "always"
+                  },
+                  "credentialPHID": null,
+                  "disabled": false,
+                  "builtin": {
+                    "protocol": null,
+                    "identifier": null
+                  },
+                  "dateCreated": "1560797355",
+                  "dateModified": "1560797378"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": 1,
+        "type": "REPO",
+        "phid": "PHID-REPO-44vrdpxkvo5n2c64fb25",
+        "fields": {
+          "name": "Warzone2100",
+          "vcs": "git",
+          "callsign": null,
+          "shortName": null,
+          "status": "active",
+          "isImporting": false,
+          "almanacServicePHID": null,
+          "refRules": {
+            "fetchRules": [],
+            "trackRules": [],
+            "permanentRefRules": []
+          },
+          "defaultBranch": "master",
+          "description": {
+            "raw": ""
+          },
+          "spacePHID": null,
+          "dateCreated": 1560796668,
+          "dateModified": 1560797184,
+          "policy": {
+            "view": "users",
+            "edit": "admin",
+            "diffusion.push": "users"
+          }
+        },
+        "attachments": {
+          "uris": {
+            "uris": [
+              {
+                "id": "11",
+                "type": "RURI",
+                "phid": "PHID-RURI-ieizbfz743qojussj4o6",
+                "fields": {
+                  "repositoryPHID": "PHID-REPO-44vrdpxkvo5n2c64fb25",
+                  "uri": {
+                    "raw": "http://github.com/Warzone2100/warzone2100.git",
+                    "display": "http://github.com/Warzone2100/warzone2100.git",
+                    "effective": "http://github.com/Warzone2100/warzone2100.git",
+                    "normalized": "github.com/Warzone2100/warzone2100.git"
+                  },
+                  "io": {
+                    "raw": "none",
+                    "default": "none",
+                    "effective": "none"
+                  },
+                  "display": {
+                    "raw": "always",
+                    "default": "never",
+                    "effective": "always"
+                  },
+                  "credentialPHID": null,
+                  "disabled": false,
+                  "builtin": {
+                    "protocol": null,
+                    "identifier": null
+                  },
+                  "dateCreated": "1560797168",
+                  "dateModified": "1560797168"
+                }
+              },
+              {
+                "id": "10",
+                "type": "RURI",
+                "phid": "PHID-RURI-c7fghrpe4zuac35hl3g7",
+                "fields": {
+                  "repositoryPHID": "PHID-REPO-44vrdpxkvo5n2c64fb25",
+                  "uri": {
+                    "raw": "https://github.com/Warzone2100/warzone2100.git",
+                    "display": "https://github.com/Warzone2100/warzone2100.git",
+                    "effective": "https://github.com/Warzone2100/warzone2100.git",
+                    "normalized": "github.com/Warzone2100/warzone2100.git"
+                  },
+                  "io": {
+                    "raw": "mirror",
+                    "default": "none",
+                    "effective": "mirror"
+                  },
+                  "display": {
+                    "raw": "always",
+                    "default": "never",
+                    "effective": "always"
+                  },
+                  "credentialPHID": null,
+                  "disabled": true,
+                  "builtin": {
+                    "protocol": null,
+                    "identifier": null
+                  },
+                  "dateCreated": "1560796812",
+                  "dateModified": "1560797184"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "maps": {},
+    "query": {
+      "queryKey": null
+    },
+    "cursor": {
+      "limit": 100,
+      "after": null,
+      "before": null,
+      "order": "newest"
+    }
+  },
+  "error_code": null,
+  "error_info": null
+}

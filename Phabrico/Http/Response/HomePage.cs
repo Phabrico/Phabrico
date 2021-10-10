@@ -288,6 +288,16 @@ namespace Phabrico.Http.Response
                             }
                         }
 
+                        Storage.PhamePost phamePostStorage = new Storage.PhamePost();
+                        foreach (string blogName in phamePostStorage.Get(database).Select(post => post.Blog).Distinct().OrderBy(blog => blog))
+                        {
+                            HtmlPartialViewPage htmlPhameBlogsMenuItem = htmlViewPage.GetPartialView("PHAME-BLOGS");
+                            if (htmlPhameBlogsMenuItem != null)
+                            {
+                                htmlPhameBlogsMenuItem.SetText("PHAME-BLOG-NAME", blogName, HtmlViewPage.ArgumentOptions.Default);
+                            }
+                        }
+
                         htmlViewPage.Merge();
                         htmlPartialViewPage = htmlViewPage;
 

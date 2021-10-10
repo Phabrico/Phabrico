@@ -214,7 +214,10 @@ var StorageDialog = function(editorUi, fn, rowLimit)
 			addLogo(IMAGE_PATH + '/onedrive-logo.svg', mxResources.get('oneDrive'), App.MODE_ONEDRIVE, 'oneDrive');
 		}
 	
-		addLogo(IMAGE_PATH + '/osa_drive-harddisk.png', mxResources.get('device'), App.MODE_DEVICE);
+		if (urlParams['noDevice'] != '1')
+		{
+			addLogo(IMAGE_PATH + '/osa_drive-harddisk.png', mxResources.get('device'), App.MODE_DEVICE);			
+		}
 		
 		if (isLocalStorage && (urlParams['browser'] == '1' || urlParams['offline'] == '1'))
 		{
@@ -1570,7 +1573,7 @@ var BackgroundImageDialog = function(editorUi, applyFn, img)
 		}
 	}
 
-	if (isPageLink || editorUi.pages == null || editorUi.pages.length == 1)
+	if (!isPageLink && (editorUi.pages == null || editorUi.pages.length == 1))
 	{
 		urlRadio.style.display = 'none';
 		pageRadio.style.display = 'none';
@@ -2505,6 +2508,8 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		leftHighlight, rightHighlight, rightHighlightBorder, itemPadding, templateFile,
 		recentDocsCallback, searchDocsCallback, openExtDocCallback, showImport, createButtonLabel, customTempCallback, withoutType)
 {
+	var ww = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+	var smallScreen = ww < 500;
 	showName = (showName != null) ? showName : true;
 	createOnly = (createOnly != null) ? createOnly : false;
 	leftHighlight = (leftHighlight != null) ? leftHighlight : '#ebf2f9';
@@ -2570,15 +2575,15 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		logo.src = IMAGE_PATH + '/osa_drive-harddisk.png';
 	}
 
-	if (!compact && showName)
+	if (!compact && !smallScreen && showName)
 	{
 		header.appendChild(logo);
 	}
 	
 	if (showName)
 	{
-		mxUtils.write(header, ((editorUi.mode == null || editorUi.mode == App.MODE_GOOGLE ||
-				editorUi.mode == App.MODE_BROWSER) ? mxResources.get('diagramName') : mxResources.get('filename')) + ':');
+		mxUtils.write(header, (smallScreen? mxResources.get('name') : ((editorUi.mode == null || editorUi.mode == App.MODE_GOOGLE ||
+				editorUi.mode == App.MODE_BROWSER) ? mxResources.get('diagramName') : mxResources.get('filename'))) + ':');
 	}
 	
 	var ext = '.drawio';
@@ -2615,7 +2620,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	var nameInput = document.createElement('input');
 	nameInput.setAttribute('value', editorUi.defaultFilename + ext);
 	nameInput.style.marginLeft = '10px';
-	nameInput.style.width = (compact) ? '144px' : '244px';
+	nameInput.style.width = (compact || smallScreen) ? '144px' : '244px';
 	
 	this.init = function()
 	{
@@ -2649,7 +2654,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 
 		if (withoutType)
 		{
-			nameInput.style.width = (compact) ? '350px' : '450px';
+			nameInput.style.width = (compact || smallScreen) ? '350px' : '450px';
 		}
 		else
 		{
@@ -2657,7 +2662,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			{
 				var typeSelect = FilenameDialog.createFileTypes(editorUi, nameInput, editorUi.editor.diagramFileTypes);
 				typeSelect.style.marginLeft = '6px';
-				typeSelect.style.width = (compact) ? '80px' : '180px';
+				typeSelect.style.width = (compact || smallScreen) ? '80px' : '180px';
 				header.appendChild(typeSelect);
 			}
 			
@@ -3860,7 +3865,8 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		btns.appendChild(cancelBtn);
 	}
 
-	if (!compact && urlParams['embed'] != '1' && !createOnly)
+	if (!compact && urlParams['embed'] != '1' && !createOnly && 
+			!mxClient.IS_ANDROID && !mxClient.IS_IOS)
 	{
 		var fromTmpBtn = mxUtils.button(mxResources.get('fromTemplateUrl'), function()
 		{
@@ -3937,6 +3943,7 @@ NewDialog.tagsList = {};
 var CreateDialog = function(editorUi, title, createFn, cancelFn, dlgTitle, btnLabel, overrideExtension, allowBrowser,
 	allowTab, helpLink, showDeviceButton, rowLimit, data, mimeType, base64Encoded, hints, hideDialog)
 {
+	showDeviceButton = urlParams['noDevice'] == '1'? false : showDeviceButton;
 	overrideExtension = (overrideExtension != null) ? overrideExtension : true;
 	allowBrowser = (allowBrowser != null) ? allowBrowser : true;
 	rowLimit = (rowLimit != null) ? rowLimit : 4;
@@ -4251,7 +4258,7 @@ var CreateDialog = function(editorUi, title, createFn, cancelFn, dlgTitle, btnLa
 	}
 	
 	if (!Editor.useLocalStorage || urlParams['storage'] == 'device' ||
-		(editorUi.getCurrentFile() != null/* && !mxClient.IS_IOS*/))
+		(editorUi.getCurrentFile() != null/* && !mxClient.IS_IOS*/ && urlParams['noDevice'] != '1'))
 	{
 		var deviceOption = document.createElement('option');
 		deviceOption.setAttribute('value', App.MODE_DEVICE);
@@ -4481,7 +4488,7 @@ var CreateDialog = function(editorUi, title, createFn, cancelFn, dlgTitle, btnLa
 /**
  * 
  */
-CreateDialog.showDownloadButton = true;
+CreateDialog.showDownloadButton = urlParams['noDevice'] != '1';
 
 /**
  * Constructs a new popup dialog.
@@ -4492,6 +4499,7 @@ var PopupDialog = function(editorUi, url, pre, fallback, hideDialog)
 	
 	var div = document.createElement('div');
 	div.style.textAlign = 'left';
+	div.style.height = '100%';
 	
 	mxUtils.write(div, mxResources.get('fileOpenLocation'));
 	mxUtils.br(div);
@@ -7456,7 +7464,6 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 var FreehandWindow = function(editorUi, x, y, w, h)
 {
 	var graph = editorUi.editor.graph;
-	var propertyName = 'tags';
 
 	var div = document.createElement('div');
 	div.style.textAlign = 'center';
@@ -7551,159 +7558,65 @@ var FreehandWindow = function(editorUi, x, y, w, h)
 var TagsWindow = function(editorUi, x, y, w, h)
 {
 	var graph = editorUi.editor.graph;
-	var propertyName = 'tags';
 
-	var div = document.createElement('div');
-	div.style.userSelect = 'none';
-	div.style.overflow = 'hidden';
-	div.style.padding = '10px';
-	div.style.height = '100%';
-	
-	var searchInput = document.createElement('input');
-	searchInput.setAttribute('placeholder', mxResources.get('allTags'));
-	searchInput.setAttribute('type', 'text');
-	searchInput.style.marginTop = '4px';
-	searchInput.style.width = '260px';
-	searchInput.style.fontSize = '12px';
-	searchInput.style.borderRadius = '4px';
-	searchInput.style.padding = '6px';
-	div.appendChild(searchInput);
-	
-	if (!editorUi.isOffline() || mxClient.IS_CHROMEAPP)
+	var tagsComponent = editorUi.editor.graph.createTagsDialog(mxUtils.bind(this, function()
 	{
-		searchInput.style.width = '240px';
-		var elt = editorUi.menus.createHelpLink('https://www.diagrams.net/doc/faq/tags');
-		elt.firstChild.style.marginBottom = '6px';
-		elt.style.marginLeft = '6px';
-		div.appendChild(elt);
-	}
-	
-	mxEvent.addListener(searchInput, 'dblclick', function()
+		return this.window.isVisible();
+	}), null, function(allTags, updateFn)
 	{
-		var dlg = new FilenameDialog(editorUi, propertyName, mxResources.get('ok'), mxUtils.bind(this, function(name)
-		{
-			if (name != null && name.length > 0)
-			{
-				propertyName = name;
-			}
-		}), mxResources.get('enterPropertyName'));
-		editorUi.showDialog(dlg.container, 300, 80, true, true);
-		dlg.init();
-	});
-	
-	searchInput.setAttribute('title', mxResources.get('doubleClickChangeProperty'));
-
-	function searchCells(cells)
-	{
-		return graph.getCellsForTags(searchInput.value.split(' '), cells, propertyName, true);
-	};
-
-	function setCellsVisible(cells, visible)
-	{
-		graph.setCellsVisible(cells, visible);
-	};
-	
-	mxUtils.br(div);
-
-	var hideBtn = mxUtils.button(mxResources.get('hide'), function()
-	{
-		setCellsVisible(searchCells(), false);
-	});
-	
-	hideBtn.setAttribute('title', mxResources.get('hide'));
-	hideBtn.style.marginTop = '8px';
-	hideBtn.style.marginRight = '4px';
-	hideBtn.className = 'geBtn';
-	
-	div.appendChild(hideBtn);
-
-	var showBtn = mxUtils.button(mxResources.get('show'), function()
-	{
-		var cells = searchCells();
-		setCellsVisible(cells, true);
-		
 		if (graph.isEnabled())
 		{
-			// Ignores layers for selection
-			var temp = [];
-			
-			for (var i = 0; i < cells.length; i++)
+			var dlg = new FilenameDialog(editorUi, '', mxResources.get('add'), function(newValue)
 			{
-				if (!graph.isCellLocked(cells[i]) &&
-					(graph.model.isVertex(cells[i]) ||
-					graph.model.isEdge(cells[i])))
+				editorUi.hideDialog();
+				
+				if (newValue != null && newValue.length > 0)
 				{
-					temp.push(cells[i]);
+					var temp = newValue.split(' ');
+					var tags = [];
+
+					for (var i = 0; i < temp.length; i++)
+					{
+						var token = mxUtils.trim(temp[i]);
+
+						if (token != '' && mxUtils.indexOf(
+							allTags, token) < 0)
+						{
+							tags.push(token);
+						}
+					}
+
+					if (tags.length > 0)
+					{
+						if (graph.isSelectionEmpty())
+						{
+							updateFn(allTags.concat(tags));
+						}
+						else
+						{
+							graph.addTagsForCells(graph.getSelectionCells(), tags);
+						}
+					}
 				}
-			}
-			
-			graph.setSelectionCells(temp);
-		}
-		else
-		{
-			for (var i = 0; i < cells.length; i++)
-			{
-				graph.highlightCell(cells[i]);
-			}
-		}
-	});
-	
-	showBtn.setAttribute('title', mxResources.get('show'));
-	showBtn.style.marginTop = '8px';
-	showBtn.style.marginRight = '4px';
-	showBtn.className = 'geBtn';
-	
-	div.appendChild(showBtn);
-	
-	var action = editorUi.actions.get('tags');
+			}, mxResources.get('enterValue') + ' (' + mxResources.get('tags') + ')');
 
-	var btn = mxUtils.button(mxResources.get('close'), function()
-	{
-		action.funct();
-	});
-	
-	btn.setAttribute('title', mxResources.get('close') + ' (Enter/Esc)');
-	btn.style.marginTop = '8px';
-	btn.className = 'geBtn gePrimaryBtn';
-	
-	div.appendChild(btn);
-		
-	mxEvent.addListener(searchInput, 'keyup', function(evt)
-	{
-		// Ctrl or Cmd keys
-		if (evt.keyCode == 13 || evt.keyCode == 27)
-		{
-			action.funct();
+			editorUi.showDialog(dlg.container, 300, 80, true, true);
+			dlg.init();
 		}
 	});
 
+	var div = tagsComponent.div;
 	this.window = new mxWindow(mxResources.get('tags'), div, x, y, w, h, true, true);
+	this.window.minimumSize = new mxRectangle(0, 0, 212, 120);
 	this.window.destroyOnClose = false;
 	this.window.setMaximizable(false);
-	this.window.setResizable(false);
+	this.window.setResizable(true);
 	this.window.setClosable(true);
-	
+
 	this.window.addListener('show', mxUtils.bind(this, function()
 	{
+		tagsComponent.refresh();
 		this.window.fit();
-		
-		if (this.window.isVisible())
-		{
-			searchInput.focus();
-			
-			if (mxClient.IS_GC || mxClient.IS_FF || document.documentMode >= 5)
-			{
-				searchInput.select();
-			}
-			else
-			{
-				document.execCommand('selectAll', false, null);
-			}
-		}
-		else
-		{
-			graph.container.focus();
-		}
 	}));
 	
 	this.window.setLocation = function(x, y)
@@ -9072,6 +8985,7 @@ var LibraryDialog = function(editorUi, name, library, initialImages, file, mode)
 					wrapper.setAttribute('draggable', 'true');
 					wrapper.style.display = 'inline-block';
 					wrapper.style.position = 'relative';
+					wrapper.style.padding = '0 12px';
 					wrapper.style.cursor = 'move';
 					mxUtils.setPrefixedStyle(wrapper.style, 'transition', 'transform .1s ease-in-out');
 					
@@ -9103,7 +9017,7 @@ var LibraryDialog = function(editorUi, name, library, initialImages, file, mode)
 					}
 					
 					var rem = document.createElement('img');
-					rem.setAttribute('src', Editor.closeImage);
+					rem.setAttribute('src', Editor.closeBlackImage);
 					rem.setAttribute('border', '0');
 					rem.setAttribute('title', mxResources.get('delete'));
 					rem.setAttribute('align', 'top');
@@ -11678,7 +11592,7 @@ var FontDialog = function(editorUi, curFontname, curUrl, curType, fn)
 	td.style.whiteSpace = 'nowrap';
 	td.style.fontSize = '10pt';
 	td.style.fontWeight = 'bold';
-	
+
 	var webFontRadio = document.createElement('input');
 	webFontRadio.style.cssText = 'margin-right:8px;margin-bottom:8px;';
 	webFontRadio.setAttribute('value', 'webfonts');
@@ -11693,7 +11607,11 @@ var FontDialog = function(editorUi, curFontname, curUrl, curType, fn)
 	td.appendChild(label);
 	
 	row.appendChild(td);
-	tbody.appendChild(row);
+
+	if (Editor.enableWebFonts)
+	{
+		tbody.appendChild(row);
+	}
 	
 	row = document.createElement('tr');
 	
@@ -11710,7 +11628,14 @@ var FontDialog = function(editorUi, curFontname, curUrl, curType, fn)
 
 	if (curType == 'w')
 	{
-		webFontInput.setAttribute('value', curFontname);
+		if (Editor.enableWebFonts)
+		{
+			webFontInput.setAttribute('value', curFontname);
+		}
+		else
+		{
+			sysFontInput.setAttribute('value', curFontname);
+		}
 	}
 	
 	webFontInput.style.marginLeft = '4px';
@@ -11720,7 +11645,11 @@ var FontDialog = function(editorUi, curFontname, curUrl, curType, fn)
 	td = document.createElement('td');
 	td.appendChild(webFontInput);
 	row.appendChild(td);
-	tbody.appendChild(row);
+
+	if (Editor.enableWebFonts)
+	{
+		tbody.appendChild(row);
+	}
 	
 	row = document.createElement('tr');
 	
@@ -11742,7 +11671,11 @@ var FontDialog = function(editorUi, curFontname, curUrl, curType, fn)
 	td = document.createElement('td');
 	td.appendChild(webFontUrlInput);
 	row.appendChild(td);
-	tbody.appendChild(row);
+
+	if (Editor.enableWebFonts)
+	{
+		tbody.appendChild(row);
+	}
 	
 	this.init = function()
 	{
@@ -11752,7 +11685,7 @@ var FontDialog = function(editorUi, curFontname, curUrl, curType, fn)
 		{
 			input = googleFontInput;
 		}
-		else if (curType == 'w')
+		else if (curType == 'w' && Editor.enableWebFonts)
 		{
 			input = webFontInput;
 		}
@@ -11992,7 +11925,7 @@ AspectDialog.prototype.init = function()
 	}
 };
 
-AspectDialog.prototype.createViewer = function(container, pageNode, layerId)
+AspectDialog.prototype.createViewer = function(container, pageNode, layerId, defaultBackground)
 {
 	mxEvent.disableContextMenu(container);
 	container.style.userSelect = 'none';
@@ -12013,7 +11946,7 @@ AspectDialog.prototype.createViewer = function(container, pageNode, layerId)
 		
 		if (bg == null || bg == '' || bg == mxConstants.NONE)
 		{
-			bg = '#ffffff';
+			bg = (defaultBackground != null) ? defaultBackground : '#ffffff';
 		}
 		
 		container.style.backgroundColor = bg;
@@ -12135,7 +12068,7 @@ var FilePropertiesDialog = function(editorUi)
 	
 	var file = editorUi.getCurrentFile();
 	var filename = (file != null && file.getTitle() != null) ?
-		file.getTitle() : this.editorUi.defaultFilename;
+		file.getTitle() : editorUi.defaultFilename;
 	var isPng = /(\.png)$/i.test(filename);
 	var apply = null;
 

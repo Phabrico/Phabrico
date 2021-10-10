@@ -320,8 +320,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
         [DataRow(typeof(ChromeConfig), "phabrico")]
         [DataRow(typeof(EdgeConfig), "")]
         [DataRow(typeof(EdgeConfig), "phabrico")]
-        // [DataRow(typeof(FirefoxConfig), "")]           // disabled: unable to hide 'Save download as' dialog
-        // [DataRow(typeof(FirefoxConfig), "phabrico")]   // disabled: unable to hide 'Save download as' dialog
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
         public void PhrictionToPDFExport(Type browser, string httpRootPath)
         {
             Initialize(browser, httpRootPath);
@@ -400,6 +400,156 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
                 return false;
             });
+        }
+
+        [TestMethod]
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
+        public void PhrictionValidator(Type browser, string httpRootPath)
+        {
+            Initialize(browser, httpRootPath);
+            Logon();
+
+            // click on 'Phriction' in the menu navigator
+            IWebElement navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+            navigatorPhriction.Click();
+
+            // wait a while
+            WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // validate if Phriction was opened
+            IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            string phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
+
+            // if action pane is collapsed -> expand it
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Edit
+            IWebElement edit = WebBrowser.FindElement(By.LinkText("Edit Document"));
+            edit.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+            // edit content
+            IWebElement textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.End);
+            textarea.SendKeys(" {F31415927}  [[ ./inexistant ]]");
+
+            // click Save button
+            IWebElement btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // validate document content
+            string documentContent = WebBrowser.FindElement(By.Id("remarkupContent"))
+                                               .Text;
+            Assert.AreEqual("Once upon a time, I was reading this story over and over again inexistant", documentContent);
+
+             // navigate to "Story of my grandfather's life" document
+            IWebElement linkStoryGrandfathersLife = WebBrowser.FindElement(By.XPath("//*[contains(text(), \"Story of my grandfather's life\")]"));
+            linkStoryGrandfathersLife.Click();
+
+            // validate if correct document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my grandfather's life"), "Unable to open dad's life story");
+
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Edit
+            edit = WebBrowser.FindElement(By.LinkText("Edit Document"));
+            edit.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+            // edit content
+            textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.End);
+            textarea.SendKeys(" {F27182818}  [[ ./inexistant2 ]]");
+
+            // click Save button
+            btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+            Thread.Sleep(500);
+
+            // validate if correct document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my grandfather's life"), "Unable to open grandaddy's life story");
+
+            // validate document content
+            documentContent = WebBrowser.FindElement(By.Id("remarkupContent"))
+                                        .Text;
+            Assert.AreEqual("Once upon a time, I was reading my grandfather's story over and over again inexistant2", documentContent);
+
+             // navigate to "Story of my life" document (Phriction root document)
+            IWebElement linkStoryDadsLife = WebBrowser.FindElement(By.XPath("//*[contains(text(), \"Phriction\")]"));
+            linkStoryDadsLife.Click();
+
+            // validate if correct document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open my life story");
+
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Validate
+            IWebElement validate = WebBrowser.FindElement(By.LinkText("Validate document"));
+            validate.Click();
+            Thread.Sleep(500); // wait for javascript to be finished
+
+            // verify if messagebox is shown
+            IWebElement msgValidateUnderlyingDocuments = WebBrowser.FindElement(By.XPath("//*[contains(text(), \"There are 2 underlying documents. Would you like to validate these as well ?\")]"));
+            IWebElement btnValidateUnderlyingDocumentsYes = WebBrowser.FindElement(By.XPath("//*[contains(text(), \"Yes\")]"));
+            btnValidateUnderlyingDocumentsYes.Click();
+            Thread.Sleep(500); // wait for javascript to be finished
+
+            // validate validation result
+            IWebElement[] invalidFileReferences = WebBrowser.FindElements(By.XPath("//*[contains(text(), \"Invalid file reference\")]")).ToArray();
+            Assert.IsTrue(invalidFileReferences.Any(invalidFileReference => invalidFileReference.GetAttribute("textContent").Equals("Invalid file reference 31415927")));
+            Assert.IsTrue(invalidFileReferences.Any(invalidFileReference => invalidFileReference.GetAttribute("textContent").Equals("Invalid file reference 27182818")));
+            IWebElement[] invalidHyperlinks = WebBrowser.FindElements(By.XPath("//*[contains(text(), \"Invalid hyperlink\")]")).ToArray();
+            Assert.IsTrue(invalidHyperlinks.Any(invalidHyperlink => invalidHyperlink.GetAttribute("textContent").Equals("Invalid hyperlink inexistant")));
+            Assert.IsTrue(invalidHyperlinks.Any(invalidHyperlink => invalidHyperlink.GetAttribute("textContent").Equals("Invalid hyperlink daddy/grandaddy/inexistant2")));
         }
     }
 }

@@ -83,7 +83,7 @@ window.mxLanguage = window.mxLanguage || (function()
 				
 				if (!lang && window.mxIsElectron)
 				{
-					lang = require('electron').remote.app.getLocale();
+					lang = require('@electron/remote').app.getLocale();
 					
 					if (lang != null)
 			    	{
@@ -223,13 +223,6 @@ window.uiTheme = window.uiTheme || (function()
 		ui = 'sketch';
 	}
 	
-	// Redirects sketch UI to min UI with sketch URL parameter
-	if (ui == 'sketch')
-	{
-		urlParams['sketch'] = '1';
-		ui = 'min';
-	}
-	
 	// Uses minimal theme on small screens
 	try
 	{
@@ -239,7 +232,12 @@ window.uiTheme = window.uiTheme || (function()
 
 	        if (iw <= 768)
 	        {
-	        	ui = 'min';
+				if (urlParams['pages'] == null)
+				{
+					urlParams['pages'] = '1';
+				}
+
+				ui = 'sketch';
 	        }
 		}
 	}
@@ -247,7 +245,14 @@ window.uiTheme = window.uiTheme || (function()
 	{
 		// ignore
 	}
-	
+
+	// Redirects sketch UI to min UI with sketch URL parameter
+	if (ui == 'sketch')
+	{
+		urlParams['sketch'] = '1';
+		ui = 'min';
+	}
+		
 	return ui;
 })();
 
@@ -405,7 +410,12 @@ if (window.location.hostname == 'embed.diagrams.net')
 	urlParams['embed'] = '1';
 }
 
-
+//Disable Google Drive when running in a WebView (e.g, MS Teams App) Since auth doesn't work with disallowd_useragent
+if (/((iPhone|iPod|iPad).*AppleWebKit(?!.*Version)|; wv)/i.test(navigator.userAgent))
+{
+	urlParams['gapi'] = '0';
+	urlParams['noDevice'] = '1';
+}
 
 // Fallback for cases where the hash property is not available
 if ((window.location.hash == null || window.location.hash.length <= 1) &&

@@ -54,6 +54,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 remarkup = remarkup.Substring(match.Length);
                 html = string.Format("<div class='remarkup-{0}'><span class='remarkup-note-word'>{1}:</span> {2}</div>", notificationType, notificationText, Engine.ToHTML(this, database, browser, url, match.Groups[3].Value.Trim(' ', '\r'), out remarkupParserOutput, false));
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
                 Length = match.Length;
 
@@ -70,6 +71,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 html = string.Format("<div class='remarkup-{0}'>{1}</div>", notificationType, Engine.ToHTML(this, database, browser, url, content, out remarkupParserOutput, false));
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
 
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                 Length = match.Length;
 
                 return true;

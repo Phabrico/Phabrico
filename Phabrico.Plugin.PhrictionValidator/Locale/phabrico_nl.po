@@ -1,0 +1,20 @@
+﻿# Dutch translations
+
+# General
+msgid "PluginName.PhrictionValidator"
+msgstr "Document valideren"
+
+msgid "There is 1 underlying document. Would you like to validate this as well ?"
+msgstr "Er is 1 onderliggend document. Wilt u dit ook valideren ?"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to validate these as well ?"
+msgstr "Er zijn @@NBR-CHILD-DOCUMENTS@@ onderliggende documenten. Wilt u deze ook valideren ?"
+
+msgid "No errors were found"
+msgstr "Er zijn geen fouten gevonden"
+
+msgid "Invalid file reference @@FILE-REFERENCE-ID@@"
+msgstr "Ongeldige bestandsreferentie @@FILE-REFERENCE-ID@@"
+
+msgid "Invalid hyperlink @@URL@@"
+msgstr "Ongeldige hyperlink @@URL@@"

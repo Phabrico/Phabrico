@@ -2,6 +2,7 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
+using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
@@ -104,7 +105,20 @@ namespace Phabrico.UnitTests.Selenium
                 DriverConfig = new FirefoxConfig();
                 new DriverManager().SetUpDriver(DriverConfig);
 
-                WebBrowser = new OpenQA.Selenium.Firefox.FirefoxDriver();
+                FirefoxProfile firefoxProfile = new FirefoxProfile();
+                firefoxProfile.SetPreference("pdfjs.disabled", true);
+                firefoxProfile.SetPreference("browser.download.folderList", 2);
+                firefoxProfile.SetPreference("browser.download.dir", DownloadDirectory);
+                firefoxProfile.SetPreference("browser.download.downloadDir", DownloadDirectory);
+                firefoxProfile.SetPreference("browser.download.defaultFolder", DownloadDirectory);
+                firefoxProfile.SetPreference("plugin.disable_full_page_plugin_for_types", "application/pdf, application/force-download");
+                firefoxProfile.SetPreference("browser.helperApps.neverAsk.saveToDisk", "application/pdf, application/force-download");
+                firefoxProfile.SetPreference("browser.helperApps.neverAsk.openFile", "application/pdf, application/force-download");
+
+                WebBrowser = new OpenQA.Selenium.Firefox.FirefoxDriver(new FirefoxOptions
+                {
+                    Profile = firefoxProfile
+                });
                 return;
             }
 

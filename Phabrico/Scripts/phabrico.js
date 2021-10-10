@@ -895,6 +895,9 @@ class Remarkup {
     }
 
     Cancel(button) {
+        var csrf_token = document.querySelector('input[name=csrf_token]');
+        if (csrf_token != null) csrf_token = csrf_token.value;
+
         var token = document.querySelector('input[name=token]').value;
         var textarea = document.querySelector('.app-window-body.edit > textarea');
 
@@ -904,6 +907,7 @@ class Remarkup {
         var data = new FormData();
         data.append('token', token);
         data.append('referencedFiles', referencedFiles);
+        data.append('csrf_token', csrf_token);
 
         var http = new XMLHttpRequest();
         http.open('POST', document.location.pathname + "?action=cancel", true);
@@ -1023,10 +1027,16 @@ class Search {
                     path.className = "search-result-url";
                     item.appendChild(path);
 
-                    if (result.URL.startsWith("/maniphest/"))
+                    if (result.URL.startsWith("maniphest/"))
                     {
                         smallIcon.className = "phui-font-fa fa-anchor lightgraytext";
                         path.innerText = "Maniphest Task";
+                    }
+                    else
+                    if (result.URL.startsWith("phame/"))
+                    {
+                        smallIcon.className = "phui-font-fa fa-feed lightgraytext";
+                        path.innerText = "Blog Post";
                     }
                     else
                     {
@@ -2259,6 +2269,7 @@ function tabChanged(tabButton) {
     if (selectedTab != null) {
         var tabContent = document.getElementById(selectedTab.dataset.tabPageId);
         tabContent.style.display = 'none';
+        selectedTab.removeAttribute('tabindex');
         selectedTab.classList.remove('selected');
     }
 
@@ -2266,6 +2277,7 @@ function tabChanged(tabButton) {
     selectedTab = document.getElementById(selectedTab);
     if (selectedTab != null) {
         tabButton.classList.add('selected');
+        tabButton.setAttribute('tabindex', '-1');
         selectedTab.style.display = 'flex';
     }
 }
@@ -2797,4 +2809,20 @@ window.addEventListener('load', function() {
     // we are using the HTML BASE tag and '?' and '#' links are not working as one would expect
     // (they are pointing to the webserver's RootPath)
     correctAnchorHrefsForUseBaseHtmlTag()
+}, false);
+
+
+// set events for visualizing/hiding keyboard focus
+window.addEventListener('keydown', function(e) {
+    if (e.code == "Tab") {
+        document.querySelectorAll('.phabrico-page-content').forEach((content) => {
+            content.classList.add('tabkey');
+        });
+    }
+}, false);
+
+window.addEventListener('mousedown', function() {
+    document.querySelectorAll('.phabrico-page-content').forEach((content) => {
+        content.classList.remove('tabkey');
+    });
 }, false);

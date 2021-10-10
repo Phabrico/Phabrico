@@ -29,6 +29,16 @@ namespace Phabrico.Phabricator.Data
         public string UserName { get; set; }
 
         /// <summary>
+        /// True if user is configured as a bot user in Phabricator
+        /// </summary>
+        public bool IsBot { get; set; } = false;
+
+        /// <summary>
+        /// True if user is disabled in Phabricator
+        /// </summary>
+        public bool IsDisabled { get; set; } = false;
+
+        /// <summary>
         /// True if the user was selected in Phabrico's Users screen.
         /// This property is used for limiting the import Maniphest data from Phabricator
         /// See also Phabrico's configuration screen

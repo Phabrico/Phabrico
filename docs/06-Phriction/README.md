@@ -63,22 +63,27 @@ To return back to the original format, click on the *Return* button in the top r
 Links to wiki pages can be added on Phabrico's initial homepage by clicking on *Add to favorites*.
 To remove a page from the homepage, click on *Remove from favorites*
 
- Favorites can be relocated by drag and drop them:<br />![image-20210411182114782](phriction-02.png) <br /> 
+ Favorites can be relocated by drag and drop them:<br />![image-20210411182114782](phriction-02.png) <br />
 
 Favorites can also be grouped by clicking on the dot next to it (a scissor should appear):<br />![image-20210411182513804](phriction-03.png) <br />
 
 To ungroup favorites, click in front of the split line
 
-#### 6.4 Export to PDF  (Plugin)
+#### 6.5 Export to PDF  (Plugin)
 
 *Export to PDF* will export the current wiki page (and all underlying wiki pages if wanted) to a PDF file.
-For this functionality you need to have the PhrictionToPDF plugin installed. 
+For this functionality you need to have the PhrictionToPDF plugin installed.
 
-#### 6.4 Metadata
+#### 6.6 Validate document  (Plugin)
+
+*Validate document* will search for invalid hyperlinks and file object references in the current wiki page (and all underlying wiki pages if wanted).
+For this functionality you need to have the PhrictionValidator plugin installed.
+
+#### 6.7 Metadata
 
 Metadata like linked projects, subscribers or who modified the last time the current wiki page are shown at the bottom.
 Attention: in case a project or a subscriber has been added or removed in Phabricator, Phabrico will not detect this in case the content of the wiki page was not modified.
-See also [Phriction's configuration documentation)](../02-Configuration/README.md) 
+See also [Phriction's configuration documentation)](../02-Configuration/README.md)
 
 
 

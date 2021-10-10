@@ -98,6 +98,7 @@ namespace Phabrico.Parsers.Remarkup
                             string processedRemarkupText = unprocessedRemarkupText;
                             remarkupRule.RuleStartOnNewLine = ruleStartsOnNewLine;
                             remarkupRule.RuleStartAfterWhiteSpace = ruleStartsAfterWhiteSpace;
+                            remarkupRule.ChildTokenList.Clear();
                             remarkupRule.LinkedPhabricatorObjects.Clear();
                             remarkupRule.ParentRemarkupRule = currentRemarkupRule;
                             remarkupRule.TokenList = remarkupParserOutput.TokenList;

@@ -30,7 +30,7 @@ namespace Phabrico.Storage
             throw new NotImplementedException();
         }
 
-        private static int _dbVersionInApplication = 3;
+        private static int _dbVersionInApplication = 4;
         private static DateTime _utcNextTimeToVacuum = DateTime.MinValue;
 
         private string encryptionKey;
@@ -198,12 +198,12 @@ namespace Phabrico.Storage
                     {
                         _dbVersionInDataFile = Int32.Parse(version);
                     }
+
+                    Initialize();
                 }
 
                 if (_dbVersionInDataFile == 0)
                 {
-                    Initialize();
-
                     UpgradeIfNeeded();
                 }
             }
@@ -1027,6 +1027,12 @@ namespace Phabrico.Storage
                            PRIMARY KEY (name)
                        );
 
+                       CREATE TABLE IF NOT EXISTS phamePostInfo(
+                           token VARCHAR(30) PRIMARY KEY,
+                           id VARCHAR,
+                           info BLOB
+                       );
+
                        CREATE TABLE IF NOT EXISTS phrictionInfo(
                            token VARCHAR(30) PRIMARY KEY,
                            path BLOB,
@@ -1472,6 +1478,26 @@ namespace Phabrico.Storage
                 {
                     AddParameter(dbCommand, "publicXorCipher", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
                     AddParameter(dbCommand, "privateXorCipher", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
+
+            if (dbVersion == 4)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                           ALTER TABLE userInfo
+                             ADD isBot BLOB;
+
+                           ALTER TABLE userInfo
+                             ADD isDisabled BLOB;
+
+                           UPDATE userInfo
+                              SET isBot = @isBot,
+                                  isDisabled = @isDisabled;
+                       ", Connection))
+                {
+                    AddParameter(dbCommand, "isBot", false);
+                    AddParameter(dbCommand, "isDisabled", false);
                     dbCommand.ExecuteNonQuery();
                 }
             }

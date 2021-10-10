@@ -58,6 +58,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             RemarkupParserOutput remarkupParserOutput;
             html = string.Format("({0})", Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false));
             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+            ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
             return true;
         }

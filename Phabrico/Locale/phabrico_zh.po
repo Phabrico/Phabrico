@@ -272,6 +272,9 @@ msgstr "正在下载任务"
 msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
 msgstr "正在下载任务优先事项和状态"
 
+msgid "Synchronization.Status.DownloadingPhamePostData"
+msgstr "下载博客数据..."
+
 msgid "Synchronization.Status.DownloadingPhrictionData"
 msgstr "维基文档正在下载中"
 
@@ -570,6 +573,16 @@ msgstr "显示参考文献"
 
 msgid "Parameters"
 msgstr "参数"
+
+# Phame
+msgid "Phame"
+msgstr "博客"
+
+msgid "Blog posts"
+msgstr "博客文章"
+
+msgid "Read more..."
+msgstr "阅读更多..."
 
 # Projects & Users
 msgid "Project"

@@ -3,9 +3,10 @@
     <?include "Generated/VersionNumber.wxi" ?>
     <?define UpgradeCode="28297b0c-9bcf-453f-bd83-89ef2f3eb214" ?>
 
+    <?define PluginDiagramsNetGUID = 6352675d-5d6c-4336-aea0-1555814598f2 ?>
     <?define PluginGitanosGUID = 5ea4dc71-b13a-4bb0-8a4c-bcdc7615da4c ?>
     <?define PluginPhrictionToPDFGUID = b1279c42-def1-456b-8db4-bbb77982d948 ?>
-    <?define PluginDiagramsNetGUID = 6352675d-5d6c-4336-aea0-1555814598f2 ?>
+    <?define PluginPhrictionValidatorGUID = fee190d5-b60c-4f22-af48-c21283d3f550 ?>
 
     <Product Id="*"
              Name="Phabrico"
@@ -223,6 +224,9 @@
                 <Feature Id="PluginPhrictionToPDF" Title="PDF Export" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Exports Phriction documents to PDF">
                     <ComponentGroupRef Id="PluginPhrictionToPDFComponents" />
                 </Feature>
+                <Feature Id="PluginPhrictionValidator" Title="Phriction Validator" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Validates all hyperlinks and referenced files in Phriction documents">
+                    <ComponentGroupRef Id="PluginPhrictionValidatorComponents" />
+                </Feature>
                 <Feature Id="PluginDiagramsNet" Title="Diagrams" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams. (Diagrams.Net)">
                     <ComponentGroupRef Id="PluginDiagramsNetComponents" />
                 </Feature>
@@ -271,6 +275,10 @@
 
     <Fragment>
         <?include "Plugin.PhrictionToPDF.wxi" ?>
+    </Fragment>
+
+    <Fragment>
+        <?include "Plugin.PhrictionValidator.wxi" ?>
     </Fragment>
 
     <Fragment>

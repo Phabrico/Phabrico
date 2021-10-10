@@ -302,7 +302,9 @@ namespace Phabrico.Controllers
             {
                 string input = System.Web.HttpUtility.UrlDecode(parameterValues["keyword"]);
                 users = userStorage.Get(database)
-                                   .Where(user => input.Split(' ')
+                                   .Where(user => user.IsBot == false
+                                               && user.IsDisabled == false
+                                               && input.Split(' ')
                                                        .All(keywordPart => user.RealName
                                                                         .Split(' ')
                                                                         .Any(part => part.StartsWith(keywordPart, System.StringComparison.OrdinalIgnoreCase))

@@ -6111,8 +6111,8 @@ LucidImporter = {};
 			
 			memberCells.sort(function(a, b)
 			{
-				var ai = a.zOrder;
-				var bi = b.zOrder;
+				var ai = a.zOrder || a.ZOrder; // for edges we need ZOrder since they aren't created yet
+				var bi = b.zOrder || b.ZOrder;
 				
 				return (ai != null && bi != null) ? (ai > bi? 1 : (ai < bi? -1 : 0)) : 0; //ZOrder can be negative
 			});
@@ -6624,8 +6624,8 @@ LucidImporter = {};
 					if (line.n1 != null) // Curve
 					{
 						var curve =  NURBSTo(points[line.p2].x, points[line.p2].y, w, h, 
-								points[line.p1].x, points[line.p1].y, line.n1.x, line.n1.y, 
-								points[line.p2].x, points[line.p2].y, line.n2.x, line.n2.y);
+								points[line.p1].x / w, points[line.p1].y / h, line.n1.x / w, line.n1.y / h, 
+								points[line.p2].x / w, points[line.p2].y / h, line.n2.x / w, line.n2.y / h);
 						parts.push(curve);
 					}
 					else //line
@@ -6656,6 +6656,8 @@ LucidImporter = {};
 				text: obj.Text,
 				w: w,
 				h: h,
+				x: obj.BoundingBox.x,
+				y: obj.BoundingBox.y,
 				stencils: stencils
 			};
 		}
@@ -9402,6 +9404,12 @@ LucidImporter = {};
 				switch (p.bpmnDataType)
 				{
 					case 0:
+						v.value = convertText(p.Text);
+						
+						if (p.Text && !p.Text.t)
+						{
+							p.Text.t = ' '; //Such that Title is catched and added later!
+						}
 						break;
 					case 1:
 						var item1 = new mxCell('', new mxGeometry(0.5, 1, 12, 10), 'shape=parallelMarker;part=1;');
@@ -13172,11 +13180,12 @@ LucidImporter = {};
 						}
 						
 						var stencil = LucidImporter.stencilsMap[p.Stencil.id];
+						var cx = -stencil.x / stencil.w, cy = -stencil.y / stencil.h;
 						
 						for (var i = 0; i < stencil.stencils.length; i++)
 						{
 							var shape = stencil.stencils[i];
-							var cell = new mxCell('', new mxGeometry(0, 0, w, h), 'shape=' + shape.shapeStencil + ';');
+							var cell = new mxCell('', new mxGeometry(cx, cy, w, h), 'shape=' + shape.shapeStencil + ';');
 							var sfc = shape.FillColor, slc = shape.LineColor, slw = shape.LineWidth;
 							
 							if (shape.FillColor == 'prop')
@@ -13244,11 +13253,11 @@ LucidImporter = {};
 									
 									if (gTxtObj.w)
 									{
-										lblGeo.width *= gTxtObj.w;
+										lblGeo.width *= (gTxtObj.w / stencil.w);
 									}									
 									if (gTxtObj.h)
 									{
-										lblGeo.height *= gTxtObj.h;
+										lblGeo.height *= (gTxtObj.h / stencil.h);
 									}
 									if (gTxtObj.x)
 									{
@@ -13528,7 +13537,8 @@ LucidImporter = {};
 			try
 			{
 				var geo = v.geometry;
-				var title = new mxCell(convertText(p.Title), new mxGeometry(0, geo.height,geo.width, 10), 'strokeColor=none;fillColor=none;');
+				var title = new mxCell(convertText(p.Title), new mxGeometry(0, geo.height + 4,geo.width, 10), 
+								'strokeColor=none;fillColor=none;whiteSpace=wrap;verticalAlign=top;labelPosition=center;verticalLabelPosition=top;align=center;');
 				title.vertex = true;
 				v.insert(title);
 				v.style += getLabelStyle(p.Title, isLastLblHTML);

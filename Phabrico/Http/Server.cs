@@ -479,7 +479,7 @@ namespace Phabrico.Http
                             string currentControllerUrlAlias = (string)urlControllerAttributeType.NamedArguments.FirstOrDefault(arg => arg.MemberName.Equals("Alias")).TypedValue.Value;
 
                             if (urlPerControllerMethod.Values.Any(processedControllerUrl => processedControllerUrl.StartsWith(currentControllerUrl, StringComparison.OrdinalIgnoreCase)
-                                                                                         && processedControllerUrl.Length > currentControllerUrl.Length
+                                                                                         && processedControllerUrl.TrimEnd('/').Length > currentControllerUrl.TrimEnd('/').Length
                                                                  ))
                             {
                                 continue;
@@ -487,7 +487,7 @@ namespace Phabrico.Http
 
                             if (urlPerControllerMethod.Values.Any(processedControllerUrlAlias => currentControllerUrlAlias != null
                                                                                               && processedControllerUrlAlias.StartsWith(currentControllerUrlAlias, StringComparison.OrdinalIgnoreCase)
-                                                                                              && processedControllerUrlAlias.Length > currentControllerUrlAlias.Length
+                                                                                              && processedControllerUrlAlias.TrimEnd('/').Length > currentControllerUrlAlias.TrimEnd('/').Length
                                                                 ))
                             {
                                 continue;
@@ -593,7 +593,7 @@ namespace Phabrico.Http
             if (urlPerControllerMethod.ContainsValue(url))
             {
                 string urlControllerMethod = url;
-                foreach (MethodInfo method in urlPerControllerMethod.Where(kvp => kvp.Value.Equals(urlControllerMethod) == false).Select(kvp => kvp.Key).ToList())
+                foreach (MethodInfo method in urlPerControllerMethod.Where(kvp => kvp.Value.TrimEnd('/').Equals(urlControllerMethod.TrimEnd('/')) == false).Select(kvp => kvp.Key).ToList())
                 {
                     controllerMethods.Remove(method);
                     urlPerControllerMethod.Remove(method);
@@ -603,10 +603,10 @@ namespace Phabrico.Http
 
             if (urlPerControllerMethod.Count > 1)
             {
-                string longestUrl = urlPerControllerMethod.Values.OrderByDescending(controllerMethodUrl => controllerMethodUrl.Length).FirstOrDefault();
+                string longestUrl = urlPerControllerMethod.Values.OrderByDescending(controllerMethodUrl => controllerMethodUrl.Length).FirstOrDefault().TrimEnd('/');
                 foreach (var kvp in urlPerControllerMethod.ToList())
                 {
-                    if (kvp.Value.Equals(longestUrl) == false)
+                    if (kvp.Value.TrimEnd('/').Equals(longestUrl) == false)
                     {
                         controllerMethods.Remove(kvp.Key);
                         urlPerControllerMethod.Remove(kvp.Key);
@@ -1511,24 +1511,7 @@ namespace Phabrico.Http
 
                     case AuthenticationFactor.Knowledge:
                     default:
-                        if (string.IsNullOrEmpty(authenticationFactor))
-                        {
-                            database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Knowledge);
-                        }
-
-                        if (string.IsNullOrEmpty(tokenId) == false && string.IsNullOrEmpty(encryptionKey) == false)
-                        {
-                            Storage.User userStorage = new Storage.User();
-                            if (userStorage.Get(database).Any() == false &&
-                                browser.Session.FormVariables["/auth/login"]?.ContainsKey("username") == true &&
-                                browser.Session.FormVariables["/auth/login"]?.ContainsKey("password") == true)
-                            {
-                                // we have a local SQLite database, but there is no data in it => try to synchronize with Phabricator server
-                                httpResponse.Status = Http.Response.HomePage.HomePageStatus.EmptyDatabase;
-                            }
-                        }
-
-                        database.UpgradeIfNeeded();
+                        ProcessKnowledgeAuthentication(database, browser, httpResponse, authenticationFactor, tokenId, encryptionKey);
                         break;
 
                     case AuthenticationFactor.Ownership:
@@ -1542,28 +1525,47 @@ namespace Phabrico.Http
                         database.PrivateEncryptionKey = Encryption.XorString(dpapiKey, dpapiXorCipherPrivate);
 
                         // create new session token (or reuse the one with the same tokenId)
-                        Phabricator.Data.Account existingAccount = accountStorage.Get(database).FirstOrDefault();
-                        tokenId = existingAccount.Token;
-                        token = Session.CreateToken(tokenId, browser);
-                        browser.SetCookie("token", token.ID, true);
-                        token.EncryptionKey = database.EncryptionKey;
-                        token.PrivateEncryptionKey = database.PrivateEncryptionKey;
-                        token.AuthenticationFactor = AuthenticationFactor.Ownership;
-                        Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
-                        Session.ClientSessions[token.ID].Locale = browser.Language;
-
-                        // store AuthenticationFactor in database
-                        database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
-
-                        database.UpgradeIfNeeded();
-
-                        if (browser.Request.RawUrl.Contains("?ReturnURL="))
+                        Phabricator.Data.Account existingAccount = null;
+                        bool ownershipFailed = false;
+                        try
                         {
-                            string redirectURL = RootPath + browser.Request.RawUrl.Substring((RootPath + "?ReturnURL=").Length);
-                            redirectURL = redirectURL.Replace("//", "/");
-                            Http.Response.HttpRedirect httpRedirect = new Http.Response.HttpRedirect(browser.HttpServer, browser, redirectURL);
-                            httpRedirect.Send(browser);
-                            return;
+                            existingAccount = accountStorage.Get(database).FirstOrDefault();
+                        }
+                        catch
+                        {
+                            ownershipFailed = true;
+                        }
+
+                        if (ownershipFailed)
+                        {
+                            // there was an issue with decrypting the database with the DPAPI keys -> recover to Knowledge authentication
+                            database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Knowledge);
+                            ProcessKnowledgeAuthentication(database, browser, httpResponse, authenticationFactor, tokenId, encryptionKey);
+                        }
+                        else
+                        {
+                            tokenId = existingAccount.Token;
+                            token = Session.CreateToken(tokenId, browser);
+                            browser.SetCookie("token", token.ID, true);
+                            token.EncryptionKey = database.EncryptionKey;
+                            token.PrivateEncryptionKey = database.PrivateEncryptionKey;
+                            token.AuthenticationFactor = AuthenticationFactor.Ownership;
+                            Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
+                            Session.ClientSessions[token.ID].Locale = browser.Language;
+
+                            // store AuthenticationFactor in database
+                            database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
+
+                            database.UpgradeIfNeeded();
+
+                            if (browser.Request.RawUrl.Contains("?ReturnURL="))
+                            {
+                                string redirectURL = RootPath + browser.Request.RawUrl.Substring((RootPath + "?ReturnURL=").Length);
+                                redirectURL = redirectURL.Replace("//", "/");
+                                Http.Response.HttpRedirect httpRedirect = new Http.Response.HttpRedirect(browser.HttpServer, browser, redirectURL);
+                                httpRedirect.Send(browser);
+                                return;
+                            }
                         }
                         break;
                 }
@@ -1577,6 +1579,28 @@ namespace Phabrico.Http
             {
                 UpdateUserRoleConfiguration(database);
             }
+        }
+
+        private void ProcessKnowledgeAuthentication(Database database, Browser browser, Response.HomePage httpResponse, string authenticationFactor, string tokenId, string encryptionKey)
+        {
+            if (string.IsNullOrEmpty(authenticationFactor))
+            {
+                database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Knowledge);
+            }
+
+            if (string.IsNullOrEmpty(tokenId) == false && string.IsNullOrEmpty(encryptionKey) == false)
+            {
+                Storage.User userStorage = new Storage.User();
+                if (userStorage.Get(database).Any() == false &&
+                    browser.Session.FormVariables["/auth/login"]?.ContainsKey("username") == true &&
+                    browser.Session.FormVariables["/auth/login"]?.ContainsKey("password") == true)
+                {
+                    // we have a local SQLite database, but there is no data in it => try to synchronize with Phabricator server
+                    httpResponse.Status = Http.Response.HomePage.HomePageStatus.EmptyDatabase;
+                }
+            }
+
+            database.UpgradeIfNeeded();
         }
 
         /// <summary>

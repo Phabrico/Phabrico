@@ -66,6 +66,33 @@
         </li>
     }@
 
+    @{IF @@ACCESS-HIDE-PHAME@@=False@
+        <li class="phui-list-item-view">
+
+            <ul class="collapsibleList">
+                <li>
+                    <a class="phui-list-item-href tooltip-right">
+                        <label class="phui-font-fa fa-feed phui-list-item-icon" for="collapsibleList-phame">
+                            <span class="phui-list-item-name">Phame
+                                @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                                    <span class="tooltiptext">Blog posts</span>
+                                }@
+                            </span>
+                        </label>
+                    </a>
+                    <input type="checkbox" id="collapsibleList-phame" />
+                    <ul style="margin-left:50px; width:var(--navigator-width);">
+                        @{PHAME-BLOGS
+                            <li style="width:calc(100% - 60px); white-space: normal;">
+                                <span class="anchor phame-blog" data-href="/phame/@@PHAME-BLOG-NAME@@/" data-screen="phame">@@PHAME-BLOG-NAME@@</span>
+                            </li>
+                        }@
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    }@
+
     @{PLUGINS
         <li class="phui-list-item-view">
             <a href="@@PLUGIN-URL@@/" class="phui-list-item-href tooltip-right">
@@ -203,6 +230,38 @@
 </form>
 
 <script>
+    // finalize anchor-liked span elements (=link to partial views)
+    function finalizeAnchorSpans(root) {
+        root.querySelectorAll('span.anchor').forEach(function (anchor) {
+            var li = anchor.closest('li');
+            if (li != null) anchor = li;
+
+            anchor.addEventListener('click', function(e) {
+                var contentWindow = document.querySelector('main > div.phabrico-page-content');
+                var xmlhttp = new XMLHttpRequest();
+                var link = e.target;
+                if (typeof link.dataset.href == "undefined") link = link.children[0];
+
+                xmlhttp.open('GET', document.baseURI + link.dataset.href, true);
+                xmlhttp.onload = function () {
+                    if (xmlhttp.status == 200) {
+                        root.querySelectorAll('span.anchor').forEach(function(anchor) {
+                            anchor.parentElement.classList.remove('selected');
+                        });
+
+                        link.parentElement.classList.add('selected');
+                        document.body.className = link.dataset.screen;
+                        contentWindow.innerHTML = xmlhttp.response;
+                        finalizeAnchorSpans(contentWindow);
+                    }
+                };
+                xmlhttp.send();
+            });
+        });
+    }
+
+    finalizeAnchorSpans(document);
+
     // correct tooltip position for navigator element in case the menu is scrolled vertically
     document.querySelector('ul.phui-list-view').addEventListener('scroll', function(e) { 
         var marginTop = -document.querySelector('ul.phui-list-view').scrollTop - 4;

@@ -158,7 +158,7 @@ namespace Phabrico.Storage
                 Stage stageStorage = new Stage();
                 result = stageStorage.Get<Phabricator.Data.Phriction>(database)
                                      .FirstOrDefault(phrictionDocument => (phrictionDocument.Token ?? "").Equals(key)
-                                                                       || phrictionDocument.Path.Equals(key)
+                                                                       || phrictionDocument.Path.TrimEnd('/').Equals(url.TrimEnd('/'))
                                                     );
             }
 
@@ -368,7 +368,7 @@ namespace Phabrico.Storage
             foreach (string childToken in database.GetUnderlyingTokens(key, "WIKI"))
             {
                 Phabricator.Data.Phriction childDocument = Get(database, childToken);
-                if (childDocument == null) continue;
+                if (childDocument == null || string.IsNullOrEmpty(childDocument.Content)) continue;
                 if (browser.HttpServer.ValidUserRoles(database, browser, childDocument) == false) continue;
 
                 PhrictionDocumentTree childTree = new PhrictionDocumentTree();
@@ -378,7 +378,7 @@ namespace Phabrico.Storage
                 foreach (string grandchildToken in database.GetUnderlyingTokens(childToken, "WIKI"))
                 {
                     Phabricator.Data.Phriction grandchildDocument = Get(database, grandchildToken);
-                    if (grandchildDocument == null) continue;
+                    if (grandchildDocument == null || string.IsNullOrEmpty(grandchildDocument.Content)) continue;
                     if (browser.HttpServer.ValidUserRoles(database, browser, grandchildDocument) == false) continue;
 
                     PhrictionDocumentTree grandchildTree = new PhrictionDocumentTree();

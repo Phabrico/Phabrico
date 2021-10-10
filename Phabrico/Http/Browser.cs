@@ -275,19 +275,6 @@ namespace Phabrico.Http
                 result += string.Format("{0:x2}", randomByte);
             }
 
-            // remove old CSRFs
-            const int maximumConcurrentCSRFs = 10;
-            while (session.ActiveCSRF.Count >= maximumConcurrentCSRFs)
-            {
-                foreach (string oldCSRF in session.ActiveCSRF.OrderByDescending(kvp => kvp.Value)
-                                                             .Skip(maximumConcurrentCSRFs - 1)
-                                                             .Select(kvp => kvp.Key)
-                                                             .ToArray())
-                {
-                    session.ActiveCSRF.Remove(oldCSRF);
-                }
-            }
-
             // store new CSRFs
             session.ActiveCSRF[result] = DateTime.UtcNow;
 

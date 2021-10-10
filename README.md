@@ -36,6 +36,9 @@ It visualizes the state of all available local git repositories.
 ## PhrictionToPDF
 allows you to convert a Phriction document (or including all the documents under this Phriction document) into a single PDF file.
 
+## PhrictionValidator
+verifies if all links to documents or files in a Phriction document (or including all documents under this Phriction document) are valid.
+
 # User manual
 See https://phabrico.github.io/Phabrico/
 

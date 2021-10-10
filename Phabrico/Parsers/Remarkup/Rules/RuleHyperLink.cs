@@ -18,6 +18,21 @@ namespace Phabrico.Parsers.Remarkup.Rules
         private bool inexistantLinkedPhrictionDocument;
         private Phabricator.Data.Phriction linkedPhrictionDocument;
 
+        public bool InvalidHyperlink { get; private set; } = false;
+        public string URL { get; private set; }
+
+        /// <summary>
+        /// Creates a copy of the current RuleHyperLink
+        /// </summary>
+        /// <returns></returns>
+        public override RemarkupRule Clone()
+        {
+            RuleHyperLink copy = base.Clone() as RuleHyperLink;
+            copy.InvalidHyperlink = InvalidHyperlink;
+            copy.URL = URL;
+            return copy;
+        }
+
         /// <summary>
         /// Converts Remarkup encoded text into HTML
         /// </summary>
@@ -34,6 +49,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             bannedLinkedPhrictionDocument = false;
             inexistantLinkedPhrictionDocument = false;
             linkedPhrictionDocument = null;
+            InvalidHyperlink = false;
 
             try
             {
@@ -63,6 +79,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                     Length = match.Length;
 
+                    URL = urlHyperlink;
+
                     return true;
                 }
 
@@ -70,7 +88,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
-                    html = string.Format("<a class='phriction-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), match.Groups[2].Value.Trim());
+                    URL = match.Groups[2].Value.Trim();
+                    html = string.Format("<a class='phriction-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), URL);
 
                     Length = match.Length;
 
@@ -81,7 +100,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
-                    html = string.Format("<a class='email-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), match.Groups[2].Value.Trim());
+                    URL = match.Groups[2].Value.Trim();
+                    html = string.Format("<a class='email-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), URL);
 
                     Length = match.Length;
 
@@ -92,6 +112,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
+                    URL = "mailto:" + match.Value;
                     html = string.Format("<a class='email-link' href='mailto:{0}'>{0}</a>", match.Value);
 
                     Length = match.Length;
@@ -103,7 +124,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
-                    html = string.Format("<a class='phone-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), match.Groups[2].Value.Trim());
+                    URL = match.Groups[2].Value.Trim();
+                    html = string.Format("<a class='phone-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), URL);
 
                     Length = match.Length;
 
@@ -119,10 +141,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     string hyperlinkText = "";
                     if (InvalidUrl(database, browser, url, ref hyperlink, ref hyperlinkText))
                     {
+                        URL = url;
                         html = HttpUtility.HtmlEncode(match.Value);
                     }
                     else
                     {
+                        URL = hyperlink;
                         html = string.Format("<a class='phriction-link' href='{0}'>{0}</a>", hyperlink);
                     }
 
@@ -153,6 +177,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
                         html = string.Format("<a class='email-link' href='mailto:{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
+                        URL = "mailto:" + urlHyperlink;
                     }
                     else
                     if (urlHyperlink.StartsWith("tel:"))
@@ -161,6 +186,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
                         html = string.Format("<a class='phone-link' href='tel:{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
+                        URL = "tel:" + urlHyperlink;
                     }
                     else
                     if (urlHyperlink.StartsWith("ftp://"))
@@ -169,6 +195,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
                         html = string.Format("<a class='phriction-link' href='{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
+                        URL = urlHyperlink;
                     }
                     else
                     {
@@ -341,6 +368,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                     remarkup = remarkup.Substring(match.Length);
 
+                    URL =urlHyperlink;
+
                     Length = match.Length;
                     return true;
                 }
@@ -435,15 +464,23 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if not valid</returns>
         private bool InvalidUrl(Storage.Database database, Browser browser, string currentUrl, ref string urlHyperlink, ref string urlHyperlinkText)
         {
-            if (bannedLinkedPhrictionDocument) return false;
+            if (bannedLinkedPhrictionDocument)
+            {
+                InvalidHyperlink = false;
+                return InvalidHyperlink;
+            }
 
             bool invalidUrl = RegexSafe.IsMatch(urlHyperlink, "[\r\n\\\\]", RegexOptions.Singleline);
-            if (invalidUrl) return true;
+            if (invalidUrl)
+            {
+                InvalidHyperlink = true;
+                return InvalidHyperlink;
+            }
 
             if (RegexSafe.IsMatch(urlHyperlink, "^https?://", RegexOptions.Singleline))
             {
-                invalidUrl = Uri.IsWellFormedUriString(urlHyperlink, UriKind.Absolute) == false;
-                return invalidUrl;
+                InvalidHyperlink = Uri.IsWellFormedUriString(urlHyperlink, UriKind.Absolute) == false;
+                return InvalidHyperlink;
             }
 
             if (RegexSafe.IsMatch(urlHyperlink, "^tel:", RegexOptions.Singleline))
@@ -469,13 +506,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     $                                           # end of string.
                 ", RegexOptions.IgnorePatternWhitespace);
 
-                return (success == false);
+                InvalidHyperlink = (success == false);
+                return InvalidHyperlink;
             }
 
             if (RegexSafe.IsMatch(urlHyperlink, "^mailto:", RegexOptions.Singleline))
             {
-                invalidUrl = new EmailAddressAttribute().IsValid(urlHyperlink.Substring("mailto:".Length).Trim()) == false;
-                if (invalidUrl) return true;
+                InvalidHyperlink = new EmailAddressAttribute().IsValid(urlHyperlink.Substring("mailto:".Length).Trim()) == false;
+                if (InvalidHyperlink) return true;
             }
 
             string localHyperlink = urlHyperlink;
@@ -493,14 +531,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
             {
                 if (browser.HttpServer.ValidUserRoles(database, browser, linkedPhrictionDocument) == false)
                 {
-                    return true;
+                    InvalidHyperlink = true;
+                    return InvalidHyperlink;
                 }
             }
 
-            return linkedPhrictionDocument == null
+            InvalidHyperlink = linkedPhrictionDocument == null
                 && localHyperlink.StartsWith("mailto:") == false
                 && localHyperlink.StartsWith("tel:") == false
                 && localHyperlink.StartsWith("ftp://") == false;
+            return InvalidHyperlink;
         }
     }
 }

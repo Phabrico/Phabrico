@@ -17,6 +17,8 @@ const PDFDocument = require('pdf-lib').PDFDocument;
 const Store = require('electron-store');
 const store = new Store();
 const ProgressBar = require('electron-progressbar');
+const remoteMain = require("@electron/remote/main")
+remoteMain.initialize()
 const disableUpdate = require('./disableUpdate').disableUpdate() || 
 						process.env.DRAWIO_DISABLE_UPDATE === 'true' || 
 						fs.existsSync('/.flatpak-info'); //This file indicates running in flatpak sandbox
@@ -75,14 +77,15 @@ function createWindow (opt = {})
 		webPreferences: {
 			// preload: path.resolve('./preload.js'),
 			nodeIntegration: true,
-			enableRemoteModule: true,
 			nodeIntegrationInWorker: true,
 			spellcheck: (os.platform() == "darwin" ? true : false),
-			contextIsolation: false
+			contextIsolation: false,
+			nativeWindowOpen: true
 		}
 	}, opt)
 
 	let mainWindow = new BrowserWindow(options)
+	remoteMain.enable(mainWindow.webContents)
 	windowsRegistry.push(mainWindow)
 
 	if (__DEV__) 
@@ -273,7 +276,8 @@ app.on('ready', e =>
 			show : false,
 			webPreferences: {
 				nodeIntegration: true,
-				contextIsolation: false
+				contextIsolation: false,
+				nativeWindowOpen: true
 			}
 		});
     	
@@ -325,10 +329,10 @@ app.on('ready', e =>
 			{
 	    		from = options.pageIndex;
 			}
-	    	else if (options.pageRage && options.pageRage.length == 2)
+	    	else if (options.pageRange && options.pageRange.length == 2)
 			{
-	    		from = options.pageRage[0] >= 0 ? options.pageRage[0] : null;
-	    		to = options.pageRage[1] >= 0 ? options.pageRage[1] : null;
+	    		from = options.pageRange[0] >= 0 ? options.pageRange[0] : null;
+	    		to = options.pageRange[1] >= 0 ? options.pageRange[1] : null;
 			}
 
 			var expArgs = {
@@ -1215,7 +1219,8 @@ function exportDiagram(event, args, directFinalize)
 			webPreferences: {
 				backgroundThrottling: false,
 				nodeIntegration: true,
-				contextIsolation: false
+				contextIsolation: false,
+				nativeWindowOpen: true
 			},
 			show : false,
 			frame: false,

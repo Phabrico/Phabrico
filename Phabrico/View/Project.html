@@ -297,6 +297,7 @@ function populateTable(firstCharacters)
                 var colorSelector = document.createElement('div');
                 colorSelector.classList.add('color-selector');
                 colorSelector.classList.add(record.Token);
+                colorSelector.setAttribute('tabindex', '0');
                 var colorRectangle = document.createElement('div');
                 colorRectangle.classList.add('color');
                 if (record.Color == '') record.Color = '#0080ff';

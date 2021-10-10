@@ -49,6 +49,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 RemarkupParserOutput remarkupParserOutput;
                 html = Engine.ToHTML(this, database, browser, url, quotedContent, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
                 while (html.StartsWith("<br>\n"))
                 {

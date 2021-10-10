@@ -66,7 +66,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                         Account existingAccount = accountStorage.Get(database, SessionManager.GetToken(browser));
 
-                        if (existingAccount.Parameters.ClipboardCopyForCodeBlock)
+                        if (existingAccount != null && existingAccount.Parameters.ClipboardCopyForCodeBlock)
                         {
                             html += "<button class='codeblock copy'>" + Locale.TranslateText("CodeBlock.Copy", browser.Session.Locale) + "</button>";
                         }

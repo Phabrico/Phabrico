@@ -710,8 +710,8 @@ namespace Phabrico.Controllers
                 Storage.Phriction phrictionStorage = new Storage.Phriction();
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
-                // set private encryption key
-                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+                    // set private encryption key
+                    database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                     Phabricator.Data.Phriction parentPhrictionDocument = null;
                     string tokenCurrentDocument = browser.Session.FormVariables[browser.Request.RawUrl]["token"];

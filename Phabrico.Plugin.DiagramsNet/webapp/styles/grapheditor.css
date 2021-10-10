@@ -1,5 +1,5 @@
 .geEditor {
-	font-family:Helvetica,Arial,sans-serif;
+	font-family:-apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", system-ui, ui-sans-serif, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 	font-size:14px;
 	border:none;
 	margin:0px;
@@ -86,21 +86,27 @@
 	filter:alpha(opacity=80);
 	font-size:9pt;
 }
-.geStatusAlert {
+.geStatus > * {
+	overflow:hidden;
 	white-space:nowrap;
-	margin-top:-5px;
+	vertical-align:middle;
+	display:inline-block;
 	font-size:12px;
-	padding:4px 6px 4px 6px;
+	margin-right:8px;
+}
+.geStatus img {
+	max-width:16px;
+	vertical-align:bottom;
+}
+.geStatusAlert {
+	padding:4px 8px;
 	background-color:#f2dede;
 	border:1px solid #ebccd1;
 	color:#a94442 !important;
 	border-radius:3px;
 }
 .geStatusAlertOrange {
-	white-space:nowrap;
-	margin-top:-5px;
-	font-size:12px;
-	padding:4px 6px 4px 6px;
+	padding:4px 8px;
 	background-color:rgb(242, 147, 30);
 	border:rgb(240, 135, 5);
 	color:#000000 !important;
@@ -111,8 +117,6 @@
 	opacity:1;
 }
 .geStatusMessage {
-	white-space:nowrap;
-	margin-top:-5px;
 	padding:4px 6px 4px 6px;
 	font-size:12px;
 	background: -webkit-linear-gradient(top,#dff0d8 0,#c8e5bc 100%);
@@ -242,7 +246,7 @@
 }
 .geActivePage {
 	font-weight:bold;
-	color:#188038 !important;
+	color:#DF6C0C !important;
 }
 .geMenubarContainer, .geToolbarContainer, .geHsplit, .geVsplit {
 	background-color:#fbfbfb;
@@ -289,7 +293,8 @@
 }
 .geMenubar a.geStatus {
 	color:#888888;
-	padding-left:12px;
+	padding-top:5px;
+	padding-left:8px;
 	display:inline-block;
 	cursor:default !important;
 }
@@ -751,7 +756,7 @@ html table.mxPopupMenu {
 }
 html td.mxPopupMenuItem {
 	padding:7px 30px 7px 30px;
-	font-family:Helvetica Neue,Helvetica,Arial Unicode MS,Arial;
+	font-family:-apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", system-ui, ui-sans-serif, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 	font-size:10pt;
 }
 html td.mxPopupMenuIcon {
@@ -786,11 +791,14 @@ table.mxPopupMenu tr {
 	font-size:4pt;
 }
 html td.mxWindowTitle {
-	font-family:Helvetica Neue,Helvetica,Arial Unicode MS,Arial;
+	font-family:-apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", system-ui, ui-sans-serif, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
  	text-align:left;
  	font-size:12px;
  	color:rgb(112, 112, 112);
  	padding:4px;
+}
+table.geProperties {
+	table-layout:fixed;
 }
 table.geProperties tr td {
 	height:21px;
@@ -819,7 +827,10 @@ table.geProperties tr td {
 }
 .gePropRowCell {
     border-left: 1px solid #f3f3f3;
-    width: 50%;
+	white-space:nowrap;
+	text-overflow:ellipsis;
+	overflow:hidden;
+    max-width: 50%;
 }
 .gePropRow>.gePropRowCell {
     background: #fff;

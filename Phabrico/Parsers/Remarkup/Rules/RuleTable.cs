@@ -220,6 +220,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         string cellConcealed = cellType.Equals("td") && concealedHeaderIndices.Contains(cellIndex) ? " class='concealed'" : "";
 
                         LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                        ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
                         tableContent += string.Format("    <{0}{1}>{2}</{0}>\n", cellType, cellConcealed, cellValue.Replace("\r", "").Replace("\n", "<br>"));
                         cellIndex++;

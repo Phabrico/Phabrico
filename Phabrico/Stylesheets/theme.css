@@ -384,7 +384,12 @@ a.maniphest-link:hover {
     color: var(--phui-document-hierarchy-a-color);
 }
 
-.phui-list-item-href:hover {
+.phui-list-item-href:hover,
+.phui-list-item-view ul.collapsibleList li ul li:hover {
+    background: var(--phui-list-item-href-hover-background);
+}
+
+.phui-list-item-view ul.collapsibleList li ul li.selected {
     background: var(--phui-list-item-href-hover-background);
 }
 
@@ -438,7 +443,8 @@ button.button-red:hover:enabled {
     color: var(--tab-head-button-selected-color);
 }
 
-.tab-head > button:hover {
+.tab-head > button:hover,
+.tab-head > button:focus {
     background-image: var(--tab-head-button-background-image-hover) !important;
     color: var(--tab-head-button-color-hover) !important;
 }
@@ -959,4 +965,35 @@ a.user-reference {
 .user-menu .content {
     background: var(--user-menu-content-background);
     border-color: var(--user-menu-content-border-color);
+}
+
+.color-selector:focus,
+.phabrico-page-content.tabkey a:focus {
+    outline-color: var(--outline-color);
+}
+
+.phame-blog-read-more {
+    color: var(--phame-blog-read-more-color);
+}
+
+a.phame-reference {
+    background: var(--phame-reference-background);
+    color: var(--phame-reference-color);
+    border-color: var(--phame-reference-border-color);
+}
+
+.phame .phabrico-page-content {
+    background: var(--phui-document-background);
+}
+
+.phame-post .phabrico-page-content {
+    background: var(--phui-document-background);
+}
+
+.phame-blog-post .post-info {
+    color: var(--phame-blog-post-info-color);
+}
+
+.phame-blog #remarkupContent {
+    background: var(--phame-blog-overview-post-background);
 }

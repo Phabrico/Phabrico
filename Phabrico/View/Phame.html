@@ -1,0 +1,20 @@
+<div class="phame-blog" style="margin: 0px 20px;">
+    <h1>@@BLOG-TITLE@@</h1>
+    <div style="display: flex;flex-direction: column;">
+        @{BLOG-POST
+            <h2>@@BLOG-POST-TITLE@@</h2>
+            <div class="post-info">
+                <span class="author">
+                    <i class="fa fa-user"></i>
+                    <span>@@AUTHOR@@</span>
+                </span>
+                <span class="modified">
+                    <i class="fa fa-calendar"></i>
+                    <span>@@DATE-MODIFIED@@</span>
+                </span>
+            </div>
+            <div id="remarkupContent" class="content remarkupContent">@@BLOG-POST-CONTENT@@</div>
+            <span class="anchor phame-blog-read-more" data-href="/phame/post/view/@@BLOG-POST-ID@@/" data-screen="phame-post">Read more...</span>
+        }@
+    </div>
+</div>

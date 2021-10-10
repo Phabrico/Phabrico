@@ -90,7 +90,7 @@ namespace Phabrico.Miscellaneous
         }
 
         /// <summary>
-        /// Converts a System.Net.HttpListenerContext object implicitly into a Phabrico.Miscellaneous.HttpListenerContext object
+        /// Converts Dictionary object implicitly into a DictionarySafe object
         /// </summary>
         /// <param name="dictionary"></param>
         public static implicit operator DictionarySafe<TKey,TValue>(Dictionary<TKey,TValue> dictionary)

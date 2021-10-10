@@ -106,6 +106,9 @@ namespace Phabrico.Controllers
         {
             /// <summary>
             /// The method to be executed
+            /// <param name="synchronizationParameters"></param>
+            /// <param name="processedDuration"></param>
+            /// <param name="totalDuration"></param>
             /// </summary>
             public Action<SynchronizationParameters, int, int> Method { get; set; }
 
@@ -145,7 +148,7 @@ namespace Phabrico.Controllers
             /// <summary>
             /// List of file id's per token
             /// In case a new or modified document or task contains a reference to a file (e.g. an image), the file needs also to be downloaded.
-            /// This dictionary is filled by the ProgressMethod_DownloadManiphestTasks and ProgressMethod_DownloadPhrictionDocuments methods and 
+            /// This dictionary is filled by the ProgressMethod_DownloadManiphestTasks and ProgressMethod_DownloadPhrictionDocuments methods and
             /// is read and cleared by the ProgressMethod_DownloadFileObjects method
             /// Key is the token of the owner (e.g. maniphest task or phriction document); Value is a list of all referenced file-id's
             /// </summary>
@@ -164,6 +167,12 @@ namespace Phabrico.Controllers
             /// This way the 2nd download won't download the results again from the 1st download
             /// </summary>
             public DateTimeOffset lastDownloadTimestamp;
+
+            /// <summary>
+            /// Latest timestamp of a removal of a wiki document in Phabricator.
+            /// It works together with the lastDownloadTimestamp variable: based on this timestamp, the starting timestamp for the next Phabricator sync can be determined
+            /// </summary>
+            public DateTimeOffset lastRemovalTimestamp;
 
             /// <summary>
             /// Timestamp of the latest the synchronization process was finished
@@ -314,31 +323,31 @@ namespace Phabrico.Controllers
                 case Phabricator.Data.Account.RemovalPeriod.RemovalPeriod1Day:
                     oldestTimestampToKeep = oldestTimestampToKeep.AddDays(-1);
                     break;
-                    
+
                 case Phabricator.Data.Account.RemovalPeriod.RemovalPeriod1Week:
                     oldestTimestampToKeep = oldestTimestampToKeep.AddDays(-7);
                     break;
-                    
+
                 case Phabricator.Data.Account.RemovalPeriod.RemovalPeriod2Weeks:
                     oldestTimestampToKeep = oldestTimestampToKeep.AddDays(-14);
                     break;
-                    
+
                 case Phabricator.Data.Account.RemovalPeriod.RemovalPeriod1Month:
                     oldestTimestampToKeep = oldestTimestampToKeep.AddMonths(-1);
                     break;
-                    
+
                 case Phabricator.Data.Account.RemovalPeriod.RemovalPeriod3Months:
                     oldestTimestampToKeep = oldestTimestampToKeep.AddMonths(-3);
                     break;
-                    
+
                 case Phabricator.Data.Account.RemovalPeriod.RemovalPeriod6Months:
                     oldestTimestampToKeep = oldestTimestampToKeep.AddMonths(-6);
                     break;
-                    
+
                 case Phabricator.Data.Account.RemovalPeriod.RemovalPeriod1Year:
                     oldestTimestampToKeep = oldestTimestampToKeep.AddYears(-1);
                     break;
-                    
+
                 case Phabricator.Data.Account.RemovalPeriod.RemovalPeriod10Years:
                     oldestTimestampToKeep = oldestTimestampToKeep.AddYears(-10);
                     break;
@@ -386,6 +395,7 @@ namespace Phabrico.Controllers
 
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+            Storage.PhamePost phamePostStorage = new Storage.PhamePost();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.SynchronizationLogging synchronizationLoggingStorage = new Storage.SynchronizationLogging();
             string filterText = parameters.FirstOrDefault();
@@ -414,25 +424,29 @@ namespace Phabrico.Controllers
                     if (record.Token.StartsWith(Phabricator.Data.Phriction.Prefix))
                     {
                         Phabricator.Data.Phriction document = phrictionStorage.Get(database, synchronizationLogging.Token, true);
+                        if (document == null) continue;
+
                         record.IsNew = string.IsNullOrEmpty(synchronizationLogging.PreviousContent);
                         record.Type = "fa-book";
 
                         if (document.Content.Contains(filterText) == false &&                                                       // is filterText found in document content ?
                             document.Name.Contains(filterText) == false &&                                                          // is filterText found in document title ?
                             string.Join(" ", document.Projects                                                                      // is filterText found in project tags ?
-                                                 .Split(',')                                                                        // 
-                                                 .Select(project => getProjectName(project))                                        // 
-                                       )                                                                                            // 
-                                  .Split(' ', '-', '.')                                                                             // 
-                                  .Any(word => word.StartsWith(filterText, StringComparison.InvariantCultureIgnoreCase)) == false)  // 
+                                                 .Split(',')                                                                        //
+                                                 .Select(project => getProjectName(project))                                        //
+                                       )                                                                                            //
+                                  .Split(' ', '-', '.')                                                                             //
+                                  .Any(word => word.StartsWith(filterText, StringComparison.InvariantCultureIgnoreCase)) == false)  //
                         {
                             continue;
                         }
                     }
-
+                    else
                     if (record.Token.StartsWith(Phabricator.Data.Maniphest.Prefix))
                     {
                         Phabricator.Data.Maniphest task = maniphestStorage.Get(database, synchronizationLogging.Token, true);
+                        if (task == null) continue;
+
                         record.IsNew = string.IsNullOrEmpty(synchronizationLogging.PreviousContent);
                         record.MetadataIsModified = synchronizationLogging.MetadataIsModified;
                         record.Type = "fa-anchor";
@@ -441,11 +455,26 @@ namespace Phabrico.Controllers
                             task.Name.ToLower().Contains(filterText.ToLower()) == false &&                                                              // is filterText found in task title ?
                             filterText.Equals("T" + task.ID) == false &&                                                            // is filterText T + task-id ?
                             string.Join(" ", task.Projects                                                                          // is filterText found in project tags ?
-                                                 .Split(',')                                                                        // 
-                                                 .Select(project => getProjectName(project))                                        // 
-                                       )                                                                                            // 
-                                  .Split(' ', '-', '.')                                                                             // 
-                                  .Any(word => word.StartsWith(filterText, StringComparison.InvariantCultureIgnoreCase)) == false)  // 
+                                                 .Split(',')                                                                        //
+                                                 .Select(project => getProjectName(project))                                        //
+                                       )                                                                                            //
+                                  .Split(' ', '-', '.')                                                                             //
+                                  .Any(word => word.StartsWith(filterText, StringComparison.InvariantCultureIgnoreCase)) == false)  //
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    if (record.Token.StartsWith(Phabricator.Data.PhamePost.Prefix))
+                    {
+                        Phabricator.Data.PhamePost blogPost = phamePostStorage.Get(database, synchronizationLogging.Token);
+                        if (blogPost == null) continue;
+
+                        record.IsNew = true;
+                        record.Type = "fa-feed";
+
+                        if (blogPost.Title.Contains(filterText) == false &&     // is filterText found in blog post ?
+                            blogPost.Content.Contains(filterText) == false)     //
                         {
                             continue;
                         }
@@ -477,6 +506,7 @@ namespace Phabrico.Controllers
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
+            Storage.PhamePost phamePostStorage = new Storage.PhamePost();
             Storage.SynchronizationLogging synchronizationLoggingStorage = new Storage.SynchronizationLogging();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
@@ -506,6 +536,15 @@ namespace Phabrico.Controllers
                         if (currentTask != null)
                         {
                             currentContent = currentTask.Description;
+                        }
+                    }
+                    else
+                    if (phabricatorToken.StartsWith(Phabricator.Data.PhamePost.Prefix))
+                    {
+                        Phabricator.Data.PhamePost currentPost = phamePostStorage.Get(database, phabricatorToken);
+                        if (currentPost != null)
+                        {
+                            currentContent = currentPost.Content;
                         }
                     }
 
@@ -643,7 +682,7 @@ namespace Phabrico.Controllers
 
         /// <summary>
         /// This method is fired from the HttpPostStartFullSynchronization method ("/synchronize/full" url)
-        /// It downloads the content of the Phabricator server into the local SQLite database and uploads 
+        /// It downloads the content of the Phabricator server into the local SQLite database and uploads
         /// the content of the StageInfo table to the Phabricator server
         /// </summary>
         /// <param name="httpServer">webserver object</param>
@@ -672,28 +711,50 @@ namespace Phabrico.Controllers
 
                     database.SetConfigurationParameter("LastSyncMode", SyncMode.Full.ToString());
 
-                    ExecuteProgressMethodsSynchronously(synchronizationParameters,
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_Connecting },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadProjects },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadUsers },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_WhoAmI },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_LoadLastSynchronizeTimeStamp },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadManiphestPrioritiesAndStates },
-                        new MethodProgress { DurationCoefficient = 20, Method = ProgressMethod_DownloadManiphestTasks },
-                        new MethodProgress { DurationCoefficient = 20, Method = ProgressMethod_DownloadPhrictionDocuments },
-                        new MethodProgress { DurationCoefficient = 40, Method = ProgressMethod_DownloadFileObjects },
-                        new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadTransactions },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_SaveLastDownloadTimeStamp },
-                        new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadPhrictionDocuments },
-                        new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadManiphestTasks },
-                        new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadPhrictionDocuments },  // download uploaded phriction documents again from server so we get the correct tokens
-                        new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadManiphestTasks },      // download uploaded maniphest tasks again from server so we get the correct tokens
-                        new MethodProgress { DurationCoefficient = 10, Method = ProgressMethod_DownloadFileObjects },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadMacros },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DeleteOldData },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_SaveLastSynchronizeTimeStamp },
-                        new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_Finalize }
-                    );
+                    List<MethodProgress> synchronizationMethods = new List<MethodProgress>();
+
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_Connecting });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadProjects });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadUsers });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_WhoAmI });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_LoadLastSynchronizeTimeStamp });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadManiphestPrioritiesAndStates });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 20, Method = ProgressMethod_DownloadManiphestTasks });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 20, Method = ProgressMethod_DownloadPhrictionDocuments });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadPhamePosts });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 40, Method = ProgressMethod_DownloadFileObjects });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadTransactions });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_SaveLastDownloadTimeStamp });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadPhrictionDocuments });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadManiphestTasks });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadPhrictionDocuments });  // download uploaded phriction documents again from server so we get the correct tokens
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadManiphestTasks });      // download uploaded maniphest tasks again from server so we get the correct tokens
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 10, Method = ProgressMethod_DownloadFileObjects });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadMacros });
+
+                    foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
+                    {
+                        if (plugin.State == Plugin.PluginBase.PluginState.Loaded)
+                        {
+                            plugin.Database = new Storage.Database(database.EncryptionKey);
+                            plugin.Initialize();
+                            plugin.State = Plugin.PluginBase.PluginState.Initialized;
+                        }
+
+                        if (plugin.SynchronizationReadData != null)
+                        {
+                            MethodProgress pluginMethodProgress = new MethodProgress();
+                            pluginMethodProgress.DurationCoefficient = 5;
+                            pluginMethodProgress.Method = new Action<Synchronization.SynchronizationParameters,int,int>(plugin.SynchronizationReadData);
+                            synchronizationMethods.Add(pluginMethodProgress);
+                        }
+                    }
+
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DeleteOldData });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_SaveLastSynchronizeTimeStamp });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_Finalize });
+
+                    ExecuteProgressMethodsSynchronously(synchronizationParameters, synchronizationMethods.ToArray());
 
                     // store syncrhonization timestamp
                     synchronizationParameters.existingAccount = accountStorage.WhoAmI(database, browser);  // reload account again (because the WhoAmI call might have changed some settings)
@@ -733,7 +794,7 @@ namespace Phabrico.Controllers
 
         /// <summary>
         /// This method is fired from the HttpPostStartLightSynchronization method ("/synchronize/full" light)
-        /// It downloads the content of the Phabricator server into the local SQLite database and uploads 
+        /// It downloads the content of the Phabricator server into the local SQLite database and uploads
         /// the content of the StageInfo table to the Phabricator server
         /// </summary>
         /// <param name="httpServer">webserver object</param>
@@ -848,7 +909,7 @@ namespace Phabrico.Controllers
             phabricatorUserAPI.GetAll(synchronizationParameters.database, synchronizationParameters.browser.Conduit, DateTimeOffset.MinValue).FirstOrDefault();
 
             // check if there's a time difference between the local computer and the Phabricator server
-            // if any time difference, the difference will be incorporated in the downloaded objects (or interpreted 
+            // if any time difference, the difference will be incorporated in the downloaded objects (or interpreted
             // as: assume the timestamp of the local computer is correct  and  the timestamp of the Phabricator server is wrong)
             DateTime dtWebServer = synchronizationParameters.browser.Conduit.GetTimestampPhabricatorServer();
             DateTime dtLocalComputer = DateTime.Now;
@@ -1032,6 +1093,16 @@ namespace Phabrico.Controllers
                 }
             }
 
+            // remove all documents where content is empty
+            documentsToRemove.AddRange(allDocuments.OrderByDescending(document => document.Path.Length)
+                                                   .Where(document => string.IsNullOrEmpty(document.Content)
+                                                                   && phrictionStorage.GetHierarchy(synchronizationParameters.database, browser, document.Token).Any() == false
+                                                         ));
+            synchronizationParameters.lastRemovalTimestamp = documentsToRemove.Select(document => document.DateModified)
+                                                                              .OrderByDescending(timestamp => timestamp)
+                                                                              .DefaultIfEmpty()
+                                                                              .FirstOrDefault();
+
             // == Delete old/disallowed maniphest tasks =================================================================================================================================
             DateTimeOffset oldestTimestampToKeep = GetOldestDateTimeOffsetToKeep(synchronizationParameters.existingAccount.Parameters.RemovalPeriodClosedManiphests);
             IEnumerable<Phabricator.Data.Maniphest> allTasks = maniphestStorage.Get(synchronizationParameters.database);
@@ -1050,7 +1121,7 @@ namespace Phabrico.Controllers
                 // synchronize tasks by project selection
                 tasksToRemove.AddRange(allTasks.Where(task => task.Projects
                                                                 .Split(',')
-                                                                .All(project => string.IsNullOrWhiteSpace(project) == false 
+                                                                .All(project => string.IsNullOrWhiteSpace(project) == false
                                                                              && selectedProjects.Contains(project) == false)));  // remove unselected projects
 
                 if (keepUntaggedTasksOrDocuments == false)
@@ -1088,15 +1159,19 @@ namespace Phabrico.Controllers
                 IEnumerable<Phabricator.Data.Phriction> phrictionDocumentsWithLinks = documentLinkers.OfType<Phabricator.Data.Phriction>();
                 IEnumerable<Phabricator.Data.Maniphest> maniphestTasksWithLinks = documentLinkers.OfType<Phabricator.Data.Maniphest>();
 
-                if (phrictionDocumentsWithLinks.Any(phrictionDocumentWithLinks => documentsToRemove.Contains(phrictionDocumentWithLinks) == false) ||
-                    maniphestTasksWithLinks.Any(maniphestTaskWithLinks => tasksToRemove.Contains(maniphestTaskWithLinks) == false))
+                if (string.IsNullOrEmpty(documentToRemove.Content) == false)
                 {
-                    // Do not delete if this document is linked in a maniphest task or another phriction document which is not supposed to be deleted
-                    continue;
+                    if (phrictionDocumentsWithLinks.Any(phrictionDocumentWithLinks => documentsToRemove.Contains(phrictionDocumentWithLinks) == false) ||
+                        maniphestTasksWithLinks.Any(maniphestTaskWithLinks => tasksToRemove.Contains(maniphestTaskWithLinks) == false))
+                    {
+                        // Do not delete if this document is linked in a maniphest task or another phriction document which is not supposed to be deleted
+                        continue;
+                    }
                 }
 
                 stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, documentToRemove);
                 phrictionStorage.Remove(synchronizationParameters.database, documentToRemove);
+                synchronizationParameters.database.UndescendTokenFrom(documentToRemove.Token);
 
                 Storage.SynchronizationLogging.Delete(synchronizationParameters.database, documentToRemove.Token);
 
@@ -1197,7 +1272,7 @@ namespace Phabrico.Controllers
                 base64EIDOStream.Seek(0, System.IO.SeekOrigin.Begin);
                 phabricatorFile.DataStream = base64EIDOStream;
                 fileStorage.Add(synchronizationParameters.database, phabricatorFile);
-                
+
                 // link file-references to their owners (e.g. Phriction document or Maniphest task)
                 foreach (string owner in synchronizationParameters.fileObjectsPerToken.Where(kvp => kvp.Value.Contains(phabricatorFile.ID)).Select(kvp => kvp.Key))
                 {
@@ -1565,7 +1640,69 @@ namespace Phabrico.Controllers
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Downloads Phame blog posts from Phabricator
+        /// </summary>
+        /// <param name="synchronizationParameters"></param>
+        /// <param name="processedDuration"></param>
+        /// <param name="totalDuration"></param>
+        public void ProgressMethod_DownloadPhamePosts(SynchronizationParameters synchronizationParameters, int processedDuration, int totalDuration)
+        {
+            SharedResource.Instance.ProgressDescription = Miscellaneous.Locale.TranslateText("Synchronization.Status.DownloadingPhamePostData", browser.Session.Locale);
+            SharedResource.Instance.ProgressPercentage += synchronizationParameters.stepSize;
+
+            Storage.Keyword keywordStorage = new Storage.Keyword();
+            Storage.PhamePost phamePostStorage = new Storage.PhamePost();
+            Phabricator.API.PhamePost phabricatorPhamePostAPI = new Phabricator.API.PhamePost();
+
+            phabricatorPhamePostAPI.TimeDifferenceBetweenPhabricatorAndLocalComputer = synchronizationParameters.TimeDifferenceBetweenPhabricatorAndLocalComputer;
+
+            DateTimeOffset lastDownloadTimestamp = synchronizationParameters.lastDownloadTimestamp;
+            if (phamePostStorage.Get(synchronizationParameters.database).Any() == false)
+            {
+                lastDownloadTimestamp = new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan());
+            }
+
+
+            List<Phabricator.Data.PhamePost> newPhamePosts = phabricatorPhamePostAPI.GetAll(synchronizationParameters.database,
+                                                                                            synchronizationParameters.browser.Conduit,
+                                                                                            new Phabricator.API.Constraint[0],
+                                                                                            lastDownloadTimestamp)
+                                                                                    .ToList();
+            foreach (Phabricator.Data.PhamePost newPhamePost in newPhamePosts)
+            {
+                phamePostStorage.Add(synchronizationParameters.database, newPhamePost);
+
+                Storage.SynchronizationLogging synchronizationLoggingStorage = new Storage.SynchronizationLogging();
+                Phabricator.Data.SynchronizationLogging synchronizationLogging = new Phabricator.Data.SynchronizationLogging();
+                synchronizationLogging.Token = newPhamePost.Token;
+                synchronizationLogging.DateModified = newPhamePost.DateModified;
+                synchronizationLogging.LastModifiedBy = newPhamePost.Author;
+                synchronizationLogging.Title = newPhamePost.Blog + ": " + newPhamePost.Title;
+                synchronizationLogging.URL = "phame/post/" + newPhamePost.ID.ToString() + "/";
+                synchronizationLogging.PreviousContent = null;
+                synchronizationLoggingStorage.Add(synchronizationParameters.database, synchronizationLogging);
+
+                // collect all file object references used in the maniphest task content
+                CollectFileObjectsFromContent(newPhamePost.Token, newPhamePost.Content, ref synchronizationParameters.fileObjectsPerToken);
+
+                // parse task content
+                RemarkupParserOutput remarkupParserOutput;
+                ConvertRemarkupToHTML(synchronizationParameters.database, "/", newPhamePost.Content, out remarkupParserOutput, false);
+
+                // get all available words from task content and save it into search database
+                keywordStorage.AddPhabricatorObject(this, synchronizationParameters.database, newPhamePost);
+
+                // (re)assign dependent Phabricator objects
+                synchronizationParameters.database.ClearAssignedTokens(newPhamePost.Token);
+                foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                {
+                    synchronizationParameters.database.AssignToken(newPhamePost.Token, linkedPhabricatorObject.Token);
+                }
+            }
+        }
+
         /// <summary>
         /// Downloads Phriction documents from Phabricator
         /// </summary>
@@ -1857,7 +1994,7 @@ namespace Phabrico.Controllers
             synchronizationParameters.projectSelected = projectStorage.Get(synchronizationParameters.database).ToDictionary(key => key.Token, value => value.Selected);
 
             // load all projects from Phabricator
-            IEnumerable<Phabricator.Data.Project> phabricatorProjects = phabricatorProjectAPI.GetAll(synchronizationParameters.database, 
+            IEnumerable<Phabricator.Data.Project> phabricatorProjects = phabricatorProjectAPI.GetAll(synchronizationParameters.database,
                                                                                                      synchronizationParameters.browser.Conduit,
                                                                                                      synchronizationParameters.lastSynchronizationTimestamp
                                                                                                     );
@@ -1917,7 +2054,7 @@ namespace Phabrico.Controllers
             // load all users from phabricator
             string messageDownloadingUserData = Miscellaneous.Locale.TranslateText("Synchronization.Status.DownloadingUsers", browser.Session.Locale);
             SharedResource.Instance.ProgressDescription = messageDownloadingUserData;
-            List<Phabricator.Data.User> phabricatorUsers = phabricatorUserAPI.GetAll(synchronizationParameters.database, 
+            List<Phabricator.Data.User> phabricatorUsers = phabricatorUserAPI.GetAll(synchronizationParameters.database,
                                                                                      synchronizationParameters.browser.Conduit,
                                                                                      synchronizationParameters.lastSynchronizationTimestamp
                                                                                     )
@@ -1986,8 +2123,8 @@ namespace Phabrico.Controllers
                                                                                   .Where(project => project.Value == Phabricator.Data.Project.Selection.Selected)
                                                                                   .Select(project => projectStorage.Get(synchronizationParameters.database, project.Key))
                                                                                   .DefaultIfEmpty()
-                                                                                  .Min(project => project == null 
-                                                                                                ? DateTimeOffset.MinValue 
+                                                                                  .Min(project => project == null
+                                                                                                ? DateTimeOffset.MinValue
                                                                                                 : project.DateSynchronized
                                                                                       );
                 if (minimumTimeStamp > minimumProjectTimeStamp)
@@ -2006,8 +2143,8 @@ namespace Phabrico.Controllers
                                                                                .Select(user => userStorage.Get(synchronizationParameters.database, user.Key))
                                                                                .DefaultIfEmpty()
                                                                                .Min(user => user == null
-                                                                                         || user.DateSynchronized == DateTimeOffset.MinValue 
-                                                                                          ? DateTimeOffset.MaxValue 
+                                                                                         || user.DateSynchronized == DateTimeOffset.MinValue
+                                                                                          ? DateTimeOffset.MaxValue
                                                                                           : user.DateSynchronized
                                                                                    );
                 if (minimumTimeStamp > minimumUserTimeStamp)
@@ -2049,7 +2186,12 @@ namespace Phabrico.Controllers
             // determine new SynchronizeTimeStamp based on the last modified maniphest task or phriction document
             DateTimeOffset maxManiphestDateModified = maniphestStorage.Get(synchronizationParameters.database).Select(record => record.DateModified).DefaultIfEmpty().Max();
             DateTimeOffset maxPhrictionDateModified = phrictionStorage.Get(synchronizationParameters.database).Select(record => record.DateModified).DefaultIfEmpty().Max();
-            DateTimeOffset newSynchronizationTimeStamp = maxManiphestDateModified > maxPhrictionDateModified ? maxManiphestDateModified : maxPhrictionDateModified;
+            DateTimeOffset newSynchronizationTimeStamp = maxManiphestDateModified > maxPhrictionDateModified
+                                                       ? maxManiphestDateModified
+                                                       : maxPhrictionDateModified;
+            newSynchronizationTimeStamp = newSynchronizationTimeStamp > synchronizationParameters.lastRemovalTimestamp
+                                        ? newSynchronizationTimeStamp
+                                        : synchronizationParameters.lastRemovalTimestamp;
             newSynchronizationTimeStamp = newSynchronizationTimeStamp.AddSeconds(1);
 
             foreach (string selectedProjectToken in synchronizationParameters.projectSelected
@@ -2078,7 +2220,7 @@ namespace Phabrico.Controllers
 
             synchronizationParameters.lastSynchronizationTimestamp = newSynchronizationTimeStamp;
         }
-        
+
         /// <summary>
         /// This method is fired when all new/modified phriction documents and maniphest tasks are downloaded from Phabricator.
         /// This method will be executed twice:
@@ -2127,7 +2269,10 @@ namespace Phabrico.Controllers
                 }
             }
 
-            synchronizationParameters.lastDownloadTimestamp = newDownloadTimeStamp;
+            if (synchronizationParameters.lastDownloadTimestamp < newDownloadTimeStamp)
+            {
+                synchronizationParameters.lastDownloadTimestamp = newDownloadTimeStamp;
+            }
         }
 
         /// <summary>
@@ -2220,7 +2365,7 @@ namespace Phabrico.Controllers
 
                 // sleep a bit, so the progress-bar is shown a little more animated...
                 if ((index % 100) == 0) Thread.Sleep(100);
-                
+
                 UploadOfflineAttachments(synchronizationParameters, modifiedPhrictionDocument);
 
                 phabricatorPhrictionAPI.Edit(synchronizationParameters.browser, synchronizationParameters.database, synchronizationParameters.browser.Conduit, modifiedPhrictionDocument);
@@ -2371,6 +2516,7 @@ namespace Phabrico.Controllers
                             }
 
                             phabricatorFileReference = newFileReference.Value;
+                            synchronizationParameters.uploadedFileReferences[phabricoFileReference] = phabricatorFileReference;
 
                             // remove file from offline stage area
                             stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, file);
@@ -2425,6 +2571,7 @@ namespace Phabrico.Controllers
                             }
 
                             phabricatorFileReference = newFileReference.Value;
+                            synchronizationParameters.uploadedFileReferences[phabricoFileReference] = phabricatorFileReference;
 
                             // remove file from offline stage area
                             stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, file);

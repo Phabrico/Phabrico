@@ -767,6 +767,8 @@ namespace Phabrico.Storage
         {
             Phabricator.Data.Maniphest stagedManiphestTask = existingPhabricatorObject as Phabricator.Data.Maniphest;
             Phabricator.Data.Phriction stagedPhrictionDocument = existingPhabricatorObject as Phabricator.Data.Phriction;
+            Phabricator.Data.File stagedFile = existingPhabricatorObject as Phabricator.Data.File;
+
             if (stagedPhrictionDocument != null && stagedPhrictionDocument.Token.StartsWith("PHID-NEWTOKEN-"))
             {
                 Phriction phrictionStorage = new Phriction();
@@ -821,6 +823,20 @@ namespace Phabrico.Storage
                         newerStagedTransaction.Type = prefixStagedTransactionName + indexStagedTransactionName.ToString();
                         Modify(database, newerStagedTransaction, browser);
                     }
+                }
+            }
+
+            if (stagedFile != null)
+            {
+                // delete phabricator object
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                           DELETE FROM stageInfo
+                           WHERE token = @token
+                             AND (operation LIKE 'new' OR operation LIKE 'edit')
+                       ", database.Connection))
+                {
+                    database.AddParameter(dbCommand, "token", stagedFile.Token, Database.EncryptionMode.None);
+                    dbCommand.ExecuteNonQuery();
                 }
             }
             else

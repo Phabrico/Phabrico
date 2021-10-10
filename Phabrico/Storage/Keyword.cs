@@ -109,6 +109,7 @@ namespace Phabrico.Storage
 
             Phabricator.Data.Phriction phrictionDocument = phabricatorObject as Phabricator.Data.Phriction;
             Phabricator.Data.Maniphest maniphestTask = phabricatorObject as Phabricator.Data.Maniphest;
+            Phabricator.Data.PhamePost blogPost = phabricatorObject as Phabricator.Data.PhamePost;
 
             if (phrictionDocument != null)
             {
@@ -132,12 +133,23 @@ namespace Phabrico.Storage
                 keyword.Description = maniphestTask.Name;
             }
 
+            if (blogPost != null)
+            {
+                RemarkupParserOutput remarkupParserOutput;
+                controller.ConvertRemarkupToHTML(database, "", blogPost.Content, out remarkupParserOutput, false);
+
+                blobContent = blogPost.Title + " ";                         // blog post title
+                blobContent += remarkupParserOutput.Text + " ";             // blog post content
+                blobContent += string.Format("J{0}", blogPost.ID);          // blog post J-identifier
+                keyword.Description = blogPost.Title;
+            }
+
             if (string.IsNullOrEmpty(blobContent) == false)
             {
-                Regex regManiphestTask = new Regex(@"\bT-?[0-9]+\b", RegexOptions.IgnoreCase);
-                IEnumerable<string> taskReferences = regManiphestTask.Matches(blobContent)
-                                                                     .OfType<Match>()
-                                                                     .Select(match => match.Value);
+                Regex regManiphestTaskOrBlogPost = new Regex(@"\b[JT]-?[0-9]+\b", RegexOptions.IgnoreCase);
+                IEnumerable<string> taskOrBlogPostReferences = regManiphestTaskOrBlogPost.Matches(blobContent)
+                                                                                         .OfType<Match>()
+                                                                                         .Select(match => match.Value);
 
                 List<Match> assemblyLikeWords = RegexSafe.Matches(blobContent, "[A-Za-z0-9_]{1,255}([.][A-Za-z0-9_]{1,255})+", RegexOptions.Singleline)    // store also all assembly-like or url-like words (i.e. words with a dot in)
                                                          .OfType<Match>()                                                                                  //   for example:  System.Net,  www.phacility.com
@@ -156,7 +168,7 @@ namespace Phabrico.Storage
                                                              .Where(word => word.All(ch => ch == '-' || ch == '_' || ch == '*' || ch == '#') == false)     // do not store words which do only contain some specific symbols
                                                              .Concat(assemblyLikeWords.Select(m => m.Value))                                               // store also all assembly-like or url-like words (i.e. words with a dot in)
                                                              .Concat(assemblyLikeWords.Select(m => m.Groups.OfType<Group>().Last().Value.Substring(1)))    // store the last word of an assembly-like word (e.g.  databaseName.dbo.tableName -> tableName)
-                                                             .Concat(taskReferences)
+                                                             .Concat(taskOrBlogPostReferences)
                                                              .Concat(emailAddresses)
                                                              .Select(word => word.ToLower());
 

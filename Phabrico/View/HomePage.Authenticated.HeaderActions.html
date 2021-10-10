@@ -160,15 +160,24 @@
         var http = new XMLHttpRequest();
         http.open('POST', "auth/language/", true);
         http.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
-        http.onload = function () {
-            if (this.responseText.length > 0) {
-                var jsonResponse = JSON.parse(this.responseText);
-                if (jsonResponse.Status === "OK") {
-                    window.location = window.location.pathname;  // reload page but without any parameters (e.g. ?action=save)
-                    return;
-                }
+        http.onreadystatechange = function () {
+            if (http.readyState == 4) {
+                if (http.status == 200)
+                {
+                    if (http.responseText.length > 0) {
+                        var jsonResponse = JSON.parse(this.responseText);
+                        if (jsonResponse.Status === "OK") {
+                            window.location = window.location.pathname;  // reload page but without any parameters (e.g. ?action=save)
+                            return;
+                        }
 
-                errorMessage.style.display = 'flex';
+                        errorMessage.style.display = 'flex';
+                    }
+                }
+                else
+                {
+                    document.location.reload();  // CSRF might be invalidated > reload page to get new token
+                }
             }
         }
 

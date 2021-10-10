@@ -13,75 +13,95 @@ if (!mxIsElectron && location.protocol !== 'http:')
 		var hashes = 'default-src \'self\'; ' +
 			// storage.googleapis.com is needed for workbox-service-worker
 			'script-src %script-src% \'self\' https://viewer.diagrams.net https://storage.googleapis.com ' +
-				'https://apis.google.com https://*.pusher.com ' +
-				// Below are the SHAs of the two script blocks in index.html.
-				// These must be updated here and in the CDN after changes.
-				//----------------------------------------------------------//
-				//------------- Bootstrap script in index.html -------------//
-				//----------------------------------------------------------//
-				// Version 14.6.5
-				'\'sha256-5DtSB5mj34lxcEf+HFWbBLEF49xxJaKnWGDWa/utwQA=\' ' +
-				// Version 14.1.1
-				'\'sha256-8HtpzsH4zj5+RKfTWMxPmWJKBu0OYbn+WuPrLbVky+g=\' ' +
-				//---------------------------------------------------------//
-				//------------- App.main script in index.html -------------//
-				//---------------------------------------------------------//
-				// Version 13.8.2
-				'\'sha256-vS/MxlVD7nbY7AnV+0t1Ap338uF7vrcs7y23KjERhKc=\' ' +
-				//---------------------------------------------------------//
-				'; '
+			'https://apis.google.com https://*.pusher.com ' +
+			// Below are the SHAs of the two script blocks in index.html.
+			// These must be updated here and in the CDN after changes.
+			//----------------------------------------------------------//
+			//------------- Bootstrap script in index.html -------------//
+			//----------------------------------------------------------//
+			// Version 14.6.5
+			'\'sha256-5DtSB5mj34lxcEf+HFWbBLEF49xxJaKnWGDWa/utwQA=\' ' +
+			// Version 14.1.1
+			'\'sha256-8HtpzsH4zj5+RKfTWMxPmWJKBu0OYbn+WuPrLbVky+g=\' ' +
+			//---------------------------------------------------------//
+			//------------- App.main script in index.html -------------//
+			//---------------------------------------------------------//
+			// Version 13.8.2
+			'\'sha256-vS/MxlVD7nbY7AnV+0t1Ap338uF7vrcs7y23KjERhKc=\' ' +
+			//---------------------------------------------------------//
+			'; ';
 
-			directives = 'connect-src %connect-src% \'self\' https://*.draw.io https://*.diagrams.net ' +
-				'https://*.googleapis.com wss://*.pusher.com https://*.pusher.com ' +
-				'https://api.github.com https://raw.githubusercontent.com https://gitlab.com ' +
-				'https://graph.microsoft.com https://*.sharepoint.com  https://*.1drv.com ' +
-				'https://dl.dropboxusercontent.com ' +
-				'https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; ' +
+		var styleHashes = '\'sha256-JjkxVHHCCVO0nllPD6hU8bBYSlsikA8TM/o3fhr0bas=\' ' + // index.html
+			'\'sha256-VTG4NbRCx30lYCdLPlgZTrdTopzcdviOjAbS7nk+KbI=\' ' + // Minimal.js/Light
+			'\'sha256-YeH9p6l4gps8LqwnJMaRzzR/7ecH/yGYkQV9fNFXKkA=\' ' + // Minimal.js/Dark
+			'\'sha256-7kY8ozVqKLIIBwZ24dhdmZkM26PsOlZmEi72RhmZKoM=\' ' + // mxTooltipHandler.js
+			'\'sha256-01chdey79TzZe4ihnvvUXXI5y8MklIcKH+vzDdQvsuU=\' ' + // Editor.js/mathJaxWebkitCss
+			'\'sha256-fGbXK7EYpvNRPca81zPnqJHi2y+34KSgAcZv8mhaSzI=\' ' + // MathJax.js
+			'\'sha256-3hENQqEWUBxdkmJp2kQ2+G0F8NVGzFAVkW5vWDo7ONk=\' ' + // MathJax.js
+			'\'sha256-Z4u/cxrZPHjN20CIXZHTKr+VlqVxrWG8cbbeC2zmPqI=\' ' + // MathJax.js
+			'\'sha256-LDMABiyg2T48kuAV9ouqNCSEqf2OkUdlZK9D9CeZHBs=\' ' + // MathJax.js
+			'\'sha256-XQfwbaSNgLzro3IzkwT0uZLAiBvZzajo0QZx7oW158E=\' ' + // MathJax.js
+			'\'sha256-++XCePvZXKdegIqkwtbudr16Jx87KFh4t/t7UxsbHpw=\' ' + // MathJax.js
+			'\'sha256-v9NOL6IswMbY7zpRZjxkYujhuGRVvZtp1c1MfdnToB4=\' ' + // MathJax.js
+			'\'sha256-5xtuTr9UuyJoTQ76CNLzvSJjS7onwfq73B2rLWCl3aE=\' ' + // MathJax.js
+			'\'sha256-W21B506Ri8aGW3T87iawssPz71NvvbYZfBfzDbBSArU=\' ' + // MathJax.js
+			'\'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=\' ' + // spin.min.js
+			'\'sha256-nzHi23DROym7G011m6y0DyDd9mvQL2hSJ0Gy3g2T/5Q=\' ' + // dropins.js
+			'\'sha256-76P1PZLzT12kfw2hkrLn5vu/cWZgcOYuSYU3RT3rXKA=\' ' + // gapi
+			'\'unsafe-hashes\'; '; // Required for hashes for style attribute
+		
+		var directives = 'connect-src %connect-src% \'self\' https://*.draw.io https://*.diagrams.net ' +
+			'https://*.googleapis.com wss://*.pusher.com https://*.pusher.com ' +
+			'https://api.github.com https://raw.githubusercontent.com https://gitlab.com ' +
+			'https://graph.microsoft.com https://*.sharepoint.com  https://*.1drv.com https://api.onedrive.com ' +
+			'https://dl.dropboxusercontent.com ' +
+			'https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; ' +
 			// font-src about: is required for MathJax HTML-CSS output with STIX
 			'img-src * data: blob:; media-src * data:; font-src * about:; ' +
 			// www.draw.io required for browser data migration to app.diagrams.net and
 			// viewer.diagrams.net required for iframe embed preview
 			'frame-src %frame-src% \'self\' https://viewer.diagrams.net https://www.draw.io https://*.google.com; ' +
-			'style-src %style-src% \'self\' \'unsafe-inline\' https://fonts.googleapis.com; ' +
-			'object-src \'none\';'
+			'style-src %style-src% \'self\'  https://fonts.googleapis.com ' +
+			// Replaces unsafe-inline style-src with hashes with safe-style-src URL parameter
+			((urlParams['safe-style-src'] == '1') ? styleHashes : '\'unsafe-inline\'; ') +
+			'object-src \'none\';';
 			
-			csp = hashes + directives;
-
+		var csp = hashes + directives;
 		var devCsp = csp.
 			// Adds script tags and loads shapes with eval
-			replace(/%script-src%/g, 'https://www.dropbox.com https://api.trello.com https://code.jquery.com https://devhost.jgraph.com \'unsafe-eval\'').
+			replace(/%script-src%/g, 'https://www.dropbox.com https://api.trello.com https://devhost.jgraph.com \'unsafe-eval\'').
 			// Adds Trello and Dropbox backend storage
 			replace(/%connect-src%/g, 'https://*.dropboxapi.com https://trello.com https://api.trello.com').
 			// Loads common.css from mxgraph
 			replace(/%style-src%/g, 'https://devhost.jgraph.com').
 			replace(/%frame-src%/g, '').
 			replace(/  /g, ' ');
+
 		mxmeta(null, devCsp, 'Content-Security-Policy');
 
 		if (urlParams['print-csp'] == '1')
 		{
 			console.log('Content-Security-Policy');
-			var app_diagrams_net = csp.replace(/%script-src%/g, 'https://www.dropbox.com https://api.trello.com https://code.jquery.com').
+			var app_diagrams_net = csp.replace(/%script-src%/g, 'https://www.dropbox.com https://api.trello.com').
 				replace(/%connect-src%/g, 'https://*.dropboxapi.com https://api.trello.com').
 				replace(/%frame-src%/g, '').
 					replace(/%style-src%/g, '').
 					replace(/  /g, ' ') + ' frame-ancestors \'self\' https://teams.microsoft.com;';
 			console.log('app.diagrams.net:', app_diagrams_net);
 
-				se_diagrams_net = hashes.
-				replace(/%script-src%/g, '') +
+			var se_diagrams_net = hashes.replace(/%script-src%/g, '') +
 				'connect-src \'self\' https://*.diagrams.net ' +
 				'https://*.googleapis.com wss://*.pusher.com https://*.pusher.com ' +
 				'https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; ' +
-			'img-src * data: blob:; media-src * data:; font-src * about:; ' +
-			'frame-src \'self\' https://viewer.diagrams.net https://*.google.com; ' +
-			'style-src \'self\' \'unsafe-inline\' https://fonts.googleapis.com;' +
-			'object-src \'none\';' +
-			'form-action \'none\';' +
-			'base-uri \'none\';' +
-			'child-src \'none\';' +
-			'frame-src \'none\';' +
-			'worker-src https://se.diagrams.net/service-worker.js;'
+				'img-src * data: blob:; media-src * data:; font-src * about:; ' +
+				'frame-src \'self\' https://viewer.diagrams.net https://*.google.com; ' +
+				'style-src \'self\' https://fonts.googleapis.com ' + styleHashes + ' ' +
+				'object-src \'none\';' +
+				'form-action \'none\';' +
+				'base-uri \'none\';' +
+				'child-src \'none\';' +
+				'frame-src \'none\';' +
+				'worker-src https://se.diagrams.net/service-worker.js;'
 			console.log('se.diagrams.net:', se_diagrams_net);
 
 			// TODO remove https://ajax.googleapis.com April 2022. It's old jquery domain

@@ -50,10 +50,17 @@ namespace Phabrico.Phabricator.API
                         break;
                     }
 
+                    string[] userRoles = userModification["fields"]["roles"]
+                                            .OfType<JValue>()
+                                            .Select(role => (string)role.Value)
+                                            .ToArray();
+
                     Data.User newUser = new Data.User();
                     newUser.Token = userModification["phid"].ToString();
                     newUser.RealName = userModification["fields"]["realName"].ToString();
                     newUser.UserName = userModification["fields"]["username"].ToString();
+                    newUser.IsBot = userRoles.Contains("bot");
+                    newUser.IsDisabled = userRoles.Contains("disabled");
                     yield return newUser;
                 }
 

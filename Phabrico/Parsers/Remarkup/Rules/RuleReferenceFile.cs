@@ -15,6 +15,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// </summary>
     public class RuleReferenceFile : RemarkupRule
     {
+        public int FileID { get; private set; }
+
+        /// <summary>
+        /// Creates a copy of the current RuleReferenceFile
+        /// </summary>
+        /// <returns></returns>
+        public override RemarkupRule Clone()
+        {
+            RuleReferenceFile copy = base.Clone() as RuleReferenceFile;
+            copy.FileID = FileID;
+            return copy;
+        }
+
         /// <summary>
         /// Converts Remarkup encoded text into HTML
         /// </summary>
@@ -36,7 +49,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
             Account existingAccount = accountStorage.WhoAmI(database, browser);
 
-            int fileObjectID = Int32.Parse(match.Groups[1].Value);
+            FileID = Int32.Parse(match.Groups[1].Value);
             Dictionary<string, string> fileObjectOptions = match.Groups[2]
                                                                          .Value
                                                                          .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -57,10 +70,10 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 showImageAsLink = true;
             }
 
-            Phabricator.Data.File fileObject = fileStorage.GetByID(database, fileObjectID, true);
+            Phabricator.Data.File fileObject = fileStorage.GetByID(database, FileID, true);
             if (fileObject == null)
             {
-                fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectID, false);
+                fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, FileID, false);
             }
 
             if (fileObject != null)
@@ -99,7 +112,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         }
                         else
                         {
-                            html = ProcessImageFile(database, browser, fileObjectOptions, existingAccount, fileObject, fileObjectID);
+                            html = ProcessImageFile(database, browser, fileObjectOptions, existingAccount, fileObject, FileID);
                         }
                         break;
 

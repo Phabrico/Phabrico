@@ -78,14 +78,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
         }
 
         /// <summary>
-        /// If true, the current rule will only be valid if it starts on a new line
+        /// List of underlying tokens
         /// </summary>
-        public bool RuleStartOnNewLine { get; set; } = true;
-
-        /// <summary>
-        /// If true, the current rule will only be valid if a whitespace precedes it
-        /// </summary>
-        public bool RuleStartAfterWhiteSpace { get; set; } = true;
+        public List<Rules.RemarkupRule> ChildTokenList { get; set; } = new List<RemarkupRule>();
 
         /// <summary>
         /// Reference to the Remarkup engine
@@ -104,6 +99,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public RemarkupRule ParentRemarkupRule { get; set; }
 
         /// <summary>
+        /// If true, the current rule will only be valid if it starts on a new line
+        /// </summary>
+        public bool RuleStartOnNewLine { get; set; } = true;
+
+        /// <summary>
+        /// If true, the current rule will only be valid if a whitespace precedes it
+        /// </summary>
+        public bool RuleStartAfterWhiteSpace { get; set; } = true;
+
+        /// <summary>
         /// List of processed tokens
         /// </summary>
         public List<Rules.RemarkupRule> TokenList { get; set; }
@@ -112,7 +117,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// Creates a copy of the current RemarkupRule
         /// </summary>
         /// <returns></returns>
-        public RemarkupRule Clone()
+        public virtual RemarkupRule Clone()
         {
             RemarkupRule clonedRemarkupRule = GetType().GetConstructor(Type.EmptyTypes).Invoke(null) as RemarkupRule;
 
@@ -122,6 +127,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             clonedRemarkupRule.Text = Text;
             clonedRemarkupRule.Clone(this);
             clonedRemarkupRule.LinkedPhabricatorObjects.AddRange(LinkedPhabricatorObjects);
+            clonedRemarkupRule.ChildTokenList.AddRange(ChildTokenList);
 
             return clonedRemarkupRule;
         }

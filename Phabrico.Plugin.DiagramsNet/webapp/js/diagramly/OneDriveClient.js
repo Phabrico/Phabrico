@@ -16,12 +16,9 @@ window.OneDriveClient = function(editorUi, isExtAuth, inlinePicker, noLogout)
 		isExtAuth = true;
 	}
 	
-	if (inlinePicker == null && 
-		((window.urlParams != null && window.urlParams['inlinePicker'] == '1') ||
-		mxClient.IS_ANDROID || mxClient.IS_IOS //Mobile devices doesn't work with OneDrive picker, so, use the inline picker
-		))
+	if (inlinePicker == null) //Use inline picker as default
 	{
-		inlinePicker = true;
+		inlinePicker = (window.urlParams != null && window.urlParams['inlinePicker'] == '0')? false : true;
 	}
 	
 	if (noLogout == null && window.urlParams != null && window.urlParams['noLogoutOD'] == '1')
@@ -722,7 +719,15 @@ OneDriveClient.prototype.getFile = function(id, success, error, denyConvert, asL
 		}
 		else
 		{
-			error(this.parseRequestText(req));
+			if (this.isExtAuth)
+			{
+				error({message: mxResources.get('fileNotFoundOrDenied') +
+							(this.user != null ? ' (' + this.user.displayName + ')' : '')});
+			}
+			else
+			{
+				error(this.parseRequestText(req));				
+			}
 		}
 	}), error);
 };
@@ -1257,6 +1262,13 @@ OneDriveClient.prototype.parseRequestText = function(req)
 	try
 	{
 		result = JSON.parse(req.getText());
+		result.status = req.getStatus();
+		
+		if (result.error)
+		{
+			result.error.status = result.status;
+			result.error.code = result.status;
+		}
 	}
 	catch (e)
 	{
@@ -1484,11 +1496,19 @@ OneDriveClient.prototype.pickFile = function(fn)
 	{
 		this.authenticate(mxUtils.bind(this, function()
 		{
-			this.ui.showDialog(new BtnDialog(this.ui, this, mxResources.get('open'), mxUtils.bind(this, function()
+			if (this.inlinePicker)
 			{
 				this.ui.hideDialog();
-				odOpenDlg();							
-			})).container, 300, 140, true, true);
+				odOpenDlg();
+			}
+			else
+			{
+				this.ui.showDialog(new BtnDialog(this.ui, this, mxResources.get('open'), mxUtils.bind(this, function()
+				{
+					this.ui.hideDialog();
+					odOpenDlg();							
+				})).container, 300, 140, true, true);
+			}
 		}), errorFn);
 	}
 	else

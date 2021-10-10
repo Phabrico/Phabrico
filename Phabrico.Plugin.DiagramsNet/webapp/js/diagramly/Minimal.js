@@ -243,7 +243,9 @@ EditorUi.initMinimalTheme = function()
 	mxWindow.prototype.closeImage = Graph.createSvgImage(18, 10, '<path d="M 5 1 L 13 9 M 13 1 L 5 9" stroke="#C0C0C0" stroke-width="2"/>').src;
 	mxWindow.prototype.minimizeImage = Graph.createSvgImage(14, 10, '<path d="M 3 7 L 7 3 L 11 7" stroke="#C0C0C0" stroke-width="2" fill="none"/>').src;
 	mxWindow.prototype.normalizeImage = Graph.createSvgImage(14, 10, '<path d="M 3 3 L 7 7 L 11 3" stroke="#C0C0C0" stroke-width="2" fill="none"/>').src;
-	mxConstraintHandler.prototype.pointImage = Graph.createSvgImage(5, 5, '<path d="m 0 0 L 5 5 M 0 5 L 5 0" stroke="' + fill + '"/>');
+	mxConstraintHandler.prototype.pointImage = Graph.createSvgImage(5, 5,
+		'<path d="m 0 0 L 5 5 M 0 5 L 5 0" stroke-width="2" style="stroke-opacity:0.4" stroke="#ffffff"/>' +
+		'<path d="m 0 0 L 5 5 M 0 5 L 5 0" stroke="' + fill + '"/>');
 	mxOutline.prototype.sizerImage = null;
 	
 	mxConstants.VERTEX_SELECTION_COLOR = '#C0C0C0';
@@ -392,17 +394,18 @@ EditorUi.initMinimalTheme = function()
 			'html body td.mxWindowTitle > div > img { padding: 8px 4px; }' +
 			// Dark mode styles
 			(Editor.isDarkMode() ?
-			
 			'html body td.mxWindowTitle > div > img { margin: -4px; }' +
 			'html body .geToolbarContainer .geMenuItem, html body .geToolbarContainer .geToolbarButton, ' +
 			'html body .geMenubarContainer .geMenuItem .geMenuItem, html body .geMenubarContainer a.geMenuItem,' +
 			'html body .geMenubarContainer .geToolbarButton { filter: invert(1); }' +
+			'html body div.geToolbarContainer a.geInverted { filter: none; }' +
 			'html body .geMenubarContainer .geMenuItem .geMenuItem, html body .geMenubarContainer a.geMenuItem { color: #353535; }' +
 			'html > body > div > .geToolbarContainer { border: 1px solid #c0c0c0 !important; box-shadow: none !important; }' +
 			'html > body.geEditor > div > a.geItem { background-color: #2a2a2a; color: #cccccc; border-color: #505759; }' +
 			'html body .geTabContainer, html body .geTabContainer div, html body .geMenubarContainer { border-color: #505759 !important; }'
 			:
 			// Non-dark mode styles
+			'html body div.geToolbarContainer a.geInverted { filter: invert(1); }' +
 			'html body.geEditor .geTabContainer div { border-color: #e5e5e5 !important; }'
 			) +
 			// End of custom styles
@@ -422,6 +425,7 @@ EditorUi.initMinimalTheme = function()
 			'html body .geToolbarButton { opacity: 0.3; }' +
 			'html body .geToolbarButton:active { opacity: 0.15; }' +
 			'html body .geStatus:active { opacity: 0.5; }' +
+			'html body .geStatus { padding-top:3px !important; }' +
 			'html body .geMenubarContainer .geStatus { margin-top: 0px !important; }' +
 			'html table.mxPopupMenu tr.mxPopupMenuItemHover:active { opacity: 0.7; }' +
 			'html body .geDialog input, html body .geToolbarContainer input, html body .mxWindow input {padding: 2px; display: inline-block; }' +
@@ -439,6 +443,8 @@ EditorUi.initMinimalTheme = function()
 			'html body button.gePrimaryBtn:hover { background: #29b6f2; border: none; }' +
 			'.geBtn button { min-width:72px !important; }' +
 			'div.geToolbarContainer a.geButton { margin:0px; padding: 0 2px 4px 2px; } ' +
+			'html body div.geToolbarContainer a.geColorBtn { margin: 2px; } ' +
+			'html body .mxWindow td.mxWindowPane input, html body .mxWindow td.mxWindowPane select, html body .mxWindow td.mxWindowPane textarea, html body .mxWindow td.mxWindowPane radio { padding: 0px; box-sizing: border-box; }' +
 			'.geDialog, .mxWindow td.mxWindowPane *, div.geSprite, td.mxWindowTitle, .geDiagramContainer { box-sizing:content-box; }' +
 			'.mxWindow div button.geStyleButton { box-sizing: border-box; }' +
 			'table.mxWindow td.mxWindowPane button.geColorBtn { padding:0px; box-sizing: border-box; }' +
@@ -469,8 +475,7 @@ EditorUi.initMinimalTheme = function()
 			'html td.mxWindowTitle div { top: 0px !important; }' +
 			// Fixes checkbox and radio size on iOS
 			((mxClient.IS_IOS) ? 'html input[type=checkbox], html input[type=radio] { height:12px; }' : '') +
-			((urlParams['sketch'] == '1') ? 'html .geStatusAlertOrange, html .geStatusAlert  { margin-top: -2px; }' +
-				'a.geStatus > div { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }' : '');
+			((urlParams['sketch'] == '1') ? 'a.geStatus > div { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }' : '');
 	};
 	
 	var styleElt = document.createElement('style')
@@ -727,10 +732,6 @@ EditorUi.initMinimalTheme = function()
 	        	{
 					this.addMenuItems(menu, ['-', 'lockUnlock'], null, evt);
 				}
-				else
-				{
-					this.addSubmenu('view', menu, null, mxResources.get('options'));
-				}
 			}
 		}
 		else
@@ -752,14 +753,22 @@ EditorUi.initMinimalTheme = function()
 				this.addMenuItems(menu, ['editData'], null, evt);
 				menu.addSeparator();
 				this.addSubmenu('layout', menu);
-				this.addSubmenu('view', menu, null, mxResources.get('options'));
-				menu.addSeparator();
 				this.addSubmenu('insert', menu);
 				this.addMenuItems(menu, ['-', 'exitGroup'], null, evt);
 			}
 			else if (graph.isEnabled())
 			{
 				this.addMenuItems(menu, ['-', 'lockUnlock'], null, evt);
+			}
+		}
+
+		if (graph.isEnabled() && graph.isSelectionEmpty())
+		{
+			this.addMenuItems(menu, ['-', 'fullscreen']);
+
+			if (Editor.isDarkMode() || (!mxClient.IS_IE && !mxClient.IS_IE11))
+			{
+				this.addMenuItems(menu, ['toggleDarkMode']);
 			}
 		}
 	};
@@ -907,6 +916,7 @@ EditorUi.initMinimalTheme = function()
         ui.actions.get('createShape').label = mxResources.get('shape') + '...';
         ui.actions.get('outline').label = mxResources.get('outline') + '...';
         ui.actions.get('layers').label = mxResources.get('layers') + '...';
+        ui.actions.get('tags').label = mxResources.get('tags') + '...';
 		ui.actions.get('forkme').visible = urlParams['sketch'] != '1';
 		ui.actions.get('downloadDesktop').visible = urlParams['sketch'] != '1';
 
@@ -917,6 +927,22 @@ EditorUi.initMinimalTheme = function()
 
 		toggleDarkModeAction.setToggleAction(true);
 		toggleDarkModeAction.setSelectedCallback(function() { return Editor.isDarkMode(); });
+		
+        var toggleSketchModeAction = ui.actions.put('toggleSketchMode', new Action(mxResources.get('sketch'), function(e)
+        {
+            ui.setSketchMode(!Editor.sketchMode);
+        }));
+
+		toggleSketchModeAction.setToggleAction(true);
+		toggleSketchModeAction.setSelectedCallback(function() { return Editor.sketchMode; });
+				
+        var togglePagesAction = ui.actions.put('togglePagesVisible', new Action(mxResources.get('pages'), function(e)
+        {
+            ui.setPagesVisible(!Editor.pagesVisible);
+        }));
+
+		togglePagesAction.setToggleAction(true);
+		togglePagesAction.setSelectedCallback(function() { return Editor.pagesVisible; });
 		
         ui.actions.put('importCsv', new Action(mxResources.get('csv') + '...', function()
         {
@@ -994,12 +1020,8 @@ EditorUi.initMinimalTheme = function()
         this.put('diagram', new Menu(mxUtils.bind(this, function(menu, parent)
         {
 			var file = ui.getCurrentFile();
-			
-			if (urlParams['sketch'] != '1')
-			{
-	        	ui.menus.addSubmenu('extras', menu, parent, mxResources.get('preferences'));
-				menu.addSeparator(parent);
-			}
+        	ui.menus.addSubmenu('extras', menu, parent, mxResources.get('preferences'));
+			menu.addSeparator(parent);
 			
 			if (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
 			{
@@ -1064,7 +1086,7 @@ EditorUi.initMinimalTheme = function()
 
 			if (urlParams['sketch'] != '1')
 			{
-				ui.menus.addMenuItems(menu, ['-', 'outline', 'layers'], parent);
+				ui.menus.addMenuItems(menu, ['-', 'outline'], parent);
 				
 				if (ui.commentsSupported())
 				{
@@ -1072,14 +1094,17 @@ EditorUi.initMinimalTheme = function()
 				}
 			}
 			
-			ui.menus.addMenuItems(menu, ['-', 'findReplace'], parent);
-			
-			if (urlParams['sketch'] != '1')
+			ui.menus.addMenuItems(menu, ['-', 'findReplace', 'layers', 'tags'], parent);
+
+			ui.menus.addMenuItems(menu, ['-', 'pageSetup', 'pageScale'], parent);
+
+			// Cannot use print in standalone mode on iOS as we cannot open new windows
+			if (!mxClient.IS_IOS || !navigator.standalone)
 			{
-				ui.menus.addMenuItems(menu, ['tags'], parent);
+				ui.menus.addMenuItems(menu, ['print'], parent);
 			}
-			
-			if (urlParams['sketch'] != '1' && file != null && ui.fileNode != null)
+
+			if (file != null && ui.fileNode != null)
 			{
 				var filename = (file.getTitle() != null) ?
 					file.getTitle() : ui.defaultFilename;
@@ -1091,18 +1116,7 @@ EditorUi.initMinimalTheme = function()
 				}
 			}
 
-			// Cannot use print in standalone mode on iOS as we cannot open new windows
-			if (!mxClient.IS_IOS || !navigator.standalone)
-			{
-				ui.menus.addMenuItems(menu, ['-', 'print', '-'], parent);
-			}
-			
-			if (urlParams['sketch'] == '1')
-			{
-	        	ui.menus.addSubmenu('extras', menu, parent, mxResources.get('preferences'));
-				menu.addSeparator(parent);
-			}
-			
+			menu.addSeparator(parent);
 			ui.menus.addSubmenu('help', menu, parent);
 
             if (urlParams['embed'] == '1')
@@ -1218,19 +1232,34 @@ EditorUi.initMinimalTheme = function()
 			
 			ui.menus.addSubmenu('units', menu, parent);
 			menu.addSeparator(parent);
-        	ui.menus.addMenuItem(menu, 'configuration', parent);
-			menu.addSeparator(parent);
-			ui.menus.addMenuItems(menu, ['scrollbars', 'tooltips'], parent);
-            
+			ui.menus.addMenuItems(menu, ['scrollbars', 'tooltips', 'ruler', '-', 'copyConnect', 'collapseExpand', '-'], parent);
+
+			if (urlParams['sketch'] == '1')
+			{
+				this.addMenuItems(menu, ['toggleSketchMode'], parent);
+			}
+
+			this.addMenuItems(menu, ['toggleDarkMode'], parent);
+
 			if (urlParams['embed'] != '1' && (isLocalStorage || mxClient.IS_CHROMEAPP))
 			{
-				ui.menus.addMenuItems(menu, ['-', 'search', 'scratchpad', '-', 'showStartScreen'], parent);
+				ui.menus.addMenuItems(menu, ['-', 'showStartScreen', 'search', 'scratchpad'], parent);
 			}
+
+			if (urlParams['sketch'] == '1')
+			{
+				this.addMenuItems(menu, ['togglePagesVisible'], parent);
+			}
+
+			menu.addSeparator(parent);
+        	ui.menus.addMenuItem(menu, 'configuration', parent);
 
 			if (!ui.isOfflineApp() && isLocalStorage)
 			{
 	        	ui.menus.addMenuItem(menu, 'plugins', parent);
 			}
+
+			this.addMenuItems(menu, ['-', 'fullscreen'], parent);
 
 			// Adds trailing separator in case new plugin entries are added
 			menu.addSeparator(parent);
@@ -1296,45 +1325,6 @@ EditorUi.initMinimalTheme = function()
                 }
             }
         })));
-
-        // Overrides view for plugins but label it options
-        this.put('view', new Menu(mxUtils.bind(this, function(menu, parent)
-        {
-            ui.menus.addMenuItems(menu, ['grid', 'guides', 'ruler', '-', 'connectionArrows', 'connectionPoints', '-'], parent);
-			
-			if (typeof(MathJax) !== 'undefined')
-			{
-				var item = ui.menus.addMenuItem(menu, 'mathematicalTypesetting', parent);
-				ui.menus.addLinkToItem(item, 'https://www.diagrams.net/doc/faq/math-typesetting');
-			}
-			
-            ui.menus.addMenuItems(menu, ['copyConnect', 'collapseExpand', '-'], parent);
-
-			var file = ui.getCurrentFile();
-
-			if (file != null && ui.fileNode != null)
-			{
-				var filename = (file.getTitle() != null) ?
-					file.getTitle() : ui.defaultFilename;
-				
-				if (!/(\.html)$/i.test(filename) &&
-					!/(\.svg)$/i.test(filename))
-				{
-					this.addMenuItems(menu, ['properties'], parent);
-				}
-			}
-			
-            ui.menus.addMenuItems(menu, ['pageScale'], parent);
-
-			if (urlParams['sketch'] != '1')
-			{
-            	ui.menus.addMenuItems(menu, ['-', 'fullscreen', 'toggleDarkMode'], parent);
-			}
-			else
-			{
-				ui.menus.addMenuItems(menu, ['pageSetup', '-', 'layers'], parent);
-			}
-        })));
 	};
 	
 	// Installs the format toolbar
@@ -1368,7 +1358,8 @@ EditorUi.initMinimalTheme = function()
 	{
 		editorUiInit.apply(this, arguments);
 		this.doSetDarkMode((urlParams['dark'] != null) ?
-			urlParams['dark'] == 1 : mxSettings.settings.darkMode);
+			urlParams['dark'] == 1 && !mxClient.IS_IE &&
+			!mxClient.IS_IE11 : mxSettings.settings.darkMode);
 		
 		var div = document.createElement('div');
 		div.style.cssText = 'position:absolute;left:0px;right:0px;top:0px;overflow-y:auto;overflow-x:hidden;';
@@ -1420,7 +1411,7 @@ EditorUi.initMinimalTheme = function()
 						
 						this.div.style.width = '240px';
 						this.table.style.width = '240px';
-						this.div.style.left = parseInt(this.div.style.left) - 150 + 'px';
+						this.div.style.left = Math.max(0, parseInt(this.div.style.left) - 150) + 'px';
 					}
 					
 					this.fit();
@@ -1459,7 +1450,7 @@ EditorUi.initMinimalTheme = function()
 				menu.funct.apply(this, arguments);
 			}), before);
             
-			elt.className = 'geMenuItem';
+			elt.className = (urlParams['sketch'] == '1') ? 'geToolbarButton' : 'geMenuItem';
 			elt.style.display = 'inline-block';
 			elt.style.boxSizing = 'border-box';
 			elt.style.top = '6px';
@@ -1494,7 +1485,7 @@ EditorUi.initMinimalTheme = function()
 		function addMenuItem(label, fn, small, tooltip, action, img)
 		{
 			var btn = document.createElement('a');
-			btn.className = 'geMenuItem';
+			btn.className = (urlParams['sketch'] == '1') ? 'geToolbarButton' : 'geMenuItem';
 			btn.style.display = 'inline-block';
 			btn.style.boxSizing = 'border-box';
 			btn.style.height = '30px';
@@ -1717,18 +1708,12 @@ EditorUi.initMinimalTheme = function()
         ui.diagramContainer.style.top = (urlParams['sketch'] == '1') ? '0px' : '47px';
 
         var viewZoomMenu = ui.menus.get('viewZoom');
-
-		var plusImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTkgMTNoLTZ2NmgtMnYtNkg1di0yaDZWNWgydjZoNnYyeiIvPjwvc3ZnPg=='; 
-		var insertImage = (urlParams['sketch'] != '1') ? plusImage :
-			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDI0IDI0IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0cHgiIGZpbGw9IiMwMDAwMDAiPjxnPjxwYXRoIGQ9Ik0wLDBoMjR2MjRIMFYweiIgZmlsbD0ibm9uZSIvPjwvZz48Zz48Zz48cGF0aCBkPSJNMywxMWg4VjNIM1YxMXogTTUsNWg0djRINVY1eiIvPjxwYXRoIGQ9Ik0xMywzdjhoOFYzSDEzeiBNMTksOWgtNFY1aDRWOXoiLz48cGF0aCBkPSJNMywyMWg4di04SDNWMjF6IE01LDE1aDR2NEg1VjE1eiIvPjxwb2x5Z29uIHBvaW50cz0iMTgsMTMgMTYsMTMgMTYsMTYgMTMsMTYgMTMsMTggMTYsMTggMTYsMjEgMTgsMjEgMTgsMTggMjEsMTggMjEsMTYgMTgsMTYiLz48L2c+PC9nPjwvc3ZnPg==';
-		var shapesImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTMgMTN2OGg4di04aC04ek0zIDIxaDh2LThIM3Y4ek0zIDN2OGg4VjNIM3ptMTMuNjYtMS4zMUwxMSA3LjM0IDE2LjY2IDEzbDUuNjYtNS42Ni01LjY2LTUuNjV6Ii8+PC9zdmc+';
-		var formatImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTIgM2MtNC45NyAwLTkgNC4wMy05IDlzNC4wMyA5IDkgOWMuODMgMCAxLjUtLjY3IDEuNS0xLjUgMC0uMzktLjE1LS43NC0uMzktMS4wMS0uMjMtLjI2LS4zOC0uNjEtLjM4LS45OSAwLS44My42Ny0xLjUgMS41LTEuNUgxNmMyLjc2IDAgNS0yLjI0IDUtNSAwLTQuNDItNC4wMy04LTktOHptLTUuNSA5Yy0uODMgMC0xLjUtLjY3LTEuNS0xLjVTNS42NyA5IDYuNSA5IDggOS42NyA4IDEwLjUgNy4zMyAxMiA2LjUgMTJ6bTMtNEM4LjY3IDggOCA3LjMzIDggNi41UzguNjcgNSA5LjUgNXMxLjUuNjcgMS41IDEuNVMxMC4zMyA4IDkuNSA4em01IDBjLS44MyAwLTEuNS0uNjctMS41LTEuNVMxMy42NyA1IDE0LjUgNXMxLjUuNjcgMS41IDEuNVMxNS4zMyA4IDE0LjUgOHptMyA0Yy0uODMgMC0xLjUtLjY3LTEuNS0xLjVTMTYuNjcgOSAxNy41IDlzMS41LjY3IDEuNSAxLjUtLjY3IDEuNS0xLjUgMS41eiIvPjwvc3ZnPg==';
-
+		var insertImage = (urlParams['sketch'] != '1') ? Editor.plusImage : Editor.shapesImage;
 		var footer = (urlParams['sketch'] == '1') ? document.createElement('div') : null;
 		var picker = (urlParams['sketch'] == '1') ? document.createElement('div') : null;
 		var toolbar = (urlParams['sketch'] == '1') ? document.createElement('div') : null;
-			
-		ui.addListener('darkModeChanged', mxUtils.bind(this, function()
+
+		var refreshSidebar = mxUtils.bind(this, function()
 		{
 			if (this.sidebar != null)
 			{
@@ -1746,9 +1731,11 @@ EditorUi.initMinimalTheme = function()
 			}
 
 			graph.refresh();
-			graph.refreshBackgroundImage();
 			graph.view.validateBackground()
-		}));
+		});
+			
+		ui.addListener('darkModeChanged', refreshSidebar);
+		ui.addListener('sketchModeChanged', refreshSidebar);
 
 		// Stops panning while freehand is active
 		if (Graph.touchStyle)
@@ -1831,35 +1818,32 @@ EditorUi.initMinimalTheme = function()
 			// moves status to bell icon tooltip for trivial messages
 			if (urlParams['embed'] != '1')
 			{
+				menubar.style.visibility = (menubar.clientWidth < 14) ? 'hidden' : '';
+
 				ui.editor.addListener('statusChanged', mxUtils.bind(this, function()
 				{
 					ui.setStatusText(ui.editor.getStatus());
 		
 					if (ui.statusContainer.children.length == 0 ||
 						(ui.statusContainer.children.length == 1 &&
+						typeof ui.statusContainer.firstChild.getAttribute === 'function' &&
 						ui.statusContainer.firstChild.getAttribute('class') == null))
 					{
-						if (ui.statusContainer.firstChild != null)
-						{
-							setNotificationTitle(ui.statusContainer.firstChild.getAttribute('title'));
-						}
-						else
-						{
-							setNotificationTitle(ui.editor.getStatus());
-						}
-						
+						var title = (ui.statusContainer.firstChild != null) ?
+							ui.statusContainer.firstChild.getAttribute('title') :
+							ui.editor.getStatus();
+						setNotificationTitle(title);
 						var file = ui.getCurrentFile();
 						var key = (file != null) ? file.savingStatusKey : DrawioFile.prototype.savingStatusKey;
 						
-						if (ui.notificationBtn != null &&
-							ui.notificationBtn.getAttribute('title') == mxResources.get(key) + '...')
+						if (title == mxResources.get(key) + '...')
 						{
 							ui.statusContainer.innerHTML = '<img title="' + mxUtils.htmlEntities(
-								mxResources.get(key)) + '...' + '"src="' + IMAGE_PATH + '/spin.gif">';
+								mxResources.get(key)) + '...' + '"src="' + Editor.tailSpin + '">';
 							ui.statusContainer.style.display = 'inline-block';
 							statusVisible = true;
 						}
-						else
+						else if (ui.buttonContainer.clientWidth > 6)
 						{	
 							ui.statusContainer.style.display = 'none';
 							statusVisible = false;
@@ -1872,12 +1856,13 @@ EditorUi.initMinimalTheme = function()
 						
 						statusVisible = true;
 					}
+
+					menubar.style.visibility = (menubar.clientWidth > 12) ? '' : 'hidden';
 				}));
 			}
 			
-			elt = addMenu('diagram', null, IMAGE_PATH + '/drawlogo.svg');
+			elt = addMenu('diagram', null, Editor.menuImage);
 			elt.style.boxShadow = 'none';
-			elt.style.opacity = '0.4';
 			elt.style.padding = '6px';
 			elt.style.margin = '0px';
 			toolbar.appendChild(elt);
@@ -1941,15 +1926,14 @@ EditorUi.initMinimalTheme = function()
 						
 						return elt;
 					};
-					
+
 					// Append sidebar elements
-					addElt(ui.sidebar.createVertexTemplate('text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;', 
-						40, 20, 'Text', mxResources.get('text'), true, true, null, true), mxResources.get('text') +
+					addElt(ui.sidebar.createVertexTemplate('text;strokeColor=none;fillColor=none;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;', 
+						60, 30, 'Text', mxResources.get('text'), true, true, null, true, true), mxResources.get('text') +
 						' (' +  Editor.ctrlKey + '+Shift+X' + ')');
 					addElt(ui.sidebar.createVertexTemplate('shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;' +
 						'fontColor=#000000;darkOpacity=0.05;fillColor=#FFF9B2;strokeColor=none;fillStyle=solid;' +
-						'direction=west;gradientDirection=north;gradientColor=#FFF2A1;shadow=1;size=20;fontSize=24;' +
-						'pointerEvents=1;' + ((urlParams['rough'] != '0') ? 'sketch=1;jiggle=2;' : ''),
+						'direction=west;gradientDirection=north;gradientColor=#FFF2A1;shadow=1;size=20;pointerEvents=1;',
 						140, 160, '', mxResources.get('note'), true, true, null, true), mxResources.get('note'));
 					addElt(ui.sidebar.createVertexTemplate('rounded=0;whiteSpace=wrap;html=1;', 160, 80,
 						'', mxResources.get('rectangle'), true, true, null, true), mxResources.get('rectangle') +
@@ -1959,10 +1943,8 @@ EditorUi.initMinimalTheme = function()
 					
 					(function()
 					{
-						var cell = new mxCell('', new mxGeometry(0, 0, graph.defaultEdgeLength, 0),
-							'edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;' +
-							'endArrow=open;sourcePerimeterSpacing=8;targetPerimeterSpacing=8;fontSize=16;' +
-							((urlParams['rough'] != '0') ? 'sketch=1;' : ''));
+						var edgeStyle = 'edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;';
+						var cell = new mxCell('', new mxGeometry(0, 0, graph.defaultEdgeLength, 0), edgeStyle);
 						cell.geometry.setTerminalPoint(new mxPoint(0, 0), true);
 						cell.geometry.setTerminalPoint(new mxPoint(cell.geometry.width, 0), false);
 						cell.geometry.points = [];
@@ -1975,7 +1957,7 @@ EditorUi.initMinimalTheme = function()
 							mxResources.get('line'));
 							
 						cell = cell.clone();
-						cell.style += 'shape=flexArrow;rounded=1;startSize=8;endSize=8;';
+						cell.style = edgeStyle + 'shape=flexArrow;rounded=1;startSize=8;endSize=8;';
 						cell.geometry.width = graph.defaultEdgeLength + 20;
 						cell.geometry.setTerminalPoint(new mxPoint(0, 20), true);
 						cell.geometry.setTerminalPoint(new mxPoint(cell.geometry.width, 20), false);
@@ -1992,16 +1974,24 @@ EditorUi.initMinimalTheme = function()
 					{
 						var elt = addMenuItem('', action.funct, null, label, action, image);
 						elt.style.width = '40px';
+						elt.style.opacity = '0.7';
 						
 						return addElt(elt, null, 'pointer');
 					};
 					
-					addAction(ui.actions.get('insertFreehand'), mxResources.get('freehand'),
-						'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAwIDI0IDI0IiB3aWR0aD0iMjRweCIgZmlsbD0iIzAwMDAwMCI+PHJlY3QgZmlsbD0ibm9uZSIgaGVpZ2h0PSIyNCIgd2lkdGg9IjI0Ii8+PHBhdGggZD0iTTQuNSw4YzEuMDQsMCwyLjM0LTEuNSw0LjI1LTEuNWMxLjUyLDAsMi43NSwxLjIzLDIuNzUsMi43NWMwLDIuMDQtMS45OSwzLjE1LTMuOTEsNC4yMkM1LjQyLDE0LjY3LDQsMTUuNTcsNCwxNyBjMCwxLjEsMC45LDIsMiwydjJjLTIuMjEsMC00LTEuNzktNC00YzAtMi43MSwyLjU2LTQuMTQsNC42Mi01LjI4YzEuNDItMC43OSwyLjg4LTEuNiwyLjg4LTIuNDdjMC0wLjQxLTAuMzQtMC43NS0wLjc1LTAuNzUgQzcuNSw4LjUsNi4yNSwxMCw0LjUsMTBDMy4xMiwxMCwyLDguODgsMiw3LjVDMiw1LjQ1LDQuMTcsMi44Myw1LDJsMS40MSwxLjQxQzUuNDEsNC40Miw0LDYuNDMsNCw3LjVDNCw3Ljc4LDQuMjIsOCw0LjUsOHogTTgsMjEgbDMuNzUsMGw4LjA2LTguMDZsLTMuNzUtMy43NUw4LDE3LjI1TDgsMjF6IE0xMCwxOC4wOGw2LjA2LTYuMDZsMC45MiwwLjkyTDEwLjkyLDE5TDEwLDE5TDEwLDE4LjA4eiBNMjAuMzcsNi4yOSBjLTAuMzktMC4zOS0xLjAyLTAuMzktMS40MSwwbC0xLjgzLDEuODNsMy43NSwzLjc1bDEuODMtMS44M2MwLjM5LTAuMzksMC4zOS0xLjAyLDAtMS40MUwyMC4zNyw2LjI5eiIvPjwvc3ZnPg==');
+					addAction(ui.actions.get('insertFreehand'), mxResources.get('freehand'), Editor.freehandImage);
 					var toggleShapesAction = ui.actions.get('toggleShapes');
 					addAction(toggleShapesAction, mxResources.get('shapes') + ' (' + toggleShapesAction.shortcut + ')', insertImage);
-					addAction(ui.actions.get('insertTemplate'), mxResources.get('template'),
-						'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAwIDI0IDI0IiB3aWR0aD0iMjRweCIgZmlsbD0iIzAwMDAwMCI+PHBhdGggZD0iTTAgMGgyNHYyNEgwVjB6IiBmaWxsPSJub25lIi8+PHBhdGggZD0iTTEzIDExaC0ydjNIOHYyaDN2M2gydi0zaDN2LTJoLTN6bTEtOUg2Yy0xLjEgMC0yIC45LTIgMnYxNmMwIDEuMS44OSAyIDEuOTkgMkgxOGMxLjEgMCAyLS45IDItMlY4bC02LTZ6bTQgMThINlY0aDd2NWg1djExeiIvPjwvc3ZnPg==');
+
+					elt = addMenu('table', null, Editor.tableImage);
+					elt.style.boxShadow = 'none';
+					elt.style.opacity = '0.7';
+					elt.style.padding = '6px';
+					elt.style.margin = '0px';
+					elt.style.width = '37px';
+					addElt(elt, null, 'pointer');
+
+					addAction(ui.actions.get('insertTemplate'), mxResources.get('template'), Editor.templateImage);
 				}
 
 				picker.appendChild(foldImg);
@@ -2033,7 +2023,7 @@ EditorUi.initMinimalTheme = function()
 					picker.style.padding = '0px';
 					picker.style.height = '24px';
 					foldImg.style.height = '24px';
-					foldImg.style.backgroundImage = 'url(' + plusImage + ')';
+					foldImg.style.backgroundImage = 'url(' + Editor.plusImage + ')';
 					foldImg.setAttribute('title', mxResources.get('insert'));
 					foldImg.style.width = '24px';
 					collapsed = true;
@@ -2042,10 +2032,8 @@ EditorUi.initMinimalTheme = function()
 			
 			initPicker();
 			
-			ui.addListener('darkModeChanged', mxUtils.bind(this, function()
-			{
-				initPicker();
-			}));
+			ui.addListener('darkModeChanged', initPicker);
+			ui.addListener('sketchModeChanged', initPicker);
 		}
 		else
 		{
@@ -2073,36 +2061,25 @@ EditorUi.initMinimalTheme = function()
 	        };
 
         	var zoomInAction = ui.actions.get('zoomIn');
-			var zoomInImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTUuNSAxNGgtLjc5bC0uMjgtLjI3QzE1LjQxIDEyLjU5IDE2IDExLjExIDE2IDkuNSAxNiA1LjkxIDEzLjA5IDMgOS41IDNTMyA1LjkxIDMgOS41IDUuOTEgMTYgOS41IDE2YzEuNjEgMCAzLjA5LS41OSA0LjIzLTEuNTdsLjI3LjI4di43OWw1IDQuOTlMMjAuNDkgMTlsLTQuOTktNXptLTYgMEM3LjAxIDE0IDUgMTEuOTkgNSA5LjVTNy4wMSA1IDkuNSA1IDE0IDcuMDEgMTQgOS41IDExLjk5IDE0IDkuNSAxNHptMi41LTRoLTJ2Mkg5di0ySDdWOWgyVjdoMXYyaDJ2MXoiLz48L3N2Zz4=';
 			var zoomOutAction = ui.actions.get('zoomOut');
-			var zoomOutImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTUuNSAxNGgtLjc5bC0uMjgtLjI3QzE1LjQxIDEyLjU5IDE2IDExLjExIDE2IDkuNSAxNiA1LjkxIDEzLjA5IDMgOS41IDNTMyA1LjkxIDMgOS41IDUuOTEgMTYgOS41IDE2YzEuNjEgMCAzLjA5LS41OSA0LjIzLTEuNTdsLjI3LjI4di43OWw1IDQuOTlMMjAuNDkgMTlsLTQuOTktNXptLTYgMEM3LjAxIDE0IDUgMTEuOTkgNSA5LjVTNy4wMSA1IDkuNSA1IDE0IDcuMDEgMTQgOS41IDExLjk5IDE0IDkuNSAxNHpNNyA5aDV2MUg3eiIvPjwvc3ZnPg==';        	
 			var resetViewAction = ui.actions.get('resetView');
 			var fullscreenAction = ui.actions.get('fullscreen');
-			var fitImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDI0IDI0IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0cHgiIGZpbGw9IiMwMDAwMDAiPjxnPjxwYXRoIGQ9Ik0wLDBoMjR2MjRIMFYweiIgZmlsbD0ibm9uZSIvPjwvZz48Zz48cGF0aCBkPSJNNiwxNmgxMlY4SDZWMTZ6IE04LDEwaDh2NEg4VjEweiBNNCwxNUgydjNjMCwxLjEsMC45LDIsMiwyaDN2LTJINFYxNXogTTQsNmgzVjRINEMyLjksNCwyLDQuOSwyLDZ2M2gyVjZ6IE0yMCw0aC0zdjJoM3YzIGgyVjZDMjIsNC45LDIxLjEsNCwyMCw0eiBNMjAsMThoLTN2MmgzYzEuMSwwLDItMC45LDItMnYtM2gtMlYxOHoiLz48L2c+PC9zdmc+';
-			var fullscreenImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMyA1djRoMlY1aDRWM0g1Yy0xLjEgMC0yIC45LTIgMnptMiAxMEgzdjRjMCAxLjEuOSAyIDIgMmg0di0ySDV2LTR6bTE0IDRoLTR2Mmg0YzEuMSAwIDItLjkgMi0ydi00aC0ydjR6bTAtMTZoLTR2Mmg0djRoMlY1YzAtMS4xLS45LTItMi0yeiIvPjwvc3ZnPg==';
 			var toggleDarkAction = ui.actions.get('toggleDarkMode'); 
-			var darkImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDI0IDI0IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0cHgiIGZpbGw9IiMwMDAwMDAiPjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iMjQiIHdpZHRoPSIyNCIvPjxwYXRoIGQ9Ik05LjM3LDUuNTFDOS4xOSw2LjE1LDkuMSw2LjgyLDkuMSw3LjVjMCw0LjA4LDMuMzIsNy40LDcuNCw3LjRjMC42OCwwLDEuMzUtMC4wOSwxLjk5LTAuMjdDMTcuNDUsMTcuMTksMTQuOTMsMTksMTIsMTkgYy0zLjg2LDAtNy0zLjE0LTctN0M1LDkuMDcsNi44MSw2LjU1LDkuMzcsNS41MXogTTEyLDNjLTQuOTcsMC05LDQuMDMtOSw5czQuMDMsOSw5LDlzOS00LjAzLDktOWMwLTAuNDYtMC4wNC0wLjkyLTAuMS0xLjM2IGMtMC45OCwxLjM3LTIuNTgsMi4yNi00LjQsMi4yNmMtMi45OCwwLTUuNC0yLjQyLTUuNC01LjRjMC0xLjgxLDAuODktMy40MiwyLjI2LTQuNEMxMi45MiwzLjA0LDEyLjQ2LDMsMTIsM0wxMiwzeiIvPjwvc3ZnPg==';
-			var lightImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDI0IDI0IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0cHgiIGZpbGw9IiMwMDAwMDAiPjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iMjQiIHdpZHRoPSIyNCIvPjxwYXRoIGQ9Ik0xMiw5YzEuNjUsMCwzLDEuMzUsMywzcy0xLjM1LDMtMywzcy0zLTEuMzUtMy0zUzEwLjM1LDksMTIsOSBNMTIsN2MtMi43NiwwLTUsMi4yNC01LDVzMi4yNCw1LDUsNXM1LTIuMjQsNS01IFMxNC43Niw3LDEyLDdMMTIsN3ogTTIsMTNsMiwwYzAuNTUsMCwxLTAuNDUsMS0xcy0wLjQ1LTEtMS0xbC0yLDBjLTAuNTUsMC0xLDAuNDUtMSwxUzEuNDUsMTMsMiwxM3ogTTIwLDEzbDIsMGMwLjU1LDAsMS0wLjQ1LDEtMSBzLTAuNDUtMS0xLTFsLTIsMGMtMC41NSwwLTEsMC40NS0xLDFTMTkuNDUsMTMsMjAsMTN6IE0xMSwydjJjMCwwLjU1LDAuNDUsMSwxLDFzMS0wLjQ1LDEtMVYyYzAtMC41NS0wLjQ1LTEtMS0xUzExLDEuNDUsMTEsMnogTTExLDIwdjJjMCwwLjU1LDAuNDUsMSwxLDFzMS0wLjQ1LDEtMXYtMmMwLTAuNTUtMC40NS0xLTEtMUMxMS40NSwxOSwxMSwxOS40NSwxMSwyMHogTTUuOTksNC41OGMtMC4zOS0wLjM5LTEuMDMtMC4zOS0xLjQxLDAgYy0wLjM5LDAuMzktMC4zOSwxLjAzLDAsMS40MWwxLjA2LDEuMDZjMC4zOSwwLjM5LDEuMDMsMC4zOSwxLjQxLDBzMC4zOS0xLjAzLDAtMS40MUw1Ljk5LDQuNTh6IE0xOC4zNiwxNi45NSBjLTAuMzktMC4zOS0xLjAzLTAuMzktMS40MSwwYy0wLjM5LDAuMzktMC4zOSwxLjAzLDAsMS40MWwxLjA2LDEuMDZjMC4zOSwwLjM5LDEuMDMsMC4zOSwxLjQxLDBjMC4zOS0wLjM5LDAuMzktMS4wMywwLTEuNDEgTDE4LjM2LDE2Ljk1eiBNMTkuNDIsNS45OWMwLjM5LTAuMzksMC4zOS0xLjAzLDAtMS40MWMtMC4zOS0wLjM5LTEuMDMtMC4zOS0xLjQxLDBsLTEuMDYsMS4wNmMtMC4zOSwwLjM5LTAuMzksMS4wMywwLDEuNDEgczEuMDMsMC4zOSwxLjQxLDBMMTkuNDIsNS45OXogTTcuMDUsMTguMzZjMC4zOS0wLjM5LDAuMzktMS4wMywwLTEuNDFjLTAuMzktMC4zOS0xLjAzLTAuMzktMS40MSwwbC0xLjA2LDEuMDYgYy0wLjM5LDAuMzktMC4zOSwxLjAzLDAsMS40MXMxLjAzLDAuMzksMS40MSwwTDcuMDUsMTguMzZ6Ii8+PC9zdmc+';
         	var undoAction = ui.actions.get('undo');
         	var redoAction = ui.actions.get('redo');        	
-	        var undoElt = addMenuItem('', undoAction.funct, null, mxResources.get('undo') + ' (' + undoAction.shortcut + ')', undoAction,
-	       		'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTIuNSA4Yy0yLjY1IDAtNS4wNS45OS02LjkgMi42TDIgN3Y5aDlsLTMuNjItMy42MmMxLjM5LTEuMTYgMy4xNi0xLjg4IDUuMTItMS44OCAzLjU0IDAgNi41NSAyLjMxIDcuNiA1LjVsMi4zNy0uNzhDMjEuMDggMTEuMDMgMTcuMTUgOCAxMi41IDh6Ii8+PC9zdmc+');
-	        var redoElt = addMenuItem('', redoAction.funct, null, mxResources.get('redo') + ' (' + redoAction.shortcut + ')', redoAction,
-	       		'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTguNCAxMC42QzE2LjU1IDguOTkgMTQuMTUgOCAxMS41IDhjLTQuNjUgMC04LjU4IDMuMDMtOS45NiA3LjIyTDMuOSAxNmMxLjA1LTMuMTkgNC4wNS01LjUgNy42LTUuNSAxLjk1IDAgMy43My43MiA1LjEyIDEuODhMMTMgMTZoOVY3bC0zLjYgMy42eiIvPjwvc3ZnPg==');
-			var fitElt = addMenuItem('', fitFunction, true, mxResources.get('fit') + ' (' + Editor.ctrlKey + '+H)', resetViewAction, fitImage);
-			var fullscreenElt = addMenuItem('', fullscreenAction.funct, null, mxResources.get('fullscreen'), fullscreenAction, fullscreenImage);
-			var deleteImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNNiAxOWMwIDEuMS45IDIgMiAyaDhjMS4xIDAgMi0uOSAyLTJWN0g2djEyek0xOSA0aC0zLjVsLTEtMWgtNWwtMSAxSDV2MmgxNFY0eiIvPjwvc3ZnPg==';
+	        var undoElt = addMenuItem('', undoAction.funct, null, mxResources.get('undo') + ' (' + undoAction.shortcut + ')', undoAction, Editor.undoImage);
+	        var redoElt = addMenuItem('', redoAction.funct, null, mxResources.get('redo') + ' (' + redoAction.shortcut + ')', redoAction, Editor.redoImage);
 
 			if (footer != null)
 			{
 				var deleteAction = ui.actions.get('delete');
-				var deleteElt = addMenuItem('', deleteAction.funct, null, mxResources.get('delete'), deleteAction, deleteImage);
+				var deleteElt = addMenuItem('', deleteAction.funct, null, mxResources.get('delete'), deleteAction, Editor.trashImage);
 				deleteElt.style.opacity = '0.1';
 	        	toolbar.appendChild(deleteElt);
 
 				deleteAction.addListener('stateChanged', function()
 				{
-					deleteElt.style.opacity = (deleteAction.enabled) ? '0.4' : '0.1';
+					deleteElt.style.opacity = (deleteAction.enabled) ? '' : '0.1';
 				});
 				
 				var undoListener = function()
@@ -2111,8 +2088,8 @@ EditorUi.initMinimalTheme = function()
 						graph.isEditing()) ? 'inline-block' : 'none';
 					redoElt.style.display = undoElt.style.display;
 					
-					undoElt.style.opacity = (undoAction.enabled) ? '0.4' : '0.1';
-					redoElt.style.opacity = (redoAction.enabled) ? '0.4' : '0.1';
+					undoElt.style.opacity = (undoAction.enabled) ? '' : '0.1';
+					redoElt.style.opacity = (redoAction.enabled) ? '' : '0.1';
 				};
 				
 				toolbar.appendChild(undoElt);
@@ -2121,15 +2098,29 @@ EditorUi.initMinimalTheme = function()
 				undoAction.addListener('stateChanged', undoListener);
 				redoAction.addListener('stateChanged', undoListener);
 				undoListener();
+
+				if (urlParams['layers'] != null)
+				{
+					var layersAction = ui.actions.get('layers');
+					var layersElt = addMenuItem('', layersAction.funct, null, mxResources.get('layers'), layersAction, Editor.layersImage);
+					layersElt.style.opacity = '0.4';
+					footer.appendChild(layersElt);
+				}
+				
+				if (urlParams['tags'] != null)
+				{
+					var tagsAction = ui.actions.get('tags');
+					var tagsElt = addMenuItem('', tagsAction.funct, null, mxResources.get('tags'), tagsAction, Editor.tagsImage);
+					tagsElt.style.opacity = '0.4';
+					footer.appendChild(tagsElt);
+				}
 				
 				var outlineAction = ui.actions.get('outline');
-				var outlineImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAwIDI0IDI0IiB3aWR0aD0iMjRweCIgZmlsbD0iIzAwMDAwMCI+PHBhdGggZD0iTTAgMGgyNHYyNEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0yMC41IDNsLS4xNi4wM0wxNSA1LjEgOSAzIDMuMzYgNC45Yy0uMjEuMDctLjM2LjI1LS4zNi40OFYyMC41YzAgLjI4LjIyLjUuNS41bC4xNi0uMDNMOSAxOC45bDYgMi4xIDUuNjQtMS45Yy4yMS0uMDcuMzYtLjI1LjM2LS40OFYzLjVjMC0uMjgtLjIyLS41LS41LS41ek0xNSAxOWwtNi0yLjExVjVsNiAyLjExVjE5eiIvPjwvc3ZnPg==';
-				var outlineElt = addMenuItem('', outlineAction.funct, null, mxResources.get('outline'), outlineAction, outlineImage);
-				outlineElt.style.opacity = '0.4';
+				var outlineElt = addMenuItem('', outlineAction.funct, null, mxResources.get('outline'), outlineAction, Editor.outlineImage);
 				footer.appendChild(outlineElt);
 	
-				var zoomOutElt = addMenuItem('', zoomOutAction.funct, true, mxResources.get('zoomOut') + ' (' + Editor.ctrlKey + ' -/Alt+Mousewheel)', zoomOutAction, zoomOutImage);
-				zoomOutElt.style.opacity = '0.4';
+				var zoomOutElt = addMenuItem('', zoomOutAction.funct, true, mxResources.get('zoomOut') +
+					' (' + Editor.ctrlKey + ' -/Alt+Mousewheel)', zoomOutAction, Editor.zoomOutImage);
 				footer.appendChild(zoomOutElt);
 
 				var elt = document.createElement('div');
@@ -2150,26 +2141,10 @@ EditorUi.initMinimalTheme = function()
 				
 				mxEvent.addListener(elt, 'click', fitFunction);
 
-				var zoomInElt = addMenuItem('', zoomInAction.funct, true, mxResources.get('zoomIn') + ' (' + Editor.ctrlKey + ' +/Alt+Mousewheel)', zoomInAction, zoomInImage);
-				zoomInElt.style.opacity = '0.4';
+				var zoomInElt = addMenuItem('', zoomInAction.funct, true, mxResources.get('zoomIn') +
+					' (' + Editor.ctrlKey + ' +/Alt+Mousewheel)', zoomInAction, Editor.zoomInImage);
 				footer.appendChild(zoomInElt);
 
-				var toggleDarkElt = addMenuItem('', toggleDarkAction.funct, null, mxResources.get('dark'), toggleDarkAction,
-					Editor.isDarkMode() ? lightImage : darkImage);
-				toggleDarkElt.style.opacity = '0.4';
-				footer.appendChild(toggleDarkElt);
-				
-				ui.addListener('darkModeChanged', mxUtils.bind(this, function()
-				{
-					toggleDarkElt.style.backgroundImage = 'url(' + (Editor.isDarkMode() ? lightImage : darkImage) + ')';
-				}));
-									
-				if (fullscreenAction.visible)
-				{
-					fullscreenElt.style.opacity = '0.4';
-					footer.appendChild(fullscreenElt);
-				}
-				
 				var pageMenu = this.createPageMenuTab(false);
 				pageMenu.style.display = 'none';
 				pageMenu.style.position = '';
@@ -2189,14 +2164,18 @@ EditorUi.initMinimalTheme = function()
 				pageMenu.firstChild.style.opacity = '0.6';
 				pageMenu.firstChild.style.margin = '0px';
 				footer.appendChild(pageMenu);
-				
-				// Page menu only visible for multiple pages
-				ui.addListener('fileDescriptorChanged', function()
+
+				function pagesVisibleChanged()
 				{
 					pageMenu.style.display = (urlParams['pages'] == '1' ||
-						(ui.pages != null && ui.pages.length > 1 )) ?
-						'inline-block' : 'none';
-				});
+						(ui.pages != null && ui.pages.length > 1 ) ||
+						Editor.pagesVisible) ? 'inline-block' : 'none';
+				};
+
+				// Page menu only visible for multiple pages
+				ui.addListener('fileDescriptorChanged', pagesVisibleChanged);
+				ui.addListener('pagesVisibleChanged', pagesVisibleChanged);
+				pagesVisibleChanged();
 				
 				ui.tabContainer.style.visibility = 'hidden';
 				menubar.style.cssText = 'position:absolute;right:12px;top:10px;height:30px;z-index:1;border-radius:4px;' +
@@ -2227,6 +2206,9 @@ EditorUi.initMinimalTheme = function()
 			}
 			else
 			{
+				var fullscreenElt = addMenuItem('', fullscreenAction.funct, null, mxResources.get('fullscreen'), fullscreenAction, Editor.fullscreenImage);
+				var fitElt = addMenuItem('', fitFunction, true, mxResources.get('fit') + ' (' + Editor.ctrlKey + '+H)', resetViewAction, Editor.zoomFitImage);
+				
 				menubar.style.cssText = 'position:absolute;left:0px;right:0px;top:0px;height:30px;padding:8px;' +
 					'text-align:left;white-space:nowrap;';
 				this.tabContainer.style.right = '70px';
@@ -2255,14 +2237,17 @@ EditorUi.initMinimalTheme = function()
 			}
 		        
 	    	// Updates the label if the scale changes
-	    	var updateZoom = mxUtils.bind(this, function()
-	    	{
-	    		elt.innerHTML = Math.round(ui.editor.graph.view.scale * 100) + '%';
-	    	});
+			(function(elt)
+			{
+				var updateZoom = mxUtils.bind(this, function()
+				{
+					elt.innerHTML = Math.round(ui.editor.graph.view.scale * 100) + '%';
+				});
 
-	    	ui.editor.graph.view.addListener(mxEvent.EVENT_SCALE, updateZoom);
-	    	ui.editor.addListener('resetGraphView', updateZoom);
-	    	ui.editor.addListener('pageSelected', updateZoom);
+				ui.editor.graph.view.addListener(mxEvent.EVENT_SCALE, updateZoom);
+				ui.editor.addListener('resetGraphView', updateZoom);
+				ui.editor.addListener('pageSelected', updateZoom);
+			})(elt);
 	    	
 	    	// Augments setGraphEnabled to update visible state
 	    	var uiSetGraphEnabled = ui.setGraphEnabled;
@@ -2325,7 +2310,7 @@ EditorUi.initMinimalTheme = function()
 			}
 			else
 			{
-				var temp = (small) ? addMenu('diagram', null, IMAGE_PATH + '/drawlogo.svg') : null;
+				var temp = (small) ? addMenu('diagram', null, Editor.drawLogoImage) : null;
 
 				if (temp != null)
 				{
@@ -2333,16 +2318,16 @@ EditorUi.initMinimalTheme = function()
 				}
 
 		        createGroup([appElt, addMenuItem(mxResources.get('shapes'), ui.actions.get('toggleShapes').funct, null,
-					mxResources.get('shapes'), ui.actions.get('image'), (small) ? shapesImage : null),
+					mxResources.get('shapes'), ui.actions.get('image'), (small) ? Editor.shapesImage : null),
 	       			addMenuItem(mxResources.get('format'), ui.actions.get('toggleFormat').funct, null,
 	       			mxResources.get('format') + ' (' + ui.actions.get('formatPanel').shortcut + ')', ui.actions.get('image'),
-	   				(small) ? formatImage : null)],
+	   				(small) ? Editor.formatImage : null)],
 	   				(small) ? 60 : null);
 			
 		        var elt = addMenu('insert', true, (small) ? insertImage : null);
 	        	createGroup([elt, addMenuItem(mxResources.get('delete'), ui.actions.get('delete').funct,
 					null, mxResources.get('delete'), ui.actions.get('delete'),
-		        	(small) ? deleteImage : null)], (small) ? 60 : null);
+		        	(small) ? Editor.trashImage : null)], (small) ? 60 : null);
 	
 		        if (iw >= 411)
 		        {
@@ -2352,30 +2337,9 @@ EditorUi.initMinimalTheme = function()
 			        {
 				        createGroup([fitElt,
 					        (iw >= 640) ? addMenuItem('', zoomInAction.funct, true, mxResources.get('zoomIn') + ' (' + Editor.ctrlKey + ' +)',
-								zoomInAction, zoomInImage) : null,
+								zoomInAction, Editor.zoomInImage) : null,
 					        (iw >= 640) ? addMenuItem('', zoomOutAction.funct, true, mxResources.get('zoomOut') + ' (' + Editor.ctrlKey + ' -)',
-								zoomOutAction, zoomOutImage) : null], 60);
-						
-				        if (iw >= 720)
-				        {
-							var toggleDarkElt = addMenuItem('', toggleDarkAction.funct, null, mxResources.get('dark'), toggleDarkAction,
-								Editor.isDarkMode() ? lightImage : darkImage);
-							toggleDarkElt.style.opacity = '0.4';
-			
-							ui.addListener('darkModeChanged', mxUtils.bind(this, function()
-							{
-								toggleDarkElt.style.backgroundImage = 'url(' + (Editor.isDarkMode() ? lightImage : darkImage) + ')';
-							}));
-							
-							if (ui.statusContainer != null && urlParams['sketch'] != '1')
-				            {
-				            	menubar.insertBefore(toggleDarkElt, ui.statusContainer);
-				            }
-				            else
-				            {
-				            	menubar.appendChild(toggleDarkElt);
-				            }
-						}
+								zoomOutAction, Editor.zoomOutImage) : null], 60);
 			        }
 		        }
 			}

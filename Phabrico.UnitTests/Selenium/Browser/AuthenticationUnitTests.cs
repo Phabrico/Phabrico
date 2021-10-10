@@ -121,7 +121,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.ClassName("phabrico-page-content")).Any());
 
-            // validate invalid logon
+            // validate valid logon
             IWebElement generalOverview = WebBrowser.FindElements(By.ClassName("phabrico-page-content")).FirstOrDefault(elem => elem.Displayed);
             string generalOverviewTitle = generalOverview.Text.Split('\r', '\n')[0];
             Assert.IsTrue(generalOverviewTitle.Equals("General Overview"));

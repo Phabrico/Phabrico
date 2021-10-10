@@ -1,4 +1,5 @@
-﻿using Phabrico.Http;
+using Phabrico.Controllers;
+using Phabrico.Http;
 using Phabrico.Http.Response;
 using System;
 using System.Linq;
@@ -30,6 +31,8 @@ namespace Phabrico.Plugin
             /// </summary>
             Initialized
         }
+
+        public delegate void SynchronizationMethod(Synchronization.SynchronizationParameters synchronizationParameters, int processedDuration, int totalDuration);
 
         /// <summary>
         /// Current state of the plugin
@@ -199,5 +202,11 @@ namespace Phabrico.Plugin
         /// </summary>
         /// <returns>True if initialization was successfull. If false, the plugin will not be loaded</returns>
         public abstract void UnlLoad();
+
+        /// <summary>
+        /// If set, this method will be executed during synchronization.
+        /// This can for example be used to download some (plugin-specific) data from Phabricator
+        /// </summary>
+        public SynchronizationMethod SynchronizationReadData = null;
     }
 }

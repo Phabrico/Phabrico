@@ -94,6 +94,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
                 if (existingHeaderNames.Contains(headerName))
                 {
@@ -139,6 +140,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
                 if (existingHeaderNames.Contains(headerName))
                 {
@@ -184,7 +186,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -229,7 +232,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -274,7 +278,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -319,7 +324,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -364,7 +370,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -409,7 +416,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -454,7 +462,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -499,7 +508,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -544,7 +554,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;
@@ -589,7 +600,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                
+                ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+
                 if (existingHeaderNames.Contains(headerName))
                 {
                     int counter = 1;

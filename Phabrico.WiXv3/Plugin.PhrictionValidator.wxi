@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <ComponentGroup Id="PluginPhrictionValidatorComponents" Directory="INSTALLDIR">
+        <Component Id="phrictionvalidator_Phabrico_Plugin_PhrictionValidator_dll" Guid="$(var.PluginPhrictionValidatorGUID)"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictionvalidator_Phabrico_Plugin_PhrictionValidator_dll"
+                        Name="Phabrico.Plugin.PhrictionValidator.dll"
+                        On="install" />
+
+            <File Id="file_phrictionvalidator_Phabrico_Plugin_PhrictionValidator_dll"
+                  Source="$(var.Phabrico.Plugin.PhrictionValidator.TargetDir)Phabrico.Plugin.PhrictionValidator.dll"
+                  KeyPath="yes" />
+            <ServiceControl Id="StartServiceForPhrictionValidator"
+                            Name="Phabrico"
+                            Start="install"
+                            Stop="install"
+                            Wait="yes" />
+        </Component>
+        <Component Id="phrictionvalidator_Phabrico_Plugin_PhrictionValidator_pdb" Guid="aadb328e-8994-4e4e-b132-279684cf2150"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictionvalidator_Phabrico_Plugin_PhrictionValidator_pdb"
+                        Name="Phabrico.Plugin.PhrictionValidator.pdb"
+                        On="install" />
+
+            <File Id="file_phrictionvalidator_Phabrico_Plugin_PhrictionValidator_pdb"
+                  Source="$(var.Phabrico.Plugin.PhrictionValidator.TargetDir)Phabrico.Plugin.PhrictionValidator.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+    </ComponentGroup>
+</Include>

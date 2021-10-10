@@ -26,7 +26,7 @@ GraphViewer.prototype.imageBaseUrl = 'https://viewer.diagrams.net/';
 /**
  * Redirects editing to absolue URLs.
  */
-GraphViewer.prototype.toolbarHeight = (document.compatMode == 'BackCompat') ? 28 : 30;
+GraphViewer.prototype.toolbarHeight = (document.compatMode == 'BackCompat') ? 24 : 26;
 
 /**
  * Redirects editing to absolue URLs.
@@ -138,6 +138,7 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 		this.graphConfig.toolbar.split(' ') : [];
 	this.zoomEnabled = mxUtils.indexOf(this.toolbarItems, 'zoom') >= 0;
 	this.layersEnabled = mxUtils.indexOf(this.toolbarItems, 'layers') >= 0;
+	this.tagsEnabled = mxUtils.indexOf(this.toolbarItems, 'tags') >= 0;
 	this.lightboxEnabled = mxUtils.indexOf(this.toolbarItems, 'lightbox') >= 0;
 	this.lightboxClickEnabled = this.graphConfig.lightbox != false;
 	this.initialWidth = (container != null) ? container.style.width : null;
@@ -319,16 +320,12 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 				
 				this.selectPageById = function(id)
 				{
-					var found = false;
-					
-					for (var i = 0; i < this.diagrams.length; i++)
+					var index = this.getIndexById(id);
+					var found = index >= 0;
+
+					if (found)
 					{
-						if (this.diagrams[i].getAttribute('id') == id)
-						{
-							this.selectPage(i);
-							found = true;
-							break;
-						}
+						this.selectPage(index);
 					}
 					
 					return found;
@@ -346,7 +343,57 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 						lastXmlNode = this.xmlNode;
 					}
 				});
-				
+
+				// Replaces background page reference with SVG
+				var graphSetBackgroundImage = this.graph.setBackgroundImage;
+		
+				this.graph.setBackgroundImage = function(img)
+				{
+					if (img != null && Graph.isPageLink(img.src))
+					{
+						var src = img.src;
+						var comma = src.indexOf(',');
+							
+						if (comma > 0)
+						{
+							var index = self.getIndexById(src.substring(comma + 1));
+					
+							if (index >= 0)
+							{
+								img = self.getImageForGraphModel(
+									Editor.parseDiagramNode(
+									self.diagrams[index]));
+								img.originalSrc = src;
+							}
+						}
+					}
+
+					graphSetBackgroundImage.apply(this, arguments);
+				};
+
+				// Overrides graph bounds to include background pages
+				var graphGetGraphBounds = this.graph.getGraphBounds;
+		
+				this.graph.getGraphBounds = function(img)
+				{
+					var bounds = graphGetGraphBounds.apply(this, arguments);
+					var img = this.backgroundImage;
+
+					// Check img.originalSrc to ignore background
+					// images but not background pages
+					if (img != null)
+					{
+						var t = this.view.translate;
+						var s = this.view.scale;
+		
+						bounds.add(new mxRectangle(
+							(t.x + img.x) * s, (t.y + img.y) * s,
+							img.width * s, img.height * s));
+					}
+
+					return bounds;
+				};
+
 				// LATER: Add event for setGraphXml
 				this.addListener('xmlNodeChanged', update);
 				update();
@@ -519,6 +566,46 @@ GraphViewer.prototype.getImageUrl = function(url)
 	}
 	
 	return url;
+};
+
+/**
+ * 
+ */
+GraphViewer.prototype.getImageForGraphModel = function(node)
+{
+	var graph = Graph.createOffscreenGraph(this.graph.getStylesheet());
+	graph.getGlobalVariable = this.graph.getGlobalVariable;
+	document.body.appendChild(graph.container);
+
+	var codec = new mxCodec(node.ownerDocument);
+	var root = codec.decode(node).root;
+	graph.model.setRoot(root);
+	
+	var svgRoot = graph.getSvg();
+	var bounds = graph.getGraphBounds();
+	document.body.removeChild(graph.container);
+
+	return new mxImage(Editor.createSvgDataUri(mxUtils.getXml(svgRoot)),
+		bounds.width, bounds.height, bounds.x, bounds.y);
+};
+
+/**
+ * 
+ */
+GraphViewer.prototype.getIndexById = function(id)
+{
+	if (this.diagrams != null)
+	{
+		for (var i = 0; i < this.diagrams.length; i++)
+		{
+			if (this.diagrams[i].getAttribute('id') == id)
+			{
+				return i;
+			}
+		}
+	}
+
+	return -1;
 };
 
 /**
@@ -1205,7 +1292,8 @@ GraphViewer.prototype.addToolbar = function()
 		var img = document.createElement('img');
 		img.setAttribute('border', '0');
 		img.setAttribute('src', imgSrc);
-		
+		img.style.width = '18px';
+
 		if (enabled == null || enabled)
 		{
 			mxEvent.addListener(a, 'mouseenter', function()
@@ -1235,7 +1323,8 @@ GraphViewer.prototype.addToolbar = function()
 	};
 
 	var layersDialog = null;
-	var layersDialogEntered = false;
+	var tagsComponent = null;
+	var tagsDialog = null;
 	var pageInfo = null;
 	
 	for (var i = 0; i < tokens.length; i++)
@@ -1245,8 +1334,8 @@ GraphViewer.prototype.addToolbar = function()
 		if (token == 'pages')
 		{
 			pageInfo = container.ownerDocument.createElement('div');
-			pageInfo.style.cssText = 'display:inline-block;position:relative;padding:3px 4px 0 4px;' +
-				'vertical-align:top;font-family:Helvetica,Arial;font-size:12px;top:4px;cursor:default;'
+			pageInfo.style.cssText = 'display:inline-block;position:relative;top:5px;padding:0 4px 0 4px;' +
+				'vertical-align:top;font-family:Helvetica,Arial;font-size:12px;;cursor:default;'
 			mxUtils.setOpacity(pageInfo, 70);
 			
 			var prevButton = addButton(mxUtils.bind(this, function()
@@ -1368,7 +1457,7 @@ GraphViewer.prototype.addToolbar = function()
 						layersDialog.style.padding = '2px 0px 2px 0px';
 						layersDialog.style.border = '1px solid #d0d0d0';
 						layersDialog.style.backgroundColor = '#eee';
-						layersDialog.style.fontFamily = 'Helvetica Neue,Helvetica,Arial Unicode MS,Arial';
+						layersDialog.style.fontFamily = Editor.defaultHtmlFont;
 						layersDialog.style.fontSize = '11px';
 						layersDialog.style.zIndex = this.toolbarZIndex + 1;
 						mxUtils.setOpacity(layersDialog, 80);
@@ -1388,6 +1477,67 @@ GraphViewer.prototype.addToolbar = function()
 				layersButton.style.display = (model.getChildCount(model.root) > 1) ? 'inline-block' : 'none';
 			}
 		}
+		else if (token == 'tags')
+		{
+			if (this.tagsEnabled)
+			{
+				var tagsButton = addButton(mxUtils.bind(this, function(evt)
+				{
+					if (tagsComponent == null)
+					{
+						tagsComponent = this.graph.createTagsDialog(mxUtils.bind(this, function()
+						{
+							return true;
+						}));
+
+						tagsComponent.div.getElementsByTagName('div')[0].style.position = '';
+						tagsComponent.div.style.maxHeight = '160px';
+						tagsComponent.div.style.maxWidth = '120px';
+						tagsComponent.div.style.padding = '2px';
+						tagsComponent.div.style.overflow = 'auto';
+						tagsComponent.div.style.height = 'auto';
+						tagsComponent.div.style.position = 'fixed';
+						tagsComponent.div.style.fontFamily = Editor.defaultHtmlFont;
+						tagsComponent.div.style.fontSize = '11px';
+						tagsComponent.div.style.backgroundColor = '#eee';
+						tagsComponent.div.style.color = '#000';
+						tagsComponent.div.style.border = '1px solid #d0d0d0';
+						tagsComponent.div.style.zIndex = this.toolbarZIndex + 1;
+						mxUtils.setOpacity(tagsComponent.div, 80);
+					}
+
+					if (tagsDialog != null)
+					{
+						tagsDialog.parentNode.removeChild(tagsDialog);
+						tagsDialog = null;
+					}
+					else
+					{
+						tagsDialog = tagsComponent.div;
+						
+						mxEvent.addListener(tagsDialog, 'mouseleave', function()
+						{
+							tagsDialog.parentNode.removeChild(tagsDialog);
+							tagsDialog = null;
+						});
+						
+						var r = tagsButton.getBoundingClientRect();
+						var origin = mxUtils.getDocumentScrollOrigin(document);
+						tagsDialog.style.left = origin.x + r.left - 1 + 'px';
+						tagsDialog.style.top = origin.y + r.bottom - 2 + 'px';
+						document.body.appendChild(tagsDialog);
+						tagsComponent.refresh();
+					}
+				}), Editor.tagsImage, mxResources.get('tags') || 'Tags');
+
+				model.addListener(mxEvent.CHANGE, mxUtils.bind(this, function()
+				{
+					tagsButton.style.display = (this.graph.getAllTags().length > 0) ? 'inline-block' : 'none';
+				}));
+				
+				tagsButton.style.display = (this.graph.getAllTags().length > 0) ? 'inline-block' : 'none';
+			}
+		}
 		else if (token == 'lightbox')
 		{
 			if (this.lightboxEnabled)
@@ -1395,7 +1545,7 @@ GraphViewer.prototype.addToolbar = function()
 				addButton(mxUtils.bind(this, function()
 				{
 					this.showLightbox();
-				}), Editor.maximizeImage, (mxResources.get('show') || 'Show'));
+				}), Editor.fullscreenImage, (mxResources.get('fullscreen') || 'Fullscreen'));
 			}
 		}
 		else if (this.graphConfig['toolbar-buttons'] != null)
@@ -1643,14 +1793,19 @@ GraphViewer.prototype.showLightbox = function(editable, closable, target)
 		    
 			if (closable)
 			{
-		    		param.close = 1;
+		    	param.close = 1;
 			}
 
 			if (this.layersEnabled)
 			{
-		    		param.layers = 1;
+		    	param.layers = 1;
 			}
 			
+			if (this.tagsEnabled)
+			{
+		    	param.tags = {};
+			}
+
 			if (this.graphConfig != null && this.graphConfig.nav != false)
 			{
 				param.nav = 1;
@@ -1718,7 +1873,7 @@ GraphViewer.prototype.showLocalLightbox = function()
 	
 	var closeImg = document.createElement('img');
 	closeImg.setAttribute('border', '0');
-	closeImg.setAttribute('src', Editor.closeImage);
+	closeImg.setAttribute('src', Editor.closeBlackImage);
 	closeImg.style.cssText = 'position:fixed;top:32px;right:32px;';
 	closeImg.style.cursor = 'pointer';
 	
@@ -1735,6 +1890,11 @@ GraphViewer.prototype.showLocalLightbox = function()
 														? this.graphConfig.layerIds.join(' ') : null;
 	urlParams['nav'] = (this.graphConfig.nav != false) ? '1' : '0';
 	urlParams['layers'] = (this.layersEnabled) ? '1' : '0';
+
+	if (this.tagsEnabled)
+	{
+		urlParams['tags'] = '{}';
+	}
 
 	// PostMessage not working and Permission denied for opened access in IE9-
 	if (document.documentMode == null || document.documentMode >= 10)
@@ -1814,14 +1974,18 @@ GraphViewer.prototype.showLocalLightbox = function()
 	
 	ui.createTemporaryGraph = function()
 	{
-		var graph = uiCreateTemporaryGraph.apply(this, arguments);
+		var newGraph = uiCreateTemporaryGraph.apply(this, arguments);
 		
-		graph.getImageFromBundles = function(key)
+		newGraph.getImageFromBundles = function(key)
 		{
 			return self.getImageUrl(key);
 		};
-		
-		return graph;
+
+		// newGraph.defaultPageBackgroundColor = graph.defaultPageBackgroundColor;
+		// newGraph.defaultPageBorderColor = graph.defaultPageBorderColor;
+		// newGraph.defaultThemeName = graph.defaultThemeName;
+			
+		return newGraph;
 	};
 	
 	if (this.graphConfig.move)
@@ -2247,7 +2411,7 @@ GraphViewer.useResizeSensor = true;
             reset();
             var dirty = false;
 
-            var dirtyChecking = function() {
+            var dirtyChecking = function(){
                 if (!element.resizedAttached) return;
 
                 if (dirty) {

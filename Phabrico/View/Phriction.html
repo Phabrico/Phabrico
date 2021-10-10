@@ -32,7 +32,7 @@
 </div>
 
 <div id="crumbsContainer" class="crumbs">
-    <a href="w/">
+    <a href="w/" tabindex="-1">
         <span class="phui-font-fa fa-book" style="padding-right: 5px;">&#x200B;</span>
     </a>
 @{IF @@ACCESS-READONLY@@=False@
@@ -97,6 +97,22 @@
             <a href="#" class="button button-gray cancel">Cancel</a>
         </div>
     </div>
+
+    <div id="dlgOK" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 90px; left: calc(50vw - 300px); z-index: 5;">
+        <div class="aphront-dialog-overlay"></div>
+        <div class="aphront-dialog-head">
+            <span class="phui-header-header title"></span>
+        </div>
+        <div class="aphront-dialog-body phabrico-remarkup">
+            <div class="phabrico-remarkup">
+                <p class="message"></p>
+            </div>
+            <br>
+        </div>
+        <div class="aphront-dialog-tail grouped" style="text-align: right;">
+            <a href="#" class="button button-blue ok">OK</a>
+        </div>
+    </div>
 </div>
 
 @{IF @@SHOW-SIDE-WINDOW@@=yes@
@@ -106,7 +122,7 @@
     </div>
 
     <div class="app-side-window phriction">
-        <div class="app-window-body">
+        <div class="app-window-body" tabindex="-1">
             <ul class="list-view">
                 @{IF @@ACCESS-READONLY@@=False@
                     <li class="list-item-view">
@@ -181,7 +197,7 @@
                 </li>
 }@
 
-<!-- 
+<!--
 commented out because of shortcoming in phriction.content.search Conduit API
 dateModified won't change when a subscription is added or removed
                 <li class="list-item-view">
@@ -191,7 +207,7 @@ dateModified won't change when a subscription is added or removed
                         </span>
                     </a>
                 </li>
--->                
+-->
 @{IF @@SHOW-PHRICTION-METADATA@@=yes@
                 <li class="list-item-separator"></li>
                 <li class="list-item-view no-hover">
@@ -213,7 +229,7 @@ dateModified won't change when a subscription is added or removed
 
                 @{IF @@ACCESS-HIDE-PROJECTS@@=False@
                     <li class="list-item-separator"></li>
-            
+
                     <li class="list-item-view no-hover">
                         <span class="list-item-head">Tags</span>
                     </li>
@@ -231,7 +247,7 @@ dateModified won't change when a subscription is added or removed
 
                 @{IF @@ACCESS-HIDE-USERS@@=False@
                     <li class="list-item-separator"></li>
-                
+
                     <li class="list-item-view no-hover">
                         <span class="list-item-head">Subscribers</span>
                     </li>
@@ -286,6 +302,9 @@ dateModified won't change when a subscription is added or removed
     </form>
 }@
 
+<div id="pluginTableData" class="scrollableTable" style="height:calc(100vh - 105px); margin-top: 40px;padding: 10px; display:none;">
+</div>
+
 <script>
         function addToFavorites()
         {
@@ -301,14 +320,14 @@ dateModified won't change when a subscription is added or removed
         {
             var data = new FormData();
             data.append('token', '@@DOCUMENT-TOKEN@@');
-            
+
             var addToFavoritesRequest = new XMLHttpRequest();
             addToFavoritesRequest.onreadystatechange = function() {
                 if (addToFavoritesRequest.readyState == 4 && addToFavoritesRequest.status == 200) {
                     document.location.reload();
                 }
             };
-            
+
             if (yes)
             {
                addToFavoritesRequest.open('POST', 'phriction/addToFavorites', true);
@@ -341,11 +360,11 @@ dateModified won't change when a subscription is added or removed
             data.append('toc', toc);
 
             // get crumbs
-            var crumbs = Array.prototype.slice.call( 
-                                    document.querySelectorAll('#crumbsContainer a:not(.crumbsAction)'), 1 
+            var crumbs = Array.prototype.slice.call(
+                                    document.querySelectorAll('#crumbsContainer a:not(.crumbsAction)'), 1
                                );
-            var crumbAddress = crumbs.map(function(a) { 
-                return a.innerText; 
+            var crumbAddress = crumbs.map(function(a) {
+                return a.innerText;
             })
                                .join(' > ');
             data.append('crumbs', crumbAddress);
@@ -427,9 +446,69 @@ dateModified won't change when a subscription is added or removed
                             a.click();
 
                             document.body.removeChild(a);
+                        } else
+                        if (typeof jsonResponse.TableData !== 'undefined') {
+                            var table = document.createElement('table');
+                            table.style.tableLayout = "fixed";
+                            table.classList.add("aphront-table-view");
 
-                            document.querySelector('div.wait').style.display = 'none';
+                            var thead = document.createElement('thead');
+                            table.appendChild(thead);
+
+                            var tbody = document.createElement('tbody');
+                            table.appendChild(tbody);
+
+                            var tableRow = document.createElement('tr');
+                            thead.appendChild(tableRow);
+
+                            jsonResponse.TableData.Header.forEach(function(header) {
+                                var tableCell = document.createElement('th');
+                                tableCell.innerText = header;
+                                tableRow.appendChild(tableCell);
+                            });
+
+                            jsonResponse.TableData.Data.forEach(function(record) {
+                                var tableRow = document.createElement('tr');
+                                tableRow.classList.add("alternate");
+                                tbody.appendChild(tableRow);
+
+                                record.forEach(function(html) {
+                                    var tableCell = document.createElement('td');
+                                    tableCell.innerHTML = html;
+                                    tableRow.appendChild(tableCell);
+                                });
+                            });
+
+                            pluginTableData.appendChild(table);
+
+                            actionNewDocument.style.display = 'none';
+                            document.querySelector('div.phui-document').style.display = 'none';
+                            document.querySelector('div.expandcollapse').style.display = 'none';
+                            document.querySelector('div.phriction.app-side-window').style.display = 'none';
+                            pluginTableData.style.display = 'block';
+                        } else
+                        if (typeof jsonResponse.MessageBox !== 'undefined') {
+                            var title = "";
+                            if (typeof jsonResponse.MessageBox.Title !== 'undefined') {
+                                title = jsonResponse.MessageBox.Title;
+                            }
+                            if (typeof jsonResponse.MessageBox.Message !== 'undefined') {
+                                message = jsonResponse.MessageBox.Message;
+
+                                dlgOK.querySelector('.title').innerText = title;
+                                dlgOK.querySelector('.message').innerText = message;
+                                dlgOK.style.display = 'block';
+
+                                var btnOK = dlgOK.querySelector('a.ok');
+                                btnOK.onclick = function() {
+                                    dlgOK.style.display = 'none';
+                                    return false;
+                                }
+                                btnOK.focus();
+                            }
                         }
+
+                        document.querySelector('div.wait').style.display = 'none';
                     }
                 }
             };
@@ -478,8 +557,8 @@ dateModified won't change when a subscription is added or removed
                 });
 
                 // fix TABs for dialog
-                btnNo.setAttribute('tabindex', '1');
-                btnYes.setAttribute('tabindex', '2')
+                btnYes.setAttribute('tabindex', '1')
+                btnNo.setAttribute('tabindex', '2');
                 btnCancel.setAttribute('tabindex', '3');
 
                 // set functions to buttons
@@ -533,14 +612,14 @@ dateModified won't change when a subscription is added or removed
                     data.set('isPrepared', 'true');
 
                     var parameters = Array.prototype.slice.call( document.querySelector('.preparationParameters ').elements, 0)
-                                                          .filter(function(elem) { 
+                                                          .filter(function(elem) {
                                                               return elem.name != "";
                                                           })
-                                                          .map(function(elem) { 
-                                                              return { 
-                                                                  "name": elem.name, 
-                                                                  "value": elem.value 
-                                                              }; 
+                                                          .map(function(elem) {
+                                                              return {
+                                                                  "name": elem.name,
+                                                                  "value": elem.value
+                                                              };
                                                           })
                                                           .map(function(parameter) {
                                                               var label = document.querySelector('label[for="' + parameter.name + '"]');
@@ -592,17 +671,17 @@ dateModified won't change when a subscription is added or removed
         {
             doSubscribe(true);
         }
-        
+
         function unsubscribe()
         {
             doSubscribe(false);
         }
-        
+
         function doSubscribe(yes)
         {
             var data = new FormData();
             data.append('token', '@@DOCUMENT-TOKEN@@');
-            
+
             var subscribeRequest = new XMLHttpRequest();
             subscribeRequest.onreadystatechange = function() {
                 if (subscribeRequest.readyState == 4 && subscribeRequest.status == 200) {
@@ -617,7 +696,7 @@ dateModified won't change when a subscription is added or removed
                     }
                 }
             };
-            
+
             if (yes)
             {
                subscribeRequest.open('POST', 'phriction/subscribe', true);
@@ -629,7 +708,7 @@ dateModified won't change when a subscription is added or removed
             subscribeRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             subscribeRequest.send(data);
         }
-        
+
 @{IF @@SHOW-SIDE-WINDOW@@=yes@
         function cancelUndo()
         {
@@ -643,7 +722,7 @@ dateModified won't change when a subscription is added or removed
            var elem = dlgConfirmUndo.tagElement;
            submitItem(elem, "offline/changes/undo");
         }
-    
+
         function hideReferences()
         {
             document.querySelector('.phriction-references').style.display = 'none';
@@ -658,12 +737,12 @@ dateModified won't change when a subscription is added or removed
             documentState.style.display = usePrinter ? 'none' : 'block';
 
             Array.prototype.slice.call( document.getElementsByClassName('expandcollapse'), 0)
-                 .map( function(item) { 
+                 .map( function(item) {
                     item.style.display = usePrinter ? 'none' : 'block';
                  }
             );
             Array.prototype.slice.call( document.getElementsByClassName('app-side-window'), 0)
-                 .map( function(item) { 
+                 .map( function(item) {
                     item.style.display = usePrinter ? 'none' : 'block';
                  }
             );
@@ -683,7 +762,7 @@ dateModified won't change when a subscription is added or removed
                  }
             );
             Array.prototype.slice.call( document.getElementsByClassName('toc'), 0)
-                 .map( function(item) { 
+                 .map( function(item) {
                     item.style.display = usePrinter ? 'none' : item.dataset.display;
                     if (usePrinter == false && item.dataset.display == 'none') {
                         var doc = document.querySelector('.phui-document');
@@ -723,7 +802,7 @@ dateModified won't change when a subscription is added or removed
                 }
 
                 elem.value = item.closest('a').hash.substring(1);
-        
+
                 var data = new FormData(frmPhriction);
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
@@ -762,10 +841,10 @@ dateModified won't change when a subscription is added or removed
 }@
 
     // create navigation-tree based on header tags
-    var navigationTree = Array.prototype.slice.call( 
+    var navigationTree = Array.prototype.slice.call(
                                 document.querySelector('.phui-document .content')
                                         .querySelectorAll("h1, h2, h3")
-                                , 0 
+                                , 0
                             )
                             .map( function(item) {
                                 var anchor = document.location + '#' + item.children[0].name;
@@ -791,16 +870,16 @@ dateModified won't change when a subscription is added or removed
                             .replace(/<\/?h.>/g, '')
                             .replace(/<ul>/g, '<li><ul>')
                             .replace(/<\/ul>/g, '</ul></li>');
-                                
+
     document.getElementById('phui-navigator').innerHTML = navigationTree;
-    
+
     // hide 'Contents' label if there's no navigation tree
     var toc = document.querySelector('.toc');
     toc.dataset.display = 'block';
     if (navigationTree == "") {
         toc.style.display = 'none';
         toc.dataset.display = 'none';
-        
+
         var doc = document.querySelector('.phui-document');
         doc.classList.add('no-side-window');
     }
@@ -809,7 +888,7 @@ dateModified won't change when a subscription is added or removed
     var toc = document.querySelector('.toc');
     toc.style.display = 'none';
     toc.dataset.display = 'none';
-        
+
     var doc = document.querySelector('.phui-document');
     doc.classList.add('no-side-window');
 
@@ -823,11 +902,11 @@ dateModified won't change when a subscription is added or removed
 
         // make sure all images fit on the page during after they have been loaded
         document.querySelectorAll('img')
-                .forEach(function(img) { 
-                    if(img.style.width != '100%' && 
+                .forEach(function(img) {
+                    if(img.style.width != '100%' &&
                        parseInt(getComputedStyle(img).width) > parseInt(getComputedStyle(document.body).width) - parseInt(getComputedStyle(toc).width)
                       ) {
-                        img.style.maxWidth = '100%'; 
+                        img.style.maxWidth = '100%';
                     }
                 });
     }, false);

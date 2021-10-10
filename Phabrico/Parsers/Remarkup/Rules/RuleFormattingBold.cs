@@ -38,6 +38,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             remarkup = remarkup.Substring(match.Length);
             html = string.Format("<strong>{0}</strong>", Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false));
             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+            ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
             Length = match.Length;
 

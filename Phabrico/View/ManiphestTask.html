@@ -64,7 +64,7 @@
         <span onclick="phabrico.appSideWindow.Expand();" class="phui-font-fa fa-chevron-left">&nbsp;</span>
     </div>
     <div class="app-side-window maniphest-task">
-        <div class="app-window-body">
+        <div class="app-window-body" tabindex="-1">
             <ul class="list-view">
                 @{IF @@ACCESS-READONLY@@=False@
                 <li class="list-item-view">
@@ -397,9 +397,9 @@
                         a.click();
 
                         document.body.removeChild(a);
-
-                        document.querySelector('div.wait').style.display = 'none';
                     }
+
+                    document.querySelector('div.wait').style.display = 'none';
                 }
             }
         };
@@ -429,8 +429,8 @@
             });
 
             // fix TABs for dialog
-            btnNo.setAttribute('tabindex', '1');
-            btnYes.setAttribute('tabindex', '2')
+            btnYes.setAttribute('tabindex', '1')
+            btnNo.setAttribute('tabindex', '2');
             btnCancel.setAttribute('tabindex', '3');
 
             // set functions to buttons

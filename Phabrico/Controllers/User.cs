@@ -135,6 +135,11 @@ namespace Phabrico.Controllers
 
                 foreach (Phabricator.Data.User userData in users)
                 {
+                    if (userData.IsBot || userData.IsDisabled)
+                    {
+                        continue;
+                    }
+
                     if (showSelectedUsersOnly && userData.Selected == false)
                     {
                         continue;

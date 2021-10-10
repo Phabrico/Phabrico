@@ -53,29 +53,34 @@ namespace Phabrico.Http.Response
         public enum ContentOptions
         {
             /// <summary>
-            /// The global menu navigator at the right and the header on top are merged into this HtmlViewPage
+            /// There will be no extra content in the HTML generated
             /// </summary>
-            Default = 0,
+            NoFormatting = 0,
+
+            /// <summary>
+            /// The global menu navigator at the left and the header on top are merged into this HtmlViewPage
+            /// </summary>
+            Default = 1,
 
             /// <summary>
             /// The global menu navigator will not be merged into this HtmlViewPage
             /// </summary>
-            HideGlobalTreeView = 1,
+            HideGlobalTreeView = 2,
 
             /// <summary>
             /// A custom menu navigator instead of the global menu navigator will be merged into this HtmlViewPage
             /// </summary>
-            UseLocalTreeView = 2,
+            UseLocalTreeView = 4,
 
             /// <summary>
             /// The header on top will not be merged into this HtmlViewPage
             /// </summary>
-            HideHeader = 4,
+            HideHeader = 8,
 
             /// <summary>
             /// The content is shown in an IFrame: header and global treeview are not shown and no Phabrico CSS is put in the view
             /// </summary>
-            IFrame = 1 + 4 + 8,
+            IFrame = 2 + 8 + 16
         }
 
         /// <summary>
@@ -250,6 +255,7 @@ namespace Phabrico.Http.Response
             bool hideManiphest = HttpServer.Customization.HideManiphest;
             bool hideNavigatorTooltips = HttpServer.Customization.HideNavigatorTooltips;
             bool hideOfflineChanges = HttpServer.Customization.HideOfflineChanges;
+            bool hidePhame = HttpServer.Customization.HidePhame;
             bool hidePhriction = HttpServer.Customization.HidePhriction;
             bool hidePhrictionChanges = HttpServer.Customization.HidePhrictionChanges;
             bool hidePhrictionFavorites = HttpServer.Customization.HidePhrictionFavorites;
@@ -266,6 +272,7 @@ namespace Phabrico.Http.Response
             SetText("ACCESS-HIDE-MANIPHEST", hideManiphest.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-NAVIGATOR-TOOLTIPS", hideNavigatorTooltips.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-OFFLINE-CHANGES", hideOfflineChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PHAME", hidePhame.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PHRICTION", hidePhriction.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PHRICTION-CHANGES", hidePhrictionChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PHRICTION-FAVORITES", hidePhrictionFavorites.ToString(), ArgumentOptions.AllowEmptyParameterValue);
@@ -450,7 +457,6 @@ namespace Phabrico.Http.Response
             }
             else
             {
-
                 if (contentOptions.HasFlag(ContentOptions.IFrame))
                 {
                     htmlViewPage.SetContent(browser, GetViewData("HomePage.IFrameContent"));
@@ -504,6 +510,7 @@ namespace Phabrico.Http.Response
                     }
                 }
                 else
+                if (contentOptions.HasFlag(ContentOptions.Default))
                 {
                     htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.TreeView.Template"));
                     htmlPartialViewPage.Customize(browser);
@@ -539,6 +546,16 @@ namespace Phabrico.Http.Response
                                         htmlPluginNavigatorMenuItem.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                         htmlPluginNavigatorMenuItem.SetText("PLUGIN-DESCRIPTION", plugin.GetDescription(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                     }
+                                }
+                            }
+
+                            Storage.PhamePost phamePostStorage = new Storage.PhamePost();
+                            foreach (string blogName in phamePostStorage.Get(database).Select(post => post.Blog).Distinct().OrderBy(blog => blog))
+                            {
+                                HtmlPartialViewPage htmlPhameBlogsMenuItem = htmlPartialViewPage.GetPartialView("PHAME-BLOGS");
+                                if (htmlPhameBlogsMenuItem != null)
+                                {
+                                    htmlPhameBlogsMenuItem.SetText("PHAME-BLOG-NAME", blogName, HtmlViewPage.ArgumentOptions.Default);
                                 }
                             }
                         }

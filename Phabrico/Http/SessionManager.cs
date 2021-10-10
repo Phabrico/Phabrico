@@ -21,7 +21,7 @@ namespace Phabrico.Http
             /// CSRF codes which are currently in use in the current session
             /// Key=CSRF code, Value=UTC Timestamp when CSRF was created
             /// </summary>
-            public Dictionary<string, DateTime> ActiveCSRF { get; internal set; } = new Dictionary<string, DateTime>();
+            public TransientDictionary<string, DateTime> ActiveCSRF { get; internal set; } = new TransientDictionary<string, DateTime>(TimeSpan.FromHours(1), true);
 
             /// <summary>
             /// Locale (language) for the current session

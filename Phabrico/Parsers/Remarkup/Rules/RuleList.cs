@@ -433,12 +433,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
                             html += string.Format("<li class='remarkup-list-item remarkup-unchecked-item'><input type='checkbox' disabled='disabled'> {0}",
                                             Engine.ToHTML(this, database, browser, url, child.Me.Content, out remarkupParserOutput, false));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                            ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
 
                         case ListElement.ListBulletType.Checked:
                             html += string.Format("<li class='remarkup-list-item remarkup-checked-item'><input type='checkbox' checked='checked' disabled='disabled'> {0}",
                                             Engine.ToHTML(this, database, browser, url, child.Me.Content, out remarkupParserOutput, false));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                            ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
 
                         case ListElement.ListBulletType.Numeric:
@@ -447,6 +449,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                             html += string.Format("<li class='remarkup-list-item'>{0}",
                                             ParagraphText(Engine.ToHTML(this, database, browser, url, child.Me.Content, out remarkupParserOutput, false)));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                            ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
                     }
 

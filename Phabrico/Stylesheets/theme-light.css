@@ -121,6 +121,9 @@
     --maniphest-task-state-background: #edeef2;
     --maniphest-task-state-color: #555;
     --phabrico-logo-color: #fff;
+    --phame-reference-background: #eee;
+    --phame-reference-color: #000;
+    --phame-reference-border-color: #000;
     --phui-document-background: #fff;
     --phui-document-create-message-background: #eee;
     --phui-document-border-bottom: 30px solid #f3f5f7;
@@ -187,6 +190,10 @@
     --kbd-border: 1px solid #C7CCD9;
     --kbd-join-color: #92969D;
     --menu-border-color: #ccc;
+    --outline-color: #f00;
+    --phame-blog-read-more-color: #888;
+    --phame-blog-post-info-color: #777;
+    --phame-blog-overview-post-background: #eee;
     --phriction-link-missing-color: #c0392b;
     --progress-bar-div-background-color: #f5f5f5;
     --progress-bar-div-color: #fff;

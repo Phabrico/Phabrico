@@ -272,6 +272,9 @@ msgstr "Descargando los datos de Maniphest..."
 msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
 msgstr "Cargando prioridades y estados del Maniphest..."
 
+msgid "Synchronization.Status.DownloadingPhamePostData"
+msgstr "Descarga de datos del blog de Phame..."
+
 msgid "Synchronization.Status.DownloadingPhrictionData"
 msgstr "Descargando los datos de Phriction..."
 
@@ -570,6 +573,16 @@ msgstr "Mostrar referencias"
 
 msgid "Parameters"
 msgstr "Parámetros"
+
+# Phame
+msgid "Phame"
+msgstr "Phame"
+
+msgid "Blog posts"
+msgstr "Entradas de blog"
+
+msgid "Read more..."
+msgstr "Leer más..."
 
 # Projects & Users
 msgid "Project"

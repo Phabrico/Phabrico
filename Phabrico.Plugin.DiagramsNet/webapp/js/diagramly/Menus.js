@@ -219,9 +219,17 @@
 		mmAction.setToggleAction(true);
 		mmAction.setSelectedCallback(function() { return editorUi.editor.graph.view.unit == mxConstants.MILLIMETERS; });
 
+		var meterAction = editorUi.actions.addAction('meters', function()
+		{
+			editorUi.editor.graph.view.setUnit(mxConstants.METERS);
+		});
+		
+		meterAction.setToggleAction(true);
+		meterAction.setSelectedCallback(function() { return editorUi.editor.graph.view.unit == mxConstants.METERS; });
+
 		this.put('units', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
-			this.addMenuItems(menu, ['points', /*'inches',*/ 'millimeters'], parent);
+			this.addMenuItems(menu, ['points', 'inches', 'millimeters', 'meters'], parent);
 		})));
 		
 		var rulerAction = editorUi.actions.addAction('ruler', function()
@@ -336,10 +344,17 @@
 		editorUi.actions.put('exportUrl', new Action(mxResources.get('url') + '...', function()
 		{
 			editorUi.showPublishLinkDialog(mxResources.get('url'), true, null, null,
-				function(linkTarget, linkColor, allPages, lightbox, editLink, layers)
+				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height, tags)
 			{
-				var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget,
-					linkColor, allPages, lightbox, editLink, layers, null, true));
+				var params = [];
+
+				if (tags)
+				{
+					params.push('tags=%7B%7D');
+				}
+
+				var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget, linkColor,
+					allPages, lightbox, editLink, layers, null, true, params));
 				editorUi.showDialog(dlg.container, 440, 240, true, true);
 				dlg.init();
 			});
@@ -354,10 +369,10 @@
 					editorUi.spinner.stop();
 					
 					editorUi.showHtmlDialog(mxResources.get('export'), null, url, function(publicUrl, zoomEnabled,
-						initialZoom, linkTarget, linkColor, fit, allPages, layers, lightbox, editLink)
+						initialZoom, linkTarget, linkColor, fit, allPages, layers, tags, lightbox, editLink)
 					{
-						editorUi.createHtml(publicUrl, zoomEnabled, initialZoom, linkTarget, linkColor,
-							fit, allPages, layers, lightbox, editLink, mxUtils.bind(this, function(html, scriptTag)
+						editorUi.createHtml(publicUrl, zoomEnabled, initialZoom, linkTarget, linkColor, fit, allPages,
+							layers, tags, lightbox, editLink, mxUtils.bind(this, function(html, scriptTag)
 							{
 								var basename = editorUi.getBaseFilename(allPages);
 								var result = '<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->\n' +
@@ -739,8 +754,9 @@
 		{
 			editorUi.showExportDialog(mxResources.get('formatSvg'), true, mxResources.get('export'),
 				'https://www.diagrams.net/doc/faq/export-diagram',
-				mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow, editable,
-					embedImages, border, cropImage, currentPage, linkTarget, grid, keepTheme, exportType)
+				mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection,
+					addShadow, editable, embedImages, border, cropImage, currentPage,
+					linkTarget, grid, keepTheme, exportType, embedFonts)
 				{
 					var val = parseInt(scale);
 					
@@ -748,7 +764,7 @@
 					{
 						editorUi.exportSvg(val / 100, transparentBackground, ignoreSelection,
 							addShadow, editable, embedImages, border, !cropImage, false,
-							linkTarget, keepTheme, exportType);
+							linkTarget, keepTheme, exportType, embedFonts);
 					}
 				}), true, null, 'svg', true);
 		}));
@@ -897,11 +913,11 @@
 			editorUi.openLink('https://get.diagrams.net/');
 		});
 		
-		action = editorUi.actions.addAction('tags...', mxUtils.bind(this, function()
+		action = editorUi.actions.addAction('tags', mxUtils.bind(this, function()
 		{
 			if (this.tagsWindow == null)
 			{
-				this.tagsWindow = new TagsWindow(editorUi, document.body.offsetWidth - 380, 230, 300, 120);
+				this.tagsWindow = new TagsWindow(editorUi, document.body.offsetWidth - 400, 60, 212, 200);
 				this.tagsWindow.window.addListener('show', function()
 				{
 					editorUi.fireEvent(new mxEventObject('tags'));
@@ -1445,8 +1461,9 @@
 					
 					if (e.keyCode == 13 && term.length > 0)
 					{
-						this.editorUi.openLink('https://www.google.com/search?q=site%3Adiagrams.net+inurl%3A%2Fdoc%2Ffaq%2F+' +
-							encodeURIComponent(term));
+						this.editorUi.openLink('https://www.diagrams.net/search?src=' +
+							EditorUi.isElectronApp? 'DESKTOP' : encodeURIComponent(location.host) + 
+							'&search=' + encodeURIComponent(term));
 						input.value = '';
 						EditorUi.logEvent({category: 'SEARCH-HELP', action: 'search', label: term});
 						
@@ -1910,10 +1927,10 @@
 					editorUi.spinner.stop();
 					
 					editorUi.showHtmlDialog(mxResources.get('create'), 'https://www.diagrams.net/doc/faq/embed-html-options',
-						url, function(publicUrl, zoomEnabled, initialZoom, linkTarget, linkColor, fit, allPages, layers, lightbox, editLink)
+						url, function(publicUrl, zoomEnabled, initialZoom, linkTarget, linkColor, fit, allPages, layers, tags, lightbox, editLink)
 					{
-						editorUi.createHtml(publicUrl, zoomEnabled, initialZoom, linkTarget, linkColor,
-							fit, allPages, layers, lightbox, editLink, mxUtils.bind(this, function(html, scriptTag)
+						editorUi.createHtml(publicUrl, zoomEnabled, initialZoom, linkTarget, linkColor, fit, allPages,
+							layers, tags, lightbox, editLink, mxUtils.bind(this, function(html, scriptTag)
 							{
 								var dlg = new EmbedDialog(editorUi, html + '\n' + scriptTag, null, null, function()
 								{
@@ -2059,17 +2076,23 @@
 			
 			editorUi.showPublishLinkDialog(mxResources.get('iframe'), null, '100%',
 				Math.ceil(bounds.height / graph.view.scale) + 2,
-				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height)
+				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height, tags)
 			{
 				if (editorUi.spinner.spin(document.body, mxResources.get('loading')))
 				{
 					editorUi.getPublicUrl(editorUi.getCurrentFile(), function(url)
 					{
 						editorUi.spinner.stop();
+						var params = [];
+
+						if (tags)
+						{
+							params.push('tags=%7B%7D');
+						}
 						
 						var dlg = new EmbedDialog(editorUi, '<iframe frameborder="0" style="width:' + width +
 							';height:' + height + ';" src="' + editorUi.createLink(linkTarget, linkColor,
-							allPages, lightbox, editLink, layers, url) + '"></iframe>');
+							allPages, lightbox, editLink, layers, url, null, params) + '"></iframe>');
 						editorUi.showDialog(dlg.container, 440, 240, true, true);
 						dlg.init();
 					});
@@ -2080,16 +2103,22 @@
 		editorUi.actions.put('embedNotion', new Action(mxResources.get('notion') + '...', function()
 		{
 			editorUi.showPublishLinkDialog(mxResources.get('notion'), null, null, null,
-				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height)
+				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height, tags)
 			{
 				if (editorUi.spinner.spin(document.body, mxResources.get('loading')))
 				{
 					editorUi.getPublicUrl(editorUi.getCurrentFile(), function(url)
 					{
 						editorUi.spinner.stop();
-						
+						var params = ['border=0'];
+
+						if (tags)
+						{
+							params.push('tags=%7B%7D');
+						}
+
 						var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget, linkColor,
-							allPages, lightbox, editLink, layers, url, null, ['border=0'], true));
+							allPages, lightbox, editLink, layers, url, null, params, true));
 						editorUi.showDialog(dlg.container, 440, 240, true, true);
 						dlg.init();
 					});
@@ -2100,15 +2129,23 @@
 		editorUi.actions.put('publishLink', new Action(mxResources.get('link') + '...', function()
 		{
 			editorUi.showPublishLinkDialog(null, null, null, null,
-				function(linkTarget, linkColor, allPages, lightbox, editLink, layers)
+				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height, tags)
 			{
 				if (editorUi.spinner.spin(document.body, mxResources.get('loading')))
 				{
 					editorUi.getPublicUrl(editorUi.getCurrentFile(), function(url)
 					{
 						editorUi.spinner.stop();
-						var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget,
-							linkColor, allPages, lightbox, editLink, layers, url));
+						
+						var params = [];
+
+						if (tags)
+						{
+							params.push('tags=%7B%7D');
+						}
+
+						var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget, linkColor,
+							allPages, lightbox, editLink, layers, url, null, params));
 						editorUi.showDialog(dlg.container, 440, 240, true, true);
 						dlg.init();
 					});
@@ -2522,11 +2559,14 @@
 				}, parent);
 			}
 
-			menu.addItem(mxResources.get('device') + '...', null, function()
+			if (urlParams['noDevice'] != '1')
 			{
-				editorUi.importLocalFile(true);
-			}, parent);
-
+				menu.addItem(mxResources.get('device') + '...', null, function()
+				{
+					editorUi.importLocalFile(true);
+				}, parent);
+			}
+			
 			if (!editorUi.isOffline())
 			{
 				menu.addSeparator(parent);
@@ -2609,15 +2649,18 @@
 				menu.addCheckmark(item, Editor.checkmarkImage);
 			}
 			
-			item = menu.addItem(mxResources.get('dark'), null, function()
+			if (theme == 'dark' || (!mxClient.IS_IE && !mxClient.IS_IE11))
 			{
-				mxSettings.setUi('dark');
-				editorUi.alert(mxResources.get('restartForChangeRequired'));
-			}, parent);
-			
-			if (theme == 'dark')
-			{
-				menu.addCheckmark(item, Editor.checkmarkImage);
+				item = menu.addItem(mxResources.get('dark'), null, function()
+				{
+					mxSettings.setUi('dark');
+					editorUi.alert(mxResources.get('restartForChangeRequired'));
+				}, parent);
+				
+				if (theme == 'dark')
+				{
+					menu.addCheckmark(item, Editor.checkmarkImage);
+				}
 			}
 			
 			menu.addSeparator(parent);
@@ -3145,6 +3188,7 @@
 			}
 			
 			//if (!mxClient.IS_IOS)
+			if (urlParams['noDevice'] != '1')
 			{
 				menu.addItem(mxResources.get('device') + '...', null, function()
 				{
@@ -3285,6 +3329,7 @@
 				}
 				
 				//if (!mxClient.IS_IOS)
+				if (urlParams['noDevice'] != '1')
 				{
 					menu.addItem(mxResources.get('device') + '...', null, function()
 					{
@@ -3396,6 +3441,7 @@
 				}
 				
 				//if (!mxClient.IS_IOS)
+				if (urlParams['noDevice'] != '1')
 				{
 					menu.addItem(mxResources.get('device') + '...', null, function()
 					{
@@ -3525,6 +3571,8 @@
 		viewPanelsMenu.funct = function(menu, parent)
 		{
 			viewPanelsFunct.apply(this, arguments);
+
+			editorUi.menus.addMenuItems(menu, ['tags'], parent);
 			
 			if (editorUi.commentsSupported())
 			{
@@ -3536,7 +3584,7 @@
 		this.put('view', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
 			this.addMenuItems(menu, ((this.editorUi.format != null) ? ['formatPanel'] : []).
-				concat(['outline', 'layers']).concat((editorUi.commentsSupported()) ?
+				concat(['outline', 'layers', 'tags']).concat((editorUi.commentsSupported()) ?
 				['comments', '-'] : ['-']));
 			
 			this.addMenuItems(menu, ['-', 'search'], parent);
@@ -3613,7 +3661,7 @@
 				this.addMenuItem(menu, 'plugins', parent);
 			}
 
-			this.addMenuItems(menu, ['tags', '-', 'editDiagram'], parent);
+			this.addMenuItems(menu, ['-', 'editDiagram'], parent);
 	
 			if (Graph.translateDiagram)
 			{
@@ -3897,7 +3945,7 @@
 		{
 			var addItem = mxUtils.bind(this, function(fontName, fontUrl, deletable, fontLabel, tooltip)
 			{
-				var graph = this.editorUi.editor.graph;
+				var graph = editorUi.editor.graph;
 
 				var tr = this.styleChange(menu, fontLabel || fontName,
 					(urlParams['ext-fonts'] != '1') ?
@@ -3916,6 +3964,13 @@
 						//Add the font to the file in case it was a previous font from the settings
 						graph.addExtFont(fontName, fontUrl);
 					}
+					
+					editorUi.fireEvent(new mxEventObject('styleChanged',
+						'keys', (urlParams['ext-fonts'] != '1') ?
+							[mxConstants.STYLE_FONTFAMILY, 'fontSource', 'FType'] : [mxConstants.STYLE_FONTFAMILY],
+						'values', (urlParams['ext-fonts'] != '1') ?
+							[fontName, (fontUrl != null) ? encodeURIComponent(fontUrl) : null, null] : [fontName],
+						'cells', [graph.cellEditor.getEditingCell()]));
 				}, function()
 				{
 					graph.updateLabelElements(graph.getSelectionCells(), function(elt)
@@ -4335,7 +4390,7 @@
 						}
 					}
 				}));
-				this.editorUi.showDialog(dlg.container, 380, 250, true, true);
+				this.editorUi.showDialog(dlg.container, 380, Editor.enableWebFonts ? 250 : 180, true, true);
 				dlg.init();
 			}), parent, null, true);
 		})));

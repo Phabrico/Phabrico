@@ -21,8 +21,8 @@ namespace Phabrico.Storage
             using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
             {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                           INSERT OR REPLACE INTO userInfo(token, userName, realName, selected, dateSynchronized) 
-                           VALUES (@userToken, @userName, @userRealName, @selected, @dateSynchronized);
+                           INSERT OR REPLACE INTO userInfo(token, userName, realName, selected, dateSynchronized, isBot, isDisabled)
+                           VALUES (@userToken, @userName, @userRealName, @selected, @dateSynchronized, @isBot, @isDisabled);
                        ", database.Connection, transaction))
                 {
 
@@ -30,6 +30,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "userName", user.UserName);
                     database.AddParameter(dbCommand, "userRealName", user.RealName);
                     database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, user.Selected.ToString()));
+                    database.AddParameter(dbCommand, "isBot", Encryption.Encrypt(database.EncryptionKey, user.IsBot.ToString()));
+                    database.AddParameter(dbCommand, "isDisabled", Encryption.Encrypt(database.EncryptionKey, user.IsDisabled.ToString()));
                     database.AddParameter(dbCommand, "dateSynchronized", user.DateSynchronized);
                     dbCommand.ExecuteNonQuery();
                 }
@@ -70,7 +72,7 @@ namespace Phabrico.Storage
         public override IEnumerable<Phabricator.Data.User> Get(Database database)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       SELECT token, userName, realName, selected, dateSynchronized
+                       SELECT token, userName, realName, selected, dateSynchronized, isBot, isDisabled
                        FROM userInfo;
                    ", database.Connection))
             {
@@ -83,6 +85,14 @@ namespace Phabrico.Storage
                         record.UserName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["userName"]);
                         record.RealName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["realName"]);
                         record.Selected = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["selected"]));
+                        try
+                        {
+                            record.IsBot = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["isBot"]));
+                            record.IsDisabled = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["isDisabled"]));
+                        }
+                        catch
+                        {
+                        }
                         record.DateSynchronized = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateSynchronized"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
 
                         yield return record;
@@ -101,7 +111,7 @@ namespace Phabrico.Storage
         public override Phabricator.Data.User Get(Database database, string key, bool ignoreStageData = false)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       SELECT token, userName, realName, selected, dateSynchronized
+                       SELECT token, userName, realName, selected, dateSynchronized, isBot, isDisabled
                        FROM userInfo
                        WHERE token = @key
                           OR userName = @userName;
@@ -118,6 +128,8 @@ namespace Phabrico.Storage
                         record.UserName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["userName"]);
                         record.RealName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["realName"]);
                         record.Selected = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["selected"]));
+                        record.IsBot = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["isBot"]));
+                        record.IsDisabled = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["isDisabled"]));
                         record.DateSynchronized = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateSynchronized"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
 
                         return record;

@@ -26,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Components.wxi" />
+    <Content Include="Plugin.PhrictionValidator.wxi" />
     <Content Include="Plugin.DiagramsNet.wxi" />
     <Content Include="Plugin.PhrictionToPDF.wxi" />
     <Content Include="Plugin.Gitanos.wxi" />
@@ -73,6 +74,14 @@
     <ProjectReference Include="..\Phabrico.Plugin.PhrictionToPDF\Phabrico.Plugin.PhrictionToPDF.csproj">
       <Name>Phabrico.Plugin.PhrictionToPDF</Name>
       <Project>{6a943228-8e29-4824-80b8-3c6a56b6c219}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+    <ProjectReference Include="..\Phabrico.Plugin.PhrictionValidator\Phabrico.Plugin.PhrictionValidator.csproj">
+      <Name>Phabrico.Plugin.PhrictionValidator</Name>
+      <Project>{fdb2c8e2-6241-460a-9f87-80a236e51ac4}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>

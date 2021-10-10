@@ -14,6 +14,7 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -82,6 +83,7 @@
     <Compile Include="Controllers\Controller.cs" />
     <Compile Include="Controllers\Exception.cs" />
     <Compile Include="Controllers\File.cs" />
+    <Compile Include="Controllers\Phame.cs" />
     <Compile Include="Controllers\Tag.cs" />
     <Compile Include="Controllers\Staging.cs" />
     <Compile Include="Controllers\Phriction.cs" />
@@ -124,6 +126,7 @@
     <Compile Include="Interpreters\Figlet.cs" />
     <Compile Include="Interpreters\Interpreter.cs" />
     <Compile Include="Interpreters\UnitTestInterpreter.cs" />
+    <Compile Include="Miscellaneous\TransientDictionary.cs" />
     <Compile Include="Miscellaneous\DictionarySafe.cs" />
     <Compile Include="Miscellaneous\Diff.cs" />
     <Compile Include="Miscellaneous\HttpListenerContext.cs" />
@@ -142,6 +145,7 @@
     <Compile Include="Parsers\Remarkup\Rules\RuleKey.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleIcon.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleMacro.cs" />
+    <Compile Include="Parsers\Remarkup\Rules\RuleReferencePhameBlogPost.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleReferenceProject.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleReferenceUser.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleReferenceManiphestTask.cs" />
@@ -169,6 +173,7 @@
     <Compile Include="Phabricator\API\Constraint.cs" />
     <Compile Include="Phabricator\API\Attachment.cs" />
     <Compile Include="Phabricator\API\ManiphestStatus.cs" />
+    <Compile Include="Phabricator\API\PhamePost.cs" />
     <Compile Include="Phabricator\API\Phriction.cs" />
     <Compile Include="Phabricator\API\ManiphestPriority.cs" />
     <Compile Include="Phabricator\API\File.cs" />
@@ -179,6 +184,7 @@
     <Compile Include="Phabricator\Data\FavoriteObject.cs" />
     <Compile Include="Phabricator\Data\Keyword.cs" />
     <Compile Include="Phabricator\Data\ManiphestStatus.cs" />
+    <Compile Include="Phabricator\Data\PhamePost.cs" />
     <Compile Include="Phabricator\Data\Phriction.cs" />
     <Compile Include="Phabricator\Data\ManiphestPriority.cs" />
     <Compile Include="Phabricator\Data\File.cs" />
@@ -209,6 +215,7 @@
     <Compile Include="Storage\FavoriteObject.cs" />
     <Compile Include="Storage\Keyword.cs" />
     <Compile Include="Storage\BannedObject.cs" />
+    <Compile Include="Storage\PhamePost.cs" />
     <Compile Include="Storage\SynchronizationLogging.cs" />
     <Compile Include="Storage\Transaction.cs" />
     <Compile Include="Storage\ManiphestStatus.cs" />
@@ -230,6 +237,9 @@
     </None>
     <None Include="..\NOTICE">
       <Link>NOTICE</Link>
+    </None>
+    <None Include="..\README.md">
+      <Link>README.md</Link>
     </None>
     <None Include="App.config">
       <SubType>Designer</SubType>
@@ -593,6 +603,12 @@
     </Content>
     <Content Include="Fonts\icomoon.svg" />
     <Content Include="Fonts\SIL Open Font License.txt" />
+    <EmbeddedResource Include="View\PhamePost.html">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\Phame.html">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\FileReferences.html" />
     <EmbeddedResource Include="View\InvalidConfiguration.html" />
     <EmbeddedResource Include="View\HomePage.IFrameContent.html" />
@@ -635,14 +651,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets'))" />
-    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
-  </Target>
-  <Import Project="..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST ..\nugetPackage RD /s /q ..\nugetPackage
 
@@ -667,5 +675,13 @@ WHERE nuget 2&gt;nul || GOTO end
 :end
 SET ERRORLEVEL = 0</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets'))" />
+    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+  </Target>
   <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
 </Project>

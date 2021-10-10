@@ -24,6 +24,7 @@ namespace Phabrico.Http.Response
         public HtmlPage(Http.Server httpServer, Browser browser, string url)
             : base(httpServer, browser, url)
         {
+            EnableBrowserCache = false;
         }
 
         /// <summary>
