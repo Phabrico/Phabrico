@@ -13,6 +13,7 @@ function Sidebar(editorUi, container)
 	this.lastCreated = 0;
 	this.showTooltips = true;
 	this.graph = editorUi.createTemporaryGraph(this.editorUi.editor.graph.getStylesheet());
+	this.graph.defaultForegroundColor = editorUi.editor.graph.defaultForegroundColor;
     this.graph.cellRenderer.minSvgStrokeWidth = this.minThumbStrokeWidth;
 	this.graph.cellRenderer.antiAlias = this.thumbAntiAlias;
 	this.graph.container.style.visibility = 'hidden';
@@ -292,6 +293,7 @@ Sidebar.prototype.createTooltip = function(elt, cells, w, h, title, showLabel, o
 		}), this.tooltip);
 		
 		this.graph2 = new Graph(this.tooltip, null, null, this.editorUi.editor.graph.getStylesheet());
+		this.graph2.defaultForegroundColor = this.editorUi.editor.graph.defaultForegroundColor;
 		this.graph2.resetViewOnRootChange = false;
 		this.graph2.foldingEnabled = false;
 		this.graph2.gridEnabled = false;
@@ -2165,7 +2167,8 @@ Sidebar.prototype.createItem = function(cells, title, showLabel, showTitle, widt
 	var originalCells = cells;
 	cells = this.graph.cloneCells(cells);
 	this.editorUi.insertHandler(originalCells, null, this.graph.model,
-		Graph.prototype.defaultVertexStyle, Graph.prototype.defaultEdgeStyle,
+		this.editorUi.editor.graph.defaultVertexStyle,
+		this.editorUi.editor.graph.defaultEdgeStyle,
 		true, true);
 
 	this.createThumb(originalCells, this.thumbWidth, this.thumbHeight, elt, title, showLabel, showTitle, width, height);
@@ -3575,6 +3578,11 @@ Sidebar.prototype.addClickHandler = function(elt, ds, cells)
  */
 Sidebar.prototype.createVertexTemplateEntry = function(style, width, height, value, title, showLabel, showTitle, tags)
 {
+	if (tags != null && title != null)
+	{
+		tags += ' ' + title;
+	}
+
 	tags = (tags != null && tags.length > 0) ? tags : ((title != null) ? title.toLowerCase() : '');
 	
 	return this.addEntry(tags, mxUtils.bind(this, function()

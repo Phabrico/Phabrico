@@ -345,9 +345,20 @@ namespace Phabrico.Controllers
                     switch (parameter)
                     {
                         case "assigned":
-                            visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Owner != null
-                                                                                     && task.Owner.Equals(whoAmI.Parameters.UserToken)
-                                                                                     && task.IsOpen).ToList();
+                            IEnumerable<string> visibleManiphestStates = database.GetConfigurationParameter("VisibleManiphestStates")?.Split('\t');
+                            if (visibleManiphestStates == null)
+                            {
+                                visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Owner != null
+                                                                                         && task.Owner.Equals(whoAmI.Parameters.UserToken)
+                                                                                         && task.IsOpen).ToList();
+                            }
+                            else
+                            {
+                                visibleManiphestTasks = visibleManiphestTasks.Where(task => task.Owner != null
+                                                                                         && task.Owner.Equals(whoAmI.Parameters.UserToken)
+                                                                                         && task.IsOpen
+                                                                                         && visibleManiphestStates.Contains(task.Status)).ToList();
+                            }
                             break;
 
                         case "authored":
@@ -906,13 +917,25 @@ namespace Phabrico.Controllers
                     }
 
                     availableManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database)
-                                                                               .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
-                                                                               .ToList();
-                    availableManiphestTasks = availableManiphestTasks.Where(task => task.Owner != null
-                                                                                 && task.Owner.Equals(whoAmI.Parameters.UserToken)
-                                                                                 && task.IsOpen
-                                                                           )
-                                                                     .Where(task => httpServer.ValidUserRoles(database, browser, task))
+                                                                                 .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
+                                                                                 .ToList();
+
+                    IEnumerable<string> visibleManiphestStates = database.GetConfigurationParameter("VisibleManiphestStates")?.Split('\t');
+                    if (visibleManiphestStates == null)
+                    {
+                        availableManiphestTasks = availableManiphestTasks.Where(task => task.Owner != null
+                                                                                     && task.Owner.Equals(whoAmI.Parameters.UserToken)
+                                                                                     && task.IsOpen);
+                    }
+                    else
+                    {
+                        availableManiphestTasks = availableManiphestTasks.Where(task => task.Owner != null
+                                                                                     && task.Owner.Equals(whoAmI.Parameters.UserToken)
+                                                                                     && task.IsOpen
+                                                                                     && visibleManiphestStates.Contains(task.Status));
+                    }
+
+                    availableManiphestTasks = availableManiphestTasks.Where(task => httpServer.ValidUserRoles(database, browser, task))
                                                                      .ToList();
                 }
 
@@ -1311,7 +1334,10 @@ namespace Phabrico.Controllers
                                 viewPage.SetText("TASK-CONFIRMATION-UNDO-LOCAL-CHANGES", "Are you sure you want to undo all your local changes for this task ?");
                             }
 
-                            string whoAmiToken = accountStorage.WhoAmI(database, browser).Parameters.UserToken;
+                            Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database, browser);
+                            viewPage.SetText("PHABRICATOR-URL", currentAccount.PhabricatorUrl.TrimEnd('/') + "/", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+
+                            string whoAmiToken = currentAccount.Parameters.UserToken;
                             if (string.IsNullOrWhiteSpace(whoAmiToken))
                             {
                                 viewPage.SetText("COMMENT-AUTHOR", "I");

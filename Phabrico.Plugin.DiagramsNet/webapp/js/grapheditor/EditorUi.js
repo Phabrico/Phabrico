@@ -17,30 +17,27 @@ EditorUi = function(editor, container, lightbox)
 	this.initialDefaultVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
 	this.initialDefaultEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
 
-	if (lightbox)
+	// Overrides graph bounds to include background pages
+	var graphGetGraphBounds = graph.getGraphBounds;
+
+	graph.getGraphBounds = function(img)
 	{
-		// Overrides graph bounds to include background pages
-		var graphGetGraphBounds = graph.getGraphBounds;
+		var bounds = graphGetGraphBounds.apply(this, arguments);
+		var img = this.backgroundImage;
 
-		graph.getGraphBounds = function(img)
+		if (img != null)
 		{
-			var bounds = graphGetGraphBounds.apply(this, arguments);
-			var img = this.backgroundImage;
+			var t = this.view.translate;
+			var s = this.view.scale;
 
-			if (img != null)
-			{
-				var t = this.view.translate;
-				var s = this.view.scale;
+			bounds = mxRectangle.fromRectangle(bounds);
+			bounds.add(new mxRectangle(
+				(t.x + img.x) * s, (t.y + img.y) * s,
+				img.width * s, img.height * s));
+		}
 
-				bounds.add(new mxRectangle(
-					(t.x + img.x) * s, (t.y + img.y) * s,
-					img.width * s, img.height * s));
-			}
-	
-			return bounds;
-		};
-	}
-
+		return bounds;
+	};
 
 	// Faster scrollwheel zoom is possible with CSS transforms
 	if (graph.useCssTransforms)
@@ -297,7 +294,7 @@ EditorUi = function(editor, container, lightbox)
 						var key = appliedStyles[j];
 						var styleValue = current[key];
 	
-						if (styleValue != null && (key != 'shape' || edge))
+						if (styleValue != null && key != 'edgeStyle' && (key != 'shape' || edge))
 						{
 							// Special case: Connect styles are not applied here but in the connection handler
 							if (!edge || applyAll || mxUtils.indexOf(connectStyles, key) < 0)
@@ -3502,6 +3499,7 @@ EditorUi.prototype.setPageVisible = function(value)
 		graph.container.scrollTop = graph.view.translate.y * graph.view.scale - ty;
 	}
 	
+	graph.defaultPageVisible = value;
 	this.fireEvent(new mxEventObject('pageViewChanged'));
 };
 
@@ -3939,8 +3937,6 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 	
 	var diagContOffset = this.getDiagramContainerOffset();
 	var contLeft = (this.hsplit.parentNode != null) ? (effHsplitPosition + this.splitSize) : 0;
-	this.diagramContainer.style.left =  (contLeft + diagContOffset.x) + 'px';
-	this.diagramContainer.style.top = (tmp + diagContOffset.y) + 'px';
 	this.footerContainer.style.height = this.footerHeight + 'px';
 	this.hsplit.style.top = this.sidebarContainer.style.top;
 	this.hsplit.style.bottom = (this.footerHeight + off) + 'px';
@@ -3957,7 +3953,6 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 		this.footerContainer.style.bottom = off + 'px';
 	}
 	
-	this.diagramContainer.style.right = fw + 'px';
 	var th = 0;
 	
 	if (this.tabContainer != null)
@@ -3969,8 +3964,15 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 	
 	this.sidebarContainer.style.bottom = (this.footerHeight + sidebarFooterHeight + off) + 'px';
 	this.formatContainer.style.bottom = (this.footerHeight + off) + 'px';
-	this.diagramContainer.style.bottom = (this.footerHeight + off + th) + 'px';
-	
+
+	if (urlParams['embedInline'] != '1')
+	{
+		this.diagramContainer.style.left =  (contLeft + diagContOffset.x) + 'px';
+		this.diagramContainer.style.top = (tmp + diagContOffset.y) + 'px';
+		this.diagramContainer.style.right = fw + 'px';
+		this.diagramContainer.style.bottom = (this.footerHeight + off + th) + 'px';
+	}
+
 	if (sizeDidChange)
 	{
 		this.editor.graph.sizeDidChange();

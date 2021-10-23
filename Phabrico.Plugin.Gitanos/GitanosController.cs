@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Phabrico.Plugin
 {
@@ -117,87 +118,6 @@ namespace Phabrico.Plugin
         }
 
         /// <summary>
-        /// This method is fired when the user opens the Gitanos screen (from the Phabrico navigator)
-        /// or from the Gitanos overview screen itself when browsing to the modifications of a given repository
-        /// </summary>
-        /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
-        /// <param name="viewPage"></param>
-        /// <param name="parameters"></param>
-        /// <param name="parameterActions"></param>
-        [UrlController(URL = "/gitanos", ServerCache = false)]
-        public void HttpGetOverviewScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
-        {
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
-            Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
-
-            SessionManager.Token token = SessionManager.GetToken(browser);
-
-            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
-            {
-                string repositoryDirectory = string.Join("\\", parameters.Skip(1));  // skip "data"-part in url
-                if (string.IsNullOrWhiteSpace(repositoryDirectory) == false)
-                {
-                    // add colon character
-                    repositoryDirectory = string.Format("{0}:{1}", repositoryDirectory[0], repositoryDirectory.Substring(1));
-                }
-
-                if (string.IsNullOrWhiteSpace(repositoryDirectory) || Directory.Exists(repositoryDirectory) == false)  // if invalid directory -> show overview screen
-                {
-                    // show overview screen
-                    viewPage = new HtmlViewPage(httpServer, browser, true, "GitanosOverview", parameters);
-
-                    string cssNotificationClasses = ".no-unpushed-commits";
-                    string[] gitStates = Storage.GitanosConfiguration.GetNotificationStates(database);
-
-                    if (gitStates == null || gitStates.Contains("Added"))
-                    {
-                        cssNotificationClasses += ".added";
-                    }
-
-                    if (gitStates == null || gitStates.Contains("Modified"))
-                    {
-                        cssNotificationClasses += ".modified";
-                    }
-
-                    if (gitStates == null || gitStates.Contains("Removed"))
-                    {
-                        cssNotificationClasses += ".removed";
-                    }
-
-                    if (gitStates == null || gitStates.Contains("Renamed"))
-                    {
-                        cssNotificationClasses += ".renamed";
-                    }
-
-                    if (gitStates == null || gitStates.Contains("Untracked"))
-                    {
-                        cssNotificationClasses += ".untracked";
-                    }
-
-                    viewPage.SetText("CSS-NOTIFICATIONS", cssNotificationClasses, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                }
-                else
-                {
-                    // show detail screen
-                    using (var repo = new LibGit2Sharp.Repository(repositoryDirectory))
-                    {
-                        lock (DirectoryMonitor.DatabaseAccess)
-                        {
-                            GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories.FirstOrDefault(repository => repository.Directory.Equals(repositoryDirectory));
-                            int repositoryIndex = Array.IndexOf(DirectoryMonitor.Repositories, currentRepository);
-
-                            viewPage = new HtmlViewPage(httpServer, browser, true, "GitanosRepositoryModifications", parameters);
-                            viewPage.SetText("REPOSITORY-INDEX", repositoryIndex.ToString(), HtmlViewPage.ArgumentOptions.JavascriptEncoding);
-                            viewPage.SetText("REPOSITORY-NAME", repositoryDirectory, HtmlViewPage.ArgumentOptions.JavascriptEncoding);
-                            viewPage.SetText("BRANCH-NAME", repo.Head.FriendlyName, HtmlViewPage.ArgumentOptions.JavascriptEncoding);
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// This method will show the DiffFile screen
         /// </summary>
         /// <param name="httpServer"></param>
@@ -296,6 +216,113 @@ namespace Phabrico.Plugin
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// This method is fired when the user opens the Gitanos screen (from the Phabrico navigator)
+        /// or from the Gitanos overview screen itself when browsing to the modifications of a given repository
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="viewPage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/gitanos", ServerCache = false)]
+        public void HttpGetOverviewScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        {
+            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
+            Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
+            {
+                string repositoryDirectory = string.Join("\\", parameters.Skip(1));  // skip "data"-part in url
+                if (string.IsNullOrWhiteSpace(repositoryDirectory) == false)
+                {
+                    // add colon character
+                    repositoryDirectory = string.Format("{0}:{1}", repositoryDirectory[0], repositoryDirectory.Substring(1));
+                }
+
+                if (string.IsNullOrWhiteSpace(repositoryDirectory) || Directory.Exists(repositoryDirectory) == false)  // if invalid directory -> show overview screen
+                {
+                    // show overview screen
+                    viewPage = new HtmlViewPage(httpServer, browser, true, "GitanosOverview", parameters);
+
+                    string cssNotificationClasses = ".no-unpushed-commits";
+                    string[] gitStates = Storage.GitanosConfiguration.GetNotificationStates(database);
+
+                    if (gitStates == null || gitStates.Contains("Added"))
+                    {
+                        cssNotificationClasses += ".added";
+                    }
+
+                    if (gitStates == null || gitStates.Contains("Modified"))
+                    {
+                        cssNotificationClasses += ".modified";
+                    }
+
+                    if (gitStates == null || gitStates.Contains("Removed"))
+                    {
+                        cssNotificationClasses += ".removed";
+                    }
+
+                    if (gitStates == null || gitStates.Contains("Renamed"))
+                    {
+                        cssNotificationClasses += ".renamed";
+                    }
+
+                    if (gitStates == null || gitStates.Contains("Untracked"))
+                    {
+                        cssNotificationClasses += ".untracked";
+                    }
+
+                    viewPage.SetText("CSS-NOTIFICATIONS", cssNotificationClasses, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                }
+                else
+                {
+                    // show detail screen
+                    using (var repo = new LibGit2Sharp.Repository(repositoryDirectory))
+                    {
+                        lock (DirectoryMonitor.DatabaseAccess)
+                        {
+                            GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories.FirstOrDefault(repository => repository.Directory.Equals(repositoryDirectory));
+                            int repositoryIndex = Array.IndexOf(DirectoryMonitor.Repositories, currentRepository);
+
+                            viewPage = new HtmlViewPage(httpServer, browser, true, "GitanosRepositoryModifications", parameters);
+                            viewPage.SetText("REPOSITORY-INDEX", repositoryIndex.ToString(), HtmlViewPage.ArgumentOptions.JavascriptEncoding);
+                            viewPage.SetText("REPOSITORY-NAME", repositoryDirectory, HtmlViewPage.ArgumentOptions.JavascriptEncoding);
+                            viewPage.SetText("BRANCH-NAME", repo.Head.FriendlyName, HtmlViewPage.ArgumentOptions.JavascriptEncoding);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// This method is fired when the user clicks on the 'Show Phabricator repositories' button in the Gitanos screen
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="viewPage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/gitanos/repositories", ServerCache = false)]
+        public void HttpGetOverviewRemoteRepositoriesScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        {
+            Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
+            {
+                string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database).FirstOrDefault().Directory.TrimEnd('\\');
+
+                // show overview screen
+                viewPage = new HtmlViewPage(httpServer, browser, true, "GitanosOverviewRemoteRepositories", parameters);
+                viewPage.SetText("GITANOS-ROOTDIRECTORY", firstRootDirectory, HtmlViewPage.ArgumentOptions.JavascriptEncoding);
+            }
         }
 
         /// <summary>
@@ -458,6 +485,63 @@ namespace Phabrico.Plugin
                 catch
                 {
                     jsonMessage = new JsonMessage("[]");
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method is fired when the user clicks on the Confirm button of the commit-dialog.
+        /// The commit-dialog is shown when user selects 1 or more files and clicks on the commit button.
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        [UrlController(URL = "/gitanos/repositories/clone", IntegratedWindowsSecurity = true)]
+        public JsonMessage HttpPostCloneRemoteRepository(Http.Server httpServer, Browser browser, string[] parameters)
+        {
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
+            {
+                try
+                {
+                    DirectoryMonitor.Stop();
+
+                    Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
+                    Storage.GitanosPhabricatorRepository storageGitanosPhabricatorRepository = new Storage.GitanosPhabricatorRepository();
+
+                    SessionManager.Token token = SessionManager.GetToken(browser);
+
+                    string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database).FirstOrDefault().Directory.TrimEnd('\\');
+                    string workingDirectory = firstRootDirectory + "\\" + browser.Session.FormVariables[browser.Request.RawUrl]["txtCloneDestination"];
+                    string repositoryName = browser.Session.FormVariables[browser.Request.RawUrl]["uriRepository"];
+
+                    Phabricator.Data.Diffusion repository = storageGitanosPhabricatorRepository.Get(database).FirstOrDefault(record => record.Name.Equals(repositoryName));
+
+                    Directory.CreateDirectory(workingDirectory);
+                    LibGit2Sharp.Repository.Clone(repository.URI, workingDirectory);
+
+                    string jsonData = JsonConvert.SerializeObject(new
+                    {
+                        Status = "OK"
+                    });
+                    return new JsonMessage(jsonData);
+                }
+                catch (System.Exception e)
+                {
+                    string jsonData = JsonConvert.SerializeObject(new
+                    {
+                        Status = "Error",
+                        Description = e.Message
+                    });
+                    return new JsonMessage(jsonData);
+                }
+                finally
+                {
+                    // start monitoring the local git repositories
+                    Storage.GitanosConfigurationRootPath gitanosConfigurationRootPathStorage = new Storage.GitanosConfigurationRootPath();
+                    IEnumerable<Model.GitanosConfigurationRootPath> rootPaths = gitanosConfigurationRootPathStorage.Get(database);
+
+                    DirectoryMonitor.Start(rootPaths);
                 }
             }
         }
@@ -851,6 +935,139 @@ namespace Phabrico.Plugin
         }
 
         /// <summary>
+        /// This method is fired when the user clicks on the Confirm button of the commit-dialog.
+        /// The commit-dialog is shown when user selects 1 or more files and clicks on the commit button.
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        [UrlController(URL = "/gitanos/repositories", IntegratedWindowsSecurity = true)]
+        public JsonMessage HttpPostPopulateRemoteRepositoriesTableData(Http.Server httpServer, Browser browser, string[] parameters)
+        {
+            SessionManager.Token token = SessionManager.GetToken(browser);
+
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
+            {
+                Storage.GitanosPhabricatorRepository storageGitanosPhabricatorRepository = new Storage.GitanosPhabricatorRepository();
+                Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
+                IEnumerable<Phabricator.Data.Diffusion> repositories = storageGitanosPhabricatorRepository.Get(database);
+
+                if (parameters.Any())
+                {
+                    string filter = "";
+                    string orderBy = System.Web.HttpUtility.UrlDecode(parameters[0]);
+                    if (parameters.Length > 1)
+                    {
+                        filter = System.Web.HttpUtility.UrlDecode(parameters[1]);
+                    }
+
+                    repositories = repositories.Where(repository => repository.CallSign.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                                                                 || repository.Description.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                                                                 || repository.Name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                                                                 || repository.ShortName.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                                                                 || repository.URI.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                                                     );
+
+                    switch (orderBy.TrimEnd('-'))
+                    {
+                        case "Name":
+                            if (orderBy.Last() == '-')
+                                repositories = repositories.OrderByDescending(o => o.Name);
+                            else
+                                repositories = repositories.OrderBy(o => o.Name);
+                            break;
+
+                        case "ShortName":
+                            if (orderBy.Last() == '-')
+                                repositories = repositories.OrderByDescending(o => o.ShortName);
+                            else
+                                repositories = repositories.OrderBy(o => o.ShortName);
+                            break;
+
+                        case "CallSign":
+                            if (orderBy.Last() == '-')
+                                repositories = repositories.OrderByDescending(o => o.CallSign);
+                            else
+                                repositories = repositories.OrderBy(o => o.CallSign);
+                            break;
+
+                        case "URI":
+                            if (orderBy.Last() == '-')
+                                repositories = repositories.OrderByDescending(o => o.URI);
+                            else
+                                repositories = repositories.OrderBy(o => o.URI);
+                            break;
+
+                        default:
+                            repositories = repositories.OrderBy(o => o.Name);
+                            break;
+                    }
+                }
+
+                repositories = repositories.Select(record => {
+                    Match uriWithCredentials = RegexSafe.Match(record.URI, "^https?://([^/\\?@&]*@)", System.Text.RegularExpressions.RegexOptions.None);
+                    if (uriWithCredentials.Success)
+                    {
+                        // hide credentials in URI
+                        Phabricator.Data.Diffusion modifiedRecord = new Phabricator.Data.Diffusion()
+                        {
+                            CallSign = record.CallSign,
+                            DateModified = record.DateModified,
+                            Description = record.Description,
+                            Name = record.Name,
+                            ShortName = record.ShortName,
+                            Status = record.Status,
+                            URI = record.URI.Substring(0, uriWithCredentials.Groups[1].Index)
+                                + record.URI.Substring(uriWithCredentials.Groups[1].Index + uriWithCredentials.Groups[1].Length),
+                        };
+
+                        return modifiedRecord;
+                    }
+                    else
+                    {
+                        return record;
+                    }
+                });
+
+                repositories = repositories.Select(record =>
+                {
+                    string defaultCloneDestination = record.Name;
+                    string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database).FirstOrDefault().Directory.TrimEnd('\\');
+                    int indexer = 2;
+
+                    while (true)
+                    {
+                        if (System.IO.Directory.Exists(firstRootDirectory + "\\" + defaultCloneDestination) ||
+                            System.IO.File.Exists(firstRootDirectory + "\\" + defaultCloneDestination))
+                        {
+                            defaultCloneDestination = record.Name + "_" + indexer;
+                            indexer++;
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    return new Phabricator.Data.Diffusion()
+                    {
+                        CallSign = record.CallSign,
+                        DateModified = record.DateModified,
+                        Description = record.Description,
+                        Name = record.Name,
+                        ShortName = record.ShortName,
+                        Status = record.Status,
+                        URI = record.URI,
+
+                        DefaultCloneDestination = defaultCloneDestination
+                    };
+                });
+                string jsonData = JsonConvert.SerializeObject(repositories);
+                return new JsonMessage(jsonData);
+            }
+        }
+
+        /// <summary>
         /// This method is fired from the Gitanos screen to fill the modifications table.
         /// It's also executed when the search filter is changed
         /// </summary>
@@ -864,7 +1081,6 @@ namespace Phabrico.Plugin
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
-                List<GitanosOverviewJsonRecordData> tableRows = new List<GitanosOverviewJsonRecordData>();
                 IEnumerable<GitanosConfigurationRepositoryPath> repositories = DirectoryMonitor.Repositories;
                 IEnumerable<GitanosModificationsJsonRecordData> filteredModifications = new GitanosModificationsJsonRecordData[0];
 

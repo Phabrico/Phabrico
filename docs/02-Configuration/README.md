@@ -22,7 +22,7 @@
 | Synchronize Maniphest tasks for         | Maniphest tasks to be downloaded from Phabricator can be filtered per selected users or per selected projects.<br />The user selection can be done in the *Users* screen.<br />The project selection can be done in the *Projects* screen |
 | Mark new/modified Maniphest tasks as    | When a new Maniphest task is created or an existing Maniphest task is modified, the task can be set into a *Frozen* or an *Unfrozen* state.<br />*Frozen* means that the modified or created task will not be uploaded to Phabricator when Phabrico is being synchronized with Phabricator.<br />*Unfrozen* is the opposite: modified or created tasks will be uploaded. |
 | Maximum lifetime closed Maniphest tasks | After a task is marked closed in Phabricator, the task may still be known in Phabrico.<br />With this parameter you can specify when closed tasks should be removed from Phabrico's local database |
-
+| Visible states                          | If a Maniphest task has a status that is checked in this list, the Maniphest task will be shown in the assigned tasks overview in the Maniphest overview screen. With this parameter you can hide some open tasks (e.g. planned tasks)
 
 
 ## Phriction settings

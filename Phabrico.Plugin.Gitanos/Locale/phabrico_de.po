@@ -36,6 +36,9 @@ msgstr "Mostrar los repositorios actualizados"
 msgid "Hide clean repositories"
 msgstr "Ocultar los repositorios actualizados"
 
+msgid "Show Phabricator repositories"
+msgstr "Repositorien in Phabricator anzeigen"
+
 msgid "Repository"
 msgstr "Repository"
 
@@ -140,3 +143,34 @@ msgstr "Verzeichnis @@DIRECTORY@ existiert nicht"
 
 msgid "Error git push"
 msgstr "Problem mit Git-Push"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "Klonen"
+
+msgid "Destination:"
+msgstr "Zielverzeichnis:"
+
+msgid "Clone repository"
+msgstr "Repository klonen..."
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "Rufzeichen"
+
+msgid "Short name"
+msgstr "Gekürzter Name"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "Es wurden keine Repositories von Phabricator synchronisiert"
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "Synchronisierte Repository-Liste von Phabricator"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "Geben Sie einen Text ein, um die Liste der Repositories zu filtern..."

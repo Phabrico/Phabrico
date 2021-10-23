@@ -139,6 +139,31 @@ namespace Phabrico.Controllers
 
                     viewPage.Customize(browser);
 
+                    Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
+                    ManiphestStatus[] openManiphestStates = maniphestStatusStorage.Get(database).Where(status => status.Closed == false).OrderBy(status => status.Name).ToArray();
+
+                    IEnumerable<string> visibleManiphestStates = database.GetConfigurationParameter("VisibleManiphestStates")?.Split('\t');
+                    if (visibleManiphestStates == null)
+                    {
+                        visibleManiphestStates = openManiphestStates.Select(state => state.Value);
+                    }
+
+                    foreach (ManiphestStatus maniphestStatus in openManiphestStates)
+                    {
+                        HtmlPartialViewPage htmlVisibleManiphestStatus = viewPage.GetPartialView("VISIBILE-MANIPHEST-STATES");
+                        htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-NAME", maniphestStatus.Value);
+                        htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-DESCRIPTION", maniphestStatus.Name);
+
+                        if (visibleManiphestStates.Contains(maniphestStatus.Value))
+                        {
+                            htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-CHECKED", "checked");
+                        }
+                        else
+                        {
+                            htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-CHECKED", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        }
+                    }
+
                     foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                     {
                         if (plugin.State == Plugin.PluginBase.PluginState.Loaded)
@@ -355,6 +380,12 @@ namespace Phabrico.Controllers
                         }
 
                         accountStorage.Set(database, existingAccount);
+
+
+                        string[] visibleManiphestStates = browser.Session.FormVariables[browser.Request.RawUrl].Keys.Where(key => key.StartsWith("visible-manipheststate-")).ToArray();
+                        database.SetConfigurationParameter("VisibleManiphestStates", 
+                                                            string.Join("\t", visibleManiphestStates.Select(state => state.Substring("visible-manipheststate-".Length)))
+                                                          );
 
                         Http.Server.InvalidateNonStaticCache(database, DateTime.MaxValue);
                     }

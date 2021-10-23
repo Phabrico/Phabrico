@@ -190,6 +190,16 @@ if (urlParams['lightbox'] == '1')
 	urlParams['chrome'] = '0';
 }
 
+// Embed inline is embed mode and sketch UI
+if (urlParams['embedInline'] == '1')
+{
+	urlParams['embed'] = '1';
+	urlParams['ui'] = 'sketch';
+	urlParams['plugins'] = '0';
+	urlParams['proto'] = 'json';
+	urlParams['prefetchFonts'] = '1';
+}
+
 /**
  * Returns the global UI setting before running static draw.io code
  */

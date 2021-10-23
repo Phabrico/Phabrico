@@ -1968,6 +1968,32 @@ label.aphront-form-label
     padding: 4px 0px; 
 }
 
+.configure .visibleManiphestStates {
+    display: flex;
+    flex-direction: column;
+}
+
+.configure .visibleManiphestStates label {
+    position: relative;
+    padding: 15px 0 15px 45px;
+    cursor: pointer;
+}
+
+.configure .visibleManiphestStates label::before {
+    content: '\f096';
+    position: absolute;
+    left: 20px;
+    font: 1.5em 'FontAwesome';
+}
+
+.configure .visibleManiphestStates input:checked + label::before {
+    content: '\f14a';
+}
+
+.configure .visibleManiphestStates input {
+    display: none;
+}
+
 .progress-bar {
     padding-top: 25px;
     padding-bottom: 10px;

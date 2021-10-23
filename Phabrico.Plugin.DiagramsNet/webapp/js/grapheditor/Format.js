@@ -855,11 +855,7 @@ BaseFormatPanel.prototype.createStepper = function(input, update, step, height, 
 {
 	step = (step != null) ? step : 1;
 	height = (height != null) ? height : 9;
-	
-	if (mxClient.IS_MT || document.documentMode >= 8)
-	{
-		//height = height + 1;
-	} 
+	var bigStep = 10 * step;
 	
 	var stepper = document.createElement('div');
 	mxUtils.setPrefixedStyle(stepper.style, 'borderRadius', '3px');
@@ -880,7 +876,11 @@ BaseFormatPanel.prototype.createStepper = function(input, update, step, height, 
 	down.className = 'geBtnDown';
 	stepper.appendChild(down);
 
-	mxEvent.addListener(down, 'click', function(evt)
+	mxEvent.addGestureListeners(down, function(evt)
+	{
+		// Stops text selection on shift+click
+		mxEvent.consume(evt);
+	}, null, function(evt)
 	{
 		if (input.value == '')
 		{
@@ -891,18 +891,22 @@ BaseFormatPanel.prototype.createStepper = function(input, update, step, height, 
 		
 		if (!isNaN(val))
 		{
-			input.value = val - step;
+			input.value = val - (mxEvent.isShiftDown(evt) ? bigStep : step);
 			
 			if (update != null)
 			{
 				update(evt);
 			}
 		}
-		
+
 		mxEvent.consume(evt);
 	});
 	
-	mxEvent.addListener(up, 'click', function(evt)
+	mxEvent.addGestureListeners(up, function(evt)
+	{
+		// Stops text selection on shift+click
+		mxEvent.consume(evt);
+	}, null, function(evt)
 	{
 		if (input.value == '')
 		{
@@ -913,14 +917,14 @@ BaseFormatPanel.prototype.createStepper = function(input, update, step, height, 
 		
 		if (!isNaN(val))
 		{
-			input.value = val + step;
+			input.value = val + (mxEvent.isShiftDown(evt) ? bigStep : step);
 			
 			if (update != null)
 			{
 				update(evt);
 			}
 		}
-		
+
 		mxEvent.consume(evt);
 	});
 	
@@ -956,6 +960,14 @@ BaseFormatPanel.prototype.createStepper = function(input, update, step, height, 
 				}
 			}
 		);
+	}
+	else
+	{
+		// Stops propagation on checkbox labels
+		mxEvent.addListener(stepper, 'click', function(evt)
+		{
+			mxEvent.consume(evt);
+		});
 	}
 	
 	return stepper;
@@ -4896,8 +4908,8 @@ StyleFormatPanel.prototype.addFill = function(container)
 	mxEvent.addListener(fillStyleSelect, 'change', function(evt)
 	{
 		graph.setCellStyles('fillStyle', fillStyleSelect.value, ss.cells);
-		ui.fireEvent(new mxEventObject('styleChanged', 'keys', [mxConstants.STYLE_GRADIENT_DIRECTION],
-			'values', [gradientSelect.value], 'cells', ss.cells));
+		ui.fireEvent(new mxEventObject('styleChanged', 'keys', ['fillStyle'],
+			'values', [fillStyleSelect.value], 'cells', ss.cells));
 		mxEvent.consume(evt);
 	});
 	
@@ -6775,6 +6787,7 @@ DiagramFormatPanel.prototype.addGridOption = function(container)
 		
 		if (value != graph.getGridSize())
 		{
+			mxGraph.prototype.gridSize = value;
 			graph.setGridSize(value)
 		}
 
@@ -6813,6 +6826,7 @@ DiagramFormatPanel.prototype.addGridOption = function(container)
 		
 		if (enabled != graph.isGridEnabled())
 		{
+			graph.defaultGridEnabled = graph.isGridEnabled();
 			ui.fireEvent(new mxEventObject('gridEnabledChanged'));
 		}
 	}, Editor.isDarkMode() ? graph.view.defaultDarkGridColor : graph.view.defaultGridColor,

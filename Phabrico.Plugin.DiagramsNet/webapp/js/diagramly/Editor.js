@@ -253,9 +253,19 @@
 	Editor.enableShadowOption = !mxClient.IS_SF;
 
 	/**
+	 * Disables the export URL function.
+	 */
+	Editor.enableExportUrl = true;
+
+	/**
 	 * Specifies if XML files should be compressed. Default is true.
 	 */
 	Editor.compressXml = true;
+
+	/**
+	 * Specifies if XML files should be compressed. Default is true.
+	 */
+	Editor.oneDriveInlinePicker = (window.urlParams != null && window.urlParams['inlinePicker'] == '0') ? false : true;
 
 	/**
 	 * Specifies global variables.
@@ -922,7 +932,8 @@
 			
 			if (fillStyle == 'auto')
 			{
-				var bg = (this.shape.state != null) ? this.shape.state.view.graph.defaultPageBackgroundColor : '#ffffff';
+				var bg = (this.shape.state != null && this.shape.state.view.graph.defaultPageBackgroundColor != 'transparent') ?
+					this.shape.state.view.graph.defaultPageBackgroundColor : (Editor.isDarkMode() ? Editor.darkColor : '#ffffff');
 				
 				fillStyle = (style.fill != null && (gradient != null || (bg != null &&
 					style.fill.toLowerCase() == bg.toLowerCase()))) ? 'solid' : defs['fillStyle']
@@ -1224,7 +1235,8 @@
 		mxShape.prototype.createHandJiggle = function(c)
 		{
 			if (!this.outline && this.style != null && mxUtils.getValue(this.style,
-				'sketch', (urlParams['rough'] == '1') ?'1' : '0') != '0')
+					'sketch', /*(urlParams['sketch'] != '1' && urlParams['rough'] == '1') ?
+						'1' : */'0') != '0')
 			{
 				if (mxUtils.getValue(this.style, 'sketchStyle', 'rough') == 'comic')
 				{
@@ -1840,6 +1852,23 @@
 			{
 				Editor.simpleLabels = config.simpleLabels;
 			}
+
+			if (config.oneDriveInlinePicker != null)
+			{
+				Editor.oneDriveInlinePicker = config.oneDriveInlinePicker;
+			}
+
+			if (config.darkColor != null)
+			{
+				Editor.darkColor = config.darkColor;
+			}
+
+			if (config.settingsName != null)
+			{
+				Editor.configurationKey = '.' + config.settingsName + '-configuration';
+				Editor.settingsKey = '.' + config.settingsName + '-config';
+				mxSettings.key = Editor.settingsKey;
+			}
 			
 			if (config.customFonts)
 			{
@@ -1910,6 +1939,18 @@
 			if (config.defaultEdgeStyle != null)
 			{
 				Graph.prototype.defaultEdgeStyle = config.defaultEdgeStyle;
+			}
+
+			// Overrides default page visible
+			if (config.defaultPageVisible != null)
+			{
+				Graph.prototype.defaultPageVisible = config.defaultPageVisible;
+			}
+
+			// Overrides default grid enabled
+			if (config.defaultGridEnabled != null)
+			{
+				Graph.prototype.defaultGridEnabled = config.defaultGridEnabled;
 			}
 
 			// Overrides mouse wheel function
@@ -3118,10 +3159,14 @@
         	this.embedCssFonts(this.fontCss, mxUtils.bind(this, function(resolvedFontCss)
 			{
         		this.resolvedFontCss = resolvedFontCss;
-        		then();
+
+				if (then != null)
+				{
+        			then();
+				}
 			}));
         }
-        else
+        else if (then != null)
         {
             then();
         }
@@ -5169,14 +5214,17 @@
 			
 			var setScheme = mxUtils.bind(this, function(index)
 			{
-				if (this.format.currentScheme != null)
+				if (dots[index] != null)
 				{
-					dots[this.format.currentScheme].style.background = 'transparent';
+					if (this.format.currentScheme != null && dots[this.format.currentScheme] != null)
+					{
+						dots[this.format.currentScheme].style.background = 'transparent';
+					}
+					
+					this.format.currentScheme = index;
+					updateScheme(this.defaultColorSchemes[this.format.currentScheme]);
+					dots[this.format.currentScheme].style.background = '#84d7ff';
 				}
-				
-				this.format.currentScheme = index;
-				updateScheme(this.defaultColorSchemes[this.format.currentScheme]);
-				dots[this.format.currentScheme].style.background = '#84d7ff';
 			});
 			
 			var updateScheme = mxUtils.bind(this, function(colorsets)
@@ -5203,23 +5251,30 @@
 								
 								if (colorset != null)
 								{
-									style = mxUtils.setStyle(style, mxConstants.STYLE_GRADIENTCOLOR, colorset['gradient'] ||
-										mxUtils.getValue(defaults, mxConstants.STYLE_GRADIENTCOLOR, null));
-								
-									if (!mxEvent.isAltDown(evt))
+									if (!mxEvent.isShiftDown(evt))
 									{
 										if (colorset['fill'] == '')
 										{
-											style = mxUtils.setStyle(style, mxConstants.STYLE_FILLCOLOR,null);
+											style = mxUtils.setStyle(style, mxConstants.STYLE_FILLCOLOR, null);
 										}
 										else
 										{
 											style = mxUtils.setStyle(style, mxConstants.STYLE_FILLCOLOR, colorset['fill'] ||
 												mxUtils.getValue(defaults, mxConstants.STYLE_FILLCOLOR, null));
 										}
+
+										style = mxUtils.setStyle(style, mxConstants.STYLE_GRADIENTCOLOR, colorset['gradient'] ||
+											mxUtils.getValue(defaults, mxConstants.STYLE_GRADIENTCOLOR, null));
+									
+										if (!mxEvent.isControlDown(evt) && (!mxClient.IS_MAC || !mxEvent.isMetaDown(evt)) &&
+											graph.getModel().isVertex(cells[i]))
+										{
+											style = mxUtils.setStyle(style, mxConstants.STYLE_FONTCOLOR, colorset['font'] ||
+												mxUtils.getValue(defaults, mxConstants.STYLE_FONTCOLOR, null));
+										}
 									}
 									
-									if (!mxEvent.isShiftDown(evt))
+									if (!mxEvent.isAltDown(evt))
 									{
 										if (colorset['stroke'] == '')
 										{
@@ -5230,13 +5285,6 @@
 											style = mxUtils.setStyle(style, mxConstants.STYLE_STROKECOLOR, colorset['stroke'] ||
 												mxUtils.getValue(defaults, mxConstants.STYLE_STROKECOLOR, null));
 										}
-									}
-									
-									if (!mxEvent.isControlDown(evt) && (!mxClient.IS_MAC || !mxEvent.isMetaDown(evt)) &&
-										graph.getModel().isVertex(cells[i]))
-									{
-										style = mxUtils.setStyle(style, mxConstants.STYLE_FONTCOLOR, colorset['font'] ||
-											mxUtils.getValue(defaults, mxConstants.STYLE_FONTCOLOR, null));
 									}
 								}
 								else
@@ -5294,12 +5342,12 @@
 						else if (colorset['fill'] == '')
 						{
 							btn.style.backgroundColor = mxUtils.getValue(ui.initialDefaultVertexStyle,
-								mxConstants.STYLE_FILLCOLOR, (Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff');
+								mxConstants.STYLE_FILLCOLOR, (Editor.isDarkMode()) ? Editor.darkColor : '#ffffff');
 						}
 						else
 						{
 							btn.style.backgroundColor = colorset['fill'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
-								mxConstants.STYLE_FILLCOLOR, (Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff');
+								mxConstants.STYLE_FILLCOLOR, (Editor.isDarkMode()) ? Editor.darkColor : '#ffffff');
 						}
 						
 						if (colorset['stroke'] == mxConstants.NONE)
@@ -5309,12 +5357,12 @@
 						else if (colorset['stroke'] == '')
 						{
 							btn.style.border = b + ' ' + mxUtils.getValue(ui.initialDefaultVertexStyle, 
-								mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff');
+								mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ? Editor.darkColor : '#ffffff');
 						}
 						else
 						{
 							btn.style.border = b + ' ' + (colorset['stroke'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
-									mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ?'#2a2a2a' : '#ffffff'));
+									mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ? Editor.darkColor : '#ffffff'));
 						}
 
 						if (colorset['title'] != null)
@@ -5721,7 +5769,7 @@
 	 * Properties for the SVG shadow effect.
 	 */
 	Graph.prototype.svgShadowSize = '3';
-		
+
 	/**
 	 * Enables move of bends/segments without selecting.
 	 */
@@ -5730,8 +5778,13 @@
 	/**
 	 * Enables move of bends/segments without selecting.
 	 */
-	 Graph.prototype.hiddenTags = null;
-		
+	Graph.prototype.hiddenTags = null;
+	
+	/**
+	 * Enables move of bends/segments without selecting.
+	 */
+	Graph.prototype.defaultMathEnabled = false;
+	
 	/**
 	 * Adds rack child layout style.
 	 */
@@ -6411,14 +6464,18 @@
 		incExtFonts, keepTheme, exportType, cells)
 	{
 		var temp = null;
+		var tempFg = null;
 		var tempBg = null;
 		
 		if (!keepTheme && this.themes != null && this.defaultThemeName == 'darkTheme')
 		{
 			temp = this.stylesheet;
+			tempFg = this.defaultForegroundColor;
 			tempBg = this.defaultPageBackgroundColor;
 			this.defaultPageBackgroundColor = (this.defaultThemeName == 'darkTheme') ?
-				'#ffffff' : '#2a2a2a';
+				'#ffffff' : Editor.darkColor;
+			this.defaultForegroundColor = (this.defaultThemeName == 'darkTheme') ?
+				'#000000' : '#f0f0f0';
 			this.stylesheet = this.getDefaultStylesheet();
 			// LATER: Fix math export in dark mode by fetching text nodes before
 			// calling refresh and changing the font color in-place
@@ -6462,6 +6519,7 @@
 		if (temp != null)
 		{
 			this.defaultPageBackgroundColor = tempBg;
+			this.defaultForegroundColor = tempFg;
 			this.stylesheet = temp;
 			this.refresh();
 		}

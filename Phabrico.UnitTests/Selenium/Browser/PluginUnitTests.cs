@@ -548,8 +548,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             Assert.IsTrue(invalidFileReferences.Any(invalidFileReference => invalidFileReference.GetAttribute("textContent").Equals("Invalid file reference 31415927")));
             Assert.IsTrue(invalidFileReferences.Any(invalidFileReference => invalidFileReference.GetAttribute("textContent").Equals("Invalid file reference 27182818")));
             IWebElement[] invalidHyperlinks = WebBrowser.FindElements(By.XPath("//*[contains(text(), \"Invalid hyperlink\")]")).ToArray();
-            Assert.IsTrue(invalidHyperlinks.Any(invalidHyperlink => invalidHyperlink.GetAttribute("textContent").Equals("Invalid hyperlink inexistant")));
-            Assert.IsTrue(invalidHyperlinks.Any(invalidHyperlink => invalidHyperlink.GetAttribute("textContent").Equals("Invalid hyperlink daddy/grandaddy/inexistant2")));
+            Assert.IsTrue(invalidHyperlinks.Any(invalidHyperlink => invalidHyperlink.GetAttribute("textContent").Equals("Invalid hyperlink [[ ./inexistant ]]")));
+            Assert.IsTrue(invalidHyperlinks.Any(invalidHyperlink => invalidHyperlink.GetAttribute("textContent").Equals("Invalid hyperlink [[ ./inexistant2 ]]")));
         }
     }
 }

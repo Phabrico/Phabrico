@@ -36,6 +36,9 @@ msgstr "Toon bijgewerkte repositories"
 msgid "Hide clean repositories"
 msgstr "Verberg bijgewerkte repositories"
 
+msgid "Show Phabricator repositories"
+msgstr "Toon repositories in Phabricator"
+
 msgid "Repository"
 msgstr "Repository"
 
@@ -140,3 +143,34 @@ msgstr "Directory @@DIRECTORY@@ bestaat niet"
 
 msgid "Error git push"
 msgstr "Probleem bij git push"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "Klonen"
+
+msgid "Destination:"
+msgstr "Bestemming:"
+
+msgid "Clone repository"
+msgstr "Klonen van repository"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "Roepnaam"
+
+msgid "Short name"
+msgstr "Verkorte naam"
+
+msgid "Name"
+msgstr "Naam"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "Er waren geen repositories gesynchroniseerd vanuit Phabricator"
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "Gesynchroniseerde repository lijst van Phabricator"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "Typ wat tekst om de lijst van repositories te filteren..."

@@ -1,5 +1,7 @@
-﻿using Phabrico.Http;
+using Phabrico.Controllers;
+using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
@@ -86,6 +88,15 @@ namespace Phabrico.Plugin
                        CREATE TABLE IF NOT EXISTS gitanosConfigurationRootPath(
                            directory            VARCHAR PRIMARY KEY
                        );
+
+                       CREATE TABLE IF NOT EXISTS gitanosPhabricatorRepositories(
+                           name                 VARCHAR PRIMARY KEY,
+                           uri                  VARCHAR,
+                           callsign             VARCHAR,
+                           shortName            VARCHAR,
+                           description          VARCHAR,
+                           dateModified         SQLITE3_UINT64
+                       );
                    ", Database.Connection))
                 {
                     dbCommand.ExecuteNonQuery();
@@ -107,12 +118,38 @@ namespace Phabrico.Plugin
                 IEnumerable<Model.GitanosConfigurationRootPath> rootPaths = gitanosConfigurationRootPathStorage.Get(Database);
                 DirectoryMonitor.Start(rootPaths);
 
+                SynchronizationReadData = GitanosSynchronizationReadData;
+
                 return true;
             }
             catch (System.Exception initializationException)
             {
                 Logging.WriteException("gitanos", initializationException);
                 return false;
+            }
+        }
+
+        private void GitanosSynchronizationReadData(Synchronization.SynchronizationParameters synchronizationParameters, int processedDuration, int totalDuration)
+        {
+            Storage.GitanosPhabricatorRepository gitanosPhabricatorRepositoryStorage = new Storage.GitanosPhabricatorRepository();
+            DateTimeOffset modifiedSince = gitanosPhabricatorRepositoryStorage.Get(synchronizationParameters.database)
+                                                                              .Select(record => record.DateModified)
+                                                                              .DefaultIfEmpty(new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan()))
+                                                                              .Max(dateTimeOffset => dateTimeOffset)
+                                                                              .AddSeconds(1);
+
+            Phabricator.API.Diffusion diffusion = new Phabricator.API.Diffusion();
+            IEnumerable<Phabricator.Data.Diffusion> modifiedRepositories = diffusion.GetModifiedRepositories(synchronizationParameters.database,
+                                                                                                             synchronizationParameters.browser.Conduit,
+                                                                                                             null,
+                                                                                                             modifiedSince
+                                                                                                            );
+            foreach (Phabricator.Data.Diffusion modifiedRepository in modifiedRepositories)
+            {
+                if (modifiedRepository.Status.Equals("Active", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    gitanosPhabricatorRepositoryStorage.Add(synchronizationParameters.database, modifiedRepository);
+                }
             }
         }
 

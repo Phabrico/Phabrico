@@ -166,6 +166,22 @@
                         </label>
                     </td>
                 </tr>
+                <tr class="setting VisibleManiphestStates">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label">Visible Maniphest states</label>
+                    </td>
+                    <td>
+                        <p class="instructions">Show only those tasks assigned to me that have one of the following states:</p>
+                        <div class="config-tables-header" style="width:auto; min-width: 100ch;">
+                            <div class="visibleManiphestStates">
+                                @{VISIBILE-MANIPHEST-STATES
+                                    <input id="@@VISIBILE-MANIPHEST-STATE-NAME@@" name="visible-manipheststate-@@VISIBILE-MANIPHEST-STATE-NAME@@" type="checkbox" @@VISIBILE-MANIPHEST-STATE-CHECKED@@>
+                                    <label for="@@VISIBILE-MANIPHEST-STATE-NAME@@">@@VISIBILE-MANIPHEST-STATE-DESCRIPTION@@</label>
+                                }@
+                            </div>
+                        </div>
+                    </td>
+                </tr>
             </table>
         </div>
         }@
@@ -828,22 +844,25 @@
 
     function inputFieldModified(item) {
         item.target.isModified = true;
-        console.log("inputFieldModified:4");
     }
 
     function inputFieldFocusLost(item) {
-        console.log("inputFieldFocusLost:1");
         if (item.target.isModified === true) {
-            console.log("inputFieldFocusLost:2");
             var form = tabConfigure.getElementsByTagName('form')[0];
             var data = new FormData(form);
             var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    @{IF @@ACCESS-HIDE-MANIPHEST@@=False@
+                        updateManiphestTaskCount();
+                    }@
+                }
+            }
             xmlhttp.open('POST', form.action, true);
             xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             xmlhttp.send(data);
             Array.prototype.slice.call( document.querySelectorAll('input[type=number], input[type=text], select'), 0)
                  .map( function(item) {
-                     console.log("inputFieldFocusLost:3");
                      item.isModified = false;
                  }
             );
@@ -917,6 +936,13 @@
             item.addEventListener("blur", inputFieldFocusLost);
          }
     );
+
+    document.querySelectorAll('input[type=checkbox]').forEach(function (checkbox) {
+        checkbox.addEventListener('change', (event) => {
+            checkbox.isModified = true;
+            inputFieldFocusLost({ target: checkbox });
+        })
+    });
 
     Array.prototype.slice.call( tabConfigure.querySelectorAll('input[type=number]'), 0)
          .map( function(item) {

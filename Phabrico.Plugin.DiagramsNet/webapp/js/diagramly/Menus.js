@@ -255,18 +255,31 @@
 		
         var fullscreenAction = editorUi.actions.addAction('fullscreen', function()
 		{
-			if (document.fullscreenElement == null)
+			if (urlParams['embedInline'] == '1')
 			{
-				document.body.requestFullscreen();
+				editorUi.setInlineFullscreen(!Editor.inlineFullscreen);
 			}
 			else
 			{
-				document.exitFullscreen();
+				if (document.fullscreenElement == null)
+				{
+					document.body.requestFullscreen();
+				}
+				else
+				{
+					document.exitFullscreen();
+				}
 			}
 		});
-		fullscreenAction.visible = document.fullscreenEnabled && document.body.requestFullscreen != null;
+		fullscreenAction.visible = urlParams['embedInline'] == '1' ||
+			(document.fullscreenEnabled && document.body.requestFullscreen != null);
 		fullscreenAction.setToggleAction(true);
-		fullscreenAction.setSelectedCallback(function() { return document.fullscreenElement != null; });
+		fullscreenAction.setSelectedCallback(function()
+		{
+			return urlParams['embedInline'] == '1' ? 
+				Editor.inlineFullscreen :
+				document.fullscreenElement != null;
+		});
 		
 		editorUi.actions.addAction('properties...', function()
 		{
@@ -341,24 +354,27 @@
 			editorUi.showDialog(dlg.container, 300, 200, true, true);
 		}));
 		
-		editorUi.actions.put('exportUrl', new Action(mxResources.get('url') + '...', function()
+		if (Editor.enableExportUrl)
 		{
-			editorUi.showPublishLinkDialog(mxResources.get('url'), true, null, null,
-				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height, tags)
+			editorUi.actions.put('exportUrl', new Action(mxResources.get('url') + '...', function()
 			{
-				var params = [];
-
-				if (tags)
+				editorUi.showPublishLinkDialog(mxResources.get('url'), true, null, null,
+					function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height, tags)
 				{
-					params.push('tags=%7B%7D');
-				}
+					var params = [];
 
-				var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget, linkColor,
-					allPages, lightbox, editLink, layers, null, true, params));
-				editorUi.showDialog(dlg.container, 440, 240, true, true);
-				dlg.init();
-			});
-		}));
+					if (tags)
+					{
+						params.push('tags=%7B%7D');
+					}
+
+					var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget, linkColor,
+						allPages, lightbox, editLink, layers, null, true, params));
+					editorUi.showDialog(dlg.container, 450, 240, true, true);
+					dlg.init();
+				});
+			}));
+		}
 		
 		editorUi.actions.put('exportHtml', new Action(mxResources.get('formatHtmlEmbedded') + '...', function()
 		{
@@ -1047,7 +1063,7 @@
 									'/' + editorUi.getSearch() + '#_CONFIG_' +
 									Graph.compress(JSON.stringify(obj));
 								var dlg = new EmbedDialog(editorUi, url);
-								editorUi.showDialog(dlg.container, 440, 240, true);
+								editorUi.showDialog(dlg.container, 450, 240, true);
 								dlg.init();
 							}
 							catch (e)
@@ -1993,7 +2009,7 @@
 										editorUi.handleError({message: mxResources.get('errorUpdatingPreview')});
 									}
 								});
-								editorUi.showDialog(dlg.container, 440, 240, true, true);
+								editorUi.showDialog(dlg.container, 450, 240, true, true);
 								dlg.init();
 							}));
 					});
@@ -2015,7 +2031,7 @@
 					{
 						var dlg = new EmbedDialog(editorUi, '<img src="' + ((current.constructor != DriveFile) ?
 							url : 'https://drive.google.com/uc?id=' + current.getId()) + '"/>');
-						editorUi.showDialog(dlg.container, 440, 240, true, true);
+						editorUi.showDialog(dlg.container, 450, 240, true, true);
 						dlg.init();
 					}
 					else
@@ -2036,7 +2052,7 @@
 					{
 						editorUi.spinner.stop();
 						var dlg = new EmbedDialog(editorUi, result);
-						editorUi.showDialog(dlg.container, 440, 240, true, true);
+						editorUi.showDialog(dlg.container, 450, 240, true, true);
 						dlg.init();
 					}, function(err)
 					{
@@ -2058,7 +2074,7 @@
 						editorUi.spinner.stop();
 						
 						var dlg = new EmbedDialog(editorUi, result);
-						editorUi.showDialog(dlg.container, 440, 240, true, true);
+						editorUi.showDialog(dlg.container, 450, 240, true, true);
 						dlg.init();
 					}, function(err)
 					{
@@ -2093,7 +2109,7 @@
 						var dlg = new EmbedDialog(editorUi, '<iframe frameborder="0" style="width:' + width +
 							';height:' + height + ';" src="' + editorUi.createLink(linkTarget, linkColor,
 							allPages, lightbox, editLink, layers, url, null, params) + '"></iframe>');
-						editorUi.showDialog(dlg.container, 440, 240, true, true);
+						editorUi.showDialog(dlg.container, 450, 240, true, true);
 						dlg.init();
 					});
 				}
@@ -2119,7 +2135,7 @@
 
 						var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget, linkColor,
 							allPages, lightbox, editLink, layers, url, null, params, true));
-						editorUi.showDialog(dlg.container, 440, 240, true, true);
+						editorUi.showDialog(dlg.container, 450, 240, true, true);
 						dlg.init();
 					});
 				}
@@ -2146,7 +2162,7 @@
 
 						var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget, linkColor,
 							allPages, lightbox, editLink, layers, url, null, params));
-						editorUi.showDialog(dlg.container, 440, 240, true, true);
+						editorUi.showDialog(dlg.container, 450, 240, true, true);
 						dlg.init();
 					});
 				}
@@ -2278,23 +2294,30 @@
 			
 			editorUi.actions.addAction('exit', function()
 			{
-				var fn = function()
+				if (urlParams['embedInline'] == '1')
 				{
-					editorUi.editor.modified = false;
-					var msg = (urlParams['proto'] == 'json') ? JSON.stringify({event: 'exit',
-						modified: editorUi.editor.modified}) : '';
-					var parent = window.opener || window.parent;
-					parent.postMessage(msg, '*');
-				}
-				
-				if (!editorUi.editor.modified)
-				{
-					fn();
+					editorUi.sendEmbeddedSvgExport();
 				}
 				else
 				{
-					editorUi.confirm(mxResources.get('allChangesLost'), null, fn,
-						mxResources.get('cancel'), mxResources.get('discardChanges'));
+					var fn = function()
+					{
+						editorUi.editor.modified = false;
+						var msg = (urlParams['proto'] == 'json') ? JSON.stringify({event: 'exit',
+							modified: editorUi.editor.modified}) : '';
+						var parent = window.opener || window.parent;
+						parent.postMessage(msg, '*');
+					}
+					
+					if (!editorUi.editor.modified)
+					{
+						fn();
+					}
+					else
+					{
+						editorUi.confirm(mxResources.get('allChangesLost'), null, fn,
+							mxResources.get('cancel'), mxResources.get('discardChanges'));
+					}
 				}
 			});
 		}
@@ -3752,20 +3775,23 @@
 				
 				this.addMenuItems(menu, ['-', 'pageSetup', 'print', '-', 'rename'], parent);
 				
-				if (urlParams['noSaveBtn'] == '1')
+				if (urlParams['embedInline'] != '1')
 				{
-					if (urlParams['saveAndExit'] != '0')
+					if (urlParams['noSaveBtn'] == '1')
 					{
-						this.addMenuItems(menu, ['saveAndExit'], parent);
+						if (urlParams['saveAndExit'] != '0')
+						{
+							this.addMenuItems(menu, ['saveAndExit'], parent);
+						}
 					}
-				}
-				else
-				{
-					this.addMenuItems(menu, ['save'], parent);
-					
-					if (urlParams['saveAndExit'] == '1')
+					else
 					{
-						this.addMenuItems(menu, ['saveAndExit'], parent);
+						this.addMenuItems(menu, ['save'], parent);
+						
+						if (urlParams['saveAndExit'] == '1')
+						{
+							this.addMenuItems(menu, ['saveAndExit'], parent);
+						}
 					}
 				}
 				
@@ -3871,7 +3897,7 @@
 					this.addMenuItems(menu, ['-', 'revisionHistory'], parent);
 				}
 				
-				if (file != null && editorUi.fileNode != null)
+				if (file != null && editorUi.fileNode != null && urlParams['embedInline'] != '1')
 				{
 					var filename = (file.getTitle() != null) ?
 						file.getTitle() : editorUi.defaultFilename;

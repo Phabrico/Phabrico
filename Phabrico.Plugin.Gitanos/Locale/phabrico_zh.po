@@ -36,6 +36,9 @@ msgstr "显示更新的git仓库"
 msgid "Hide clean repositories"
 msgstr "隐藏更新的git仓库"
 
+msgid "Show Phabricator repositories"
+msgstr "在Phabricator中显示存储库"
+
 msgid "Repository"
 msgstr "仓库"
 
@@ -140,3 +143,34 @@ msgstr "@@DIRECTORY@目录不存在"
 
 msgid "Error git push"
 msgstr "git推送的问题"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "克隆"
+
+msgid "Destination:"
+msgstr "目的地目录:"
+
+msgid "Clone repository"
+msgstr "克隆存储库..."
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "呼号"
+
+msgid "Short name"
+msgstr "缩略语名称"
+
+msgid "Name"
+msgstr "命名"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "没有从Phabricator同步的存储库"
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "来自Phabricator的同步版本库列表"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "输入一些文本来过滤存储库列表..."

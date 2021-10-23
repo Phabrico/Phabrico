@@ -133,6 +133,15 @@
                         </a>
                     </li>
                 }@
+                @{IF @@ACCESS-MASTER-DATA@@=True@
+                    <li class="list-item-view">
+                        <a id="actionViewPhabricatorDocument" class="list-item-href">
+                            <span class="phui-font-fa fa-institution phui-list-item-icon">
+                                <span class="phui-list-item-name">View Document on Phabricator</span>
+                            </span>
+                        </a>
+                    </li>
+                }@
                 @{IF @@ACCESS-HIDE-PHRICTION-CHANGES@@=False@
                 <li id="actionViewLocalChanges" data-document-state="@@DOCUMENT-STATE@@" class="list-item-view">
                     <a href="offline/changes/view/@@DOCUMENT-TOKEN@@/" class="list-item-href">
@@ -838,6 +847,10 @@ dateModified won't change when a subscription is added or removed
         {
             documentState.title = Locale.Translate("This modified page hasn't been uploaded yet to the Phabricator server");
         }
+
+    @{IF @@ACCESS-MASTER-DATA@@=True@
+        actionViewPhabricatorDocument.href = "@@PHABRICATOR-URL@@" + document.location.href.substring(document.baseURI.length);
+    }@
 }@
 
     // create navigation-tree based on header tags

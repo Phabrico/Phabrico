@@ -188,8 +188,9 @@
 			var columnLines = mxUtils.getValue(this.state.style,
 				'columnLines', '1') != '0';
 			var geo = graph.getCellGeometry(rows[0]);
+			var cells = graph.model.getChildCells(rows[0], true);
 			var rowData = [{y: (geo != null) ? geo.y + geo.height : 0,
-				cells: graph.model.getChildCells(rows[0], true)}];
+				x: 0, cells: cells, colspans: []}];
 			
 			// Paints row lines
 			if (rowLines)
@@ -197,7 +198,10 @@
 				for (var i = 1; i < rows.length; i++)
 				{
 					geo = graph.getCellGeometry(rows[i]);
-					var data = {y: 0, cells: graph.model.getChildCells(rows[i], true)};
+
+					var data = {y: 0, cells: graph.model.
+						getChildCells(rows[i], true),
+						colspans: []};
 					rowData.push(data);
 
 					if (geo != null)
@@ -206,6 +210,26 @@
 
 						c.begin();
 						c.moveTo(x + start.x, y + geo.y);
+						var tw = 0;
+
+						for (j = 0; j < data.cells.length; j++)
+						{
+							if (graph.model.isVisible(data.cells[j]))
+							{
+								tw = data.x;
+							}
+							else
+							{
+								if (tw > 0)
+								{
+									c.lineTo(x + tw - start.width, y + geo.y);
+								}
+
+								c.moveTo(x + geo.x + geo.width + start.x, y + geo.y);
+								tw = 0;
+							}
+						}
+
 						c.lineTo(x + w - start.width, y + geo.y);
 						c.end();
 						c.stroke();
@@ -213,11 +237,11 @@
 				}
 			}
 			
+			// Paints column lines
 			if (columnLines)
 			{
-				var cols = graph.model.getChildCells(rows[0], true);
+				var cols = rowData[0].cells;
 				
-				// Paints column lines
 				for (var i = 1; i < cols.length; i++)
 				{
 					geo = graph.getCellGeometry(cols[i]);
@@ -231,23 +255,27 @@
 						for (var j = 0; j < rowData.length; j++)
 						{
 							var data = rowData[j];
+							var colspan = (i == 1) ? parseInt(graph.getCurrentCellStyle(
+								data.cells[i - 1])['colspan'] || 1) :
+									rowData[j].colspans[i - 1];
 
-							if (data != null)
+							data.colspans[i] = colspan - 1;
+
+							if (data.colspans[i] < 1)
 							{
-								if (graph.model.isVisible(data.cells[i]))
+								data.colspans[i] = parseInt(graph.getCurrentCellStyle(
+									data.cells[i])['colspan'] || 1);
+								th = data.y;
+							}
+							else
+							{
+								if (th > 0)
 								{
-									th = data.y;
+									c.lineTo(x + geo.x + start.x, y + th - start.height);
 								}
-								else
-								{
-									if (th > 0)
-									{
-										c.lineTo(x + geo.x + start.x, y + th - start.height);
-									}
 
-									c.moveTo(x + geo.x + start.x, y + data.y);
-									th = 0;
-								}
+								c.moveTo(x + geo.x + start.x, y + data.y);
+								th = 0;
 							}
 						}
 

@@ -39,6 +39,12 @@
         <div class="aphront-form-input" style="display:flex;">
             <input id="filter" type="text" class="full-width" placeholder="Type some text to filter the list of git repositories..." oninput="populateTable(this.value)" />
             <button class="button-gray" id="btnShowHideCleanRepositories" type="button" style="margin: 3px 3px 7px 3px;" onclick="showHideCleanRepositories()"></button>
+            <!-- disabled because of https://github.com/libgit2/libgit2sharp/issues/1904
+            <a id="btnShowPhabricatorRepositories" class="button button-gray" href="/gitanos/repositories/" style="float:right; padding: 4px 30px 5px 10px;margin: 3px 4px;">
+                <span class="phui-list-item-icon phui-font-fa fa-cloud-download" style="float:left; margin-top:2px;"></span>
+                <div>Show Phabricator repositories</div>
+            </a>
+            -->
         </div>
         <div class="scrollableTable" style="height:calc(100vh - 140px);">
             <table id="tblGitanosRepositories" class="aphront-table-view show-all-repositories">

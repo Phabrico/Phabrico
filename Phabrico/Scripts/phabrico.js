@@ -1921,6 +1921,13 @@ class TextAreaDropZone {
                                                              .replace(/<td>/g,                              '\n    <td>')      // indent table-cell
                                                              .replace(/<th>/g,                              '\n    <th>')      // indent header-cell
                                                              .replace(/<\/table>/g,                         '\n</table>');     // indent table-end
+
+                        // fix some HTML entities
+                        remarkupTable = remarkupTable.replace(/&lt;/g, '<');
+                        remarkupTable = remarkupTable.replace(/&gt;/g, '>');
+                        remarkupTable = remarkupTable.replace(/&quot;/g, '"');
+                        remarkupTable = remarkupTable.replace(/&amp;/g, '&');
+
                         var textarea = event.target;
                         textarea.value = textarea.value.substr(0, textarea.selectionStart) + remarkupTable + textarea.value.substr(textarea.selectionEnd);
                         event.preventDefault();
@@ -2401,25 +2408,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            var topLineNumber = Array.prototype.slice.call( right.querySelectorAll('span[data-line]') ).find(function(span) {
-                                    return cumulativeOffset(span).top > right.scrollTop + 20;
-                                })
-                                .dataset.line;
-            if (textarea.previousTopLineNumber == topLineNumber) return;
-            textarea.previousTopLineNumber = topLineNumber;
+            var topLine = Array.prototype.slice.call(right.querySelectorAll('span[data-line]')).find(function (span) {
+                return cumulativeOffset(span).top > right.scrollTop + 20;
+            })
 
-            var regexNewlines = /\n/g;
-            var match = null;
-            for (var i=0; i<topLineNumber; i++) match=regexNewlines.exec(textarea.value);
-            var selectionIndex = match.index;
-            var lineCount = topLineNumber;
-            while (match != null) {
-                lineCount++;
-                match=regexNewlines.exec(textarea.value);
+            if (typeof topLine != 'undefined') {
+                var topLineNumber = topLine.dataset.line;
+                if (textarea.previousTopLineNumber == topLineNumber) return;
+                textarea.previousTopLineNumber = topLineNumber;
+
+                var regexNewlines = /\n/g;
+                var match = null;
+                for (var i=0; i<topLineNumber; i++) match=regexNewlines.exec(textarea.value);
+                if (match != null) {
+                    var selectionIndex = match.index;
+                    var lineCount = topLineNumber;
+                    while (match != null) {
+                        lineCount++;
+                        match=regexNewlines.exec(textarea.value);
+                    }
+
+                    textarea.selectionStart = textarea.selectionEnd = selectionIndex;
+                    textarea.scrollTop = (textarea.scrollHeight / lineCount) * topLineNumber;
+                }
             }
-
-            textarea.selectionStart = textarea.selectionEnd = selectionIndex;
-            textarea.scrollTop = (textarea.scrollHeight / lineCount) * topLineNumber;
         });
     });
 

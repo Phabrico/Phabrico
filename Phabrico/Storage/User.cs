@@ -72,7 +72,7 @@ namespace Phabrico.Storage
         public override IEnumerable<Phabricator.Data.User> Get(Database database)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       SELECT token, userName, realName, selected, dateSynchronized, isBot, isDisabled
+                       SELECT *
                        FROM userInfo;
                    ", database.Connection))
             {
@@ -92,6 +92,8 @@ namespace Phabrico.Storage
                         }
                         catch
                         {
+                            record.IsBot = false;
+                            record.IsDisabled = false;
                         }
                         record.DateSynchronized = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateSynchronized"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
 

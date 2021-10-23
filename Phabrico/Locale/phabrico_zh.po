@@ -375,6 +375,9 @@ msgstr "分配到"
 msgid "Edit Task"
 msgstr "编辑任务"
 
+msgid "View Task on Phabricator"
+msgstr "在Phabricator上查看任务"
+
 msgid "Description"
 msgstr "说明"
 
@@ -522,6 +525,9 @@ msgstr "驳回局部变化"
 
 msgid "Edit Document"
 msgstr "编辑维基文档"
+
+msgid "View Document on Phabricator"
+msgstr "在Phabricator上查看文件"
 
 msgid "Contents"
 msgstr "内容"
@@ -727,6 +733,12 @@ msgstr "1年"
 
 msgid "10 years"
 msgstr "10年"
+
+msgid "Visible Maniphest states"
+msgstr "可见的状态"
+
+msgid "Show only those tasks assigned to me that have one of the following states:"
+msgstr "只显示那些分配给我的、具有以下状态之一的任务。"
 
 msgid "Choose the synchronization method for Phriction documents:"
 msgstr "选择维基文档的同步方法:"

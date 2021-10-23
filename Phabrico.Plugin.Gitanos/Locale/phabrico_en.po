@@ -36,6 +36,9 @@ msgstr "Show clean repositories"
 msgid "Hide clean repositories"
 msgstr "Hide clean repositories"
 
+msgid "Show Phabricator repositories"
+msgstr "Show Phabricator repositories"
+
 msgid "Repository"
 msgstr "Repository"
 
@@ -140,3 +143,34 @@ msgstr "Directory @@DIRECTORY@@ does not exist"
 
 msgid "Error git push"
 msgstr "Error git push"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "Clone"
+
+msgid "Destination:"
+msgstr "Destination:"
+
+msgid "Clone repository"
+msgstr "Clone repository"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "Call sign"
+
+msgid "Short name"
+msgstr "Short name"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "There were no repositories synchronized from Phabricator"
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "Synchronized repository list from Phabricator"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "Type some text to filter the list of repositories..."

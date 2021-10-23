@@ -802,7 +802,7 @@ namespace Phabrico.Storage
                                     yield return maniphestTask;
                                 }
                             }
-                            
+
                             if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Phriction.Prefix))
                             {
                                 Phabricator.Data.Phriction phrictionDocument = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Phriction)) as Phabricator.Data.Phriction;
@@ -811,7 +811,7 @@ namespace Phabrico.Storage
                                     yield return phrictionDocument;
                                 }
                             }
-                            
+
                             if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.File.Prefix))
                             {
                                 Phabricator.Data.File fileObject = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.File)) as Phabricator.Data.File;
@@ -823,35 +823,43 @@ namespace Phabrico.Storage
                         }
                     }
                 }
+                else
+                {
+                    Phabricator.Data.PhabricatorObject phabricatorObject = null;
+                    if (referencedToken.StartsWith(Phabricator.Data.Phriction.Prefix))
+                    {
+                        Phriction phrictionStorage = new Phriction();
+                        phabricatorObject = phrictionStorage.Get(this, referencedToken);
+                    }
+                    else
+                    if (referencedToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
+                    {
+                        Maniphest maniphestStorage = new Maniphest();
+                        phabricatorObject = maniphestStorage.Get(this, referencedToken);
+                    }
+                    else
+                    if (referencedToken.StartsWith(Phabricator.Data.File.Prefix))
+                    {
+                        File fileStorage = new File();
+                        phabricatorObject = fileStorage.Get(this, referencedToken);
+                    }
+                    else
+                    if (referencedToken.StartsWith(Phabricator.Data.User.Prefix))
+                    {
+                        User userStorage = new User();
+                        phabricatorObject = userStorage.Get(this, referencedToken);
+                    }
+                    else
+                    if (referencedToken.StartsWith(Phabricator.Data.Project.Prefix))
+                    {
+                        Project projectStorage = new Project();
+                        phabricatorObject = projectStorage.Get(this, referencedToken);
+                    }
 
-                if (referencedToken.StartsWith(Phabricator.Data.Phriction.Prefix))
-                {
-                    Phriction phrictionStorage = new Phriction();
-                    yield return phrictionStorage.Get(this, referencedToken);
-                }
-
-                if (referencedToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
-                {
-                    Maniphest maniphestStorage = new Maniphest();
-                    yield return maniphestStorage.Get(this, referencedToken);
-                }
-                
-                if (referencedToken.StartsWith(Phabricator.Data.File.Prefix))
-                {
-                    File fileStorage = new File();
-                    yield return fileStorage.Get(this, referencedToken);
-                }
-                
-                if (referencedToken.StartsWith(Phabricator.Data.User.Prefix))
-                {
-                    User userStorage = new User();
-                    yield return userStorage.Get(this, referencedToken);
-                }
-                
-                if (referencedToken.StartsWith(Phabricator.Data.Project.Prefix))
-                {
-                    Project projectStorage = new Project();
-                    yield return projectStorage.Get(this, referencedToken);
+                    if (phabricatorObject != null)
+                    {
+                        yield return phabricatorObject;
+                    }
                 }
             }
         }
@@ -1490,14 +1498,8 @@ namespace Phabrico.Storage
 
                            ALTER TABLE userInfo
                              ADD isDisabled BLOB;
-
-                           UPDATE userInfo
-                              SET isBot = @isBot,
-                                  isDisabled = @isDisabled;
                        ", Connection))
                 {
-                    AddParameter(dbCommand, "isBot", false);
-                    AddParameter(dbCommand, "isDisabled", false);
                     dbCommand.ExecuteNonQuery();
                 }
             }

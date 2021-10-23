@@ -171,6 +171,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         urlHyperlinkText = null;
                     }
 
+                    if (urlHyperlink.StartsWith("/w/"))
+                    {
+                        urlHyperlink = urlHyperlink.Substring("/w/".Length);
+                    }
+
                     if (urlHyperlink.StartsWith("mailto:"))
                     {
                         urlHyperlink = urlHyperlink.Substring("mailto:".Length);
@@ -245,6 +250,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 }
 
                                 urlHyperlink = absoluteUrl;
+
+                                if (urlHyperlink.StartsWith("/"))
+                                {
+                                    urlHyperlink = urlHyperlink.Substring("/".Length);
+                                }
                             }
 
                             if (urlHyperlink.StartsWith("http://") == false && urlHyperlink.StartsWith("https://") == false)
@@ -255,12 +265,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                     Storage.Account accountStorage = new Storage.Account();
                                     Phabrico.Storage.Phriction phrictionStorage = new Storage.Phriction();
 
-                                    if (urlHyperlink.StartsWith("/")) urlHyperlink = urlHyperlink.Substring(1);
                                     string linkedDocument = urlHyperlink.Split('#')[0];
-
-                                    if (linkedDocument.StartsWith("w/")) linkedDocument = linkedDocument.Substring("w/".Length - 1);
-                                    else
-                                    if (linkedDocument.StartsWith("phriction/")) linkedDocument = linkedDocument.Substring("phriction/".Length - 1);
 
                                     // check if we have an hyperlink, wrongly formatted as a Windows file path, but somehow allowed by Phabricator
                                     // e.g. [[ Q:\blabla\document.docx | My document ]]
@@ -439,14 +444,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (invalidUrl || browser.HttpServer.Customization.IsReadonly)
             {
                 return string.Format("<a class=\"phriction-link banned\" href=\"w/{0}\">{1}</a>",
-                    urlHyperlink.Replace("\r", "")         // hide newlines in url
+                    urlHyperlink.Trim('/')                 // remove leading '/'
+                                .Replace("\r", "")         // hide newlines in url
                                 .Replace("\n", ""),        // hide newlines in url
                     System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
             }
             else
             {
                 return string.Format("<a class=\"phriction-link banned\" href=\"w/{0}?title={1}\">{2}</a>",
-                    urlHyperlink.Replace("\r", "")         // hide newlines in url
+                    urlHyperlink.Trim('/')                 // remove leading '/'
+                                .Replace("\r", "")         // hide newlines in url
                                 .Replace("\n", ""),        // hide newlines in url
                     HttpUtility.UrlPathEncode(urlHyperlinkText),
                     System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));

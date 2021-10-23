@@ -75,6 +75,15 @@
                     </a>
                 </li>
                 }@
+                @{IF @@ACCESS-MASTER-DATA@@=True@
+                    <li class="list-item-view">
+                        <a id="actionViewPhabricatorTask" class="list-item-href">
+                            <span class="phui-font-fa fa-institution phui-list-item-icon">
+                                <span class="phui-list-item-name">View Task on Phabricator</span>
+                            </span>
+                        </a>
+                    </li>
+                }@
                 <li id="actionViewLocalChanges" data-task-state="@@TASK-UNSYNCED@@" class="list-item-view">
                     <a href="offline/changes/view/@@TASK-TOKEN@@/" class="list-item-href">
                         <span class="compare phui-list-item-icon">
@@ -461,7 +470,7 @@
 
     // set page title
     window.addEventListener('load', function() {
-        document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + "@@TASK-HEADER@@";
+        document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + fromHTML("@@TASK-HEADER@@");
         new TextAreaContextMenu(textarea, "@", "user", "user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
         new TextAreaContextMenu(textarea, "#", "project", "project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
         new TextAreaContextMenu(textarea, ":", "emoji", "remarkup/emoji/", "Code", "Name");
@@ -472,4 +481,9 @@
     taskInputTagValues["owner"] = { "Name": "@@TASK-ASSIGNED-NAME@@", "Token": "@@TASK-ASSIGNED-TOKEN@@" };
     taskInputTagValues["projectPHIDs"] = @@TASK-TAGS-JSON@@;
     taskInputTagValues["subscriberPHIDs"] = @@TASK-SUBSCRIBERS-JSON@@;
+
+    @{IF @@ACCESS-MASTER-DATA@@=True@
+        actionViewPhabricatorTask.href = "@@PHABRICATOR-URL@@" + document.location.href.substring(document.baseURI.length + "maniphest/".length)
+                                                                                       .match(/^T[0-9]+/)[0]
+    }@
 </script>

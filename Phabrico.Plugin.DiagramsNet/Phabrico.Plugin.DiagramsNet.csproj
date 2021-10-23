@@ -33,6 +33,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <TextTransformPath>$(DevEnvDir)\TextTransform.exe</TextTransformPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -3461,6 +3464,7 @@
     <None Include="Phabrico.Plugin.DiagramsNet.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <EmbeddedResource Include="webapp\CITATION.cff" />
     <None Include="webapp\img\LICENSE" />
     <None Include="webapp\js\deflate\README.md" />
     <None Include="webapp\js\mermaid\README.md" />

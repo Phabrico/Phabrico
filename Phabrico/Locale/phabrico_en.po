@@ -375,6 +375,9 @@ msgstr "Assigned To"
 msgid "Edit Task"
 msgstr "Edit Task"
 
+msgid "View Task on Phabricator"
+msgstr "View Task on Phabricator"
+
 msgid "Description"
 msgstr "Description"
 
@@ -519,6 +522,9 @@ msgstr "Remove from favorites"
 
 msgid "Dismiss local changes"
 msgstr "Dismiss local changes"
+
+msgid "View Document on Phabricator"
+msgstr "View Document on Phabricator"
 
 msgid "Contents"
 msgstr "Contents"
@@ -727,6 +733,12 @@ msgstr "1 year"
 
 msgid "10 years"
 msgstr "10 years"
+
+msgid "Visible Maniphest states"
+msgstr "Visible states"
+
+msgid "Show only those tasks assigned to me that have one of the following states:"
+msgstr "Show only those tasks assigned to me that have one of the following states:"
 
 msgid "Choose the synchronization method for Phriction documents:"
 msgstr "Choose the synchronization method for Phriction documents:"

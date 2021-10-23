@@ -315,11 +315,14 @@ namespace Phabrico.Controllers
                     }
                 }
 
+                Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database, browser);
+
                 viewPage.SetText("DOCUMENT-TOKEN", phrictionDocument.Token, editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("DOCUMENT-TITLE", phrictionDocument.Name, editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("DOCUMENT-PATH", phrictionDocument.Path, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("DOCUMENT-CONTENT", formattedDocumentContent, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                 viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                viewPage.SetText("PHABRICATOR-URL", currentAccount.PhabricatorUrl.TrimEnd('/') + "/", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
                 if (phrictionDocument.Token != null && phrictionDocument.Token.StartsWith(Phabricator.Data.Phriction.PrefixCoverPage))
                 {
@@ -358,7 +361,6 @@ namespace Phabrico.Controllers
                     }
 
 
-                    Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database, browser);
                     if (phrictionStorage.IsFavorite(database, phrictionDocument, currentAccount.UserName))
                     {
                         viewPage.SetText("IS-MEMBER-OF-FAVORITES", "yes");

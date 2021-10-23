@@ -375,6 +375,9 @@ msgstr "Toegewezen aan"
 msgid "Edit Task"
 msgstr "Taak bewerken"
 
+msgid "View Task on Phabricator"
+msgstr "Bekijk taak op Phabricator"
+
 msgid "Description"
 msgstr "Beschrijving"
 
@@ -522,6 +525,9 @@ msgstr "Annuleer lokale wijzigingen"
 
 msgid "Edit Document"
 msgstr "Bewerk document"
+
+msgid "View Document on Phabricator"
+msgstr "Bekijk document op Phabricator"
 
 msgid "Contents"
 msgstr "Inhoud"
@@ -727,6 +733,12 @@ msgstr "1 jaar"
 
 msgid "10 years"
 msgstr "10 jaar"
+
+msgid "Visible Maniphest states"
+msgstr "Zichtbare statussen"
+
+msgid "Show only those tasks assigned to me that have one of the following states:"
+msgstr "Toon alleen de aan mij toegewezen taken die een van de volgende toestanden hebben:"
 
 msgid "Choose the synchronization method for Phriction documents:"
 msgstr "Kies de synchronisatiemethode voor Phriction-documenten:"

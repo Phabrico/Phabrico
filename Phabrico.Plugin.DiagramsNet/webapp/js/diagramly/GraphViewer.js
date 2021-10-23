@@ -386,6 +386,7 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 						var t = this.view.translate;
 						var s = this.view.scale;
 		
+						bounds = mxRectangle.fromRectangle(bounds);
 						bounds.add(new mxRectangle(
 							(t.x + img.x) * s, (t.y + img.y) * s,
 							img.width * s, img.height * s));
@@ -1980,11 +1981,7 @@ GraphViewer.prototype.showLocalLightbox = function()
 		{
 			return self.getImageUrl(key);
 		};
-
-		// newGraph.defaultPageBackgroundColor = graph.defaultPageBackgroundColor;
-		// newGraph.defaultPageBorderColor = graph.defaultPageBorderColor;
-		// newGraph.defaultThemeName = graph.defaultThemeName;
-			
+	
 		return newGraph;
 	};
 	

@@ -240,10 +240,10 @@ namespace Phabrico.Plugin
                     // check if hyperlink is valid
                     if (hyperlink != null && hyperlink.InvalidHyperlink)
                     {
-                        if (invalidHyperlinks.TryGetValue(hyperlink.URL, out invalidHyperlinkReferences) == false)
+                        if (invalidHyperlinks.TryGetValue(hyperlink.Text, out invalidHyperlinkReferences) == false)
                         {
                             invalidHyperlinkReferences = new List<string>();
-                            invalidHyperlinks[hyperlink.URL] = invalidHyperlinkReferences;
+                            invalidHyperlinks[hyperlink.Text] = invalidHyperlinkReferences;
                         }
 
                         if (invalidHyperlinkReferences.Contains(phrictionDocument.Path) == false)
@@ -327,11 +327,15 @@ namespace Phabrico.Plugin
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken);
             List<Phabricator.Data.Phriction> underlyingDocuments = phrictionStorage.Get(database)
-                                                                                   .Where(wiki => wiki.Path.StartsWith(phrictionDocument.Path))
+                                                                                   .Where(wiki => wiki.Path.StartsWith(phrictionDocument.Path.TrimStart('/')))
                                                                                    .ToList();
             underlyingDocuments.AddRange( stageStorage.Get<Phabricator.Data.Phriction>(database)
-                                                      .Where(stagedWiki => stagedWiki.Token.StartsWith("PHID-NEWTOKEN-"))
+                                                      .Where(stagedWiki => stagedWiki.Token.StartsWith("PHID-NEWTOKEN-")
+                                                                        && stagedWiki.Path.StartsWith(phrictionDocument.Path.TrimStart('/'))
+                                                            )
                                         );
+
+            underlyingDocuments.RemoveAll(wiki => wiki.Path.Equals(phrictionDocument.Path));
 
             underlyingPhrictionTokens = underlyingDocuments.Select(wiki => wiki.Token).ToList();
         }

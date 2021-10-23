@@ -375,6 +375,9 @@ msgstr "Zugewiesen an"
 msgid "Edit Task"
 msgstr "Aufgabe bearbeiten"
 
+msgid "View Task on Phabricator"
+msgstr "Aufgabe auf Phabricator anzeigen"
+
 msgid "Description"
 msgstr "Beschreibung"
 
@@ -522,6 +525,9 @@ msgstr "Lokale Änderungen löschen"
 
 msgid "Edit Document"
 msgstr "Dokument bearbeiten"
+
+msgid "View Document on Phabricator"
+msgstr "Dokument auf Phabricator anzeigen"
 
 msgid "Contents"
 msgstr "Inhalt"
@@ -727,6 +733,12 @@ msgstr "1 Jahr"
 
 msgid "10 years"
 msgstr "10 Jahre"
+
+msgid "Visible Maniphest states"
+msgstr "Sichtbare Stati"
+
+msgid "Show only those tasks assigned to me that have one of the following states:"
+msgstr "Nur die mir zugewiesenen Aufgaben anzeigen, die einen der folgenden Status haben:"
 
 msgid "Choose the synchronization method for Phriction documents:"
 msgstr "Wählen Sie die Synchronisationsmethode für Phriktionsdokumente:"

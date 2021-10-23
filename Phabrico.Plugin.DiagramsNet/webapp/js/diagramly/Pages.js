@@ -357,6 +357,7 @@ EditorUi.prototype.getImageForPage = function(page, sourcePage, sourceGraph)
 	sourceGraph = (sourceGraph != null) ? sourceGraph : this.editor.graph;
 	var graphGetGlobalVariable = sourceGraph.getGlobalVariable;
 	var graph = this.createTemporaryGraph(sourceGraph.getStylesheet());
+	graph.defaultForegroundColor = sourceGraph.defaultForegroundColor;
 	var index = this.getPageIndex((sourcePage != null) ?
 		sourcePage : this.currentPage);
 
@@ -815,7 +816,7 @@ Graph.prototype.setViewState = function(state, removeOldExtFonts)
 		this.setConnectable(true);
 		this.lastPasteXml = null;
 		this.pasteCounter = 0;
-		this.mathEnabled = false;
+		this.mathEnabled = this.defaultMathEnabled;
 		this.connectionArrowsEnabled = true;
 		this.hiddenTags = [];
 		this.extFonts = [];
@@ -1281,7 +1282,7 @@ EditorUi.prototype.updateTabContainer = function()
 				if (this.pages[index] == this.currentPage)
 				{
 					tab.className = 'geActivePage';
-					tab.style.backgroundColor = Editor.isDarkMode() ? '#2a2a2a' : '#fff';
+					tab.style.backgroundColor = Editor.isDarkMode() ? Editor.darkColor : '#fff';
 				}
 				else
 				{
@@ -1792,7 +1793,7 @@ EditorUi.prototype.createPageMenu = function(page, label)
 					}
 					
 					var dlg = new EmbedDialog(this, this.getLinkForPage(page, params, lightbox));
-					this.showDialog(dlg.container, 440, 240, true, true);
+					this.showDialog(dlg.container, 450, 240, true, true);
 					dlg.init();
 				}));
 			}));
