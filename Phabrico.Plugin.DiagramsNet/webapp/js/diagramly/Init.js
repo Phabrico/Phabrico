@@ -178,6 +178,22 @@ if (window.mxLanguages == null)
 	}
 }
 
+//Disable Google Drive when running in a WebView (e.g, MS Teams App) Since auth doesn't work with disallowd_useragent
+//[For MS Teams only] TODO Check if other apps are affected also (android and iOS)
+if (urlParams['extAuth'] == '1' && /((iPhone|iPod|iPad).*AppleWebKit(?!.*Version)|; wv)/i.test(navigator.userAgent))
+{
+	urlParams['gapi'] = '0';
+	urlParams['noDevice'] = '1';
+	//Force viewer only
+	//TODO This should always be for MS Teams only
+	if (urlParams['lightbox'] != '1')
+	{
+		urlParams['lightbox'] = '1';
+		urlParams['layers'] = '1';
+		urlParams['viewerOnlyMsg'] = '1';
+	}
+}
+
 // Uses lightbox mode on viewer domain
 if (window.location.hostname == DRAWIO_LIGHTBOX_URL.substring(DRAWIO_LIGHTBOX_URL.indexOf('//') + 2))
 {
@@ -207,6 +223,12 @@ window.uiTheme = window.uiTheme || (function()
 {
 	var ui = urlParams['ui'];
 
+	//Use Sketch theme for MS Teams (and any future extAuth) by default
+	if (urlParams['extAuth'] == '1')
+	{
+		ui = 'sketch';
+	}
+
 	// Known issue: No JSON object at this point in quirks in IE8
 	if (ui == null && isLocalStorage && typeof JSON !== 'undefined' && urlParams['lightbox'] != '1')
 	{
@@ -225,12 +247,6 @@ window.uiTheme = window.uiTheme || (function()
 			// a DOM error at a minimum on Chrome
 			isLocalStorage = false;
 		}
-	}
-	
-	//Use Sketch theme for MS Teams (and any future extAuth) by default
-	if (ui == null && urlParams['extAuth'] == '1')
-	{
-		ui = 'sketch';
 	}
 	
 	// Uses minimal theme on small screens
@@ -418,13 +434,6 @@ if (urlParams['mode'] == 'trello')
 if (window.location.hostname == 'embed.diagrams.net')
 {
 	urlParams['embed'] = '1';
-}
-
-//Disable Google Drive when running in a WebView (e.g, MS Teams App) Since auth doesn't work with disallowd_useragent
-if (/((iPhone|iPod|iPad).*AppleWebKit(?!.*Version)|; wv)/i.test(navigator.userAgent))
-{
-	urlParams['gapi'] = '0';
-	urlParams['noDevice'] = '1';
 }
 
 // Fallback for cases where the hash property is not available

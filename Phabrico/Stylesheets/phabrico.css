@@ -3276,3 +3276,46 @@ a.phame-reference {
 .phame-blog #remarkupContent h6 {
     font-size: 18px;
 }
+
+.context-menu ul {
+    list-style: none;
+}
+
+.context-menu .menu {
+    display: flex;
+    flex-direction: column;
+    background-color: #eee;
+    border-radius: 3px;
+    border: solid 1px #ccc;
+}
+
+.context-menu .menu > li > a {
+    font: inherit;
+    border: 0;
+    padding: 10px 30px 10px 15px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: #000;
+    font-weight: 500;
+}
+
+.context-menu .menu > li > a:hover {
+    background: #0af;
+    color: #fff;
+}
+
+.context-menu .menu > li > a > i {
+    padding-right: 10px;
+}
+
+.context-menu .menu > li.trash > a:hover {
+    color: red;
+}
+
+span.metadata {
+    border: solid 1px transparent;
+    padding: 0px 4px;
+    border-radius: 4px;
+    cursor: default;
+}

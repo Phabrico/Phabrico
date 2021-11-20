@@ -13,7 +13,6 @@ function Sidebar(editorUi, container)
 	this.lastCreated = 0;
 	this.showTooltips = true;
 	this.graph = editorUi.createTemporaryGraph(this.editorUi.editor.graph.getStylesheet());
-	this.graph.defaultForegroundColor = editorUi.editor.graph.defaultForegroundColor;
     this.graph.cellRenderer.minSvgStrokeWidth = this.minThumbStrokeWidth;
 	this.graph.cellRenderer.antiAlias = this.thumbAntiAlias;
 	this.graph.container.style.visibility = 'hidden';
@@ -211,7 +210,7 @@ if (urlParams['sidebar-entries'] != 'large')
 /**
  * Specifies the size of the sidebar titles.
  */
-Sidebar.prototype.sidebarTitleSize = 9;
+Sidebar.prototype.sidebarTitleSize = 8;
 
 /**
  * Specifies if titles in the sidebar should be enabled.
@@ -274,8 +273,9 @@ Sidebar.prototype.getTooltipOffset = function(elt, bounds)
 /**
  * Adds all palettes to the sidebar.
  */
-Sidebar.prototype.createTooltip = function(elt, cells, w, h, title, showLabel, off, maxSize, mouseDown, closable)
+Sidebar.prototype.createTooltip = function(elt, cells, w, h, title, showLabel, off, maxSize, mouseDown, closable, applyAllStyles)
 {
+	applyAllStyles = (applyAllStyles != null) ? applyAllStyles : true;
 	this.tooltipMouseDown = mouseDown;
 	
 	// Lazy creation of the DOM nodes and graph instance
@@ -293,7 +293,6 @@ Sidebar.prototype.createTooltip = function(elt, cells, w, h, title, showLabel, o
 		}), this.tooltip);
 		
 		this.graph2 = new Graph(this.tooltip, null, null, this.editorUi.editor.graph.getStylesheet());
-		this.graph2.defaultForegroundColor = this.editorUi.editor.graph.defaultForegroundColor;
 		this.graph2.resetViewOnRootChange = false;
 		this.graph2.foldingEnabled = false;
 		this.graph2.gridEnabled = false;
@@ -354,7 +353,7 @@ Sidebar.prototype.createTooltip = function(elt, cells, w, h, title, showLabel, o
 	this.tooltipCloseImage.style.display = (closable) ? '' : 'none';
 	this.graph2.model.clear();
 	this.graph2.view.setTranslate(this.tooltipBorder, this.tooltipBorder);
-
+	
 	if (!maxSize && (w > this.maxTooltipWidth || h > this.maxTooltipHeight))
 	{
 		this.graph2.view.scale = Math.round(Math.min(this.maxTooltipWidth / w, this.maxTooltipHeight / h) * 100) / 100;
@@ -371,11 +370,13 @@ Sidebar.prototype.createTooltip = function(elt, cells, w, h, title, showLabel, o
 	
 	// Applies current style for preview
 	var temp = this.graph2.cloneCells(cells);
-	this.editorUi.insertHandler(temp, null, this.graph2.model, null, null, true);
+	this.editorUi.insertHandler(temp, null, this.graph2.model,
+		(!applyAllStyles) ? this.editorUi.editor.graph.defaultVertexStyle : null,
+		(!applyAllStyles) ? this.editorUi.editor.graph.defaultEdgeStyle : null,
+		applyAllStyles, true);
 	this.graph2.addCells(temp);
-	
+
 	mxClient.NO_FO = fo;
-	
 	var bounds = this.graph2.getGraphBounds();
 	
 	// Maximum size applied with transform for faster repaint
@@ -2052,7 +2053,7 @@ Sidebar.prototype.createTitle = function(label)
 /**
  * Creates a thumbnail for the given cells.
  */
-Sidebar.prototype.createThumb = function(cells, width, height, parent, title, showLabel, showTitle, realWidth, realHeight)
+Sidebar.prototype.createThumb = function(cells, width, height, parent, title, showLabel, showTitle)
 {
 	this.graph.labelsVisible = (showLabel == null || showLabel);
 	var fo = mxClient.NO_FO;
@@ -2102,10 +2103,12 @@ Sidebar.prototype.createThumb = function(cells, width, height, parent, title, sh
 		parent.style.height = (this.thumbHeight + border + this.sidebarTitleSize + 8) + 'px';
 		
 		var div = document.createElement('div');
+		div.style.color = Editor.isDarkMode() ? '#A0A0A0' : '#303030';
 		div.style.fontSize = this.sidebarTitleSize + 'px';
-		div.style.color = '#303030';
 		div.style.textAlign = 'center';
 		div.style.whiteSpace = 'nowrap';
+		div.style.overflow = 'hidden';
+		div.style.textOverflow = 'ellipsis';
 		
 		if (mxClient.IS_IE)
 		{
@@ -2171,7 +2174,8 @@ Sidebar.prototype.createItem = function(cells, title, showLabel, showTitle, widt
 		this.editorUi.editor.graph.defaultEdgeStyle,
 		true, true);
 
-	this.createThumb(originalCells, this.thumbWidth, this.thumbHeight, elt, title, showLabel, showTitle, width, height);
+	this.createThumb(originalCells, this.thumbWidth, this.thumbHeight,
+		elt, title, showLabel, showTitle, width, height);
 	var bounds = new mxRectangle(0, 0, width, height);
 	
 	if (cells.length > 1 || cells[0].vertex)
@@ -3658,9 +3662,9 @@ Sidebar.prototype.createEdgeTemplate = function(style, width, height, value, tit
 /**
  * Creates a drop handler for inserting the given cells.
  */
-Sidebar.prototype.createEdgeTemplateFromCells = function(cells, width, height, title, showLabel, allowCellsInserted, showTooltip)
+Sidebar.prototype.createEdgeTemplateFromCells = function(cells, width, height, title, showLabel, allowCellsInserted, showTooltip, showTitle)
 {	
-	return this.createItem(cells, title, showLabel, true, width, height, allowCellsInserted, showTooltip);
+	return this.createItem(cells, title, showLabel, (showTitle != null) ? showTitle : true, width, height, allowCellsInserted, showTooltip);
 };
 
 /**

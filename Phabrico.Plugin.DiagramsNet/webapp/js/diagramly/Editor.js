@@ -457,13 +457,13 @@
         {name: 'portConstraintRotation', dispName: 'Rotate Constraint', type: 'bool', defVal: false},
         {name: 'connectable', dispName: 'Connectable', type: 'bool', getDefaultValue: function(state, format)
         {
-        	var cell = (state.vertices.length == 1 && state.edges.length == 0) ? state.vertices[0] : null;
+        	var cell = (state.vertices.length > 0 && state.edges.length == 0) ? state.vertices[0] : null;
         	var graph = format.editorUi.editor.graph;
         	
         	return graph.isCellConnectable(cell);
         }, isVisible: function(state, format)
         {
-    		return state.vertices.length == 1 && state.edges.length == 0;
+    		return state.vertices.length > 0 && state.edges.length == 0;
         }},
         {name: 'allowArrows', dispName: 'Allow Arrows', type: 'bool', defVal: true},
         {name: 'snapToPoint', dispName: 'Snap to Point', type: 'bool', defVal: false},
@@ -932,11 +932,11 @@
 			
 			if (fillStyle == 'auto')
 			{
-				var bg = (this.shape.state != null && this.shape.state.view.graph.defaultPageBackgroundColor != 'transparent') ?
-					this.shape.state.view.graph.defaultPageBackgroundColor : (Editor.isDarkMode() ? Editor.darkColor : '#ffffff');
-				
+				var bg = mxUtils.hex2rgba((this.shape.state != null) ?
+					this.shape.state.view.graph.shapeBackgroundColor :
+					(Editor.isDarkMode() ? Editor.darkColor : '#ffffff'));
 				fillStyle = (style.fill != null && (gradient != null || (bg != null &&
-					style.fill.toLowerCase() == bg.toLowerCase()))) ? 'solid' : defs['fillStyle']
+					style.fill == bg))) ? 'solid' : defs['fillStyle'];
 			}
 			
 			style['fillStyle'] = fillStyle;
@@ -1690,79 +1690,6 @@
 		
 		return result;
 	};
-	
-	/**
-	 * Extracts the XML from the compressed or non-compressed text chunk.
-	 */
-	Editor.extractGraphModelFromPng = function(data)
-	{
-		var result = null;
-		
-		try
-		{
-			var base64 = data.substring(data.indexOf(',') + 1);
-
-			// Workaround for invalid character error in Safari
-			var binary = (window.atob && !mxClient.IS_SF) ? atob(base64) : Base64.decode(base64, true);
-			
-			EditorUi.parsePng(binary, mxUtils.bind(this, function(pos, type, length)
-			{
-				var value = binary.substring(pos + 8, pos + 8 + length);
-				
-				if (type == 'zTXt')
-				{
-					var idx = value.indexOf(String.fromCharCode(0));
-					
-					if (value.substring(0, idx) == 'mxGraphModel')
-					{
-						// Workaround for Java URL Encoder using + for spaces, which isn't compatible with JS
-						var xmlData = pako.inflateRaw(Graph.stringToArrayBuffer(
-							value.substring(idx + 2)), {to: 'string'}).replace(/\+/g,' ');
-						
-						if (xmlData != null && xmlData.length > 0)
-						{
-							result = xmlData;
-						}
-					}
-				}
-				// Uncompressed section is normally not used
-				else if (type == 'tEXt')
-				{
-					var vals = value.split(String.fromCharCode(0));
-					
-					if (vals.length > 1 && (vals[0] == 'mxGraphModel' ||
-						vals[0] == 'mxfile'))
-					{
-						result = vals[1];
-					}
-				}
-				
-				if (result != null || type == 'IDAT')
-				{
-					// Stops processing the file as our text chunks
-					// are always placed before the data section
-					return true;
-				}
-			}));
-		}
-		catch (e)
-		{
-			// ignores decoding errors
-		}
-		
-		if (result != null && result.charAt(0) == '%')
-		{
-			result = decodeURIComponent(result);
-		}
-		
-		// Workaround for double encoded content
-		if (result != null && result.charAt(0) == '%')
-		{
-			result = decodeURIComponent(result);
-		}
-		
-		return result;
-	};
 
 	/**
 	 * Extracts any parsers errors in the given XML.
@@ -1830,7 +1757,14 @@
 			
 			if (config.styles != null)
 			{
-				Editor.styles = config.styles;
+				if (Array.isArray(config.styles))
+				{
+					Editor.styles = config.styles;
+				}
+				else
+				{
+					EditorUi.debug('Configuration Error: Array expected for styles');
+				}
 			}
 			
 			if (config.globalVars != null)
@@ -1861,6 +1795,11 @@
 			if (config.darkColor != null)
 			{
 				Editor.darkColor = config.darkColor;
+			}
+
+			if (config.lightColor != null)
+			{
+				Editor.lightColor = config.lightColor;
 			}
 
 			if (config.settingsName != null)
@@ -1908,7 +1847,14 @@
 			// Defines the enabled built-in libraries.
 			if (config.enabledLibraries != null)
 			{
-				Sidebar.prototype.enabledLibraries = config.enabledLibraries;
+				if (Array.isArray(config.enabledLibraries))
+				{
+					Sidebar.prototype.enabledLibraries = config.enabledLibraries;
+				}
+				else
+				{
+					EditorUi.debug('Configuration Error: Array expected for enabledLibraries');
+				}
 			}
 			
 			// Overrides default libraries
@@ -1970,7 +1916,7 @@
 				}
 				else
 				{
-					EditorUi.debug('Invalid zoomFactor: value must be float > 1');
+					EditorUi.debug('Configuration Error: Float > 1 expected for zoomFactor');
 				}
 			}
 
@@ -1985,7 +1931,7 @@
 				}
 				else
 				{
-					EditorUi.debug('Invalid gridSteps: value must be int > 0');
+					EditorUi.debug('Configuration Error: Int > 0 expected for gridSteps');
 				}
 			}
 
@@ -2001,7 +1947,7 @@
 				}
 				else
 				{
-					EditorUi.debug('Invalid pageFormat: value must be {width: int, height: int}');
+					EditorUi.debug('Configuration Error: {width: int, height: int} expected for pageFormat');
 				}
 			}
 			
@@ -2019,10 +1965,34 @@
 			{
 				EditorUi.prototype.emptyLibraryXml = config.emptyLibraryXml;
 			}
+
+			if (config.emptyDiagramXml)
+			{
+				EditorUi.prototype.emptyDiagramXml = config.emptyDiagramXml;
+			}
 			
 			if (config.sidebarWidth)
 			{
 				EditorUi.prototype.hsplitPosition = config.sidebarWidth;
+			}
+			
+			if (config.sidebarTitles)
+			{
+				Sidebar.prototype.sidebarTitles = config.sidebarTitles;
+			}
+			
+			if (config.sidebarTitleSize)
+			{
+				var val = parseInt(config.sidebarTitleSize);
+				
+				if (!isNaN(val) && val > 0)
+				{
+					Sidebar.prototype.sidebarTitleSize = val;
+				}
+				else
+				{
+					EditorUi.debug('Configuration Error: Int > 0 expected for sidebarTitleSize');
+				}
 			}
 			
 			if (config.fontCss)
@@ -2033,7 +2003,7 @@
 				}
 				else
 				{
-					EditorUi.debug('Invalid fontCss: value must be string');
+					EditorUi.debug('Configuration Error: String expected for fontCss');
 				}
 			}
 			
@@ -2047,7 +2017,7 @@
 				}
 				else
 				{
-					EditorUi.debug('Invalid autosaveDelay: value must be int > 0');
+					EditorUi.debug('Configuration Error: Int > 0 expected for autosaveDelay');
 				}
 			}
 			
@@ -5247,7 +5217,7 @@
 									style = mxUtils.removeStylename(style, stylenames[j]);
 								}
 
-								var defaults = (graph.getModel().isVertex(cells[i])) ? ui.initialDefaultVertexStyle : ui.initialdefaultEdgeStyle;
+								var defaults = (graph.getModel().isVertex(cells[i])) ? graph.defaultVertexStyle : graph.defaultEdgeStyle;
 								
 								if (colorset != null)
 								{
@@ -5341,12 +5311,12 @@
 						}
 						else if (colorset['fill'] == '')
 						{
-							btn.style.backgroundColor = mxUtils.getValue(ui.initialDefaultVertexStyle,
+							btn.style.backgroundColor = mxUtils.getValue(graph.defaultVertexStyle,
 								mxConstants.STYLE_FILLCOLOR, (Editor.isDarkMode()) ? Editor.darkColor : '#ffffff');
 						}
 						else
 						{
-							btn.style.backgroundColor = colorset['fill'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
+							btn.style.backgroundColor = colorset['fill'] || mxUtils.getValue(graph.defaultVertexStyle,
 								mxConstants.STYLE_FILLCOLOR, (Editor.isDarkMode()) ? Editor.darkColor : '#ffffff');
 						}
 						
@@ -5356,12 +5326,12 @@
 						}
 						else if (colorset['stroke'] == '')
 						{
-							btn.style.border = b + ' ' + mxUtils.getValue(ui.initialDefaultVertexStyle, 
+							btn.style.border = b + ' ' + mxUtils.getValue(graph.defaultVertexStyle, 
 								mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ? Editor.darkColor : '#ffffff');
 						}
 						else
 						{
-							btn.style.border = b + ' ' + (colorset['stroke'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
+							btn.style.border = b + ' ' + (colorset['stroke'] || mxUtils.getValue(graph.defaultVertexStyle,
 									mxConstants.STYLE_STROKECOLOR, (!Editor.isDarkMode()) ? Editor.darkColor : '#ffffff'));
 						}
 
@@ -5871,28 +5841,6 @@
 					
 					return rackLayout;
 				}
-				else if (typeof mxTableLayout !== 'undefined' && style['childLayout'] == 'tableLayout')
-		        {
-		            var tableLayout = new mxTableLayout(this.graph);
-		            tableLayout.rows = style['tableRows'] || 2;
-		            tableLayout.columns = style['tableColumns'] || 2;
-		            tableLayout.colPercentages = style['colPercentages'];
-		            tableLayout.rowPercentages = style['rowPercentages'];
-		            tableLayout.equalColumns = mxUtils.getValue(style, 'equalColumns', tableLayout.colPercentages? '0' : '1') == '1';
-		            tableLayout.equalRows = mxUtils.getValue(style, 'equalRows', tableLayout.rowPercentages? '0' : '1') == '1';
-		            tableLayout.resizeParent = mxUtils.getValue(style, 'resizeParent', '1') == '1';
-		            tableLayout.border = style['tableBorder'] || tableLayout.border;
-		            tableLayout.marginLeft = style['marginLeft'] || 0;
-		            tableLayout.marginRight = style['marginRight'] || 0;
-		            tableLayout.marginTop = style['marginTop'] || 0;
-		            tableLayout.marginBottom = style['marginBottom'] || 0;
-		            tableLayout.autoAddCol = mxUtils.getValue(style, 'autoAddCol', '0') == '1';
-		            tableLayout.autoAddRow = mxUtils.getValue(style, 'autoAddRow', tableLayout.autoAddCol? '0' : '1') == '1';
-		            tableLayout.colWidths = style['colWidths'] || "100";
-		            tableLayout.rowHeights = style['rowHeights'] || "50";
-		            
-		            return tableLayout;
-		        }
 			}
 			
 			return layoutManagerGetLayout.apply(this, arguments);
@@ -5907,7 +5855,41 @@
 	var graphPostProcessCellStyle = Graph.prototype.postProcessCellStyle;
 	Graph.prototype.postProcessCellStyle = function(style)
 	{
+		this.replaceDefaultColors(style);
+
 		return Graph.processFontStyle(graphPostProcessCellStyle.apply(this, arguments));
+	};
+
+	/**
+	 * Replaces default colors. 
+	 */
+	Graph.prototype.replaceDefaultColors = function(style)
+	{
+		if (style != null)
+		{
+			var bg = mxUtils.hex2rgba(this.shapeBackgroundColor);
+			var fg = mxUtils.hex2rgba(this.shapeForegroundColor);
+
+			this.replaceDefaultColor(style, mxConstants.STYLE_FONTCOLOR, fg);
+			this.replaceDefaultColor(style, mxConstants.STYLE_FILLCOLOR, bg);
+			this.replaceDefaultColor(style, mxConstants.STYLE_STROKECOLOR, fg);
+			this.replaceDefaultColor(style, mxConstants.STYLE_IMAGE_BORDER, fg);
+			this.replaceDefaultColor(style, mxConstants.STYLE_IMAGE_BACKGROUND, bg);
+			this.replaceDefaultColor(style, mxConstants.STYLE_LABEL_BORDERCOLOR, fg);
+			this.replaceDefaultColor(style, mxConstants.STYLE_SWIMLANE_FILLCOLOR, bg);
+			this.replaceDefaultColor(style, mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, bg);
+		}
+	};
+
+	/**
+	 * Replaces the colors for the given key.
+	 */
+	Graph.prototype.replaceDefaultColor = function(style, key, value)
+	{
+		if (style != null && style[key] == 'default' && value != null)
+		{
+			style[key] = value;
+		}
 	};
 
 	/**
@@ -6470,12 +6452,12 @@
 		if (!keepTheme && this.themes != null && this.defaultThemeName == 'darkTheme')
 		{
 			temp = this.stylesheet;
-			tempFg = this.defaultForegroundColor;
-			tempBg = this.defaultPageBackgroundColor;
-			this.defaultPageBackgroundColor = (this.defaultThemeName == 'darkTheme') ?
+			tempFg = this.shapeForegroundColor;
+			tempBg = this.shapeBackgroundColor;
+			this.shapeForegroundColor = (this.defaultThemeName == 'darkTheme') ?
+				'#000000' : Editor.lightColor;
+			this.shapeBackgroundColor = (this.defaultThemeName == 'darkTheme') ?
 				'#ffffff' : Editor.darkColor;
-			this.defaultForegroundColor = (this.defaultThemeName == 'darkTheme') ?
-				'#000000' : '#f0f0f0';
 			this.stylesheet = this.getDefaultStylesheet();
 			// LATER: Fix math export in dark mode by fetching text nodes before
 			// calling refresh and changing the font color in-place
@@ -6518,8 +6500,8 @@
 		
 		if (temp != null)
 		{
-			this.defaultPageBackgroundColor = tempBg;
-			this.defaultForegroundColor = tempFg;
+			this.shapeBackgroundColor = tempBg;
+			this.shapeForegroundColor = tempFg;
 			this.stylesheet = temp;
 			this.refresh();
 		}
@@ -7498,9 +7480,10 @@
 	/**
 	 * Adds a shadow filter to the given svg root.
 	 */
-	Graph.prototype.addSvgShadow = function(svgRoot, group, createOnly)
+	Graph.prototype.addSvgShadow = function(svgRoot, group, createOnly, extend)
 	{
 		createOnly = (createOnly != null) ? createOnly : false;
+		extend = (extend != null) ? extend : true;
 		
 		var svgDoc = svgRoot.ownerDocument;
 		
@@ -7577,7 +7560,7 @@
 			{
 				group.setAttribute('filter', 'url(#' + this.shadowId + ')');
 				
-				if (!isNaN(parseInt(svgRoot.getAttribute('width'))))
+				if (!isNaN(parseInt(svgRoot.getAttribute('width'))) && extend)
 				{
 					svgRoot.setAttribute('width', parseInt(svgRoot.getAttribute('width')) + 6);
 					svgRoot.setAttribute('height', parseInt(svgRoot.getAttribute('height')) + 6);

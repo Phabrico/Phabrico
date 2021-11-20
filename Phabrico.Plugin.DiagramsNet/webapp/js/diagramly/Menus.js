@@ -934,10 +934,11 @@
 			if (this.tagsWindow == null)
 			{
 				this.tagsWindow = new TagsWindow(editorUi, document.body.offsetWidth - 400, 60, 212, 200);
-				this.tagsWindow.window.addListener('show', function()
+				this.tagsWindow.window.addListener('show', mxUtils.bind(this, function()
 				{
 					editorUi.fireEvent(new mxEventObject('tags'));
-				});
+					this.tagsWindow.window.fit();
+				}));
 				this.tagsWindow.window.addListener('hide', function()
 				{
 					editorUi.fireEvent(new mxEventObject('tags'));
@@ -1197,6 +1198,11 @@
 						else
 						{
 							elt.style.top = '0px';
+						}
+						
+						if (EditorUi.isElectronApp)
+						{
+							elt.style.right = '95px';
 						}
 
 						var icon = document.createElement('div');
@@ -1519,9 +1525,26 @@
 
 				if (EditorUi.isElectronApp)
 				{
+					editorUi.actions.addAction('website...', function()
+					{
+						editorUi.openLink('https://www.diagrams.net');
+					});
+					
+					editorUi.actions.addAction('check4Updates', function()
+					{
+						editorUi.checkForUpdates();
+					});
+					
 					console.log('electron help menu');
 					this.addMenuItems(menu, ['-', 'keyboardShortcuts', 'quickStart',
-						'support', '-', 'forkme', '-', 'about'], parent);
+						'website', 'support', '-'], parent);
+						
+					if (urlParams['disableUpdate'] != '1')
+					{
+						this.addMenuItems(menu, ['check4Updates', '-'], parent);
+					}
+						
+					this.addMenuItems(menu, ['forkme', '-', 'about'], parent);
 
 				}
 				else
@@ -2118,6 +2141,25 @@
 
 		editorUi.actions.put('embedNotion', new Action(mxResources.get('notion') + '...', function()
 		{
+			var footer = document.createElement('div');
+			footer.style.position = 'absolute';
+			footer.style.bottom = '30px';
+			footer.style.textAlign = 'center';
+			footer.style.width = '100%';
+			footer.style.left = '0px';
+			var link = document.createElement('a');
+			link.setAttribute('href', 'javascript:void(0);');
+			link.setAttribute('target', '_blank');
+			link.style.cursor = 'pointer';
+			mxUtils.write(link, mxResources.get('getNotionChromeExtension'));
+			footer.appendChild(link);
+
+			mxEvent.addListener(link, 'click', function(evt)
+			{
+				editorUi.openLink('https://chrome.google.com/webstore/detail/drawio-for-notion/plhaalebpkihaccllnkdaokdoeaokmle');
+				mxEvent.consume(evt);
+			});
+			
 			editorUi.showPublishLinkDialog(mxResources.get('notion'), null, null, null,
 				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height, tags)
 			{
@@ -2139,7 +2181,7 @@
 						dlg.init();
 					});
 				}
-			}, true);
+			}, true, 'https://www.diagrams.net/blog/drawio-notion', footer);
 		}));
 		
 		editorUi.actions.put('publishLink', new Action(mxResources.get('link') + '...', function()

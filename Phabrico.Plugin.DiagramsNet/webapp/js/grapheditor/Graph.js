@@ -1683,13 +1683,19 @@ Graph.sanitizeSvg = function(div)
 	    }
 	}
 	
-	// Removes all script tags
-	var scripts = div.getElementsByTagName('script');
-	
-	while (scripts.length > 0)
+	function removeAllTags(tagName)
 	{
-		scripts[0].parentNode.removeChild(scripts[0]);
-	}
+		var nodes = div.getElementsByTagName(tagName);
+	
+		while (nodes.length > 0)
+		{
+			nodes[0].parentNode.removeChild(nodes[0]);
+		}
+	};
+
+	removeAllTags('meta');
+	removeAllTags('script');
+	removeAllTags('metadata');
 };
 
 /**
@@ -1730,14 +1736,50 @@ Graph.clipSvgDataUri = function(dataUri)
 					
 					try
 					{
+						var fx = 1;
+						var fy = 1;
+						var w = svgs[0].getAttribute('width');
+						var h = svgs[0].getAttribute('height');
+						
+						if (w != null && w.charAt(w.length - 1) != '%')
+						{
+							w = parseFloat(w);
+						}
+						else
+						{
+							w = NaN;
+						}
+						
+						if (h != null && h.charAt(h.length - 1) != '%')
+						{
+							h = parseFloat(h);
+						}
+						else
+						{
+							h = NaN;
+						}
+						
+						var vb = svgs[0].getAttribute('viewBox');
+						
+						if (vb != null && !isNaN(w) && !isNaN(h))
+						{
+							var tokens = vb.split(' ');
+
+							if (vb.length >= 4)
+							{
+								fx = parseFloat(tokens[2]) / w;
+								fy = parseFloat(tokens[3]) / h;
+							}
+						}
+
 						var size = svgs[0].getBBox();
 
 						if (size.width > 0 && size.height > 0)
 						{
 							div.getElementsByTagName('svg')[0].setAttribute('viewBox', size.x +
 								' ' + size.y + ' ' + size.width + ' ' + size.height);
-							div.getElementsByTagName('svg')[0].setAttribute('width', size.width);
-							div.getElementsByTagName('svg')[0].setAttribute('height', size.height);
+							div.getElementsByTagName('svg')[0].setAttribute('width', size.width / fx);
+							div.getElementsByTagName('svg')[0].setAttribute('height', size.height / fy);
 						}
 					}
 					catch (e)
@@ -1903,12 +1945,17 @@ Graph.prototype.defaultPageBackgroundColor = '#ffffff';
 /**
  * 
  */
-Graph.prototype.defaultForegroundColor = '#000000';
+Graph.prototype.defaultPageBorderColor = '#ffffff';
 
 /**
  * 
  */
-Graph.prototype.defaultPageBorderColor = '#ffffff';
+Graph.prototype.shapeForegroundColor = '#000000';
+
+/**
+ * 
+ */
+Graph.prototype.shapeBackgroundColor = '#ffffff';
 
 /**
  * Specifies the size of the size for "tiles" to be used for a graph with
@@ -2462,6 +2509,24 @@ Graph.prototype.init = function(container)
 		}
 		
 		return cells;
+	};
+
+	/**
+	 * Overrides scrollRectToVisible to fix ignored transform.
+	 */
+	var graphScrollRectToVisible = mxGraph.prototype.scrollRectToVisible;
+	Graph.prototype.scrollRectToVisible = function(r)
+	{
+		if (this.useCssTransforms)
+		{
+			var s = this.currentScale;
+			var t = this.currentTranslate;
+			r = new mxRectangle((r.x + 2 * t.x) * s - t.x,
+				(r.y + 2 * t.y) * s - t.y,
+				r.width * s, r.height * s);
+		}
+
+		graphScrollRectToVisible.apply(this, arguments);
 	};
 
 	/**
@@ -7244,6 +7309,8 @@ if (typeof mxVertexHandler != 'undefined')
 			{
 				state.style[key] = this.graph.currentEdgeStyle[key];
 			}
+
+			state.style = this.graph.postProcessCellStyle(state.style);
 			
 			return state;
 		};
@@ -7779,11 +7846,63 @@ if (typeof mxVertexHandler != 'undefined')
 		};
 
 		/**
+		 * Swaps UML Lifelines.
+		 */
+		Graph.prototype.swapUmlLifelines = function(cells, target)
+		{
+			var result = false;
+
+			if (target != null && cells.length == 1)
+			{
+				var targetState = this.view.getState(target);
+				var sourceState = this.view.getState(cells[0]);
+
+				if (targetState != null && sourceState != null &&
+					targetState.style['shape'] == 'umlLifeline' &&
+					sourceState.style['shape'] == 'umlLifeline')
+				{
+					var g1 = this.getCellGeometry(target);
+					var g2 = this.getCellGeometry(cells[0]);
+
+					if (g1 != null && g2 != null)
+					{
+						var ng1 = g1.clone();
+						var ng2 = g2.clone();
+						ng2.x = ng1.x;
+						ng2.y = ng1.y;
+						ng1.x = g2.x;
+						ng1.y = g2.y;
+
+						this.model.beginUpdate();
+						try
+						{
+							this.model.setGeometry(target, ng1);
+							this.model.setGeometry(cells[0], ng2);
+						}
+						finally
+						{
+							this.model.endUpdate();
+						}
+
+						result = true;
+					}
+				}
+			}
+
+			return result;
+		};
+
+		/**
 		 * Overrides cloning cells in moveCells.
 		 */
 		var graphMoveCells = Graph.prototype.moveCells;
 		Graph.prototype.moveCells = function(cells, dx, dy, clone, target, evt, mapping)
 		{
+			if (!clone && this.swapUmlLifelines(cells, target))
+			{
+				return cells;
+			}
+			
 			mapping = (mapping != null) ? mapping : new Object();
 			
 			// Replaces source tables with rows
@@ -9590,6 +9709,7 @@ if (typeof mxVertexHandler != 'undefined')
 				crisp = (crisp != null) ? crisp : true;
 				ignoreSelection = (ignoreSelection != null) ? ignoreSelection : true;
 				showText = (showText != null) ? showText : true;
+				hasShadow = (hasShadow != null) ? hasShadow : false;
 	
 				var bounds = (exportType == 'page') ? this.view.getBackgroundPageBounds() :
 					(((ignoreSelection && lookup == null) || nocrop ||
@@ -9639,10 +9759,12 @@ if (typeof mxVertexHandler != 'undefined')
 					// KNOWN: Ignored in IE9-11, adds namespace for each image element instead. No workaround.
 					root.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:xlink', mxConstants.NS_XLINK);
 				}
-				
+
 				var s = scale / vs;
-				var w = Math.max(1, Math.ceil(bounds.width * s) + 2 * border) + ((hasShadow) ? 5 : 0);
-				var h = Math.max(1, Math.ceil(bounds.height * s) + 2 * border) + ((hasShadow) ? 5 : 0);
+				var w = Math.max(1, Math.ceil(bounds.width * s) + 2 * border) +
+					((hasShadow && border == 0) ? 5 : 0);
+				var h = Math.max(1, Math.ceil(bounds.height * s) + 2 * border) +
+					((hasShadow && border == 0) ? 5 : 0);
 				
 				root.setAttribute('version', '1.1');
 				root.setAttribute('width', w + 'px');
@@ -10916,38 +11038,6 @@ if (typeof mxVertexHandler != 'undefined')
 			catch (e)
 			{
 				// ignore
-			}
-		};
-
-		/**
-		 * Handles special color values.
-		 */
-		var mxCellRendererPostConfigureShape = mxCellRenderer.prototype.postConfigureShape;
-		mxCellRenderer.prototype.postConfigureShape = function(state)
-		{
-			var bg = state.view.graph.defaultPageBackgroundColor;
-			var fg = state.view.graph.defaultForegroundColor;
-
-			this.resolveDefaultColor(state, 'fill', state.shape, bg);
-			this.resolveDefaultColor(state, 'stroke', state.shape, fg);
-			this.resolveDefaultColor(state, 'laneFill', state.shape, bg);
-			this.resolveDefaultColor(state, 'imageBackground', state.shape, bg);
-			this.resolveDefaultColor(state, 'labelBackgroundColor', state.shape, bg);
-			this.resolveDefaultColor(state, 'imageBorder', state.shape, fg);
-			this.resolveDefaultColor(state, 'background', state.text, bg);
-			this.resolveDefaultColor(state, 'color', state.text, fg);
-
-			mxCellRendererPostConfigureShape.apply(this, arguments);
-		};
-
-		/**
-		 * Adds default background color handling for text and lanes.
-		 */
-		mxCellRenderer.prototype.resolveDefaultColor = function(state, field, shape, defaultValue)
-		{
-			if (shape != null && shape[field] == 'default')
-			{
-				shape[field] = defaultValue;
 			}
 		};
 
@@ -12304,7 +12394,19 @@ if (typeof mxVertexHandler != 'undefined')
 				this.linkHint.style.display = 'none';
 			}
 		};
-	
+
+		/**
+		 * Replaces folding icons with SVG.
+		 */
+		Graph.prototype.expandedImage = Graph.createSvgImage(9, 9, '<defs><linearGradient id="grad1" x1="50%" y1="0%" x2="50%" y2="100%">' +
+			'<stop offset="30%" style="stop-color:#f0f0f0;" /><stop offset="100%" style="stop-color:#AFB0B6;" /></linearGradient></defs>' +
+			'<rect x="0" y="0" width="9" height="9" stroke="#8A94A5" fill="url(#grad1)" stroke-width="2"/>' +
+			'<path d="M 2 4.5 L 7 4.5 z" stroke="#000"/>');
+		Graph.prototype.collapsedImage = Graph.createSvgImage(9, 9, '<defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">' +
+			'<stop offset="30%" style="stop-color:#f0f0f0;" /><stop offset="100%" style="stop-color:#AFB0B6;" /></linearGradient></defs>' +
+			'<rect x="0" y="0" width="9" height="9" stroke="#8A94A5" fill="url(#grad1)" stroke-width="2"/>' +
+			'<path d="M 4.5 2 L 4.5 7 M 2 4.5 L 7 4.5 z" stroke="#000"/>');
+
 		/**
 		 * Updates the hint for the current operation.
 		 */
@@ -12313,34 +12415,40 @@ if (typeof mxVertexHandler != 'undefined')
 		/**
 		 * Defines the handles for the UI. Uses data-URIs to speed-up loading time where supported.
 		 */
-		// TODO: Increase handle padding
-		HoverIcons.prototype.mainHandle = (!mxClient.IS_SVG) ? new mxImage(IMAGE_PATH + '/handle-main.png', 17, 17) :
-			Graph.createSvgImage(18, 18, '<circle cx="9" cy="9" r="5" stroke="#fff" fill="' + HoverIcons.prototype.arrowFill + '" stroke-width="1"/>');
-		HoverIcons.prototype.secondaryHandle = (!mxClient.IS_SVG) ? new mxImage(IMAGE_PATH + '/handle-secondary.png', 17, 17) :
-			Graph.createSvgImage(16, 16, '<path d="m 8 3 L 13 8 L 8 13 L 3 8 z" stroke="#fff" fill="#fca000"/>');
-		HoverIcons.prototype.fixedHandle = (!mxClient.IS_SVG) ? new mxImage(IMAGE_PATH + '/handle-fixed.png', 17, 17) :
-			Graph.createSvgImage(22, 22, '<circle cx="11" cy="11" r="6" stroke="#fff" fill="#01bd22" stroke-width="1"/><path d="m 8 8 L 14 14M 8 14 L 14 8" stroke="#fff"/>');
-		HoverIcons.prototype.terminalHandle = (!mxClient.IS_SVG) ? new mxImage(IMAGE_PATH + '/handle-terminal.png', 17, 17) :
-			Graph.createSvgImage(22, 22, '<circle cx="11" cy="11" r="6" stroke="#fff" fill="' + HoverIcons.prototype.arrowFill + '" stroke-width="1"/><circle cx="11" cy="11" r="3" stroke="#fff" fill="transparent"/>');
-		HoverIcons.prototype.rotationHandle = (!mxClient.IS_SVG) ? new mxImage(IMAGE_PATH + '/handle-rotate.png', 16, 16) :
-			Graph.createSvgImage(16, 16, '<path stroke="' + HoverIcons.prototype.arrowFill +
-				'" fill="' + HoverIcons.prototype.arrowFill +
+		HoverIcons.prototype.mainHandle = Graph.createSvgImage(18, 18, '<circle cx="9" cy="9" r="5" stroke="#fff" fill="' + HoverIcons.prototype.arrowFill + '"/>');
+		HoverIcons.prototype.endMainHandle = Graph.createSvgImage(18, 18, '<circle cx="9" cy="9" r="6" stroke="#fff" fill="' + HoverIcons.prototype.arrowFill + '"/>');
+		HoverIcons.prototype.secondaryHandle = Graph.createSvgImage(16, 16, '<path d="m 8 3 L 13 8 L 8 13 L 3 8 z" stroke="#fff" fill="#fca000"/>');
+		HoverIcons.prototype.fixedHandle = Graph.createSvgImage(22, 22,
+			'<circle cx="11" cy="11" r="6" stroke="#fff" fill="#01bd22"/>' +
+			'<path d="m 8 8 L 14 14M 8 14 L 14 8" stroke="#fff"/>');
+		HoverIcons.prototype.endFixedHandle = Graph.createSvgImage(22, 22,
+			'<circle cx="11" cy="11" r="7" stroke="#fff" fill="#01bd22"/>' +
+			'<path d="m 8 8 L 14 14M 8 14 L 14 8" stroke="#fff"/>');
+		HoverIcons.prototype.terminalHandle = Graph.createSvgImage(22, 22,
+			'<circle cx="11" cy="11" r="6" stroke="#fff" fill="' + HoverIcons.prototype.arrowFill +
+			'"/><circle cx="11" cy="11" r="3" stroke="#fff" fill="transparent"/>');
+		HoverIcons.prototype.endTerminalHandle = Graph.createSvgImage(22, 22,
+			'<circle cx="11" cy="11" r="7" stroke="#fff" fill="' + HoverIcons.prototype.arrowFill +
+			'"/><circle cx="11" cy="11" r="3" stroke="#fff" fill="transparent"/>');
+		HoverIcons.prototype.rotationHandle = Graph.createSvgImage(16, 16,
+			'<path stroke="' + HoverIcons.prototype.arrowFill + '" fill="' + HoverIcons.prototype.arrowFill +
 				'" d="M15.55 5.55L11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42l1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/>',
 				24, 24);
-		
-		if (mxClient.IS_SVG)
-		{
-			mxConstraintHandler.prototype.pointImage = Graph.createSvgImage(5, 5,
-				'<path d="m 0 0 L 5 5 M 0 5 L 5 0" stroke-width="2" style="stroke-opacity:0.4" stroke="#ffffff"/>' +
-				'<path d="m 0 0 L 5 5 M 0 5 L 5 0" stroke="' + HoverIcons.prototype.arrowFill + '"/>');
-		}
-		
+	
+		mxConstraintHandler.prototype.pointImage = Graph.createSvgImage(5, 5,
+			'<path d="m 0 0 L 5 5 M 0 5 L 5 0" stroke-width="2" style="stroke-opacity:0.4" stroke="#ffffff"/>' +
+			'<path d="m 0 0 L 5 5 M 0 5 L 5 0" stroke="' + HoverIcons.prototype.arrowFill + '"/>');
+
 		mxVertexHandler.TABLE_HANDLE_COLOR = '#fca000';
 		mxVertexHandler.prototype.handleImage = HoverIcons.prototype.mainHandle;
 		mxVertexHandler.prototype.secondaryHandleImage = HoverIcons.prototype.secondaryHandle;
 		mxEdgeHandler.prototype.handleImage = HoverIcons.prototype.mainHandle;
+		mxEdgeHandler.prototype.endHandleImage = HoverIcons.prototype.endMainHandle;
 		mxEdgeHandler.prototype.terminalHandleImage = HoverIcons.prototype.terminalHandle;
+		mxEdgeHandler.prototype.endTerminalHandleImage = HoverIcons.prototype.endTerminalHandle;
 		mxEdgeHandler.prototype.fixedHandleImage = HoverIcons.prototype.fixedHandle;
+
+		mxEdgeHandler.prototype.endFixedHandleImage = HoverIcons.prototype.endFixedHandle;
 		mxEdgeHandler.prototype.labelHandleImage = HoverIcons.prototype.secondaryHandle;
 		mxOutline.prototype.sizerImage = HoverIcons.prototype.mainHandle;
 		
@@ -12354,23 +12462,6 @@ if (typeof mxVertexHandler != 'undefined')
 			Sidebar.prototype.roundDrop = HoverIcons.prototype.roundDrop;
 		}
 
-		// Pre-fetches images (only needed for non data-uris)
-		if (!mxClient.IS_SVG)
-		{
-			new Image().src = HoverIcons.prototype.mainHandle.src;
-			new Image().src = HoverIcons.prototype.fixedHandle.src;
-			new Image().src = HoverIcons.prototype.terminalHandle.src;
-			new Image().src = HoverIcons.prototype.secondaryHandle.src;
-			new Image().src = HoverIcons.prototype.rotationHandle.src;
-			
-			new Image().src = HoverIcons.prototype.triangleUp.src;
-			new Image().src = HoverIcons.prototype.triangleRight.src;
-			new Image().src = HoverIcons.prototype.triangleDown.src;
-			new Image().src = HoverIcons.prototype.triangleLeft.src;
-			new Image().src = HoverIcons.prototype.refreshTarget.src;
-			new Image().src = HoverIcons.prototype.roundDrop.src;
-		}
-		
 		// Adds rotation handle and live preview
 		mxVertexHandler.prototype.rotationEnabled = true;
 		mxVertexHandler.prototype.manageSizers = true;
@@ -12721,7 +12812,7 @@ if (typeof mxVertexHandler != 'undefined')
 		};
 		
 		// Shows secondary handle for fixed connection points
-		mxEdgeHandler.prototype.createHandleShape = function(index, virtual)
+		mxEdgeHandler.prototype.createHandleShape = function(index, virtual, target)
 		{
 			var source = index != null && index == 0;
 			var terminalState = this.state.getVisibleTerminalState(source);
@@ -12729,8 +12820,9 @@ if (typeof mxVertexHandler != 'undefined')
 				(this.constructor == mxElbowEdgeHandler && index == 2))) ?
 				this.graph.getConnectionConstraint(this.state, terminalState, source) : null;
 			var pt = (c != null) ? this.graph.getConnectionPoint(this.state.getVisibleTerminalState(source), c) : null;
-			var img = (pt != null) ? this.fixedHandleImage : ((c != null && terminalState != null) ?
-				this.terminalHandleImage : this.handleImage);
+			var img = (pt != null) ? (!target ? this.fixedHandleImage : this.endFixedHandleImage) :
+				((c != null && terminalState != null) ? (!target ? this.terminalHandleImage : this.endTerminalHandleImage) :
+					(!target ? this.handleImage : this.endHandleImage));
 			
 			if (img != null)
 			{

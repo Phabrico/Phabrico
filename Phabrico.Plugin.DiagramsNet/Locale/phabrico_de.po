@@ -68,8 +68,8 @@ msgstr "Alt+Shift+C/T"
 msgid "Alt+Shift+Cursor"
 msgstr "Alt+Shift+Cursor"
 
-msgid "Alt+Shift+Drag"
-msgstr "Alt+Shift+Ziehen"
+msgid "Alt+Drag"
+msgstr "Alt+Ziehen"
 
 msgid "Alt+Shift+P"
 msgstr "Alt+Shift+P"
@@ -176,8 +176,8 @@ msgstr "Strg+Shift+Cursor"
 msgid "Ctrl+Shift+D"
 msgstr "Strg+Shift+D"
 
-msgid "Ctrl+Shift+Drag"
-msgstr "Strg+Shift+Ziehen"
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Strg+Shift+Ziehen"
 
 msgid "Ctrl+Shift+End"
 msgstr "Strg+Shift+End"
@@ -320,8 +320,8 @@ msgstr "Space / Ziehen mit der<br />rechten Maustaste"
 msgid "About"
 msgstr "Über"
 
-msgid "Add to Selection"
-msgstr "Zur Auswahl hinzufügen"
+msgid "Toggle to Selection"
+msgstr "Zur Auswahl umschalten"
 
 msgid "Autosize"
 msgstr "Autosize"
@@ -524,8 +524,8 @@ msgstr "Wiederherstellen"
 msgid "Refresh"
 msgstr "Aktualisieren"
 
-msgid "Remove from Selection"
-msgstr "Aus Auswahl entfernen"
+msgid "Select intersection"
+msgstr "Schnittpunkt auswählen"
 
 msgid "Replaces the selected item with the clicked one"
 msgstr "Ersetzt das ausgewählte Element durch das angeklickte"

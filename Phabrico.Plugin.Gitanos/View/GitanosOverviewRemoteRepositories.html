@@ -139,7 +139,7 @@
             </div>
             <div class="aphront-dialog-tail">
                 <button class="button-gray" id="btnCloneRepositoryCancel" type="button" style="width:140px; cursor: pointer;" onclick="showHideCloneRepositoryDialog(false)">Cancel</button>
-                <button class="button-blue" id="btnCloneRepositoryConfirm" type="button" style="width:140px; cursor: not-allowed;" onclick="gitCloneRepository()">Clone</button>
+                <button class="button-blue" id="btnCloneRepositoryConfirm" type="button" style="width:140px; cursor: pointer;" onclick="gitCloneRepository()">Clone</button>
             </div>
         </div>
 
@@ -220,6 +220,7 @@
                     } else {
                         // refresh screen
                         populateRemoteRepositories(filter.value);
+                        showHideMessageDialog(true, '', Locale.Translate('Repository successfully cloned'));
                     }
                 }
                 catch(except) {

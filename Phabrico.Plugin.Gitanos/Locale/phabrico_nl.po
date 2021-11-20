@@ -137,6 +137,9 @@ msgstr "Lijn:"
 msgid "This git repository is clean"
 msgstr "Deze git repository is ongewijzigd"
 
+msgid "Repository successfully cloned"
+msgstr "Repository succesvol gekloond"
+
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
 msgstr "Directory @@DIRECTORY@@ bestaat niet"

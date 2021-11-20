@@ -1367,7 +1367,7 @@ BaseFormatPanel.prototype.createCellColorOption = function(label, colorKey, defa
 				
 				if (state != null)
 				{
-					apply(mxUtils.getValue(state.style, colorKey, null));
+					apply(mxUtils.getValue(state.style, colorKey, null), true);
 				}
 			};
 			
@@ -2117,10 +2117,12 @@ ArrangePanel.prototype.addGroupOps = function(div)
 		
 		btn = mxUtils.button(mxResources.get('clearWaypoints'), mxUtils.bind(this, function(evt)
 		{
-			this.editorUi.actions.get('clearWaypoints').funct(evt);
+			this.editorUi.actions.get('clearWaypoints').funct(evt, evt);
 		}));
 		
-		btn.setAttribute('title', mxResources.get('clearWaypoints') + ' (' + this.editorUi.actions.get('clearWaypoints').shortcut + ')');
+		btn.setAttribute('title', mxResources.get('clearWaypoints') +
+			' (' + this.editorUi.actions.get('clearWaypoints').shortcut + ')' +
+			' Shift+Click to Clear Anchor Points');
 		btn.style.width = '210px';
 		btn.style.marginBottom = '2px';
 		div.appendChild(btn);
@@ -3590,16 +3592,19 @@ TextFormatPanel.prototype.addFont = function(container)
 	{
 		install: function(apply) { bgColorApply = apply; },
 		destroy: function() { bgColorApply = null; }
-	}, null, true) : this.createCellColorOption(mxResources.get('backgroundColor'), mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, 'default', null, function(color)
+	}, null, true) : this.createCellColorOption(mxResources.get('backgroundColor'),
+		mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, 'default', null, function(color)
 	{
 		graph.updateLabelElements(ss.cells, function(elt)
 		{
 			elt.style.backgroundColor = null;
 		});
-	}, graph.defaultPageBackgroundColor);
+	}, graph.shapeBackgroundColor);
 	bgPanel.style.fontWeight = 'bold';
 
-	var borderPanel = this.createCellColorOption(mxResources.get('borderColor'), mxConstants.STYLE_LABEL_BORDERCOLOR, '#000000');
+	var borderPanel = this.createCellColorOption(mxResources.get('borderColor'),
+		mxConstants.STYLE_LABEL_BORDERCOLOR, 'default', null, null,
+		graph.shapeForegroundColor);
 	borderPanel.style.fontWeight = 'bold';
 	
 	var defs = (ss.vertices.length >= 1) ? graph.stylesheet.getDefaultVertexStyle() : graph.stylesheet.getDefaultEdgeStyle();
@@ -3708,7 +3713,7 @@ TextFormatPanel.prototype.addFont = function(container)
 			elt.removeAttribute('color');
 			elt.style.color = null;
 		});
-	}, Editor.isDarkMode() ? '#ffffff' : '#000000');
+	}, graph.shapeForegroundColor);
 	panel.style.fontWeight = 'bold';
 	
 	colorPanel.appendChild(panel);
@@ -4832,7 +4837,7 @@ StyleFormatPanel.prototype.addFill = function(container)
 	var fillPanel = this.createCellColorOption(label, fillKey, 'default', null, mxUtils.bind(this, function(color)
 	{
 		graph.setCellStyles(fillKey, color, ss.cells);
-	}), graph.defaultPageBackgroundColor);
+	}), graph.shapeBackgroundColor);
 
 	fillPanel.style.fontWeight = 'bold';
 	var tmpColor = mxUtils.getValue(ss.style, fillKey, null);
@@ -5028,11 +5033,11 @@ StyleFormatPanel.prototype.addStroke = function(container)
 
 	var strokeKey = (ss.style.shape == 'image') ? mxConstants.STYLE_IMAGE_BORDER : mxConstants.STYLE_STROKECOLOR;
 	var label = (ss.style.shape == 'image') ? mxResources.get('border') : mxResources.get('line');
-	
+
 	var lineColor = this.createCellColorOption(label, strokeKey, 'default', null, mxUtils.bind(this, function(color)
 	{
 		graph.setCellStyles(strokeKey, color, ss.cells);
-	}), Editor.isDarkMode() ? '#ffffff' : '#000000');
+	}), graph.shapeForegroundColor);
 	
 	lineColor.appendChild(styleSelect);
 	colorPanel.appendChild(lineColor);
@@ -5233,7 +5238,7 @@ StyleFormatPanel.prototype.addStroke = function(container)
 				Format.processMenuIcon(this.editorUi.menus.edgeStyleChange(menu, '', [mxConstants.STYLE_STARTARROW, 'startFill'], ['ERmany', 0], null, null, false, Format.ERmanyMarkerImage.src));
 				Format.processMenuIcon(this.editorUi.menus.edgeStyleChange(menu, '', [mxConstants.STYLE_STARTARROW, 'startFill'], ['ERoneToMany', 0], null, null, false, Format.ERoneToManyMarkerImage.src));
 				Format.processMenuIcon(this.editorUi.menus.edgeStyleChange(menu, '', [mxConstants.STYLE_STARTARROW, 'startFill'], ['ERzeroToOne', 0], null, null, false, Format.ERzeroToOneMarkerImage.src));
-				Format.processMenuIcon(this.editorUi.menus.edgeStyleChange(menu, '', [mxConstants.STYLE_STARTARROW, 'startFill'], ['ERzeroToMany', 1], null, null, false, Format.ERzeroToManyMarkerImage.src));
+				Format.processMenuIcon(this.editorUi.menus.edgeStyleChange(menu, '', [mxConstants.STYLE_STARTARROW, 'startFill'], ['ERzeroToMany', 0], null, null, false, Format.ERzeroToManyMarkerImage.src));
 				Format.processMenuIcon(this.editorUi.menus.edgeStyleChange(menu, '', [mxConstants.STYLE_STARTARROW, 'startFill'], ['doubleBlock', 0], null, null, false, Format.doubleBlockMarkerImage.src));
 				Format.processMenuIcon(this.editorUi.menus.edgeStyleChange(menu, '', [mxConstants.STYLE_STARTARROW, 'startFill'], ['doubleBlock', 1], null, null, false, Format.doubleBlockFilledMarkerImage.src));
 			}
@@ -5912,6 +5917,12 @@ DiagramStylePanel.prototype.init = function()
 	var editor = ui.editor;
 	var graph = editor.graph;
 
+	this.darkModeChangedListener = mxUtils.bind(this, function()
+	{
+		this.format.cachedStyleEntries = [];
+	});
+
+	ui.addListener('darkModeChanged', this.darkModeChangedListener);
 	this.container.appendChild(this.addView(this.createPanel()));
 };
 
@@ -5992,14 +6003,16 @@ DiagramStylePanel.prototype.addView = function(div)
 		
 		if (checked)
 		{
+			graph.currentEdgeStyle['rounded'] = '1';
 			graph.currentVertexStyle['rounded'] = '1';
 		}
 		else
 		{
+			delete graph.currentEdgeStyle['rounded'];
 			delete graph.currentVertexStyle['rounded'];
 		}
 		
-		graph.updateCellStyles('rounded', (checked) ? '1' : null, graph.getVerticesAndEdges(true, true));
+		graph.updateCellStyles('rounded', (checked) ? '1' : '0', graph.getVerticesAndEdges());
 	}, null, function(div)
 	{
 		div.style.width = 'auto';
@@ -6156,9 +6169,6 @@ DiagramStylePanel.prototype.addView = function(div)
 			}
 		}
 		
-		// FIXME: Reset for sketch mode
-		graph.defaultVertexStyle = mxUtils.clone(ui.initialDefaultVertexStyle);
-		graph.defaultEdgeStyle = mxUtils.clone(ui.initialDefaultEdgeStyle);
 		ui.clearDefaultStyle();
 	}));
 	
@@ -6171,10 +6181,16 @@ DiagramStylePanel.prototype.addView = function(div)
 	{
 		// Wrapper needed to catch events
 		var div = document.createElement('div');
-		div.style.cssText = 'position:absolute;display:inline-block;width:100%;height:100%;overflow:hidden;pointer-events:none;';
+		div.style.position = 'absolute';
+		div.style.display = 'inline-block';
+		div.style.overflow = 'hidden';
+		div.style.pointerEvents = 'none';
+		div.style.width = '100%';
+		div.style.height = '100%';
 		container.appendChild(div);
 		
 		var graph2 = new Graph(div, null, null, graph.getStylesheet());
+
 		graph2.resetViewOnRootChange = false;
 		graph2.foldingEnabled = false;
 		graph2.gridEnabled = false;
@@ -6200,6 +6216,11 @@ DiagramStylePanel.prototype.addView = function(div)
 			applyStyle(commonStyle, result, cell, graphStyle, graph2);
 			applyStyle(appliedStyle, result, cell, graphStyle, graph2);
 			
+			if (result != null)
+			{
+				result = this.postProcessCellStyle(result);
+			}
+
 			return result;
 		};
 		
@@ -6229,6 +6250,16 @@ DiagramStylePanel.prototype.addView = function(div)
 	{
 		this.format.cachedStyleEntries = [];
 	}
+
+	function addKeys(style, result)
+	{
+		for (var key in style)
+		{
+			result.push(key);
+		}
+
+		return result;
+	};
 
 	var addEntry = mxUtils.bind(this, function(commonStyle, vertexStyle, edgeStyle, graphStyle, index)
 	{
@@ -6260,14 +6291,13 @@ DiagramStylePanel.prototype.addView = function(div)
 			}), null, mxUtils.bind(this, function(evt)
 			{
 				panel.style.opacity = 1;
-				graph.defaultVertexStyle = mxUtils.clone(ui.initialDefaultVertexStyle);
-				graph.defaultEdgeStyle = mxUtils.clone(ui.initialDefaultEdgeStyle);
+				graph.currentVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
+				graph.currentEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
 				
-				applyStyle(commonStyle, graph.defaultVertexStyle);
-				applyStyle(commonStyle, graph.defaultEdgeStyle);
-				applyStyle(vertexStyle, graph.defaultVertexStyle);
-				applyStyle(edgeStyle, graph.defaultEdgeStyle);
-				ui.clearDefaultStyle();
+				applyStyle(commonStyle, graph.currentVertexStyle);
+				applyStyle(commonStyle, graph.currentEdgeStyle);
+				applyStyle(vertexStyle, graph.currentVertexStyle);
+				applyStyle(edgeStyle, graph.currentEdgeStyle);
 				
 				if (sketch)
 				{
@@ -6303,7 +6333,7 @@ DiagramStylePanel.prototype.addView = function(div)
 				model.beginUpdate();
 				try
 				{
-					updateCells(defaultStyles, graphStyle);
+					updateCells(addKeys(commonStyle, defaultStyles.slice()), graphStyle);
 					
 					var change = new ChangePageSetup(ui, (graphStyle != null) ? graphStyle.background : null);
 					change.ignoreImage = true;
@@ -6344,6 +6374,11 @@ DiagramStylePanel.prototype.addView = function(div)
 					removeStyles(result, defaultStyles, defaultStyle);
 					applyStyle(commonStyle, result, cell, graphStyle);
 					applyStyle(appliedStyle, result, cell, graphStyle);
+					
+					if (result != null)
+					{
+						result = this.postProcessCellStyle(result);
+					}
 					
 					return result;
 				};
@@ -6507,6 +6542,20 @@ DiagramStylePanel.prototype.addView = function(div)
 	return div;
 };
 
+/**
+ * Adds the label menu items to the given menu and parent.
+ */
+ DiagramStylePanel.prototype.destroy = function()
+ {
+	 BaseFormatPanel.prototype.destroy.apply(this, arguments);
+	 
+	 if (this.darkModeChangedListener)
+	 {
+		 this.editorUi.removeListener(this.darkModeChangedListener);
+		 this.darkModeChangedListener = null;
+	 }
+ };
+ 
 /**
  * Adds the label menu items to the given menu and parent.
  */

@@ -68,8 +68,8 @@ msgstr "Alt+Shift+C/T"
 msgid "Alt+Shift+Cursor"
 msgstr "Alt+Shift+Cursor"
 
-msgid "Alt+Shift+Drag"
-msgstr "Alt+Shift+Drag"
+msgid "Alt+Drag"
+msgstr "Alt+Drag"
 
 msgid "Alt+Shift+P"
 msgstr "Alt+Shift+P"
@@ -176,8 +176,8 @@ msgstr "Ctrl+Shift+Cursor"
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
-msgid "Ctrl+Shift+Drag"
-msgstr "Ctrl+Shift+Drag"
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Ctrl+Shift+Drag"
 
 msgid "Ctrl+Shift+End"
 msgstr "Ctrl+Shift+End"
@@ -320,8 +320,8 @@ msgstr "Space / Right mouse Drag"
 msgid "About"
 msgstr "About"
 
-msgid "Add to Selection"
-msgstr "Add to Selection"
+msgid "Toggle to Selection"
+msgstr "Toggle to Selection"
 
 msgid "Autosize"
 msgstr "Autosize"
@@ -524,8 +524,8 @@ msgstr "Redo"
 msgid "Refresh"
 msgstr "Refresh"
 
-msgid "Remove from Selection"
-msgstr "Remove from Selection"
+msgid "Select intersection"
+msgstr "Select intersection"
 
 msgid "Replaces the selected item with the clicked one"
 msgstr "Replaces the selected item with the clicked one"

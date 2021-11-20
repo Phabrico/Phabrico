@@ -517,8 +517,23 @@ namespace Phabrico.Plugin
 
                     Phabricator.Data.Diffusion repository = storageGitanosPhabricatorRepository.Get(database).FirstOrDefault(record => record.Name.Equals(repositoryName));
 
+                    // get authentication
+                    string password;
+                    string urlGitRemote = string.Join("/", repository.URI.Split('/').Take(3));
+                    LibGit2Sharp.Signature gitAuthor = GetGitAuthor(urlGitRemote, out password);
+
+                    // create local work directory
                     Directory.CreateDirectory(workingDirectory);
-                    LibGit2Sharp.Repository.Clone(repository.URI, workingDirectory);
+
+                    // clone
+                    LibGit2Sharp.Repository.Clone(repository.URI, workingDirectory, new CloneOptions
+                    {
+                        CredentialsProvider = (url, usernameFromUrl, types) => new LibGit2Sharp.UsernamePasswordCredentials
+                        {
+                            Username = gitAuthor.Name,
+                            Password = password
+                        }
+                    });
 
                     string jsonData = JsonConvert.SerializeObject(new
                     {
@@ -862,23 +877,35 @@ namespace Phabrico.Plugin
         /// <returns></returns>
         private LibGit2Sharp.Signature GetGitAuthor(LibGit2Sharp.Repository repo, out string password)
         {
-            LibGit2Sharp.Signature signature;
             string pushUrl = repo.Network.Remotes.FirstOrDefault().PushUrl;
             pushUrl = string.Join("/", pushUrl.Split('/').Take(3));
 
-            CredentialManagement.Credential credential = new CredentialManagement.Credential { Target = "git:" + pushUrl };
+            return GetGitAuthor(pushUrl, out password, repo);
+        }
+
+        /// <summary>
+        /// Returns the git credentials for a given git repository
+        /// </summary>
+        /// <param name="urlGitRemote">url pointing to the remote git repository</param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        private LibGit2Sharp.Signature GetGitAuthor(string urlGitRemote, out string password, LibGit2Sharp.Repository repo = null)
+        {
+            LibGit2Sharp.Signature signature = null;
+            CredentialManagement.Credential credential = new CredentialManagement.Credential { Target = "git:" + urlGitRemote };
+
             bool credentialsLoaded = credential.Load();
             if (credentialsLoaded)
             {
                 string emailAddress;
-                int startHostName = pushUrl.IndexOf('@');
+                int startHostName = urlGitRemote.IndexOf('@');
                 if (startHostName > 0)
                 {
-                    emailAddress = string.Format("{0}@{1}", credential.Username, pushUrl.Substring(startHostName + 1));
+                    emailAddress = string.Format("{0}@{1}", credential.Username, urlGitRemote.Substring(startHostName + 1));
                 }
                 else
                 {
-                    emailAddress = string.Format("{0}@{1}", credential.Username, pushUrl.Substring("http:/".Length).TrimStart('/'));
+                    emailAddress = string.Format("{0}@{1}", credential.Username, urlGitRemote.Substring("http:/".Length).TrimStart('/'));
                 }
 
                 signature = new LibGit2Sharp.Signature(credential.Username, emailAddress, DateTimeOffset.Now);
@@ -890,7 +917,7 @@ namespace Phabrico.Plugin
 
             password = null;
 
-            signature = repo.Config.BuildSignature(DateTimeOffset.Now);
+            if (repo != null) signature = repo.Config.BuildSignature(DateTimeOffset.Now);
             if (signature != null) return signature;
 
             // load git-configuration:
@@ -919,7 +946,7 @@ namespace Phabrico.Plugin
                 }
             }
 
-            if (gitConfig == null)
+            if (gitConfig == null && repo != null)
             {
                 // unable to load .gitconfig file of impersonated user -> proceed with the one of service account
                 gitConfig = repo.Config;

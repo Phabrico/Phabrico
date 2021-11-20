@@ -137,6 +137,9 @@ msgstr "Zeile:"
 msgid "This git repository is clean"
 msgstr "Dieses Git-Repository ist unverändert"
 
+msgid "Repository successfully cloned"
+msgstr "Repository erfolgreich geklont"
+
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
 msgstr "Verzeichnis @@DIRECTORY@ existiert nicht"

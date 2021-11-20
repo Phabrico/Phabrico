@@ -1547,7 +1547,7 @@ Actions.prototype.init = function()
 						var geo = graph.getCellGeometry(cell);
 			
 						// Resets fixed connection point
-						if (mxEvent.isShiftDown(evt))
+						if (trigger != null && mxEvent.isShiftDown(evt))
 						{
 							graph.setCellStyles(mxConstants.STYLE_EXIT_X, null, [cell]);
 							graph.setCellStyles(mxConstants.STYLE_EXIT_Y, null, [cell]);
@@ -1685,10 +1685,11 @@ Actions.prototype.init = function()
 		{
 			// LATER: Check outline window for initial placement
 			this.layersWindow = new LayersWindow(ui, document.body.offsetWidth - 280, 120, 212, 200);
-			this.layersWindow.window.addListener('show', function()
+			this.layersWindow.window.addListener('show', mxUtils.bind(this, function()
 			{
 				ui.fireEvent(new mxEventObject('layers'));
-			});
+				this.layersWindow.window.fit();
+			}));
 			this.layersWindow.window.addListener('hide', function()
 			{
 				ui.fireEvent(new mxEventObject('layers'));
@@ -1717,10 +1718,11 @@ Actions.prototype.init = function()
 		{
 			// LATER: Check layers window for initial placement
 			this.outlineWindow = new OutlineWindow(ui, document.body.offsetWidth - 260, 100, 180, 180);
-			this.outlineWindow.window.addListener('show', function()
+			this.outlineWindow.window.addListener('show', mxUtils.bind(this, function()
 			{
 				ui.fireEvent(new mxEventObject('outline'));
-			});
+				this.outlineWindow.window.fit();
+			}));
 			this.outlineWindow.window.addListener('hide', function()
 			{
 				ui.fireEvent(new mxEventObject('outline'));

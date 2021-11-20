@@ -151,13 +151,18 @@ function mxODPicker(container, previewFn, getODFilesList, getODFileInfo, getRece
 		'	overflow-y: auto;' + 
 		'}' + 
 		'.odFileImg {' + 
+		'	width: 24px;' + 
 		'	padding-left: 5px;' + 
 		'	padding-right: 5px;' + 
 		'}' + 
 		'.odFileTitle {' + 
 		'	cursor: default;' + 
 		'	font-weight: normal;' + 
-		'	color: #666666 !important;' + 
+		'	color: #666666 !important;' +
+		'	width: calc(100% - 20px);' +
+	    '	white-space: nowrap;' +
+	    '	overflow: hidden;' +
+    	'	text-overflow: ellipsis;' +
 		'}' + 
 		'.odFileListGrid {' + 
 		'	width: 100%;' + 
@@ -305,7 +310,9 @@ function mxODPicker(container, previewFn, getODFilesList, getODFileInfo, getRece
 						}
 						
 						var doc = mxUtils.parseXml(cnt);
-						var node = Editor.extractGraphModel(doc.documentElement);
+
+						var node = (doc.documentElement.nodeName == 'mxlibrary') ?
+							doc.documentElement : Editor.extractGraphModel(doc.documentElement);
 
 						if (node != null)
 						{
@@ -373,13 +380,11 @@ function mxODPicker(container, previewFn, getODFilesList, getODFileInfo, getRece
 			spinner.stop();
 		};
 		
-		if (file == null || file.folder) 
+		if (file == null || file.folder || /\.drawiolib$/.test(file.name)) 
 		{
 			showRenderMsg(mxResources.get('noPreview'));
 			return;
 		}
-		
-		spinner.spin(prevDiv);
 		
 		try
 		{
@@ -390,20 +395,27 @@ function mxODPicker(container, previewFn, getODFilesList, getODFileInfo, getRece
 			}
 
 			loadingPreviewFile = file;
-			
+			spinner.spin(prevDiv);
+		
 			getDrawioFileDoc(file, function(doc)
 			{
+				spinner.stop();
+
 				if (loadingPreviewFile != file)
 				{
 					return;
 				}
-
-				var diagrams = doc.getElementsByTagName('diagram');
-				curViewer = AspectDialog.prototype.createViewer(prevDiv,
-						diagrams.length == 0? doc.documentElement : diagrams[0],
-						null, 'transparent');
-
-				spinner.stop();
+				else if (doc.documentElement.nodeName == 'mxlibrary')
+				{
+					showRenderMsg(mxResources.get('noPreview'));
+				}
+				else
+				{
+					var diagrams = doc.getElementsByTagName('diagram');
+					curViewer = AspectDialog.prototype.createViewer(prevDiv,
+							diagrams.length == 0? doc.documentElement : diagrams[0],
+							null, 'transparent');
+				}
 			}, 
 			function() //If the file is not a draw.io diagram
 			{
@@ -528,7 +540,6 @@ function mxODPicker(container, previewFn, getODFilesList, getODFileInfo, getRece
 				
 				var title = item.displayName || item.name;
 				var tooltip = mxUtils.htmlEntities(item.description || title);
-				var titleLimit = Math.round(container.clientWidth * 0.7 / 10);
 						
 				if (isSharepointSites)
 				{
@@ -545,21 +556,19 @@ function mxODPicker(container, previewFn, getODFilesList, getODFileInfo, getRece
 				var row = document.createElement('tr');
 				row.className = (count++) % 2? 'odOddRow' : 'odEvenRow';
 				var td = document.createElement('td');
-				td.style.width = "24px";
+				td.style.width = '36px';
 				var typeImg = document.createElement('img');
 				typeImg.src = '/images/'  + (isFolder? 'folder.png' : 'file.png');
 				typeImg.className = 'odFileImg';
-				typeImg.width = 24;
 				td.appendChild(typeImg);
 				
 				row.appendChild(td);
 				td = document.createElement('td');
-				var titleSpan = document.createElement('span');
-				titleSpan.className = "odFileTitle";
-				titleSpan.innerHTML = (title != null && title.length > titleLimit)?
-						mxUtils.htmlEntities(title.substring(0, titleLimit)) + '&hellip;' : mxUtils.htmlEntities(title);
-				titleSpan.setAttribute('title', tooltip);
-				td.appendChild(titleSpan);
+				var titleDiv = document.createElement('div');
+				titleDiv.className = "odFileTitle";
+				titleDiv.innerHTML = mxUtils.htmlEntities(title);
+				titleDiv.setAttribute('title', tooltip);
+				td.appendChild(titleDiv);
 				row.appendChild(td);
 				grid.appendChild(row);
 				
@@ -695,7 +704,7 @@ function mxODPicker(container, previewFn, getODFilesList, getODFileInfo, getRece
 				
 				if (file.folder || mimeType == 'text/html' || mimeType == 'text/xml' || mimeType == 'application/xml' || mimeType == 'image/png' 
 					|| /\.svg$/.test(file.name) || /\.html$/.test(file.name) || /\.xml$/.test(file.name) || /\.png$/.test(file.name)
-					|| /\.drawio$/.test(file.name))
+					|| /\.drawio$/.test(file.name) || /\.drawiolib$/.test(file.name))
 				{
 					potentialDrawioFiles.push(file);
 				}

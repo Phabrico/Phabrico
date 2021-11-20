@@ -87,7 +87,8 @@ EditorUi.initMinimalTheme = function()
 	    {
 			ui.formatWindow = new WrapperWindow(ui, mxResources.get('format'),
 				(urlParams['sketch'] == '1') ? Math.max(10, ui.diagramContainer.clientWidth - 241) :
-				Math.max(10, ui.diagramContainer.clientWidth - 248), 60,
+				Math.max(10, ui.diagramContainer.clientWidth - 248), 
+				EditorUi.isElectronApp && urlParams['sketch'] == '1'? 80 : 60,
 				240, Math.min(566, graph.container.clientHeight - 10), function(container)
 			{
 				var format = ui.createFormat(container);
@@ -135,7 +136,11 @@ EditorUi.initMinimalTheme = function()
 				div.style.cssText = 'position:absolute;left:0;right:0;border-top:1px solid lightgray;' +
 					'height:24px;bottom:31px;text-align:center;cursor:pointer;padding:6px 0 0 0;';
 				div.className = 'geTitle';
-				div.innerHTML = '<span style="font-size:18px;margin-right:5px;">+</span>';
+				var span = document.createElement('span');
+				span.style.fontSize = '18px';
+				span.style.marginRight = '5px';
+				span.innerHTML = '+';
+				div.appendChild(span);
 				mxUtils.write(div, mxResources.get('moreShapes'));
 				container.appendChild(div);
 				
@@ -332,16 +337,17 @@ EditorUi.initMinimalTheme = function()
 			// Sets instance vars and graph stylesheet
 			this.spinner.opts.color = Editor.isDarkMode() ? '#c0c0c0' : '#000';
 			this.setGridColor(Editor.isDarkMode() ? graph.view.defaultDarkGridColor : graph.view.defaultGridColor);
+			graph.defaultPageBackgroundColor = (urlParams['embedInline'] == '1') ? 'transparent' :
+				Editor.isDarkMode() ? Editor.darkColor : '#ffffff';
 			graph.defaultPageBorderColor = Editor.isDarkMode() ? '#505759' : '#ffffff';
-			graph.defaultForegroundColor = Editor.isDarkMode() ? '#f0f0f0' : '#000000';
+			graph.shapeBackgroundColor = Editor.isDarkMode() ? Editor.darkColor : '#ffffff';
+			graph.shapeForegroundColor = Editor.isDarkMode() ? Editor.lightColor : '#000000';
 			graph.defaultThemeName = Editor.isDarkMode() ? 'darkTheme' : 'default-style2';
 			graph.graphHandler.previewColor = Editor.isDarkMode() ? '#cccccc' : 'black';
-			graph.defaultPageBackgroundColor = Editor.isDarkMode() ? Editor.darkColor : '#ffffff';
-			Graph.prototype.defaultPageBackgroundColor = graph.defaultPageBackgroundColor;
 			document.body.style.backgroundColor = (urlParams['embedInline'] == '1') ? 'transparent' :
 				(Editor.isDarkMode() ? Editor.darkColor : '#ffffff');
 			graph.loadStylesheet();
-			
+
 			// Destroys windows with code for dark mode
 		    if (this.actions.layersWindow != null)
 		    {
@@ -370,10 +376,15 @@ EditorUi.initMinimalTheme = function()
 			}
 
 			// Sets global vars
-			Dialog.backdropColor = Editor.isDarkMode() ? Editor.darkColor : 'white';
+			Graph.prototype.defaultPageBackgroundColor = graph.defaultPageBackgroundColor;
+			Graph.prototype.defaultPageBorderColor = graph.defaultPageBorderColor;
+			Graph.prototype.shapeBackgroundColor = graph.shapeBackgroundColor;
+			Graph.prototype.shapeForegroundColor = graph.shapeForegroundColor;
+			Graph.prototype.defaultThemeName = graph.defaultThemeName;
 			StyleFormatPanel.prototype.defaultStrokeColor = Editor.isDarkMode() ? '#cccccc' : 'black';
 			BaseFormatPanel.prototype.buttonBackgroundColor = Editor.isDarkMode() ? Editor.darkColor : 'white';
 			Format.inactiveTabBackgroundColor = Editor.isDarkMode() ? 'black' : '#f0f0f0';
+			Dialog.backdropColor = Editor.isDarkMode() ? Editor.darkColor : 'white';
 			mxConstants.DROP_TARGET_COLOR = Editor.isDarkMode() ? '#00ff00' : '#0000FF';
 			Editor.helpImage = (Editor.isDarkMode() && mxClient.IS_SVG) ?
 				Editor.darkHelpImage : Editor.lightHelpImage;
@@ -1066,15 +1077,15 @@ EditorUi.initMinimalTheme = function()
 				
 				menu.addSeparator(parent);
 			}
-			else if(ui.mode == App.MODE_ATLAS) 
+			else if (ui.mode == App.MODE_ATLAS)
 			{
 				ui.menus.addMenuItems(menu, ['save', 'synchronize', '-'], parent);
 			}
-			else
+			else if (urlParams['noFileMenu'] != '1')
 			{
 	        	ui.menus.addMenuItems(menu, ['new'], parent);
 				ui.menus.addSubmenu('openFrom', menu, parent);
-			
+
 				if (isLocalStorage)
 				{
 					this.addSubmenu('openRecent', menu, parent);
@@ -1106,7 +1117,7 @@ EditorUi.initMinimalTheme = function()
             {
             	ui.menus.addMenuItems(menu, ['import'], parent);
             }
-            else
+            else if (urlParams['noFileMenu'] != '1')
             {
             	ui.menus.addSubmenu('importFrom', menu, parent);
             }
@@ -1121,12 +1132,11 @@ EditorUi.initMinimalTheme = function()
 				}
 			}
 			
-			ui.menus.addMenuItems(menu, ['-', 'findReplace', 'layers', 'tags'], parent);
-
-			ui.menus.addMenuItems(menu, ['-', 'pageSetup', 'pageScale'], parent);
+			ui.menus.addMenuItems(menu, ['-', 'findReplace',
+				'layers', 'tags', '-', 'pageSetup'], parent);
 
 			// Cannot use print in standalone mode on iOS as we cannot open new windows
-			if (!mxClient.IS_IOS || !navigator.standalone)
+			if (urlParams['noFileMenu'] != '1' && (!mxClient.IS_IOS || !navigator.standalone))
 			{
 				ui.menus.addMenuItems(menu, ['print'], parent);
 			}
@@ -1153,7 +1163,7 @@ EditorUi.initMinimalTheme = function()
 					ui.menus.addMenuItems(menu, ['-', 'exit'], parent);
 				}
 			}
-			else
+			else if (urlParams['noFileMenu'] != '1')
 			{
 				ui.menus.addMenuItems(menu, ['-', 'close']);
 			}
@@ -1213,12 +1223,11 @@ EditorUi.initMinimalTheme = function()
 	            ui.menus.addMenuItems(menu, ['publishLink'], parent);
     		}
     		
-    		if(ui.mode != App.MODE_ATLAS) 
+    		if (ui.mode != App.MODE_ATLAS && urlParams['extAuth'] != '1')
     		{
     			menu.addSeparator(parent);
     			ui.menus.addSubmenu('embed', menu, parent);
     		}
-
         })));
 
         var langMenu = this.get('language');
@@ -1254,7 +1263,7 @@ EditorUi.initMinimalTheme = function()
         // Extras menu is labelled preferences but keeps ID for extensions
         this.put('extras', new Menu(mxUtils.bind(this, function(menu, parent)
         {
-			if (urlParams['embed'] != '1')
+			if (urlParams['embed'] != '1' && urlParams['extAuth'] != '1')
 			{
 				ui.menus.addSubmenu('theme', menu, parent);
 			}
@@ -1265,8 +1274,8 @@ EditorUi.initMinimalTheme = function()
 			}
 			
 			ui.menus.addSubmenu('units', menu, parent);
-			menu.addSeparator(parent);
-			ui.menus.addMenuItems(menu, ['scrollbars', 'tooltips', 'ruler', '-', 'copyConnect', 'collapseExpand', '-'], parent);
+			ui.menus.addMenuItems(menu, ['-', 'pageScale', 'ruler', '-', 'scrollbars',
+				'tooltips', '-', 'copyConnect', 'collapseExpand', '-'], parent);
 
 			if (urlParams['sketch'] == '1')
 			{
@@ -1275,7 +1284,10 @@ EditorUi.initMinimalTheme = function()
 
 			if (urlParams['embedInline'] != '1')
 			{
-				this.addMenuItems(menu, ['toggleDarkMode'], parent);
+				if (Editor.isDarkMode() || (!mxClient.IS_IE && !mxClient.IS_IE11))
+				{
+					this.addMenuItems(menu, ['toggleDarkMode'], parent);
+				}
 
 				if (urlParams['embed'] != '1' && (isLocalStorage || mxClient.IS_CHROMEAPP))
 				{
@@ -1467,6 +1479,30 @@ EditorUi.initMinimalTheme = function()
 				this.sidebar.showEntries('search');
 			}
 		}
+
+		// Overrides mxWindow.fit to allow for embedViewport
+		var ui = this;
+
+		mxWindow.prototype.fit = function()
+		{
+			if (!Editor.inlineFullscreen && ui.embedViewport != null)
+			{
+				var left = parseInt(this.div.offsetLeft);
+				var width = parseInt(this.div.offsetWidth);
+				var right = ui.embedViewport.x + ui.embedViewport.width;
+				this.div.style.left = Math.max(ui.embedViewport.x, Math.min(left, right - width)) + 'px';
+				
+				var top = parseInt(this.div.offsetTop);
+				var height = parseInt(this.div.offsetHeight);
+				var bottom = ui.embedViewport.y + ui.embedViewport.height;
+				
+				this.div.style.top = Math.max(ui.embedViewport.y, Math.min(top, bottom - height)) + 'px';
+			}
+			else
+			{
+				mxUtils.fit(this.div);
+			}
+		};
 
 		// Overrides insert ellipse shortcut
 		this.keyHandler.bindAction(75, true, 'toggleShapes', true); // Ctrl+Shift+K
@@ -1763,6 +1799,18 @@ EditorUi.initMinimalTheme = function()
         wrapper.style.cssText = 'position:absolute;top:0px;left:0px;right:0px;bottom:0px;overflow:hidden;';
         ui.diagramContainer.style.top = (urlParams['sketch'] == '1') ? '0px' : '47px';
 
+		//Create draggable titlebar
+		if (EditorUi.isElectronApp && urlParams['sketch'] == '1')
+		{
+			wrapper.style.top = '20px';
+			ui.titlebar = document.createElement('div');
+			ui.titlebar.style.cssText = 'position:absolute;top:0px;left:0px;right:0px;height:20px;overflow:hidden;box-shadow: 0px 0px 2px #c0c0c0;';
+			var title = document.createElement('div');
+			title.style.cssText = 'max-width: calc(100% - 100px);text-overflow: ellipsis;user-select:none;height:20px;margin: 2px 10px;font-size: 12px;white-space: nowrap;overflow: hidden;';
+			ui.titlebar.appendChild(title);
+			previousParent.appendChild(ui.titlebar);
+		}
+		
         var viewZoomMenu = ui.menus.get('viewZoom');
 		var insertImage = (urlParams['sketch'] != '1') ? Editor.plusImage : Editor.shapesImage;
 		var footer = (urlParams['sketch'] == '1') ? document.createElement('div') : null;
@@ -1775,8 +1823,6 @@ EditorUi.initMinimalTheme = function()
 			{
 				this.sidebar.graph.stylesheet.styles =
 					mxUtils.clone(graph.stylesheet.styles);
-				this.sidebar.graph.defaultForegroundColor =
-					graph.defaultForegroundColor;
 				this.sidebar.container.innerHTML = '';
 				this.sidebar.palettes = new Object();
 				this.sidebar.init();
@@ -2121,17 +2167,17 @@ EditorUi.initMinimalTheme = function()
 
 					// Append sidebar elements
 					addElt(ui.sidebar.createVertexTemplate('text;strokeColor=none;fillColor=none;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;', 
-						60, 30, 'Text', mxResources.get('text'), true, true, null, true, true), mxResources.get('text') +
+						60, 30, 'Text', mxResources.get('text'), true, false, null, true, true), mxResources.get('text') +
 						' (' +  Editor.ctrlKey + '+Shift+X' + ')');
 					addElt(ui.sidebar.createVertexTemplate('shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;' +
 						'fontColor=#000000;darkOpacity=0.05;fillColor=#FFF9B2;strokeColor=none;fillStyle=solid;' +
 						'direction=west;gradientDirection=north;gradientColor=#FFF2A1;shadow=1;size=20;pointerEvents=1;',
-						140, 160, '', mxResources.get('note'), true, true, null, true), mxResources.get('note'));
+						140, 160, '', mxResources.get('note'), true, false, null, true), mxResources.get('note'));
 					addElt(ui.sidebar.createVertexTemplate('rounded=0;whiteSpace=wrap;html=1;', 160, 80,
-						'', mxResources.get('rectangle'), true, true, null, true), mxResources.get('rectangle') +
+						'', mxResources.get('rectangle'), true, false, null, true), mxResources.get('rectangle') +
 						' (' +  Editor.ctrlKey + '+K' + ')');
 					addElt(ui.sidebar.createVertexTemplate('ellipse;whiteSpace=wrap;html=1;', 160, 100,
-						'', mxResources.get('ellipse'), true, true, null, true), mxResources.get('ellipse'));
+						'', mxResources.get('ellipse'), true, false, null, true), mxResources.get('ellipse'));
 					
 					(function()
 					{
@@ -2145,7 +2191,7 @@ EditorUi.initMinimalTheme = function()
 						
 						addElt(ui.sidebar.createEdgeTemplateFromCells([cell],
 							cell.geometry.width, cell.geometry.height,
-							mxResources.get('line'), false, null, true),
+							mxResources.get('line'), true, null, true, false),
 							mxResources.get('line'));
 							
 						cell = cell.clone();
@@ -2156,7 +2202,7 @@ EditorUi.initMinimalTheme = function()
 		
 						var elt = addElt(ui.sidebar.createEdgeTemplateFromCells([cell],
 							cell.geometry.width, 40, mxResources.get('arrow'),
-							false, null, true), mxResources.get('arrow'));
+							true, null, true, false), mxResources.get('arrow'));
 						elt.style.borderBottom = '1px solid ' + (Editor.isDarkMode() ? '#505050' : 'lightgray');
 						elt.style.paddingBottom = '14px';
 						elt.style.marginBottom = '14px';
@@ -2657,6 +2703,7 @@ EditorUi.initMinimalTheme = function()
 				if (mxEvent.getSource(evt) ==
 					ui.diagramContainer.parentNode)
 				{
+					ui.embedExitPoint = new mxPoint(mxEvent.getClientX(evt), mxEvent.getClientY(evt));
 					ui.sendEmbeddedSvgExport();
 				}
 			});
@@ -2724,7 +2771,7 @@ EditorUi.initMinimalTheme = function()
 						fullscreen: Editor.inlineFullscreen,
 						rect: ui.diagramContainer.getBoundingClientRect()
 					}), '*');
-					ui.fireEvent(new mxEventObject('editInlineStart'));
+					inlineSizeChanged();
 					ui.refresh();
 				}
 			}, function(evt)
@@ -2738,7 +2785,6 @@ EditorUi.initMinimalTheme = function()
 				y0 = null;
 			});
 
-			graph.defaultPageBackgroundColor = 'transparent';
 			this.diagramContainer.style.borderRadius = '4px';
 			document.body.style.backgroundColor = 'transparent';
 			ui.bottomResizer.style.visibility = 'hidden';

@@ -654,7 +654,7 @@ class Remarkup {
                 var table = new Table();
                 table.conceal( xmlhttp.destinationField );
 
-
+                finishMetaDataElements();
             }
 
             if (onChanged != null) {
@@ -2103,6 +2103,58 @@ function diffRestoreFocusLocationPane(evt) {
     fileLeft.focus();
 }
 
+function finishMetaDataElements() {
+    document.querySelectorAll('.metadata').forEach((metadata) => {
+        var contextMenu = document.body.querySelector('.context-menu');
+        if (contextMenu != null) document.body.removeChild(contextMenu);
+
+        // set events for context-menu for metadata in decoded Remarkup
+        metadata.addEventListener('contextmenu', function (ev) {
+            ev.preventDefault();
+
+            document.body.querySelectorAll('.context-menu').forEach((c) => {
+                document.body.removeChild(c);
+            });
+
+            var contextMenu = document.createElement('div');
+            document.body.appendChild(contextMenu);
+            contextMenu.className = 'context-menu';
+            contextMenu.style.display = 'block';
+            contextMenu.style.position = 'absolute';
+            contextMenu.style.left = ev.pageX + "px";
+            contextMenu.style.top = ev.pageY + "px";
+
+            var menuItems = document.createElement('ul');
+            menuItems.className = 'menu';
+
+            // == start Copy-to-clipboard ========================================================================================
+            var mnuCopy = document.createElement('li');
+            mnuCopy.className = 'copy';
+            var mnuCopyAnchor = document.createElement('a');
+            var mnuCopyIcon = document.createElement('i');
+            mnuCopyIcon.className = 'fa fa-copy';
+            var mnuCopyContent = document.createTextNode("Copy");
+            mnuCopyAnchor.appendChild(mnuCopyIcon);
+            mnuCopyAnchor.appendChild(mnuCopyContent);
+            mnuCopy.appendChild(mnuCopyAnchor);
+            menuItems.appendChild(mnuCopy);
+
+            contextMenu.appendChild(menuItems);
+
+            var clipboard = new ClipboardJS('.context-menu .copy a');
+            mnuCopyAnchor.setAttribute('data-clipboard-text', metadata.innerText);
+            mnuCopyAnchor.addEventListener('mouseup', function (e) {
+                setTimeout(function () {
+                    contextMenu.removeChild(menuItems);
+                }, 100);
+            });
+            // == end Copy-to-clipboard ==========================================================================================
+
+            return false;
+        }, false);
+    });
+}
+
 function getElementOverlappingElement(elementBelow) {
     const boundingRect = elementBelow.getBoundingClientRect()
     // adjust coordinates to get more accurate results
@@ -2356,7 +2408,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     cancelable: true,
                 });
 
-                textarea.dispatchEvent(event);
+                setTimeout(function () {
+                    textarea.dispatchEvent(event);
+                }, 300); // slow event a bit down for uploaded images (otherwise the images will not be visible immediately after a copy/paste upload action)
             }
         });
     });
@@ -2820,7 +2874,10 @@ window.addEventListener('load', function() {
     // convert href's which start with '?' to full relative paths
     // we are using the HTML BASE tag and '?' and '#' links are not working as one would expect
     // (they are pointing to the webserver's RootPath)
-    correctAnchorHrefsForUseBaseHtmlTag()
+    correctAnchorHrefsForUseBaseHtmlTag();
+
+    // add some extra code to meta-elements (e.g. ip addresses in content)
+    finishMetaDataElements();
 }, false);
 
 
@@ -2833,8 +2890,20 @@ window.addEventListener('keydown', function(e) {
     }
 }, false);
 
-window.addEventListener('mousedown', function() {
+window.addEventListener('mousedown', function(e) {
     document.querySelectorAll('.phabrico-page-content').forEach((content) => {
         content.classList.remove('tabkey');
     });
+
+    if (e.target.closest('.context-menu') == null) {
+        document.body.querySelectorAll('.context-menu').forEach((contextmenu) => {
+            document.body.removeChild(contextmenu);
+        });
+    }
 }, false);
+
+// disable contextmenu
+document.addEventListener('contextmenu', function (ev) {
+    ev.preventDefault();
+    return false;
+})

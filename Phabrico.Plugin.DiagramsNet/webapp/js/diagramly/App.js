@@ -246,6 +246,11 @@ App.MODE_NOTION = 'notion';
 App.MODE_EMBED = 'embed';
 
 /**
+ * Atlas App Mode
+ */
+App.MODE_ATLAS = 'atlas';
+
+/**
  * Sets the delay for autosave in milliseconds. Default is 2000.
  */
 App.DROPBOX_APPKEY = window.DRAWIO_DROPBOX_ID;
@@ -363,7 +368,7 @@ App.loadScripts = function(scripts, onload)
 {
 	var n = scripts.length;
 	
-	for (var i = 0; i < n; i++)
+	for (var i = 0; i < scripts.length; i++)
 	{
 		mxscript(scripts[i], function()
 		{
@@ -516,14 +521,8 @@ App.getStoredMode = function()
 						if (App.mode == App.MODE_ONEDRIVE || (window.location.hash != null &&
 							window.location.hash.substring(0, 2) == '#W'))
 						{
-							if (!Editor.oneDriveInlinePicker)
-							{
-								mxscript(App.ONEDRIVE_URL);
-							}
-							else
-							{
-								window.OneDrive = {}; //Needed to allow code that check its existance to work BUT it's not used 
-							}
+							//Editor.oneDriveInlinePicker can be set with configuration which is done later, so load it all time
+							mxscript(App.ONEDRIVE_URL);
 						}
 						else if (urlParams['chrome'] == '0')
 						{
@@ -645,7 +644,7 @@ App.main = function(callback, createUi)
 			{
 				var content = mxUtils.getTextContent(scripts[0]);
 				
-				if (CryptoJS.MD5(content).toString() != 'b02227617087e21bd49f2faa15164112')
+				if (CryptoJS.MD5(content).toString() != '0fed8c83fc7187e0b39310c4aa3e6d63')
 				{
 					console.log('Change bootstrap script MD5 in the previous line:', CryptoJS.MD5(content).toString());
 					alert('[Dev] Bootstrap script change requires update of CSP');
@@ -819,7 +818,7 @@ App.main = function(callback, createUi)
 		// Loading the correct bundle (one file) via the fallback system in mxResources. The stylesheet
 		// is compiled into JS in the build process and is only needed for local development.
 		mxUtils.getAll((urlParams['dev'] != '1') ? [bundle] : [bundle,
-			STYLE_PATH + '/default.xml', STYLE_PATH + '/dark-default.xml'], function(xhr)
+			STYLE_PATH + '/default.xml'], function(xhr)
 		{
 			// Adds bundle text to resources
 			mxResources.parse(xhr[0].getText());
@@ -909,10 +908,10 @@ App.main = function(callback, createUi)
 			}
 						
 			// Prepares themes with mapping from old default-style to old XML file
-			if (xhr.length > 2)
+			if (xhr.length > 1)
 			{
 				Graph.prototype.defaultThemes['default-style2'] = xhr[1].getDocumentElement();
-	 			Graph.prototype.defaultThemes['darkTheme'] = xhr[2].getDocumentElement();
+	 			Graph.prototype.defaultThemes['darkTheme'] = xhr[1].getDocumentElement();
 			}
 			
 			// Main
@@ -954,15 +953,8 @@ App.main = function(callback, createUi)
 						urlParams['od'] == '1')) && (navigator.userAgent == null ||
 						navigator.userAgent.indexOf('MSIE') < 0 || document.documentMode >= 10))))
 					{
-						if (!Editor.oneDriveInlinePicker)
-						{
-							mxscript(App.ONEDRIVE_URL, window.DrawOneDriveClientCallback);
-						}
-						else
-						{
-							window.OneDrive = {}; //Needed to allow code that check its existance to work BUT it's not used 
-							window.DrawOneDriveClientCallback();
-						}
+						//Editor.oneDriveInlinePicker can be set with configuration which is done later, so load it all time
+						mxscript(App.ONEDRIVE_URL, window.DrawOneDriveClientCallback);
 					}
 					// Disables client
 					else if (typeof window.OneDrive === 'undefined')
@@ -1432,7 +1424,12 @@ App.prototype.init = function()
 		{
 			this.updateUserElement();
 			this.restoreLibraries();
-		}))
+
+			this.showBanner('GithubFooter', 'Click to install GitHub app', mxUtils.bind(this, function()
+			{
+				this.openLink('https://github.com/apps/draw-io-app');
+			}));
+		}));
 	}
 	
 	/**
@@ -2356,8 +2353,7 @@ App.prototype.getThumbnail = function(width, fn)
 		if (this.pages != null && (darkTheme || this.currentPage != this.pages[0]))
 		{
 			var graphGetGlobalVariable = graph.getGlobalVariable;
-			graph = this.createTemporaryGraph((darkTheme) ?
-				graph.getDefaultStylesheet() : graph.getStylesheet());
+			graph = this.createTemporaryGraph(graph.getStylesheet());
 			graph.setBackgroundImage = this.editor.graph.setBackgroundImage;
 			var page = this.pages[0];
 
@@ -2371,12 +2367,6 @@ App.prototype.getThumbnail = function(width, fn)
 				graph.setBackgroundImage(bgImg);
 			}
 
-			// Avoids override of stylesheet in getSvg for dark mode
-			if (darkTheme)
-			{
-				graph.defaultThemeName = 'default';
-			}
-			
 			graph.getGlobalVariable = function(name)
 			{
 				if (name == 'page')
@@ -3007,6 +2997,10 @@ App.prototype.showAlert = function(message)
 		div.style.zIndex = 2e9; 
 		div.style.left = '50%';
 		div.style.top = '-100%';
+		//Limit width to 80% max with word wrapping
+		div.style.maxWidth = '80%';
+		div.style.width = 'max-content';
+		div.style.whiteSpace = 'pre-wrap';
 		mxUtils.setPrefixedStyle(div.style, 'transform', 'translate(-50%,0%)');
 		mxUtils.setPrefixedStyle(div.style, 'transition', 'all 1s ease');
 		
@@ -3181,9 +3175,9 @@ App.prototype.start = function()
 					var doLoadFile = mxUtils.bind(this, function(xml)
 					{
 						// Extracts graph model from PNG
-						if (xml.substring(0, 22) == 'data:image/png;base64,')
+						if (Editor.isPngDataUrl(xml))
 						{
-							xml = this.extractGraphModelFromPng(xml);
+							xml = Editor.extractGraphModelFromPng(xml);
 						}
 						
 						var title = urlParams['title'];
@@ -5864,7 +5858,7 @@ App.prototype.updateButtonContainer = function()
 			//Fetch notifications
 			if (urlParams['extAuth'] != '1') //Disable notification with external auth (e.g, Teams app)
 			{
-				this.fetchAndShowNotification(this.mode == 'device' || this.mode == 'google'? this.mode : null);
+				this.fetchAndShowNotification('online', this.mode);
 			}
 		}
 		else if (urlParams['notif'] != null) //Notif for embed mode
@@ -5875,7 +5869,7 @@ App.prototype.updateButtonContainer = function()
 };
 
 
-App.prototype.fetchAndShowNotification = function(target)
+App.prototype.fetchAndShowNotification = function(target, subtarget)
 {
 	if (this.fetchingNotif)
 	{
@@ -5890,7 +5884,8 @@ App.prototype.fetchAndShowNotification = function(target)
 	{
 		notifs = notifs.filter(function(notif)
 		{
-			return !notif.targets || notif.targets.indexOf(target) > -1;
+			return !notif.targets || notif.targets.indexOf(target) > -1 || 
+						(subtarget != null && notif.targets.indexOf(subtarget) > -1);
 		});
 		
 		var lsReadFlag = target + 'NotifReadTS';
@@ -5947,7 +5942,22 @@ App.prototype.fetchAndShowNotification = function(target)
 
 App.prototype.showNotification = function(notifs, lsReadFlag)
 {
-	if (notifs.length == 0)
+	var newCount = notifs.length;
+
+	if (uiTheme == 'min')
+	{
+		newCount = 0;
+
+		for (var i = 0; i < notifs.length; i++)
+		{
+			if (notifs[i].isNew)
+			{
+				newCount++;
+			}
+		}
+	}
+
+	if (newCount == 0)
 	{
 		if (this.notificationBtn != null)
 		{

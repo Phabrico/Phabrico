@@ -68,8 +68,8 @@ msgstr "Alt+Shift+C/T"
 msgid "Alt+Shift+Cursor"
 msgstr "Alt+Shift+光标"
 
-msgid "Alt+Shift+Drag"
-msgstr "Alt+Shift+拖拽"
+msgid "Alt+Drag"
+msgstr "Alt+拖拽"
 
 msgid "Alt+Shift+P"
 msgstr "Alt+Shift+P"
@@ -176,8 +176,8 @@ msgstr "Ctrl+Shift+光标"
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
-msgid "Ctrl+Shift+Drag"
-msgstr "Ctrl+Shift+拖拽"
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Ctrl+Shift+拖拽"
 
 msgid "Ctrl+Shift+End"
 msgstr "Ctrl+Shift+End"
@@ -320,8 +320,8 @@ msgstr "Space / 用鼠标右键拖动"
 msgid "About"
 msgstr "关于"
 
-msgid "Add to Selection"
-msgstr "添加到选择"
+msgid "Toggle to Selection"
+msgstr "切换到选区"
 
 msgid "Autosize"
 msgstr "自动尺寸"
@@ -524,8 +524,8 @@ msgstr "重做"
 msgid "Refresh"
 msgstr "刷新"
 
-msgid "Remove from Selection"
-msgstr "从选择中移除"
+msgid "Select intersection"
+msgstr "选择交叉点"
 
 msgid "Replaces the selected item with the clicked one"
 msgstr "将选中的元素替换为点击的元素"

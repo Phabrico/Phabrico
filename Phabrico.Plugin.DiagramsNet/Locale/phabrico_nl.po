@@ -68,8 +68,8 @@ msgstr "Alt+Shift+C/T"
 msgid "Alt+Shift+Cursor"
 msgstr "Alt+Shift+Cursor"
 
-msgid "Alt+Shift+Drag"
-msgstr "Alt+Shift+Slepen"
+msgid "Alt+Drag"
+msgstr "Alt+Slepen"
 
 msgid "Alt+Shift+P"
 msgstr "Alt+Shift+P"
@@ -176,8 +176,8 @@ msgstr "Ctrl+Shift+Cursor"
 msgid "Ctrl+Shift+D"
 msgstr "Ctrl+Shift+D"
 
-msgid "Ctrl+Shift+Drag"
-msgstr "Ctrl+Shift+Slepen"
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Ctrl+Shift+Slepen"
 
 msgid "Ctrl+Shift+End"
 msgstr "Ctrl+Shift+End"
@@ -320,8 +320,8 @@ msgstr "Space / Slepen met de rechtermuisknop"
 msgid "About"
 msgstr "Over"
 
-msgid "Add to Selection"
-msgstr "Toevoegen aan selectie"
+msgid "Toggle to Selection"
+msgstr "Wisselen naar selectie"
 
 msgid "Autosize"
 msgstr "Autosize"
@@ -524,8 +524,8 @@ msgstr "Opnieuw"
 msgid "Refresh"
 msgstr "Vernieuwen"
 
-msgid "Remove from Selection"
-msgstr "Uit selectie verwijderen"
+msgid "Select intersection"
+msgstr "Selecteer intersectie"
 
 msgid "Replaces the selected item with the clicked one"
 msgstr "Vervangt het geselecteerde element door het aangeklikte element"

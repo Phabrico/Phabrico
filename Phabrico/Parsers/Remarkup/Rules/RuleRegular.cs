@@ -1,5 +1,7 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
@@ -40,7 +42,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Value.Contains("{{{")) return false;  // contains interpreter syntax
             }
 
-            // check for numeric characters, but make sure it's no numeric list item (which has a ') ' or a '. ) after it)
+            // check for numeric characters, but make sure it's no numeric list item (which has a ') ' or a '. ' after it)
             match = RegexSafe.Match(remarkup, @"^[1-9][0-9]*[).] ", System.Text.RegularExpressions.RegexOptions.Singleline);
             if (match.Success) return false;
 
@@ -48,12 +50,81 @@ namespace Phabrico.Parsers.Remarkup.Rules
             match = RegexSafe.Match(remarkup, @"^[A-Za-z0-9]+(?![^\n]*\n[=-])", System.Text.RegularExpressions.RegexOptions.Singleline);
             if (match.Success == false) return false;
 
-            remarkup = remarkup.Substring(match.Length);
-            html = match.Value;
+            // search for metadata in the text and put them between SPAN elements (with class=metadata)
+            string decodedHTML;
+            Length = ProcessMetaData(remarkup, out decodedHTML);
+            if (Length > 0)
+            {
+                remarkup = remarkup.Substring(Length);
+                html = decodedHTML;
+            }
+            else
+            {
+                remarkup = remarkup.Substring(match.Length);
+                html = match.Value;
 
-            Length = match.Length;
+                Length = match.Length;
+            }
 
             return true;
+        }
+
+        /// <summary>
+        /// Searches for any metadata in the remarkup content (e.g. IP addresses)
+        /// These matadata will be incapsulated in SPAN elements
+        /// </summary>
+        /// <param name="remarkup">Remarkup content to be investigated</param>
+        /// <param name="decodedHTML">Decoded HTML for metadata</param>
+        /// <returns>Non-zero if metadata was found (contains the Length of the data found in the Remarkup content)</returns>
+        private int ProcessMetaData(string remarkup, out string decodedHTML)
+        {
+            const string metadataType_IPV4 = "ipv4";
+            const string metadataType_IPV6 = "ipv6";
+
+            Dictionary<Match, string> metadatas = new Dictionary<Match, string>();
+            decodedHTML = null;
+
+            // search for IPv4 addresses
+            MatchCollection ipv4s = RegexSafe.Matches(remarkup, @"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b");
+            foreach (Match ipv4 in ipv4s)
+            {
+                metadatas[ipv4] = metadataType_IPV4;
+            }
+
+
+            // search for IPv6 addresses
+            MatchCollection ipv6s = RegexSafe.Matches(remarkup, @"^
+                (
+                    (([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|
+                    (([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|
+                    (([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|
+                    (([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|
+                    (([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|
+                    (([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|
+                    (([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|
+                    (:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))
+                )
+                \b",
+                RegexOptions.IgnorePatternWhitespace);
+            foreach (Match ipv6 in ipv6s)
+            {
+                metadatas[ipv6] = metadataType_IPV6;
+            }
+
+            if (metadatas.Any() == false)
+            {
+                return 0;
+            }
+
+            decodedHTML = remarkup;
+            foreach (KeyValuePair<Match, string> metadata in metadatas.OrderByDescending(kvp => kvp.Key.Index))
+            {
+                decodedHTML = decodedHTML.Substring(0, metadata.Key.Index)
+                            + "<span class='metadata " + metadata.Value + "'>" + metadata.Key.Value + "</span>";
+            }
+
+            int length = metadatas.Select(kvp => kvp.Key.Index + kvp.Key.Length).Max();
+            return length;
         }
     }
 }

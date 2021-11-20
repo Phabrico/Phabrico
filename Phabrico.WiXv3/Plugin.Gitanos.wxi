@@ -926,11 +926,11 @@
                     <Component Id="gitanos_git2_dll" Guid="39b4a9df-4e0e-4986-8d0c-4188c62142ca"
                        Win64="yes">
                         <RemoveFile Id="removefile_gitanos_git2_dll"
-                                    Name="git2-6777db8.dll"
+                                    Name="git2-b7bad55.dll"
                                     On="install" />
 
                         <File Id="file_gitanos_git2_dll"
-                              Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)\lib\win32\x64\git2-6777db8.dll"
+                              Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)\lib\win32\x64\git2-b7bad55.dll"
                               KeyPath="yes"
                               ProcessorArchitecture="x64" />
                     </Component>

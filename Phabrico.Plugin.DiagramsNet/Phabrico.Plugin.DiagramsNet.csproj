@@ -55,10 +55,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildVersion.cs">
-      <DependentUpon>BuildVersion.tt</DependentUpon>
+      <DependentUpon>BuildVersion.cst</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="BuildVersion.cst" />
     <Compile Include="DiagramsNetController.cs" />
     <Compile Include="DiagramsNet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -73,10 +74,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BuildVersion.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>BuildVersion.cs</LastGenOutput>
-    </Content>
+    <EmbeddedResource Include="webapp\WEB-INF\lib\appengine-api-1.0-sdk-1.9.92.jar" />
+    <EmbeddedResource Include="webapp\WEB-INF\lib\javax.servlet-api-3.1.0.jar" />
+    <EmbeddedResource Include="webapp\js\diagramly\sidebar\Sidebar-GCP3.js" />
+    <EmbeddedResource Include="webapp\images\sidebar-gcp3.png" />
+    <EmbeddedResource Include="webapp\workbox-bed83ea8.js" />
     <EmbeddedResource Include="webapp\js\jquery\jquery-3.3.1.min.js" />
     <EmbeddedResource Include="webapp\teams.html" />
     <EmbeddedResource Include="webapp\js\diagramly\NotionClient.js" />
@@ -308,11 +310,6 @@
     <EmbeddedResource Include="webapp\images\google-share.png" />
     <EmbeddedResource Include="webapp\images\grid.gif" />
     <EmbeddedResource Include="webapp\images\handle-connect.png" />
-    <EmbeddedResource Include="webapp\images\handle-fixed.png" />
-    <EmbeddedResource Include="webapp\images\handle-main.png" />
-    <EmbeddedResource Include="webapp\images\handle-rotate.png" />
-    <EmbeddedResource Include="webapp\images\handle-secondary.png" />
-    <EmbeddedResource Include="webapp\images\handle-terminal.png" />
     <EmbeddedResource Include="webapp\images\help.png" />
     <EmbeddedResource Include="webapp\images\hs.png" />
     <EmbeddedResource Include="webapp\images\hv.png" />
@@ -3542,6 +3539,7 @@
     <EmbeddedResource Include="webapp\workbox-f163abaa.js.map" />
     <EmbeddedResource Include="webapp\yarn.lock" />
     <EmbeddedResource Include="webapp\WEB-INF\github_client_secret" />
+    <EmbeddedResource Include="webapp\workbox-bed83ea8.js.map" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -3569,13 +3567,21 @@ WHERE nuget 2&gt;nul || GOTO end
 :end
 SET ERRORLEVEL = 0</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets'))" />
     <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
   </Target>
   <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+  <PropertyGroup>
+    <PreBuildEvent>IF EXIST "$(MSBuildBinPath)\Roslyn\csc.exe" SET CSC="$(MSBuildBinPath)\Roslyn\csc.exe" &amp; GOTO build
+SET CSC=%25WINDIR%25\Microsoft.NET\Framework64\v4.0.30319\csc.exe
+
+:build
+echo %25CSC%25
+%25CSC%25 /debug:full "$(ProjectDir)BuildVersion.cst" &gt; nul  &amp;&amp;  BuildVersion.exe ..\.. &gt; "$(ProjectDir)BuildVersion.cs"
+if exist BuildVersion.exe del BuildVersion.exe
+if exist BuildVersion.pdb del BuildVersion.pdb</PreBuildEvent>
+  </PropertyGroup>
 </Project>

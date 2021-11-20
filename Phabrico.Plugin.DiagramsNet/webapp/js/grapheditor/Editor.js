@@ -202,7 +202,7 @@ Editor.fitWindowBorders = null;
  * Specifies if the diagram should be saved automatically if possible. Default
  * is true.
  */
-Editor.popupsAllowed = true;
+Editor.popupsAllowed = window.urlParams != null? urlParams['noDevice'] != '1' : true;
 
 /**
  * Specifies if the html and whiteSpace styles should be removed on inserted cells.
@@ -229,6 +229,92 @@ Editor.darkMode = false;
  * Dynamic change of dark mode for minimal and sketch theme.
  */
 Editor.darkColor = '#2a2a2a';
+
+/**
+ * Dynamic change of dark mode for minimal and sketch theme.
+ */
+Editor.lightColor = '#f0f0f0';
+
+/**
+ * Returns true if the given URL is a PNG data URL.
+ */
+Editor.isPngDataUrl = function(url)
+{
+	return url != null && url.substring(0, 15) == 'data:image/png;'
+};
+
+/**
+ * Extracts the XML from the compressed or non-compressed text chunk.
+ */
+Editor.extractGraphModelFromPng = function(data)
+{
+	var result = null;
+	
+	try
+	{
+		var base64 = data.substring(data.indexOf(';base64,') + 8);
+
+		// Workaround for invalid character error in Safari
+		var binary = (window.atob && !mxClient.IS_SF) ? atob(base64) : Base64.decode(base64, true);
+		
+		EditorUi.parsePng(binary, mxUtils.bind(this, function(pos, type, length)
+		{
+			var value = binary.substring(pos + 8, pos + 8 + length);
+			
+			if (type == 'zTXt')
+			{
+				var idx = value.indexOf(String.fromCharCode(0));
+				
+				if (value.substring(0, idx) == 'mxGraphModel')
+				{
+					// Workaround for Java URL Encoder using + for spaces, which isn't compatible with JS
+					var xmlData = pako.inflateRaw(Graph.stringToArrayBuffer(
+						value.substring(idx + 2)), {to: 'string'}).replace(/\+/g,' ');
+					
+					if (xmlData != null && xmlData.length > 0)
+					{
+						result = xmlData;
+					}
+				}
+			}
+			// Uncompressed section is normally not used
+			else if (type == 'tEXt')
+			{
+				var vals = value.split(String.fromCharCode(0));
+				
+				if (vals.length > 1 && (vals[0] == 'mxGraphModel' ||
+					vals[0] == 'mxfile'))
+				{
+					result = vals[1];
+				}
+			}
+			
+			if (result != null || type == 'IDAT')
+			{
+				// Stops processing the file as our text chunks
+				// are always placed before the data section
+				return true;
+			}
+		}));
+	}
+	catch (e)
+	{
+		// ignores decoding errors
+	}
+	
+	if (result != null && result.charAt(0) == '%')
+	{
+		result = decodeURIComponent(result);
+	}
+	
+	// Workaround for double encoded content
+	if (result != null && result.charAt(0) == '%')
+	{
+		result = decodeURIComponent(result);
+	}
+	
+	return result;
+};
 
 /**
  * Dynamic change of dark mode.
@@ -802,10 +888,11 @@ function Dialog(editorUi, elt, w, h, modal, closable, onClose, noScroll, transpa
 	var h0 = h;
 	var padding = transparent? 0 : 64; //No padding needed for transparent dialogs
 	
-	var ds = mxUtils.getDocumentSize();
+	var ds = (!Editor.inlineFullscreen && editorUi.embedViewport != null) ?
+		mxUtils.clone(editorUi.embedViewport) : mxUtils.getDocumentSize();
 	
 	// Workaround for print dialog offset in viewer lightbox
-	if (window.innerHeight != null)
+	if (editorUi.embedViewport == null && window.innerHeight != null)
 	{
 		ds.height = window.innerHeight;
 	}
@@ -844,6 +931,13 @@ function Dialog(editorUi, elt, w, h, modal, closable, onClose, noScroll, transpa
 	left += origin.x;
 	top += origin.y;
 
+	if (!Editor.inlineFullscreen && editorUi.embedViewport != null)
+	{
+		this.bg.style.height = mxUtils.getDocumentSize().height + 'px';
+		top += editorUi.embedViewport.y;
+		left += editorUi.embedViewport.x;
+	}
+	
 	if (modal)
 	{
 		document.body.appendChild(this.bg);
@@ -853,7 +947,7 @@ function Dialog(editorUi, elt, w, h, modal, closable, onClose, noScroll, transpa
 	var pos = this.getPosition(left, top, w, h);
 	left = pos.x;
 	top = pos.y;
-	
+
 	div.style.width = w + 'px';
 	div.style.height = h + 'px';
 	div.style.left = left + 'px';
@@ -926,6 +1020,11 @@ function Dialog(editorUi, elt, w, h, modal, closable, onClose, noScroll, transpa
 		dh = ds.height;
 		this.bg.style.height = dh + 'px';
 		
+		if (!Editor.inlineFullscreen && editorUi.embedViewport != null)
+		{
+			this.bg.style.height = mxUtils.getDocumentSize().height + 'px';
+		}
+
 		left = Math.max(1, Math.round((ds.width - w - padding) / 2));
 		top = Math.max(1, Math.round((dh - h - editorUi.footerHeight) / 3));
 		w = (document.body != null) ? Math.min(w0, document.body.scrollWidth - padding) : w0;

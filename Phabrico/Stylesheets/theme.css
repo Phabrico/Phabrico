@@ -997,3 +997,8 @@ a.phame-reference {
 .phame-blog #remarkupContent {
     background: var(--phame-blog-overview-post-background);
 }
+
+span.metadata:hover {
+    background: var(--metadata-hover-background);
+    color: var(--metadata-hover-color);
+}

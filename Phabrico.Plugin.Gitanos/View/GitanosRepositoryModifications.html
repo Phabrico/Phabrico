@@ -334,6 +334,12 @@
         populateTableUnpushedCommits();
     };
 
+    function addWordBreaksToFilePath(filePath)
+    {
+        // add after each backslash a <wbr> tag
+        return filePath.split('\\').join('\\<wbr>') + "<wbr>";
+    }
+
     function gitCommitSelectedFiles()
     {
         modificationsForNewCommit.value = selectedModifications.join();
@@ -615,7 +621,7 @@
                             anchorUndoModification.addEventListener('click', function (e) {
                                 var title = Locale.Translate("Undo modification");
                                 var message = toHTML(Locale.Translate("Are you sure you want to discard your local changes for @@FILENAME@@ ?"));
-                                message = message.replace(/@@FILENAME@@/, "<span style='white-space: nowrap;'>" + toHTML(record.File) + "</span>");
+                                message = message.replace(/@@FILENAME@@/, "<span style='white-space: nowrap; background:#aaa7;'>" + addWordBreaksToFilePath(toHTML(record.File)) + "</span>");
                                 showHideConfirmationMessage(true, title, message,
                                     function () {
                                         var modificationID = e.target.closest('tr').querySelector('.button.add').hash.substr(1);

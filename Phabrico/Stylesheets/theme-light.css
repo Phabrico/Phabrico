@@ -190,6 +190,8 @@
     --kbd-border: 1px solid #C7CCD9;
     --kbd-join-color: #92969D;
     --menu-border-color: #ccc;
+    --metadata-hover-background: #080;
+    --metadata-hover-color: #fff;
     --outline-color: #f00;
     --phame-blog-read-more-color: #888;
     --phame-blog-post-info-color: #777;

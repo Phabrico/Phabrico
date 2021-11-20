@@ -422,7 +422,7 @@ var SplashDialog = function(editorUi)
 	}
 	else
 	{
-		buttons.style.padding = '42px 0px 56px 0px';
+		buttons.style.padding = '42px 0px 10px 0px';
 		btn.style.marginBottom = '12px';
 	}
 
@@ -1279,7 +1279,7 @@ var CreateGraphDialog = function(editorUi, title, type)
 		graph.connectionHandler.createEdgeState = function(me)
 		{
 			var edge = graph.createEdge(null, null, null, null, null, edgeStyle);
-			
+
 			return new mxCellState(this.graph.view, edge, this.graph.getCellStyle(edge));
 		};
 	
@@ -3165,7 +3165,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 						wasVisible = editorUi.sidebar.tooltip != null &&
 							editorUi.sidebar.tooltip.style.display != 'none';
 						selectElement(elt, null, null, url, infoObj, clibs);
-					}, true);
+					}, true, false);
 			}
 		};
 
@@ -3241,10 +3241,32 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			
 			if (title != null)
 			{
-				elt.innerHTML = '<table width="100%" height="100%" style="line-height:1.3em;' + (Editor.isDarkMode() ? '' : 'background:rgba(255,255,255,0.85);') +
-					'border:inherit;"><tr><td align="center" valign="middle"><span style="display:inline-block;padding:4px 8px 4px 8px;user-select:none;' +
-					'border-radius:3px;background:rgba(255,255,255,0.85);overflow:hidden;text-overflow:ellipsis;max-width:' + (w - 34) + 'px;">' +
-					mxUtils.htmlEntities(mxResources.get(title, null, title)) + '</span></td></tr></table>';
+				var table = document.createElement('table');
+				table.setAttribute('width', '100%');
+				table.setAttribute('height', '100%');
+				table.style.background = Editor.isDarkMode() ? 'transparent' : 'rgba(255,255,255,0.85)';
+				table.style.lineHeight = '1.3em';
+				table.style.border = 'inherit';
+				var tbody = document.createElement('tbody');
+				var row = document.createElement('tr');
+				var td = document.createElement('td');
+				td.setAttribute('align', 'center');
+				td.setAttribute('valign', 'middle');
+				var span = document.createElement('span');
+				span.style.display = 'inline-block';
+				span.style.padding = '4px 8px 4px 8px';
+				span.style.userSelect = 'none';
+				span.style.borderRadius = '3px';
+				span.style.background = 'rgba(255,255,255,0.85)';
+				span.style.overflow = 'hidden';
+				span.style.textOverflow = 'ellipsis';
+				span.style.maxWidth = (w - 34) + 'px';
+				mxUtils.write(span, mxResources.get(title, null, title));
+				td.appendChild(span);
+				row.appendChild(td);
+				tbody.appendChild(row);
+				table.appendChild(tbody);
+				elt.appendChild(table);
 			}
 			
 			function activate(doCreate)
@@ -3283,11 +3305,31 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		}
 		else
 		{
-			elt.innerHTML = '<table width="100%" height="100%" style="line-height:1.3em;"><tr>' +
-				'<td align="center" valign="middle"><span style="display:inline-block;padding:4px 8px 4px 8px;user-select:none;' +
-				'border-radius:3px;background:#ffffff;overflow:hidden;text-overflow:ellipsis;max-width:' + (w - 34) + 'px;">' +
-				mxUtils.htmlEntities(mxResources.get(title, null, title)) + '</span></td></tr></table>';
-			
+			var table = document.createElement('table');
+			table.setAttribute('width', '100%');
+			table.setAttribute('height', '100%');
+			table.style.lineHeight = '1.3em';
+			var tbody = document.createElement('tbody');
+			var row = document.createElement('tr');
+			var td = document.createElement('td');
+			td.setAttribute('align', 'center');
+			td.setAttribute('valign', 'middle');
+			var span = document.createElement('span');
+			span.style.display = 'inline-block';
+			span.style.padding = '4px 8px 4px 8px';
+			span.style.userSelect = 'none';
+			span.style.borderRadius = '3px';
+			span.style.background = '#ffffff';
+			span.style.overflow = 'hidden';
+			span.style.textOverflow = 'ellipsis';
+			span.style.maxWidth = (w - 34) + 'px';
+			mxUtils.write(span, mxResources.get(title, null, title));
+			td.appendChild(span);
+			row.appendChild(td);
+			tbody.appendChild(row);
+			table.appendChild(tbody);
+			elt.appendChild(table);
+
 			if (select)
 			{
 				selectElement(elt);
@@ -3884,7 +3926,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	}
 
 	if (!compact && urlParams['embed'] != '1' && !createOnly && 
-			!mxClient.IS_ANDROID && !mxClient.IS_IOS)
+			!mxClient.IS_ANDROID && !mxClient.IS_IOS && urlParams['noDevice'] != '1')
 	{
 		var fromTmpBtn = mxUtils.button(mxResources.get('fromTemplateUrl'), function()
 		{
@@ -4024,7 +4066,7 @@ var CreateDialog = function(editorUi, title, createFn, cancelFn, dlgTitle, btnLa
 	var copyBtn = null;
 	
 	// Disables SVG preview if SVG is not supported in browser
-	if (data != null && mimeType != null && (mimeType.substring(0, 6) == 'image/' &&
+	if (urlParams['noDevice'] != '1' && data != null && mimeType != null && (mimeType.substring(0, 6) == 'image/' &&
 		(mimeType.substring(0, 9) != 'image/svg' || mxClient.IS_SVG)))
 	{
 		nameInput.style.width = '160px';
@@ -4941,6 +4983,7 @@ var ImageDialog = function(editorUi, title, initialValue, fn, ignoreExisting, co
 var LinkDialog = function(editorUi, initialValue, btnLabel, fn, showPages, showNewWindowOption, linkTarget)
 {
 	var div = document.createElement('div');
+	div.style.height = '100%';
 	mxUtils.write(div, mxResources.get('editLink') + ':');
 	
 	var inner = document.createElement('div');
@@ -4998,7 +5041,7 @@ var LinkDialog = function(editorUi, initialValue, btnLabel, fn, showPages, showN
 	pageRadio.setAttribute('name', 'geLinkDialogOption');
 
 	var pageSelect = document.createElement('select');
-	pageSelect.style.width = '100%';
+	pageSelect.style.width = '520px';
 
 	var newWindowCheckbox = document.createElement('input');
 	newWindowCheckbox.setAttribute('type', 'checkbox');

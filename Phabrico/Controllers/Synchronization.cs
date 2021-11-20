@@ -2413,6 +2413,10 @@ namespace Phabrico.Controllers
 
                 if (modifiedTransactionsPerObject.Key.StartsWith(Phabricator.Data.Maniphest.Prefix))
                 {
+                    foreach (Phabricator.Data.Transaction transaction in modifiedTransactionsPerObject)
+                    {
+                        UploadOfflineAttachments(synchronizationParameters, transaction);
+                    }
                     phabricatorManiphestAPI.Edit(synchronizationParameters.browser, synchronizationParameters.database, synchronizationParameters.browser.Conduit, modifiedTransactionsPerObject);
                 }
 
@@ -2472,118 +2476,103 @@ namespace Phabrico.Controllers
         /// <param name="phabricatorObject"></param>
         private void UploadOfflineAttachments(SynchronizationParameters synchronizationParameters, Phabricator.Data.PhabricatorObject phabricatorObject)
         {
-            Dictionary<int,Phabricator.Data.File> cachedFileReferences = new Dictionary<int, Phabricator.Data.File>();
-            Storage.Stage stageStorage = new Storage.Stage();
-            Phabricator.API.File fileAPI = new Phabricator.API.File();
-            Regex matchFileAttachments = new Regex("{F(-[0-9]+)[^}]*}");
+            string remarkupContent = null;
+
+            // find out which kind of phabricatorObject we're processing
             Phabricator.Data.Phriction phrictionDocument = phabricatorObject as Phabricator.Data.Phriction;
             if (phrictionDocument != null)
             {
-                foreach (Match match in matchFileAttachments.Matches(phrictionDocument.Content).OfType<Match>().ToArray().OrderByDescending(match => match.Index))
-                {
-                    int phabricatorFileReference;
-                    int phabricoFileReference = Int32.Parse(match.Groups[1].Value);
-                    if (synchronizationParameters.uploadedFileReferences.TryGetValue(phabricoFileReference, out phabricatorFileReference) == false)
-                    {
-                        Phabricator.Data.File file;
-                        Phabricator.Data.File fileWithoutContent;
-                        if (cachedFileReferences.TryGetValue(phabricatorFileReference, out fileWithoutContent) == false)
-                        {
-                            fileWithoutContent = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database)
-                                                             .FirstOrDefault(f => f.ID == phabricoFileReference);
-                        }
-
-                        if (fileWithoutContent != null)
-                        {
-                            if (cachedFileReferences.TryGetValue(phabricatorFileReference, out file) == false)
-                            {
-                                // get content of file
-                                file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database,
-                                                                               Phabricator.Data.File.Prefix,
-                                                                               Int32.Parse(fileWithoutContent.Token.Substring("PHID-NEWTOKEN".Length)),
-                                                                               true
-                                                                              );
-
-                                // cache file in case we have multiple references to this file in this document
-                                cachedFileReferences[phabricatorFileReference] = file;
-                            }
-
-                            int? newFileReference = fileAPI.Edit(synchronizationParameters.browser.Conduit, file);
-                            if (newFileReference.HasValue == false)
-                            {
-                                // some error occurred while uploading the file
-                                continue;
-                            }
-
-                            phabricatorFileReference = newFileReference.Value;
-                            synchronizationParameters.uploadedFileReferences[phabricoFileReference] = phabricatorFileReference;
-
-                            // remove file from offline stage area
-                            stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, file);
-                        }
-                    }
-
-                    phrictionDocument.Content = phrictionDocument.Content.Substring(0, match.Groups[1].Index)
-                                              + phabricatorFileReference.ToString()
-                                              + phrictionDocument.Content.Substring(match.Groups[1].Index + match.Groups[1].Length);
-                }
-
-                return;
+                remarkupContent = phrictionDocument.Content;
             }
 
             Phabricator.Data.Maniphest maniphestTask = phabricatorObject as Phabricator.Data.Maniphest;
             if (maniphestTask != null)
             {
-                foreach (Match match in matchFileAttachments.Matches(maniphestTask.Description).OfType<Match>().ToArray().OrderByDescending(match => match.Index))
+                remarkupContent = maniphestTask.Description;
+            }
+
+            Phabricator.Data.Transaction transaction = phabricatorObject as Phabricator.Data.Transaction;
+            if (transaction != null)
+            {
+                remarkupContent = transaction.NewValue;
+            }
+
+            // execute the actual processing
+            if (remarkupContent != null)
+            {
+                Action<Phabricator.Data.PhabricatorObject> processFileReferencedInRemarkupContent = new Action<Phabricator.Data.PhabricatorObject>((dataObject) =>
                 {
-                    int phabricatorFileReference;
-                    int phabricoFileReference = Int32.Parse(match.Groups[1].Value);
-                    if (synchronizationParameters.uploadedFileReferences.TryGetValue(phabricoFileReference, out phabricatorFileReference) == false)
+                    Storage.Stage stageStorage = new Storage.Stage();
+                    Phabricator.API.File fileAPI = new Phabricator.API.File();
+                    Dictionary<int, Phabricator.Data.File> cachedFileReferences = new Dictionary<int, Phabricator.Data.File>();
+                    Regex matchFileAttachments = new Regex("{F(-[0-9]+)[^}]*}");
+                    foreach (Match match in matchFileAttachments.Matches(remarkupContent).OfType<Match>().ToArray().OrderByDescending(match => match.Index))
                     {
-                        Phabricator.Data.File file;
-                        Phabricator.Data.File fileWithoutContent;
-                        if (cachedFileReferences.TryGetValue(phabricatorFileReference, out fileWithoutContent) == false)
+                        int phabricatorFileReference;
+                        int phabricoFileReference = Int32.Parse(match.Groups[1].Value);
+                        if (synchronizationParameters.uploadedFileReferences.TryGetValue(phabricoFileReference, out phabricatorFileReference) == false)
                         {
-                            fileWithoutContent = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database)
-                                                             .FirstOrDefault(f => f.ID == phabricoFileReference);
+                            Phabricator.Data.File file = null;
+                            Phabricator.Data.File fileWithoutContent = null;
+                            if (cachedFileReferences.TryGetValue(phabricoFileReference, out fileWithoutContent) == false)
+                            {
+                                fileWithoutContent = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database)
+                                                                 .FirstOrDefault(f => f.ID == phabricoFileReference);
+                            }
+
+                            if (fileWithoutContent != null)
+                            {
+                                if (cachedFileReferences.TryGetValue(phabricoFileReference, out file) == false)
+                                {
+                                    // get content of file
+                                    file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database,
+                                                                                   Phabricator.Data.File.Prefix,
+                                                                                   phabricoFileReference,
+                                                                                   true
+                                                                                  );
+
+                                    // cache file in case we have multiple references to this file in this document
+                                    cachedFileReferences[phabricoFileReference] = file;
+                                }
+
+                                int? newFileReference = fileAPI.Edit(synchronizationParameters.browser.Conduit, file);
+                                if (newFileReference.HasValue == false)
+                                {
+                                    // some error occurred while uploading the file
+                                    continue;
+                                }
+
+                                phabricatorFileReference = newFileReference.Value;
+                                synchronizationParameters.uploadedFileReferences[phabricoFileReference] = phabricatorFileReference;
+
+                                // remove file from offline stage area
+                                stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, file);
+                            }
                         }
 
-                        if (fileWithoutContent != null)
+                        remarkupContent = remarkupContent.Substring(0, match.Groups[1].Index)
+                                        + phabricatorFileReference.ToString()
+                                        + remarkupContent.Substring(match.Groups[1].Index + match.Groups[1].Length);
+
+                        // copy result into phabricatorObject
+                        if (phrictionDocument != null)
                         {
-                            if (cachedFileReferences.TryGetValue(phabricatorFileReference, out file) == false)
-                            {
-                                // get content of file
-                                file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database,
-                                                                               Phabricator.Data.File.Prefix,
-                                                                               Int32.Parse(fileWithoutContent.Token.Substring("PHID-NEWTOKEN".Length)),
-                                                                               true
-                                                                              );
+                            phrictionDocument.Content = remarkupContent;
+                        }
 
-                                // cache file in case we have multiple references to this file in this document
-                                cachedFileReferences[phabricatorFileReference] = file;
-                            }
+                        if (maniphestTask != null)
+                        {
+                            maniphestTask.Description = remarkupContent;
+                        }
 
-                            int? newFileReference = fileAPI.Edit(synchronizationParameters.browser.Conduit, file);
-                            if (newFileReference.HasValue == false)
-                            {
-                                // some error occurred while uploading the file
-                                continue;
-                            }
-
-                            phabricatorFileReference = newFileReference.Value;
-                            synchronizationParameters.uploadedFileReferences[phabricoFileReference] = phabricatorFileReference;
-
-                            // remove file from offline stage area
-                            stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, file);
+                        if (transaction != null)
+                        {
+                            transaction.NewValue = remarkupContent;
                         }
                     }
+                });
 
-                    maniphestTask.Description = maniphestTask.Description.Substring(0, match.Groups[1].Index)
-                                              + phabricatorFileReference.ToString()
-                                              + maniphestTask.Description.Substring(match.Groups[1].Index + match.Groups[1].Length);
-                }
-
-                return;
+                processFileReferencedInRemarkupContent.Invoke(phrictionDocument); // execute
             }
         }
     }

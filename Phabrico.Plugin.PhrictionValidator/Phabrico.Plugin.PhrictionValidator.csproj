@@ -55,10 +55,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildVersion.cs">
-      <DependentUpon>BuildVersion.tt</DependentUpon>
+      <DependentUpon>BuildVersion.cst</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="BuildVersion.cst" />
     <Compile Include="PhrictionValidator.cs" />
     <Compile Include="PhrictionValidatorController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -84,22 +85,24 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BuildVersion.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>BuildVersion.cs</LastGenOutput>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets" Condition="Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Clarius.TransformOnBuild.1.22.0\build\Clarius.TransformOnBuild.targets'))" />
     <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
   </Target>
   <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+  <PropertyGroup>
+    <PreBuildEvent>IF EXIST "$(MSBuildBinPath)\Roslyn\csc.exe" SET CSC="$(MSBuildBinPath)\Roslyn\csc.exe" &amp; GOTO build
+SET CSC=%25WINDIR%25\Microsoft.NET\Framework64\v4.0.30319\csc.exe
+
+:build
+echo %25CSC%25
+%25CSC%25 /debug:full "$(ProjectDir)BuildVersion.cst" &gt; nul  &amp;&amp;  BuildVersion.exe ..\.. &gt; "$(ProjectDir)BuildVersion.cs"
+if exist BuildVersion.exe del BuildVersion.exe
+if exist BuildVersion.pdb del BuildVersion.pdb</PreBuildEvent>
+  </PropertyGroup>
 </Project>

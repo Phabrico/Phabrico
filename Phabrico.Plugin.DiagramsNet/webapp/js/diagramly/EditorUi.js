@@ -280,80 +280,6 @@
 	};
 
 	/**
-	 * Static method for pasing PNG files.
-	 */
-	EditorUi.parsePng = function(f, fn, error)
-	{
-		var pos = 0;
-		
-		function fread(d, count)
-		{
-			var start = pos;
-			pos += count;
-			
-			return d.substring(start, pos);
-		};
-		
-		// Reads unsigned long 32 bit big endian
-		function _freadint(d)
-		{
-			var bytes = fread(d, 4);
-			
-			return bytes.charCodeAt(3) + (bytes.charCodeAt(2) << 8) +
-				(bytes.charCodeAt(1) << 16) + (bytes.charCodeAt(0) << 24);
-		};
-		
-		// Checks signature
-		if (fread(f,8) != String.fromCharCode(137) + 'PNG' + String.fromCharCode(13, 10, 26, 10))
-		{
-			if (error != null)
-			{
-				error();
-			}
-			
-			return;
-		}
-		
-		// Reads header chunk
-		fread(f,4);
-		
-		if (fread(f,4) != 'IHDR')
-		{
-			if (error != null)
-			{
-				error();
-			}
-			
-			return;
-		}
-		
-		fread(f, 17);
-		
-		do
-		{
-			var n = _freadint(f);
-			var type = fread(f,4);
-			
-			if (fn != null)
-			{
-				if (fn(pos - 8, type, n))
-				{
-					break;
-				}
-			}
-			
-			value = fread(f,n);
-			fread(f,4);
-			
-			if (type == 'IEND')
-			{
-				break;
-			}
-		}
-		while (n);
-	};
-	
-	/**
 	 * Removes any values, styles and geometries from the given XML node.
 	 */
 	EditorUi.removeChildNodes = function(node)
@@ -2724,6 +2650,12 @@
 				
 				EditorUi.debug('File.opened', [file]);
 				
+				//Notify users that editing is disabled within mobile apps (mainly for MS Teams)
+				if (urlParams['viewerOnlyMsg'] == '1')
+				{
+					this.showAlert(mxResources.get('viewerOnlyMsg'));
+				}
+			
 				if (this.editor.editable && this.mode == file.getMode() &&
 					file.getMode() != App.MODE_DEVICE && file.getMode() != null)
 				{
@@ -3721,6 +3653,8 @@
 			Dialog.backdropColor = Editor.darkColor;
 			Format.inactiveTabBackgroundColor = 'black';
 	    	Graph.prototype.defaultThemeName = 'darkTheme';
+			Graph.prototype.shapeBackgroundColor = Editor.darkColor;
+			Graph.prototype.shapeForegroundColor = Editor.lightColor;
 			Graph.prototype.defaultPageBackgroundColor = Editor.darkColor;
 			Graph.prototype.defaultPageBorderColor = '#505759';
 			BaseFormatPanel.prototype.buttonBackgroundColor = Editor.darkColor;
@@ -3735,7 +3669,7 @@
 		// Implements the sketch-min UI
 		if (urlParams['sketch'] == '1')
 		{
-			Graph.prototype.defaultVertexStyle = {'pointerEvents': '0', 'hachureGap': '4'};
+			Graph.prototype.defaultVertexStyle = {'hachureGap': '4'};
 			Graph.prototype.defaultEdgeStyle = {'edgeStyle': 'none', 'rounded': '0', 'curved': '1',
 				'jettySize': 'auto', 'orthogonalLoop': '1', 'endArrow': 'open', 'startSize': '14', 'endSize': '14',
 				'sourcePerimeterSpacing': '8', 'targetPerimeterSpacing': '8'};
@@ -4085,6 +4019,17 @@
 				fn3 = mxUtils.bind(this, function()
 				{
 					return this.editor.graph.openLink(e.helpLink);
+				});
+			}
+			else if (e != null && e.ownerEmail != null)
+			{
+				btn3 = mxResources.get('contactOwner');
+				
+				msg += mxUtils.htmlEntities(' (' + btn3 + ': ' + e.ownerEmail + ')');
+				
+				fn3 = mxUtils.bind(this, function()
+				{
+					return this.openLink('mailto:' + mxUtils.htmlEntities(e.ownerEmail));
 				});
 			}
 	
@@ -4763,9 +4708,9 @@
 				var tags = this.editor.graph.getAllTags();
 				tagsButton.style.display = (tags.length > 0) ? '' : 'none';
 			}));
-			
-			editoUiAddChromelessToolbarItems.apply(this, arguments);
 		}
+	
+		editoUiAddChromelessToolbarItems.apply(this, arguments);
 
 		this.editor.addListener('tagsDialogShown', mxUtils.bind(this, function()
 		{
@@ -4916,7 +4861,6 @@
 			}), Editor.cameraImage, mxResources.get('export'));
 		}
 	};
-
 
 	/**
 	 * Translates this point by the given vector.
@@ -5368,11 +5312,25 @@
 		
 		function updateLinkColor()
 		{
-			linkButton.innerHTML = '<div style="width:100%;height:100%;box-sizing:border-box;' +
-				((linkColor != null && linkColor != mxConstants.NONE) ?
-				'border:1px solid black;background-color:' + linkColor :
-				'background-position:center center;background-repeat:no-repeat;' +
-				'background-image:url(\'' + Dialog.prototype.closeImage + '\')') + ';"></div>';
+			var div = document.createElement('div');
+			div.style.width = '100%';
+			div.style.height = '100%';
+			div.style.boxSizing = 'border-box';
+
+			if (linkColor != null && linkColor != mxConstants.NONE)
+			{
+				div.style.border = '1px solid black';
+				div.style.backgroundColor = linkColor;
+			}
+			else
+			{
+				div.style.backgroundPosition = 'center center';
+				div.style.backgroundRepeat = 'no-repeat';
+				div.style.backgroundImage = 'url(\'' + Dialog.prototype.closeImage + '\')';
+			}
+
+			linkButton.innerHTML = '';
+			linkButton.appendChild(div);
 		};
 		
 		linkButton = mxUtils.button('', mxUtils.bind(this, function(evt)
@@ -5737,7 +5695,7 @@
 	/**
 	 * 
 	 */
-	EditorUi.prototype.showPublishLinkDialog = function(title, hideShare, width, height, fn, showFrameOption)
+	EditorUi.prototype.showPublishLinkDialog = function(title, hideShare, width, height, fn, showFrameOption, helpLink, footer)
 	{
 		var div = document.createElement('div');
 		div.style.whiteSpace = 'nowrap';
@@ -5749,13 +5707,12 @@
 		div.appendChild(hd);
 		
 		var file = this.getCurrentFile();
-		var helpLink = 'https://www.diagrams.net/doc/faq/publish-diagram-as-link';
 		var dy = 0;
 		
 		if (file != null && file.constructor == window.DriveFile && !hideShare)
 		{
 			dy = 80;
-			helpLink = 'https://www.diagrams.net/doc/faq/google-drive-publicly-publish-diagram';
+			helpLink = (helpLink != null) ? helpLink : 'https://www.diagrams.net/doc/faq/google-drive-publicly-publish-diagram';
 			var hintSection = document.createElement('div');
 			hintSection.style.cssText = 'border-bottom:1px solid lightGray;padding-bottom:14px;padding-top:6px;margin-bottom:14px;text-align:center;';
 			
@@ -5796,6 +5753,10 @@
 					}));
 				}
 			}));
+		}
+		else
+		{
+			helpLink = (helpLink != null) ? helpLink : 'https://www.diagrams.net/doc/faq/publish-diagram-as-link';
 		}
 		
 		var widthInput = null;
@@ -5890,7 +5851,7 @@
 				lightbox.checked, editSection.getLink(),
 				layers.checked, (widthInput != null) ? widthInput.value : null,
 				(heightInput != null) ? heightInput.value : null, tags.checked);
-		}), null, mxResources.get('create'), helpLink);
+		}), null, mxResources.get('create'), helpLink, footer);
 		this.showDialog(dlg.container, 340, 300 + dy, true, true);
 		
 		if (widthInput != null)
@@ -6746,6 +6707,8 @@
 		redirect, embedImages, background, scale, border, shadow, keepTheme)
 	{
 		embedImages = (embedImages != null) ? embedImages : true;
+		border = (border != null) ? border : 0;
+
 		var bg = (background != null) ? background : graph.background;
 		
 		if (bg == mxConstants.NONE)
@@ -6760,7 +6723,7 @@
 		
 		if (graph.shadowVisible || shadow)
 		{
-			graph.addSvgShadow(svgRoot);
+			graph.addSvgShadow(svgRoot, null, null, border == 0);
 		}
 
 		if (xml != null)
@@ -7031,9 +6994,9 @@
 					if (applyDefaultStyles)
 					{
 						this.insertHandler(cells, null, null,
-							Graph.prototype.defaultVertexStyle,
-							Graph.prototype.defaultEdgeStyle,
-							true, true);
+							graph.defaultVertexStyle,
+							graph.defaultEdgeStyle,
+							false, true);
 					}
 				}
 				finally
@@ -7828,9 +7791,9 @@
 	    		}
 				
 				// Checks for embedded XML in PNG
-				if (text.substring(0, 22) == 'data:image/png;base64,')
+				if (Editor.isPngDataUrl(text))
 				{
-					var xml = this.extractGraphModelFromPng(text);
+					var xml = Editor.extractGraphModelFromPng(text);
 					
 					if (xml != null && xml.length > 0)
 					{
@@ -10267,7 +10230,6 @@
 			this.menus.defaultFontSize = (value) ? 20 : 16;
 
 			graph.defaultVertexStyle = mxUtils.clone(Graph.prototype.defaultVertexStyle);
-			setStyle(graph.defaultVertexStyle, 'pointerEvents', '0');
 			setStyle(graph.defaultVertexStyle, 'fontSize', this.menus.defaultFontSize);
 
 			graph.defaultEdgeStyle = mxUtils.clone(Graph.prototype.defaultEdgeStyle);
@@ -10302,8 +10264,6 @@
 					concat(this.menus.defaultFonts);
 			}
 
-			this.initialDefaultVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
-			this.initialDefaultEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
 			graph.currentVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
 			graph.currentEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
 			this.clearDefaultStyle();
@@ -10988,9 +10948,9 @@
 									if (data != null)
 									{
 										// Checks for embedded XML in PNG
-										if (data.substring(0, 22) == 'data:image/png;base64,')
+										if (Editor.isPngDataUrl(data))
 										{
-											var xml = this.extractGraphModelFromPng(data);
+											var xml = Editor.extractGraphModelFromPng(data);
 											
 											if (xml != null && xml.length > 0)
 											{
@@ -11662,7 +11622,7 @@
 	/**
 	 * Adds the buttons for embedded mode.
 	 */
-	EditorUi.prototype.sendEmbeddedSvgExport = function()
+	EditorUi.prototype.sendEmbeddedSvgExport = function(noExit)
 	{
 		var graph = this.editor.graph;
 
@@ -11675,30 +11635,44 @@
 
 		if (!this.editor.modified)
 		{
-			parent.postMessage(JSON.stringify({event: 'exit'}), '*');
+			if (!noExit)
+			{
+				parent.postMessage(JSON.stringify({event: 'exit',
+					point: this.embedExitPoint}), '*');
+			}
 		}
 		else
 		{
+			var bg = graph.background;
+		
+			if (bg == null || bg == mxConstants.NONE)
+			{
+				bg = this.embedExportBackground;
+			}
+
 			this.getEmbeddedSvg(this.getFileData(true, null, null, null, null,
 				null, null, null, null, false), graph, null, true,
 				mxUtils.bind(this, function(svg)
 			{
 				parent.postMessage(JSON.stringify({
-					event: 'export',
+					event: 'export', point: this.embedExitPoint,
+					exit: (noExit != null) ? !noExit : true,
 					data: Editor.createSvgDataUri(svg)
 				}), '*');
-			}), null, null, true, this.embedExportBackground,
-				1, this.embedExportBorder);
+			}), null, null, true, bg, 1, this.embedExportBorder);
 		}
 
-		this.diagramContainer.removeAttribute('data-bounds');
-		Editor.inlineFullscreen = false;
-		graph.model.clear();
-		this.editor.undoManager.clear();
-		this.setBackgroundImage(null);
-		this.editor.modified = false;
+		if (!noExit)
+		{
+			this.diagramContainer.removeAttribute('data-bounds');
+			Editor.inlineFullscreen = false;
+			graph.model.clear();
+			this.editor.undoManager.clear();
+			this.setBackgroundImage(null);
+			this.editor.modified = false;
 
-		this.fireEvent(new mxEventObject('editInlineStop'));
+			this.fireEvent(new mxEventObject('editInlineStop'));
+		}
 	};
 	
 	/**
@@ -11744,9 +11718,9 @@
 				{
 					try
 					{
-						if (data.substring(0, 22) == 'data:image/png;base64,')
+						if (Editor.isPngDataUrl(data))
 						{
-							data = this.extractGraphModelFromPng(data);
+							data = Editor.extractGraphModelFromPng(data);
 						}
 						else if (data.substring(0, 26) == 'data:image/svg+xml;base64,')
 						{
@@ -12034,6 +12008,27 @@
 							this.spinner.spin(document.body, msg)
 						}
 	
+						return;
+					}
+					else if (data.action == 'exit')
+					{
+						this.actions.get('exit').funct();
+
+						return;
+					}
+					else if (data.action == 'viewport')
+					{
+						if (data.viewport != null)
+						{
+							this.embedViewport = data.viewport;
+						}
+
+						return;
+					}
+					else if (data.action == 'snapshot')
+					{
+						this.sendEmbeddedSvgExport(true);
+
 						return;
 					}
 					else if (data.action == 'export')
@@ -12385,15 +12380,22 @@
 							this.embedExportBorder = data.border;
 						}
 
-						var border = this.embedExportBorder;
-
 						if (data.background != null)
 						{
 							this.embedExportBackground = data.background;
 						}
 
+						if (data.viewport != null)
+						{
+							this.embedViewport = data.viewport;
+						}
+
+						this.embedExitPoint = null;
+
 						if (data.rect != null)
 						{
+							var border = this.embedExportBorder;
+	
 							this.diagramContainer.style.border = '2px solid #295fcc';
 							this.diagramContainer.style.top = data.rect.top + 'px';
 							this.diagramContainer.style.left = data.rect.left + 'px';
