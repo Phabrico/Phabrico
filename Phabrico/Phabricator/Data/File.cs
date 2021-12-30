@@ -304,6 +304,7 @@ namespace Phabrico.Phabricator.Data
         {
             TokenPrefix = Prefix;
 
+            DateModified = DateTimeOffset.Now;
             FontAwesomeIcon = "fa-file-text-o";
             FileType = FileStyle.Other;
             Properties = "";

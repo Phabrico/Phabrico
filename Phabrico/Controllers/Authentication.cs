@@ -137,18 +137,18 @@ namespace Phabrico.Controllers
                                 Storage.Database localDatabase = (Storage.Database)objects[1];
                                 using (localDatabase = new Storage.Database(localDatabase.EncryptionKey))
                                 {
-                                // initialize some stuff after the first time we authenticate
-                                if (firstAuthentication && httpResponse.Status == Http.Response.HomePage.HomePageStatus.Authenticated)
+                                    // initialize some stuff after the first time we authenticate
+                                    if (firstAuthentication && httpResponse.Status == Http.Response.HomePage.HomePageStatus.Authenticated)
                                     {
                                         firstAuthentication = false;
 
-                                    // clean up unreferenced staged files
-                                    Storage.Stage.DeleteUnreferencedFiles(localDatabase, localBrowser);
+                                        // clean up unreferenced staged files
+                                        Storage.Stage.DeleteUnreferencedFiles(localDatabase, localBrowser);
                                     }
                                 }
 
-                            // start preloading
-                            if (httpResponse.Status == Http.Response.HomePage.HomePageStatus.Authenticated)
+                                // start preloading
+                                if (httpResponse.Status == Http.Response.HomePage.HomePageStatus.Authenticated)
                                 {
                                     string encryptionKey = Encryption.XorString(publicEncryptionKey, publicXorCipher);
                                     httpServer.PreloadContent(localBrowser, encryptionKey, accountDataUserName);
@@ -162,6 +162,24 @@ namespace Phabrico.Controllers
             }
 
             throw new InvalidOperationException();
+        }
+
+        /// <summary>
+        /// This method is fired when the AutoLogoff functionality is disabled by the browser client (i.e. autoLogoff.disable())
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        [UrlController(URL = "/poke")]
+        public void HttpPostDisablePoke(Http.Server httpServer, Browser browser, string[] parameters)
+        {
+            bool enabled = Int32.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["enabled"] ?? "0") != 0;
+
+            if (enabled == false)
+            {
+                SessionManager.Token token = SessionManager.GetToken(browser);
+                token.ServerValidationCheckEnabled = false;
+            }
         }
 
         /// <summary>

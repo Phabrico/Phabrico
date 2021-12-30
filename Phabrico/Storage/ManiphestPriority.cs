@@ -46,8 +46,9 @@ namespace Phabrico.Storage
         /// Returns all available ManiphestPriorityInfo records
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.ManiphestPriority> Get(Database database)
+        public override IEnumerable<Phabricator.Data.ManiphestPriority> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT priority, info
@@ -80,7 +81,7 @@ namespace Phabrico.Storage
         /// <param name="key"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public override Phabricator.Data.ManiphestPriority Get(Database database, string key, bool ignoreStageData = false)
+        public override Phabricator.Data.ManiphestPriority Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT priority, info

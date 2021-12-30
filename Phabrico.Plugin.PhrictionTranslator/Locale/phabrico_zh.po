@@ -1,0 +1,120 @@
+﻿# Chinese translations
+
+# General
+msgid "PluginName.PhrictionTranslator"
+msgstr "翻译这份文件"
+
+msgid "Translation parameters"
+msgstr "翻译参数"
+
+msgid "There is 1 underlying document. Would you like to translate this as well ?"
+msgstr "有1份基础文件。你想把它也翻译出来吗？"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to translate these as well ?"
+msgstr "有@@NBR-CHILD-DOCUMENTS@@基础文件。你想把这些也翻译出来吗？"
+
+msgid "The translation will be performed by a machine translation service on the Internet. Be sure not to send any sensitive data over the Internet! Do you still want to continue ?"
+msgstr "翻译将由互联网上的机器翻译服务来完成。\n请注意不要在互联网上发送任何敏感的数据! \n\n你确定你还想继续吗？"
+
+msgid "Document is translated"
+msgstr "文件被翻译"
+
+msgid "@@NBR-DOCUMENTS@@ documents have been translated"
+msgstr "翻译了@@NBR-DOCUMENTS@@份文件"
+
+msgid "Translation engine"
+msgstr "翻译引擎"
+
+msgid "API Key"
+msgstr "认证密钥"
+
+msgid "Source language"
+msgstr "源语言"
+
+msgid "Target language"
+msgstr "目标语言"
+
+msgid "Bulgarian"
+msgstr "保加利亚语"
+
+msgid "Chinese"
+msgstr "中文"
+
+msgid "Czech"
+msgstr "捷克语"
+
+msgid "Danish"
+msgstr "丹麦语"
+
+msgid "Dutch"
+msgstr "荷兰语"
+
+msgid "English"
+msgstr "英语"
+
+msgid "Estonian"
+msgstr "爱沙尼亚语"
+
+msgid "Finnish"
+msgstr "芬兰语"
+
+msgid "French"
+msgstr "法语"
+
+msgid "German"
+msgstr "德语"
+
+msgid "Greek"
+msgstr "希腊语"
+
+msgid "Hungarian"
+msgstr "匈牙利语"
+
+msgid "Italian"
+msgstr "意大利语"
+
+msgid "Japanese"
+msgstr "日语"
+
+msgid "Latvian"
+msgstr "拉脱维亚语"
+
+msgid "Lithuanian"
+msgstr "立陶宛语"
+
+msgid "Polish"
+msgstr "波兰语"
+
+msgid "Portuguese"
+msgstr "葡萄牙语"
+
+msgid "Romanian"
+msgstr "罗马尼亚语"
+
+msgid "Russian"
+msgstr "俄语"
+
+msgid "Slovak"
+msgstr "斯洛伐克语"
+
+msgid "Slovenian"
+msgstr "斯洛文尼亚语"
+
+msgid "Spanish"
+msgstr "西班牙文"
+
+msgid "Swedish"
+msgstr "瑞典语"
+
+# ProofReader
+msgid "PluginName.PhrictionProofReader"
+msgstr "校對"
+
+msgid "Save translation"
+msgstr "保存翻译"
+
+msgid "View remarkup code"
+msgstr "查看源代码"
+
+msgid "View result"
+msgstr "查看结果"

@@ -16,7 +16,7 @@ namespace Phabrico.Miscellaneous
         /// key = locale
         /// value = translation dictionaries (key = english text;  value = translation)
         /// </summary>
-        private static Dictionary<string,DictionarySafe<string,string>> dictionariesInUse = new Dictionary<string, DictionarySafe<string, string>>();
+        private static Dictionary<Language,DictionarySafe<string,string>> dictionariesInUse = new Dictionary<Language, DictionarySafe<string, string>>();
 
         /// <summary>
         /// Locale.css stylesheet is a special CSS stylesheet: it will be merged into the HTML page for speed improvement during the loading of the webpage
@@ -31,7 +31,7 @@ namespace Phabrico.Miscellaneous
         /// <param name="content">HTML content</param>
         /// <param name="locale">Language code</param>
         /// <returns></returns>
-        public static string MergeLocaleCss(string content, string locale)
+        public static string MergeLocaleCss(string content, Language locale)
         {
             string noLocaleStyleProperties = localeCss.GetCssProperties("*");
             string currentLocaleStyleProperties = localeCss.GetCssProperties("[data-locale=\"" + locale + "\"]");
@@ -51,7 +51,7 @@ namespace Phabrico.Miscellaneous
         /// </summary>
         /// <param name="locale">Language to be used for translation</param>
         /// <returns>Dictionary where key contains the English key translations and value contains the visible translations</returns>
-        public static DictionarySafe<string, string> ReadLocaleFile(string locale)
+        public static DictionarySafe<string, string> ReadLocaleFile(Language locale)
         {
             if (locale == null)
             {
@@ -120,7 +120,7 @@ namespace Phabrico.Miscellaneous
         /// <param name="htmlContent">HTML content to be translated</param>
         /// <param name="locale">Language to be used for translation</param>
         /// <returns>Translated HTML file</returns>
-        public static string TranslateHTML(string htmlContent, string locale)
+        public static string TranslateHTML(string htmlContent, Language locale)
         {
             List<string> missingMsgIds;
 
@@ -134,7 +134,7 @@ namespace Phabrico.Miscellaneous
         /// <param name="locale">Language to be used for translation</param>
         /// <param name="missingMsgIds">Contains the msgids that need to be translated but couldn't be found in the po locale files</param>
         /// <returns>Translated HTML file</returns>
-        public static string TranslateHTML(string htmlContent, string locale, out List<string> missingMsgIds)
+        public static string TranslateHTML(string htmlContent, Language locale, out List<string> missingMsgIds)
         {
             DictionarySafe<string,string> currentDictionary = ReadLocaleFile(locale);
             missingMsgIds = new List<string>();
@@ -280,13 +280,20 @@ namespace Phabrico.Miscellaneous
         /// <param name="javascript">Javascript code to be translated</param>
         /// <param name="locale">Language code</param>
         /// <returns>Javascript with the Locale.Translate calls replaced by translated strings</returns>
-        public static string TranslateJavascript(string javascript, string locale)
+        public static string TranslateJavascript(string javascript, Language locale)
         {
             DictionarySafe<string,string> currentDictionary = ReadLocaleFile(locale);
             List<string> missingMsgIds = new List<string>();
             return TranslateJavascript(javascript, currentDictionary, ref missingMsgIds);
         }
 
+        /// <summary>
+        /// Translates the Locale.Translate calls according to a given dictionary
+        /// </summary>
+        /// <param name="javascript">Javascript code to be translated</param>
+        /// <param name="currentDictionary">Translation dictionary</param>
+        /// <param name="missingMsgIds">Locale.Translate calls found in hte javascript code which are not defined in the dictionary</param>
+        /// <returns>Javascript with the Locale.Translate calls replaced by translated strings</returns>
         private static string TranslateJavascript(string javascript, DictionarySafe<string,string> currentDictionary, ref List<string> missingMsgIds)
         {
             string translatedJavascript = javascript;
@@ -342,7 +349,7 @@ namespace Phabrico.Miscellaneous
         /// <param name="locale">Language to be used for translation</param>
         /// <param name="noTranslationFound">True if no tranlsation was found for the given text</param>
         /// <returns>Translated string</returns>
-        public static string TranslateText(string text, string locale, out bool noTranslationFound)
+        public static string TranslateText(string text, Language locale, out bool noTranslationFound)
         {
             DictionarySafe<string, string> currentDictionary = ReadLocaleFile(locale);
 
@@ -350,7 +357,7 @@ namespace Phabrico.Miscellaneous
             string translation = currentDictionary[text];
             if (translation == null)
             {
-                translation = text;
+                translation = text.Replace("\\n", "\n");
                 noTranslationFound = true;
                 Logging.WriteError(null, "### No translation found for \"{0}\"", text);
             }
@@ -364,7 +371,7 @@ namespace Phabrico.Miscellaneous
         /// <param name="text">String to be translated</param>
         /// <param name="locale">Language to be used for translation</param>
         /// <returns>Translated string</returns>
-        public static string TranslateText(string text, string locale)
+        public static string TranslateText(string text, Language locale)
         {
             bool noTranslationFound;
             return TranslateText(text, locale, out noTranslationFound);

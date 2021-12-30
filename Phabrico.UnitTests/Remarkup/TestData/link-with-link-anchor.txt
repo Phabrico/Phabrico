@@ -2,3 +2,5 @@ http://x.y#http://x.y#
 ~~~~~~~~~~
 http://x.y#http://x.y#
 ~~~~~~~~~~
+<A f="i" u="http%3A%2F%2Fx.y%23http%3A%2F%2Fx.y%23"></A>
+~~~~~~~~~~

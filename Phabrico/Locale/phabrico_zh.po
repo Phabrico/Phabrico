@@ -320,6 +320,12 @@ msgstr "同步化正在完成";
 msgid "Synchronization.Status.Failed"
 msgstr "失败";
 
+msgid "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+msgstr "一些维基文件 将不会被上传，因为它们的slug路径太长了。你可以在 '当地变化' 屏幕上缩短这些路径。\n\n你想上传其他维基文件和任务吗？"
+
+msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+msgstr "一些维基文档有很长的slug路径，在你创建底层文档时可能会导致问题。\n\n你想继续吗？"
+
 # Maniphest
 msgid "Create Task"
 msgstr "创建一个任务"
@@ -579,6 +585,48 @@ msgstr "显示参考文献"
 
 msgid "Parameters"
 msgstr "参数"
+
+msgid "This page has been translated but it's translated content hasn't been reviewed yet"
+msgstr "此页已被翻译，但其翻译内容尚未被审查"
+
+msgid "Edit translation"
+msgstr "编辑翻译"
+
+msgid "Approve translation"
+msgstr "批准翻译"
+
+msgid "Are you sure you want to approve this translation?"
+msgstr "你确定你要批准这个翻译吗？"
+
+msgid "Unreviewed translations"
+msgstr "未修订的译文"
+
+msgid "Revert to original translation"
+msgstr "回归原文翻译"
+
+msgid "Are you sure you want to completely undo your translation ?"
+msgstr "你确定你要完全撤销你的翻译吗？"
+
+msgid "Action"
+msgstr "行动"
+
+msgid "Original Title"
+msgstr "原标题"
+
+msgid "All translations have been approved"
+msgstr "所有的翻译都被批准"
+
+msgid "Type some text to filter the list of unreviewed translations..."
+msgstr "键入一些文字来过滤未审阅的翻译列表..."
+
+msgid "Are you sure you don't need a translation for this document ?"
+msgstr "你确定你不需要翻译这份文件吗？"
+
+msgid "No translation needed"
+msgstr "不需要翻译"
+
+msgid "The original content of this document has changed. You must update the translation before you can approve it."
+msgstr "本文件的原始内容已经改变。你必须在批准前更新翻译。"
 
 # Phame
 msgid "Phame"
@@ -999,6 +1047,30 @@ msgstr "冻结了"
 msgid "Modified"
 msgstr "修改了"
 
+msgid "Rename path"
+msgstr "修改网址"
+
+msgid "New path:"
+msgstr "新的路径:"
+
+msgid "Current path:"
+msgstr "当前的路径:"
+
+msgid "Change path"
+msgstr "改变路径"
+
+msgid "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+msgstr "该文件的路径超过了100个字符。此文件仍可上传到Phabricator，但新创建的底层文件可能不会。"
+
+msgid "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+msgstr "该文件的路径超过了115个字符。该文件不能被上传到Phabricator。"
+
+msgid "An internal error occurred"
+msgstr "发生了一个内部错误"
+
+msgid "A document already exists with this slug path"
+msgstr "一个使用此路径的文件已经存在"
+
 # Remarkup editor
 msgid "Bold"
 msgstr "粗体"
@@ -1035,6 +1107,9 @@ msgstr "表"
 
 msgid "Diagram"
 msgstr "图示"
+
+msgid "Unlock edit and view windows"
+msgstr "解锁编辑和查看"
 
 msgid "Help"
 msgstr "救命"

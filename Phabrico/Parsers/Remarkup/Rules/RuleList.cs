@@ -1,9 +1,12 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {
@@ -22,6 +25,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
     [RuleNotInnerRuleFor(typeof(RuleNotification))]
     [RuleNotInnerRuleFor(typeof(RuleQuote))]
     [RuleNotInnerRuleFor(typeof(RuleTable))]
+    [RuleXmlTag("LS")]
     public class RuleList : RemarkupRule
     {
         /// <summary>
@@ -147,6 +151,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
         private List<ListElement> listElements;
         private RemarkupParserOutput remarkupParserOutput;
 
+        public DataTreeNode<ListElement> Tree { get; private set; }
+
+        /// <summary>
+        /// Deeper cloner
+        /// </summary>
+        /// <param name="originalRemarkupRule"></param>
+        public override RemarkupRule Clone()
+        {
+            RuleList copy = base.Clone() as RuleList;
+            copy.Tree = Tree;
+            return copy;
+        }
+
         /// <summary>
         /// Converts Remarkup encoded text into HTML
         /// </summary>
@@ -236,8 +253,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 }
 
                 // convert ListElements into DataTree
-                DataTreeNode<ListElement> rootTree = new DataTreeNode<ListElement>(14);
-                DataTreeNode<ListElement> previousTreeNode = rootTree;
+                Tree = new DataTreeNode<ListElement>(14);
+                DataTreeNode<ListElement> previousTreeNode = Tree;
                 foreach (ListElement listElement in listElements)
                 {
                     DataTreeNode<ListElement> newTreeListNode = new DataTreeNode<ListElement>(listElement);
@@ -325,7 +342,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 }
 
                 // convert tree to HTML
-                string[] htmlLines = GenerateListHtml(rootTree, browser, database, url).Split('\n').ToArray();
+                string[] htmlLines = GenerateListHtml(Tree, browser, database, url).Split('\n').ToArray();
 
                 // complete whitespace indenting
                 int indentSize = 0;
@@ -370,6 +387,77 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            string result = "";
+            string[] listItems = RegexSafe.Split(innerText, "</[bcnu][0-9]+>", RegexOptions.Singleline)
+                                          .Select(item => item.Trim(' ', '\r', '\n', '\t'))
+                                          .Where(item => item.Any())
+                                          .SelectMany(item => RegexSafe.Matches(item, 
+                                                                                "<[bcnu][0-9]+[^>]*>[^\n]*", RegexOptions.Singleline)
+                                                                       .OfType<Match>()
+                                                                       .Select(match => match.Value)
+                                                     )
+                                          .ToArray();
+            foreach (string listItem in listItems)
+            {
+                Match header = RegexSafe.Match(listItem, "^<([bcnu])([0-9]+)([^>]*)>", RegexOptions.None);
+                if (header.Success)
+                {
+                    char listType = header.Groups[1].Value[0];
+                    int listDepth = Int32.Parse(header.Groups[2].Value) - 1;
+                    int? startValue = null;
+                    string listAttributes = header.Groups[3].Value;
+                    Match matchStartValue = RegexSafe.Match(listAttributes, "s=\"([0-9]+)\"", RegexOptions.None);
+                    if (matchStartValue.Success)
+                    {
+                        startValue = Int32.Parse(matchStartValue.Groups[1].Value);
+                    }
+                    
+                    result += new string(' ', listDepth * 2);
+                    switch (listType)
+                    {
+                        case 'b':
+                            result += "-";
+                            break;
+
+                        case 'c':
+                            result += "- [X]";
+                            break;
+
+                        case 'n':
+                            if (startValue.HasValue)
+                            {
+                                result += startValue + ")";
+                            }
+                            else
+                            {
+                                result += "#";
+                            }
+                            break;
+
+                        case 'u':
+                            result += "- [ ]";
+                            break;
+                    }
+
+                    result += " ";
+                    result += RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, listItem.Substring(header.Length));
+                    result += "\n";
+                }
+            }
+
+            return result + "<N>[1]</N>\n";
         }
 
         /// <summary>
@@ -477,6 +565,95 @@ namespace Phabrico.Parsers.Remarkup.Rules
             html += endTag;
 
             return html;
+        }
+
+        /// <summary>
+        /// Generates a BrokenXml string based on the content of a tree of ListElements
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="browser"></param>
+        /// <param name="url"></param>
+        /// <param name="treeNode"></param>
+        /// <param name="level"></param>
+        /// <returns></returns>
+        public string GenerateListXML(Storage.Database database, Browser browser, string url, DataTreeNode<ListElement> treeNode = null, int level = 1)
+        {
+            string result = "";
+            IEnumerable<DataTreeNode<ListElement>> nodes;
+
+            if (treeNode == null) 
+                nodes = Tree.Children;
+            else
+                nodes = treeNode.Children;
+
+            if (level == 1) result += "\n" + BGN + RuleXmlTag.GetXmlTag(GetType()) + END;
+
+            RemarkupEngine remarkupEngine = new RemarkupEngine();
+
+            foreach (DataTreeNode<ListElement> node in nodes)
+            {
+                RemarkupParserOutput innerRemarkupParserOutput;
+                remarkupEngine.ToHTML(this, database, browser, url, node.Me.Content, out innerRemarkupParserOutput, false);
+
+                string xmlContent = innerRemarkupParserOutput.TokenList.PrepareForXmlExport(database, browser, url);
+
+                string tagName;
+                string bulletStart = "";
+                switch (node.Me.Bullet)
+                {
+                    case ListElement.ListBulletType.Checked:
+                        tagName = "c";
+                        break;
+
+                    case ListElement.ListBulletType.Numeric:
+                        tagName = "n";
+                        if (node.Me.BulletStart != 0)
+                        {
+                            bulletStart = " s=\"" + node.Me.BulletStart + "\"";
+                        }
+                        break;
+
+                    case ListElement.ListBulletType.Unchecked:
+                        tagName = "u";
+                        break;
+
+                    default:
+                        tagName = "b";
+                        break;
+                }
+
+                if (node.Children.Any())
+                {
+                    result += string.Format("\n{0}" + BGN + "{1}{2}{3}" + END + "{4}{5}{0}" + BGN + "/{1}{2}" + END,
+                                                new string(' ', level * 2),
+                                                tagName,
+                                                level,
+                                                bulletStart,
+                                                xmlContent.Replace("&", "&amp;")
+                                                          .Replace(">", "&gt;")
+                                                          .Replace("<", "&lt;"),
+                                                GenerateListXML(database, browser, url, node, level + 1)
+                                           );
+                }
+                else
+                {
+                    result += string.Format("\n{0}" + BGN + "{1}{2}{3}" + END + "{4}" + BGN + "/{1}{2}" + END,
+                                                new string(' ', level * 2),
+                                                tagName,
+                                                level,
+                                                bulletStart,
+                                                xmlContent.Replace("&", "&amp;")
+                                                          .Replace(">", "&gt;")
+                                                          .Replace("<", "&lt;")
+                                           );
+                }
+            }
+
+            result += "\n";
+
+            if (level == 1) result += "</" + RuleXmlTag.GetXmlTag(GetType()) + ">\n";
+
+            return result;
         }
 
         /// <summary>

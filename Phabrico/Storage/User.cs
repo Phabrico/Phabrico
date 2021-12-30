@@ -68,8 +68,9 @@ namespace Phabrico.Storage
         /// Returns all UserInfo records
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.User> Get(Database database)
+        public override IEnumerable<Phabricator.Data.User> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT *
@@ -110,7 +111,7 @@ namespace Phabrico.Storage
         /// <param name="key"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public override Phabricator.Data.User Get(Database database, string key, bool ignoreStageData = false)
+        public override Phabricator.Data.User Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, userName, realName, selected, dateSynchronized, isBot, isDisabled
@@ -130,8 +131,16 @@ namespace Phabrico.Storage
                         record.UserName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["userName"]);
                         record.RealName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["realName"]);
                         record.Selected = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["selected"]));
-                        record.IsBot = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["isBot"]));
-                        record.IsDisabled = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["isDisabled"]));
+                        try
+                        {
+                            record.IsBot = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["isBot"]));
+                            record.IsDisabled = bool.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["isDisabled"]));
+                        }
+                        catch
+                        {
+                            record.IsBot = false;
+                            record.IsDisabled = false;
+                        }
                         record.DateSynchronized = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateSynchronized"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
 
                         return record;

@@ -46,7 +46,7 @@ namespace Phabrico.Plugin
         /// </summary>
         /// <param name="locale"></param>
         /// <returns></returns>
-        public override string GetName(string locale)
+        public override string GetName(Language locale)
         {
             return Locale.TranslateText("Diagram", locale);
         }
@@ -64,7 +64,7 @@ namespace Phabrico.Plugin
         /// </summary>
         /// <param name="browser"></param>
         /// <returns></returns>
-        public override bool IsVisible(Browser browser)
+        public override bool IsVisibleInNavigator(Browser browser)
         {
             return true;
         }

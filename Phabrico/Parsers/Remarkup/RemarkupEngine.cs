@@ -109,18 +109,18 @@ namespace Phabrico.Parsers.Remarkup
                                 remarkupRule.Text = processedRemarkupText.Substring(0, remarkupRule.Length);
                                 remarkupRule.Html = localHtml;
 
+                                // fix backticking RuleFormattingMonospace
+                                if (remarkupRule is RuleFormattingMonospace && remarkupRule.Text[1] == '`') remarkupRule.Text = remarkupRule.Text.Substring(1);
+
+                                // fix trailing newline from horizontal rule
+                                if (remarkupRule is RuleHorizontalRule) remarkupRule.Text = remarkupRule.Text.TrimEnd('\r', '\n');
+
+                                // fix trailing newline from codeblock by 2 whitespaces rule
+                                if (remarkupRule is RuleCodeBlockBy2WhiteSpaces) remarkupRule.Text = remarkupRule.Text.TrimEnd('\r', '\n') + "\r\n";
+
                                 RemarkupRule clonedRemarkupRule = remarkupRule.Clone();
                                 remarkupParserOutput.TokenList.Add(clonedRemarkupRule);
                                 remarkupParserOutput.LinkedPhabricatorObjects.AddRange(clonedRemarkupRule.LinkedPhabricatorObjects);
-
-                                if (processedRemarkupText.Substring(0, unprocessedRemarkupText.Length).LastOrDefault() == ' ')
-                                {
-                                    ruleStartsAfterWhiteSpace = true;
-                                }
-                                else
-                                {
-                                    ruleStartsAfterWhiteSpace = false;
-                                }
 
                                 ruleStartsOnNewLine = remarkupRule is RuleHorizontalRule ||
                                                       remarkupRule is RuleNewline ||
@@ -140,9 +140,14 @@ namespace Phabrico.Parsers.Remarkup
                                              (remarkupRule is RuleFormattingStrikeThrough) == false &&
                                              (remarkupRule is RuleFormattingUnderline) == false;
 
+                                ruleStartsAfterWhiteSpace = remarkupRule.Text.EndsWith(" ");
+
                                 if (includeLineNumbers)
                                 {
-                                    int lineNumber = remarkupText.Substring(0, remarkupText.IndexOf(processedRemarkupText))
+                                    int processedPosition = remarkupText.IndexOf(processedRemarkupText);
+                                    if (processedPosition < 0) processedPosition = 0;
+
+                                    int lineNumber = remarkupText.Substring(0, processedPosition)
                                                                  .Count(ch => ch == '\n');
                                     if (lineNumber != previousLineNumber)
                                     {
@@ -181,10 +186,12 @@ namespace Phabrico.Parsers.Remarkup
                                 if (utf16.Length >= 4 && utf16[3] != 0x00)
                                 {
                                     html += (char)BitConverter.ToUInt16(utf16, 2);
+                                    remarkupParserOutput.TokenList.Add(new Rules.RuleUnknownToken(unprocessedRemarkupText[0].ToString()));
                                     unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
                                 }
                             }
                             
+                            remarkupParserOutput.TokenList.Add(new Rules.RuleUnknownToken(unprocessedRemarkupText[0].ToString()));
                             unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
                         }
 

@@ -34,8 +34,8 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			'; ';
 
 		var styleHashes = '\'sha256-JjkxVHHCCVO0nllPD6hU8bBYSlsikA8TM/o3fhr0bas=\' ' + // index.html
-			'\'sha256-VTG4NbRCx30lYCdLPlgZTrdTopzcdviOjAbS7nk+KbI=\' ' + // Minimal.js/Light
-			'\'sha256-mbkyvR7KVIpvb+DU65TAGUt3LYuyF2kUg8Ktoee8eY4=\' ' + // Minimal.js/Dark
+			'\'sha256-AmGry6TX9+7jq8dDe3fV57YLyCZkhoLUqLMFLkDHngQ=\' ' + // Minimal.js/Light
+			'\'sha256-9mIrMmC05PfyiKHe8Cf98PvG7wJ8gXtJv+bX221nLpk=\' ' + // Minimal.js/Dark
 			'\'sha256-7kY8ozVqKLIIBwZ24dhdmZkM26PsOlZmEi72RhmZKoM=\' ' + // mxTooltipHandler.js
 			'\'sha256-01chdey79TzZe4ihnvvUXXI5y8MklIcKH+vzDdQvsuU=\' ' + // Editor.js/mathJaxWebkitCss
 			'\'sha256-fGbXK7EYpvNRPca81zPnqJHi2y+34KSgAcZv8mhaSzI=\' ' + // MathJax.js
@@ -66,6 +66,9 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			'style-src %style-src% \'self\'  https://fonts.googleapis.com ' +
 			// Replaces unsafe-inline style-src with hashes with safe-style-src URL parameter
 			((urlParams['safe-style-src'] == '1') ? styleHashes : '\'unsafe-inline\'; ') +
+			'form-action \'none\';' +
+			'base-uri \'none\';' +
+			'child-src \'none\';' +
 			'object-src \'none\';';
 			
 		var csp = hashes + directives;
@@ -99,9 +102,6 @@ if (!mxIsElectron && location.protocol !== 'http:')
 				'frame-src \'self\' https://viewer.diagrams.net https://*.google.com; ' +
 				'style-src \'self\' https://fonts.googleapis.com ' + styleHashes + ' ' +
 				'object-src \'none\';' +
-				'form-action \'none\';' +
-				'base-uri \'none\';' +
-				'child-src \'none\';' +
 				'frame-src \'none\';' +
 				'worker-src https://se.diagrams.net/service-worker.js;'
 			console.log('se.diagrams.net:', se_diagrams_net);
@@ -209,7 +209,7 @@ mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Flowchart.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-FluidPower.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-GCP.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-GCP2.js');
-mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-GCP3.js');
+mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-GCPIcons.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Gmdl.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-IBM.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Infographic.js');

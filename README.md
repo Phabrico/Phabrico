@@ -36,6 +36,10 @@ It visualizes the state of all available local git repositories.
 ## PhrictionToPDF
 allows you to convert a Phriction document (or including all the documents under this Phriction document) into a single PDF file.
 
+## PhrictionTranslator
+creates an offline translation copy of a Phriction document (or including all documents under this Phriction document).
+Translation is performed by DeepL Free. To use this plugin, you need to sign up for an API key: https://www.deepl.com/pro-api
+
 ## PhrictionValidator
 verifies if all links to documents or files in a Phriction document (or including all documents under this Phriction document) are valid.
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -123,7 +124,7 @@ namespace Phabrico.UnitTests.JsonConfiguration
                                     return false;
                                 }
 
-                                Phabricator.Data.File fileObject = fileStorage.Get(Database, file.token);
+                                Phabricator.Data.File fileObject = fileStorage.Get(Database, file.token, Language.NotApplicable);
                                 if (fileObject == null)
                                 {
                                     // token not found in database
@@ -154,7 +155,7 @@ namespace Phabrico.UnitTests.JsonConfiguration
                                     return false;
                                 }
 
-                                Phabricator.Data.Maniphest maniphestTask = maniphestStorage.Get(Database, maniphest.token);
+                                Phabricator.Data.Maniphest maniphestTask = maniphestStorage.Get(Database, maniphest.token, Language.NotApplicable);
                                 if (maniphest == null)
                                 {
                                     // token not found in database
@@ -188,7 +189,7 @@ namespace Phabrico.UnitTests.JsonConfiguration
                                     return false;
                                 }
 
-                                Phabricator.Data.ManiphestPriority priority = maniphestPriorityStorage.Get(Database, maniphestPriority.value.ToString());
+                                Phabricator.Data.ManiphestPriority priority = maniphestPriorityStorage.Get(Database, maniphestPriority.value.ToString(), Language.NotApplicable);
                                 if (priority == null)
                                 {
                                     // token not found in database
@@ -217,7 +218,7 @@ namespace Phabrico.UnitTests.JsonConfiguration
                                     return false;
                                 }
 
-                                Phabricator.Data.ManiphestStatus status = maniphestStatusStorage.Get(Database, maniphestStatus.value);
+                                Phabricator.Data.ManiphestStatus status = maniphestStatusStorage.Get(Database, maniphestStatus.value, Language.NotApplicable);
                                 if (status == null)
                                 {
                                     // token not found in database
@@ -246,7 +247,7 @@ namespace Phabrico.UnitTests.JsonConfiguration
                                     return false;
                                 }
 
-                                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(Database, phriction.token);
+                                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(Database, phriction.token, Language.NotApplicable);
                                 if (phrictionDocument == null)
                                 {
                                     // token not found in database

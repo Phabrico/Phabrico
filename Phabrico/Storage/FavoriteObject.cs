@@ -38,8 +38,9 @@ namespace Phabrico.Storage
         /// Returns all available FavoriteObject records
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.FavoriteObject> Get(Database database)
+        public override IEnumerable<Phabricator.Data.FavoriteObject> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT accountUserName, token, displayOrder
@@ -98,7 +99,7 @@ namespace Phabrico.Storage
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
         [Obsolete("Use Phabricator.Data.FavoriteObject.Get(Database,string,string) instead")]
-        public override Phabricator.Data.FavoriteObject Get(Database database, string key, bool ignoreStageData)
+        public override Phabricator.Data.FavoriteObject Get(Database database, string key, Language language, bool ignoreStageData)
         {
             throw new NotImplementedException("Use Phabricator.Data.FavoriteObject.Get(Database,string,string) instead");
         }

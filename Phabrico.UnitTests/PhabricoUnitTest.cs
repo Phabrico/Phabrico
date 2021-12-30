@@ -22,6 +22,10 @@ namespace Phabrico.UnitTests
 
         public PhabricoUnitTest()
         {
+            if (System.IO.File.Exists("Phabrico.translation"))
+            {
+                System.IO.File.Delete("Phabrico.translation");
+            }
         }
 
         protected string ExecuteCMD(string directory, string cmd)
@@ -71,6 +75,7 @@ namespace Phabrico.UnitTests
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.ManiphestPriority maniphestPriorityStorage = new Storage.ManiphestPriority();
             Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
+            Storage.PhamePost phameStorage = new Storage.PhamePost();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.Project projectStorage = new Storage.Project();
             Storage.Transaction transactionStorage = new Storage.Transaction();
@@ -138,6 +143,16 @@ namespace Phabrico.UnitTests
             myPhrictionDocument.Subscribers = userWhoAmI.Token + "," + project.Token;
             myPhrictionDocument.Token = "PHID-WIKI-MYSTORY";
             phrictionStorage.Add(Database, myPhrictionDocument);
+
+            Phabricator.Data.PhamePost myPhamePost = new Phabricator.Data.PhamePost();
+            myPhamePost.Author = userWhoAmI.Token;
+            myPhamePost.Blog = "My Blog";
+            myPhamePost.Content = "All the things I want to bother you with today...";
+            myPhamePost.DateModified = DateTimeOffset.Now;
+            myPhamePost.ID = "123";
+            myPhamePost.Title = "Listen to me";
+            myPhamePost.Token = "PHID-POST-ITSREALLYIMPORTANT";
+            phameStorage.Add(Database, myPhamePost);
 
             Phabricator.Data.Phriction daddysPhrictionDocument = new Phabricator.Data.Phriction();
             daddysPhrictionDocument.Author = userWhoAmI.Token;
@@ -273,7 +288,7 @@ namespace Phabrico.UnitTests
             file.FileName = "small.png";
             file.FileType = Phabricator.Data.File.FileStyle.Image;
             file.ID = 1234;
-            file.MacroName = ":mymacro";
+            file.MacroName = "mymacro";
             file.Token = "PHID-FILE-SMALLPNG";
             file.Size = 391;
             file.Data = new byte[] {
@@ -304,6 +319,8 @@ namespace Phabrico.UnitTests
                 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
             };
             fileStorage.Add(Database, file);
+
+            HttpServer.PreloadFileMacros(EncryptionKey);
         }
 
         public JsonConfiguration.UnitTest ParseTestConfiguration(string jsonFile)

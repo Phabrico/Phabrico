@@ -1,0 +1,13 @@
+You should take a look at {T1247} as it is specially made for you
+
+Don't forget to mark T1247 as completed when you are finished
+~~~~~~~~~~
+You should take a look at <a class='maniphest-link ' href='/maniphest/T1247/'>T1247: Mind searching</a>
+ as it is specially made for you<p class='paragraph'></p>
+Don&#39;t forget to mark <a class='maniphest-link ' href='/maniphest/T1247/'>T1247</a>
+ as completed when you are finished
+~~~~~~~~~~
+You should take a look at <TS>{T1247}</TS> as it is specially made for you<N>[28]</N>
+<N>[29]</N>
+Don't forget to mark <TS>T1247</TS> as completed when you are finished
+~~~~~~~~~~

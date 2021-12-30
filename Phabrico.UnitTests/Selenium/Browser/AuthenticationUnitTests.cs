@@ -16,8 +16,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
         [DataRow(typeof(ChromeConfig), "")]
         [DataRow(typeof(EdgeConfig), "")]
         [DataRow(typeof(EdgeConfig), "phabrico")]
-        // [DataRow(typeof(FirefoxConfig), "")]           // disabled: get ElementNotInteractableException at mnuChangeLanguage.Click() ?!?
-        // [DataRow(typeof(FirefoxConfig), "phabrico")]   // disabled: get ElementNotInteractableException at mnuChangeLanguage.Click() ?!?
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
         public void LogOnAndSetLanguageToSpanish(Type browser, string httpRootPath)
         {
             Initialize(browser, httpRootPath);
@@ -29,7 +29,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             userMenu.Click();
 
             // click 'Change language'
-            IWebElement mnuChangeLanguage = userMenu.FindElement(By.PartialLinkText("Change language"));
+            IWebElement mnuChangeLanguage = userMenu.FindElement(By.PartialLinkText("Change language"))
+                                                    .FindElement(By.TagName("span"));  // otherwise firefox webdriver won't work
             mnuChangeLanguage.Click();
 
             // change language to Spanish
@@ -51,7 +52,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // click 'Change language'
             IWebElement btnChangeLanguage = WebBrowser.FindElement(By.XPath("//button[contains(text(), 'Change language')]"));
             btnChangeLanguage.Click();
-            Thread.Sleep(500);  // wait a while to make sure the redirect call is finished
+            Thread.Sleep(1000);  // wait a while to make sure the redirect call is finished
 
             // verify new language change
             IWebElement search = WebBrowser.FindElement(By.Id("searchPhabrico"));
@@ -156,8 +157,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
         [DataRow(typeof(ChromeConfig), "phabrico")]
         [DataRow(typeof(EdgeConfig), "")]
         [DataRow(typeof(EdgeConfig), "phabrico")]
-        // [DataRow(typeof(FirefoxConfig), "")]          // disabled: get ElementNotInteractableException at logOff.Click ?!?
-        // [DataRow(typeof(FirefoxConfig), "phabrico")]  // disabled: get ElementNotInteractableException at logOff.Click ?!?
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
         public void TestLogOnAndLogOff(Type browser, string httpRootPath)
         {
             Initialize(browser, httpRootPath);
@@ -169,7 +170,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             userMenu.Click();
 
             // click 'Log off'
-            IWebElement logOff = userMenu.FindElement(By.PartialLinkText("Log out"));
+            IWebElement logOff = userMenu.FindElement(By.PartialLinkText("Log out"))
+                                         .FindElement(By.TagName("span"));  // otherwise firefox webdriver won't work;
             logOff.Click();
             Thread.Sleep(5);  // wait a while to make sure the redirect call is finished
             
@@ -184,8 +186,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
         [DataRow(typeof(ChromeConfig), "")]
         [DataRow(typeof(EdgeConfig), "")]
         [DataRow(typeof(EdgeConfig), "phabrico")]
-        // [DataRow(typeof(FirefoxConfig), "")]           // disabled: get ElementNotInteractableException at mnuChangePassword.Click() ?!?
-        // [DataRow(typeof(FirefoxConfig), "phabrico")]   // disabled: get ElementNotInteractableException at mnuChangePassword.Click() ?!?
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
         public void TestModificationPassword(Type browser, string httpRootPath)
         {
             Initialize(browser, httpRootPath);
@@ -197,7 +199,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             userMenu.Click();
 
             // click 'Change password'
-            IWebElement mnuChangePassword = userMenu.FindElement(By.PartialLinkText("Change password"));
+            IWebElement mnuChangePassword = userMenu.FindElement(By.PartialLinkText("Change password"))
+                                                    .FindElement(By.TagName("span"));  // otherwise firefox webdriver won't work
             mnuChangePassword.Click();
 
             // enter old password

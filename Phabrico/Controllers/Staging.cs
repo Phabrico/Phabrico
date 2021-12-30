@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +22,32 @@ namespace Phabrico.Controllers
         /// </summary>
         public class JsonRecordData
         {
+            public enum IssueType
+            {
+                /// <summary>
+                /// No icon
+                /// </summary>
+                None,
+
+                /// <summary>
+                /// Phriction document has a path with a length between 100 and 115 characters
+                /// Yellow Exclamation icon
+                /// </summary>
+                SlugIsLong,
+
+                /// <summary>
+                /// Phriction document has path with length of more than 114 characters
+                /// Red Disallowed icon
+                /// </summary>
+                SlugIsTooLong
+            }
+
+            /// <summary>
+            /// In case an issue is detected with staged data, an issue icon is shown at the beginning of the table record
+            /// </summary>
+            [JsonConverter(typeof(StringEnumConverter))]
+            public IssueType Issue { get; set; }
+
             /// <summary>
             /// This is set to true when a document or a task has been modified in both Phabrico and Phabricator.
             /// If this is set to true, a blinking triangle icon is shown for the offline change record
@@ -32,6 +60,12 @@ namespace Phabrico.Controllers
             /// If this is set to false, a flame is shown
             /// </summary>
             public bool Frozen { get; set; }
+
+            /// <summary>
+            /// If this is set to true, the modified content points to a content translation for the current language
+            /// If this is set to false, the modified content points to a real phabrico object (e.g. Phriction document, Maniphest task, ...)
+            /// </summary>
+            public bool IsTranslation { get; set; }
 
             /// <summary>
             /// Represents the 'Last modified at' column
@@ -95,7 +129,7 @@ namespace Phabrico.Controllers
                 HtmlPartialViewPage dataViewPage = null;
                 viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "Staging", null);
 
-                foreach (Storage.Stage.Data stageData in stage.Get(database).OrderByDescending(modification => modification.DateModified))
+                foreach (Storage.Stage.Data stageData in stage.Get(database, browser.Session.Locale).OrderByDescending(modification => modification.DateModified))
                 {
                     string unknownToken = stageData.Token;
 
@@ -155,7 +189,9 @@ namespace Phabrico.Controllers
                     Storage.Project projectStorage = new Storage.Project();
                     Storage.User userStorage = new Storage.User();
 
-                    foreach (Storage.Stage.Data stageData in stage.Get(database)
+                    Content content = new Content(database);
+
+                    foreach (Storage.Stage.Data stageData in stage.Get(database, Language.NotApplicable)
                                                                   .OrderByDescending(modification => modification.DateModified.ToUnixTimeSeconds())  // do not order by milliseconds
                                                                   .ThenBy(modification => modification.Operation))
                     {
@@ -167,6 +203,7 @@ namespace Phabrico.Controllers
                         record.Type = "";
                         record.TransactionModifier = "";
                         record.TransactionText = "";
+                        record.Issue = JsonRecordData.IssueType.None;
 
                         if (stageData.Token.StartsWith("PHID-NEWTOKEN-"))
                         {
@@ -185,7 +222,7 @@ namespace Phabrico.Controllers
                                     record.TransactionModifier = (string)deserializedObject["Type"];
 
                                     Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                                    Phabricator.Data.Maniphest maniphest = maniphestStorage.Get(database, unknownToken);
+                                    Phabricator.Data.Maniphest maniphest = maniphestStorage.Get(database, unknownToken, browser.Session.Locale);
                                     stageData.HeaderData = JsonConvert.SerializeObject(maniphest);
 
                                     Match inputTagsParameter = RegexSafe.Match(record.TransactionModifier, "^(project|subscriber)-[0-9]*$", RegexOptions.None);
@@ -196,19 +233,19 @@ namespace Phabrico.Controllers
                                         switch (inputTagsParameter.Groups[1].Value)
                                         {
                                             case "project":
-                                                Phabricator.Data.Project project = projectStorage.Get(database, inputTagValue);
+                                                Phabricator.Data.Project project = projectStorage.Get(database, inputTagValue, browser.Session.Locale);
                                                 record.TransactionText = Locale.TranslateText("Project @@PROJECT@@ tagged", browser.Session.Locale).Replace("@@PROJECT@@", project.Name);
                                                 break;
 
                                             case "subscriber":
-                                                Phabricator.Data.User subscriberUser = userStorage.Get(database, inputTagValue);
+                                                Phabricator.Data.User subscriberUser = userStorage.Get(database, inputTagValue, browser.Session.Locale);
                                                 if (subscriberUser != null)
                                                 {
                                                     record.TransactionText = Locale.TranslateText("Subscriber @@SUBSCRIBER@@ added", browser.Session.Locale).Replace("@@SUBSCRIBER@@", subscriberUser.RealName);
                                                 }
                                                 else
                                                 {
-                                                    Phabricator.Data.Project subscriberProject = projectStorage.Get(database, inputTagValue);
+                                                    Phabricator.Data.Project subscriberProject = projectStorage.Get(database, inputTagValue, browser.Session.Locale);
                                                     record.TransactionText = Locale.TranslateText("Subscriber @@SUBSCRIBER@@ added", browser.Session.Locale).Replace("@@SUBSCRIBER@@", subscriberProject.Name);
                                                 }
                                                 break;
@@ -240,7 +277,7 @@ namespace Phabrico.Controllers
                             foreach (string crumb in crumbs.Take(crumbs.Length - 1))
                             {
                                 currentPath += crumb + "/";
-                                Phabricator.Data.Phriction parentDocument = phrictionStorage.Get(database, currentPath);
+                                Phabricator.Data.Phriction parentDocument = phrictionStorage.Get(database, currentPath, browser.Session.Locale);
                                 if (parentDocument == null)
                                 {
                                     string inexistantDocumentName = currentPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
@@ -260,6 +297,16 @@ namespace Phabrico.Controllers
                             }
 
                             crumbDescriptions += document.Name;
+
+                            if (document.Path.Length > Phabricator.Data.Phriction.MaximumLengthSlug)
+                            {
+                                record.Issue = JsonRecordData.IssueType.SlugIsTooLong;
+                            }
+                            else
+                            if (document.Path.Length >= Phabricator.Data.Phriction.MaximumPreferredLengthSlug)
+                            {
+                                record.Issue = JsonRecordData.IssueType.SlugIsLong;
+                            }
 
                             record.Title = crumbDescriptions;
                             record.URL = "w/" + document.Path;
@@ -293,8 +340,26 @@ namespace Phabrico.Controllers
                         record.Frozen = stageData.Frozen;
                         record.Token = stageData.Token;
                         record.Timestamp = FormatDateTimeOffset(stageData.DateModified, browser.Session.Locale);
+                        record.IsTranslation = content.GetTranslation(stageData.Token, browser.Session.Locale) != null;
 
                         tableRows.Add(record);
+                    }
+
+                    if (tableRows.Any(row => row.Issue == JsonRecordData.IssueType.SlugIsTooLong))
+                    {
+                        Http.Server.SendNotificationError("/offline/changes/notification", tableRows.Count.ToString());
+                    }
+                    else if (tableRows.Any(row => row.Issue == JsonRecordData.IssueType.SlugIsLong))
+                    {
+                        Http.Server.SendNotificationWarning("/offline/changes/notification", tableRows.Count.ToString());
+                    }
+                    else if (tableRows.Any())
+                    {
+                        Http.Server.SendNotificationInformation("/offline/changes/notification", tableRows.Count.ToString());
+                    }
+                    else
+                    {
+                        Http.Server.SendNotificationInformation("/offline/changes/notification", "");
                     }
                 }
             }
@@ -302,7 +367,65 @@ namespace Phabrico.Controllers
             string jsonData = JsonConvert.SerializeObject(tableRows);
             jsonMessage = new JsonMessage(jsonData);
         }
-        
+
+
+        /// <summary>
+        /// This method is fired via javascript when the navigator menu is visible.
+        /// It is used to visualize the notification of the 'Offline changes' menuitem
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="jsonMessage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/offline/changes/count")]
+        public void HttpGetCountUncommittedObjects(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        {
+            JsonRecordData.IssueType issueType = JsonRecordData.IssueType.None;
+            int numberUncommittedObjects = 0;
+
+            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
+                Storage.Stage stageStorage = new Storage.Stage();
+                Phabricator.Data.PhabricatorObject[] uncommittedObjects = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, Language.NotApplicable, false).ToArray();
+                Phabricator.Data.Phriction[] uncommittedPhrictionDocuments = stageStorage.Get<Phabricator.Data.Phriction>(database, Language.NotApplicable, false)
+                                                                                         .Where(uncommittedObject => uncommittedObject != null)
+                                                                                         .ToArray();
+
+                numberUncommittedObjects = uncommittedObjects.Length;
+                if (numberUncommittedObjects > 0)
+                {
+                    if (uncommittedPhrictionDocuments.Any(document => document.Path.Length >= Phabricator.Data.Phriction.MaximumLengthSlug))
+                    {
+                        issueType = JsonRecordData.IssueType.SlugIsTooLong;
+                        Http.Server.SendNotificationError("/offline/changes/notification", numberUncommittedObjects.ToString());
+                    }
+                    else if (uncommittedPhrictionDocuments.Any(document => document.Path.Length >= Phabricator.Data.Phriction.MaximumPreferredLengthSlug))
+                    {
+                        issueType = JsonRecordData.IssueType.SlugIsLong;
+                        Http.Server.SendNotificationWarning("/offline/changes/notification", numberUncommittedObjects.ToString());
+                    }
+                    else
+                    {
+                        Http.Server.SendNotificationInformation("/offline/changes/notification", numberUncommittedObjects.ToString());
+                    }
+                }
+                else
+                {
+                    Http.Server.SendNotificationInformation("/offline/changes/notification", "");
+                }
+            }
+
+            string jsonData = JsonConvert.SerializeObject(new {
+                IssueType = Enum.GetName(typeof(JsonRecordData.IssueType), issueType),
+                Count = numberUncommittedObjects
+            });
+            jsonMessage = new JsonMessage(jsonData);
+        }
+
         /// <summary>
         /// This controller method is fired when the user clicks on the 'Freeze' button of an item in the Offline Changes overview
         /// </summary>
@@ -326,8 +449,8 @@ namespace Phabrico.Controllers
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 Storage.Stage stageStorage = new Storage.Stage();
-                Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken);
-                Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken);
+                Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken, browser.Session.Locale);
+                Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken, browser.Session.Locale);
                 Phabricator.Data.Transaction transactionPriorityChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "priority");
                 Phabricator.Data.Transaction transactionStatusChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "status");
                 Phabricator.Data.Transaction transactionOwnerChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "owner");
@@ -342,7 +465,7 @@ namespace Phabrico.Controllers
                     if (maniphestTask == null)
                     {
                         Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                        maniphestTask = maniphestStorage.Get(database, phabricatorObjectToken, true);
+                        maniphestTask = maniphestStorage.Get(database, phabricatorObjectToken, browser.Session.Locale, true);
                     }
 
                     referencedStagedFileIDs.AddRange(matchFileAttachments.Matches(maniphestTask.Description)
@@ -351,7 +474,7 @@ namespace Phabrico.Controllers
                                                     );
 
                     // freeze task
-                    stageStorage.Freeze(database, maniphestTask.Token, true);
+                    stageStorage.Freeze(database, browser, maniphestTask.Token, true);
                 }
 
                 if (phrictionDocument != null)
@@ -362,13 +485,13 @@ namespace Phabrico.Controllers
                                                     );
 
                     // freeze document
-                    stageStorage.Freeze(database, phrictionDocument.Token, true);
+                    stageStorage.Freeze(database, browser, phrictionDocument.Token, true);
                 }
 
-                List<Phabricator.Data.File> stagedFiles = stageStorage.Get<Phabricator.Data.File>(database, false).ToList();
-                Phabricator.Data.PhabricatorObject[] stagedObjects = stageStorage.Get<Phabricator.Data.Phriction>(database)
+                List<Phabricator.Data.File> stagedFiles = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, false).ToList();
+                Phabricator.Data.PhabricatorObject[] stagedObjects = stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale)
                                                                                     .OfType<Phabricator.Data.PhabricatorObject>()
-                                                                                    .Concat(stageStorage.Get<Phabricator.Data.Maniphest>(database))
+                                                                                    .Concat(stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale))
                                                                                     .ToArray();
 
                 foreach (int referencedStagedFileID in referencedStagedFileIDs)
@@ -387,7 +510,7 @@ namespace Phabrico.Controllers
                                )
                             {
                                 // freeze (other) tasks where file is referenced in
-                                stageStorage.Freeze(database, stagedManiphestTask.Token, true);
+                                stageStorage.Freeze(database, browser, stagedManiphestTask.Token, true);
                             }
                         }
 
@@ -400,14 +523,14 @@ namespace Phabrico.Controllers
                                )
                             {
                                 // freeze (other) documents where file is referenced in
-                                stageStorage.Freeze(database, stagedPhrictionDocument.Token, true);
+                                stageStorage.Freeze(database, browser, stagedPhrictionDocument.Token, true);
                             }
                         }
                     }
 
                     // freeze file
                     string fileToken = stagedFiles.FirstOrDefault(file => file.ID == referencedStagedFileID).Token;
-                    stageStorage.Freeze(database, fileToken, true);
+                    stageStorage.Freeze(database, browser, fileToken, true);
                 }
             }
         }
@@ -435,8 +558,8 @@ namespace Phabrico.Controllers
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 Storage.Stage stageStorage = new Storage.Stage();
-                Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken);
-                Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken);
+                Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken, browser.Session.Locale);
+                Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken, browser.Session.Locale);
                 Phabricator.Data.Transaction transactionPriorityChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "priority");
                 Phabricator.Data.Transaction transactionStatusChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "status");
                 Phabricator.Data.Transaction transactionOwnerChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "owner");
@@ -451,7 +574,7 @@ namespace Phabrico.Controllers
                     if (maniphestTask == null)
                     {
                         Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                        maniphestTask = maniphestStorage.Get(database, phabricatorObjectToken, true);
+                        maniphestTask = maniphestStorage.Get(database, phabricatorObjectToken, browser.Session.Locale, true);
                     }
 
                     referencedStagedFileIDs.AddRange(matchFileAttachments.Matches(maniphestTask.Description)
@@ -460,7 +583,7 @@ namespace Phabrico.Controllers
                                                     );
 
                     // unfreeze task
-                    stageStorage.Freeze(database, maniphestTask.Token, false);
+                    stageStorage.Freeze(database, browser, maniphestTask.Token, false);
                 }
 
                 if (phrictionDocument != null)
@@ -471,13 +594,13 @@ namespace Phabrico.Controllers
                                                     );
 
                     // unfreeze document
-                    stageStorage.Freeze(database, phrictionDocument.Token, false);
+                    stageStorage.Freeze(database, browser, phrictionDocument.Token, false);
                 }
 
-                List<Phabricator.Data.File> stagedFiles = stageStorage.Get<Phabricator.Data.File>(database, false).ToList();
-                Phabricator.Data.PhabricatorObject[] stagedObjects = stageStorage.Get<Phabricator.Data.Phriction>(database)
+                List<Phabricator.Data.File> stagedFiles = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, false).ToList();
+                Phabricator.Data.PhabricatorObject[] stagedObjects = stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale)
                                                                                     .OfType<Phabricator.Data.PhabricatorObject>()
-                                                                                    .Concat(stageStorage.Get<Phabricator.Data.Maniphest>(database))
+                                                                                    .Concat(stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale))
                                                                                     .ToArray();
 
                 foreach (int referencedStagedFileID in referencedStagedFileIDs)
@@ -496,7 +619,7 @@ namespace Phabrico.Controllers
                                )
                             {
                                 // unfreeze (other) tasks where file is referenced in
-                                stageStorage.Freeze(database, stagedManiphestTask.Token, false);
+                                stageStorage.Freeze(database, browser, stagedManiphestTask.Token, false);
                             }
                         }
 
@@ -509,16 +632,88 @@ namespace Phabrico.Controllers
                                )
                             {
                                 // unfreeze (other) documents where file is referenced in
-                                stageStorage.Freeze(database, stagedPhrictionDocument.Token, false);
+                                stageStorage.Freeze(database, browser, stagedPhrictionDocument.Token, false);
                             }
                         }
                     }
 
                     // freeze file
                     string fileToken = stagedFiles.FirstOrDefault(file => file.ID == referencedStagedFileID).Token;
-                    stageStorage.Freeze(database, fileToken, false);
+                    stageStorage.Freeze(database, browser, fileToken, false);
                 }
             }
+        }
+
+        /// <summary>
+        /// When a slug (= a URL path to a Phriction document) for a staged Phriction document is too long
+        /// to be stored in Phabricator, the Offline Changes will show a red or yellow icon in front of the title.
+        /// A red icon means that the document can definitely not be stored in Phabricator.
+        /// A yellow icon means that the document can still be stored in Phabricator, but that any new underlying documents
+        /// may not.
+        /// When the user clicks on the red or yellow icon, a dialog appears in which the user can rename the slug.
+        /// This method will be executed when the user confirms the renewal action.
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        [UrlController(URL = "/offline/changes/rename/slug")]
+        public JsonMessage HttpPostRenamePhrictionSlug(Http.Server httpServer, Browser browser, string[] parameters)
+        {
+            string jsonData;
+            if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/undo");
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+            
+            string oldSlug = browser.Session.FormVariables[browser.Request.RawUrl]["old"];
+            string newSlug = browser.Session.FormVariables[browser.Request.RawUrl]["new"].TrimEnd('/') + "/";
+
+            try
+            {
+                using (Storage.Database database = new Storage.Database(EncryptionKey))
+                {
+                    // set private encryption key
+                    database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
+                    Storage.Stage stageStorage = new Storage.Stage();
+                    Storage.Phriction phrictionStorage = new Storage.Phriction();
+                    Phabricator.Data.Phriction existingPhrictionDocument = phrictionStorage.Get(database, newSlug, Language.NotApplicable, false);
+                    if (existingPhrictionDocument == null)
+                    {
+                        Phabricator.Data.Phriction[] phrictionDocumentsToBeRenamed = stageStorage.Get<Phabricator.Data.Phriction>(database, Language.NotApplicable)
+                                                                                                 .Where(wiki => wiki.Path.StartsWith(oldSlug))
+                                                                                                 .ToArray();
+                        foreach (Phabricator.Data.Phriction phrictionDocumentToBeRenamed in phrictionDocumentsToBeRenamed)
+                        {
+                            // prepend "\x01" to make sure we only replace the first part of the string (and not any duplicated tokens)
+                            phrictionDocumentToBeRenamed.Path = ("\x01" + phrictionDocumentToBeRenamed.Path).Replace("\x01" + oldSlug, newSlug);
+                            stageStorage.Modify(database, phrictionDocumentToBeRenamed, browser);
+                        }
+
+                        jsonData = JsonConvert.SerializeObject(new
+                        {
+                            Status = "OK"
+                        });
+                    }
+                    else
+                    {
+                        jsonData = JsonConvert.SerializeObject(new
+                        {
+                            Status = "AlreadyExists"
+                        });
+                    }
+                }
+            }
+            catch
+            {
+                jsonData = JsonConvert.SerializeObject(new
+                {
+                    Status = "NOK"
+                });
+            }
+
+            return new JsonMessage(jsonData);
         }
 
         /// <summary>
@@ -536,6 +731,12 @@ namespace Phabrico.Controllers
             string phabricatorObjectToken = input.Groups[1].Value;
             string operation = input.Groups[2].Value;
 
+            Language language = Language.NotApplicable;
+            if (browser.Session.FormVariables[browser.Request.RawUrl].ContainsKey("use-local-language"))
+            {
+                language = browser.Session.Locale;
+            }
+
             SessionManager.Token token = SessionManager.GetToken(browser);
             if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
@@ -550,10 +751,10 @@ namespace Phabrico.Controllers
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 Storage.Stage stageStorage = new Storage.Stage();
-                Phabricator.Data.PhabricatorObject phabricatorObject = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, phabricatorObjectToken, operation);
+                Phabricator.Data.PhabricatorObject phabricatorObject = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, phabricatorObjectToken, browser.Session.Locale, operation);
                 if (phabricatorObject != null)
                 {
-                    stageStorage.Remove(browser, database, phabricatorObject);
+                    stageStorage.Remove(database, browser, phabricatorObject, language);
                     
                     Regex matchFileAttachments = new Regex("{F(-[0-9]+)[^}]*}");
                     List<int> unreferencedStagedFileIDs = new List<int>();
@@ -576,7 +777,7 @@ namespace Phabrico.Controllers
                                                           );
                     }
 
-                    foreach (Phabricator.Data.PhabricatorObject stagedObject in stageStorage.Get<Phabricator.Data.PhabricatorObject>(database))
+                    foreach (Phabricator.Data.PhabricatorObject stagedObject in stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, browser.Session.Locale))
                     {
                         maniphestTask = stagedObject as Phabricator.Data.Maniphest;
                         phrictionDocument = stagedObject as Phabricator.Data.Phriction;
@@ -602,10 +803,10 @@ namespace Phabrico.Controllers
 
                     foreach (int unreferencedStagedFileID in unreferencedStagedFileIDs)
                     {
-                        Phabricator.Data.File unreferencedStageFile = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, unreferencedStagedFileID, false);
+                        Phabricator.Data.File unreferencedStageFile = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, unreferencedStagedFileID, false);
                         if (unreferencedStageFile != null)
                         {
-                            stageStorage.Remove(browser, database, unreferencedStageFile);
+                            stageStorage.Remove(database, browser, unreferencedStageFile, language);
                         }
                     }
                 }
@@ -641,7 +842,7 @@ namespace Phabrico.Controllers
 
                             if (phabricatorObjectToken.StartsWith(Phabricator.Data.Phriction.Prefix))
                             {
-                                Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken);
+                                Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken, browser.Session.Locale);
                                 if (phrictionDocument != null)
                                 {
                                     phrictionDocument.Content = newContent;
@@ -654,7 +855,7 @@ namespace Phabrico.Controllers
 
                             if (phabricatorObjectToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
                             {
-                                Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken);
+                                Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken, browser.Session.Locale);
                                 if (maniphestTask != null)
                                 {
                                     maniphestTask.Description = newContent;
@@ -694,21 +895,31 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.Stage stageStorage = new Storage.Stage();
-                Phabricator.Data.PhabricatorObject modifiedPhabricatorObject = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, phabricatorObjectToken);
+                Phabricator.Data.PhabricatorObject modifiedPhabricatorObject = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, phabricatorObjectToken, browser.Session.Locale);
                 Phabricator.Data.Phriction modifiedPhrictionDocument = modifiedPhabricatorObject as Phabricator.Data.Phriction;
                 Phabricator.Data.Maniphest modifiedManiphestTask = modifiedPhabricatorObject as Phabricator.Data.Maniphest;
 
                 if (modifiedPhrictionDocument != null)
                 {
                     Storage.Phriction phrictionStorage = new Storage.Phriction();
-                    Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, phabricatorObjectToken, true);
+                    Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, phabricatorObjectToken, browser.Session.Locale, true);
                     if (originalPhrictionDocument == null)
                     {
                         // IMPOSSIBLE: should not happen
                         return;
                     }
 
-                    originalText = originalPhrictionDocument.Content;
+                    Content content = new Content(database);
+                    Content.Translation translation = content.GetTranslation(originalPhrictionDocument.Token, browser.Session.Locale);
+                    if (translation == null || modifiedPhrictionDocument.Language.Equals(browser.Session.Locale) == false)
+                    {
+                        originalText = originalPhrictionDocument.Content;
+                    }
+                    else
+                    {
+                        originalText = translation.TranslatedRemarkup;
+                    }
+
                     modifiedText = modifiedPhrictionDocument.Content;
                     title = modifiedPhrictionDocument.Name;
                     url = "w/" + modifiedPhrictionDocument.Path;
@@ -717,7 +928,7 @@ namespace Phabrico.Controllers
                 if (modifiedManiphestTask != null)
                 {
                     Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                    Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, phabricatorObjectToken);
+                    Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, phabricatorObjectToken, browser.Session.Locale);
                     if (originalManiphestTask == null)
                     {
                         // IMPOSSIBLE: should not happen

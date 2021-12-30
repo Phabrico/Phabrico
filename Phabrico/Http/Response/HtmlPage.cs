@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Phabrico.Miscellaneous;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +11,23 @@ namespace Phabrico.Http.Response
     /// </summary>
     public class HtmlPage : HttpFound
     {
+        private static string internalHtml = null;
+        private static string internalLanguage = "";
+
+        protected string InternalHtml
+        {
+            get
+            {
+                if (internalHtml == null || Browser.Session.Locale != internalLanguage)
+                {
+                    internalLanguage = Browser.Session.Locale;
+                    internalHtml = GetViewData("InternalHtml");
+                }
+
+                return internalHtml;
+            }
+        }
+
         /// <summary>
         /// Represents the application's theme in which the HTML page should be shown (i.e. dark, light)
         /// </summary>
@@ -32,7 +50,7 @@ namespace Phabrico.Http.Response
         /// </summary>
         /// <param name="currentLanguageCode"></param>
         /// <returns>A string of OPTION tags containing all available languages</returns>
-        public string GetLanguageOptions(string currentLanguageCode)
+        public string GetLanguageOptions(Language currentLanguageCode)
         {
             // dictionary holding native language name (key) and its language code (value)
             Dictionary<string,string> availableLanguages =  Assembly.GetExecutingAssembly()
@@ -47,9 +65,9 @@ namespace Phabrico.Http.Response
             string htmlResult = "";
 
             // currentLanguage is unknown language -> take English instead as currentLanguage
-            if (availableLanguages.Values.Contains(currentLanguageCode) == false)
+            if (availableLanguages.Values.Contains(currentLanguageCode.ToString()) == false)
             {
-                currentLanguageCode = "en";
+                currentLanguageCode = Language.Default;
             }
 
             foreach (string language in availableLanguages.Keys.OrderBy(lang => lang))

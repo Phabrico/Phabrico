@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <ComponentGroup Id="PluginPhrictionTranslatorComponents" Directory="INSTALLDIR">
+        <Component Id="phrictiontranslator_Phabrico_Plugin_PhrictionTranslator_dll" Guid="$(var.PluginPhrictionTranslatorGUID)"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictiontranslator_Phabrico_Plugin_PhrictionTranslator_dll"
+                        Name="Phabrico.Plugin.PhrictionTranslator.dll"
+                        On="install" />
+
+            <File Id="file_phrictiontranslator_Phabrico_Plugin_PhrictionTranslator_dll"
+                  Source="$(var.Phabrico.Plugin.PhrictionTranslator.TargetDir)Phabrico.Plugin.PhrictionTranslator.dll"
+                  KeyPath="yes" />
+            <ServiceControl Id="StartServiceForPhrictionTranslator"
+                            Name="Phabrico"
+                            Start="install"
+                            Stop="install"
+                            Wait="yes" />
+        </Component>
+        <Component Id="phrictiontranslator_Phabrico_Plugin_PhrictionTranslator_pdb" Guid="d92b3020-c9b3-41fe-83bc-96a1aa94e526"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictiontranslator_Phabrico_Plugin_PhrictionTranslator_pdb"
+                        Name="Phabrico.Plugin.PhrictionTranslator.pdb"
+                        On="install" />
+
+            <File Id="file_phrictiontranslator_Phabrico_Plugin_PhrictionTranslator_pdb"
+                  Source="$(var.Phabrico.Plugin.PhrictionTranslator.TargetDir)Phabrico.Plugin.PhrictionTranslator.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+    </ComponentGroup>
+</Include>

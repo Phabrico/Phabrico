@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Phabrico.Miscellaneous;
 using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace Phabrico.Phabricator.API
             double minimumDateTime = modifiedSince.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;
 
             Storage.Project projectStorage = new Storage.Project();
-            Data.Project[] activatedProjects = projectStorage.Get(database).Where(project => project.Selected == Data.Project.Selection.Selected).ToArray();
+            Data.Project[] activatedProjects = projectStorage.Get(database, Language.NotApplicable).Where(project => project.Selected == Data.Project.Selection.Selected).ToArray();
 
             string firstItemId = "";
             bool searchForModifications = true;

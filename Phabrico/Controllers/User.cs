@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Http.Response;
+using Phabrico.Miscellaneous;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -66,7 +67,7 @@ namespace Phabrico.Controllers
 
                 string[] filtersUser = browser.Session.FormVariables[browser.Request.RawUrl]["filterUser"]
                                                             .Split(' ');
-                IEnumerable<Phabricator.Data.User> users = userStorage.Get(database)
+                IEnumerable<Phabricator.Data.User> users = userStorage.Get(database, Language.NotApplicable)
                                                                       .Where(user => filtersUser.All(filter => user.RealName
                                                                                                                    .Split(' ', '-')
                                                                                                                    .Any(name => name.StartsWith(filter, System.StringComparison.OrdinalIgnoreCase)))
@@ -116,7 +117,7 @@ namespace Phabrico.Controllers
             Storage.User userStorage = new Storage.User();
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                IEnumerable<Phabricator.Data.User> users = userStorage.Get(database).OrderBy(user => user.RealName);
+                IEnumerable<Phabricator.Data.User> users = userStorage.Get(database, Language.NotApplicable).OrderBy(user => user.RealName);
                 totalNumberSelected = users.Count(user => user.Selected);
                 noneUserSelected = users.Any(user => user.Selected && user.Token.Equals(Phabricator.Data.User.None));
 
@@ -211,7 +212,7 @@ namespace Phabrico.Controllers
                 Storage.User userStorage = new Storage.User();
                 userStorage.SelectUser(database, userToken, false);
 
-                if (userStorage.Get(database).Any(user => user.Selected) == false)
+                if (userStorage.Get(database, Language.NotApplicable).Any(user => user.Selected) == false)
                 {
                     // no users selected -> select 'None' user instead (otherwise we can't track the difference between 2 synchronizations)
                     userStorage.SelectUser(database, Phabricator.Data.User.None, true);

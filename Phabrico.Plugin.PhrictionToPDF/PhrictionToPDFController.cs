@@ -88,7 +88,7 @@ namespace Phabrico.Plugin
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 string jsonData;
-                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, PhrictionData.Path);
+                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, PhrictionData.Path, browser.Session.Locale);
 
                 if (phrictionDocument != null)
                 {
@@ -178,19 +178,15 @@ namespace Phabrico.Plugin
                         string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
                         if (cachedFileData.ContainsKey(cacheKey)) continue;
                         
-                        Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token);
+                        Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token, browser.Session.Locale);
                         if (linkedFileWithContent == null)
                         {
-                            linkedFileWithContent = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, linkedFile.ID, true);
-                            if (linkedFileWithContent == null)
-                            {
-                                // file not found in database ?!?
-                                continue;
-                            }
+                            // file not found in database ?!?
+                            continue;
                         }
 
                         cachedFileData[cacheKey] = new Http.Response.File(linkedFileWithContent.DataStream, linkedFileWithContent.ContentType, linkedFileWithContent.FileName, true);
-                        PhrictionData.Content = PhrictionData.Content.Replace("/file/data/" + linkedFileWithContent.ID.ToString() + "/", 
+                        PhrictionData.Content = PhrictionData.Content.Replace("file/data/" + linkedFileWithContent.ID.ToString() + "/", 
                                                   httpServer.Address + "PhrictionToPDF/file/data/" + cacheKey.ToString() + "/");
                     }
 
@@ -199,7 +195,7 @@ namespace Phabrico.Plugin
                     {
                         foreach (string underlyingPhrictionToken in underlyingPhrictionTokens)
                         {
-                            Phabricator.Data.Phriction underlyingPhrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken);
+                            Phabricator.Data.Phriction underlyingPhrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken, browser.Session.Locale);
                             if (underlyingPhrictionDocument != null)
                             {
                                 if (string.IsNullOrWhiteSpace(underlyingPhrictionDocument.Content)) continue;
@@ -210,19 +206,15 @@ namespace Phabrico.Plugin
                                     string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
                                     if (cachedFileData.ContainsKey(cacheKey)) continue;
 
-                                    Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token);
+                                    Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token, browser.Session.Locale);
                                     if (linkedFileWithContent == null)
                                     {
-                                        linkedFileWithContent = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, linkedFile.ID, true);
-                                        if (linkedFileWithContent == null)
-                                        {
-                                            // file not found in database ?!?
-                                            continue;
-                                        }
+                                        // file not found in database ?!?
+                                        continue;
                                     }
 
                                     cachedFileData[cacheKey] = new Http.Response.File(linkedFileWithContent.DataStream, linkedFileWithContent.ContentType, linkedFileWithContent.FileName, true);
-                                    html = html.Replace("/file/data/" + linkedFileWithContent.ID.ToString() + "/",
+                                    html = html.Replace("file/data/" + linkedFileWithContent.ID.ToString() + "/",
                                                         httpServer.Address + "PhrictionToPDF/file/data/" + cacheKey.ToString() + "/");
                                 }
 
@@ -251,7 +243,19 @@ namespace Phabrico.Plugin
                     foreach (Match askParameter in RegexSafe.Matches(pageHeaderHtml, "{ASK ([^}]*)}").OfType<Match>().OrderByDescending(match => match.Index).ToArray())
                     {
                         string parameterName = askParameter.Groups[1].Value;
-                        string parameterValue = browser.Session.FormVariables["PhrictionToPDF"][parameterName];
+                        string parameterValue = browser.Session.FormVariables[browser.Request.RawUrl][parameterName];
+
+                        if (Http.Server.UnitTesting)
+                        {
+                            // this is some code that is only executed during unit tests
+                            if (parameterValue is null)
+                            {
+                                // dirty easy check if ASK parameter was correctly implemented
+                                // (otherwise we need to convert the generated PDF to text and search for the ASK parameter in this text -> too complex)
+                                throw new ArgumentException("Unit test failed: unable to retrieve ASK parameter value");
+                            }
+                        }
+
                         pageHeaderHtml = pageHeaderHtml.Replace(askParameter.Value, parameterValue);
                     }
                     htmlToPdf.PageHeaderHtml = pageHeaderHtml;
@@ -260,7 +264,7 @@ namespace Phabrico.Plugin
                     foreach (Match askParameter in RegexSafe.Matches(pageFooterHtml, "{ASK ([^}]*)}").OfType<Match>().OrderByDescending(match => match.Index).ToArray())
                     {
                         string parameterName = askParameter.Groups[1].Value;
-                        string parameterValue = browser.Session.FormVariables["PhrictionToPDF"][parameterName];
+                        string parameterValue = browser.Session.FormVariables[browser.Request.RawUrl][parameterName];
                         pageFooterHtml = pageFooterHtml.Replace(askParameter.Value, parameterValue);
                     }
 
@@ -304,10 +308,13 @@ namespace Phabrico.Plugin
         [UrlController(URL = "/PhrictionToPDF/confirm")]
         public JsonMessage HttpPostExportToPDFConfirmation(Http.Server httpServer, Browser browser, string[] parameters)
         {
-            string content = browser.Session.FormVariables["PhrictionToPDF"]["content"];
-            string toc = browser.Session.FormVariables["PhrictionToPDF"]["toc"];
-            string crumbs = browser.Session.FormVariables["PhrictionToPDF"]["crumbs"];
-            string path = browser.Session.FormVariables["PhrictionToPDF"]["path"];
+            string formVariablesUrl = browser.Request.RawUrl.Substring(0, browser.Request.RawUrl.Length - "/confirm".Length);
+            DictionarySafe<string, string> formVariables = browser.Session.FormVariables[formVariablesUrl];
+
+            string content = formVariables["content"];
+            string toc = formVariables["toc"];
+            string crumbs = formVariables["crumbs"];
+            string path = formVariables["path"];
 
             Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
@@ -315,7 +322,7 @@ namespace Phabrico.Plugin
             List<string> underlyingPhrictionTokens = new List<string>();
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
-                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, path);
+                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, path, browser.Session.Locale);
 
                 if (phrictionDocument != null)
                 {
@@ -328,7 +335,7 @@ namespace Phabrico.Plugin
                 foreach (string underlyingPhrictionToken in underlyingPhrictionTokens)
                 {
                     Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
-                    phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken);
+                    phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken, browser.Session.Locale);
                     string html = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
                 }
             }
@@ -365,7 +372,6 @@ namespace Phabrico.Plugin
         {
             string headerLayout = browser.Session.FormVariables["/PhrictionToPDF/configuration/save/"]["headerLayout"];
             string footerLayout = browser.Session.FormVariables["/PhrictionToPDF/configuration/save/"]["footerLayout"];
-            browser.Session.FormVariables["PhrictionToPDF"] = browser.Session.FormVariables["/PhrictionToPDF/configuration/save/"];
 
             Model.PhrictionToPDFConfiguration configuration = new Model.PhrictionToPDFConfiguration(null);
             configuration.PageHeaderJson = headerLayout;
@@ -518,7 +524,7 @@ namespace Phabrico.Plugin
         /// <param name="underlyingPhrictionTokens">Collection of tokens of all underlying Phriction documents</param>
         private void RetrieveUnderlyingPhrictionDocuments(Database database, string phrictionToken, ref List<string> underlyingPhrictionTokens)
         {
-            foreach (string childToken in database.GetUnderlyingTokens(phrictionToken, "WIKI"))
+            foreach (string childToken in database.GetUnderlyingTokens(phrictionToken, "WIKI", browser))
             {
                 if (underlyingPhrictionTokens.Contains(childToken)) continue;
                 underlyingPhrictionTokens.Add(childToken);

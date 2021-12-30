@@ -10,6 +10,10 @@ namespace Phabrico.Exception
     {
         public string ErrorMessage { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="errorMessage"></param>
         public InvalidConfigurationException(string errorMessage)
         {
             ErrorMessage = errorMessage;

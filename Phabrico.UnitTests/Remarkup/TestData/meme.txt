@@ -1,0 +1,6 @@
+{meme, src = mymacro, above = toptextgoeshere, below = bottomtextgoeshere}
+~~~~~~~~~~
+<div><span class='meme-above' style='width:24px'>toptextgoeshere</span><img alt='small.png' src='file/data/1234/'><span class='meme-below' style='width:24px; margin-top:-38px;'>bottomtextgoeshere</span><div>
+~~~~~~~~~~
+<ME>{meme, src = mymacro, above = toptextgoeshere, below = bottomtextgoeshere}</ME>
+~~~~~~~~~~

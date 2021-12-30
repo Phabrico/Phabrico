@@ -48,6 +48,12 @@
   <PropertyGroup>
     <TextTransformPath>$(DevEnvDir)\TextTransform.exe</TextTransformPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
+    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
+    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
+    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -58,8 +64,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    <Reference Include="System.Data.SQLite, Version=1.0.115.5, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\lib\net46\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Security" />
@@ -82,6 +88,10 @@
     </Compile>
     <None Include="BuildVersion.cst" />
     <Compile Include="Commander.cs" />
+    <Compile Include="ContentTranslation\Engines\DummyTranslationEngine.cs" />
+    <Compile Include="ContentTranslation\Engines\DeepLTranslationEngine.cs" />
+    <Compile Include="ContentTranslation\TranslationAttribute.cs" />
+    <Compile Include="ContentTranslation\Engines\TranslationEngine.cs" />
     <Compile Include="Controllers\Authentication.cs" />
     <Compile Include="Controllers\Configuration.cs" />
     <Compile Include="Controllers\Controller.cs" />
@@ -96,6 +106,7 @@
     <Compile Include="Controllers\Keyword.cs" />
     <Compile Include="Controllers\Remarkup.cs" />
     <Compile Include="Controllers\Synchronization.cs" />
+    <Compile Include="Controllers\Translation.cs" />
     <Compile Include="Controllers\UrlControllerAttribute.cs" />
     <Compile Include="Controllers\User.cs" />
     <Compile Include="Exception\InvalidCSRFException.cs" />
@@ -130,6 +141,7 @@
     <Compile Include="Interpreters\Figlet.cs" />
     <Compile Include="Interpreters\Interpreter.cs" />
     <Compile Include="Interpreters\UnitTestInterpreter.cs" />
+    <Compile Include="Miscellaneous\Language.cs" />
     <Compile Include="Miscellaneous\TransientDictionary.cs" />
     <Compile Include="Miscellaneous\DictionarySafe.cs" />
     <Compile Include="Miscellaneous\Diff.cs" />
@@ -140,10 +152,19 @@
     <Compile Include="Miscellaneous\Logging.cs" />
     <Compile Include="Miscellaneous\PolyCharacterCipherEncryption.cs" />
     <Compile Include="Parsers\Base64\Base64EIDOStream.cs" />
+    <Compile Include="Parsers\BrokenXML\BrokenXmlAttribute.cs" />
+    <Compile Include="Parsers\BrokenXML\BrokenXmlAutoCloseTag.cs" />
+    <Compile Include="Parsers\BrokenXML\BrokenXmlClosingTag.cs" />
+    <Compile Include="Parsers\BrokenXML\BrokenXmlOpeningTag.cs" />
+    <Compile Include="Parsers\BrokenXML\BrokenXmlParser.cs" />
+    <Compile Include="Parsers\BrokenXML\BrokenXmlText.cs" />
+    <Compile Include="Parsers\BrokenXML\BrokenXmlToken.cs" />
     <Compile Include="Parsers\Remarkup\RemarkupParserOutput.cs" />
+    <Compile Include="Parsers\Remarkup\RemarkupTokenList.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleBrackets.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleCodeBlock.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleCodeBlockBy2WhiteSpaces.cs" />
+    <Compile Include="Parsers\Remarkup\Rules\RuleFormatting.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleMeme.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleNavigation.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleKey.cs" />
@@ -173,6 +194,7 @@
     <Compile Include="Parsers\Remarkup\Rules\RuleFormattingItalic.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleFormattingBold.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RemarkupRule.cs" />
+    <Compile Include="Parsers\Remarkup\Rules\RuleUnknownToken.cs" />
     <Compile Include="Phabricator\API\Conduit.cs" />
     <Compile Include="Phabricator\API\Constraint.cs" />
     <Compile Include="Phabricator\API\Attachment.cs" />
@@ -198,10 +220,12 @@
     <Compile Include="Phabricator\Data\Maniphest.cs" />
     <Compile Include="Miscellaneous\RegexSafe.cs" />
     <Compile Include="Parsers\Remarkup\RemarkupEngine.cs" />
+    <Compile Include="Plugin\PluginWithoutConfigurationBase.cs" />
     <Compile Include="Plugin\PluginBase.cs" />
     <Compile Include="Plugin\PluginController.cs" />
     <Compile Include="Plugin\PluginTypeAttribute.cs" />
     <Compile Include="Storage\Account.cs" />
+    <Compile Include="Storage\ContentTranslation.cs" />
     <Compile Include="Storage\Database.cs" />
     <Compile Include="Miscellaneous\Encryption.cs" />
     <Compile Include="Http\Response\HomePage.cs" />
@@ -603,6 +627,10 @@
   <ItemGroup>
     <Content Include="Fonts\icomoon.svg" />
     <Content Include="Fonts\SIL Open Font License.txt" />
+    <EmbeddedResource Include="View\InternalHtml.html" />
+    <EmbeddedResource Include="View\Translations.Unreviewed.html">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Scripts\clipboard.min.js" />
     <EmbeddedResource Include="View\PhamePost.html">
       <SubType>Designer</SubType>
@@ -676,13 +704,6 @@ WHERE nuget 2&gt;nul || GOTO end
 :end
 SET ERRORLEVEL = 0</PostBuildEvent>
   </PropertyGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
-  </Target>
-  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
   <PropertyGroup>
     <PreBuildEvent>IF EXIST "$(MSBuildBinPath)\Roslyn\csc.exe" SET CSC="$(MSBuildBinPath)\Roslyn\csc.exe" &amp; GOTO build
 SET CSC=%25WINDIR%25\Microsoft.NET\Framework64\v4.0.30319\csc.exe
@@ -693,4 +714,11 @@ echo %25CSC%25
 if exist BuildVersion.exe del BuildVersion.exe
 if exist BuildVersion.pdb del BuildVersion.pdb</PreBuildEvent>
   </PropertyGroup>
+  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.5\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+  </Target>
 </Project>

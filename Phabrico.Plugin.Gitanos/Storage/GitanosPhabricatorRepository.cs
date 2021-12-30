@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Globalization;
+using Phabrico.Miscellaneous;
 using Phabrico.Plugin.Phabricator.Data;
 using Phabrico.Storage;
 
@@ -26,7 +27,7 @@ namespace Phabrico.Plugin.Storage
             }
         }
 
-        public override IEnumerable<Diffusion> Get(Database database)
+        public override IEnumerable<Diffusion> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT name, uri, callsign, shortname, description, datemodified
@@ -44,7 +45,7 @@ namespace Phabrico.Plugin.Storage
                         record.CallSign = (string)reader["callsign"];
                         record.ShortName = (string)reader["shortname"];
                         record.Description = (string)reader["description"];
-                        record.DateModified = DateTimeOffset.Parse((string)reader["datemodified"]);
+                        record.DateModified = DateTimeOffset.FromUnixTimeSeconds((Int64)reader["datemodified"]);
 
                         yield return record;
                     }
@@ -52,7 +53,7 @@ namespace Phabrico.Plugin.Storage
             }
         }
 
-        public override Diffusion Get(Database database, string key, bool ignoreStageData)
+        public override Diffusion Get(Database database, string key, Language language, bool ignoreStageData)
         {
             throw new NotImplementedException();
         }

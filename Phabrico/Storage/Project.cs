@@ -67,8 +67,9 @@ namespace Phabrico.Storage
         /// Returns all ProjectInfo records from the database
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.Project> Get(Database database)
+        public override IEnumerable<Phabricator.Data.Project> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, name, slug, description, color, selected, dateSynchronized
@@ -99,15 +100,15 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database"></param>
         /// <param name="key"></param>
+        /// <param name="language"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public override Phabricator.Data.Project Get(Database database, string key, bool ignoreStageData = false)
+        public override Phabricator.Data.Project Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, name, slug, description, color, selected, dateSynchronized
                        FROM projectInfo
-                       WHERE token = @key
-                         OR slug = @slug;
+                       WHERE token = @key;
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "key", key, Database.EncryptionMode.None);
@@ -124,13 +125,39 @@ namespace Phabrico.Storage
                         record.Selected = (Phabricator.Data.Project.Selection)Enum.Parse(typeof(Phabricator.Data.Project.Selection), Encryption.Decrypt(database.EncryptionKey, (byte[])reader["selected"]));
                         record.DateSynchronized = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateSynchronized"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
                         record.Color = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["color"]);
-                        
+
                         return record;
                     }
                 }
-
-                return null;
             }
+
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       SELECT token, name, slug, description, color, selected, dateSynchronized
+                       FROM projectInfo;
+                   ", database.Connection))
+            {
+                using (var reader = dbCommand.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string slug = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["slug"]);
+                        if (slug.Equals(key, StringComparison.OrdinalIgnoreCase) == false) continue;
+
+                        Phabricator.Data.Project record = new Phabricator.Data.Project();
+                        record.Token = (string)reader["token"];
+                        record.Name = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["name"]);
+                        record.InternalName = slug;
+                        record.Description = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["description"]);
+                        record.Selected = (Phabricator.Data.Project.Selection)Enum.Parse(typeof(Phabricator.Data.Project.Selection), Encryption.Decrypt(database.EncryptionKey, (byte[])reader["selected"]));
+                        record.DateSynchronized = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateSynchronized"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
+                        record.Color = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["color"]);
+
+                        return record;
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -157,7 +184,7 @@ namespace Phabrico.Storage
         /// <param name="database"></param>
         /// <param name="projectToken"></param>
         /// <param name="projectSelection"></param>
-        public void SelectProject(Database database, string projectToken, Phabricator.Data.Project.Selection projectSelection)
+        public void SelectProject(Database database, Language language, string projectToken, Phabricator.Data.Project.Selection projectSelection)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        UPDATE projectInfo 
@@ -172,7 +199,7 @@ namespace Phabrico.Storage
 
             if (projectSelection == Phabricator.Data.Project.Selection.Selected)
             {
-                Phabricator.Data.Project currentProject = Get(database, projectToken);
+                Phabricator.Data.Project currentProject = Get(database, projectToken, language);
                 if (currentProject != null)
                 {
                     currentProject.DateSynchronized = DateTimeOffset.MinValue;  // download all when sync'ing

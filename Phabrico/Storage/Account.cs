@@ -80,8 +80,9 @@ namespace Phabrico.Storage
         /// Returns a bunch of AccountInfo records
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.Account> Get(Database database)
+        public override IEnumerable<Phabricator.Data.Account> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, username, publicXorCipher, url, api, parameters, theme
@@ -127,7 +128,7 @@ namespace Phabrico.Storage
         /// <param name="key">Token to be searched for</param>
         /// <param name="ignoreStageData">Not used</param>
         /// <returns></returns>
-        public override Phabricator.Data.Account Get(Database database, string key, bool ignoreStageData = false)
+        public override Phabricator.Data.Account Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, userName, publicXorCipher, url, api, parameters, theme
@@ -525,7 +526,8 @@ namespace Phabrico.Storage
             }
             else
             {
-                return Get(database).FirstOrDefault(user => user.Token.Equals(browser.Token.Key));
+                return Get(database, browser.Session.Locale)
+                        .FirstOrDefault(user => user.Token.Equals(browser.Token.Key));
             }
         }
     }

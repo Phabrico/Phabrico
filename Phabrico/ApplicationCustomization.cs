@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -119,7 +120,7 @@ namespace Phabrico
         }
 
         /// <summary>
-        /// CSS styles for formatting the ApplicationName
+        /// CSS styles for formatting the ApplicationLogo
         /// </summary>
         public Dictionary<string, string> ApplicationLogoStyle { get; set; } = new Dictionary<string, string>();
 
@@ -267,7 +268,7 @@ namespace Phabrico
         /// Language code for Phabrico application.
         /// (Content of Phriction documents or Maniphest tasks will not be translated)
         /// </summary>
-        public string Language { get; set; } = null;
+        public Language Language { get; set; } = null;
 
         /// <summary>
         /// If false, the master data on Phabricator is not accessible via Phabrico.

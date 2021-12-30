@@ -22,6 +22,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
     [RuleNotInnerRuleFor(typeof(RuleNotification))]
     [RuleNotInnerRuleFor(typeof(RuleQuote))]
     [RuleNotInnerRuleFor(typeof(RuleTable))]
+    [RuleXmlTag("TB")]
     public class RuleTable : RemarkupRule
     {
         /// <summary>
@@ -149,6 +150,57 @@ namespace Phabrico.Parsers.Remarkup.Rules
         }
 
         /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Storage.Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            bool isHtmlTable = attributes["t"][0] == 'h';
+            if (isHtmlTable)
+            {
+                string result = "<table>\n";
+                foreach (Match row in RegexSafe.Matches(innerText, @"\<tr\>(.+?(?<!\</tr\>))\</tr\>", RegexOptions.Singleline).OfType<Match>())
+                {
+                    result += "    <tr>\n";
+                    foreach (Match cell in RegexSafe.Matches(row.Value, @"\<(t[dh])\>(.+?(?<!\</t[dh]\>))\</t[dh]\>", RegexOptions.Singleline).OfType<Match>())
+                    {
+                        string cellTag = cell.Groups[1].Value;
+                        string cellContent = RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, cell.Groups[2].Value);
+
+                        result += string.Format("        <{0}>{1}</{0}>\n", cellTag, cellContent);
+                    }
+
+                    result += "    </tr>\n";
+                }
+
+                result += "</table>";
+
+                return result;
+            }
+            else
+            {
+                string result = "";
+                foreach (Match row in RegexSafe.Matches(innerText, @"\<tr\>(.+?(?<!\</tr\>))\</tr\>", RegexOptions.Singleline).OfType<Match>())
+                {
+                    foreach (Match cell in RegexSafe.Matches(row.Value, @"\<td\>(.+?(?<!\</td\>))\</td\>", RegexOptions.Singleline).OfType<Match>())
+                    {
+                        string cellContent = RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, cell.Groups[1].Value);
+
+                        result += "|" + cellContent;
+                    }
+
+                    result += "\n";
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Do some post-processing on the table data (e.g. formatting of table cells, ...)
         /// </summary>
         /// <param name="browser">Reference to browser</param>
@@ -222,7 +274,36 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                         ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
-                        tableContent += string.Format("    <{0}{1}>{2}</{0}>\n", cellType, cellConcealed, cellValue.Replace("\r", "").Replace("\n", "<br>"));
+                        string cellValueWithBR = "";
+                        for (int c = 0; c < cellValue.Length; c++)
+                        {
+                            if (cellValue[c] == '\r') continue;
+                            if (cellValue[c] == '\n')
+                            {
+                                if (cellValue.Substring(c + 1).TrimStart(' ', '\t').StartsWith("<"))
+                                {
+                                    cellValueWithBR += "\n";
+                                }
+                                else
+                                if (c > 0 && cellValueWithBR.TrimEnd().EndsWith(">"))
+                                {
+                                    cellValueWithBR += "\n";
+                                }
+                                else
+                                {
+                                    cellValueWithBR += "<br>";
+                                }
+
+                                continue;
+                            }
+
+                            cellValueWithBR += cellValue[c];
+                        }
+
+                        tableContent += string.Format("    <{0}{1}>{2}</{0}>\n", 
+                                                cellType,
+                                                cellConcealed,
+                                                cellValueWithBR);
                         cellIndex++;
                     }
 

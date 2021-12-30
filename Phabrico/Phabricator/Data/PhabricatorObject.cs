@@ -1,4 +1,5 @@
-﻿using Phabrico.Storage;
+﻿using Phabrico.Miscellaneous;
+using Phabrico.Storage;
 using System;
 
 namespace Phabrico.Phabricator.Data
@@ -18,6 +19,11 @@ namespace Phabrico.Phabricator.Data
         /// By means of these characters, Phabrico is able to detect what object type a serialized string represents
         /// </summary>
         public string TokenPrefix { get; protected set; }
+
+        /// <summary>
+        /// In case content translation is performed, this property contains the language that is worked in
+        /// </summary>
+        public Language Language { get; set; } = Language.NotApplicable;
 
         /// <summary>
         /// Initializes a new PhabricatorObject instance

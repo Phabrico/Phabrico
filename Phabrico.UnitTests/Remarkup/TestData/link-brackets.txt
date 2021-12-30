@@ -2,3 +2,5 @@
 ~~~~~~~~~~
 <a class='phriction-link' href='http://www.zany.com/omg/weird_url,,,'>http://www.zany.com/omg/weird_url,,,</a>
 ~~~~~~~~~~
+<A f="a" u="http%3A%2F%2Fwww.zany.com%2Fomg%2Fweird_url%2C%2C%2C"></A>
+~~~~~~~~~~

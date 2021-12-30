@@ -1,0 +1,38 @@
+﻿msgid "I"
+msgstr "Ik"
+
+msgid "You"
+msgstr "Jij"
+
+msgid "He"
+msgstr "Hij"
+
+msgid "We"
+msgstr "Wij"
+
+msgid "They"
+msgstr "Zij"
+
+msgid "are"
+msgstr "bent"
+
+msgid "I am"
+msgstr "Ik ben"
+
+msgid "You are"
+msgstr "Jij bent"
+
+msgid "He is"
+msgstr "Hij is"
+
+msgid "We are"
+msgstr "Wij zijn"
+
+msgid "They are"
+msgstr "Zij zijn"
+
+msgid "Story of my life"
+msgstr "Mijn levensverhaal"
+
+msgid "Once upon a time, I was reading this story over and over again"
+msgstr "Er was eens een tijd dat ik dit verhaal steeds opnieuw aan het lezen was"

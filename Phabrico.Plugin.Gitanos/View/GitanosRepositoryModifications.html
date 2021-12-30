@@ -132,39 +132,6 @@
     }
 </style>
 
-<div class="wait">
-    <svg height="100" width="180">
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(20) rotate(180,0,50)">
-            <animate attributeName="height" attributeType="XML" dur="1s" values="30; 100; 30" repeatCount="indefinite"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(40) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.5s" values="30; 100; 30" repeatCount="indefinite" begin="0.1s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(60) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1s" values="30; 100; 30" repeatCount="indefinite" begin="0.2s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(80) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.2s" values="30; 100; 30" repeatCount="indefinite" begin="0.3s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(100) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.1s" values="30; 100; 30" repeatCount="indefinite" begin="0.1s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(120) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.4s" values="30; 100; 30" repeatCount="indefinite" begin="0.2s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(140) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.2s" values="30; 100; 30" repeatCount="indefinite" begin="0.3s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(160) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.0s" values="30; 100; 30" repeatCount="indefinite" begin="0.4s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(180) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="0.8s" values="30; 100; 30" repeatCount="indefinite" begin="0.5s"></animate>
-        </rect>
-    </svg>
-    <span class="message" style="display:block;">One moment please...</span>
-</div>
-
 <div id="overview" class="app-window no-pushable-commits">
     <div class="title">
         <span class="repository-name"></span>
@@ -234,39 +201,6 @@
                 <button class="button-blue" id="btnCommitMessageConfirm" type="button" style="width:140px; cursor: not-allowed;" disabled="" onclick="gitCommitSelectedFiles()">COMMIT</button>
             </div>
         </div>
-
-        <div id="dlgMessage" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 0px; left: calc(50vw - 300px);">
-            <div class="aphront-dialog-overlay"></div>
-            <div class="aphront-dialog-head">
-                <span class="phui-header-header title"></span>
-            </div>
-            <div class="aphront-dialog-body phabrico-remarkup">
-                <div class="phabrico-remarkup">
-                    <p class="message"></p>
-                </div>
-                <br>
-            </div>
-            <div class="aphront-dialog-tail grouped" style="text-align: right;">
-                <a href="#" class="button button-blue yes" onclick="return showHideMessageDialog(false);">OK</a>
-            </div>
-        </div>
-
-        <div id="dlgYesNo" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 0px; left: calc(50vw - 300px);">
-            <div class="aphront-dialog-overlay"></div>
-            <div class="aphront-dialog-head">
-                <span class="phui-header-header title"></span>
-            </div>
-            <div class="aphront-dialog-body phabrico-remarkup">
-                <div class="phabrico-remarkup">
-                    <p class="message"></p>
-                </div>
-                <br>
-            </div>
-            <div class="aphront-dialog-tail grouped" style="text-align: right;">
-                <a data-accesskey="Button-AccessKey-Yes" href="#" class="button button-blue yes">Yes</a>
-                <a data-accesskey="Button-AccessKey-No" href="#" class="button button-gray no">No</a>
-            </div>
-        </div>
     </form>
 </div>
 
@@ -319,7 +253,7 @@
 
     initializeTables();
 
-    document.querySelector('div.wait').style.display = 'block';
+    showHideWaitNotification(true);
     populateTableUnpushedCommits();
     populateTableModifications(filter.value, true);
 
@@ -351,7 +285,7 @@
         xmlhttp.onload = function() {
             if (xmlhttp.readyState == 4) {
                 try {
-                    document.querySelector('div.wait').style.display = null;
+                    showHideWaitNotification(false);
 
                     var jsonResponse = JSON.parse(xmlhttp.responseText);
                     if (jsonResponse.Status == 'Error') {
@@ -376,7 +310,7 @@
         xmlhttp.send(data);
 
         showHideCommitMessageDialog(false);
-        document.querySelector('div.wait').style.display = 'block';
+        showHideWaitNotification(true);
     }
 
     function gitResetHEAD1()
@@ -387,7 +321,7 @@
         xmlhttp.open('POST', "gitanos/repository/resetHEAD1/", true);
         xmlhttp.onload = function() {
             if(xmlhttp.readyState == 4) {
-                document.querySelector('div.wait').style.display = null;
+                showHideWaitNotification(false);
 
                 try {
                     var jsonResponse = JSON.parse(xmlhttp.responseText);
@@ -407,7 +341,7 @@
         xmlhttp.send(data);
 
         showHideConfirmationMessage(false);
-        document.querySelector('div.wait').style.display = 'block';
+        showHideWaitNotification(true);
     }
 
     function gitRestoreModification(modificationID)
@@ -420,7 +354,7 @@
         xmlhttp.open('POST', "gitanos/repository/undo/", true);
         xmlhttp.onload = function() {
             if(xmlhttp.readyState == 4) {
-                document.querySelector('div.wait').style.display = null;
+                showHideWaitNotification(false);
 
                 try {
                     var jsonResponse = JSON.parse(xmlhttp.responseText);
@@ -440,7 +374,7 @@
         xmlhttp.send(data);
 
         showHideConfirmationMessage(false);
-        document.querySelector('div.wait').style.display = 'block';
+        showHideWaitNotification(true);
     }
 
     function initializeTables()
@@ -708,7 +642,7 @@
                             btnCommit.classList.remove('disabled');
                         }
 
-                        document.querySelector('div.wait').style.display = null;
+                        showHideWaitNotification(false);
                     }
                     catch (exc) {
                         // show logon dialog
@@ -869,61 +803,6 @@
             document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
               input.removeAttribute('tabindex');
             });
-        }
-
-        return false;
-    }
-
-    function showHideConfirmationMessage(show, title, text, fnYes, fnNo)
-    {
-        if (show) {
-            dlgYesNo.style.display = 'block';
-            document.querySelector('html').style.overflow = 'hidden';
-
-            var btnNo = dlgYesNo.querySelector('.no');
-            var btnYes = dlgYesNo.querySelector('.yes');
-
-            // set title and text
-            dlgYesNo.querySelector('.title').innerText = title;
-            dlgYesNo.querySelector('.message').innerHTML = text;
-
-            // disable all TABs
-            document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
-              input.setAttribute('tabindex', '-1');
-            });
-
-            // fix TABs for dialog
-            btnNo.setAttribute('tabindex', '1');
-            btnYes.setAttribute('tabindex', '2');
-
-            // set functions to buttons
-            btnNo.onclick = function() { fnNo(); return false; }
-            btnYes.onclick = function() { fnYes(); return false; }
-
-            // set focus
-            btnNo.focus();
-        } else {
-            dlgYesNo.style.display = 'none';
-            document.querySelector('html').style.overflow = 'unset';
-
-            // restore all TABs
-            document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
-              input.removeAttribute('tabindex');
-            });
-        }
-    }
-
-    function showHideMessageDialog(show, title, message) {
-        if (show) {
-            // set title and text
-            dlgMessage.querySelector('.title').innerText = title;
-            dlgMessage.querySelector('.message').innerHTML = message;
-
-            dlgMessage.style.display = 'block';
-            document.querySelector('html').style.overflow = 'hidden';
-        } else {
-            dlgMessage.style.display = 'none';
-            document.querySelector('html').style.overflow = 'unset';
         }
 
         return false;

@@ -222,6 +222,8 @@ namespace Phabrico.Phabricator.API
                                                       );
                     yield return newPhriction;
                 }
+
+                firstItemId = phrictionDocuments.Select(c => c.SelectToken("id").Value<string>()).LastOrDefault();
             }
         }
 

@@ -76,7 +76,7 @@ You can also nest lists:
     - Knee
     - Foot
 ~~~~~~~~~~
-<h1 class='remarkup-header'><a name='hdrLists' style='padding-top: 80px;'></a>Lists </h1>
+<h1 class='remarkup-header'><a name='lists' style='padding-top: 80px;'></a>Lists </h1>
 <br>
 Make <strong>lists</strong> by beginning each item with a <tt class='remarkup-monospaced'>-</tt> or a <tt class='remarkup-monospaced'>*</tt>:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>- milk
@@ -158,4 +158,93 @@ You can also nest lists:<br>
     </ul>
   </li>
 </ul>
+~~~~~~~~~~
+<H d="0" t="2">Lists</H>
+<N>[2]</N>
+Make <B>lists</B> by beginning each item with a <M>`-`</M> or a <M>`*`</M>:<N>[27]</N>
+<BT>```
+lang=text
+- milk
+- eggs
+- bread
+
+* duck
+* duck
+* goose
+```
+</BT>
+<N>[29]</N>
+This produces a list like this:<N>[42]</N>
+<N>[43]</N>
+<LS>
+  <b1>milk</b1>
+  <b1>eggs</b1>
+  <b1>bread</b1>
+</LS>
+<BR>Note that you need to put a space after the <M>`-`</M> or <M>`*`</M>.</BR><N>[45]</N>
+<N>[46]</N>
+You can make numbered lists with a <M>`#`</M> instead of <M>`-`</M> or <M>`*`</M>:<N>[72]</N>
+<N>[73]</N>
+<LS>
+  <n1>Articuno</n1>
+  <n1>Zapdos</n1>
+  <n1>Moltres</n1>
+</LS>
+Numbered lists can also be started with <M>`1.`</M> or <M>`1)`</M>. If you use a number other<N>[106]</N>
+than <M>`1`</M>, the list will start at that number instead. For example, this:<N>[136]</N>
+<N>[137]</N>
+<BT>```
+200) OK
+201) Created
+202) Accepted
+```
+</BT>
+<N>[138]</N>
+...produces this:<N>[146]</N>
+<N>[147]</N>
+<LS>
+  <n1 s="200">OK</n1>
+  <n1 s="201">Created</n1>
+  <n1 s="202">Accepted</n1>
+</LS>
+You can also nest lists:<N>[158]</N>
+<N>[159]</N>
+<BT>```
+- Body
+  - Head
+  - Arm
+    - Elbow
+    - Hand
+      # Thumb
+      # Index
+      # Middle
+      # Ring
+      # Pinkie
+  - Leg
+    - Knee
+    - Foot
+```
+</BT>
+<N>[160]</N>
+...which produces:<N>[168]</N>
+<N>[169]</N>
+<LS>
+  <b1>Body
+    <b2>Head</b2>
+    <b2>Arm
+      <b3>Elbow</b3>
+      <b3>Hand
+        <n4>Thumb</n4>
+        <n4>Index</n4>
+        <n4>Middle</n4>
+        <n4>Ring</n4>
+        <n4>Pinkie</n4>
+      </b3>
+    </b2>
+    <b2>Leg
+      <b3>Knee</b3>
+      <b3>Foot</b3>
+    </b2>
+  </b1>
+</LS>
 ~~~~~~~~~~

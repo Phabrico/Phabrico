@@ -20,7 +20,21 @@ namespace Phabrico.UnitTests.Synchronization
     /// </summary>
     public class DummyPhabricatorWebServer
     {
+        public class TreeNode
+        {
+            public string Me { get; set; }
+            public TreeNode Parent { get; set; }
+            public List<TreeNode> Children { get; set; }
+        }
+
         private HttpListener httpListener;
+        private int nbrPhrictionDocuments = 0;
+        private TreeNode phrictionDocuments = new TreeNode
+        {
+            Me = "",
+            Parent = null,
+            Children = new List<TreeNode>()
+        };
 
         /// <summary>
         /// Constructor
@@ -228,6 +242,75 @@ namespace Phabrico.UnitTests.Synchronization
                 if (context.Request.ContentType.Equals("application/octet-stream"))
                 {
                     throw new NotImplementedException();
+                }
+
+                if (url.Equals("phriction.create"))
+                {
+                    string jsonData = formVariables["params"];
+                    JObject request = JObject.Parse(jsonData);
+                    string slug = ((JValue)request["slug"]).ToString();
+                    string content = ((JValue)request["content"]).ToString();
+                    string[] slugParts = slug.TrimEnd('/').Split('/').ToArray();
+                    string newDocument = slugParts.Last();
+                    TreeNode parent = phrictionDocuments;
+
+                    foreach (string slugPart in slugParts.Take(slugParts.Length - 1))
+                    {
+                        parent = parent.Children.FirstOrDefault(c => c.Me.Equals(slugPart));
+                        //phrictionDocuments
+                    }
+
+                    string errorMessage = null;
+                    if (parent == null)
+                    {
+                        errorMessage = "Path not found: " + string.Join("/", slugParts.Take(slugParts.Length - 1));
+                    }
+                    else
+                    if (string.IsNullOrEmpty(content))
+                    {
+                        errorMessage = "No content found";
+                    }
+                    else
+                    if (slug.Length >= 115)
+                    {
+                        errorMessage = "Path too long";
+                    }
+
+                    if (errorMessage == null)
+                    {
+                        parent.Children.Add(new TreeNode
+                        {
+                            Children = new List<TreeNode>(),
+                            Me = newDocument,
+                            Parent = parent
+                        });
+
+                        nbrPhrictionDocuments++;
+                    }
+
+                    jsonData = @"{
+                                    ""result"": {
+                                        ""object"": {
+                                            ""id"": 2145,
+                                            ""phid"": ""{0}""
+                                        }
+                                    },
+                                    ""error_code"": {1},
+                                    ""error_info"": null
+                                }".Replace("{0}", "PHID-WIKI-00001" + nbrPhrictionDocuments.ToString("0:D15"))
+                                  .Replace("{1}", errorMessage == null ? "null" : "\"" + errorMessage + "\"")
+                                ;
+                    context.Response.StatusCode = 200;
+                    context.Response.StatusDescription = "OK";
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength64 = jsonData.Length;
+                    context.Response.AppendHeader("Accept-Ranges", "bytes");
+                    context.Response.AppendHeader("Pragma", "no-cache, no-store, must-revalidate");
+                    context.Response.AppendHeader("Expires", "0");
+                    context.Response.OutputStream.Write(UTF8Encoding.UTF8.GetBytes(jsonData), 0, jsonData.Length);
+                    context.Response.OutputStream.Flush();
+                    context.Response.OutputStream.Close();
+                    return;
                 }
 
                 // process POST request

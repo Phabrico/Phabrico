@@ -92,7 +92,7 @@
 	/**
 	 * Specifies if drafts should be saved in IndexedDB.
 	 */
-	EditorUi.enableDrafts = !mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
+	EditorUi.enableDrafts = !mxClient.IS_CHROMEAPP &&
 		isLocalStorage && urlParams['drafts'] != '0';
 	
 	/**
@@ -707,16 +707,6 @@
 			data.charCodeAt(2) == 0x11 && data.charCodeAt(3) == 0xE0 && data.charCodeAt(4) == 0xA1 && data.charCodeAt(5) == 0xB1 &&
 			data.charCodeAt(6) == 0x1A && data.charCodeAt(7) == 0xE1) || (data.charCodeAt(0) == 0x3C && data.charCodeAt(1) == 0x3F &&
 			data.charCodeAt(2) == 0x78 && data.charCodeAt(3) == 0x6D && data.charCodeAt(3) == 0x6C));
-	};
-	
-	/**
-	 * Returns true if the given binary data is a PNG file.
-	 */
-	EditorUi.prototype.isPngData = function(data)
-	{
-		return data.length > 8 && data.charCodeAt(0) == 137 && data.charCodeAt(1) == 80 &&
-			data.charCodeAt(2) == 78 && data.charCodeAt(3) == 71 && data.charCodeAt(4) == 13 &&
-			data.charCodeAt(5) == 10 && data.charCodeAt(6) == 26 && data.charCodeAt(7) == 10;
 	};
 
 	/**
@@ -1537,7 +1527,8 @@
 			{
 				var graphGetGlobalVariable = graph.getGlobalVariable;
 				graph = this.createTemporaryGraph(darkTheme ?
-						graph.getDefaultStylesheet() : graph.getStylesheet());
+					graph.getDefaultStylesheet() :
+					graph.getStylesheet());
 				graph.setBackgroundImage = this.editor.graph.setBackgroundImage;
 				var page = this.pages[0];
 
@@ -1867,8 +1858,8 @@
 	 * @param {number} dx X-coordinate of the translation.
 	 * @param {number} dy Y-coordinate of the translation.
 	 */
-	EditorUi.prototype.downloadFile = function(format, uncompressed, addShadow, ignoreSelection, currentPage,
-		pageVisible, transparent, scale, border, grid, includeXml, pageRange)
+	EditorUi.prototype.downloadFile = function(format, uncompressed, addShadow, ignoreSelection,
+		currentPage, pageVisible, transparent, scale, border, grid, includeXml, pageRange)
 	{
 		try
 		{
@@ -2643,9 +2634,20 @@
 
 				if (!this.isOffline() && file.getMode() != null)
 				{
+					var theme = (urlParams['sketch'] == '1') ? 'sketch' : uiTheme;
+
+					if (theme == null)
+					{
+						theme = 'default';
+					}
+					else if (theme == 'sketch' || theme == 'min')
+					{
+						theme += Editor.isDarkMode() ? '-dark' : '-light';
+					}
+
 					EditorUi.logEvent({category: file.getMode().toUpperCase() + '-OPEN-FILE-' + file.getHash(),
 						action: 'size_' + file.getSize(),
-						label: 'autosave_' + ((this.editor.autosave) ? 'on' : 'off')});
+						label: 'autosave_' + ((this.editor.autosave) ? 'on' : 'off') + '_theme_' + theme});
 				}
 				
 				EditorUi.debug('File.opened', [file]);
@@ -3102,7 +3104,18 @@
 		}
 		
 		// Adds new sidebar entry for this library
-		var tmp = (optionalTitle != null && optionalTitle.length > 0) ? optionalTitle : file.getTitle();
+		var tmp = optionalTitle;
+		
+		if (tmp == null)
+		{
+			tmp = file.getTitle();
+
+			if (tmp != null && /(\.xml)$/i.test(tmp))
+			{
+				tmp = tmp.substring(0, tmp.lastIndexOf('.'));
+			}
+		}
+
 		var contentDiv = this.sidebar.addPalette(file.getHash(), tmp,
 			(expand != null) ? expand : true, mxUtils.bind(this, function(content)
 		{
@@ -5197,7 +5210,8 @@
 		}
 		
 		var editSelect = document.createElement('select');
-		editSelect.style.width = '120px';
+		editSelect.style.maxWidth = '200px';
+		editSelect.style.width = 'auto';
 		editSelect.style.marginLeft = '8px';
 		editSelect.style.marginRight = '10px';
 		editSelect.className = 'geBtn';
@@ -5276,6 +5290,7 @@
 
 		var linkSelect = document.createElement('select');
 		linkSelect.style.width = '100px';
+		linkSelect.style.padding = '0px';
 		linkSelect.style.marginLeft = '8px';
 		linkSelect.style.marginRight = '10px';
 		linkSelect.className = 'geBtn';
@@ -7400,18 +7415,43 @@
 			{
 				try
 				{
-					EditorUi.logEvent({category: 'LUCIDCHART-IMPORT-FILE',
-						action: 'size_' + data.length});
-					EditorUi.debug('convertLucidChart', data);
-				}
-				catch (e)
-				{
-					// ignore
-				}
-				
-				try
-				{
-					success(LucidImporter.importState(JSON.parse(data)));
+					var obj = JSON.parse(data);
+					success(LucidImporter.importState(obj));
+
+					try
+					{
+						EditorUi.logEvent({category: 'LUCIDCHART-IMPORT-FILE',
+							action: 'size_' + data.length});
+
+							if (window.console != null && urlParams['test'] == '1')
+							{
+								var args = [new Date().toISOString(), 'convertLucidChart', obj];
+
+								if (obj.state != null)
+								{
+									args.push(JSON.parse(obj.state));
+								}
+		
+								if (obj.svgThumbs != null)
+								{
+									for (var i = 0; i < obj.svgThumbs.length; i++)
+									{
+										args.push(Editor.createSvgDataUri(obj.svgThumbs[i]));
+									}
+								}
+
+								if (obj.thumb != null)
+								{
+									args.push(obj.thumb);
+								}
+
+								console.log.apply(console, args);
+							}
+					}
+					catch (e)
+					{
+						// ignore
+					}
 				}
 				catch (e)
 				{
@@ -7476,9 +7516,14 @@
 			{
 				this.loadingMermaid = false;
 				
-				config = (config != null) ? config : EditorUi.defaultMermaidConfig;
+				config = (config != null) ? config : mxUtils.clone(EditorUi.defaultMermaidConfig);
 				config.securityLevel = 'strict';
 				config.startOnLoad = false;
+
+				if (Editor.isDarkMode())
+				{
+					config.theme = 'dark';
+				}
 				
 				mermaid.mermaidAPI.initialize(config);
 	    		
@@ -7761,7 +7806,7 @@
 			if (Graph.fileSupport && !this.isOffline() && new XMLHttpRequest().upload && this.isRemoteFileFormat(text))
 			{
 				// Fixes possible parsing problems with ASCII 160 (non-breaking space)
-				this.parseFile(new Blob([text.replace(/\s+/g,' ')], {type: 'application/octet-stream'}), mxUtils.bind(this, function(xhr)
+				this.parseFileData(text.replace(/\s+/g,' '), mxUtils.bind(this, function(xhr)
 				{
 					if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <= 299)
 					{
@@ -7838,7 +7883,7 @@
 						this.resizeImage(img, text, mxUtils.bind(this, function(data2, w2, h2)
 	    				{
 							graph.setSelectionCell(graph.insertVertex(null, null, '', graph.snap(dx), graph.snap(dy),
-									w2, h2, 'shape=image;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;' +
+									w2, h2, 'shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;' +
 									'verticalAlign=top;aspect=fixed;imageAspect=0;image=' + this.convertDataUri(data2) + ';'));
 	    				}), resizeImages, this.maxImageSize);
 					}
@@ -7849,7 +7894,7 @@
 						var h = Math.round(img.height * s);
 						
 						graph.setSelectionCell(graph.insertVertex(null, null, '', graph.snap(dx), graph.snap(dy),
-								w, h, 'shape=image;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;' +
+								w, h, 'shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;' +
 								'verticalAlign=top;aspect=fixed;imageAspect=0;image=' + text + ';'));
 					}
 				}), mxUtils.bind(this, function()
@@ -8187,7 +8232,7 @@
 		                	{
 		                		if (!ui.isOffline() && new XMLHttpRequest().upload && ui.isRemoteFileFormat(data, file.name))
 		                		{
-		                			ui.parseFile(new Blob([data], {type: 'application/octet-stream'}), mxUtils.bind(this, function(xhr)
+		                			ui.parseFileData(data, mxUtils.bind(this, function(xhr)
 		                			{
 		                				if (xhr.readyState == 4)
 		                				{
@@ -8299,7 +8344,7 @@
 				}
 
 				cells = [graph.insertVertex(null, null, '', dx, dy, w, h,
-					'shape=image;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;' +
+					'shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;' +
 					'verticalAlign=top;aspect=fixed;imageAspect=0;image=' + data + ';')];
 			}
 		}
@@ -8322,7 +8367,7 @@
 			async = true;
 
 			// Returns empty cells array as it is aysynchronous
-			this.parseFile((file != null) ? file : new Blob([data], {type: 'application/octet-stream'}), mxUtils.bind(this, function(xhr)
+			var parseCallback = mxUtils.bind(this, function(xhr)
 			{
 				if (xhr.readyState == 4)
 				{
@@ -8335,7 +8380,16 @@
 						done(null);
 					}
 				}
-			}), filename);
+			});
+
+			if (data != null)
+			{
+				this.parseFileData(data, parseCallback, filename);
+			}
+			else
+			{
+				this.parseFile(file, parseCallback, filename);
+			}
 		}
 		else if (data.indexOf('PK') == 0 && file != null)
 		{
@@ -8824,21 +8878,31 @@
 	 */
 	EditorUi.prototype.parseFile = function(file, fn, filename)
 	{
+		var reader = new FileReader();
+
+        reader.onload = mxUtils.bind(this, function()
+		{
+			this.parseFileData(reader.result, fn, filename)
+        });
+
+        reader.readAsText(file);
+	};
+
+	//TODO Use this version of the function instead of creating a Blob then read it again
+	EditorUi.prototype.parseFileData = function(data, fn, filename)
+	{
 		filename = (filename != null) ? filename : file.name;
-		
-		var formData = new FormData();
-		formData.append('format', 'xml');
-		formData.append('upfile', file, filename);
 
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', OPEN_URL);
-		
+		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
 		xhr.onreadystatechange = function()
 		{
 			fn(xhr);
 		};
 		
-		xhr.send(formData);
+		xhr.send('format=xml&filename=' + encodeURIComponent(filename) + '&data=' + encodeURIComponent(data));
 		
 		try
 		{
@@ -8993,6 +9057,20 @@
 			graph.view.defaultGridColor = mxGraphView.prototype.defaultDarkGridColor;
 		}
 		
+		// Stops panning while freehand is active
+		if (Graph.touchStyle)
+		{
+			graph.panningHandler.isPanningTrigger = function(me)
+			{
+				var evt = me.getEvent();
+				
+			 	return (me.getState() == null && (!mxEvent.isMouseEvent(evt) &&
+					!graph.freehand.isDrawing())) ||
+			 		(mxEvent.isPopupTrigger(evt) && (me.getState() == null ||
+			 		mxEvent.isControlDown(evt) || mxEvent.isShiftDown(evt)));
+			};
+		}		
+
 		// Starts editing PlantUML data
 		graph.cellEditor.editPlantUmlData = function(cell, trigger, data)
 		{
@@ -9249,8 +9327,14 @@
 					this.defaultThemeName == 'darkTheme')
 				{
 					var temp = this.stylesheet;
+					var tempFg = this.shapeForegroundColor;
+					var tempBg = this.shapeBackgroundColor;
 					this.stylesheet = this.getDefaultStylesheet();
+					this.shapeBackgroundColor = '#ffffff';
+					this.shapeForegroundColor = '#000000';
 					result = ui.createImageForPageLink(result.originalSrc);
+					this.shapeBackgroundColor = tempBg;
+					this.shapeForegroundColor = tempFg;
 					this.stylesheet = temp;
 				}
 			}
@@ -9849,7 +9933,7 @@
 			    				var s = Math.min(1, Math.min(maxSize / Math.max(1, w)), maxSize / Math.max(1, h));
 
 			    				graph.setSelectionCell(graph.insertVertex(null, null, '', x, y, w * s, h * s,
-			    					'shape=image;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;' +
+			    					'shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;' +
 			    					'verticalAlign=top;aspect=fixed;imageAspect=0;image=' + uri + ';'));
 			    			}), mxUtils.bind(this, function(img)
 			    			{
@@ -10426,7 +10510,9 @@
 			 * Persists default grid color.
 			 */
 			this.editor.graph.view.gridColor = mxSettings.getGridColor(Editor.isDarkMode());
-			
+			this.editor.graph.view.defaultDarkGridColor = mxSettings.getGridColor(true);
+			this.editor.graph.view.defaultGridColor = mxSettings.getGridColor(false);
+
 			this.addListener('gridColorChanged', mxUtils.bind(this, function(sender, evt)
 			{
 				mxSettings.setGridColor(this.editor.graph.view.gridColor, Editor.isDarkMode());
@@ -12602,7 +12688,7 @@
 			else if (data != null && typeof data.substring === 'function' && !this.isOffline() && new XMLHttpRequest().upload && this.isRemoteFileFormat(data, ''))
 			{
 				// Asynchronous parsing via server
-				this.parseFile(new Blob([data], {type: 'application/octet-stream'}), mxUtils.bind(this, function(xhr)
+				this.parseFileData(data, mxUtils.bind(this, function(xhr)
 				{
 					if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <= 299 &&
 						xhr.responseText.substring(0, 13) == '<mxGraphModel')
@@ -13767,21 +13853,19 @@
 
 		var graph = this.editor.graph;
 		var file = this.getCurrentFile();
+		var ss = this.getSelectionState();
 		var active = this.isDiagramActive();
-		var editable = graph.getEditableCells(graph.getSelectionCells());
-		var enabled = file != null || urlParams['embed'] == '1';
 
 		this.actions.get('pageSetup').setEnabled(active);
 		this.actions.get('autosave').setEnabled(file != null && file.isEditable() && file.isAutosaveOptional());
 		this.actions.get('guides').setEnabled(active);
-		this.actions.get('editData').setEnabled(editable.length > 0 || graph.isSelectionEmpty());
+		this.actions.get('editData').setEnabled(graph.isEnabled());
 		this.actions.get('shadowVisible').setEnabled(active);
 		this.actions.get('connectionArrows').setEnabled(active);
 		this.actions.get('connectionPoints').setEnabled(active);
 		this.actions.get('copyStyle').setEnabled(active && !graph.isSelectionEmpty());
-		this.actions.get('pasteStyle').setEnabled(active && editable.length > 0);
-		this.actions.get('editGeometry').setEnabled(editable.length > 0 &&
-			graph.getModel().isVertex(editable[0]));
+		this.actions.get('pasteStyle').setEnabled(active && ss.cells.length > 0);
+		this.actions.get('editGeometry').setEnabled(ss.vertices.length >  0);
 		this.actions.get('createShape').setEnabled(active);
 		this.actions.get('createRevision').setEnabled(active);
 		this.actions.get('moveToFolder').setEnabled(file != null);
@@ -13801,7 +13885,8 @@
 			'/' + mxResources.get('replace') : '') + '...';
 		
 		var state = graph.view.getState(graph.getSelectionCell());
-		this.actions.get('editShape').setEnabled(active && state != null && state.shape != null && state.shape.stencil != null);
+		this.actions.get('editShape').setEnabled(active && state != null &&
+			state.shape != null && state.shape.stencil != null);
 	};
 
 	/**

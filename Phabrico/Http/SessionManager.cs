@@ -26,7 +26,7 @@ namespace Phabrico.Http
             /// <summary>
             /// Locale (language) for the current session
             /// </summary>
-            public string Locale { get; set; } = null;
+            public Language Locale { get; set; } = null;
 
             /// <summary>
             /// Web form variables being shared between client and server per url
@@ -102,12 +102,13 @@ namespace Phabrico.Http
             /// <summary>
             /// Returns true if the session hasn't been poked recently (see Poke method)
             /// If AuthenticationFactor is not Knowledge, the session will always remain valid
+            /// See also ServerValidationCheckEnabled
             /// </summary>
             public bool Invalid
             {
                 get
                 {
-                    if (AuthenticationFactor == AuthenticationFactor.Knowledge)
+                    if (ServerValidationCheckEnabled && AuthenticationFactor == AuthenticationFactor.Knowledge)
                     {
                         return DateTime.UtcNow.Subtract(lastPokeTime).TotalSeconds >= 120;
                     }
@@ -115,6 +116,11 @@ namespace Phabrico.Http
                     return false;
                 }
             }
+
+            /// <summary>
+            /// If set to false, the webserver itself can invalidate a session token (see Token.Invalid property)
+            /// </summary>
+            public bool ServerValidationCheckEnabled { get; set; }
 
             /// <summary>
             /// Constructor
@@ -226,7 +232,7 @@ namespace Phabrico.Http
 
                 if (browser == null)
                 {
-                    ClientSessions[token.ID].Locale = "en";
+                    ClientSessions[token.ID].Locale = Language.Default;
                 }
                 else
                 {

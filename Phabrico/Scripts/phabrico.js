@@ -123,6 +123,14 @@ class AutoLogOff {
             document.body.removeEventListener('touchstart', instance.doWakeUp);
             document.body.removeEventListener('wheel', instance.doWakeUp);
             clearTimeout(instance.timeoutTimer);
+
+            // inform server that token should not be invalidated after no poke message was sent for 120 seconds
+            var disablePokeRequest = new XMLHttpRequest();
+            disablePokeRequest.open('POST', document.baseURI + 'poke', true);
+            disablePokeRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            var data = new FormData();
+            data.append('enabled', 0);
+            disablePokeRequest.send(data);
         }
 
         this.enable = function() {
@@ -364,8 +372,8 @@ class InputTag {
                     {
                         this.delTag(inputText.previousElementSibling.lastElementChild);
 
-                        if (onChanged != null) {
-                            onChanged(inputTag, inputTag.nextSibling.value);
+                        if (me.onChanged != null) {
+                            me.onChanged(inputTag, inputTag.nextSibling.value);
                         }
                         return;
                     }
@@ -381,8 +389,8 @@ class InputTag {
                             inputText.value = "";
                             this.addTag(inputTag, selectedMenuItem.name, selectedMenuItem.rel, selectedMenuItem.dataset.icon);
 
-                            if (onChanged != null) {
-                                onChanged(inputTag, inputTag.nextSibling.value);
+                            if (me.onChanged != null) {
+                                me.onChanged(inputTag, inputTag.nextSibling.value);
                             }
                         }
                         menu.classList.remove('opened');
@@ -654,6 +662,9 @@ class Remarkup {
                 var table = new Table();
                 table.conceal( xmlhttp.destinationField );
 
+                correctHeaderHeights();
+
+                finishHyperlinks();
                 finishMetaDataElements();
             }
 
@@ -664,7 +675,7 @@ class Remarkup {
 
         this.tmrDecodeRemarkup = null;
 
-        document.querySelectorAll('.app-edit-window-head > .phui-font-fa').forEach((toolbarButton) => {
+        document.querySelectorAll('.edit .app-edit-window-head > .phui-font-fa').forEach((toolbarButton) => {
             toolbarButton.onclick = function(ev) {
                 var span = ev.target;
                 var textarea = document.querySelector('.app-window-body.edit > textarea');
@@ -856,6 +867,20 @@ class Remarkup {
                     sessionStorage["remarkup-editor-text-after"] = textarea.Text.substring(selectionEnd);
                     sessionStorage["originURL"] = window.location;
                     window.location = "diagrams.net/new/";
+                }
+
+                if (span.classList.contains('fa-lock'))
+                {
+                    textarea.unlocked = true;
+                    span.classList.remove('fa-lock');
+                    span.classList.add('fa-unlock');
+                }
+                else
+                if (span.classList.contains('fa-unlock'))
+                {
+                    textarea.unlocked = false;
+                    span.classList.remove('fa-unlock');
+                    span.classList.add('fa-lock');
                 }
             };
         });
@@ -1767,7 +1792,7 @@ class TextAreaDropZone {
     {
         var me = this;
 
-        this.fileReaderLoad = function(evt, files, i) {
+        this.fileReaderLoad = function(evt, files, i, isTranslation) {
                 var chunkSize = 0x400000 - 0x1000;
 
                 var getIDForNewFileData = new FormData();
@@ -1859,7 +1884,7 @@ class TextAreaDropZone {
                         };
 
                         evt.nbrHttpUploadCalls++;
-                        uploadChunk.open('POST', "file/uploadChunk/" + jsonResponse.ID + "/" + nbrSlices + "/" + (s + 1) + "/" + currentFile.name, true);
+                        uploadChunk.open('POST', "file/uploadChunk/" + jsonResponse.ID + "/" + nbrSlices + "/" + (s + 1) + "/" + (isTranslation ? 1 : 0) + "/" + currentFile.name, true);
                         uploadChunk.setRequestHeader('Content-type', 'application/octet-stream');
                         uploadChunk.send(blob);
                     }
@@ -1871,11 +1896,13 @@ class TextAreaDropZone {
             evt.stopPropagation();
             evt.preventDefault();
 
+            var isTranslation = document.querySelector('.edit-container.translation') != null;
+
             var files = evt.dataTransfer.files; // FileList object.
             for (var i = 0; i < files.length; i++)
             {
                 var fileReader = new FileReader();
-                fileReader.onload = (me.fileReaderLoad)(evt, files, i);
+                fileReader.onload = (me.fileReaderLoad)(evt, files, i, isTranslation);
 
                 fileReader.readAsBinaryString(files[i],"UTF-8");
             }
@@ -1978,6 +2005,22 @@ function correctAnchorHrefsForUseBaseHtmlTag() {
     document.querySelectorAll("a[href^='?']").forEach(function(anchor) {
         anchor.href = document.location.pathname + anchor.attributes["href"].value;
     });
+}
+
+function correctHeaderHeights() {
+    var remarkupContent = document.querySelector('.remarkupContent');
+    if (remarkupContent == null || typeof(remarkupContent) === 'undefined') return;
+
+    var headerTags = Array.prototype.slice.call( remarkupContent.querySelectorAll('h1,h2,h3,h4,h5,h6'), 0 );
+    headerTags = headerTags.map(function(h) {
+        return parseInt(h.tagName.substring(1));
+    });
+
+    if (headerTags.filter((v, i, a) => a.indexOf(v) === i).length > 1) {
+        remarkupContent.classList.add("multilevel-headers");
+    } else {
+        remarkupContent.classList.remove("multilevel-headers");
+    }
 }
 
 function cumulativeOffset(element) {
@@ -2101,6 +2144,58 @@ function diffResizeLocationPane(evt) {
 
 function diffRestoreFocusLocationPane(evt) {
     fileLeft.focus();
+}
+
+function finishHyperlinks() {
+    document.querySelectorAll('.email-link, .phone-link, .phriction-link').forEach((hyperlink) => {
+        var contextMenu = document.body.querySelector('.context-menu');
+        if (contextMenu != null) document.body.removeChild(contextMenu);
+
+        // set events for context-menu for hyperlink in decoded Remarkup
+        hyperlink.addEventListener('contextmenu', function (ev) {
+            ev.preventDefault();
+
+            document.body.querySelectorAll('.context-menu').forEach((c) => {
+                document.body.removeChild(c);
+            });
+
+            var contextMenu = document.createElement('div');
+            document.body.appendChild(contextMenu);
+            contextMenu.className = 'context-menu';
+            contextMenu.style.display = 'block';
+            contextMenu.style.position = 'absolute';
+            contextMenu.style.left = ev.pageX + "px";
+            contextMenu.style.top = ev.pageY + "px";
+
+            var menuItems = document.createElement('ul');
+            menuItems.className = 'menu';
+
+            // == start Copy-to-clipboard ========================================================================================
+            var mnuCopy = document.createElement('li');
+            mnuCopy.className = 'copy';
+            var mnuCopyAnchor = document.createElement('a');
+            var mnuCopyIcon = document.createElement('i');
+            mnuCopyIcon.className = 'fa fa-copy';
+            var mnuCopyContent = document.createTextNode("Copy");
+            mnuCopyAnchor.appendChild(mnuCopyIcon);
+            mnuCopyAnchor.appendChild(mnuCopyContent);
+            mnuCopy.appendChild(mnuCopyAnchor);
+            menuItems.appendChild(mnuCopy);
+
+            contextMenu.appendChild(menuItems);
+
+            var clipboard = new ClipboardJS('.context-menu .copy a');
+            mnuCopyAnchor.setAttribute('data-clipboard-text', hyperlink.href);
+            mnuCopyAnchor.addEventListener('mouseup', function (e) {
+                setTimeout(function () {
+                    contextMenu.removeChild(menuItems);
+                }, 100);
+            });
+            // == end Copy-to-clipboard ==========================================================================================
+
+            return false;
+        }, false);
+    });
 }
 
 function finishMetaDataElements() {
@@ -2416,7 +2511,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // finalize all textarea elements in phriction-edit and maniphest-edit: when the cursor in the textarea is repositioned on a new line, the resulting remarkup at the right should also be scrolled
-    document.body.querySelectorAll('textarea').forEach(function(textarea) {
+    document.body.querySelectorAll('.edit textarea').forEach(function(textarea) {
         if (typeof(right) !== 'undefined') {
             ['focus', 'keyup', 'click'].forEach(function(eventName) {
                 textarea.addEventListener(eventName, function(e) {
@@ -2425,6 +2520,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     var nextRightLineSpan = rightDataLineSpans.find(function(span) { return parseInt(span.dataset.line) > leftLine});
                     var firstRightLineSpan = rightDataLineSpans[ rightDataLineSpans.indexOf(nextRightLineSpan) - 1 ];
                     if (typeof firstRightLineSpan === 'undefined') return;
+
+                    if (textarea.unlocked == true) return;  // do nothing
 
                     textarea.ignoreRepositioning = true;
 
@@ -2455,8 +2552,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    document.body.querySelectorAll('#right').forEach(function(decodedRemarkup) {
+    document.body.querySelectorAll('.edit-container #right').forEach(function(decodedRemarkup) {
         decodedRemarkup.addEventListener('scroll', function(e) {
+            if (textarea.unlocked == true) return;  // do nothing
+
             if (textarea.ignoreRepositioning == true) {
                 textarea.ignoreRepositioning = false;
                 return;
@@ -2876,6 +2975,12 @@ window.addEventListener('load', function() {
     // (they are pointing to the webserver's RootPath)
     correctAnchorHrefsForUseBaseHtmlTag();
 
+    // fix size of H1 headers in case we also have subheaders (e.g. H2, H3, ...)
+    correctHeaderHeights();
+
+    // add some extra code to hyperlinks
+    finishHyperlinks();
+
     // add some extra code to meta-elements (e.g. ip addresses in content)
     finishMetaDataElements();
 }, false);
@@ -2902,8 +3007,17 @@ window.addEventListener('mousedown', function(e) {
     }
 }, false);
 
-// disable contextmenu
+// disable contextmenu (except for images)
 document.addEventListener('contextmenu', function (ev) {
+    if (ev.target.tagName == 'IMG') return true; 
+
     ev.preventDefault();
     return false;
 })
+
+// correct colors for animated wait icon in case we're in dark mode
+if (document.body.dataset.theme == "dark") {
+    document.querySelectorAll('.wait svg rect').forEach(function (r) {
+        r.setAttribute('fill', "#fff");
+    });
+}

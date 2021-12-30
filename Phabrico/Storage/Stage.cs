@@ -112,9 +112,12 @@ namespace Phabrico.Storage
             long result = 0;
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT frozen
-                       FROM stageInfo;
+                       FROM stageInfo
+                       WHERE CAST(language AS TEXT) = @notApplicable
                    ", database.Connection))
             {
+                dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
+
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     while (reader.Read())
@@ -140,9 +143,12 @@ namespace Phabrico.Storage
             long result = 0;
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT frozen
-                       FROM stageInfo;
+                       FROM stageInfo
+                       WHERE CAST(language AS TEXT) = @notApplicable
                    ", database.Connection))
             {
+                dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
+
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     while (reader.Read())
@@ -162,9 +168,10 @@ namespace Phabrico.Storage
         /// Creates a new staged object
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="browser"></param>
         /// <param name="newPhabricatorObject"></param>
         /// <returns></returns>
-        public string Create(Database database, Phabricator.Data.PhabricatorObject newPhabricatorObject)
+        public string Create(Database database, Browser browser, Phabricator.Data.PhabricatorObject newPhabricatorObject)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT MAX(token) AS lastToken
@@ -209,7 +216,7 @@ namespace Phabrico.Storage
                     stageData.HeaderData = JsonConvert.SerializeObject(newPhabricatorObject);
                     stageData.TokenPrefix = newPhabricatorObject.TokenPrefix;
 
-                    SaveStageData(database, stageData);
+                    SaveStageData(database, browser, stageData, newPhabricatorObject.Language);
 
                     return stageData.Token;
                 }
@@ -227,7 +234,7 @@ namespace Phabrico.Storage
             if (fileObject.ID > 0)
             {
                 // fileObject is not staged yet
-                return Create(database, fileObject);
+                return Create(database, browser, fileObject);
             }
             else
             {
@@ -240,14 +247,29 @@ namespace Phabrico.Storage
         /// Returns all stageInfo records
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public IEnumerable<Data> Get(Database database)
+        public IEnumerable<Data> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen
-                       FROM stageInfo;
+                        SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen, language
+                        FROM stageInfo mst
+                        WHERE ((
+                                  CAST(language AS TEXT) = @notApplicable
+                                  AND NOT EXISTS ( SELECT 1
+                                                   FROM stageInfo
+                                                   WHERE token = mst.token
+                                                     AND CAST(language AS TEXT) = @language
+                                                 )
+                               )
+                            OR 
+                                CAST(language AS TEXT) = @language
+                          )
                    ", database.Connection))
             {
+                dbCommand.Parameters.Add(new SQLiteParameter("language", language));
+                dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
+
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     while (reader.Read())
@@ -265,20 +287,30 @@ namespace Phabrico.Storage
                         if (record.Token.StartsWith(Phabricator.Data.Phriction.Prefix))
                         {
                             Storage.Phriction phrictionStorage = new Storage.Phriction();
-                            Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, record.Token);
-                            if (phrictionDocument != null && phrictionDocument.DateModified.ToUnixTimeSeconds() > record.DateModified.ToUnixTimeSeconds())
+                            Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, record.Token, language);
+                            if (phrictionDocument != null)
                             {
-                                record.MergeConflict = true;
+                                phrictionDocument.Language = (Language)(string)reader["language"];
+
+                                if (phrictionDocument.DateModified.ToUnixTimeSeconds() > record.DateModified.ToUnixTimeSeconds())
+                                {
+                                    record.MergeConflict = true;
+                                }
                             }
                         }
                         else
                         if (record.Token.StartsWith(Phabricator.Data.Maniphest.Prefix))
                         {
                             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                            Phabricator.Data.Maniphest maniphestTask = maniphestStorage.Get(database, record.Token);
-                            if (maniphestTask != null && maniphestTask.DateModified.ToUnixTimeSeconds() > record.DateModified.ToUnixTimeSeconds())
+                            Phabricator.Data.Maniphest maniphestTask = maniphestStorage.Get(database, record.Token, language);
+                            if (maniphestTask != null)
                             {
-                                record.MergeConflict = true;
+                                maniphestTask.Language = (Language)(string)reader["language"];
+
+                                if (maniphestTask.DateModified.ToUnixTimeSeconds() > record.DateModified.ToUnixTimeSeconds())
+                                {
+                                    record.MergeConflict = true;
+                                }
                             }
                         }
 
@@ -293,19 +325,33 @@ namespace Phabrico.Storage
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <param name="tokenPrefix"></param>
         /// <param name="stageObjectID"></param>
         /// <param name="includeContent"></param>
         /// <returns></returns>
-        public T Get<T>(Database database, string tokenPrefix, int stageObjectID, bool includeContent) where T : Phabricator.Data.PhabricatorObject
+        public T Get<T>(Database database, Language language, string tokenPrefix, int stageObjectID, bool includeContent) where T : Phabricator.Data.PhabricatorObject
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, tokenPrefix, headerData, contentData
                        FROM stageInfo
                        WHERE objectID = @objectID
+                         AND ((
+                                 CAST(language AS TEXT) = @notApplicable
+                                 AND NOT EXISTS ( SELECT 1
+                                                 FROM stageInfo
+                                                 WHERE objectID = @objectID
+                                                 AND CAST(language AS TEXT) = @language
+                                             )
+                             )
+                         OR 
+                             CAST(language AS TEXT) = @language
+                         )
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "objectID", stageObjectID, Database.EncryptionMode.Default);
+                dbCommand.Parameters.Add(new SQLiteParameter("language", language));
+                dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
 
                 using (var reader = dbCommand.ExecuteReader())
                 {
@@ -344,9 +390,10 @@ namespace Phabrico.Storage
         /// </summary>
         /// <typeparam name="T">Type of objects to be returned</typeparam>
         /// <param name="database">Phabrico database</param>
+        /// <param name="language"></param>
         /// <param name="unfrozenOnly">If true, return only the unfrozen records</param>
         /// <returns></returns>
-        public IEnumerable<T> Get<T>(Database database, bool unfrozenOnly = false) where T : Phabricator.Data.PhabricatorObject
+        public IEnumerable<T> Get<T>(Database database, Language language, bool unfrozenOnly = false) where T : Phabricator.Data.PhabricatorObject
         {
             string prefixToken;
             if (typeof(T) == typeof(Phabricator.Data.Phriction))
@@ -380,13 +427,27 @@ namespace Phabrico.Storage
 
             using (SQLiteCommand dbCommand = new SQLiteCommand(
                        string.Format(@"
-                           SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen
-                           FROM stageInfo
-                           WHERE token LIKE '{0}%'
-                              OR (token NOT LIKE 'PHID-NEWTOKEN-%' AND '{0}' = '{1}')
+                           SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen, language
+                           FROM stageInfo mst
+                           WHERE (token LIKE '{0}%'
+                                  OR (token NOT LIKE 'PHID-NEWTOKEN-%' AND '{0}' = '{1}')
+                                 )
+                             AND ((
+                                     CAST(language AS TEXT) = @notApplicable
+                                     AND NOT EXISTS ( SELECT 1
+                                                      FROM stageInfo
+                                                      WHERE token = mst.token
+                                                        AND CAST(language AS TEXT) = @language
+                                                    )
+                                  )
+                               OR 
+                                   CAST(language AS TEXT) = @language
+                             )
                        ", prefixToken, Phabricator.Data.Transaction.Prefix)
                    , database.Connection))
             {
+                dbCommand.Parameters.Add(new SQLiteParameter("language", language));
+                dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     while (reader.Read())
@@ -401,13 +462,15 @@ namespace Phabrico.Storage
 
                         record.HeaderData = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["headerData"]);
 
-                        yield return JsonConvert.DeserializeObject(record.HeaderData, typeof(T)) as T;
+                        T result = JsonConvert.DeserializeObject(record.HeaderData, typeof(T)) as T;
+                        result.Language = (Language)(string)reader["language"];
+                        yield return result;
                     }
                 }
             }
 
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen
+                       SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen, language
                        FROM stageInfo
                        WHERE token LIKE 'PHID-NEWTOKEN-%'
                    ", database.Connection))
@@ -430,6 +493,7 @@ namespace Phabrico.Storage
 
                         Phabricator.Data.PhabricatorObject phabricatorObject = JsonConvert.DeserializeObject(record.HeaderData, typeof(T)) as T;
                         phabricatorObject.Token = record.Token;
+                        phabricatorObject.Language = (Language)(string)reader["language"];
 
                         yield return phabricatorObject as T;
                     }
@@ -459,14 +523,26 @@ namespace Phabrico.Storage
         /// <typeparam name="T"></typeparam>
         /// <param name="database"></param>
         /// <param name="token"></param>
+        /// <param name="language"></param>
         /// <param name="operation"></param>
         /// <returns></returns>
-        public T Get<T>(Database database, string token, string operation = null) where T : Phabricator.Data.PhabricatorObject
+        public T Get<T>(Database database, string token, Language language, string operation = null) where T : Phabricator.Data.PhabricatorObject
         {
             string sqlStatement = @"
-                SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen
+                SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen, language
                 FROM stageInfo
                 WHERE token = @token
+                  AND ((
+                          CAST(language AS TEXT) = @notApplicable
+                          AND NOT EXISTS ( SELECT 1
+                                           FROM stageInfo
+                                           WHERE token = @token
+                                             AND CAST(language AS TEXT) = @language
+                                         )
+                       )
+                    OR 
+                        CAST(language AS TEXT) = @language
+                  )
             ";
 
             if (string.IsNullOrEmpty(operation))
@@ -485,6 +561,8 @@ namespace Phabrico.Storage
             using (SQLiteCommand dbCommand = new SQLiteCommand(sqlStatement, database.Connection))
             {
                 database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
+                dbCommand.Parameters.Add(new SQLiteParameter("language", language));
+                dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
                 if (operation != null)
                 {
                     database.AddParameter(dbCommand, "operation", operation, Database.EncryptionMode.None);
@@ -572,6 +650,7 @@ namespace Phabrico.Storage
                         }
 
                         result.Token = record.Token;
+                        result.Language = (Language)(string)reader["language"];
 
                         return result;
                     }
@@ -587,17 +666,30 @@ namespace Phabrico.Storage
         /// <param name="database"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public bool IsFrozen(Database database, string token)
+        public bool IsFrozen(Database database, Browser browser, string token)
         {
             string sqlStatement = @"
                 SELECT frozen
                 FROM stageInfo
                 WHERE token = @token
+                  AND ((
+                          CAST(language AS TEXT) = @notApplicable
+                          AND NOT EXISTS ( SELECT 1
+                                           FROM stageInfo
+                                           WHERE token = @token
+                                             AND CAST(language AS TEXT) = @language
+                                         )
+                       )
+                    OR 
+                        CAST(language AS TEXT) = @language
+                  )
             ";
 
             using (SQLiteCommand dbCommand = new SQLiteCommand(sqlStatement, database.Connection))
             {
                 database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
+                dbCommand.Parameters.Add(new SQLiteParameter("language", browser.Session.Locale));
+                dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
 
                 using (var reader = dbCommand.ExecuteReader())
                 {
@@ -618,16 +710,29 @@ namespace Phabrico.Storage
         /// <param name="database"></param>
         /// <param name="token"></param>
         /// <param name="doFreeze"></param>
-        public void Freeze(Database database, string token, bool doFreeze)
+        public void Freeze(Database database, Browser browser, string token, bool doFreeze)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        UPDATE stageInfo
                           SET frozen = @frozen
-                       WHERE token = @token;
+                       WHERE token = @token
+                         AND ((
+                                 CAST(language AS TEXT) = @notApplicable
+                                 AND NOT EXISTS ( SELECT 1
+                                                  FROM stageInfo
+                                                  WHERE token = @token
+                                                    AND CAST(language AS TEXT) = @language
+                                                )
+                              )
+                           OR 
+                               CAST(language AS TEXT) = @language
+                         )
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "frozen", Encryption.Encrypt(database.EncryptionKey, doFreeze.ToString()));
+                dbCommand.Parameters.Add(new SQLiteParameter("language", browser.Session.Locale));
+                dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
                 dbCommand.ExecuteNonQuery();
             }
         }
@@ -659,7 +764,7 @@ namespace Phabrico.Storage
                     // maniphest task is modified: check if number of comments to users has been changed (i.e. "@" remarkup-code)
                     Phabricator.Data.Maniphest modifiedManiphestTask = modifiedPhabricatorObject as Phabricator.Data.Maniphest;
                     Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                    Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, modifiedPhabricatorObject.Token);
+                    Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, modifiedPhabricatorObject.Token, browser.Session.Locale);
                     if (originalManiphestTask != null)
                     {
                         string originalCommentsToUsers = string.Join(",", RegexSafe.Matches(originalManiphestTask.Description, "@[a-z0-9._-]*[a-z0-9_-]")
@@ -678,7 +783,7 @@ namespace Phabrico.Storage
                                                                                    .Select(comment => comment.Substring("@".Length))
                                     )
                             {
-                                Phabricator.Data.User user = userStorage.Get(database, userId);
+                                Phabricator.Data.User user = userStorage.Get(database, userId, browser.Session.Locale);
                                 if (user != null)
                                 {
                                     if (modifiedManiphestTask.Subscribers.Contains(user.Token) == false)
@@ -707,16 +812,18 @@ namespace Phabrico.Storage
             stageData.Token = modifiedPhabricatorObject.Token;
             stageData.DateModified = DateTimeOffset.UtcNow;
             stageData.TokenPrefix = modifiedPhabricatorObject.TokenPrefix;
-            stageData.HeaderData = JsonConvert.SerializeObject(modifiedPhabricatorObject);
             stageData.ContentData = new byte[0];
 
             Phabricator.Data.File modifiedFileObject = modifiedPhabricatorObject as Phabricator.Data.File;
             if (modifiedFileObject != null)
             {
                 stageData.ContentDataStream = modifiedFileObject.DataStream;
+                modifiedFileObject.DateModified = stageData.DateModified;
             }
 
-            Stage.Data previouslyStagedObject = Get(database).FirstOrDefault(obj => obj.Token.Equals(stageData.Token));
+            stageData.HeaderData = JsonConvert.SerializeObject(modifiedPhabricatorObject);
+
+            Stage.Data previouslyStagedObject = Get(database, browser.Session.Locale).FirstOrDefault(obj => obj.Token.Equals(stageData.Token));
             if (previouslyStagedObject != null)
             {
                 stageData.Frozen = previouslyStagedObject.Frozen;
@@ -751,7 +858,14 @@ namespace Phabrico.Storage
                 }
             }
 
-            SaveStageData(database, stageData);
+            Content content = new Content(database);
+            bool isTranslation = content.GetTranslation(modifiedPhabricatorObject.Token, browser.Session.Locale) != null;
+
+            Language language = isTranslation 
+                    ? browser.Session.Locale
+                    : Language.NotApplicable;
+
+            SaveStageData(database, browser, stageData, language);
 
             // invalidate cached data
             Server.InvalidateNonStaticCache(database, DateTime.MaxValue);
@@ -760,21 +874,24 @@ namespace Phabrico.Storage
         /// <summary>
         /// Deletes a staged object
         /// </summary>
-        /// <param name="browser"></param>
         /// <param name="database"></param>
+        /// <param name="browser"></param>
         /// <param name="existingPhabricatorObject"></param>
-        public void Remove(Http.Browser browser, Database database, Phabricator.Data.PhabricatorObject existingPhabricatorObject)
+        /// <param name="language"></param>
+        public void Remove(Database database, Http.Browser browser, Phabricator.Data.PhabricatorObject existingPhabricatorObject, Language language = null)
         {
             Phabricator.Data.Maniphest stagedManiphestTask = existingPhabricatorObject as Phabricator.Data.Maniphest;
             Phabricator.Data.Phriction stagedPhrictionDocument = existingPhabricatorObject as Phabricator.Data.Phriction;
             Phabricator.Data.File stagedFile = existingPhabricatorObject as Phabricator.Data.File;
+
+            if (language == null) language = Language.NotApplicable;
 
             if (stagedPhrictionDocument != null && stagedPhrictionDocument.Token.StartsWith("PHID-NEWTOKEN-"))
             {
                 Phriction phrictionStorage = new Phriction();
                 foreach (Phabricator.Data.Phriction underlyingStagedPhrictionDocument in phrictionStorage.GetHierarchy(database, browser, stagedPhrictionDocument.Token).Children)
                 {
-                    Remove(browser, database, underlyingStagedPhrictionDocument);
+                    Remove(database, browser, underlyingStagedPhrictionDocument, language);
                 }
             }
 
@@ -785,11 +902,13 @@ namespace Phabrico.Storage
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            DELETE FROM stageInfo
                            WHERE token = @token
-                             AND operation = @operation;
+                             AND operation = @operation
+                             AND language = @language;
                        ", database.Connection))
                 {
                     database.AddParameter(dbCommand, "token", stagedTransaction.Token, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "operation", stagedTransaction.Type, Database.EncryptionMode.None);
+                    database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
                     dbCommand.ExecuteNonQuery();
                 }
 
@@ -833,9 +952,22 @@ namespace Phabrico.Storage
                            DELETE FROM stageInfo
                            WHERE token = @token
                              AND (operation LIKE 'new' OR operation LIKE 'edit')
+                             AND ((
+                                     CAST(language AS TEXT) = @notApplicable
+                                     AND NOT EXISTS ( SELECT 1
+                                                      FROM stageInfo
+                                                      WHERE token = @token
+                                                        AND CAST(language AS TEXT) = @language
+                                                    )
+                                  )
+                               OR 
+                                   CAST(language AS TEXT) = @language
+                             )
                        ", database.Connection))
                 {
                     database.AddParameter(dbCommand, "token", stagedFile.Token, Database.EncryptionMode.None);
+                    dbCommand.Parameters.Add(new SQLiteParameter("language", language ?? browser.Session.Locale));
+                    dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
                     dbCommand.ExecuteNonQuery();
                 }
             }
@@ -856,9 +988,22 @@ namespace Phabrico.Storage
                            DELETE FROM stageInfo
                            WHERE token = @token
                              AND (operation LIKE 'new' OR operation LIKE 'edit')
+                             AND ((
+                                     CAST(language AS TEXT) = @notApplicable
+                                     AND NOT EXISTS ( SELECT 1
+                                                      FROM stageInfo
+                                                      WHERE token = @token
+                                                        AND CAST(language AS TEXT) = @language
+                                                    )
+                                  )
+                               OR 
+                                   CAST(language AS TEXT) = @language
+                             )
                        ", database.Connection))
                 {
                     database.AddParameter(dbCommand, "token", existingPhabricatorObject.Token, Database.EncryptionMode.None);
+                    dbCommand.Parameters.Add(new SQLiteParameter("language", language ?? browser.Session.Locale));
+                    dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
                     dbCommand.ExecuteNonQuery();
                 }
 
@@ -869,7 +1014,7 @@ namespace Phabrico.Storage
                 if (stagedManiphestTask != null)
                 {
                     Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                    Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, stagedManiphestTask.ID, true);
+                    Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, stagedManiphestTask.ID, language ?? browser.Session.Locale, true);
                     if (originalManiphestTask != null)
                     {
                         remarkupContent = originalManiphestTask.Description;
@@ -879,22 +1024,32 @@ namespace Phabrico.Storage
                 if (stagedPhrictionDocument != null)
                 {
                     Storage.Phriction phrictionStorage = new Storage.Phriction();
-                    Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, stagedPhrictionDocument.Path, true);
+                    Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, stagedPhrictionDocument.Path, language ?? browser.Session.Locale, true);
                     if (originalPhrictionDocument != null)
                     {
-                        remarkupContent = originalPhrictionDocument.Content;
+                        Content content = new Content(database);
+                        Content.Translation translation = content.GetTranslation(originalPhrictionDocument.Token, language ?? browser.Session.Locale);
+                        if (translation != null)
+                        {
+                            remarkupContent = translation.TranslatedRemarkup;
+                        }
+                        else
+                        {
+                            remarkupContent = originalPhrictionDocument.Content;
+                        }
+
                         url = "/" + originalPhrictionDocument.Path;
                     }
                 }
 
                 if (remarkupContent != null)
                 {
-                    database.ClearAssignedTokens(existingPhabricatorObject.Token);
+                    database.ClearAssignedTokens(existingPhabricatorObject.Token, language);
                     privateStagingController.browser = browser;
                     privateStagingController.ConvertRemarkupToHTML(database, url, remarkupContent, out remarkupParserOutput, false);
                     foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                     {
-                        database.AssignToken(existingPhabricatorObject.Token, linkedPhabricatorObject.Token);
+                        database.AssignToken(existingPhabricatorObject.Token, linkedPhabricatorObject.Token, language);
                     }
                 }
 
@@ -909,12 +1064,13 @@ namespace Phabrico.Storage
         /// Adds or updates a stageInfo record
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="browser"></param>
         /// <param name="stageData"></param>
-        private void SaveStageData(Database database, Data stageData)
+        private void SaveStageData(Database database, Browser browser, Data stageData, Language language)
         {
             if (stageData.Token.StartsWith("PHID-NEWTOKEN-") && stageData.Operation.Equals("new") == false)
             {
-                Phabricator.Data.PhabricatorObject newPhabricatorObject = Get<Phabricator.Data.PhabricatorObject>(database, stageData.Token);
+                Phabricator.Data.PhabricatorObject newPhabricatorObject = Get<Phabricator.Data.PhabricatorObject>(database, stageData.Token, browser.Session.Locale);
                 if (newPhabricatorObject.MergeStageData(stageData))
                 {
                     stageData.Operation = "new";
@@ -924,8 +1080,8 @@ namespace Phabrico.Storage
             using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
             {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                           INSERT OR REPLACE INTO stageInfo(token, tokenPrefix, objectID, operation, dateModified, headerData, contentData, frozen)
-                           VALUES (@token, @tokenPrefix, @objectID, @operation, @dateModified, @headerData, @contentData, @frozen);
+                           INSERT OR REPLACE INTO stageInfo(token, tokenPrefix, objectID, operation, dateModified, headerData, contentData, frozen, language)
+                           VALUES (@token, @tokenPrefix, @objectID, @operation, @dateModified, @headerData, @contentData, @frozen, @language);
                        ", database.Connection, transaction))
                 {
                     database.AddParameter(dbCommand, "token", stageData.Token, Database.EncryptionMode.None);
@@ -936,6 +1092,7 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "headerData", Encryption.Encrypt(database.EncryptionKey, stageData.HeaderData));
                     database.AddParameter(dbCommand, "contentData", stageData.ContentDataStream);
                     database.AddParameter(dbCommand, "frozen", Encryption.Encrypt(database.EncryptionKey, stageData.Frozen.ToString()));
+                    database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
                     dbCommand.ExecuteNonQuery();
 
                     transaction.Commit();
@@ -954,13 +1111,13 @@ namespace Phabrico.Storage
 
             Storage.Stage stageStorage = new Stage();
 
-            Phabricator.Data.PhabricatorObject[] stagedObjects = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database).ToArray();
-            List<Phabricator.Data.File> stagedFiles = stageStorage.Get<Phabricator.Data.File>(database, true).ToList();
+            Phabricator.Data.PhabricatorObject[] stagedObjects = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, browser.Session.Locale).ToArray();
+            List<Phabricator.Data.File> stagedFiles = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, true).ToList();
             List<int> referencedFileIDs = new List<int>();
             Regex matchFileAttachments = new Regex("{F(-?[0-9]+)[^}]*}");
             foreach (Phabricator.Data.PhabricatorObject stagedObject in stagedObjects.Where(obj => stagedFiles.All(file => file.Token.Equals(obj.Token) == false)).ToList())
             {
-                Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, stagedObject.Token);
+                Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, stagedObject.Token, browser.Session.Locale);
                 if (maniphestTask != null)
                 {
                     referencedFileIDs.AddRange( matchFileAttachments.Matches(maniphestTask.Description)
@@ -970,7 +1127,7 @@ namespace Phabrico.Storage
                     continue;
                 }
 
-                Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, stagedObject.Token);
+                Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, stagedObject.Token, browser.Session.Locale);
                 if (phrictionDocument != null)
                 {
                     referencedFileIDs.AddRange( matchFileAttachments.Matches(phrictionDocument.Content)
@@ -983,10 +1140,7 @@ namespace Phabrico.Storage
 
             foreach (Phabricator.Data.File stagedFile in stagedFiles.Where(file => referencedFileIDs.Contains(file.ID) == false))
             {
-                if (stagedFile.ContentType.Equals("image/drawio") == false)
-                {
-                    stageStorage.Remove(browser, database, stagedFile);
-                }
+                stageStorage.Remove(database, browser, stagedFile);
             }
 
             // shrinks the database

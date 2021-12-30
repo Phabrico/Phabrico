@@ -1,5 +1,9 @@
 <script>
     window.addEventListener('load', function() {
+        if (typeof phabrico == 'undefined') {
+            alert('ERROR: Not all javascript files were loaded');
+        }
+
         Object.defineProperty( phabrico, "autoLogOff", {
             value: new AutoLogOff(@@AUTOLOGOUTAFTERMINUTESOFINACTIVITY@@),
             writable: false,
@@ -167,7 +171,7 @@
         <li class="phui-list-item-view">
             <a href="offline/changes/" class="phui-list-item-href tooltip-right">
                 <span class="phui-font-fa fa-pencil phui-list-item-icon">
-                    <span class="phui-list-item-name">Offline changes
+                    <span class="phui-list-item-name">Offline changes<span class="navigator-menuitem-notification staging-notifier"></span>
                         @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
                             <span class="tooltiptext">View local changes</span>
                         }@
@@ -180,7 +184,7 @@
     @{IF @@ACCESS-MASTER-DATA@@=True@
         <li class="phui-list-item-view">
             <div style="margin:20px 5px; text-align:center;">
-                <button class="button-green" name="__synchronize__" type="button" onclick="phabrico.synchronization.confirm()">Synchronize</button>
+                <button class="button-green" id="btnSynchronizeWithPhabricator" disabled="disabled" name="__synchronize__" type="button" onclick="phabrico.synchronization.confirm()">Synchronize</button>
             </div>
         </li>
     }@
@@ -193,7 +197,7 @@
     </div>
 </main>
 
-<form action="" method="POST" id="dlgRequestSynchronize" class="aphront-dialog-view modal" style="display:none" onsubmit="return phabrico.synchronization.start(this, 'full');">
+<form action="" method="POST" id="dlgRequestSynchronize" class="aphront-dialog-view modal" style="display:none" onsubmit="return synchronize(this)">
     <input name="csrf_token" type="hidden" value="@@CSRF@@" />
     <div class="aphront-dialog-overlay"></div>
     <div class="aphront-dialog-head">
@@ -260,6 +264,52 @@
         });
     }
 
+    function getCountUncommittedObjects() {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open('GET', document.baseURI + "offline/changes/count", true);
+
+        @{IF @@ACCESS-MASTER-DATA@@=True@
+            xmlhttp.onload = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    var response = JSON.parse(xmlhttp.responseText);
+
+                    btnSynchronizeWithPhabricator.disabled = false;
+                    btnSynchronizeWithPhabricator.IssueType = response.IssueType;
+                }
+            }
+        }@
+
+        xmlhttp.send();
+    }
+
+    function synchronize(frm) {
+        dlgRequestSynchronize.style.display = 'none';
+
+        if (btnSynchronizeWithPhabricator.IssueType == 'None') {
+            return phabrico.synchronization.start(frm, 'full');            
+        } else {
+            var title = Locale.Translate("Notification.WARNING");
+            var message = "";
+
+            if (btnSynchronizeWithPhabricator.IssueType == 'SlugIsTooLong') {
+                message = toHTML(Locale.Translate("Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"));
+            } else {
+                message = toHTML(Locale.Translate("Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"));
+            }
+
+            showHideConfirmationMessage(true, title, message,
+                function () {
+                    showHideConfirmationMessage(false);
+                    phabrico.synchronization.start(frm, 'full');
+                },
+                function () {
+                    showHideConfirmationMessage(false);
+                });
+
+            return false;
+        }
+    }
+
     finalizeAnchorSpans(document);
 
     // correct tooltip position for navigator element in case the menu is scrolled vertically
@@ -280,11 +330,19 @@
             notifier.innerText = notification.Message;
             if (notification.Type == "error") {
                 notifier.classList.remove('information');
+                notifier.classList.remove('warning');
                 notifier.classList.add('error');
+            } else if (notification.Type == "warning") {
+                notifier.classList.remove('error');
+                notifier.classList.remove('information');
+                notifier.classList.add('warning');
             } else {
                 notifier.classList.remove('error');
+                notifier.classList.remove('warning');
                 notifier.classList.add('information');
             }
         };
     });
+
+    getCountUncommittedObjects();
 </script>

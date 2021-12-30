@@ -177,6 +177,11 @@ namespace Phabrico.Http.Response
             }
         }
         
+        /// <summary>
+        /// This method is fired for each incoming request and will set up some customizable parameters (if any) in the
+        /// generated HTML output
+        /// </summary>
+        /// <param name="browser"></param>
         public void Customize(Browser browser)
         {
             string customApplicationLogo = HttpServer.Customization.CustomApplicationLogoBase64;
@@ -225,6 +230,12 @@ namespace Phabrico.Http.Response
             else
             {
                 SetText("CUSTOM-FAVICON", HttpServer.Customization.CustomFavIconBase64, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
+            }
+
+            if (Http.Server.UnitTesting)
+            {
+                // disable periodical check to see if we have the latest Phabrico version installed (otherwise we are spamming github with a request for each Selenium unit test)
+                SetText("CHECK-FOR-LATEST-VERSION", "False", ArgumentOptions.AllowEmptyParameterValue);
             }
 
             if (HttpServer.IsHttpModule)
@@ -334,7 +345,7 @@ namespace Phabrico.Http.Response
                 HttpServer.Customization.HideProjects &&
                 HttpServer.Customization.HideUsers &&
                 HttpServer.Customization.HidePhriction == false &&
-                Http.Server.Plugins.All(plugin => plugin.IsVisible(browser) == false)
+                Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false)
                )
             {
                 SetText("ONLY-MANIPHEST", "True", ArgumentOptions.AllowEmptyParameterValue);
@@ -443,6 +454,7 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    htmlViewPage.SetText("INTERNAL-HTML", InternalHtml, ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -476,6 +488,7 @@ namespace Phabrico.Http.Response
                         htmlViewPage.SetText("THEME", Theme, ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        htmlViewPage.SetText("INTERNAL-HTML", InternalHtml, ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -502,6 +515,7 @@ namespace Phabrico.Http.Response
                         htmlViewPage.SetText("HEADERACTIONS", htmlPartialHeaderViewPage.Content, ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("INTERNAL-HTML", InternalHtml, ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -536,7 +550,7 @@ namespace Phabrico.Http.Response
                                     plugin.State = Plugin.PluginBase.PluginState.Initialized;
                                 }
 
-                                if (plugin.IsVisible(browser))
+                                if (plugin.IsVisibleInNavigator(browser))
                                 {
                                     HtmlPartialViewPage htmlPluginNavigatorMenuItem = htmlPartialViewPage.GetPartialView("PLUGINS");
                                     if (htmlPluginNavigatorMenuItem != null)
@@ -546,11 +560,34 @@ namespace Phabrico.Http.Response
                                         htmlPluginNavigatorMenuItem.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                         htmlPluginNavigatorMenuItem.SetText("PLUGIN-DESCRIPTION", plugin.GetDescription(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                     }
+
+                                }
+
+                                foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions)
+                                {
+                                    if (pluginExtension.IsVisibleInNavigator(browser))
+                                    {
+                                        if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
+                                        {
+                                            pluginExtension.Database = new Storage.Database(database.EncryptionKey);
+                                            pluginExtension.Initialize();
+                                            pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                                        }
+
+                                        HtmlPartialViewPage htmlPluginNavigatorMenuItem = htmlViewPage.GetPartialView("PLUGINS");
+                                        if (htmlPluginNavigatorMenuItem != null)
+                                        {
+                                            htmlPluginNavigatorMenuItem.SetText("PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                            htmlPluginNavigatorMenuItem.SetText("PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                            htmlPluginNavigatorMenuItem.SetText("PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                            htmlPluginNavigatorMenuItem.SetText("PLUGIN-DESCRIPTION", pluginExtension.GetDescription(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                        }
+                                    }
                                 }
                             }
 
                             Storage.PhamePost phamePostStorage = new Storage.PhamePost();
-                            foreach (string blogName in phamePostStorage.Get(database).Select(post => post.Blog).Distinct().OrderBy(blog => blog))
+                            foreach (string blogName in phamePostStorage.Get(database, browser.Session.Locale).Select(post => post.Blog).Distinct().OrderBy(blog => blog))
                             {
                                 HtmlPartialViewPage htmlPhameBlogsMenuItem = htmlPartialViewPage.GetPartialView("PHAME-BLOGS");
                                 if (htmlPhameBlogsMenuItem != null)
@@ -576,6 +613,7 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("HEADERACTIONS", htmlPartialHeaderViewPage.Content, ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("ICON-USERNAME", char.ToUpper(userName.FirstOrDefault()).ToString(), ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("LANGUAGE-OPTIONS", GetLanguageOptions(browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    htmlViewPage.SetText("INTERNAL-HTML", InternalHtml, ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, ArgumentOptions.NoHtmlEncoding);
                     htmlViewPage.SetText("PHABRICO-VERSION", VersionInfo.Version, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);

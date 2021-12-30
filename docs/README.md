@@ -29,3 +29,4 @@ You can also edit your offline copies and synchronize them later to Phabricator.
 <a href="11-Gitanos/">11 Gitanos (plugin)</a><br />
 <a href="12-Customization/">12 Customization (IIS HTTP Module)</a><br />
 <a href="13-CommandLineInterfacing/">13 Command Line Interfacing</a><br />
+<a href="14-ContentTranslation/">14 Content Translation</a><br />

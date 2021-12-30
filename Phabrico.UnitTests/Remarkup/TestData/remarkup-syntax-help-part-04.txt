@@ -1,5 +1,4 @@
-= Layout =
-
+= Layout
 Make **headers** like this:
 ```
 = Large Header =
@@ -26,7 +25,7 @@ You can optionally omit the trailing `=` signs -- that is, these are the same:
 This produces headers like the ones in this document. Make sure you have an
 empty line before and after the header.
 ~~~~~~~~~~
-<h1 class='remarkup-header'><a name='hdrLayout' style='padding-top: 80px;'></a>Layout </h1>
+<h1 class='remarkup-header'><a name='layout' style='padding-top: 80px;'></a>Layout </h1>
 Make <strong>headers</strong> like this:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>= Large Header =
 
@@ -46,5 +45,34 @@ You can optionally omit the trailing <tt class='remarkup-monospaced'>=</tt> sign
 == Smaller Header</code></pre></div>
 <br>
 This produces headers like the ones in this document. Make sure you have an<br>
+empty line before and after the header.
+~~~~~~~~~~
+<H d="1" t="2">Layout</H>
+Make <B>headers</B> like this:<N>[10]</N>
+<BT>```
+= Large Header =
+
+== Smaller Header ==
+
+===== Very Small Header =====
+
+Alternate Large Header
+======================
+
+Alternate Smaller Header
+------------------------
+```
+</BT>
+<N>[12]</N>
+You can optionally omit the trailing <M>`=`</M> signs -- that is, these are the same:<N>[45]</N>
+<N>[46]</N>
+<BT>```
+== Smaller Header ==
+
+== Smaller Header
+```
+</BT>
+<N>[47]</N>
+This produces headers like the ones in this document. Make sure you have an<N>[76]</N>
 empty line before and after the header.
 ~~~~~~~~~~

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Http.Response;
+using Phabrico.Miscellaneous;
 using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
@@ -66,6 +67,9 @@ namespace Phabrico.Controllers
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
                     List<SearchResult> searchResults = new List<SearchResult>();
+
+                    // in case the search-filter contains a '/', we have a parameters array with more than 1 element -> combine all elements
+                    parameters = new string[] { string.Join("/", parameters) };
 
                     // in case multiple words are entered as search criteria, split them all up as separate filter values
                     parameters = HttpUtility.UrlDecode(parameters.FirstOrDefault()).Split(' ').ToArray();
@@ -139,7 +143,7 @@ namespace Phabrico.Controllers
 
             if (httpServer.Customization.HideManiphest == false)
             {
-                Phabricator.Data.Maniphest data = maniphestStorage.Get(database, token);
+                Phabricator.Data.Maniphest data = maniphestStorage.Get(database, token, Language.NotApplicable);
                 if (data != null)
                 {
                     searchResult = new SearchResult();
@@ -180,7 +184,7 @@ namespace Phabrico.Controllers
 
             if (httpServer.Customization.HidePhame == false)
             {
-                Phabricator.Data.PhamePost data = phamePostStorage.Get(database, token);
+                Phabricator.Data.PhamePost data = phamePostStorage.Get(database, token, Language.NotApplicable);
                 if (data != null)
                 {
                     if (httpServer.ValidUserRoles(database, browser, data) == false)
@@ -226,7 +230,7 @@ namespace Phabrico.Controllers
 
             if (httpServer.Customization.HidePhriction == false)
             {
-                Phabricator.Data.Phriction data = phrictionStorage.Get(database, token);
+                Phabricator.Data.Phriction data = phrictionStorage.Get(database, token, Language.NotApplicable);
                 if (data != null)
                 {
                     if (httpServer.ValidUserRoles(database, browser, data) == false)

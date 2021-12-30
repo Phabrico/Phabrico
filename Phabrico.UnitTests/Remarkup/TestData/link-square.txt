@@ -6,11 +6,21 @@
 
 [[#anchor]]
 
-[[#anchor | Anchors ]]
+[[#anchor | Anchors]]
 ~~~~~~~~~~
 <a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a><p class='paragraph'></p>
 <a class='phriction-link' href='http://www.example.com/'>example.com</a><p class='paragraph'></p>
 <a class='phriction-link' href='w/daddy/'>Story of my dad&#39;s life</a><p class='paragraph'></p>
 <a class='phriction-link' href='w/#anchor'>Story of my life</a><p class='paragraph'></p>
 <a class='phriction-link' href='w/#anchor'>Anchors</a>
+~~~~~~~~~~
+<A f="l" u="http%3A%2F%2Fwww.example.com%2F"></A><N>[2]</N>
+<N>[3]</N>
+<A f="n" u="http%3A%2F%2Fwww.example.com%2F">example.com</A><N>[4]</N>
+<N>[5]</N>
+<A f="l" u="w%2Fdaddy%2F"></A><N>[6]</N>
+<N>[7]</N>
+<A f="l" u="w%2F%23anchor"></A><N>[8]</N>
+<N>[9]</N>
+<A f="n" u="w%2F%23anchor">Anchors</A>
 ~~~~~~~~~~

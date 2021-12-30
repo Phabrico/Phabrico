@@ -28,6 +28,20 @@ namespace Phabrico.Phabricator.Data
         public const string PrefixCoverPage = "PHID-WIKICOVER-";
 
         /// <summary>
+        /// Maximum length of slug
+        /// Slugs longer than MaximumLengthSlug can not be uploaded to Phabricator
+        /// </summary>
+        public const int MaximumLengthSlug = 115;
+
+        /// <summary>
+        /// Maximum preferred length of slug
+        /// Slugs with length longer than MaximumPreferredLengthSlug (but smaller than MaximumLengthSlug) are still
+        /// allowed, but are generating warnings during synchronizing as you might run into problems when creating
+        /// underlying documents
+        /// </summary>
+        public const int MaximumPreferredLengthSlug = 100;
+
+        /// <summary>
         /// Author of the document
         /// </summary>
         public string Author { get; set; }

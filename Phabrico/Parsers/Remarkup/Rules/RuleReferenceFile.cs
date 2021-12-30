@@ -13,6 +13,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// <summary>
     /// Rmarkup parser for File objects
     /// </summary>
+    [RuleXmlTag("F")]
     public class RuleReferenceFile : RemarkupRule
     {
         public int FileID { get; private set; }
@@ -73,7 +74,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Phabricator.Data.File fileObject = fileStorage.GetByID(database, FileID, true);
             if (fileObject == null)
             {
-                fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, FileID, false);
+                fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, FileID, false);
             }
 
             if (fileObject != null)
@@ -134,6 +135,66 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Length = match.Length;
 
             return true;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Storage.Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            Match match = RegexSafe.Match(innerText, @"^{F(-?[0-9]+)([^}]*)}", RegexOptions.Singleline);
+            FileID = Int32.Parse(match.Groups[1].Value);
+
+            Storage.Stage stageStorage = new Storage.Stage();
+            Storage.File fileStorage = new Storage.File();
+            Phabricator.Data.File fileObject = fileStorage.GetByID(database, FileID, true);
+            if (fileObject == null)
+            {
+                fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, FileID, false);
+                if (fileObject.ContentType.Equals("image/drawio"))
+                {
+                    fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, FileID, true);
+                }
+            }
+            else
+            if (fileObject.ContentType.Equals("image/drawio"))
+            {
+                fileObject = fileStorage.GetByID(database, FileID, false);
+            }
+
+
+            if (fileObject != null)
+            {
+                if (fileObject.ContentType.Equals("image/drawio"))
+                {
+                    // create clone of diagram
+                    Phabricator.Data.File clonedFileObject = new Phabricator.Data.File();
+                    clonedFileObject.Data = fileObject.Data;
+                    clonedFileObject.DateModified = DateTimeOffset.MinValue;
+                    clonedFileObject.TemplateFileName = "{0}";
+                    clonedFileObject.ImagePropertyPixelHeight = fileObject.ImagePropertyPixelHeight;
+                    clonedFileObject.ImagePropertyPixelWidth = fileObject.ImagePropertyPixelWidth;
+
+                    stageStorage.Create(database, browser, clonedFileObject);
+
+                    // mark file object as 'unreviewed'
+                    Storage.Content content = new Storage.Content(database);
+                    string clonedFileObjectTitle = string.Format("F{0} ({1})", fileObject.ID, browser.Session.Locale);
+                    content.AddTranslation(clonedFileObject.Token, browser.Session.Locale, clonedFileObjectTitle, "");
+
+                    // modify innerText
+                    innerText = innerText.Substring(0, match.Groups[1].Index)
+                              + clonedFileObject.ID
+                              + innerText.Substring(match.Groups[1].Index + match.Groups[1].Length);
+                }
+            }
+
+            return innerText;
         }
 
         /// <summary>
@@ -265,7 +326,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (fileObject.DataStream == null)
                 {
                     Storage.Stage stageStorage = new Storage.Stage();
-                    fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectID, true);
+                    fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileObjectID, true);
                     if (fileObject == null)
                     {
                         // file was not loaded from staging area, so content was not loaded -> load file content
@@ -310,10 +371,47 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 }
             }
 
+            if (fileObject.ContentType.Equals("image/drawio")) // set width of drawio images again, as the original stored width does not always seem to be right
+            {
+                // check if file content was also loaded, if not load it
+                if (fileObject.DataStream == null)
+                {
+                    Storage.Stage stageStorage = new Storage.Stage();
+                    fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileObjectID, true);
+                    if (fileObject == null)
+                    {
+                        // file was not loaded from staging area, so content was not loaded -> load file content
+                        fileObject = fileStorage.GetByID(database, fileObjectID, false);
+                    }
+                }
+
+                try
+                {
+                    // load image and count the 16 boundary colors of the image (10x10 pixels for each corner) + center
+                    fileObject.DataStream.Seek(0, SeekOrigin.Begin);
+                    System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(fileObject.DataStream);
+
+                    // set width
+                    fileObject.ImagePropertyPixelWidth = bitmap.Width;
+                }
+                catch
+                {
+                }
+            }
+
             string imgStyles = "";
-            string imgLocatorStyles = "width: " + fileObject.ImagePropertyPixelWidth + "px;";
+            string imgLocatorStyles;
             string alternativeText = "";
             string clickAction = "";
+
+            if (fileObjectOptions.Keys.Contains("float"))
+            {
+                imgLocatorStyles = "width: " + (fileObject.ImagePropertyPixelWidth + 10) + "px;";
+            }
+            else
+            {
+                imgLocatorStyles = "width: " + fileObject.ImagePropertyPixelWidth + "px;";
+            }
 
             if (fileObjectOptions.ContainsKey("size") == false &&
                 fileObjectOptions.ContainsKey("width") == false &&
@@ -385,7 +483,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             // check if alternative text should be displayed
             if (fileObjectOptions.ContainsKey("alt") && string.IsNullOrWhiteSpace(fileObjectOptions["alt"]) == false)
             {
-                alternativeText = " alt=\"" + fileObjectOptions["alt"] + "\"";
+                alternativeText = " alt=\"" + fileObjectOptions["alt"].Trim('"') + "\"";
             }
 
             // check if we need to add an 'Edit-button' to the image (which will be displayed when mouse-hovering over the image)

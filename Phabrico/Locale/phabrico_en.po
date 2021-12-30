@@ -320,6 +320,12 @@ msgstr "Finishing...";
 msgid "Synchronization.Status.Failed"
 msgstr "Failed";
 
+msgid "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+msgstr "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+
+msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+msgstr "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+
 # Maniphest
 msgid "Create Task"
 msgstr "Create Task"
@@ -579,6 +585,48 @@ msgstr "Show references"
 
 msgid "Parameters"
 msgstr "Parameters"
+
+msgid "This page has been translated but it's translated content hasn't been reviewed yet"
+msgstr "This page has been translated but it's translated content hasn't been reviewed yet"
+
+msgid "Edit translation"
+msgstr "Edit translation"
+
+msgid "Approve translation"
+msgstr "Approve translation"
+
+msgid "Are you sure you want to approve this translation?"
+msgstr "Are you sure you want to approve this translation?"
+
+msgid "Unreviewed translations"
+msgstr "Unreviewed translations"
+
+msgid "Revert to original translation"
+msgstr "Revert to original translation"
+
+msgid "Are you sure you want to completely undo your translation ?"
+msgstr "Are you sure you want to completely undo your translation ?"
+
+msgid "Action"
+msgstr "Action"
+
+msgid "Original Title"
+msgstr "Original Title"
+
+msgid "All translations have been approved"
+msgstr "All translations have been approved"
+
+msgid "Type some text to filter the list of unreviewed translations..."
+msgstr "Type some text to filter the list of unreviewed translations..."
+
+msgid "Are you sure you don't need a translation for this document ?"
+msgstr "Are you sure you don't need a translation for this document ?"
+
+msgid "No translation needed"
+msgstr "No translation needed"
+
+msgid "The original content of this document has changed. You must update the translation before you can approve it."
+msgstr "The original content of this document has changed. You must update the translation before you can approve it."
 
 # Phame
 msgid "Phame"
@@ -999,6 +1047,30 @@ msgstr "Frozen"
 msgid "Modified"
 msgstr "Modified"
 
+msgid "Rename path"
+msgstr "Modify URL"
+
+msgid "New path:"
+msgstr "New path:"
+
+msgid "Current path:"
+msgstr "Current path:"
+
+msgid "Change path"
+msgstr "Change path"
+
+msgid "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+msgstr "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+
+msgid "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+msgstr "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+
+msgid "An internal error occurred"
+msgstr "An internal error occurred"
+
+msgid "A document already exists with this slug path"
+msgstr "A document already exists with this slug path"
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Bold"
@@ -1035,6 +1107,9 @@ msgstr "Table"
 
 msgid "Diagram"
 msgstr "Diagram"
+
+msgid "Unlock edit and view windows"
+msgstr "Unlock edit and view windows"
 
 msgid "Help"
 msgstr "Help"

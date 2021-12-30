@@ -1,5 +1,4 @@
 == Embedding Images
-
 You can embed an image or other file by using braces to refer to it:
 
 {F1234}
@@ -16,36 +15,29 @@ You can set file display options like this:
 
 Valid options for all files are:
 
-- **layout** left (default), center, right, inline, link (render a link
-instead of a thumbnail for images)
-- **name** with `layout=link` or for non-images, use this name for the link
-text
+- **layout** left (default), center, right, inline, link (render a link instead of a thumbnail for images)
+- **name** with `layout=link` or for non-images, use this name for the link text
 - **alt** Provide alternate text for assistive technologies.
 
 Image files support these options:
 
-- **float** If layout is set to left or right, the image will be floated so
-text wraps around it.
+- **float** If layout is set to left or right, the image will be floated so text wraps around it.
 - **size** thumb (default), full
 - **width** Scale image to a specific width.
 - **height** Scale image to a specific height.
 
 Audio and video files support these options:
 
-- **media**: Specify the media type as `audio` or `video`. This allows you
-to disambiguate how file format which may contain either audio or video
-should be rendered.
+- **media**: Specify the media type as `audio` or `video`. This allows you to disambiguate how file format which may contain either audio or video should be rendered.
 - **loop**: Loop this media.
 - **autoplay**: Automatically begin playing this media.
 
 == Embedding Countdowns
-
 You can embed a countdown by using braces:
 
 {C123}
 
-= Quoting Text =
-
+= Quoting Text
 To quote text, preface it with an `>`:
 
   > This is quoted text.
@@ -54,18 +46,15 @@ This appears like this:
 
 > This is quoted text.
 
-= Embedding Media =
-
+= Embedding Media
 If you set a configuration flag, you can embed media directly in text:
 
-- **remarkup.enable-embedded-youtube**: allows you to paste in YouTube videos
-and have them render inline.
+- **remarkup.enable-embedded-youtube**: allows you to paste in YouTube videos and have them render inline.
 
 This option is disabled by default because it has security and/or
 silliness implications. Carefully read the description before enabling it.
 
-= Image Macros =
-
+= Image Macros
 You can upload image macros (More Stuff -> Macro) which will replace text
 strings with the image you specify. For instance, you could upload an image of a
 dancing banana to create a macro named "peanutbutterjellytime", and then any
@@ -73,7 +62,7 @@ time you type that string on a separate line it will be replaced with the image
 of a dancing banana.
 
 ~~~~~~~~~~
-<h1 class='remarkup-header'><a name='hdrEmbedding_Images' style='padding-top: 80px;'></a>Embedding Images </h1>
+<h1 class='remarkup-header'><a name='embedding-images' style='padding-top: 80px;'></a>Embedding Images </h1>
 You can embed an image or other file by using braces to refer to it:<p class='paragraph'></p>
 <div class='image-locator' style='width: 24px;'>
   <div class='image-container allow-full-screen'>
@@ -85,33 +74,21 @@ text area to upload and reference it.<p class='paragraph'></p>
 Most browsers also support uploading an image data just by pasting them from the<br>
 clipboard into the text area.<p class='paragraph'></p>
 You can set file display options like this:<p class='paragraph'></p>
-<div class='image-locator' style='width: 24px;float: left;'>
+<div class='image-locator' style='width: 34px;float: left;'>
   <div class='image-container allow-full-screen'>
-     <img rel='small.png' src='file/data/1234/' class='' style='max-width: max-content;' alt=""a duckling"">
+     <img rel='small.png' src='file/data/1234/' class='' style='max-width: max-content;' alt="a duckling">
   </div></div>
 <p class='paragraph'></p>
 Valid options for all files are:<br>
 <ul class='remarkup-list'>
-  <li class='remarkup-list-item'><strong>layout</strong> left (default), center, right, inline, link (render a link</li>
-</ul>
-
-instead of a thumbnail for images)<br>
-<ul class='remarkup-list'>
-  <li class='remarkup-list-item'><strong>name</strong> with <tt class='remarkup-monospaced'>layout=link</tt> or for non-images, use this name for the link</li>
-</ul>
-
-text<br>
-<ul class='remarkup-list'>
+  <li class='remarkup-list-item'><strong>layout</strong> left (default), center, right, inline, link (render a link instead of a thumbnail for images)</li>
+  <li class='remarkup-list-item'><strong>name</strong> with <tt class='remarkup-monospaced'>layout=link</tt> or for non-images, use this name for the link text</li>
   <li class='remarkup-list-item'><strong>alt</strong> Provide alternate text for assistive technologies.</li>
 </ul>
 
 Image files support these options:<br>
 <ul class='remarkup-list'>
-  <li class='remarkup-list-item'><strong>float</strong> If layout is set to left or right, the image will be floated so</li>
-</ul>
-
-text wraps around it.<br>
-<ul class='remarkup-list'>
+  <li class='remarkup-list-item'><strong>float</strong> If layout is set to left or right, the image will be floated so text wraps around it.</li>
   <li class='remarkup-list-item'><strong>size</strong> thumb (default), full</li>
   <li class='remarkup-list-item'><strong>width</strong> Scale image to a specific width.</li>
   <li class='remarkup-list-item'><strong>height</strong> Scale image to a specific height.</li>
@@ -119,38 +96,99 @@ text wraps around it.<br>
 
 Audio and video files support these options:<br>
 <ul class='remarkup-list'>
-  <li class='remarkup-list-item'><strong>media</strong>: Specify the media type as <tt class='remarkup-monospaced'>audio</tt> or <tt class='remarkup-monospaced'>video</tt>. This allows you</li>
-</ul>
-
-to disambiguate how file format which may contain either audio or video<br>
-should be rendered.<br>
-<ul class='remarkup-list'>
+  <li class='remarkup-list-item'><strong>media</strong>: Specify the media type as <tt class='remarkup-monospaced'>audio</tt> or <tt class='remarkup-monospaced'>video</tt>. This allows you to disambiguate how file format which may contain either audio or video should be rendered.</li>
   <li class='remarkup-list-item'><strong>loop</strong>: Loop this media.</li>
   <li class='remarkup-list-item'><strong>autoplay</strong>: Automatically begin playing this media.</li>
 </ul>
 
-<h1 class='remarkup-header'><a name='hdrEmbedding_Countdowns' style='padding-top: 80px;'></a>Embedding Countdowns </h1>
+<h1 class='remarkup-header'><a name='embedding-countdowns' style='padding-top: 80px;'></a>Embedding Countdowns </h1>
 You can embed a countdown by using braces:<p class='paragraph'></p>
 {C123}<br>
-<h1 class='remarkup-header'><a name='hdrQuoting_Text' style='padding-top: 80px;'></a>Quoting Text </h1>
+<h1 class='remarkup-header'><a name='quoting-text' style='padding-top: 80px;'></a>Quoting Text </h1>
 To quote text, preface it with an <tt class='remarkup-monospaced'>&gt;</tt>:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>&gt; This is quoted text.</code></pre></div>
 This appears like this:<p class='paragraph'></p>
 <blockquote><p>This is quoted text.</p></blockquote>
 <br>
-<h1 class='remarkup-header'><a name='hdrEmbedding_Media' style='padding-top: 80px;'></a>Embedding Media </h1>
+<h1 class='remarkup-header'><a name='embedding-media' style='padding-top: 80px;'></a>Embedding Media </h1>
 If you set a configuration flag, you can embed media directly in text:<br>
 <ul class='remarkup-list'>
-  <li class='remarkup-list-item'><strong>remarkup.enable-embedded-youtube</strong>: allows you to paste in YouTube videos</li>
+  <li class='remarkup-list-item'><strong>remarkup.enable-embedded-youtube</strong>: allows you to paste in YouTube videos and have them render inline.</li>
 </ul>
 
-and have them render inline.<p class='paragraph'></p>
 This option is disabled by default because it has security and/or<br>
 silliness implications. Carefully read the description before enabling it.<br>
-<h1 class='remarkup-header'><a name='hdrImage_Macros' style='padding-top: 80px;'></a>Image Macros </h1>
+<h1 class='remarkup-header'><a name='image-macros' style='padding-top: 80px;'></a>Image Macros </h1>
 You can upload image macros (More Stuff -&gt; Macro) which will replace text<br>
 strings with the image you specify. For instance, you could upload an image of a<br>
 dancing banana to create a macro named &quot;peanutbutterjellytime&quot;, and then any<br>
 time you type that string on a separate line it will be replaced with the image<br>
+of a dancing banana.
+~~~~~~~~~~
+<H d="2" t="2">Embedding Images</H>
+You can embed an image or other file by using braces to refer to it:<N>[32]</N>
+<N>[33]</N>
+<F>{F1234}</F><N>[34]</N>
+<N>[35]</N>
+In most interfaces, you can drag-and-drop an image from your computer into the<N>[65]</N>
+text area to upload and reference it.<N>[80]</N>
+<N>[81]</N>
+Most browsers also support uploading an image data just by pasting them from the<N>[108]</N>
+clipboard into the text area.<N>[119]</N>
+<N>[120]</N>
+You can set file display options like this:<N>[136]</N>
+<N>[137]</N>
+<F>{F1234, layout=left, float, size=full, alt="a duckling"}</F><N>[138]</N>
+<N>[139]</N>
+Valid options for all files are:<N>[151]</N>
+<N>[152]</N>
+<LS>
+  <b1><B>layout</B> left <BR>default</BR>, center, right, inline, link <BR>render a link instead of a thumbnail for images</BR></b1>
+  <b1><B>name</B> with <M>`layout=link`</M> or for non-images, use this name for the link text</b1>
+  <b1><B>alt</B> Provide alternate text for assistive technologies.</b1>
+</LS>
+Image files support these options:<N>[163]</N>
+<N>[164]</N>
+<LS>
+  <b1><B>float</B> If layout is set to left or right, the image will be floated so text wraps around it.</b1>
+  <b1><B>size</B> thumb <BR>default</BR>, full</b1>
+  <b1><B>width</B> Scale image to a specific width.</b1>
+  <b1><B>height</B> Scale image to a specific height.</b1>
+</LS>
+Audio and video files support these options:<N>[179]</N>
+<N>[180]</N>
+<LS>
+  <b1><B>media</B>: Specify the media type as <M>`audio`</M> or <M>`video`</M>. This allows you to disambiguate how file format which may contain either audio or video should be rendered.</b1>
+  <b1><B>loop</B>: Loop this media.</b1>
+  <b1><B>autoplay</B>: Automatically begin playing this media.</b1>
+</LS>
+<H d="2" t="2">Embedding Countdowns</H>
+You can embed a countdown by using braces:<N>[198]</N>
+<N>[199]</N>
+{C123}<N>[202]</N>
+<N>[203]</N>
+<H d="1" t="2">Quoting Text</H>
+To quote text, preface it with an <M>`&gt;`</M>:<N>[221]</N>
+<N>[222]</N>
+<WS>  &gt; This is quoted text.
+</WS>
+This appears like this:<N>[231]</N>
+<N>[232]</N>
+<Q>&gt; This is quoted text.</Q>
+<N>[233]</N>
+<H d="1" t="2">Embedding Media</H>
+If you set a configuration flag, you can embed media directly in text:<N>[262]</N>
+<N>[263]</N>
+<LS>
+  <b1><B>remarkup.enable-embedded-youtube</B>: allows you to paste in YouTube videos and have them render inline.</b1>
+</LS>
+This option is disabled by default because it has security and/or<N>[287]</N>
+silliness implications. Carefully read the description before enabling it.<N>[307]</N>
+<N>[308]</N>
+<H d="1" t="2">Image Macros</H>
+You can upload image macros <BR>More Stuff -&gt; Macro</BR> which will replace text<N>[328]</N>
+strings with the image you specify. For instance, you could upload an image of a<N>[360]</N>
+dancing banana to create a macro named "peanutbutterjellytime", and then any<N>[385]</N>
+time you type that string on a separate line it will be replaced with the image<N>[417]</N>
 of a dancing banana.
 ~~~~~~~~~~

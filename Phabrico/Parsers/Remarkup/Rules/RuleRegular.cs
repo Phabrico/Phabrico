@@ -1,5 +1,6 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using Phabrico.Storage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,6 +12,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// This rule is executed first to improve the performance of the Remarkup decoding
     /// </summary>
     [RulePriority(-100)]
+    [RuleXmlTag("T")]
     public class RuleRegular : RemarkupRule
     {
         /// <summary>
@@ -49,6 +51,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
             // check for alphanumeric characters, but make sure there's no underlining (by '=' or '-' characters) on the next line (=> header syntax)
             match = RegexSafe.Match(remarkup, @"^[A-Za-z0-9]+(?![^\n]*\n[=-])", System.Text.RegularExpressions.RegexOptions.Singleline);
             if (match.Success == false) return false;
+
+            // check if text is a macro
+            string text = remarkup;
+            Phabricator.Data.File macroFile = Http.Server.FilesPerMacroName.FirstOrDefault(macro => text.StartsWith(macro.Key)).Value;
+            if (macroFile != null)
+            {
+                return false;
+            }
 
             // search for metadata in the text and put them between SPAN elements (with class=metadata)
             string decodedHTML;
@@ -125,6 +135,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
             int length = metadatas.Select(kvp => kvp.Key.Index + kvp.Key.Length).Max();
             return length;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            return innerText;
         }
     }
 }

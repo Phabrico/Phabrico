@@ -19,18 +19,24 @@ namespace Phabrico.Miscellaneous
         {
             get
             {
-                return internalDictionary.Keys;
+                lock (internalDictionary)
+                {
+                    return internalDictionary.Keys;
+                }
             }
         }
 
         /// <summary>
         /// Collection containing the keys of the dictionary
         /// </summary>
-        public IEnumerable<TValue> Values
+        public virtual IEnumerable<TValue> Values
         {
             get
             {
-                return internalDictionary.Values;
+                lock (internalDictionary)
+                {
+                    return internalDictionary.Values;
+                }
             }
         }
 
@@ -40,12 +46,19 @@ namespace Phabrico.Miscellaneous
         /// </summary>
         /// <param name="key">Name of the key to be retrieved</param>
         /// <returns></returns>
-        public TValue this[TKey key]
+        public virtual TValue this[TKey key]
         {
             get
             {
                 TValue value;
-                if (internalDictionary.TryGetValue(key, out value) == false)
+                bool valueFound;
+
+                lock (internalDictionary)
+                {
+                    valueFound = internalDictionary.TryGetValue(key, out value);
+                }
+
+                if (valueFound == false)
                 {
                     if (typeof(TValue).IsGenericType && typeof(TValue).GetGenericTypeDefinition() == GetType().GetGenericTypeDefinition())
                     {
@@ -63,7 +76,10 @@ namespace Phabrico.Miscellaneous
 
             set
             {
-                internalDictionary[key] = value;
+                lock (internalDictionary)
+                {
+                    internalDictionary[key] = value;
+                }
             }
         }
 
@@ -83,9 +99,12 @@ namespace Phabrico.Miscellaneous
         {
             internalDictionary = new Dictionary<TKey, TValue>();
 
-            foreach (KeyValuePair<TKey, TValue> keyValuePair in originalSafeDictionary)
+            lock (internalDictionary)
             {
-                internalDictionary.Add(keyValuePair.Key, keyValuePair.Value);
+                foreach (KeyValuePair<TKey, TValue> keyValuePair in originalSafeDictionary)
+                {
+                    internalDictionary.Add(keyValuePair.Key, keyValuePair.Value);
+                }
             }
         }
 
@@ -107,7 +126,10 @@ namespace Phabrico.Miscellaneous
         /// <returns>True if the dictionary contains an element with the specified key</returns>
         public bool ContainsKey(TKey key)
         {
-            return internalDictionary.ContainsKey(key);
+            lock (internalDictionary)
+            {
+                return internalDictionary.ContainsKey(key);
+            }
         }
 
         /// <summary>
@@ -117,7 +139,10 @@ namespace Phabrico.Miscellaneous
         /// <returns>True if the element is successfully found and removed</returns>
         public bool Remove(TKey key)
         {
-            return internalDictionary.Remove(key);
+            lock (internalDictionary)
+            {
+                return internalDictionary.Remove(key);
+            }
         }
 
         /// <summary>
@@ -126,7 +151,10 @@ namespace Phabrico.Miscellaneous
         /// <returns>A enumerator structure for the dictionary</returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            return internalDictionary.GetEnumerator();
+            lock (internalDictionary)
+            {
+                return internalDictionary.GetEnumerator();
+            }
         }
 
         /// <summary>
@@ -135,7 +163,10 @@ namespace Phabrico.Miscellaneous
         /// <returns>A enumerator structure for the dictionary</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return internalDictionary.GetEnumerator();
+            lock (internalDictionary)
+            {
+                return internalDictionary.GetEnumerator();
+            }
         }
 
         /// <summary>
@@ -149,7 +180,10 @@ namespace Phabrico.Miscellaneous
         ///  the specified key; otherwise, false.</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return internalDictionary.TryGetValue(key, out value);
+            lock (internalDictionary)
+            {
+                return internalDictionary.TryGetValue(key, out value);
+            }
         }
     }
 }

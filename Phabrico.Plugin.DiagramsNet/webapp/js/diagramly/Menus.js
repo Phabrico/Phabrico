@@ -8,12 +8,12 @@
 	var mxPopupMenuShowMenu = mxPopupMenu.prototype.showMenu;
 	mxPopupMenu.prototype.showMenu = function()
 	{
-		mxPopupMenuShowMenu.apply(this, arguments);
-		
 		this.div.style.overflowY = 'auto';
 		this.div.style.overflowX = 'hidden';
 		var h0 = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
-		this.div.style.maxHeight = (h0 - 10) + 'px';
+		this.div.style.maxHeight = (h0 - (EditorUi.isElectronApp? 50 : 10)) + 'px'; //In Electron and without titlebar, the top item is not selectable
+
+		mxPopupMenuShowMenu.apply(this, arguments);
 	};
 	
 	Menus.prototype.createHelpLink = function(href)
@@ -1033,23 +1033,24 @@
 					{
 						try
 						{
-							localStorage.removeItem(Editor.configurationKey);
-							
 							if (mxEvent.isShiftDown(evt))
 							{
+								localStorage.removeItem(Editor.settingsKey);
 								localStorage.removeItem('.drawio-config');
-								localStorage.removeItem('.mode');
 							}
-							
-							editorUi.hideDialog();
-							editorUi.alert(mxResources.get('restartForChangeRequired'));
+							else
+							{
+								localStorage.removeItem(Editor.configurationKey);
+								editorUi.hideDialog();
+								editorUi.alert(mxResources.get('restartForChangeRequired'));
+							}
 						}
 						catch (e)
 						{
 							editorUi.handleError(e);
 						}
 					});
-				}]];
+				}, 'Shift+Click to Reset Settings']];
 				
 				if (!EditorUi.isElectronApp)
 				{
@@ -1200,11 +1201,6 @@
 							elt.style.top = '0px';
 						}
 						
-						if (EditorUi.isElectronApp)
-						{
-							elt.style.right = '95px';
-						}
-
 						var icon = document.createElement('div');
 						icon.style.backgroundImage = 'url(' + Editor.globeImage + ')';
 						icon.style.backgroundPosition = 'center center';
@@ -1218,6 +1214,15 @@
 						elt.appendChild(icon);
 						mxUtils.setOpacity(elt, 40);
 						
+						if (urlParams['winCtrls'] == '1')
+						{
+							elt.style.right = '95px';
+							elt.style.width = '19px';
+							elt.style.height = '19px';
+							elt.style.webkitAppRegion = 'no-drag';
+							icon.style.webkitAppRegion = 'no-drag';
+						}
+
 						if (uiTheme == 'atlas' || uiTheme == 'dark')
 						{
 							elt.style.opacity = '0.85';
@@ -1225,6 +1230,7 @@
 						}
 
 						document.body.appendChild(elt);
+						menubar.langIcon = elt;
 					}
 				}
 
@@ -1484,7 +1490,7 @@
 					if (e.keyCode == 13 && term.length > 0)
 					{
 						this.editorUi.openLink('https://www.diagrams.net/search?src=' +
-							EditorUi.isElectronApp? 'DESKTOP' : encodeURIComponent(location.host) + 
+							(EditorUi.isElectronApp ? 'DESKTOP' : encodeURIComponent(location.host)) + 
 							'&search=' + encodeURIComponent(term));
 						input.value = '';
 						EditorUi.logEvent({category: 'SEARCH-HELP', action: 'search', label: term});
@@ -1535,7 +1541,6 @@
 						editorUi.checkForUpdates();
 					});
 					
-					console.log('electron help menu');
 					this.addMenuItems(menu, ['-', 'keyboardShortcuts', 'quickStart',
 						'website', 'support', '-'], parent);
 						
@@ -2263,7 +2268,7 @@
 			{
 				editorUi.actions.addAction('plugins...', function()
 				{
-					editorUi.showDialog(new PluginsDialog(editorUi).container, 360, 170, true, false);
+					editorUi.showDialog(new PluginsDialog(editorUi).container, 380, 240, true, false);
 				});
 			}
 		}
@@ -3683,6 +3688,21 @@
 			}
 		})));
 		
+		if (EditorUi.isElectronApp)
+		{
+			var enableSpellCheck = urlParams['enableSpellCheck'] == '1';
+
+			var spellCheckAction = editorUi.actions.addAction('spellCheck', function()
+			{
+				editorUi.toggleSpellCheck();
+				enableSpellCheck = !enableSpellCheck;
+				editorUi.alert(mxResources.get('restartForChangeRequired'));
+			});
+			
+			spellCheckAction.setToggleAction(true);
+			spellCheckAction.setSelectedCallback(function() { return enableSpellCheck; });
+		}
+
 		this.put('extras', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
 			if (urlParams['noLangIcon'] == '1')
@@ -3706,7 +3726,12 @@
 					this.addLinkToItem(item, 'https://www.diagrams.net/doc/faq/math-typesetting');
 				}
 			}
-			
+	
+			if (EditorUi.isElectronApp)
+			{
+				this.addMenuItems(menu, ['spellCheck'], parent);	
+			}
+
 			this.addMenuItems(menu, ['copyConnect', 'collapseExpand', '-'], parent);
 			
 			if (urlParams['embed'] != '1' && (isLocalStorage || mxClient.IS_CHROMEAPP))

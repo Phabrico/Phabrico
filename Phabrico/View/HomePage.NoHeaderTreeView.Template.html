@@ -21,9 +21,9 @@
       <link rel="icon" href="@@CUSTOM-FAVICON@@" type="image/png" />
       <link rel="shortcut icon" href="@@CUSTOM-FAVICON@@" type="image/png" />
       }@
-      <script src="scripts/clipboard.min.js?version=@@PHABRICO-VERSION@@-@@LOCALE@@"></script>
-      <script src="scripts/phabrico.js?version=@@PHABRICO-VERSION@@-@@LOCALE@@"></script>
-      <script src="scripts/highlight.min.js?version=@@PHABRICO-VERSION@@"></script>
+      <script src="js/clipboard.min.js?version=@@PHABRICO-VERSION@@-@@LOCALE@@"></script>
+      <script src="js/phabrico.js?version=@@PHABRICO-VERSION@@-@@LOCALE@@"></script>
+      <script src="js/highlight.min.js?version=@@PHABRICO-VERSION@@"></script>
       <script>
           function fromHTML(html) {
               var div = document.createElement('div');
@@ -50,6 +50,7 @@
             document.body.dataset.locale = '@@LOCALE@@';
         </script>
 
+        @@INTERNAL-HTML@@
         @@CONTENT@@
     </body>
 </html>

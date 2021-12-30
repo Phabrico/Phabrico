@@ -77,6 +77,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 Thread.Sleep(500);  // wait some milliseconds to make sure the AJAX call for the projects-menu has been finished
                 inputProjectTags.SendKeys(OpenQA.Selenium.Keys.Enter);
 
+                AssertNoJavascriptErrors();
+
                 // save
                 IWebElement btnSetSailForAdventure = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Set Sail for Adventure')]"));
                 btnSetSailForAdventure.Click();
@@ -109,6 +111,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
                 logo.Click();
 
+                // wait a while
+                Thread.Sleep(1000);
+
                 // click on 'Synchronize' in the menu navigator
                 IWebElement navigatorSynchronize = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Synchronize')]"));
                 navigatorSynchronize.Click();
@@ -120,13 +125,15 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
                 // click on Yes button
                 IWebElement btnConfirmSynchronization = WebBrowser.FindElement(By.Id("dlgRequestSynchronize"))
-                                                                  .FindElement(By.XPath("//*[contains(text(), 'Yes')]"));
+                                                                  .FindElement(By.XPath(".//*[contains(text(), 'Yes')]"));
                 btnConfirmSynchronization.Click();
 
                 // wait until synchronization process is finished
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
                 wait.Until(condition => condition.FindElement(By.Id("dlgSynchronizing")).Displayed);
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(30));
+                wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
                 wait.Until(condition => condition.FindElements(By.Id("dlgSynchronizing")).Any(dlg => dlg.Displayed) == false);
 
                 // verify if we don't have any local offline changes anymore

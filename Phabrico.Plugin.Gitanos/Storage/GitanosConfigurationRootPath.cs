@@ -52,7 +52,7 @@ namespace Phabrico.Plugin.Storage
             }
         }
 
-        public override IEnumerable<Plugin.Model.GitanosConfigurationRootPath> Get(Phabrico.Storage.Database database)
+        public override IEnumerable<Plugin.Model.GitanosConfigurationRootPath> Get(Phabrico.Storage.Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT directory
@@ -73,7 +73,7 @@ namespace Phabrico.Plugin.Storage
             }
         }
 
-        public override Plugin.Model.GitanosConfigurationRootPath Get(Phabrico.Storage.Database database, string key, bool ignoreStageData)
+        public override Plugin.Model.GitanosConfigurationRootPath Get(Phabrico.Storage.Database database, string key, Language language, bool ignoreStageData)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT directory

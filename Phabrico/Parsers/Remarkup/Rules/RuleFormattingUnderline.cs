@@ -1,5 +1,7 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using Phabrico.Storage;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
@@ -17,7 +19,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
     [RuleNotInnerRuleFor(typeof(RuleNotification))]
     [RuleNotInnerRuleFor(typeof(RuleQuote))]
     [RuleNotInnerRuleFor(typeof(RuleTable))]
-    public class RuleFormattingUnderline : RemarkupRule
+    [RuleXmlTag("U")]
+    public class RuleFormattingUnderline : RuleFormatting
     {
         /// <summary>
         /// Converts Remarkup encoded text into HTML
@@ -52,7 +55,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     {
                         RemarkupParserOutput remarkupParserOutput;
                         remarkup = remarkup.Substring(match.Length);
-                        html = string.Format("<u>{0}</u>", Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false));
+                        UnformattedText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                        html = string.Format("<u>{0}</u>", UnformattedText);
                         LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                         ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -64,6 +68,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            return "__" + innerText + "__";
         }
     }
 }

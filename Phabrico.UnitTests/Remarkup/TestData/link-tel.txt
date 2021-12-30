@@ -1,6 +1,6 @@
-[[ tel:18005555555 | call me ]]
+[[tel:18005555555 | call me]]
 
-[ call me ]( tel:18005555555 )
+[call me](tel:18005555555)
 
 [[tel:18005555555]]
 
@@ -8,4 +8,10 @@
 <a class='phone-link' href='tel:18005555555'>call me</a><p class='paragraph'></p>
 <a class='phone-link' href='tel:18005555555'>call me</a><p class='paragraph'></p>
 <a class='phone-link' href='tel:18005555555'>18005555555</a>
+~~~~~~~~~~
+<A f="n" u="tel%3A18005555555">call me</A><N>[2]</N>
+<N>[3]</N>
+<A f="m" u="tel%3A18005555555">call me</A><N>[4]</N>
+<N>[5]</N>
+<A f="l" u="tel%3A18005555555"></A>
 ~~~~~~~~~~

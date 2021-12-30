@@ -408,7 +408,7 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 // show overview screen
-                foreach (Phabricator.Data.SynchronizationLogging synchronizationLogging in synchronizationLoggingStorage.Get(database)
+                foreach (Phabricator.Data.SynchronizationLogging synchronizationLogging in synchronizationLoggingStorage.Get(database, browser.Session.Locale)
                                                                                                                         .OrderByDescending(modification => modification.DateModified
                                                                                                                                                                        .ToUnixTimeSeconds()
                                                                                                                                           )) // do not order by milliseconds
@@ -423,7 +423,7 @@ namespace Phabrico.Controllers
 
                     if (record.Token.StartsWith(Phabricator.Data.Phriction.Prefix))
                     {
-                        Phabricator.Data.Phriction document = phrictionStorage.Get(database, synchronizationLogging.Token, true);
+                        Phabricator.Data.Phriction document = phrictionStorage.Get(database, synchronizationLogging.Token, browser.Session.Locale, true);
                         if (document == null) continue;
 
                         record.IsNew = string.IsNullOrEmpty(synchronizationLogging.PreviousContent);
@@ -444,7 +444,7 @@ namespace Phabrico.Controllers
                     else
                     if (record.Token.StartsWith(Phabricator.Data.Maniphest.Prefix))
                     {
-                        Phabricator.Data.Maniphest task = maniphestStorage.Get(database, synchronizationLogging.Token, true);
+                        Phabricator.Data.Maniphest task = maniphestStorage.Get(database, synchronizationLogging.Token, browser.Session.Locale, true);
                         if (task == null) continue;
 
                         record.IsNew = string.IsNullOrEmpty(synchronizationLogging.PreviousContent);
@@ -467,7 +467,7 @@ namespace Phabrico.Controllers
                     else
                     if (record.Token.StartsWith(Phabricator.Data.PhamePost.Prefix))
                     {
-                        Phabricator.Data.PhamePost blogPost = phamePostStorage.Get(database, synchronizationLogging.Token);
+                        Phabricator.Data.PhamePost blogPost = phamePostStorage.Get(database, synchronizationLogging.Token, browser.Session.Locale);
                         if (blogPost == null) continue;
 
                         record.IsNew = true;
@@ -516,14 +516,14 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 string phabricatorToken = parameters.FirstOrDefault();
-                Phabricator.Data.SynchronizationLogging synchronizationLogging = synchronizationLoggingStorage.Get(database, phabricatorToken, false);
+                Phabricator.Data.SynchronizationLogging synchronizationLogging = synchronizationLoggingStorage.Get(database, phabricatorToken, browser.Session.Locale, false);
                 if (synchronizationLogging != null)
                 {
                     string currentContent = null;
 
                     if (phabricatorToken.StartsWith(Phabricator.Data.Phriction.Prefix))
                     {
-                        Phabricator.Data.Phriction currentDocument = phrictionStorage.Get(database, phabricatorToken, false);
+                        Phabricator.Data.Phriction currentDocument = phrictionStorage.Get(database, phabricatorToken, browser.Session.Locale, false);
                         if (currentDocument != null)
                         {
                             currentContent = currentDocument.Content;
@@ -532,7 +532,7 @@ namespace Phabrico.Controllers
                     else
                     if (phabricatorToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
                     {
-                        Phabricator.Data.Maniphest currentTask = maniphestStorage.Get(database, phabricatorToken, false);
+                        Phabricator.Data.Maniphest currentTask = maniphestStorage.Get(database, phabricatorToken, browser.Session.Locale, false);
                         if (currentTask != null)
                         {
                             currentContent = currentTask.Description;
@@ -541,7 +541,7 @@ namespace Phabrico.Controllers
                     else
                     if (phabricatorToken.StartsWith(Phabricator.Data.PhamePost.Prefix))
                     {
-                        Phabricator.Data.PhamePost currentPost = phamePostStorage.Get(database, phabricatorToken);
+                        Phabricator.Data.PhamePost currentPost = phamePostStorage.Get(database, phabricatorToken, browser.Session.Locale);
                         if (currentPost != null)
                         {
                             currentContent = currentPost.Content;
@@ -647,7 +647,7 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.Stage stageStorage = new Storage.Stage();
-                int numberOfUnfrozenChanges = stageStorage.Get(database).Count(record => record.Frozen == false);
+                int numberOfUnfrozenChanges = stageStorage.Get(database, Language.NotApplicable).Count(record => record.Frozen == false);
 
                 string jsonData = JsonConvert.SerializeObject(new
                 {
@@ -723,6 +723,7 @@ namespace Phabrico.Controllers
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 20, Method = ProgressMethod_DownloadPhrictionDocuments });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadPhamePosts });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 40, Method = ProgressMethod_DownloadFileObjects });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadMacros });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadTransactions });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_SaveLastDownloadTimeStamp });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadPhrictionDocuments });
@@ -966,7 +967,7 @@ namespace Phabrico.Controllers
 
             // == Delete old Phriction documents ========================================================================================================================================
             List<Phabricator.Data.Phriction> documentsToRemove = new List<Phabricator.Data.Phriction>();
-            IEnumerable<Phabricator.Data.Phriction> allDocuments = phrictionStorage.Get(synchronizationParameters.database);
+            IEnumerable<Phabricator.Data.Phriction> allDocuments = phrictionStorage.Get(synchronizationParameters.database, browser.Session.Locale);
             if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.PhrictionAllProjects) == false)
             {
                 // remove documents without a project tagged
@@ -1063,14 +1064,14 @@ namespace Phabrico.Controllers
             if (noRootDocument)
             {
                 // no root document found -> search for documents which are the closest to the 'virtual' root
-                List<string[]> urlPartsCollection = phrictionStorage.Get(synchronizationParameters.database)
+                List<string[]> urlPartsCollection = phrictionStorage.Get(synchronizationParameters.database, browser.Session.Locale)
                                                                     .Where(document => documentsToRemove.Contains(document) == false)
                                                                     .Select(document => document.Path.Split('/'))
                                                                     .ToList();
                 if (urlPartsCollection.Any())  // check if any documents found
                 {
                     int minimumLength = urlPartsCollection.Min(urlParts => urlParts.Length);
-                    IEnumerable<Phabricator.Data.Phriction> rootDocuments = phrictionStorage.Get(synchronizationParameters.database)
+                    IEnumerable<Phabricator.Data.Phriction> rootDocuments = phrictionStorage.Get(synchronizationParameters.database, browser.Session.Locale)
                                                                                             .Where(document => document.Path.Split('/').Length == minimumLength);
                     if (rootDocuments.Count() == 1)
                     {
@@ -1105,7 +1106,7 @@ namespace Phabrico.Controllers
 
             // == Delete old/disallowed maniphest tasks =================================================================================================================================
             DateTimeOffset oldestTimestampToKeep = GetOldestDateTimeOffsetToKeep(synchronizationParameters.existingAccount.Parameters.RemovalPeriodClosedManiphests);
-            IEnumerable<Phabricator.Data.Maniphest> allTasks = maniphestStorage.Get(synchronizationParameters.database);
+            IEnumerable<Phabricator.Data.Maniphest> allTasks = maniphestStorage.Get(synchronizationParameters.database, browser.Session.Locale);
             List<Phabricator.Data.Maniphest> tasksToRemove = new List<Phabricator.Data.Maniphest>();
             tasksToRemove.AddRange(allTasks.Where(task => task.IsOpen == false && task.DateModified < oldestTimestampToKeep)); // remove old closed tasks
 
@@ -1155,7 +1156,7 @@ namespace Phabrico.Controllers
                     documentsToRemove.Count
                 );
 
-                List<Phabricator.Data.PhabricatorObject> documentLinkers = synchronizationParameters.database.GetDependentObjects(documentToRemove.Token).ToList();
+                List<Phabricator.Data.PhabricatorObject> documentLinkers = synchronizationParameters.database.GetDependentObjects(documentToRemove.Token, Language.NotApplicable).ToList();
                 IEnumerable<Phabricator.Data.Phriction> phrictionDocumentsWithLinks = documentLinkers.OfType<Phabricator.Data.Phriction>();
                 IEnumerable<Phabricator.Data.Maniphest> maniphestTasksWithLinks = documentLinkers.OfType<Phabricator.Data.Maniphest>();
 
@@ -1169,7 +1170,7 @@ namespace Phabrico.Controllers
                     }
                 }
 
-                stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, documentToRemove);
+                stageStorage.Remove(synchronizationParameters.database, synchronizationParameters.browser, documentToRemove);
                 phrictionStorage.Remove(synchronizationParameters.database, documentToRemove);
                 synchronizationParameters.database.UndescendTokenFrom(documentToRemove.Token);
 
@@ -1191,7 +1192,7 @@ namespace Phabrico.Controllers
                 );
 
 
-                List<Phabricator.Data.PhabricatorObject> documentLinkers = synchronizationParameters.database.GetDependentObjects(taskToRemove.Token).ToList();
+                List<Phabricator.Data.PhabricatorObject> documentLinkers = synchronizationParameters.database.GetDependentObjects(taskToRemove.Token, Language.NotApplicable).ToList();
                 IEnumerable<Phabricator.Data.Phriction> phrictionDocumentsWithLinks = documentLinkers.OfType<Phabricator.Data.Phriction>();
                 IEnumerable<Phabricator.Data.Maniphest> maniphestTasksWithLinks = documentLinkers.OfType<Phabricator.Data.Maniphest>();
 
@@ -1202,7 +1203,7 @@ namespace Phabrico.Controllers
                     continue;
                 }
 
-                stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, taskToRemove);
+                stageStorage.Remove(synchronizationParameters.database, synchronizationParameters.browser, taskToRemove);
                 maniphestStorage.Remove(synchronizationParameters.database, taskToRemove);
 
                 Storage.SynchronizationLogging.Delete(synchronizationParameters.database, taskToRemove.Token);
@@ -1276,7 +1277,7 @@ namespace Phabrico.Controllers
                 // link file-references to their owners (e.g. Phriction document or Maniphest task)
                 foreach (string owner in synchronizationParameters.fileObjectsPerToken.Where(kvp => kvp.Value.Contains(phabricatorFile.ID)).Select(kvp => kvp.Key))
                 {
-                    synchronizationParameters.database.AssignToken(owner, phabricatorFile.Token);
+                    synchronizationParameters.database.AssignToken(owner, phabricatorFile.Token, Language.NotApplicable);
                 }
             }
 
@@ -1412,7 +1413,7 @@ namespace Phabrico.Controllers
                                                                         .Where(project => project.Value == Phabricator.Data.Project.Selection.Selected)
                                                                         .Select(project => project.Key)
                                                                         .ToArray();
-                IEnumerable<Phabricator.Data.Project> availableProjects = projectStorage.Get(synchronizationParameters.database);
+                IEnumerable<Phabricator.Data.Project> availableProjects = projectStorage.Get(synchronizationParameters.database, synchronizationParameters.browser.Session.Locale);
 
                 if (availableProjects.Count() > 0 &&
                     selectedProjectTags.Count() == availableProjects.Count(p => p.Token.Equals(Phabricator.Data.Project.None) == false) &&
@@ -1465,7 +1466,7 @@ namespace Phabrico.Controllers
                                                                      .Where(user => user.Value == true)
                                                                      .Select(user => user.Key)
                                                                      .ToArray();
-                IEnumerable<Phabricator.Data.User> availableUsers = userStorage.Get(synchronizationParameters.database);
+                IEnumerable<Phabricator.Data.User> availableUsers = userStorage.Get(synchronizationParameters.database, browser.Session.Locale);
                 if (selectedUserTags.Count() == availableUsers.Count())
                 {
                     // all users are selected -> load all maniphest tasks from phabricator without a user constraint
@@ -1576,7 +1577,7 @@ namespace Phabrico.Controllers
                         synchronizationLogging.LastModifiedBy = phabricatorManiphestTask.Subscribers.Split(',').FirstOrDefault();
                     }
 
-                    Phabricator.Data.Maniphest previousData = maniphestStorage.Get(synchronizationParameters.database, phabricatorManiphestTask.Token, true);
+                    Phabricator.Data.Maniphest previousData = maniphestStorage.Get(synchronizationParameters.database, phabricatorManiphestTask.Token, synchronizationParameters.browser.Session.Locale, true);
                     if (previousData == null)
                     {
                         if (loggedManiphestTokens.Contains(phabricatorManiphestTask.Token) == false)
@@ -1633,10 +1634,10 @@ namespace Phabrico.Controllers
                 keywordStorage.AddPhabricatorObject(this, synchronizationParameters.database, phabricatorManiphestTask);
 
                 // (re)assign dependent Phabricator objects
-                synchronizationParameters.database.ClearAssignedTokens(phabricatorManiphestTask.Token);
+                synchronizationParameters.database.ClearAssignedTokens(phabricatorManiphestTask.Token, Language.NotApplicable);
                 foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                 {
-                    synchronizationParameters.database.AssignToken(phabricatorManiphestTask.Token, linkedPhabricatorObject.Token);
+                    synchronizationParameters.database.AssignToken(phabricatorManiphestTask.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
                 }
             }
         }
@@ -1659,7 +1660,7 @@ namespace Phabrico.Controllers
             phabricatorPhamePostAPI.TimeDifferenceBetweenPhabricatorAndLocalComputer = synchronizationParameters.TimeDifferenceBetweenPhabricatorAndLocalComputer;
 
             DateTimeOffset lastDownloadTimestamp = synchronizationParameters.lastDownloadTimestamp;
-            if (phamePostStorage.Get(synchronizationParameters.database).Any() == false)
+            if (phamePostStorage.Get(synchronizationParameters.database, synchronizationParameters.browser.Session.Locale).Any() == false)
             {
                 lastDownloadTimestamp = new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan());
             }
@@ -1695,10 +1696,10 @@ namespace Phabrico.Controllers
                 keywordStorage.AddPhabricatorObject(this, synchronizationParameters.database, newPhamePost);
 
                 // (re)assign dependent Phabricator objects
-                synchronizationParameters.database.ClearAssignedTokens(newPhamePost.Token);
+                synchronizationParameters.database.ClearAssignedTokens(newPhamePost.Token, Language.NotApplicable);
                 foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                 {
-                    synchronizationParameters.database.AssignToken(newPhamePost.Token, linkedPhabricatorObject.Token);
+                    synchronizationParameters.database.AssignToken(newPhamePost.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
                 }
             }
         }
@@ -1905,7 +1906,7 @@ namespace Phabrico.Controllers
                     synchronizationLogging.Title = phabricatorPhrictionDocument.Name;
                     synchronizationLogging.URL = "w/" + phabricatorPhrictionDocument.Path;
 
-                    Phabricator.Data.Phriction previousData = phrictionStorage.Get(synchronizationParameters.database, phabricatorPhrictionDocument.Token, true);
+                    Phabricator.Data.Phriction previousData = phrictionStorage.Get(synchronizationParameters.database, phabricatorPhrictionDocument.Token, synchronizationParameters.browser.Session.Locale, true);
                     if (previousData == null)
                     {
                         // new data
@@ -1935,7 +1936,7 @@ namespace Phabrico.Controllers
                     if (urlParts.Any())
                     {
                         string parentUrl = string.Join("/", urlParts.Take(urlParts.Length - 1)) + "/";
-                        Phabricator.Data.Phriction parentDocument = phrictionStorage.Get(synchronizationParameters.database, parentUrl);
+                        Phabricator.Data.Phriction parentDocument = phrictionStorage.Get(synchronizationParameters.database, parentUrl, synchronizationParameters.browser.Session.Locale);
                         if (parentDocument != null)
                         {
                             synchronizationParameters.database.DescendTokenFrom(parentDocument.Token, phabricatorPhrictionDocument.Token);
@@ -1950,10 +1951,10 @@ namespace Phabrico.Controllers
                     keywordStorage.AddPhabricatorObject(this, synchronizationParameters.database, phabricatorPhrictionDocument);
 
                     // (re)assign dependent Phabricator objects
-                    synchronizationParameters.database.ClearAssignedTokens(phabricatorPhrictionDocument.Token);
+                    synchronizationParameters.database.ClearAssignedTokens(phabricatorPhrictionDocument.Token, Language.NotApplicable);
                     foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                     {
-                        synchronizationParameters.database.AssignToken(phabricatorPhrictionDocument.Token, linkedPhabricatorObject.Token);
+                        synchronizationParameters.database.AssignToken(phabricatorPhrictionDocument.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
                     }
                 }
             }
@@ -1977,7 +1978,7 @@ namespace Phabrico.Controllers
             Storage.Project projectStorage = new Storage.Project();
 
             // check if untagged-dummy-project exists
-            if (projectStorage.Get(synchronizationParameters.database, Phabricator.Data.Project.None) == null)
+            if (projectStorage.Get(synchronizationParameters.database, Phabricator.Data.Project.None, Language.NotApplicable) == null)
             {
                 // create dummy project for untagged Phriction documents or Maniphest tasks
                 Phabricator.Data.Project dummyProject = new Phabricator.Data.Project();
@@ -1991,7 +1992,11 @@ namespace Phabrico.Controllers
 
             // load all current projects (to remember which are currently selected)
             SharedResource.Instance.ProgressDescription = Miscellaneous.Locale.TranslateText("Synchronization.Status.DownloadingProjects", browser.Session.Locale);
-            synchronizationParameters.projectSelected = projectStorage.Get(synchronizationParameters.database).ToDictionary(key => key.Token, value => value.Selected);
+            synchronizationParameters.projectSelected = projectStorage.Get(synchronizationParameters.database, synchronizationParameters.browser.Session.Locale)
+                                                                      .ToDictionary(
+                                                                            key => key.Token,
+                                                                            value => value.Selected
+                                                                       );
 
             // load all projects from Phabricator
             IEnumerable<Phabricator.Data.Project> phabricatorProjects = phabricatorProjectAPI.GetAll(synchronizationParameters.database,
@@ -2007,7 +2012,7 @@ namespace Phabrico.Controllers
                 }
 
                 // get DateSynchronized and color
-                Phabricator.Data.Project localProject = projectStorage.Get(synchronizationParameters.database, phabricatorProject.Token);
+                Phabricator.Data.Project localProject = projectStorage.Get(synchronizationParameters.database, phabricatorProject.Token, synchronizationParameters.browser.Session.Locale);
                 if (localProject != null)
                 {
                     phabricatorProject.Color = localProject.Color;
@@ -2022,7 +2027,11 @@ namespace Phabrico.Controllers
 
             // load all current users (to remember which are currently selected)
             Storage.User userStorage = new Storage.User();
-            synchronizationParameters.userSelected = userStorage.Get(synchronizationParameters.database).ToDictionary(key => key.Token, value => value.Selected);
+            synchronizationParameters.userSelected = userStorage.Get(synchronizationParameters.database, synchronizationParameters.browser.Session.Locale)
+                                                                .ToDictionary(
+                                                                    key => key.Token,
+                                                                    value => value.Selected
+                                                                );
         }
 
         /// <summary>
@@ -2038,7 +2047,7 @@ namespace Phabrico.Controllers
 
             // check if untagged-dummy-project exists
             synchronizationParameters.UserNoneInitialized = false;
-            if (userStorage.Get(synchronizationParameters.database, Phabricator.Data.User.None) == null)
+            if (userStorage.Get(synchronizationParameters.database, Phabricator.Data.User.None, Language.NotApplicable) == null)
             {
                 // create dummy project for untagged Phriction documents or Maniphest tasks
                 Phabricator.Data.User dummyUser = new Phabricator.Data.User();
@@ -2079,7 +2088,7 @@ namespace Phabrico.Controllers
                 phabricatorUser.Selected = selected;
 
                 // get DateSynchronized
-                Phabricator.Data.User localUser = userStorage.Get(synchronizationParameters.database, phabricatorUser.Token);
+                Phabricator.Data.User localUser = userStorage.Get(synchronizationParameters.database, phabricatorUser.Token, synchronizationParameters.browser.Session.Locale);
                 if (localUser != null)
                 {
                     phabricatorUser.DateSynchronized = localUser.DateSynchronized;
@@ -2097,6 +2106,13 @@ namespace Phabrico.Controllers
         /// <param name="totalDuration"></param>
         public void ProgressMethod_Finalize(SynchronizationParameters synchronizationParameters, int processedDuration, int totalDuration)
         {
+            // update review states of all translations
+            Storage.Content.SynchronizeReviewStatesWithMasterObjects(synchronizationParameters.database);
+
+            // update FilesPerMacroName dictionary
+            Http.Server.FilesPerMacroName[""] = null;
+            synchronizationParameters.browser.HttpServer.PreloadFileMacros(synchronizationParameters.database.EncryptionKey);
+
             if (synchronizationParameters.remotelyModifiedObjects.Any())
             {
                 SharedResource.Instance.ProgressState = "MERGE-CONFLICT";
@@ -2121,7 +2137,7 @@ namespace Phabrico.Controllers
                 DateTimeOffset minimumProjectTimeStamp = synchronizationParameters.projectSelected
                                                                                   .DefaultIfEmpty()
                                                                                   .Where(project => project.Value == Phabricator.Data.Project.Selection.Selected)
-                                                                                  .Select(project => projectStorage.Get(synchronizationParameters.database, project.Key))
+                                                                                  .Select(project => projectStorage.Get(synchronizationParameters.database, project.Key, synchronizationParameters.browser.Session.Locale))
                                                                                   .DefaultIfEmpty()
                                                                                   .Min(project => project == null
                                                                                                 ? DateTimeOffset.MinValue
@@ -2140,7 +2156,7 @@ namespace Phabrico.Controllers
                 DateTimeOffset minimumUserTimeStamp = synchronizationParameters.userSelected
                                                                                .DefaultIfEmpty()
                                                                                .Where(user => user.Value == true)
-                                                                               .Select(user => userStorage.Get(synchronizationParameters.database, user.Key))
+                                                                               .Select(user => userStorage.Get(synchronizationParameters.database, user.Key, synchronizationParameters.browser.Session.Locale))
                                                                                .DefaultIfEmpty()
                                                                                .Min(user => user == null
                                                                                          || user.DateSynchronized == DateTimeOffset.MinValue
@@ -2184,8 +2200,8 @@ namespace Phabrico.Controllers
             Storage.User userStorage = new Storage.User();
 
             // determine new SynchronizeTimeStamp based on the last modified maniphest task or phriction document
-            DateTimeOffset maxManiphestDateModified = maniphestStorage.Get(synchronizationParameters.database).Select(record => record.DateModified).DefaultIfEmpty().Max();
-            DateTimeOffset maxPhrictionDateModified = phrictionStorage.Get(synchronizationParameters.database).Select(record => record.DateModified).DefaultIfEmpty().Max();
+            DateTimeOffset maxManiphestDateModified = maniphestStorage.Get(synchronizationParameters.database, synchronizationParameters.browser.Session.Locale).Select(record => record.DateModified).DefaultIfEmpty().Max();
+            DateTimeOffset maxPhrictionDateModified = phrictionStorage.Get(synchronizationParameters.database, synchronizationParameters.browser.Session.Locale).Select(record => record.DateModified).DefaultIfEmpty().Max();
             DateTimeOffset newSynchronizationTimeStamp = maxManiphestDateModified > maxPhrictionDateModified
                                                        ? maxManiphestDateModified
                                                        : maxPhrictionDateModified;
@@ -2198,7 +2214,7 @@ namespace Phabrico.Controllers
                                                                              .Where(project => project.Value == Phabricator.Data.Project.Selection.Selected)
                                                                              .Select(project => project.Key))
             {
-                Phabricator.Data.Project project = projectStorage.Get(synchronizationParameters.database, selectedProjectToken);
+                Phabricator.Data.Project project = projectStorage.Get(synchronizationParameters.database, selectedProjectToken, Language.NotApplicable);
                 if (project != null)
                 {
                     project.DateSynchronized = newSynchronizationTimeStamp;
@@ -2210,7 +2226,7 @@ namespace Phabrico.Controllers
                                                                           .Where(user => user.Value == true)
                                                                           .Select(user => user.Key))
             {
-                Phabricator.Data.User user = userStorage.Get(synchronizationParameters.database, selectedUserToken);
+                Phabricator.Data.User user = userStorage.Get(synchronizationParameters.database, selectedUserToken, Language.NotApplicable);
                 if (user != null)
                 {
                     user.DateSynchronized = newSynchronizationTimeStamp;
@@ -2239,8 +2255,8 @@ namespace Phabrico.Controllers
             Storage.User userStorage = new Storage.User();
 
             // determine new DownloadTimeStamp based on the last modified maniphest task or phriction document
-            DateTimeOffset maxManiphestDateModified = maniphestStorage.Get(synchronizationParameters.database).Select(record => record.DateModified).DefaultIfEmpty().Max();
-            DateTimeOffset maxPhrictionDateModified = phrictionStorage.Get(synchronizationParameters.database).Select(record => record.DateModified).DefaultIfEmpty().Max();
+            DateTimeOffset maxManiphestDateModified = maniphestStorage.Get(synchronizationParameters.database, synchronizationParameters.browser.Session.Locale).Select(record => record.DateModified).DefaultIfEmpty().Max();
+            DateTimeOffset maxPhrictionDateModified = phrictionStorage.Get(synchronizationParameters.database, synchronizationParameters.browser.Session.Locale).Select(record => record.DateModified).DefaultIfEmpty().Max();
             DateTimeOffset newDownloadTimeStamp = maxManiphestDateModified > maxPhrictionDateModified ? maxManiphestDateModified : maxPhrictionDateModified;
             newDownloadTimeStamp = newDownloadTimeStamp.AddSeconds(1);
             newDownloadTimeStamp = newDownloadTimeStamp.Add(synchronizationParameters.TimeDifferenceBetweenPhabricatorAndLocalComputer);
@@ -2249,7 +2265,7 @@ namespace Phabrico.Controllers
                                                                              .Where(project => project.Value == Phabricator.Data.Project.Selection.Selected)
                                                                              .Select(project => project.Key))
             {
-                Phabricator.Data.Project project = projectStorage.Get(synchronizationParameters.database, selectedProjectToken);
+                Phabricator.Data.Project project = projectStorage.Get(synchronizationParameters.database, selectedProjectToken, synchronizationParameters.browser.Session.Locale);
                 if (project != null)
                 {
                     project.DateSynchronized = newDownloadTimeStamp;
@@ -2261,7 +2277,7 @@ namespace Phabrico.Controllers
                                                                           .Where(user => user.Value == true)
                                                                           .Select(user => user.Key))
             {
-                Phabricator.Data.User user = userStorage.Get(synchronizationParameters.database, selectedUserToken);
+                Phabricator.Data.User user = userStorage.Get(synchronizationParameters.database, selectedUserToken, Language.NotApplicable);
                 if (user != null)
                 {
                     user.DateSynchronized = newDownloadTimeStamp;
@@ -2290,9 +2306,9 @@ namespace Phabrico.Controllers
             // uploading maniphest tasks
             string messageUploadingManiphestData = Miscellaneous.Locale.TranslateText("Synchronization.Status.UploadingManiphestData", browser.Session.Locale);
             SharedResource.Instance.ProgressDescription = messageUploadingManiphestData;
-            IEnumerable<Phabricator.Data.Maniphest> maniphestTasksLocallyModified = stageStorage.Get<Phabricator.Data.Maniphest>(synchronizationParameters.database, true);
+            IEnumerable<Phabricator.Data.Maniphest> maniphestTasksLocallyModified = stageStorage.Get<Phabricator.Data.Maniphest>(synchronizationParameters.database, Language.NotApplicable, true);
             IEnumerable<Phabricator.Data.Maniphest> maniphestTasksRemotelyModified = maniphestTasksLocallyModified.Where(locallyModifiedTask => {
-                Phabricator.Data.Maniphest remotelyModifiedTask = maniphestStorage.Get(synchronizationParameters.database, locallyModifiedTask.Token);
+                Phabricator.Data.Maniphest remotelyModifiedTask = maniphestStorage.Get(synchronizationParameters.database, locallyModifiedTask.Token, synchronizationParameters.browser.Session.Locale);
                 if (remotelyModifiedTask == null || remotelyModifiedTask.Token.StartsWith("PHID-NEWTOKEN-")) return false;  // new document
 
                 return remotelyModifiedTask.DateModified > synchronizationParameters.lastSynchronizationTimestamp;
@@ -2320,7 +2336,7 @@ namespace Phabrico.Controllers
             foreach (Phabricator.Data.Maniphest processedManiphestTask in processedManiphestTasks)
             {
                 // delete the local version
-                stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, processedManiphestTask);
+                stageStorage.Remove(synchronizationParameters.database, synchronizationParameters.browser, processedManiphestTask);
             }
 
             synchronizationParameters.remotelyModifiedObjects.AddRange(maniphestTasksRemotelyModified);
@@ -2345,9 +2361,9 @@ namespace Phabrico.Controllers
             SharedResource.Instance.ProgressDescription = messageUploadingPhrictionData;
 
             // verify that we don't overwrite remotely changed documents
-            IEnumerable<Phabricator.Data.Phriction> phrictionDocumentsLocallyModified = stageStorage.Get<Phabricator.Data.Phriction>(synchronizationParameters.database, true);
+            IEnumerable<Phabricator.Data.Phriction> phrictionDocumentsLocallyModified = stageStorage.Get<Phabricator.Data.Phriction>(synchronizationParameters.database, Language.NotApplicable, true);
             IEnumerable<Phabricator.Data.Phriction> phrictionDocumentsRemotelyModified = phrictionDocumentsLocallyModified.Where(locallyModifiedDocument => {
-                Phabricator.Data.Phriction remotelyModifiedDocument = phrictionStorage.Get(synchronizationParameters.database, locallyModifiedDocument.Token, true);
+                Phabricator.Data.Phriction remotelyModifiedDocument = phrictionStorage.Get(synchronizationParameters.database, locallyModifiedDocument.Token, Language.NotApplicable, true);
                 if (remotelyModifiedDocument == null || remotelyModifiedDocument.Token.StartsWith("PHID-NEWTOKEN-")) return false;  // new document
 
                 return remotelyModifiedDocument.DateModified > synchronizationParameters.lastSynchronizationTimestamp;
@@ -2358,13 +2374,19 @@ namespace Phabrico.Controllers
             int count = phrictionDocumentsLocallyModified.Count() - phrictionDocumentsRemotelyModified.Count();
             double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
             List<Phabricator.Data.Phriction> processedPhrictionDocuments = new List<Phabricator.Data.Phriction>();
-            foreach (var modifiedPhrictionDocument in phrictionDocumentsLocallyModified.Where(doc => phrictionDocumentsRemotelyModified.Any(modification => modification.Token.Equals(doc.Token)) == false))
+            foreach (var modifiedPhrictionDocument in phrictionDocumentsLocallyModified.Where(doc => phrictionDocumentsRemotelyModified.Any(modification => modification.Token.Equals(doc.Token)) == false)
+                                                                                       .OrderBy(doc => doc.Path.Length)
+                                                                                       .Where(doc => doc.Path.Length < 115)  // Phabricator will not accept slugs longer than 115 characters
+                    )
             {
                 SharedResource.Instance.ProgressDescription = string.Format("{0} [{1}/{2}]", messageUploadingPhrictionData, index++, count);
                 SharedResource.Instance.ProgressPercentage += stepsize;
 
                 // sleep a bit, so the progress-bar is shown a little more animated...
                 if ((index % 100) == 0) Thread.Sleep(100);
+
+                // make sure that there is content -> if not create a 1-space content
+                if (string.IsNullOrEmpty(modifiedPhrictionDocument.Content)) modifiedPhrictionDocument.Content = " ";
 
                 UploadOfflineAttachments(synchronizationParameters, modifiedPhrictionDocument);
 
@@ -2376,7 +2398,7 @@ namespace Phabrico.Controllers
             foreach (Phabricator.Data.Phriction processedPhrictionDocument in processedPhrictionDocuments)
             {
                 // delete the local version
-                stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, processedPhrictionDocument);
+                stageStorage.Remove(synchronizationParameters.database, synchronizationParameters.browser, processedPhrictionDocument);
             }
 
             synchronizationParameters.remotelyModifiedObjects.AddRange(phrictionDocumentsRemotelyModified);
@@ -2399,7 +2421,7 @@ namespace Phabrico.Controllers
             // uploading maniphest meta data
             string messageUploadingCommentsAndTransactions = Miscellaneous.Locale.TranslateText("Synchronization.Status.UploadingCommentsAndTransactions", browser.Session.Locale);
             SharedResource.Instance.ProgressDescription = messageUploadingCommentsAndTransactions;
-            IEnumerable<Phabricator.Data.Transaction> modifiedTransactions = stageStorage.Get<Phabricator.Data.Transaction>(synchronizationParameters.database, true);
+            IEnumerable<Phabricator.Data.Transaction> modifiedTransactions = stageStorage.Get<Phabricator.Data.Transaction>(synchronizationParameters.database, Language.NotApplicable, true);
             int index = 0;
             int count = modifiedTransactions.Count();
             double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
@@ -2423,7 +2445,7 @@ namespace Phabrico.Controllers
                 // delete the local versions
                 foreach (var modifiedTransaction in modifiedTransactionsPerObject.Reverse())
                 {
-                    stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, modifiedTransaction);
+                    stageStorage.Remove(synchronizationParameters.database, synchronizationParameters.browser, modifiedTransaction);
                 }
             }
             SharedResource.Instance.ProgressPercentage = (processedDuration * 100.0) / totalDuration;
@@ -2516,7 +2538,7 @@ namespace Phabrico.Controllers
                             Phabricator.Data.File fileWithoutContent = null;
                             if (cachedFileReferences.TryGetValue(phabricoFileReference, out fileWithoutContent) == false)
                             {
-                                fileWithoutContent = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database)
+                                fileWithoutContent = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database, Language.NotApplicable)
                                                                  .FirstOrDefault(f => f.ID == phabricoFileReference);
                             }
 
@@ -2526,6 +2548,7 @@ namespace Phabrico.Controllers
                                 {
                                     // get content of file
                                     file = stageStorage.Get<Phabricator.Data.File>(synchronizationParameters.database,
+                                                                                   browser.Session.Locale,
                                                                                    Phabricator.Data.File.Prefix,
                                                                                    phabricoFileReference,
                                                                                    true
@@ -2546,7 +2569,7 @@ namespace Phabrico.Controllers
                                 synchronizationParameters.uploadedFileReferences[phabricoFileReference] = phabricatorFileReference;
 
                                 // remove file from offline stage area
-                                stageStorage.Remove(synchronizationParameters.browser, synchronizationParameters.database, file);
+                                stageStorage.Remove(synchronizationParameters.database, synchronizationParameters.browser, file);
                             }
                         }
 

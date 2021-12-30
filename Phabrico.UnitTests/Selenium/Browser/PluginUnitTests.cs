@@ -2,8 +2,15 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using Phabrico.ContentTranslation.Engines;
+using Phabrico.Miscellaneous;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using WebDriverManager.DriverConfigs.Impl;
 
@@ -76,6 +83,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement overlay = WebBrowser.FindElement(By.ClassName("overlay"));
                 overlay.Click();
 
+                AssertNoJavascriptErrors();
+
                 // click on 'Gitanos' tab
                 IWebElement tabGitanos = WebBrowser.FindElement(By.XPath("//button[contains(text(), 'Gitanos')]"));
                 tabGitanos.Click();
@@ -84,6 +93,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement btnAddRootDirectory = WebBrowser.FindElement(By.Id("btnGitanosAddRootDirectory"));
                 btnAddRootDirectory.Click();
                 Thread.Sleep(1000);  // wait a while to make sure all the javascript functionality has been finished
+
+                AssertNoJavascriptErrors();
 
                 // enter new 'Gitanos root directory'
                 Actions action = new Actions(WebBrowser);
@@ -96,6 +107,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // wait a while to make sure the save-config AJAX call is finished
                 Thread.Sleep(1000);
 
+                AssertNoJavascriptErrors();
+
                 // Open 'Gitanos' screen
                 IWebElement navigatorGitanos = WebBrowser.FindElement(By.PartialLinkText("Gitanos"));
                 navigatorGitanos.Click();
@@ -105,6 +118,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
                 // verify content of Gitanos screen
                 Assert.IsFalse(WebBrowser.FindElements(By.XPath("//a[contains(text(), 'gitRepository')]")).Any(elem => elem.Displayed));
+
+                AssertNoJavascriptErrors();
 
                 // click on 'Show clean repositories'
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -118,6 +133,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
                 wait.Until(condition => condition.FindElements(By.XPath("//a[contains(text(), 'GitanosRemote')]")).Any(elem => elem.Displayed));
 
+                AssertNoJavascriptErrors();
+
                 // click on GitanosRemote
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
@@ -125,10 +142,12 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement gitanosRemote = WebBrowser.FindElement(By.XPath("//a[contains(text(), 'GitanosRemote')]"));
                 gitanosRemote.Click();
 
-                // verify that wehave a clean repository
+                // verify that we have a clean repository
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
                 wait.Until(condition => condition.FindElements(By.XPath("//div[contains(text(), 'This git repository is clean')]")).Any(elem => elem.Displayed));
+
+                AssertNoJavascriptErrors();
 
                 // modify dummy file
                 System.IO.File.WriteAllText(gitanosRootDirectory + "\\GitanosRemote\\dummy.txt", "dummy file.");
@@ -145,6 +164,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement gitRepository = WebBrowser.FindElement(By.XPath("//a[contains(text(), 'GitanosRemote')]"));
                 gitRepository.Click();
 
+                AssertNoJavascriptErrors();
 
                 // click on 'dummy.txt'
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -187,6 +207,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement editor = WebBrowser.FindElement(By.ClassName("editor"));
                 Assert.AreEqual(editor.Text, "dummy file.");
 
+                AssertNoJavascriptErrors();
+
                 // modify file contents
                 editor.SendKeys(" (modified)");
 
@@ -204,6 +226,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // verify if content was modified
                 Assert.IsTrue(WebBrowser.FindElements(By.XPath("//td[contains(text(), '+dummy file. (modified)')]")).Any());
 
+                AssertNoJavascriptErrors();
 
                 // click on 'Select' button
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -234,6 +257,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement btnCommitMessageConfirm = WebBrowser.FindElement(By.XPath("//button[contains(text(), 'COMMIT')]"));
                 btnCommitMessageConfirm.Click();
 
+                AssertNoJavascriptErrors();
+
                 // verify content of unpushed messages
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
@@ -246,6 +271,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement btnPush = WebBrowser.FindElement(By.XPath("//a[contains(text(), 'PUSH')]"));
                 btnPush.Click();
 
+                AssertNoJavascriptErrors();
+
                 // verify that an error was shown
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
@@ -257,6 +284,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                                                         .FirstOrDefault();
                 IWebElement errorMessage = dlgGitanosError.FindElement(By.XPath("//p[contains(text(), \"local push doesn't (yet) support pushing to non-bare repos.\")]"));
                 Assert.IsNotNull(errorMessage);
+
+                AssertNoJavascriptErrors();
 
                 // confirm error
                 IWebElement btnOK = dlgGitanosError.FindElement(By.XPath("//a[contains(text(), 'OK')]"));
@@ -281,6 +310,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 IWebElement btnYes = dlgConfirmUndoPush.FindElement(By.XPath("//a[contains(text(), 'Yes')]"));
                 btnYes.Click();
 
+                AssertNoJavascriptErrors();
+
                 // verify if 'dummy.txt' is back in the list of unpushed commits
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
@@ -289,6 +320,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // undo local commit
                 IWebElement btnUndoCommit = WebBrowser.FindElement(By.XPath("//a[contains(text(), 'Undo')]"));
                 btnUndoCommit.Click();
+
+                AssertNoJavascriptErrors();
 
                 // confirm undo push
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -303,6 +336,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 Assert.IsNotNull(errorMessage);
                 btnYes = dlgConfirmUndoCommit.FindElement(By.XPath("//a[contains(text(), 'Yes')]"));
                 btnYes.Click();
+
+                AssertNoJavascriptErrors();
 
                 // verify if 'dummy.txt' is back in the list of unpushed commits
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -322,7 +357,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
         [DataRow(typeof(EdgeConfig), "phabrico")]
         [DataRow(typeof(FirefoxConfig), "")]
         [DataRow(typeof(FirefoxConfig), "phabrico")]
-        public void PhrictionToPDFExport(Type browser, string httpRootPath)
+        public void PhrictionToPDFExportWithoutTemplateParameters(Type browser, string httpRootPath)
         {
             Initialize(browser, httpRootPath);
             Logon();
@@ -334,6 +369,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // wait a while
             WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            AssertNoJavascriptErrors();
 
             // validate if Phriction was opened
             IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
@@ -358,6 +395,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), \"There are 2 underlying documents. Would you like to export these as well ?\")]")).Any());
+
+            AssertNoJavascriptErrors();
 
             // confirm exporting all underlying documents
             IWebElement dlgExportToPDF = WebBrowser.FindElements(By.ClassName("aphront-dialog-view"))
@@ -390,8 +429,6 @@ namespace Phabrico.UnitTests.Selenium.Browser
                                 && fileHeader[2] == 'D'
                                 && fileHeader[3] == 'F';
                         }
-
-                        return true;
                     }
                 }
                 catch
@@ -400,6 +437,961 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
                 return false;
             });
+        }
+
+
+        [TestMethod]
+        // [DataRow(typeof(ChromeConfig), "")]          // disabled because javascript prompt() not working
+        // [DataRow(typeof(ChromeConfig), "phabrico")]  // disabled because javascript prompt() not working
+        // [DataRow(typeof(EdgeConfig), "")]            // disabled because javascript prompt() not working
+        // [DataRow(typeof(EdgeConfig), "phabrico")]    // disabled because javascript prompt() not working
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
+        public void PhrictionToPDFExportWithTemplateParameters(Type browser, string httpRootPath)
+        {
+            Initialize(browser, httpRootPath);
+            Logon();
+
+            // click on 'Config' in the menu navigator
+            IWebElement navigatorConfig = WebBrowser.FindElement(By.PartialLinkText("Config"));
+            navigatorConfig.Click();
+
+            // wait a while
+            WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.Id("autoLogon")).Any());
+
+            // hide first-time help
+            IWebElement overlay = WebBrowser.FindElement(By.ClassName("overlay"));
+            overlay.Click();
+
+            AssertNoJavascriptErrors();
+
+            // click on 'Export to PDF' tab
+            IWebElement tabExportToPDF = WebBrowser.FindElement(By.XPath("//button[contains(text(), 'Export to PDF')]"));
+            tabExportToPDF.Click();
+
+            // right click on furst header column
+            IWebElement firstHeaderColumn = WebBrowser.FindElement(By.CssSelector("td.headerFooterColumn.headerColumn1"));
+            Actions builder = new Actions(WebBrowser);
+            builder.ContextClick(firstHeaderColumn).Perform();
+
+            // click on 'Prompt field' menu item
+            IWebElement mnuPromptField = WebBrowser.FindElement(By.XPath("//li[contains(text(), 'Prompt field')]"));
+            mnuPromptField.Click();
+
+            // fill in prompt dialog and press OK
+            IAlert promptDialog = WebBrowser.SwitchTo().Alert();
+            promptDialog.SendKeys("My Parameter");
+            promptDialog.Accept();
+
+            // click on 'Phriction' in the menu navigator
+            IWebElement navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+            navigatorPhriction.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // validate if Phriction was opened
+            IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            string phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
+
+            // if action pane is collapsed -> expand it
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on 'Export to PDF'
+            IWebElement exportToPDF = WebBrowser.FindElement(By.LinkText("Export to PDF"));
+            exportToPDF.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.Id("input-1")).Any(input => input.Displayed));
+
+            // Enter value for 'My Parameter'
+            IWebElement myParameter = WebBrowser.FindElement(By.Id("input-1"));
+            myParameter.SendKeys("My fabulous header text");
+
+            // click OK button
+            IWebElement btnOK = WebBrowser.FindElement(By.ClassName("preparationParameters"))
+                                          .FindElements(By.XPath("//button[text()=\"OK\"]"))
+                                          .FirstOrDefault(button => button.Displayed);
+            btnOK.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), \"There are 2 underlying documents. Would you like to export these as well ?\")]")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // confirm exporting all underlying documents
+            IWebElement dlgExportToPDF = WebBrowser.FindElements(By.ClassName("aphront-dialog-view"))
+                                                   .Where(dialog => dialog.Displayed
+                                                                   && dialog.GetAttribute("class").Split(' ').Contains("modalview")
+                                                           )
+                                                   .FirstOrDefault();
+            IWebElement btnYes = dlgExportToPDF.FindElement(By.XPath("//a[contains(text(), 'Yes')]"));
+            btnYes.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition =>
+            {
+                try
+                {
+                    // verify if file was downloaded
+                    string downloadedFile = DownloadDirectory + "\\phriction.pdf";
+                    if (System.IO.File.Exists(downloadedFile))
+                    {
+                        System.IO.FileInfo fileInfo = new System.IO.FileInfo(downloadedFile);
+                        if (fileInfo.Length > 0)
+                        {
+                            // verify file content (first bytes should be "%PDF")
+                            byte[] fileHeader = System.IO.File.ReadAllBytes(downloadedFile)
+                                                              .Take(4)
+                                                              .ToArray();
+                            return fileHeader[0] == '%'
+                                && fileHeader[1] == 'P'
+                                && fileHeader[2] == 'D'
+                                && fileHeader[3] == 'F';
+                        }
+                    }
+                }
+                catch
+                {
+                }
+
+                return false;
+            });
+        }
+
+
+        [TestMethod]
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
+        // [DataRow(typeof(FirefoxConfig), "")]          // disabled because of WebBrowser.SwitchTo().Alert().Accept();
+        // [DataRow(typeof(FirefoxConfig), "phabrico")]  // disabled because of WebBrowser.SwitchTo().Alert().Accept();
+        public void PhrictionTranslatorDiagrams(Type browser, string httpRootPath)
+        {
+            Initialize(browser, httpRootPath);
+
+            // read translations.po and convert it to a dictionary (which we'll use in the dummy translator)
+            string translated = File.ReadAllText(@"ContentTranslation\translations.po");
+            Dictionary<string, string> translations = RegexSafe.Matches(translated, "^msgid +\"([^\"]*)\"\r?\nmsgstr +\"([^\"]*)", RegexOptions.Multiline)
+                                                              .OfType<Match>()
+                                                              .GroupBy(g => g.Groups[1].Value)
+                                                              .Select(g => g.FirstOrDefault())
+                                                              .ToDictionary(key => key.Groups[1].Value,
+                                                                              value => value.Groups[2].Value
+                                                                          );
+            DummyTranslationEngine.Translations = translations;
+
+            Logon();
+
+            // click on 'Phriction' in the menu navigator
+            IWebElement navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+            navigatorPhriction.Click();
+
+            // wait a while
+            WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // validate if Phriction was opened
+            IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            string phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
+
+            AssertNoJavascriptErrors();
+
+            // if action pane is collapsed -> expand it
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Edit
+            IWebElement edit = WebBrowser.FindElement(By.LinkText("Edit Document"));
+            edit.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // edit content
+            IWebElement textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.End);
+            textarea.SendKeys(OpenQA.Selenium.Keys.Enter);
+
+            // click on Diagrams button in Remarkup editor toolbar
+            IWebElement diagramsButton = WebBrowser.FindElement(By.ClassName("fa-sitemap"));
+            diagramsButton.Click();
+
+            // confirm "Leave site?" dialog
+            WebBrowser.SwitchTo().Alert().Accept();
+
+            // wait until DiagramsNet IFrame content is fully loaded
+            wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
+            IWebElement diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
+            WebBrowser.SwitchTo().Frame(diagramsIFrame);
+
+            WebDriverWait webDriverWait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            webDriverWait.IgnoreExceptionTypes(typeof(StaleElementReferenceException), typeof(WebDriverException));
+            webDriverWait.Until(condition => condition.FindElements(By.XPath("//*[contains(@title, 'Shapes')]")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // show Shapes toolbox if invisible
+            IWebElement shapes = null;
+            if (WebBrowser.FindElements(By.XPath("//*[contains(text(), 'Shapes')]")).Any(shape => shape.Displayed) == false)
+            {
+                IWebElement toolbarButtonShapes = WebBrowser.FindElement(By.XPath("//*[contains(@title, 'Shapes')]"));
+                toolbarButtonShapes.Click();
+            }
+
+            shapes = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Shapes')]"));
+            shapes = shapes.FindElement(By.XPath("../../../.."));
+
+            // click on rectangle shape in Shapes toolbox
+            IWebElement rectangle = shapes.FindElement(By.ClassName("geItem"));
+            rectangle.Click();
+
+            // enter some text in the newly created rectangle
+            Actions action = new Actions(WebBrowser);
+            action.SendKeys("English").Perform();
+
+            AssertNoJavascriptErrors();
+
+            // click on save button
+            IWebElement save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Save')]"));
+            save.Click();
+
+            // verify if the page is reloaded with the new file name
+            wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'F-1')]")).Any());
+            
+            // wait until DiagramsNet IFrame content is fully loaded
+            wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
+            diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
+            WebBrowser.SwitchTo().Frame(diagramsIFrame);
+
+            webDriverWait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            webDriverWait.IgnoreExceptionTypes(typeof(StaleElementReferenceException), typeof(WebDriverException));
+            webDriverWait.Until(condition => condition.FindElements(By.XPath("//*[contains(@title, 'Shapes')]")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // click on exit button
+            IWebElement exit = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Exit')]"));
+            exit.Click();
+
+             // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+            // verify if diagram-reference is added to Phriction's textarea content
+            textarea = WebBrowser.FindElement(By.Id("textarea"));
+            Assert.AreEqual("Once upon a time, I was reading this story over and over again\n{F-1, size=full}", textarea.GetAttribute("value").Replace("\r", ""));
+            wait.Until(condition => condition.FindElements(By.ClassName("diagram")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // verify if image is presented on the right side
+            IWebElement image = WebBrowser.FindElement(By.ClassName("diagram"));
+            wait.Until(condition => condition.FindElement(By.ClassName("diagram")).Displayed);
+            Assert.AreNotEqual(image.Size.Width, 0);
+            Assert.AreNotEqual(image.Size.Height, 0);
+
+            // remember image content for comparison later on
+            byte[] originalImageData;
+            using (MemoryStream imageStream = new MemoryStream(WebBrowser.GetScreenshot().AsByteArray))
+            {
+                Bitmap screenshot = new Bitmap(imageStream);
+                Rectangle croppedImage = new System.Drawing.Rectangle(image.Location.X, image.Location.Y, image.Size.Width, image.Size.Height);
+                screenshot = screenshot.Clone(croppedImage, screenshot.PixelFormat);
+
+                MemoryStream outputStream = new MemoryStream();
+                screenshot.Save(outputStream, ImageFormat.Bmp);
+                outputStream.Position = 0;
+                originalImageData = outputStream.ToArray();
+            }
+
+            // click Save button
+            IWebElement btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+            Thread.Sleep(500);
+
+            AssertNoJavascriptErrors();
+
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Translate Document
+            IWebElement translateDocument = WebBrowser.FindElement(By.LinkText("Translate document"));
+            translateDocument.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.Name("translationEngine")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // select Dummy translation engine
+            IWebElement translationEngine = WebBrowser.FindElement(By.Name("translationEngine"));
+            translationEngine.Click();
+            translationEngine.FindElements(By.TagName("option"))
+                    .Single(option => option.Text == "Dummy")
+                    .Click();
+            translationEngine.Click();
+
+            // select target language
+            IWebElement targetLanguage = WebBrowser.FindElement(By.Name("targetLanguage"));
+            targetLanguage.Click();
+            targetLanguage.FindElements(By.TagName("option"))
+                    .Single(option => option.Text == "Dutch")
+                    .Click();
+            targetLanguage.Click();
+
+            // click OK button
+            IWebElement btnOK = WebBrowser.FindElement(By.ClassName("preparationParameters"))
+                                          .FindElements(By.XPath("//button[text()=\"OK\"]"))
+                                          .FirstOrDefault(button => button.Displayed);
+            btnOK.Click();
+
+            // wait a while
+            Thread.Sleep(500);
+
+            // wait until "one moment please" is gone
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            wait.Until(condition => condition.FindElements(By.ClassName("wait")).Any(message => message.Displayed == false));
+
+            // do not translate underlying documents: click No
+            IWebElement btnNo = WebBrowser.FindElement(By.Id("dlgYesNoCancel"))
+                                          .FindElements(By.XPath("//a[text()=\"No\"]"))
+                                          .FirstOrDefault(button => button.Displayed);
+            btnNo.Click();
+
+            // wait a while
+            Thread.Sleep(500);
+
+            // wait until "one moment please" is gone
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            wait.Until(condition => condition.FindElements(By.ClassName("wait")).Any(message => message.Displayed == false));
+
+            AssertNoJavascriptErrors();
+
+            // Document is translated: click OK
+            btnOK = WebBrowser.FindElement(By.Id("dlgOK"))
+                              .FindElements(By.XPath("//a[text()=\"OK\"]"))
+                              .FirstOrDefault(button => button.Displayed);
+            btnOK.Click();
+
+            AssertNoJavascriptErrors();
+
+            ChangeLanguageFromEnglishToDutch();
+
+            // validate if document is translated
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            string documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsTrue(documentContent.StartsWith("Mijn levensverhaal\nEr was eens een tijd dat ik dit verhaal steeds opnieuw aan het lezen was"), "Document not translated");
+
+            // verify if original image is shown in translation
+            image = WebBrowser.FindElement(By.ClassName("diagram"));
+            wait.Until(condition => condition.FindElement(By.ClassName("diagram")).Displayed);
+            Assert.AreNotEqual(image.Size.Width, 0);
+            Assert.AreNotEqual(image.Size.Height, 0);
+
+            // verify if image content is still the same
+            byte[] imageData;
+            using (MemoryStream imageStream = new MemoryStream(WebBrowser.GetScreenshot().AsByteArray))
+            {
+                Bitmap screenshot = new Bitmap(imageStream);
+                Rectangle croppedImage = new System.Drawing.Rectangle(image.Location.X, image.Location.Y, image.Size.Width, image.Size.Height);
+                screenshot = screenshot.Clone(croppedImage, screenshot.PixelFormat);
+
+                MemoryStream outputStream = new MemoryStream();
+                screenshot.Save(outputStream, ImageFormat.Bmp);
+                outputStream.Position = 0;
+                imageData = outputStream.ToArray();
+            }
+
+            Assert.IsTrue(Enumerable.SequenceEqual(imageData, originalImageData), "Diagram image is different");
+
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Edit
+            edit = WebBrowser.FindElement(By.LinkText("Vertaling bewerken"));
+            edit.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // verify edit content
+            textarea = WebBrowser.FindElement(By.Id("textarea"));
+            Assert.IsTrue(textarea.Text.Replace("\r", "").Equals("Er was eens een tijd dat ik dit verhaal steeds opnieuw aan het lezen was\n{F-2, size=full}"));
+
+            // click Cancel button
+            IWebElement btnCancel = WebBrowser.FindElement(By.Id("btnCancel"));
+            btnCancel.Click();
+            Thread.Sleep(500);
+
+            // hover over image
+            image = WebBrowser.FindElement(By.ClassName("diagram"));
+            Actions builder = new Actions(WebBrowser);
+            builder.MoveToElement(image).Build().Perform();
+
+            // click on blue diagram button
+            IWebElement btnDiagram = WebBrowser.FindElement(By.ClassName("image-locator"))
+                                               .FindElements(By.TagName("a"))
+                                               .FirstOrDefault();
+            btnDiagram.Click();
+
+            // wait until DiagramsNet IFrame content is fully loaded
+            wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
+            diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
+            WebBrowser.SwitchTo().Frame(diagramsIFrame);
+
+            webDriverWait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            webDriverWait.IgnoreExceptionTypes(typeof(StaleElementReferenceException), typeof(WebDriverException));
+            webDriverWait.Until(condition => condition.FindElements(By.XPath("//div[text()=\"English\"]")).Any());
+
+            // verify if 'Approve Translation' button is disabled
+            IWebElement btnApproveTranslation = WebBrowser.FindElement(By.XPath("//a[text()=\"Vertaling goedkeuren\"]"));
+            Assert.AreEqual(btnApproveTranslation.GetCssValue("pointer-events"), "none");
+
+            // double click on 'English'
+            IWebElement englishRectangle = WebBrowser.FindElement(By.XPath("//div[text()=\"English\"]"));
+            builder = new Actions(WebBrowser);
+            builder.DoubleClick(englishRectangle).Build().Perform();
+
+            // change 'English' to 'Nederlands'
+            IWebElement rectangleText = WebBrowser.SwitchTo().ActiveElement();
+            rectangleText.SendKeys(Keys.Control + "A");
+            rectangleText.SendKeys("Nederlands");
+
+            // click on background, so rectangle is not focused anymore
+            IWebElement background = WebBrowser.FindElement(By.ClassName("geDiagramContainer"));
+            builder = new Actions(WebBrowser);
+            builder.MoveToElement(background).MoveByOffset(100,100).Click().Release().Build().Perform();
+
+            // wait a while, so background javascript can be finished
+            Thread.Sleep(500);
+
+            // click on save button
+            save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Opslaan')]"));
+            save.Click();
+
+            AssertNoJavascriptErrors();
+
+            // wait until green 'Approve Translation' button is enabled
+            webDriverWait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(3));
+            webDriverWait.IgnoreExceptionTypes(typeof(StaleElementReferenceException), typeof(WebDriverException));
+            webDriverWait.Until(condition => condition.FindElements(By.XPath("//a[text()=\"Vertaling goedkeuren\"]"))
+                                                      .Any(btn => btn.GetCssValue("pointer-events").Equals("auto"))
+                               );
+
+            // click on exit button
+            exit = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Afsluiten')]"));
+            exit.Click();
+
+            // wait a while , so image can be loaded
+            Thread.Sleep(1500);
+
+            AssertNoJavascriptErrors();
+
+            // verify if image content has been changed
+            image = WebBrowser.FindElement(By.ClassName("diagram"));
+            using (MemoryStream imageStream = new MemoryStream(WebBrowser.GetScreenshot().AsByteArray))
+            {
+                Bitmap screenshot = new Bitmap(imageStream);
+                Rectangle croppedImage = new System.Drawing.Rectangle(image.Location.X, image.Location.Y, image.Size.Width, image.Size.Height);
+                screenshot = screenshot.Clone(croppedImage, screenshot.PixelFormat);
+
+                MemoryStream outputStream = new MemoryStream();
+                screenshot.Save(outputStream, ImageFormat.Bmp);
+                outputStream.Position = 0;
+                imageData = outputStream.ToArray();
+            }
+
+            Assert.IsFalse(Enumerable.SequenceEqual(imageData, originalImageData), "Diagram image is still the same");
+
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on 'Unreviewed translations'
+            IWebElement unreviewedTranslations = WebBrowser.FindElement(By.PartialLinkText("Niet gereviseerde vertalingen"));
+            unreviewedTranslations.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.LinkText("F-2")).Any());
+
+            // click on diagram link
+            IWebElement diagram = WebBrowser.FindElement(By.LinkText("F-2"));
+            diagram.Click();
+
+            // wait until DiagramsNet IFrame content is fully loaded
+            wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
+            diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
+            WebBrowser.SwitchTo().Frame(diagramsIFrame);
+
+            webDriverWait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            webDriverWait.IgnoreExceptionTypes(typeof(StaleElementReferenceException), typeof(WebDriverException));
+            webDriverWait.Until(condition => condition.FindElements(By.XPath("//div[text()=\"Nederlands\"]")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // verify if 'Approve Translation' button is disabled
+            btnApproveTranslation = WebBrowser.FindElement(By.XPath("//a[text()=\"Vertaling goedkeuren\"]"));
+            Assert.AreEqual(btnApproveTranslation.GetCssValue("pointer-events"), "auto");
+
+            // click on 'Approve Translation'
+            btnApproveTranslation.Click();
+
+            // confirm approval
+            WebBrowser.SwitchTo().DefaultContent();
+            IWebElement btnYes = WebBrowser.FindElement(By.Id("dlgYesNoCancel"))
+                                           .FindElements(By.XPath("//a[text()=\"Ja\"]"))
+                                           .FirstOrDefault(button => button.Displayed);
+            btnYes.Click();
+
+            // wait a while
+            Thread.Sleep(1000);
+            
+            // wait until DiagramsNet IFrame content is fully loaded
+            wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
+            diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
+            WebBrowser.SwitchTo().Frame(diagramsIFrame);
+
+            webDriverWait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            webDriverWait.IgnoreExceptionTypes(typeof(StaleElementReferenceException), typeof(WebDriverException));
+            webDriverWait.Until(condition => condition.FindElements(By.XPath("//div[text()=\"Nederlands\"]")).Any());
+
+            AssertNoJavascriptErrors();
+
+            // verify that 'Approve Translation' button is gone
+            btnApproveTranslation = WebBrowser.FindElements(By.XPath("//a[text()=\"Vertaling goedkeuren\"]")).FirstOrDefault();
+            Assert.AreEqual(null, btnApproveTranslation);
+        }
+
+        [TestMethod]
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
+        public void PhrictionTranslatorStageStates(Type browser, string httpRootPath)
+        {
+            Initialize(browser, httpRootPath);
+
+            // read translations.po and convert it to a dictionary (which we'll use in the dummy translator)
+            string translated = File.ReadAllText(@"ContentTranslation\translations.po");
+            Dictionary<string,string> translations = RegexSafe.Matches(translated, "^msgid +\"([^\"]*)\"\r?\nmsgstr +\"([^\"]*)",  RegexOptions.Multiline)
+                                                              .OfType<Match>()
+                                                              .GroupBy(g => g.Groups[1].Value)
+                                                              .Select(g => g.FirstOrDefault())
+                                                              .ToDictionary( key => key.Groups[1].Value, 
+                                                                              value => value.Groups[2].Value
+                                                                          );
+            DummyTranslationEngine.Translations = translations;
+
+            Logon();
+
+            // == Start test 1: master=not staged and translation=not staged ======================================================================================
+            ChangeLanguageFromEnglishToDutch();
+
+            // click on 'Phriction' in the menu navigator
+            IWebElement navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+            navigatorPhriction.Click();
+
+            // wait a while
+            WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // validate if Phriction was opened
+            IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            string phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
+
+            // if action pane is collapsed -> expand it
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Translate Document
+            IWebElement translateDocument = WebBrowser.FindElement(By.LinkText("Document vertalen"));
+            translateDocument.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.Name("translationEngine")).Any());
+
+            // select Dummy translation engine
+            IWebElement translationEngine = WebBrowser.FindElement(By.Name("translationEngine"));
+            translationEngine.Click();
+            translationEngine.FindElements(By.TagName("option"))
+                    .Single(option => option.Text == "Dummy")
+                    .Click();
+            translationEngine.Click();
+
+            // select target language
+            IWebElement targetLanguage = WebBrowser.FindElement(By.Name("targetLanguage"));
+            targetLanguage.Click();
+            targetLanguage.FindElements(By.TagName("option"))
+                    .Single(option => option.Text == "Nederlands")
+                    .Click();
+            targetLanguage.Click();
+
+            // click OK button
+            IWebElement btnOK = WebBrowser.FindElement(By.ClassName("preparationParameters"))
+                                          .FindElements(By.XPath("//button[text()=\"OK\"]"))
+                                          .FirstOrDefault(button => button.Displayed);
+            btnOK.Click();
+
+            // wait a while
+            Thread.Sleep(500);
+
+            // wait until "one moment please" is gone
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            wait.Until(condition => condition.FindElements(By.ClassName("wait")).Any(message => message.Displayed == false));
+
+            // do not translate underlying documents: click No
+            IWebElement btnNo = WebBrowser.FindElement(By.Id("dlgYesNoCancel"))
+                                          .FindElements(By.XPath("//a[text()=\"Nee\"]"))
+                                          .FirstOrDefault(button => button.Displayed);
+            btnNo.Click();
+
+            // wait a while
+            Thread.Sleep(500);
+
+            // wait until "one moment please" is gone
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+            wait.Until(condition => condition.FindElements(By.ClassName("wait")).Any(message => message.Displayed == false));
+
+            // Document is translated: click OK
+            btnOK = WebBrowser.FindElement(By.Id("dlgOK"))
+                              .FindElements(By.XPath("//a[text()=\"OK\"]"))
+                              .FirstOrDefault(button => button.Displayed);
+            btnOK.Click();
+
+            AssertNoJavascriptErrors();
+
+            // validate if document is translated
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            string documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsTrue(documentContent.StartsWith("Mijn levensverhaal\nEr was eens een tijd dat ik dit verhaal steeds opnieuw aan het lezen was"), "Document not translated");
+
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Approve translation
+            IWebElement approveTranslation = WebBrowser.FindElement(By.LinkText("Vertaling goedkeuren"));
+            approveTranslation.Click();
+
+            // do not translate underlying documents: click No
+            IWebElement btnYes = WebBrowser.FindElement(By.Id("dlgYesNoCancel"))
+                                           .FindElements(By.XPath("//a[text()=\"Ja\"]"))
+                                           .FirstOrDefault(button => button.Displayed);
+            btnYes.Click();
+
+            // wait a while, so the javascript can refresh the page
+            Thread.Sleep(1500);
+
+            AssertNoJavascriptErrors();
+
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // verify that the Approve translation button is one
+            approveTranslation = WebBrowser.FindElements(By.LinkText("Vertaling goedkeuren")).FirstOrDefault();
+            Assert.IsTrue(approveTranslation == null, "Translation was not approved");
+
+            // == Start test 2: master=staged and translation=not staged ==========================================================================================
+            ChangeLanguageFromDutchToEnglish();
+
+            // verify if master document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsTrue(documentContent.StartsWith("Story of my life\nOnce upon a time, I was reading this story over and over again"), "Document still translated");
+
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Edit
+            IWebElement edit = WebBrowser.FindElement(By.LinkText("Edit Document"));
+            edit.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+            // edit content
+            IWebElement textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.End);
+            textarea.SendKeys("...");
+
+            // click Save button
+            IWebElement btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+            Thread.Sleep(500);
+
+            // validate if correct document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsTrue(documentContent.StartsWith("Story of my life\nOnce upon a time, I was reading this story over and over again..."), "Master document not modified");
+
+            ChangeLanguageFromEnglishToDutch();
+
+            // validate if correct document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsTrue(documentContent.StartsWith("Mijn levensverhaal\nEr was eens een tijd dat ik dit verhaal steeds opnieuw aan het lezen was"), "Translation not shown");
+
+            // == Start test 3: master=staged and translation=staged ==============================================================================================
+            // if action pane is collapsed -> expand it
+            actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                            .GetAttribute("class")
+                                            .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Edit Translation
+            edit = WebBrowser.FindElement(By.LinkText("Vertaling bewerken"));
+            edit.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+            // edit content
+            textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.End);
+            textarea.SendKeys("...");
+
+            // click Save button
+            btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+            Thread.Sleep(500);
+
+            // validate if correct document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsTrue(documentContent.StartsWith("Mijn levensverhaal\nEr was eens een tijd dat ik dit verhaal steeds opnieuw aan het lezen was..."), "Translation not modified");
+
+            ChangeLanguageFromDutchToEnglish();
+
+            // verify if master document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsTrue(documentContent.StartsWith("Story of my life\nOnce upon a time, I was reading this story over and over again..."), "Modified master document not shown");
+
+            // == Start test 4: master=not staged and translation=staged ==========================================================================================
+            // click on logo to go back to the homepage
+            IWebElement logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
+            logo.Click();
+
+            // wait a while to make sure the save-config AJAX call is finished
+            Thread.Sleep(1000);
+
+            // Open 'Offline changes' screen
+            IWebElement navigatorOfflineChanges = WebBrowser.FindElement(By.PartialLinkText("Offline changes"));
+            navigatorOfflineChanges.Click();
+
+            // wait until Gitanos screen is loaded AND DirectoryMonitor is finished
+            Thread.Sleep(3000);
+
+            // verify content of Offline Changes screen
+            Assert.IsTrue(WebBrowser.FindElements(By.XPath("//a[contains(text(), 'Story of my life')]")).Count(elem => elem.Displayed) == 1);
+
+            // click on undo button
+            IWebElement btnUndo = WebBrowser.FindElements(By.XPath("//a[contains(text(), 'Undo')]")).FirstOrDefault(elem => elem.Displayed);
+            btnUndo.Click();
+
+            // confirm Undo
+            btnYes = WebBrowser.FindElement(By.Id("dlgConfirmUndo"))
+                               .FindElements(By.XPath("//button[text()=\"Yes\"]"))
+                               .FirstOrDefault(button => button.Displayed);
+            btnYes.Click();
+
+            // wait until javascript is finished
+            Thread.Sleep(1000);
+
+            // verify content of Offline Changes screen
+            Assert.IsTrue(WebBrowser.FindElements(By.XPath("//a[contains(text(), 'Story of my life')]")).Any(elem => elem.Displayed) == false);
+
+            // click on 'Phriction' in the menu navigator
+            navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+            navigatorPhriction.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // validate if Phriction was opened
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsFalse(documentContent.StartsWith("Story of my life\nOnce upon a time, I was reading this story over and over again..."), "Master document not shown");
+            Assert.IsTrue(documentContent.StartsWith("Story of my life\nOnce upon a time, I was reading this story over and over again"), "Master document not shown");
+
+            ChangeLanguageFromEnglishToDutch();
+
+            // validate if Phriction was opened
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            documentContent = phrictionDocument.Text.Replace("\r", "");
+            Assert.IsTrue(documentContent.StartsWith("Mijn levensverhaal\nEr was eens een tijd dat ik dit verhaal steeds opnieuw aan het lezen was..."), "Modified translation not shown");
+        }
+
+        private void ChangeLanguageFromEnglishToDutch()
+        {
+            // open user menu
+            IWebElement userMenu = WebBrowser.FindElement(By.ClassName("user-menu"));
+            userMenu.Click();
+
+            // click 'Change language'
+            IWebElement mnuChangeLanguage = userMenu.FindElement(By.PartialLinkText("Change language"))
+                                                    .FindElement(By.TagName("span"));  // otherwise firefox webdriver won't work
+            mnuChangeLanguage.Click();
+
+            // change language to Dutch
+            IWebElement language = WebBrowser.FindElement(By.Id("newLanguage"));
+            language.Click();
+            language.FindElements(By.TagName("option"))
+                    .Single(option => option.Text == " Nederlands")
+                    .Click();
+            language.Click();
+
+            // verify new language selection
+            language = WebBrowser.FindElement(By.Id("newLanguage"));
+            Assert.IsTrue( language.FindElements(By.TagName("option"))
+                                   .Single(option => option.Text == " Nederlands")
+                                   .Selected
+                         );
+            language.SendKeys(Keys.Enter);
+
+            // click 'Change language'
+            IWebElement btnChangeLanguage = WebBrowser.FindElement(By.XPath("//button[contains(text(), 'Change language')]"));
+            btnChangeLanguage.Click();
+            Thread.Sleep(500);  // wait a while to make sure the redirect call is finished
+
+            // verify new language change
+            IWebElement search = WebBrowser.FindElement(By.Id("searchPhabrico"));
+            Assert.AreEqual(search.GetAttribute("placeholder"), "Zoeken");
+        }
+
+        private void ChangeLanguageFromDutchToEnglish()
+        {
+            IWebElement userMenu = WebBrowser.FindElement(By.ClassName("user-menu"));
+            userMenu.Click();
+
+            // click 'Change language'
+            IWebElement mnuChangeLanguage = userMenu.FindElement(By.PartialLinkText("Taal wijzigen"))
+                                                    .FindElement(By.TagName("span"));  // otherwise firefox webdriver won't work
+            mnuChangeLanguage.Click();
+
+            // change language to English
+            IWebElement language = WebBrowser.FindElement(By.Id("newLanguage"));
+            language.Click();
+            language.FindElements(By.TagName("option"))
+                    .Single(option => option.Text == " English")
+                    .Click();
+            language.Click();
+
+            // verify new language selection
+            language = WebBrowser.FindElement(By.Id("newLanguage"));
+            Assert.IsTrue( language.FindElements(By.TagName("option"))
+                                   .Single(option => option.Text == " English")
+                                   .Selected
+                         );
+            language.SendKeys(Keys.Enter);
+
+            // click 'Change language'
+            IWebElement btnChangeLanguage = WebBrowser.FindElement(By.XPath("//button[contains(text(), 'Taal wijzigen')]"));
+            btnChangeLanguage.Click();
+            Thread.Sleep(500);  // wait a while to make sure the redirect call is finished
+
+            // verify new language change
+            IWebElement search = WebBrowser.FindElement(By.Id("searchPhabrico"));
+            Assert.AreEqual(search.GetAttribute("placeholder"), "Search");
         }
 
         [TestMethod]

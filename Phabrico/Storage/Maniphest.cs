@@ -81,8 +81,9 @@ namespace Phabrico.Storage
         /// Returns all available ManiphestInfo records (including their states)
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.Maniphest> Get(Database database)
+        public override IEnumerable<Phabricator.Data.Maniphest> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT m.token, m.id, m.status, ms.closed, m.info
@@ -125,7 +126,7 @@ namespace Phabrico.Storage
         /// <param name="key"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public override Phabricator.Data.Maniphest Get(Database database, string key, bool ignoreStageData = false)
+        public override Phabricator.Data.Maniphest Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
             Transaction transactionStorage = new Transaction();
 
@@ -160,14 +161,14 @@ namespace Phabrico.Storage
                         record.DateCreated = DateTimeOffset.ParseExact((string)info["DateCreated"], "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
                         record.DateModified = DateTimeOffset.ParseExact((string)info["DateModified"], "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
 
-                        record.Transactions = transactionStorage.GetAll(database, record.Token);
+                        record.Transactions = transactionStorage.GetAll(database, record.Token, language);
 
                         return record;
                     }
                     else
                     {
                         Stage stageStorage = new Stage();
-                        return stageStorage.Get<Phabricator.Data.Maniphest>(database, key);
+                        return stageStorage.Get<Phabricator.Data.Maniphest>(database, key, language);
                     }
                 }
             }
@@ -178,12 +179,13 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database">Phabrico database</param>
         /// <param name="maniphestTask">Maniphest task to be merged</param>
-        public void LoadStagedTransactionsIntoManiphestTask(Database database, Phabricator.Data.Maniphest maniphestTask)
+        /// <param name="language"></param>
+        public void LoadStagedTransactionsIntoManiphestTask(Database database, Phabricator.Data.Maniphest maniphestTask, Language language)
         {
             Storage.Stage stageStorage = new Storage.Stage();
 
             // search for transactions on this ManiphestTask (i.e. modification of priority, status, ...)
-            foreach (Phabricator.Data.Transaction stagedTransaction in stageStorage.Get<Phabricator.Data.Transaction>(database)
+            foreach (Phabricator.Data.Transaction stagedTransaction in stageStorage.Get<Phabricator.Data.Transaction>(database, language)
                                                                                    .Where(stageData => stageData.Token.Equals(maniphestTask.Token))
                                                                                    .OrderBy(stageData => stageData.Type))
             {
@@ -260,7 +262,7 @@ namespace Phabrico.Storage
                         cmdDeleteKeywordInfo.ExecuteNonQuery();
                     }
 
-                    database.ClearAssignedTokens(maniphestTask.Token);
+                    database.ClearAssignedTokens(maniphestTask.Token, Language.NotApplicable);
 
                     database.CleanupUnusedObjectRelations();
                 }

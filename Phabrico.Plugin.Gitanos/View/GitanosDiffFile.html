@@ -125,7 +125,7 @@
     } 
 </style>
 
-<script defer src="scripts/codejar.js?version=@@PHABRICO-VERSION@@">
+<script defer src="js/codejar.js?version=@@PHABRICO-VERSION@@">
     /***************************************************************************************************************
         MIT License
 
@@ -150,7 +150,7 @@
         SOFTWARE.
     ***************************************************************************************************************/
 </script>
-<script defer src="scripts/linenumbers.js?version=@@PHABRICO-VERSION@@">
+<script defer src="js/linenumbers.js?version=@@PHABRICO-VERSION@@">
     /***************************************************************************************************************
         MIT License
 
@@ -208,24 +208,6 @@
     <div class="editor" spellcheck="false" contenteditable="true">
 
     </div>
-
-    <div id="dlgYesNo" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 0px; left: calc(50vw - 300px);">
-        <div class="aphront-dialog-overlay"></div>
-        <div class="aphront-dialog-head">
-            <span class="phui-header-header title"></span>
-        </div>
-        <div class="aphront-dialog-body phabrico-remarkup">
-            <div class="phabrico-remarkup">
-                <p class="message"></p>
-            </div>
-            <br>
-        </div>
-        <div class="aphront-dialog-tail grouped" style="text-align: right;">
-            <a data-accesskey="Button-AccessKey-Yes" href="#" class="button button-blue yes">Yes</a>
-            <a data-accesskey="Button-AccessKey-No" href="#" class="button button-gray no">No</a>
-        </div>
-    </div>
-
 
     <div id="dlgGoToLine" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 0px; left: calc(50vw - 300px);">
         <div class="aphront-dialog-overlay"></div>
@@ -400,44 +382,6 @@
 
         // go to repository overview screen
         window.location = "@@REPO-URL@@";
-    }
-
-    function showHideConfirmationMessage(show, title, text, fnYes, fnNo) {
-        if (show) {
-            dlgYesNo.style.display = 'block';
-            document.querySelector('html').style.overflow = 'hidden';
-
-            var btnNo = dlgYesNo.querySelector('.no');
-            var btnYes = dlgYesNo.querySelector('.yes');
-
-            // set title and text
-            dlgYesNo.querySelector('.title').innerText = title;
-            dlgYesNo.querySelector('.message').innerHTML = text;
-
-            // disable all TABs
-            document.querySelectorAll('input, button, a, textarea').forEach(function (input) {
-                input.setAttribute('tabindex', '-1');
-            });
-
-            // fix TABs for dialog
-            btnNo.setAttribute('tabindex', '1');
-            btnYes.setAttribute('tabindex', '2');
-
-            // set functions to buttons
-            btnNo.onclick = function () { fnNo(); return false; }
-            btnYes.onclick = function () { fnYes(); return false; }
-
-            // set focus
-            btnNo.focus();
-        } else {
-            dlgYesNo.style.display = 'none';
-            document.querySelector('html').style.overflow = 'unset';
-
-            // restore all TABs
-            document.querySelectorAll('input, button, a, textarea').forEach(function (input) {
-                input.removeAttribute('tabindex');
-            });
-        }
     }
 
     function gitRestoreModification(modificationID) {

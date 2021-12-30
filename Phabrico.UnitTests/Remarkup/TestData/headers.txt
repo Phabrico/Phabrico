@@ -19,13 +19,13 @@ Markdown-Style Small Header
 = ☃☃☃ UTF8 Header ☃☃☃ =
 ~~~~~~~~~~
 @nolint (UTF8)<br>
-<h1 class='remarkup-header'><a name='hdra' style='padding-top: 80px;'></a>a </h1>
+<h1 class='remarkup-header'><a name='a' style='padding-top: 80px;'></a>a </h1>
 blah blah blah<br>
-<h1 class='remarkup-header'><a name='hdrb' style='padding-top: 80px;'></a>b </h1>
-<h1 class='remarkup-header'><a name='hdrMarkdown_Style_Large_Header' style='padding-top: 80px;'></a>Markdown-Style Large Header </h1>
+<h1 class='remarkup-header'><a name='b' style='padding-top: 80px;'></a>b </h1>
+<h1 class='remarkup-header'><a name='markdown-style-large-header' style='padding-top: 80px;'></a>Markdown-Style Large Header </h1>
 <br>
-<h2 class='remarkup-header'><a name='hdrMarkdown_Style_Small_Header' style='padding-top: 80px;'></a>Markdown-Style Small Header </h2>
+<h2 class='remarkup-header'><a name='markdown-style-small-header' style='padding-top: 80px;'></a>Markdown-Style Small Header </h2>
 <br>
-<h3 class='remarkup-header'><a name='hdrRemarkup_Style_Smaller_Header' style='padding-top: 80px;'></a>Remarkup-Style Smaller Header </h3>
-<h1 class='remarkup-header'><a name='hdr____UTF8_Header____' style='padding-top: 80px;'></a>☃☃☃ UTF8 Header ☃☃☃ </h1>
+<h3 class='remarkup-header'><a name='remarkup-style-smaller-header' style='padding-top: 80px;'></a>Remarkup-Style Smaller Header </h3>
+<h1 class='remarkup-header'><a name='utf8-header' style='padding-top: 80px;'></a>☃☃☃ UTF8 Header ☃☃☃ </h1>
 ~~~~~~~~~~

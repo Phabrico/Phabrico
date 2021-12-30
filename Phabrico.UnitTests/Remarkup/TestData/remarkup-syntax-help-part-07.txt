@@ -64,7 +64,6 @@ lang=html, name=example.html, lines=12, counterexample
   <p>Mangostine</p>
   <p>Melon</p>
 
-
 You can use the `NOTE:`, `WARNING:` or `IMPORTANT:` elements to call attention
 to an important idea.
 
@@ -153,16 +152,109 @@ For example, write this:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>NOTE: Hold regular meetings to keep your employees awake.</code></pre></div>
 <br>
 ...to produce this:<br>
-<div class='remarkup-note'><span class='remarkup-note-word'>NOTE:</span> Hold regular meetings to keep your employees awake.</div>
+<div class='remarkup-notification note'><span class='remarkup-note-word'>NOTE:</span> Hold regular meetings to keep your employees awake.</div>
 <br>
 Using <tt class='remarkup-monospaced'>WARNING:</tt> or <tt class='remarkup-monospaced'>IMPORTANT:</tt> at the beginning of the line changes the<br>
 color of the callout:<br>
-<div class='remarkup-warning'><span class='remarkup-note-word'>WARNING:</span> Too many meetings can become sleep-inducing</div>
+<div class='remarkup-notification warning'><span class='remarkup-note-word'>WARNING:</span> Too many meetings can become sleep-inducing</div>
 <br>
-<div class='remarkup-important'><span class='remarkup-note-word'>IMPORTANT:</span> Don&#39;t attend too many meetings</div>
+<div class='remarkup-notification important'><span class='remarkup-note-word'>IMPORTANT:</span> Don&#39;t attend too many meetings</div>
 <br>
 In addition, you can use <tt class='remarkup-monospaced'>(NOTE)</tt>, <tt class='remarkup-monospaced'>(WARNING)</tt>, or <tt class='remarkup-monospaced'>(IMPORTANT)</tt> to get the<br>
 same effect but without <tt class='remarkup-monospaced'>(NOTE)</tt>, <tt class='remarkup-monospaced'>(WARNING)</tt>, or <tt class='remarkup-monospaced'>(IMPORTANT)</tt> appearing in<br>
 the rendered result. For example, this callout uses <tt class='remarkup-monospaced'>(NOTE)</tt>:<br>
-<div class='remarkup-note'>Do not attend too few meetings.</div>
+<div class='remarkup-notification note'>Do not attend too few meetings.</div>
+~~~~~~~~~~
+This will highlight the block using a highlighter for that language, if one is<N>[29]</N>
+available <BR>in most cases, this means you need to configure Pygments</BR>:<N>[34]</N>
+<WS>  lang=html
+  &lt;a href="#"&gt;...&lt;/a&gt;
+</WS>
+You can also use a <M>`COUNTEREXAMPLE`</M> header to show that a block of code is<N>[65]</N>
+bad and shouldn't be copied:<N>[78]</N>
+<WS>  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+</WS>
+This produces a block like this:<N>[92]</N>
+<N>[93]</N>
+<WS>  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+</WS>
+You can use <M>`lines=N`</M> to limit the vertical size of a chunk of code, and<N>[124]</N>
+<M>`name=some_name.ext`</M> to give it a name. For example, this:<N>[145]</N>
+<N>[146]</N>
+lang=text<N>[149]</N>
+lang=html, name=example.html, lines=12, counterexample<N>[168]</N>
+...<N>[172]</N>
+<N>[173]</N>
+...produces this:<N>[180]</N>
+<N>[181]</N>
+<WS>  lang=html, name=example.html, lines=12, counterexample
+  &lt;p&gt;Apple&lt;/p&gt;
+  &lt;p&gt;Apricot&lt;/p&gt;
+  &lt;p&gt;Avocado&lt;/p&gt;
+  &lt;p&gt;Banana&lt;/p&gt;
+  &lt;p&gt;Bilberry&lt;/p&gt;
+  &lt;p&gt;Blackberry&lt;/p&gt;
+  &lt;p&gt;Blackcurrant&lt;/p&gt;
+  &lt;p&gt;Blueberry&lt;/p&gt;
+  &lt;p&gt;Currant&lt;/p&gt;
+  &lt;p&gt;Cherry&lt;/p&gt;
+  &lt;p&gt;Cherimoya&lt;/p&gt;
+  &lt;p&gt;Clementine&lt;/p&gt;
+  &lt;p&gt;Date&lt;/p&gt;
+  &lt;p&gt;Damson&lt;/p&gt;
+  &lt;p&gt;Durian&lt;/p&gt;
+  &lt;p&gt;Eggplant&lt;/p&gt;
+  &lt;p&gt;Elderberry&lt;/p&gt;
+  &lt;p&gt;Feijoa&lt;/p&gt;
+  &lt;p&gt;Gooseberry&lt;/p&gt;
+  &lt;p&gt;Grape&lt;/p&gt;
+  &lt;p&gt;Grapefruit&lt;/p&gt;
+  &lt;p&gt;Guava&lt;/p&gt;
+  &lt;p&gt;Huckleberry&lt;/p&gt;
+  &lt;p&gt;Jackfruit&lt;/p&gt;
+  &lt;p&gt;Jambul&lt;/p&gt;
+  &lt;p&gt;Kiwi fruit&lt;/p&gt;
+  &lt;p&gt;Kumquat&lt;/p&gt;
+  &lt;p&gt;Legume&lt;/p&gt;
+  &lt;p&gt;Lemon&lt;/p&gt;
+  &lt;p&gt;Lime&lt;/p&gt;
+  &lt;p&gt;Lychee&lt;/p&gt;
+  &lt;p&gt;Mandarine&lt;/p&gt;
+  &lt;p&gt;Mango&lt;/p&gt;
+  &lt;p&gt;Mangostine&lt;/p&gt;
+  &lt;p&gt;Melon&lt;/p&gt;
+</WS>
+You can use the <M>`NOTE:`</M>, <M>`WARNING:`</M> or <M>`IMPORTANT:`</M> elements to call attention<N>[206]</N>
+to an important idea.<N>[215]</N>
+<N>[216]</N>
+For example, write this:<N>[225]</N>
+<N>[226]</N>
+<BT>```
+NOTE: Hold regular meetings to keep your employees awake.
+```
+</BT>
+<N>[227]</N>
+...to produce this:<N>[237]</N>
+<N>[238]</N>
+<NT p="1">Hold regular meetings to keep your employees awake.</NT><N>[239]</N>
+<N>[240]</N>
+Using <M>`WARNING:`</M> or <M>`IMPORTANT:`</M> at the beginning of the line changes the<N>[263]</N>
+color of the callout:<N>[272]</N>
+<N>[273]</N>
+<NT t="w" p="1">Too many meetings can become sleep-inducing</NT><N>[274]</N>
+<N>[275]</N>
+<NT t="i" p="1">Don't attend too many meetings</NT><N>[276]</N>
+<N>[277]</N>
+In addition, you can use <M>`(NOTE)`</M>, <M>`(WARNING)`</M>, or <M>`(IMPORTANT)`</M> to get the<N>[303]</N>
+same effect but without <M>`(NOTE)`</M>, <M>`(WARNING)`</M>, or <M>`(IMPORTANT)`</M> appearing in<N>[325]</N>
+the rendered result. For example, this callout uses <M>`(NOTE)`</M>:<N>[346]</N>
+<N>[347]</N>
+<NT p="0">Do not attend too few meetings.</NT>
 ~~~~~~~~~~

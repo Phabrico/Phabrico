@@ -1,0 +1,7 @@
+In case you're bored, you should take a look at {J123}, which is the autobiography of my life
+~~~~~~~~~~
+In case you&#39;re bored, you should take a look at <a class='phame-reference phui-icon-view phui-font-fa fa-feed' href='phame/post/123/'>&nbsp;Listen to me</a>
+, which is the autobiography of my life
+~~~~~~~~~~
+In case you're bored, you should take a look at <BL>{J123}</BL>, which is the autobiography of my life
+~~~~~~~~~~

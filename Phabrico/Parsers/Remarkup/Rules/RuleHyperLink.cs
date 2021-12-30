@@ -1,6 +1,8 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using Phabrico.Storage;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -12,14 +14,58 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// Remarkup parser for hyperlinks
     /// </summary>
     [RulePriority(60)]
+    [RuleXmlTag("A")]
     public class RuleHyperLink : RemarkupRule
     {
+        public enum RemarkupFormattings
+        {
+            /// <summary>
+            /// <{0}>
+            /// </summary>
+            AngledLink = 'a',
+
+            /// <summary>
+            /// Invalid hyperlink notation
+            /// </summary>
+            Invalid = 'i',
+
+            /// <summary>
+            /// [[{0}]]
+            /// </summary>
+            Link = 'l',
+
+            /// <summary>
+            /// [{0}]({1})
+            /// </summary>
+            MarkDownLink = 'm',
+
+            /// <summary>
+            /// [[{0} | {1}]]
+            /// </summary>
+            NamedLink = 'n',
+
+            /// <summary>
+            /// {0}
+            /// </summary>
+            URI = 'u'
+        }
+
         private bool bannedLinkedPhrictionDocument;
         private bool inexistantLinkedPhrictionDocument;
         private Phabricator.Data.Phriction linkedPhrictionDocument;
 
+        public string Description { get; private set; } = "";
         public bool InvalidHyperlink { get; private set; } = false;
+        public RemarkupFormattings RemarkupFormatting { get; private set; } = RemarkupFormattings.URI;
         public string URL { get; private set; }
+
+        public override string Attributes
+        {
+            get
+            {
+                return "f=\"" + (char)RemarkupFormatting + "\" u=\"" + System.Uri.EscapeDataString(URL) + "\"";
+            }
+        }
 
         /// <summary>
         /// Creates a copy of the current RuleHyperLink
@@ -28,7 +74,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override RemarkupRule Clone()
         {
             RuleHyperLink copy = base.Clone() as RuleHyperLink;
+            copy.Description = Description;
             copy.InvalidHyperlink = InvalidHyperlink;
+            copy.RemarkupFormatting = RemarkupFormatting;
             copy.URL = URL;
             return copy;
         }
@@ -51,9 +99,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
             linkedPhrictionDocument = null;
             InvalidHyperlink = false;
 
+            Match match = null;
+
             try
             {
-                Match match = RegexSafe.Match(remarkup, @"^(https?|ftp)://[A-Za-z0-9._~:/?#[\]@!$&'()*,;%=+-]+", RegexOptions.Singleline);
+                match = RegexSafe.Match(remarkup, @"^(https?|ftp)://[A-Za-z0-9._~:/?#[\]@!$&'()*,;%=+-]+", RegexOptions.Singleline);
                 if (match.Success)
                 {
                     string urlHyperlink = match.Value;
@@ -79,7 +129,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                     Length = match.Length;
 
+                    Description = "";
                     URL = urlHyperlink;
+                    RemarkupFormatting = RemarkupFormattings.URI;
 
                     return true;
                 }
@@ -88,10 +140,13 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
+                    Description = match.Groups[1].Value.Trim();
                     URL = match.Groups[2].Value.Trim();
-                    html = string.Format("<a class='phriction-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), URL);
+                    html = string.Format("<a class='phriction-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(Description), URL);
 
                     Length = match.Length;
+
+                    RemarkupFormatting = RemarkupFormattings.MarkDownLink;
 
                     return true;
                 }
@@ -100,10 +155,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
+                    Description = match.Groups[1].Value.Trim();
                     URL = match.Groups[2].Value.Trim();
-                    html = string.Format("<a class='email-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), URL);
+                    html = string.Format("<a class='email-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(Description), URL);
 
                     Length = match.Length;
+                    RemarkupFormatting = RemarkupFormattings.MarkDownLink;
 
                     return true;
                 }
@@ -112,10 +169,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
+                    Description = "";
                     URL = "mailto:" + match.Value;
                     html = string.Format("<a class='email-link' href='mailto:{0}'>{0}</a>", match.Value);
 
                     Length = match.Length;
+                    RemarkupFormatting = RemarkupFormattings.URI;
 
                     return true;
                 }
@@ -124,10 +183,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
+                    Description = match.Groups[1].Value.Trim();
                     URL = match.Groups[2].Value.Trim();
-                    html = string.Format("<a class='phone-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(match.Groups[1].Value.Trim()), URL);
+                    html = string.Format("<a class='phone-link' href='{1}'>{0}</a>", System.Web.HttpUtility.HtmlEncode(Description), URL);
 
                     Length = match.Length;
+                    RemarkupFormatting = RemarkupFormattings.MarkDownLink;
 
                     return true;
                 }
@@ -141,16 +202,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     string hyperlinkText = "";
                     if (InvalidUrl(database, browser, url, ref hyperlink, ref hyperlinkText))
                     {
+                        Description = hyperlink;
                         URL = url;
                         html = HttpUtility.HtmlEncode(match.Value);
                     }
                     else
                     {
+                        Description = "";
                         URL = hyperlink;
                         html = string.Format("<a class='phriction-link' href='{0}'>{0}</a>", hyperlink);
                     }
 
                     Length = match.Length;
+                    RemarkupFormatting = RemarkupFormattings.AngledLink;
 
                     return true;
                 }
@@ -164,11 +228,15 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     {
                         urlHyperlink = urlHyperlinkParts[0].Trim();
                         urlHyperlinkText = string.Join("|", urlHyperlinkParts.Skip(1)).Trim();
+                        Description = urlHyperlinkText;
+                        RemarkupFormatting = RemarkupFormattings.NamedLink;
                     }
                     else
                     {
                         urlHyperlink = urlHyperlinkParts[0].Trim();
                         urlHyperlinkText = null;
+                        Description = "";
+                        RemarkupFormatting = RemarkupFormattings.Link;
                     }
 
                     if (urlHyperlink.StartsWith("/w/"))
@@ -182,7 +250,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
                         html = string.Format("<a class='email-link' href='mailto:{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
-                        URL = "mailto:" + urlHyperlink;
+                        urlHyperlink = "mailto:" + urlHyperlink;
                     }
                     else
                     if (urlHyperlink.StartsWith("tel:"))
@@ -191,7 +259,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
                         html = string.Format("<a class='phone-link' href='tel:{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
-                        URL = "tel:" + urlHyperlink;
+                        urlHyperlink = "tel:" + urlHyperlink;
                     }
                     else
                     if (urlHyperlink.StartsWith("ftp://"))
@@ -200,7 +268,6 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         if (urlHyperlinkText == null) urlHyperlinkText = urlHyperlink;
 
                         html = string.Format("<a class='phriction-link' href='{0}'>{1}</a>", urlHyperlink, System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
-                        URL = urlHyperlink;
                     }
                     else
                     {
@@ -285,11 +352,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                                     if (linkedDocument.EndsWith("/") == false) linkedDocument += "/";
 
-                                    linkedPhrictionDocument = phrictionStorage.Get(database, linkedDocument);
+                                    linkedPhrictionDocument = phrictionStorage.Get(database, linkedDocument, browser.Session.Locale);
                                     if (linkedPhrictionDocument == null)
                                     {
                                         Storage.Stage stageStorage = new Storage.Stage();
-                                        linkedPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database).FirstOrDefault(doc => doc.Path.Equals(linkedDocument));
+                                        linkedPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale).FirstOrDefault(doc => doc.Path.Equals(linkedDocument));
                                     }
 
                                     if (linkedPhrictionDocument != null)
@@ -418,6 +485,56 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         }
                     }
                 }
+
+                if (InvalidHyperlink && match != null)
+                {
+                    URL = match.Value;
+                    RemarkupFormatting = RemarkupFormattings.Invalid;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            RemarkupFormatting = (RemarkupFormattings)attributes["f"][0];
+            Description = Uri.UnescapeDataString(innerText);
+            URL = Uri.UnescapeDataString(attributes["u"]);
+
+            if (URL.StartsWith("w/"))
+            {
+                URL = URL.Substring("w/".Length);
+            }
+
+            switch (RemarkupFormatting)
+            {
+                case RemarkupFormattings.AngledLink:
+                    return string.Format("<{0}>", URL);
+
+                case RemarkupFormattings.Link:
+                    return string.Format("[[{0}]]", URL);
+
+                case RemarkupFormattings.MarkDownLink:
+                    return string.Format("[{0}]({1})", Description, URL);
+
+                case RemarkupFormattings.NamedLink:
+                    return string.Format("[[{0} | {1}]]", URL, Description);
+
+                case RemarkupFormattings.URI:
+                    return string.Format("{0}", URL);
+
+                case RemarkupFormattings.Invalid:
+                    return URL;
+
+                default:
+                    return string.Format("[[{0} | {1}]]", URL, Description);
             }
         }
 

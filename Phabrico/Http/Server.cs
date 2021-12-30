@@ -89,6 +89,12 @@ namespace Phabrico.Http
         private static Dictionary<string, string> currentNotifications = new Dictionary<string, string>();
 
         /// <summary>
+        /// Dictionary containing all file objects based on their macro names
+        /// </summary>
+        public static Dictionary<string, Phabricator.Data.File> FilesPerMacroName { get; } = new Dictionary<string, Phabricator.Data.File>() { { "", null } };
+        private static object filesPerMacroNameLock = new object();
+
+        /// <summary>
         /// True if Phabrico is executed as IIS Http module
         /// False is Phabrico is executed as a Windows service
         /// </summary>
@@ -145,6 +151,12 @@ namespace Phabrico.Http
         /// TCP portnr for webserver listener
         /// </summary>
         public int TcpPortNr { get; private set; }
+
+        /// <summary>
+        /// If set to true, some extra unit testing code is executed.
+        /// E.g. a dummy translator engine is used instead of an online translator engine
+        /// </summary>
+        public static bool UnitTesting = false;
 
         /// <summary>
         /// User roles per username
@@ -272,11 +284,6 @@ namespace Phabrico.Http
 
                 httpListener.BeginGetContext(ProcessHttpRequest, httpListener);
             }
-        }
-
-        private void CurrentDomain_DomainUnload(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -642,7 +649,7 @@ namespace Phabrico.Http
         /// <param name="token"></param>
         /// <param name="locale"></param>
         /// <returns></returns>
-        public string GetLatestSynchronizationTime(SessionManager.Token token, string locale)
+        public string GetLatestSynchronizationTime(SessionManager.Token token, Language locale)
         {
             string encryptionKey = token?.EncryptionKey;
             if (string.IsNullOrEmpty(encryptionKey) == false)
@@ -651,7 +658,7 @@ namespace Phabrico.Http
                 {
                     Storage.Account accountStorage = new Storage.Account();
 
-                    Phabricator.Data.Account accountData = accountStorage.Get(database).FirstOrDefault();
+                    Phabricator.Data.Account accountData = accountStorage.Get(database, Language.NotApplicable).FirstOrDefault();
                     if (accountData != null)
                     {
                         if (accountData.Parameters.LastSynchronizationTimestamp == DateTimeOffset.MinValue)
@@ -763,7 +770,7 @@ namespace Phabrico.Http
                    url.StartsWith("/favicon.ico", StringComparison.OrdinalIgnoreCase) ||
                    url.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase) ||
                    url.StartsWith("/images/", StringComparison.OrdinalIgnoreCase) ||
-                   url.StartsWith("/scripts/", StringComparison.OrdinalIgnoreCase);
+                   url.StartsWith("/js/", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -819,7 +826,7 @@ namespace Phabrico.Http
                     // preload favorite phriction documents
                     Storage.Phriction phrictionStorage = new Storage.Phriction();
                     List<Phabricator.Data.Phriction> favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, browser, username).ToList();
-                    favoritePhrictionDocuments.Add(phrictionStorage.Get(database, "/"));
+                    favoritePhrictionDocuments.Add(phrictionStorage.Get(database, "/", browser.Session.Locale));
                     htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
                     Controllers.Phriction phrictionController = new Controllers.Phriction();
                     phrictionController.browser = clonedBrowser;
@@ -849,13 +856,13 @@ namespace Phabrico.Http
                     // preload assigned maniphest tasks
                     Storage.Maniphest maniphestStorage = new Storage.Maniphest();
                     Storage.Stage stageStorage = new Storage.Stage();
-                    Phabricator.Data.Maniphest[] stagedManiphestTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database).ToArray();
+                    Phabricator.Data.Maniphest[] stagedManiphestTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).ToArray();
                     foreach (Phabricator.Data.Maniphest stagedManiphestTask in stagedManiphestTasks)
                     {
-                        maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedManiphestTask);
+                        maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedManiphestTask, browser.Session.Locale);
                     }
 
-                    Phabricator.Data.Maniphest[] assignedManiphestTasks = maniphestStorage.Get(database)
+                    Phabricator.Data.Maniphest[] assignedManiphestTasks = maniphestStorage.Get(database, browser.Session.Locale)
                                                                                           .Where(maniphestTask => stagedManiphestTasks.All(stagedTask => stagedTask.Token.Equals(maniphestTask.Token) == false)
                                                                                                                && maniphestTask.Owner.Equals(whoAmI.Parameters.UserToken)
                                                                                                                && maniphestTask.IsOpen.Equals("true")
@@ -891,6 +898,47 @@ namespace Phabrico.Http
                 // cache was filled up again
                 cacheStatusHttpMessages = CacheState.Valid;
             });
+        }
+
+        /// <summary>
+        /// Loads all file objects which have a macro-name into the static FilesPerMacroName dictionary.
+        /// This FilesPerMacroName dictionary is used by the remarkup parser for decoding macro-names
+        /// </summary>
+        /// <param name="encryptionKey"></param>
+        public void PreloadFileMacros(string encryptionKey)
+        {
+            lock (filesPerMacroNameLock)
+            {
+                if (Http.Server.FilesPerMacroName.ContainsKey(""))
+                {
+                    try
+                    {
+                        Dictionary<string, Phabricator.Data.File> filesPerMacroName = new Dictionary<string, Phabricator.Data.File>();
+
+                        using (Storage.Database database = new Database(encryptionKey))
+                        {
+                            Storage.File fileStorage = new Storage.File();
+                            foreach (Phabricator.Data.File macroFile in fileStorage.GetMacroFiles(database, Language.NotApplicable)
+                                                                                   .Where(record => string.IsNullOrWhiteSpace(record.MacroName) == false)
+                                    )
+                            {
+                                filesPerMacroName[macroFile.MacroName] = macroFile;
+                            }
+                        }
+
+                        // copy local filesPerMacroName to static FilesPerMacroName
+                        FilesPerMacroName.Clear();
+                        foreach (string macroName in filesPerMacroName.Keys)
+                        {
+                            FilesPerMacroName[macroName] = filesPerMacroName[macroName];
+                        }
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1077,8 +1125,8 @@ namespace Phabrico.Http
                                         httpResponse.Send(browser);
                                         return;
 
-                                    case string scripts when scripts.StartsWith("/scripts/", StringComparison.OrdinalIgnoreCase):
-                                        httpResponse = new Http.Response.Script(this, browser, cmdGetUrl.Substring("/scripts/".Length));
+                                    case string scripts when scripts.StartsWith("/js/", StringComparison.OrdinalIgnoreCase):
+                                        httpResponse = new Http.Response.Script(this, browser, cmdGetUrl.Substring("/js/".Length));
                                         if (httpResponse.Content != null)
                                         {
                                             cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
@@ -1110,6 +1158,11 @@ namespace Phabrico.Http
                                         if (tokenId != null)
                                         {
                                             tokenIsValid = Session.TokenValid(tokenId);
+                                            if (tokenIsValid)
+                                            {
+                                                SessionManager.Token sessionToken = SessionManager.GetToken(browser);
+                                                sessionToken.ServerValidationCheckEnabled = true;
+                                            }
                                         }
 
                                         // get AutoLogOutAfterMinutesOfInactivity parameter
@@ -1190,7 +1243,7 @@ namespace Phabrico.Http
                                 plugin.State = Plugin.PluginBase.PluginState.Initialized;
                             }
 
-                            if (plugin.IsVisible(browser))
+                            if (plugin.IsVisibleInNavigator(browser))
                             {
                                 viewPage = plugin.GetViewPage(browser, urlPath);
                                 if (viewPage != null)
@@ -1493,7 +1546,7 @@ namespace Phabrico.Http
 
                             // get tokenId from accountinfo
                             database.EncryptionKey = publicEncryptionKey;
-                            Phabricator.Data.Account primaryUserAccount = accountStorage.Get(database)
+                            Phabricator.Data.Account primaryUserAccount = accountStorage.Get(database, Language.NotApplicable)
                                                                                         .FirstOrDefault(account => account.Parameters.AccountType == Phabricator.Data.Account.AccountTypes.PrimaryUser);
                             tokenId = primaryUserAccount.Token;
 
@@ -1529,7 +1582,7 @@ namespace Phabrico.Http
                         bool ownershipFailed = false;
                         try
                         {
-                            existingAccount = accountStorage.Get(database).FirstOrDefault();
+                            existingAccount = accountStorage.Get(database, Language.NotApplicable).FirstOrDefault();
                         }
                         catch
                         {
@@ -1591,7 +1644,7 @@ namespace Phabrico.Http
             if (string.IsNullOrEmpty(tokenId) == false && string.IsNullOrEmpty(encryptionKey) == false)
             {
                 Storage.User userStorage = new Storage.User();
-                if (userStorage.Get(database).Any() == false &&
+                if (userStorage.Get(database, Language.NotApplicable).Any() == false &&
                     browser.Session.FormVariables["/auth/login"]?.ContainsKey("username") == true &&
                     browser.Session.FormVariables["/auth/login"]?.ContainsKey("password") == true)
                 {
@@ -1792,6 +1845,10 @@ namespace Phabrico.Http
             }
         }
 
+        /// <summary>
+        /// This method will process any incoming request (i.e. POST/GET, HTTP/Websocket)
+        /// </summary>
+        /// <param name="httpListenerContext"></param>
         public void ProcessHttpRequest(Miscellaneous.HttpListenerContext httpListenerContext)
         {
             try
@@ -1811,7 +1868,7 @@ namespace Phabrico.Http
                                 bool isStaticData = httpListenerContext.Request.RawUrl.StartsWith("/favicon.ico", StringComparison.OrdinalIgnoreCase)
                                                  || httpListenerContext.Request.RawUrl.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase)
                                                  || httpListenerContext.Request.RawUrl.StartsWith("/css/", StringComparison.OrdinalIgnoreCase)
-                                                 || httpListenerContext.Request.RawUrl.StartsWith("/scripts/", StringComparison.OrdinalIgnoreCase);
+                                                 || httpListenerContext.Request.RawUrl.StartsWith("/js/", StringComparison.OrdinalIgnoreCase);
                                 if (isStaticData == false)
                                 {
                                     AccessDeniedException accessDeniedException = new AccessDeniedException("/", "Remote access is disabled");
@@ -2105,6 +2162,42 @@ namespace Phabrico.Http
         }
 
         /// <summary>
+        /// Pushes an error message to one or more browser sessions via WebSockets
+        /// </summary>
+        /// <param name="webSocketMessageIdentifier">
+        /// Local path of websocket
+        /// For example: if websocket connects to http://localhost:13467/abc/def the webSocketMessageIdentifier should be /abc/def
+        /// If there are multiple browser sessions connected to this identifier, they will all receive a message
+        /// </param>
+        /// <param name="message">data to be sent to browser</param>
+        public static void SendNotificationWarning(string webSocketMessageIdentifier, string message)
+        {
+            string jsonData = JsonConvert.SerializeObject(new
+            {
+                Message = message,
+                Type = "warning"
+            });
+
+            // prepend root-path
+            webSocketMessageIdentifier = RootPath.TrimEnd('/') + webSocketMessageIdentifier;
+
+            currentNotifications[webSocketMessageIdentifier] = jsonData;
+
+            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
+                                                                                                 && websocket.RequestUri
+                                                                                                             .LocalPath
+                                                                                                             .TrimEnd('/')
+                                                                                                             .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                                                      )
+                                                                                .ToArray())
+            {
+                Logging.WriteInfo("Notify-Warning", webSocketContext.RequestUri.LocalPath);
+                byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
+                webSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+        }
+
+        /// <summary>
         /// Finalizes an instance of the Http.Server class.
         /// </summary>
         public void Stop()
@@ -2152,7 +2245,7 @@ namespace Phabrico.Http
             {
                 Storage.Account accountStorage = new Storage.Account();
 
-                UserRoles = accountStorage.Get(database)
+                UserRoles = accountStorage.Get(database, Language.NotApplicable)
                                           .ToDictionary(user => user.UserName,
                                                         user => (user.Parameters.DefaultUserRoleTag ?? "")
                                                                                .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -2252,7 +2345,7 @@ namespace Phabrico.Http
                         if (pathElements.Any() == false) break;  // we're at the root -> stop
 
                         string parentPath = string.Join("/", pathElements) + "/";
-                        phrictionDocument = phrictionStorage.Get(database, parentPath, false);
+                        phrictionDocument = phrictionStorage.Get(database, parentPath, browser.Session.Locale, false);
                         if (phrictionDocument == null) break;  // parent not document found -> stop
                     }
                 }

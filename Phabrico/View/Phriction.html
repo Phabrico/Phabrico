@@ -1,36 +1,3 @@
-<div class="wait">
-    <svg height="100" width="180">
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(20) rotate(180,0,50)">
-            <animate attributeName="height" attributeType="XML" dur="1s" values="30; 100; 30" repeatCount="indefinite"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(40) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.5s" values="30; 100; 30" repeatCount="indefinite" begin="0.1s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(60) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1s" values="30; 100; 30" repeatCount="indefinite" begin="0.2s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(80) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.2s" values="30; 100; 30" repeatCount="indefinite" begin="0.3s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(100) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.1s" values="30; 100; 30" repeatCount="indefinite" begin="0.1s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(120) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.4s" values="30; 100; 30" repeatCount="indefinite" begin="0.2s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(140) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.2s" values="30; 100; 30" repeatCount="indefinite" begin="0.3s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(160) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="1.0s" values="30; 100; 30" repeatCount="indefinite" begin="0.4s"></animate>
-        </rect>
-        <rect x="0" fill="#00a" width="18" height="100" transform="translate(180) rotate(180 0 50)">
-            <animate attributeName="height" attributeType="XML" dur="0.8s" values="30; 100; 30" repeatCount="indefinite" begin="0.5s"></animate>
-        </rect>
-    </svg>
-    <span class="message" style="display:block;">One moment please...</span>
-</div>
-
 <div id="crumbsContainer" class="crumbs">
     <a href="w/" tabindex="-1">
         <span class="phui-font-fa fa-book" style="padding-right: 5px;">&#x200B;</span>
@@ -67,7 +34,7 @@
 </script>
 
 <div class="phui-document">
-    <h1><span id="documentState" class="@@DOCUMENT-STATE@@"></span>@@DOCUMENT-TITLE@@</h1>
+    <h1><span id="documentState" class="@@DOCUMENT-STATE@@ @@UNREVIEWED-TRANSLATION@@"></span>@@DOCUMENT-TITLE@@</h1>
     <div style="display: flex;flex-direction: column;">
         <div id="remarkupContent" class="content remarkupContent">@@DOCUMENT-CONTENT@@</div>
         @@DOCUMENT-HIERARCHY@@
@@ -77,24 +44,6 @@
         <div>
             <ul id="phui-navigator" class="no-print">
             </ul>
-        </div>
-    </div>
-
-    <div id="dlgYesNoCancel" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 90px; left: calc(50vw - 300px); z-index: 5;">
-        <div class="aphront-dialog-overlay"></div>
-        <div class="aphront-dialog-head">
-            <span class="phui-header-header title"></span>
-        </div>
-        <div class="aphront-dialog-body phabrico-remarkup">
-            <div class="phabrico-remarkup">
-                <p class="message"></p>
-            </div>
-            <br>
-        </div>
-        <div class="aphront-dialog-tail grouped" style="text-align: right;">
-            <a data-accesskey="Button-AccessKey-Yes" href="#" class="button button-blue yes">Yes</a>
-            <a data-accesskey="Button-AccessKey-No" href="#" class="button button-gray no">No</a>
-            <a href="#" class="button button-gray cancel">Cancel</a>
         </div>
     </div>
 
@@ -126,11 +75,20 @@
             <ul class="list-view">
                 @{IF @@ACCESS-READONLY@@=False@
                     <li class="list-item-view">
-                        <a id="actionEditDocument" href="?action=edit" class="list-item-href">
-                            <span class="phui-font-fa fa-pencil phui-list-item-icon">
-                                <span class="phui-list-item-name">Edit Document</span>
-                            </span>
-                        </a>
+                        @{IF @@CONTENT-IS-TRANSLATION@@=no@
+                            <a href="?action=edit" class="list-item-href">
+                                <span class="phui-font-fa fa-pencil phui-list-item-icon">
+                                    <span class="phui-list-item-name">Edit Document</span>
+                                </span>
+                            </a>
+                        }@
+                        @{ELSE
+                            <a href="?action=translate" class="list-item-href">
+                                <span class="phui-font-fa fa-pencil phui-list-item-icon">
+                                    <span class="phui-list-item-name">Edit translation</span>
+                                </span>
+                            </a>
+                        }@
                     </li>
                 }@
                 @{IF @@ACCESS-MASTER-DATA@@=True@
@@ -190,6 +148,29 @@
                     <a href="#" class="list-item-href" onclick="showReferences();">
                         <span class="phui-font-fa fa-external-link phui-list-item-icon">
                             <span class="phui-list-item-name">Show references</span>
+                        </span>
+                    </a>
+                </li>
+}@
+@{IF @@SHOW-ALL-UNREVIEWED-TRANSLATIONS@@=yes@
+                <li class="plugin-action list-item-separator"></li>
+}@
+@{IF @@SHOW-APPROVE-TRANSLATION@@=yes@
+                <li class="list-item-view">
+                    <a href="#" class="list-item-href" onclick="approveTranslation();">
+                        <span class="phui-font-fa fa-check phui-list-item-icon">
+                            <span class="phui-list-item-name">Approve translation</span>
+                        </span>
+                    </a>
+                </li>
+}@
+@{IF @@SHOW-ALL-UNREVIEWED-TRANSLATIONS@@=yes@
+                <li class="list-item-view">
+                    <a href="translations/unreviewed" class="list-item-href review-translation">
+                        <span class="phui-font-fa phui-list-item-icon">
+                            <span class="phui-list-item-name">Unreviewed translations
+                                <span style="" class="navigator-menuitem-notification information unreviewed-translations-count">@@NUMBER-UNREVIEWED-TRANSLATIONS@@</span>
+                            </span>
                         </span>
                     </a>
                 </li>
@@ -349,6 +330,48 @@ dateModified won't change when a subscription is added or removed
             addToFavoritesRequest.send(data);
         }
 
+        function approveTranslation() {
+            showHideConfirmationMessage( true, Locale.Translate("Approve translation"), Locale.Translate("Are you sure you want to approve this translation?"),
+                                            function() {
+                                                showHideConfirmationMessage(false);
+
+                                                var data = new FormData();
+                                                data.append('token', '@@DOCUMENT-TOKEN@@');
+
+                                                var xmlRequest = new XMLHttpRequest();
+                                                xmlRequest.onreadystatechange = function() {
+                                                    if (xmlRequest.readyState == 4 && xmlRequest.status == 200) {
+                                                        var jsonResponse = JSON.parse(xmlRequest.responseText);
+
+                                                        if (typeof jsonResponse.SetFormVariables != 'undefined') {
+                                                            for (var variableName in jsonResponse.SetFormVariables) {
+                                                                data.delete(variableName);
+                                                                data.append(variableName, jsonResponse.SetFormVariables[variableName]);
+                                                            }
+                                                        }
+
+                                                        if (jsonResponse.Status == 'OK') {
+                                                            document.location.reload();
+                                                            return;
+                                                        }
+                                                        if (jsonResponse.Status == 'MasterDataModified') {
+                                                            showHideMessageDialog(true, Locale.Translate('ERROR'), jsonResponse.Message);
+                                                            return;
+                                                        }
+                                                    }
+                                                };
+
+                                                xmlRequest.open('POST', 'translations/approve', true);
+                                                xmlRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+                                                xmlRequest.send(data);
+                                            },
+                                            function() {
+                                                showHideConfirmationMessage(false);
+                                            },
+                                            null
+                                        );
+        }
+
         function initializePhrictionPluginFormData() {
             var data = new FormData();
 
@@ -394,17 +417,39 @@ dateModified won't change when a subscription is added or removed
                 data = initializePhrictionPluginFormData();
             }
 
+            document.querySelector('div.wait').style.display = 'block';
+
             xmlhttp.onreadystatechange = function() {
                 if(xmlhttp.readyState == 4)
                 {
                     var jsonResponse = JSON.parse(xmlhttp.responseText);
+
+                    document.querySelector('div.wait').style.display = 'none';
+
+                    if (typeof jsonResponse.SetFormVariables != 'undefined') {
+                        for (var variableName in jsonResponse.SetFormVariables) {
+                            data.delete(variableName);
+                            data.append(variableName, jsonResponse.SetFormVariables[variableName]);
+                        }
+                    }
+
                     if (jsonResponse.Status == 'Confirm') {
                         showHideConfirmationMessage( true, pluginName, jsonResponse.Message,
                                                         function() {
+                                                            if (typeof jsonResponse.ResponseTarget != 'undefined') {
+                                                                data.delete(jsonResponse.ResponseTarget);
+                                                                data.append(jsonResponse.ResponseTarget, 'Yes');
+                                                            }
+
                                                             showHideConfirmationMessage(false);
                                                             executePhrictionPluginConfirmed(document.baseURI + pluginURL, data, true);
                                                         },
                                                         function() {
+                                                            if (typeof jsonResponse.ResponseTarget != 'undefined') {
+                                                                data.delete(jsonResponse.ResponseTarget);
+                                                                data.append(jsonResponse.ResponseTarget, 'No');
+                                                            }
+
                                                             showHideConfirmationMessage(false);
                                                             executePhrictionPluginConfirmed(document.baseURI + pluginURL, data, false);
                                                         },
@@ -418,9 +463,13 @@ dateModified won't change when a subscription is added or removed
                         showHideParametersDialog(true, data, jsonResponse.DialogTitle, pluginName, pluginURL, jsonResponse);
                     }
 
+                    if (jsonResponse.Status == 'Redirect') {
+                        document.location.href = jsonResponse.URL;
+                    }
+
                     if (jsonResponse.Status == 'Finished') {
                         showHideConfirmationMessage(false);
-                        executePhrictionPluginConfirmed('/' + pluginURL, data, false);
+                        processFinishedPluginState(jsonResponse);
                     }
                 }
             }
@@ -444,78 +493,16 @@ dateModified won't change when a subscription is added or removed
                 if(xmlhttp.readyState == 4)
                 {
                     var jsonResponse = JSON.parse(xmlhttp.responseText);
-                    if (jsonResponse.Status == 'Finished') {
-                        if (typeof jsonResponse.Base64Data !== 'undefined'  &&  typeof jsonResponse.ContentType !== 'undefined'  &&  typeof jsonResponse.FileName !== 'undefined') {
-                            var a = document.createElement('a');
-                            a.download = jsonResponse.FileName;
-                            a.href = "data:" + jsonResponse.ContentType + ";base64," + jsonResponse.Base64Data;
 
-                            document.body.appendChild(a);
-                            a.style.display = "none";
-                            a.click();
-
-                            document.body.removeChild(a);
-                        } else
-                        if (typeof jsonResponse.TableData !== 'undefined') {
-                            var table = document.createElement('table');
-                            table.style.tableLayout = "fixed";
-                            table.classList.add("aphront-table-view");
-
-                            var thead = document.createElement('thead');
-                            table.appendChild(thead);
-
-                            var tbody = document.createElement('tbody');
-                            table.appendChild(tbody);
-
-                            var tableRow = document.createElement('tr');
-                            thead.appendChild(tableRow);
-
-                            jsonResponse.TableData.Header.forEach(function(header) {
-                                var tableCell = document.createElement('th');
-                                tableCell.innerText = header;
-                                tableRow.appendChild(tableCell);
-                            });
-
-                            jsonResponse.TableData.Data.forEach(function(record) {
-                                var tableRow = document.createElement('tr');
-                                tableRow.classList.add("alternate");
-                                tbody.appendChild(tableRow);
-
-                                record.forEach(function(html) {
-                                    var tableCell = document.createElement('td');
-                                    tableCell.innerHTML = html;
-                                    tableRow.appendChild(tableCell);
-                                });
-                            });
-
-                            pluginTableData.appendChild(table);
-
-                            actionNewDocument.style.display = 'none';
-                            document.querySelector('div.phui-document').style.display = 'none';
-                            document.querySelector('div.expandcollapse').style.display = 'none';
-                            document.querySelector('div.phriction.app-side-window').style.display = 'none';
-                            pluginTableData.style.display = 'block';
-                        } else
-                        if (typeof jsonResponse.MessageBox !== 'undefined') {
-                            var title = "";
-                            if (typeof jsonResponse.MessageBox.Title !== 'undefined') {
-                                title = jsonResponse.MessageBox.Title;
-                            }
-                            if (typeof jsonResponse.MessageBox.Message !== 'undefined') {
-                                message = jsonResponse.MessageBox.Message;
-
-                                dlgOK.querySelector('.title').innerText = title;
-                                dlgOK.querySelector('.message').innerText = message;
-                                dlgOK.style.display = 'block';
-
-                                var btnOK = dlgOK.querySelector('a.ok');
-                                btnOK.onclick = function() {
-                                    dlgOK.style.display = 'none';
-                                    return false;
-                                }
-                                btnOK.focus();
-                            }
+                    if (typeof jsonResponse.SetFormVariables != 'undefined') {
+                        for (var variableName in jsonResponse.SetFormVariables) {
+                            data.delete(variableName);
+                            data.append(variableName, jsonResponse.SetFormVariables[variableName]);
                         }
+                    }
+
+                    if (jsonResponse.Status == 'Finished') {
+                        processFinishedPluginState(jsonResponse);
 
                         document.querySelector('div.wait').style.display = 'none';
                     }
@@ -527,6 +514,83 @@ dateModified won't change when a subscription is added or removed
             xmlhttp.send(data);
         }
 
+        function processFinishedPluginState(jsonResponse) {
+            if (typeof jsonResponse.Base64Data !== 'undefined'  &&  typeof jsonResponse.ContentType !== 'undefined'  &&  typeof jsonResponse.FileName !== 'undefined') {
+                var a = document.createElement('a');
+                a.download = jsonResponse.FileName;
+                a.href = "data:" + jsonResponse.ContentType + ";base64," + jsonResponse.Base64Data;
+
+                document.body.appendChild(a);
+                a.style.display = "none";
+                a.click();
+
+                document.body.removeChild(a);
+            } else
+            if (typeof jsonResponse.TableData !== 'undefined') {
+                var table = document.createElement('table');
+                table.style.tableLayout = "fixed";
+                table.classList.add("aphront-table-view");
+
+                var thead = document.createElement('thead');
+                table.appendChild(thead);
+
+                var tbody = document.createElement('tbody');
+                table.appendChild(tbody);
+
+                var tableRow = document.createElement('tr');
+                thead.appendChild(tableRow);
+
+                jsonResponse.TableData.Header.forEach(function(header) {
+                    var tableCell = document.createElement('th');
+                    tableCell.innerText = header;
+                    tableRow.appendChild(tableCell);
+                });
+
+                jsonResponse.TableData.Data.forEach(function(record) {
+                    var tableRow = document.createElement('tr');
+                    tableRow.classList.add("alternate");
+                    tbody.appendChild(tableRow);
+
+                    record.forEach(function(html) {
+                        var tableCell = document.createElement('td');
+                        tableCell.innerHTML = html;
+                        tableRow.appendChild(tableCell);
+                    });
+                });
+
+                pluginTableData.appendChild(table);
+
+                actionNewDocument.style.display = 'none';
+                document.querySelector('div.phui-document').style.display = 'none';
+                document.querySelector('div.expandcollapse').style.display = 'none';
+                document.querySelector('div.phriction.app-side-window').style.display = 'none';
+                pluginTableData.style.display = 'block';
+            } else
+            if (typeof jsonResponse.MessageBox !== 'undefined') {
+                var title = "";
+                if (typeof jsonResponse.MessageBox.Title !== 'undefined') {
+                    title = jsonResponse.MessageBox.Title;
+                }
+                if (typeof jsonResponse.MessageBox.Message !== 'undefined') {
+                    message = jsonResponse.MessageBox.Message;
+
+                    dlgOK.querySelector('.title').innerText = title;
+                    dlgOK.querySelector('.message').innerText = message;
+                    dlgOK.style.display = 'block';
+
+                    var btnOK = dlgOK.querySelector('a.ok');
+                    btnOK.onclick = function() {
+                        dlgOK.style.display = 'none';
+                        document.location.reload();
+                        return false;
+                    }
+                    btnOK.focus();
+                }
+            } else {
+                document.location.reload();
+            }
+        }
+
         function executePhrictionPluginPrepared(pluginName, pluginURL, data) {
             data.set('isPrepared', 'true');
 
@@ -534,58 +598,73 @@ dateModified won't change when a subscription is added or removed
             xmlhttp.onreadystatechange = function() {
                 if(xmlhttp.readyState == 4)
                 {
-                    showHideParametersDialog(false, data);
+                    document.querySelector('div.wait').style.display = 'none';
 
                     var jsonResponse = JSON.parse(xmlhttp.responseText);
-                    executePhrictionPlugin(pluginName, pluginURL, data);
+
+                    if (typeof jsonResponse.SetFormVariables != 'undefined') {
+                        for (var variableName in jsonResponse.SetFormVariables) {
+                            data.delete(variableName);
+                            data.append(variableName, jsonResponse.SetFormVariables[variableName]);
+                        }
+                    }
+
+                    if (jsonResponse.Status == 'Finished') {
+                        processFinishedPluginState(jsonResponse);
+                    }
+                    else if (jsonResponse.Status == 'Confirm') {
+                        showHideConfirmationMessage( true, pluginName, jsonResponse.Message,
+                                                        function() {
+                                                            showHideConfirmationMessage(false);
+
+                                                            if (typeof jsonResponse.ResponseTarget != 'undefined') {
+                                                                data.delete(jsonResponse.ResponseTarget);
+                                                                data.append(jsonResponse.ResponseTarget, 'Yes');
+                                                            }
+
+                                                            data.delete('confirm');
+                                                            data.append('confirm', 'Yes');
+                                                            executePhrictionPlugin(pluginName, pluginURL, data);
+                                                        },
+                                                        function() {
+                                                            showHideConfirmationMessage(false);
+
+                                                            if (typeof jsonResponse.ResponseTarget != 'undefined') {
+                                                                data.delete(jsonResponse.ResponseTarget);
+                                                                data.append(jsonResponse.ResponseTarget, 'No');
+                                                            }
+
+                                                            if (jsonResponse.AbortWhenDeclined != true) {
+                                                                data.delete('confirm');
+                                                                data.append('confirm', 'No');
+                                                                executePhrictionPlugin(pluginName, pluginURL, data);
+                                                            }
+                                                        }
+                                                    );
+                    } else {
+                        executePhrictionPlugin(pluginName, pluginURL, data);
+                    }
                 }
             };
 
             xmlhttp.open('POST', pluginURL, true);
             xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             xmlhttp.send(data);
+
+            showHideParametersDialog(false, data);
+            document.querySelector('div.wait').style.display = 'block';
         }
 
-        function showHideConfirmationMessage(show, title, text, fnYes, fnNo, fnCancel)
-        {
-            if (show) {
-                dlgYesNoCancel.style.display = 'block';
-                document.querySelector('html').style.overflow = 'hidden';
-
-                var btnNo = dlgYesNoCancel.querySelector('.no');
-                var btnYes = dlgYesNoCancel.querySelector('.yes');
-                var btnCancel = dlgYesNoCancel.querySelector('.cancel');
-
-                // set title and text
-                dlgYesNoCancel.querySelector('.title').innerText = title;
-                dlgYesNoCancel.querySelector('.message').innerHTML = text;
-
-                // disable all TABs
-                document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
-                  input.setAttribute('tabindex', '-1');
-                });
-
-                // fix TABs for dialog
-                btnYes.setAttribute('tabindex', '1')
-                btnNo.setAttribute('tabindex', '2');
-                btnCancel.setAttribute('tabindex', '3');
-
-                // set functions to buttons
-                btnNo.onclick = function() { fnNo(); return false; }
-                btnYes.onclick = function() { fnYes(); return false; }
-                btnCancel.onclick = function() { fnCancel(); return false; }
-
-                // set focus
-                btnNo.focus();
-            } else {
-                dlgYesNoCancel.style.display = 'none';
-                document.querySelector('html').style.overflow = 'unset';
-
-                // restore all TABs
-                document.querySelectorAll('input, button, a, textarea').forEach(function(input) {
-                  input.removeAttribute('tabindex');
-                });
-            }
+        function onRequiredParameter(btnOK, allRequiredParameters, lastModifiedParameter) {
+            var requiredParameterMissing = Array.prototype.slice.call( document.querySelectorAll('.required'), 0 )
+                                                .map(function(p) {
+                                                   if (p.getClientRects().length == 0) return true;  // invisible
+                                                   return (p.tagName == 'SELECT' && p.value != "")
+                                                       || (p.tagName == 'INPUT' && p.value != "")
+                                           }).filter(function(v) {
+                                                  return v == false;
+                                           }).length > 0;
+            btnOK.disabled = requiredParameterMissing;
         }
 
         function showHideParametersDialog(show, data, dialogTitle, pluginName, pluginURL, jsonResponse)
@@ -601,7 +680,7 @@ dateModified won't change when a subscription is added or removed
                 dialogHeader.className = "aphront-dialog-head";
                 var dialogHeaderText = document.createElement("span");
                 dialogHeaderText.className = "phui-header-header";
-                dialogHeaderText.innerText = typeof dialogTitle == "undefined" ? dialogTitle : Locale.Translate("Parameters");
+                dialogHeaderText.innerText = typeof dialogTitle != "undefined" ? dialogTitle : Locale.Translate("Parameters");
                 var dialogBody = document.createElement("div");
                 dialogBody.className = "aphront-dialog-body phabrico-remarkup";
                 dialogBody.innerHTML = jsonResponse.DialogHTML;
@@ -657,7 +736,28 @@ dateModified won't change when a subscription is added or removed
                 dialogButtons.appendChild(btnCancel);
                 dialogButtons.appendChild(btnOK);
 
+                if (typeof jsonResponse.Javascript != 'undefined') {
+                    var scriptTag = document.createElement('script');
+                    scriptTag.text = jsonResponse.Javascript;
+
+                    form.appendChild(scriptTag);
+                }
+
                 document.body.appendChild(form);
+
+                dialogBody.querySelectorAll('.required').forEach(function(parameter) {
+                    if (parameter.tagName == 'INPUT') {
+                        parameter.addEventListener('input', function(e) {
+                            onRequiredParameter(btnOK, dialogBody.querySelectorAll('.required'), parameter);
+                        });
+                    }
+
+                    if (parameter.tagName == 'SELECT') {
+                        parameter.addEventListener('change', function(e) {
+                            onRequiredParameter(btnOK, dialogBody.querySelectorAll('.required'), parameter);
+                        });
+                    }
+                });
 
                 // center dialog
                 var dialogWidth = form.getBoundingClientRect().width;
@@ -669,6 +769,8 @@ dateModified won't change when a subscription is added or removed
                 var screenHeight = document.body.getBoundingClientRect().height;
                 form.style.top = ((parseInt(screenHeight) - parseInt(dialogHeight)) / 2) + "px";
                 form.style.marginTop = "0px";
+
+                onRequiredParameter(btnOK, dialogBody.querySelectorAll('.required'), null);
             } else {
                 var form = document.querySelector("form.preparationParameters");
                 if (form != null) {
@@ -846,6 +948,10 @@ dateModified won't change when a subscription is added or removed
         if ('@@DOCUMENT-STATE@@' === 'frozen' || '@@DOCUMENT-STATE@@' === 'unfrozen')
         {
             documentState.title = Locale.Translate("This modified page hasn't been uploaded yet to the Phabricator server");
+        }
+        if ('@@DOCUMENT-STATE@@' === 'translated')
+        {
+            documentState.title = Locale.Translate("This page has been translated but it's translated content hasn't been reviewed yet");
         }
 
     @{IF @@ACCESS-MASTER-DATA@@=True@

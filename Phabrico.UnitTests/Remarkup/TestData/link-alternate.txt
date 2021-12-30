@@ -6,3 +6,7 @@ x[0][1](**ptr);
 <a class='phriction-link' href='http://www.example.com/'>Example</a><p class='paragraph'></p>
 x[0][1](**ptr);
 ~~~~~~~~~~
+<A f="m" u="http%3A%2F%2Fwww.example.com%2F">Example</A><N>[2]</N>
+<N>[3]</N>
+x[0][1]<BR>**ptr</BR>;
+~~~~~~~~~~

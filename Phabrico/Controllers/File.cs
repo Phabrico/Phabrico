@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Http.Response;
+using Phabrico.Miscellaneous;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,7 +92,7 @@ namespace Phabrico.Controllers
                     Phabricator.Data.File file = fileStorage.GetByID(database, fileId, false);
                     if (file == null)
                     {
-                        file = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileId, true);
+                        file = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileId, true);
                     }
 
                     bool keepFilename = false;
@@ -144,12 +145,12 @@ namespace Phabrico.Controllers
                     Phabricator.Data.File file = fileStorage.GetByID(database, fileId, true);
                     if (file == null)
                     {
-                        file = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileId, false);
+                        file = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileId, false);
                     }
 
                     if (file != null)
                     {
-                        Phabricator.Data.PhabricatorObject[] dependentObjects = database.GetDependentObjects(file.Token).ToArray();
+                        Phabricator.Data.PhabricatorObject[] dependentObjects = database.GetDependentObjects(file.Token, browser.Session.Locale).ToArray();
                         if (dependentObjects.Length == 1)
                         {
                             Phabricator.Data.Phriction phrictionDocument = dependentObjects.First() as Phabricator.Data.Phriction;
@@ -204,12 +205,12 @@ namespace Phabrico.Controllers
                     Phabricator.Data.File file = fileStorage.GetByID(database, fileId, true);
                     if (file == null)
                     {
-                        file = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileId, false);
+                        file = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileId, false);
                     }
 
                     if (file != null)
                     {
-                        foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(file.Token).ToArray())
+                        foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(file.Token, browser.Session.Locale).ToArray())
                         {
                             Phabricator.Data.Phriction phrictionDocument = dependentObject as Phabricator.Data.Phriction;
                             if (phrictionDocument != null)
@@ -221,7 +222,7 @@ namespace Phabrico.Controllers
                                 {
                                     internalCrumbs += slug + "/";
 
-                                    Phabricator.Data.Phriction crumbPhrictionReference = phrictionStorage.Get(database, internalCrumbs);
+                                    Phabricator.Data.Phriction crumbPhrictionReference = phrictionStorage.Get(database, internalCrumbs, browser.Session.Locale);
                                     if (crumbPhrictionReference != null)  // can be null when parents are not downloaded in commander-export -> these should be ignored
                                     {
                                         translatedCrumbs += " > " + crumbPhrictionReference?.Name ?? ConvertPhabricatorUrlPartToDescription(slug);
@@ -232,6 +233,12 @@ namespace Phabrico.Controllers
                                 jsonRecordReferenceData.Title = translatedCrumbs.Substring(" > ".Length);
                                 jsonRecordReferenceData.URL = Http.Server.RootPath + "w/" + phrictionDocument.Path;
                                 jsonRecordReferenceData.Type = "fa-book";
+
+                                if (dependentObject.Language.Equals(Language.NotApplicable) == false)
+                                {
+                                    jsonRecordReferenceData.Title += " (" + dependentObject.Language + ")";
+                                }
+
                                 tableRows.Add(jsonRecordReferenceData);
                                 continue;
                             }
@@ -279,7 +286,7 @@ namespace Phabrico.Controllers
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                jsonData = JsonConvert.SerializeObject(new { ID = fileStorage.GetNewID(database) });
+                jsonData = JsonConvert.SerializeObject(new { ID = fileStorage.GetNewID(database, browser) });
             }
 
             JsonMessage jsonMessage = new JsonMessage(jsonData);
@@ -419,7 +426,8 @@ namespace Phabrico.Controllers
                 int fileID = Int32.Parse(parameters[0]);
                 int nbrChunks = Int32.Parse(parameters[1]);
                 int chunkID = Int32.Parse(parameters[2]);
-                string fileName = System.Web.HttpUtility.UrlDecode( parameters[3] );
+                bool isTranslated = Int32.Parse(parameters[3]) == 1;
+                string fileName = System.Web.HttpUtility.UrlDecode( parameters[4] );
 
                 // correct invalid characters
                 fileName = fileName.Replace(':', '_')
@@ -445,7 +453,7 @@ namespace Phabrico.Controllers
                     fileChunk.Data = browser.Session.OctetStreamData;
                     fileChunk.DateModified = DateTimeOffset.UtcNow;
 
-                    fileStorage.AddChunk(database, fileName, fileChunk);
+                    fileStorage.AddChunk(database, browser, fileName, fileChunk, isTranslated ? browser.Session.Locale : Language.NotApplicable);
                 }
             }
         }

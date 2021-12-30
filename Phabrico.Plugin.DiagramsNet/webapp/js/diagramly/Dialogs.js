@@ -3141,6 +3141,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		
 		// Shows a tooltip with the rendered template
 		var loading = false;
+		var extImg = null;
 		
 		function showTooltip(xml, x, y)
 		{
@@ -3174,6 +3175,18 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			if (url != null && !loading && editorUi.sidebar.currentElt != elt)
 			{
 				editorUi.sidebar.hideTooltip();
+				
+				if (extImg != null)
+				{
+					//Create a diagram with the image to use the same code
+					//Note: Without compression it doesn't work for some reason. Find out why later
+					var xml = '<mxfile><diagram id="d" name="n">' + Graph.compress('<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/>' +
+						'<mxCell id="2" value="" style="shape=image;image=' + extImg.src + ';imageAspect=1;" parent="1" vertex="1"><mxGeometry width="' + 
+						extImg.naturalWidth + '" height="' + extImg.naturalHeight + '" as="geometry" /></mxCell></root></mxGraphModel>') + '</diagram></mxfile>';
+					showTooltip(xml, mxEvent.getClientX(evt), mxEvent.getClientY(evt));
+					return;
+				}
+				
 				editorUi.sidebar.currentElt = elt;
 				loading = true;
 				
@@ -3203,6 +3216,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			img.setAttribute('alt', tooltip);
 			img.style.maxWidth = w + 'px';
 			img.style.maxHeight = h + 'px';
+			extImg = img;
 			
 			var fallbackImgUrl = imgUrl.replace('.drawio.xml', '').replace('.drawio', '').replace('.xml', '');
 			elt.appendChild(img);
@@ -4056,7 +4070,7 @@ var CreateDialog = function(editorUi, title, createFn, cancelFn, dlgTitle, btnLa
 		{
 			var typeSelect = FilenameDialog.createFileTypes(editorUi, nameInput, editorUi.editor.diagramFileTypes);
 			typeSelect.style.marginLeft = '6px';
-			typeSelect.style.width = '80px';
+			typeSelect.style.width = '90px';
 			div.appendChild(typeSelect);
 		}
 		
@@ -4999,7 +5013,7 @@ var LinkDialog = function(editorUi, initialValue, btnLabel, fn, showPages, showN
 	linkInput.setAttribute('placeholder', mxResources.get('dragUrlsHere'));
 	linkInput.setAttribute('type', 'text');
 	linkInput.style.marginTop = '6px';
-	linkInput.style.width = '100%';
+	linkInput.style.width = '97%';
 	linkInput.style.boxSizing = 'border-box';
 	linkInput.style.backgroundImage = 'url(\'' + Dialog.prototype.clearImage + '\')';
 	linkInput.style.backgroundRepeat = 'no-repeat';
@@ -7206,6 +7220,9 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 			substr = mxUtils.htmlEntities(substr);
 			var tagPos = [], p = -1;
 			
+			//Original position (startIndex) counts for \n which is removed when tags are removed, so handle <br> separately
+			str = str.replace(/<br>/ig, '\n');
+
 			while((p = str.indexOf('<', p + 1)) > -1)
 			{
 				tagPos.push(p);
@@ -7248,7 +7265,7 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 				tagDiff += tags[i].length;
 			}
 			
-			return newStr;
+			return newStr.replace(/\n/g, '<br>');
 		};
 		
 		var replaceFindBtn = mxUtils.button(mxResources.get('replFind'), function()
@@ -8258,7 +8275,7 @@ var PluginsDialog = function(editorUi, addFn, delFn)
 	var div = document.createElement('div');
 	var inner = document.createElement('div');
 	
-	inner.style.height = '120px';
+	inner.style.height = '180px';
 	inner.style.overflow = 'auto';
 
 	var plugins = mxSettings.getPlugins().slice();
@@ -8315,7 +8332,7 @@ var PluginsDialog = function(editorUi, addFn, delFn)
 	div.appendChild(inner);
 	refresh();
 
-	var addBtn = mxUtils.button(mxResources.get('add') + '...', addFn != null? function()
+	var addBtn = mxUtils.button(mxResources.get('add'), addFn != null? function()
 	{
 		addFn(function(newPlugin)
 		{
@@ -9907,7 +9924,8 @@ var EditShapeDialog = function(editorUi, cell, title, w, h)
 	this.container = table;
 };
 
-var CustomDialog = function(editorUi, content, okFn, cancelFn, okButtonText, helpLink, buttonsContent, hideCancel, cancelButtonText, hideAfterOKFn)
+var CustomDialog = function(editorUi, content, okFn, cancelFn, okButtonText, helpLink,
+		buttonsContent, hideCancel, cancelButtonText, hideAfterOKFn, customButtons)
 {
 	var div = document.createElement('div');
 	div.appendChild(content);
@@ -9986,6 +10004,28 @@ var CustomDialog = function(editorUi, content, okFn, cancelFn, okButtonText, hel
 		btns.appendChild(cancelBtn);
 	}
 
+	if (customButtons != null)
+	{
+		for (var i = 0; i < customButtons.length; i++)
+		{
+			(function(label, fn, title)
+			{
+				var customBtn = mxUtils.button(label, function(e)
+				{
+					fn(e);
+				});
+
+				if (title != null)
+				{
+					customBtn.setAttribute('title', title);
+				}
+
+				customBtn.className = 'geBtn';
+				btns.appendChild(customBtn);
+			})(customButtons[i][0], customButtons[i][1], customButtons[i][2]);
+		}
+	}
+	
 	div.appendChild(btns);
 
 	this.cancelBtn = cancelBtn;

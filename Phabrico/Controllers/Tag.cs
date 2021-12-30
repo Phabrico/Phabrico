@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Http.Response;
+using Phabrico.Miscellaneous;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,7 +61,7 @@ namespace Phabrico.Controllers
                     {
                         if (httpServer.Customization.HideUsers == false)
                         {
-                            Phabricator.Data.User user = userStorage.Get(database, token);
+                            Phabricator.Data.User user = userStorage.Get(database, token, browser.Session.Locale);
                             if (user != null)
                             {
                                 records.Add(new JsonRecordData { Token = user.Token, Name = user.RealName, FontAwesomeIcon = "fa-user" });
@@ -70,7 +71,7 @@ namespace Phabrico.Controllers
 
                         if (httpServer.Customization.HideProjects == false)
                         {
-                            Phabricator.Data.Project project = projectStorage.Get(database, token);
+                            Phabricator.Data.Project project = projectStorage.Get(database, token, browser.Session.Locale);
                             if (project != null)
                             {
                                 records.Add(new JsonRecordData { Token = project.Token, Name = project.Name, FontAwesomeIcon = "fa-briefcase" });
@@ -107,7 +108,7 @@ namespace Phabrico.Controllers
             {
                 if (httpServer.Customization.HideUsers == false)
                 {
-                    users = userStorage.Get(database)
+                    users = userStorage.Get(database, Language.NotApplicable)
                                        .Where(user => System.Web.HttpUtility.UrlDecode(parameterValues["keyword"])
                                                                             .Split(' ')
                                                                             .All(part => user.RealName
@@ -121,7 +122,7 @@ namespace Phabrico.Controllers
 
                 if (httpServer.Customization.HideUsers == false)
                 {
-                    projects = projectStorage.Get(database)
+                    projects = projectStorage.Get(database, Language.NotApplicable)
                                              .Where(project => project.Name.Split(' ', '-', '_').All(part => System.Web.HttpUtility.UrlDecode(parameterValues["keyword"]).Split(' ', '-', '_').Any(keywordPart => part.StartsWith(keywordPart, System.StringComparison.OrdinalIgnoreCase))))
                                              .Where(token => parameterValues.ContainsKey("tags") == false ||
                                                              parameterValues["tags"].Contains(token.Token) == false)
@@ -177,7 +178,7 @@ namespace Phabrico.Controllers
                 {
                     foreach (string token in tokens)
                     {
-                        Phabricator.Data.Project project = projectStorage.Get(database, token);
+                        Phabricator.Data.Project project = projectStorage.Get(database, token, browser.Session.Locale);
                         if (project != null)
                         {
                             records.Add(new JsonRecordData { Token = project.Token, Name = project.Name, FontAwesomeIcon = "fa-briefcase" });
@@ -211,7 +212,7 @@ namespace Phabrico.Controllers
             List<Phabricator.Data.Project> projects;
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                projects = projectStorage.Get(database)
+                projects = projectStorage.Get(database, Language.NotApplicable)
                                          .Where(keyword => System.Web.HttpUtility.UrlDecode(parameterValues["keyword"])
                                                                                  .Split(' ', '-', '_')
                                                                                  .All(keywordPart => keyword.Name
@@ -266,7 +267,7 @@ namespace Phabrico.Controllers
                 {
                     foreach (string token in tokens)
                     {
-                        Phabricator.Data.User user = userStorage.Get(database, token);
+                        Phabricator.Data.User user = userStorage.Get(database, token, browser.Session.Locale);
                         if (user != null)
                         {
                             records.Add(new JsonRecordData { Token = user.Token, Name = user.RealName, FontAwesomeIcon = "fa-user" });
@@ -301,7 +302,7 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 string input = System.Web.HttpUtility.UrlDecode(parameterValues["keyword"]);
-                users = userStorage.Get(database)
+                users = userStorage.Get(database, Language.NotApplicable)
                                    .Where(user => user.IsBot == false
                                                && user.IsDisabled == false
                                                && input.Split(' ')

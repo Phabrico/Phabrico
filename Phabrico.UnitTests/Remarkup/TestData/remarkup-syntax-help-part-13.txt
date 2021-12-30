@@ -20,8 +20,7 @@ are preserved as currently written. After moving a document, you may need to
 review and adjust any relative links it contains.
 
 
-= Literal Blocks =
-
+= Literal Blocks
 To place text in a literal block use `%%%`:
 
 %%%Text that won't be processed by remarkup
@@ -31,8 +30,7 @@ To place text in a literal block use `%%%`:
 Remarkup will not process the text inside of literal blocks (other than to
 escape HTML and preserve line breaks).
 
-= Tables =
-
+= Tables
 Remarkup supports simple table syntax. For example, this:
 
 ```
@@ -101,8 +99,7 @@ Some general notes about this syntax:
 
 - your tags must all be properly balanced;
 - your tags must NOT include attributes (`<td>` is OK, `<td style="...">` is not);
-  - you can use other Remarkup rules (like **bold**, //italics//, etc.) inside
-    table cells.
+  - you can use other Remarkup rules (like **bold**, //italics//, etc.) inside table cells.
 
 ~~~~~~~~~~
 Links to pages which do not exist are shown in red. Links to pages which exist<br>
@@ -121,7 +118,7 @@ reasonable place for the link to start resolving from.<p class='paragraph'></p>
 When documents are moved, relative links are not automatically updated: they<br>
 are preserved as currently written. After moving a document, you may need to<br>
 review and adjust any relative links it contains.<br>
-<h1 class='remarkup-header'><a name='hdrLiteral_Blocks' style='padding-top: 80px;'></a>Literal Blocks </h1>
+<h1 class='remarkup-header'><a name='literal-blocks' style='padding-top: 80px;'></a>Literal Blocks </h1>
 To place text in a literal block use <tt class='remarkup-monospaced'>%%%</tt>:<p class='paragraph'></p>
 <p class='remarkup-literal'>Text that won&#39;t be processed by remarkup<br>
 [[http://www.example.com | example]]<br>
@@ -129,7 +126,7 @@ To place text in a literal block use <tt class='remarkup-monospaced'>%%%</tt>:<p
 <br>
 Remarkup will not process the text inside of literal blocks (other than to<br>
 escape HTML and preserve line breaks).<br>
-<h1 class='remarkup-header'><a name='hdrTables' style='padding-top: 80px;'></a>Tables </h1>
+<h1 class='remarkup-header'><a name='tables' style='padding-top: 80px;'></a>Tables </h1>
 Remarkup supports simple table syntax. For example, this:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>| Fruit  | Color  | Price   | Peel?
 | -----  | -----  | -----   | -----
@@ -221,4 +218,101 @@ Some general notes about this syntax:<br>
     </ul>
   </li>
 </ul>
+~~~~~~~~~~
+Links to pages which do not exist are shown in red. Links to pages which exist<N>[33]</N>
+but which the viewer does not have permission to see are shown with a lock<N>[63]</N>
+icon, and the link will not disclose the page title.<N>[85]</N>
+<N>[86]</N>
+If you begin a link path with <M>`./`</M> or <M>`../`</M>, the remainder of the path will be<N>[120]</N>
+evaluated relative to the current wiki page. For example, if you are writing<N>[148]</N>
+content for the document <M>`fruit/`</M> a link to <M>`[[./guava]]`</M> is the same as a link<N>[178]</N>
+to <M>`[[fruit/guava]]`</M> from elsewhere.<N>[187]</N>
+<N>[188]</N>
+Relative links may use <M>`../`</M> to transverse up the document tree. From the<N>[214]</N>
+<M>`produce/vegetables/`</M> page, you can use <M>`[[../fruit/guava]]`</M> to link to the<N>[235]</N>
+<M>`produce/fruit/guava`</M> page.<N>[240]</N>
+<N>[241]</N>
+Relative links do not work when used outside of wiki pages. For example,<N>[268]</N>
+you can't use a relative link in a comment on a task, because there is no<N>[303]</N>
+reasonable place for the link to start resolving from.<N>[322]</N>
+<N>[323]</N>
+When documents are moved, relative links are not automatically updated: they<N>[346]</N>
+are preserved as currently written. After moving a document, you may need to<N>[374]</N>
+review and adjust any relative links it contains.<N>[391]</N>
+<N>[392]</N>
+<N>[393]</N>
+<H d="1" t="2">Literal Blocks</H>
+To place text in a literal block use <M>`%%%`</M>:<N>[411]</N>
+<N>[412]</N>
+<LT>%%%Text that won't be processed by remarkup
+[[http://www.example.com | example]]
+%%%
+</LT>
+<N>[413]</N>
+Remarkup will not process the text inside of literal blocks <BR>other than to<N>[5]</N>
+escape HTML and preserve line breaks</BR>.<N>[436]</N>
+<N>[437]</N>
+<H d="1" t="2">Tables</H>
+Remarkup supports simple table syntax. For example, this:<N>[456]</N>
+<N>[457]</N>
+<BT>```
+| Fruit  | Color  | Price   | Peel?
+| -----  | -----  | -----   | -----
+| Apple  | red    | `$0.93` | no
+| Banana | yellow | `$0.19` | **YES**
+```
+</BT>
+<N>[458]</N>
+...produces this:<N>[466]</N>
+<N>[467]</N>
+<TB t="s">
+  <tr><td> Fruit  </td><td> Color  </td><td> Price   </td><td> Peel?</td></tr>
+  <tr><td> -----  </td><td> -----  </td><td> -----   </td><td> -----</td></tr>
+  <tr><td> Apple  </td><td> red    </td><td> <M>`$0.93`</M> </td><td> no</td></tr>
+  <tr><td> Banana </td><td> yellow </td><td> <M>`$0.19`</M> </td><td> <B>YES</B></td></tr>
+</TB>
+<N>[468]</N>
+Remarkup also supports a simplified HTML table syntax. For example, this:<N>[493]</N>
+<N>[494]</N>
+<BT>```
+&lt;table&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Fruit&lt;/th&gt;
+        &lt;th&gt;Color&lt;/th&gt;
+        &lt;th&gt;Price&lt;/th&gt;
+        &lt;th&gt;Peel?&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;Apple&lt;/td&gt;
+        &lt;td&gt;red&lt;/td&gt;
+        &lt;td&gt;`$0.93`&lt;/td&gt;
+        &lt;td&gt;no&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;td&gt;Banana&lt;/td&gt;
+        &lt;td&gt;yellow&lt;/td&gt;
+        &lt;td&gt;`$0.19`&lt;/td&gt;
+        &lt;td&gt;**YES**&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;
+```
+</BT>
+<N>[495]</N>
+...produces this:<N>[503]</N>
+<N>[504]</N>
+<TB t="h">
+  <tr><th>Fruit</th><th>Color</th><th>Price</th><th>Peel?</th></tr>
+  <tr><td>Apple</td><td>red</td><td><M>`$0.93`</M></td><td>no</td></tr>
+  <tr><td>Banana</td><td>yellow</td><td><M>`$0.19`</M></td><td><B>YES</B></td></tr>
+</TB>
+<N>[505]</N>
+<N>[506]</N>
+Some general notes about this syntax:<N>[518]</N>
+<N>[519]</N>
+<LS>
+  <b1>your tags must all be properly balanced;</b1>
+  <b1>your tags must NOT include attributes <BR><M>`&amp;lt;td&amp;gt;`</M> is OK, <M>`&amp;lt;td style="..."&amp;gt;`</M> is not</BR>;
+    <b2>you can use other Remarkup rules <BR>like <B>bold</B>, <I>italics</I>, etc.</BR> inside table cells.</b2>
+  </b1>
+</LS>
 ~~~~~~~~~~

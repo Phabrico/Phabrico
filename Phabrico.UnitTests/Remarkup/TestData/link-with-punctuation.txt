@@ -6,3 +6,7 @@ http://www.example.com/!!!
 <a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a>..<br>
 <a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a>!!!
 ~~~~~~~~~~
+<A f="u" u="http%3A%2F%2Fwww.example.com%2F"></A>,<N>[3]</N>
+<A f="u" u="http%3A%2F%2Fwww.example.com%2F"></A>..<N>[7]</N>
+<A f="u" u="http%3A%2F%2Fwww.example.com%2F"></A>!!!
+~~~~~~~~~~

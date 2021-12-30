@@ -1,0 +1,252 @@
+<style>
+    .title {
+        padding: 8px 0px;
+        font-weight: bold;
+    }
+    table.aphront-table-view tr:hover td.title:hover {
+
+    }
+    .scrollableTable.unreviewed-translations {
+        height: calc(100vh - 175px);
+    }
+
+    tbody {
+        background-image: none;
+    }
+
+    [data-theme="dark"] #tblUnreviewedTranslations tbody tr:nth-child(2n) {
+        background: #4448;
+    }
+
+    [data-theme="light"] #tblUnreviewedTranslations tbody tr:nth-child(2n) {
+        background: #4442;
+    }
+
+    #tblUnreviewedTranslations th.action {
+        text-align: center;
+    }
+
+    #tblUnreviewedTranslations tbody td.action {
+        display: flex;
+    }
+
+        #tblUnreviewedTranslations tbody td.action a.button {
+            height: 20px;
+            margin-bottom: 2px;
+            margin-left: 4px;
+            margin-top: 5px;
+            min-width: 70px;
+        }
+
+    #tblUnreviewedTranslations tr a.add {
+        display: block;
+    }
+
+    #tblUnreviewedTranslations tr a.remove {
+        display: none;
+    }
+
+
+    #noUnreviewedTranslations {
+        text-align: center;
+        background: #8884;
+        height: calc(100vh - 140px);
+        font-style: italic;
+        line-height: calc(100vh - 140px);
+    }
+</style>
+
+<div id="overview" class="app-window">
+    <div class="title">
+        <span>Unreviewed translations</span>
+    </div>
+    <div id="noUnreviewedTranslations" style="display:none;">All translations have been approved</div>
+    <form id="frmUnreviewedTranslations" action="" method="POST">
+        <div class="screen">
+            <div class="aphront-form-input unreviewed-translations" style="display: flex;">
+                <input id="filter" type="text" class="full-width" placeholder="Type some text to filter the list of unreviewed translations..." oninput="populateUnreviewedTranslations(this.value)" />
+            </div>
+            <div class="scrollableTable unreviewed-translations" style="display: none; height: unset;">
+                <table id="tblUnreviewedTranslations" class="aphront-table-view">
+                    <thead>
+                        <tr>
+                            <th id="tblUnreviewedTranslations#Title" class="sortableColumn wide title sortedColumn ascending">Title</th>
+                            <th id="tblUnreviewedTranslations#OriginalTitle wide" class="sortableColumn wide originaltitle">Original Title</th>
+                            <th id="tblUnreviewedTranslations#Action" class="sortableColumn action">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    var tmrPopulateUnreviewedTranslations = null;
+
+    firstTimePopulatingUnreviewedTranslations = true;
+
+    // fill tables
+    var sortedColumn = "Name";
+
+    if (typeof sessionStorage["UnreviewedTranslations_filter"] !== 'undefined') {
+        filter.value = sessionStorage["UnreviewedTranslations_filter"];
+    } else {
+        filter.value = "";
+    }
+
+
+    initializeTables();
+
+    showHideWaitNotification(true);
+    populateUnreviewedTranslations(filter.value, true);
+
+    // set page title
+    document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Unreviewed translations");
+
+    function initializeTables()
+    {
+        var sortableColumns = document.querySelectorAll('#tblUnreviewedTranslations thead tr th.sortableColumn');
+        sortableColumns.forEach(function (sortableColumn) {
+            sortableColumn.onclick = function(clickedColumnHeader) {
+                 var newSortedColumn = clickedColumnHeader.target.id.split('#')[1];
+
+                 var previouslySortedColumn = document.querySelector('#tblUnreviewedTranslations thead tr th.sortedColumn');
+                 if (previouslySortedColumn != null) {
+                     previouslySortedColumn.classList.remove('sortedColumn');
+                     previouslySortedColumn.classList.remove('ascending');
+                     previouslySortedColumn.classList.remove('descending');
+                 }
+
+                 if (sortedColumn == newSortedColumn) {
+                    sortedColumn = sortedColumn + "-";
+                    clickedColumnHeader.target.classList.add('sortedColumn');
+                    clickedColumnHeader.target.classList.remove('ascending');
+                    clickedColumnHeader.target.classList.add('descending');
+                 } else {
+                    sortedColumn = newSortedColumn;
+                    clickedColumnHeader.target.classList.add('sortedColumn');
+                    clickedColumnHeader.target.classList.add('ascending');
+                    clickedColumnHeader.target.classList.remove('descending');
+                 }
+
+                 populateUnreviewedTranslations(filter.value)
+            };
+        });
+    }
+
+    function populateUnreviewedTranslations(firstCharacters, delayed = true) {
+        if (delayed) {
+            if (tmrPopulateUnreviewedTranslations != null) {
+                clearTimeout(tmrPopulateUnreviewedTranslations);
+            }
+
+            tmrPopulateUnreviewedTranslations = setTimeout(function () {
+                populateUnreviewedTranslations(firstCharacters, false);
+            }, 300);
+        } else {
+            sessionStorage["UnreviewedTranslations_filter"] = firstCharacters;
+
+            var data = new FormData(frmUnreviewedTranslations);
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.overrideMimeType("application/json");
+            xmlhttp.open('POST', "translations/unreviewed/" + sortedColumn + "/" + firstCharacters, true);
+            xmlhttp.onload = function () {
+                if (xmlhttp.readyState == 4) {
+                    if (firstTimePopulatingUnreviewedTranslations) {
+                        firstTimePopulatingUnreviewedTranslations = false;
+
+                        if (filter.value == "") {
+                            // there are no unreviewed translations: do not show search filter
+                            document.querySelectorAll('.unreviewed-translations').forEach(function (elem) {
+                                elem.style.display = 'none';
+                            });
+                        }
+                    }
+
+                    document.querySelector('#tblUnreviewedTranslations tbody').innerHTML = "";
+
+                    try {
+                        var jsonResponse = JSON.parse(xmlhttp.responseText);
+                        noUnreviewedTranslations.style.display = 'block';
+                        jsonResponse.forEach(function (record) {
+                            noUnreviewedTranslations.style.display = 'none';
+
+                            document.querySelectorAll('.unreviewed-translations').forEach(function (elem) {
+                                elem.style.display = 'flex';
+                            });
+
+                            var tbody = document.querySelector('#tblUnreviewedTranslations tbody');
+                            var row = tbody.insertRow();
+
+                            var cell = row.insertCell();
+                            cell.classList.add('title');
+                            var anchorOriginalContent = document.createElement('a');
+                            anchorOriginalContent.href = document.baseURI + record.URL;
+                            anchorOriginalContent.style.minWidth = "70px";
+                            var text = document.createTextNode(record.Title);
+                            anchorOriginalContent.appendChild(text);
+                            cell.appendChild(anchorOriginalContent);
+
+                            cell = row.insertCell();
+                            cell.classList.add('originalTitle');
+                            cell.classList.add('wide');
+                            text = document.createTextNode(record.OriginalTitle);
+                            cell.appendChild(text);
+
+                            // add action button to row
+                            var text = null;
+                            var cell = row.insertCell();
+                            cell.classList.add('action');
+
+                            var anchorUndoModification = document.createElement('a');
+                            anchorUndoModification.href = document.location.pathname + "#";
+                            anchorUndoModification.classList.add("button");
+                            anchorUndoModification.classList.add("undo");
+                            anchorUndoModification.classList.add("small");
+                            var fontAwesome = document.createElement('i');
+                            fontAwesome.classList.add('phui-font-fa');
+                            fontAwesome.classList.add('fa-undo');
+                            anchorUndoModification.appendChild(fontAwesome);
+                            text = document.createTextNode(Locale.Translate("Undo"));
+                            anchorUndoModification.appendChild(text);
+                            anchorUndoModification.classList.add("button-red");
+                            cell.appendChild(anchorUndoModification);
+                            anchorUndoModification.addEventListener('click', function (e) {
+                                var title = Locale.Translate("No translation needed");
+                                var message = toHTML(Locale.Translate("Are you sure you don't need a translation for this document ?"));
+                                showHideConfirmationMessage(true, title, message,
+                                    function () {
+                                        var data = new FormData();
+                                        data.append('token', record.Token);
+                                        var xmlhttp = new XMLHttpRequest();
+                                        xmlhttp.overrideMimeType("application/json");
+                                        xmlhttp.open('POST', "translations/undo", true);
+                                        xmlhttp.onload = function () {
+                                            if (xmlhttp.readyState == 4) {
+                                                document.location.reload();
+                                            }
+                                        }
+                                        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+                                        xmlhttp.send(data);
+                                    },
+                                    function () {
+                                        showHideConfirmationMessage(false);
+                                    });
+                            });
+                        });
+
+                        showHideWaitNotification(false);
+                    }
+                    catch (exc) {
+                        // show logon dialog
+                        document.location.reload();
+                    }
+                }
+            };
+            xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            xmlhttp.send(data);
+        }
+    }
+</script>

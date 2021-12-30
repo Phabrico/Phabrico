@@ -1,6 +1,7 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
 using Phabrico.Phabricator.Data;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
@@ -9,6 +10,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// Rmarkup parser for links to Users
     /// it will convert "@User" to a CSS-styled "@User"
     /// </summary>
+    [RuleXmlTag("US")]
     public class RuleReferenceUser : RemarkupRule
     {
         public string UserName { get; private set; }
@@ -40,7 +42,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 {
                     Storage.Account accountStorage = new Storage.Account();
                     Storage.User userStorage = new Storage.User();
-                    User user = userStorage.Get(database, matchUserName.Value);
+                    User user = userStorage.Get(database, matchUserName.Value, browser.Session.Locale);
                     if (user == null) return false;
 
                     LinkedPhabricatorObjects.Add(user);
@@ -55,9 +57,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         html = string.Format("<a class='user-reference' href='user/info/{0}/'>@{0}</a>",
                                         System.Web.HttpUtility.HtmlEncode(user.UserName));
                     }
-                    remarkup = remarkup.Substring(match.Length);
 
                     Length = match.Length;
+                    if (match.Value.EndsWith(" ") || match.Value.EndsWith("\t"))
+                    {
+                        Length--;
+                    }
+
+                    remarkup = remarkup.Substring(Length);
 
                     UserName = user.UserName;
                     UserToken = user.Token;
@@ -67,6 +74,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Storage.Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            return innerText;
         }
 
         /// <summary>

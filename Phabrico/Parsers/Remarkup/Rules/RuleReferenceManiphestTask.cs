@@ -1,6 +1,8 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using Phabrico.Storage;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -11,6 +13,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// it will convert "{Txxx}" to a maniphest-task anchor link; the phriction anchor link will be corrected below into a maniphest link
     /// </summary>
     [RulePriority(-105)]
+    [RuleXmlTag("TS")]
     public class RuleReferenceManiphestTask : RemarkupRule
     {
         /// <summary>
@@ -47,11 +50,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     Storage.Account accountStorage = new Storage.Account();
                         string taskID = Int32.Parse(taskIdentifier).ToString();
 
-                        Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database)
+                        Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale)
                                                                                .FirstOrDefault(stagedTask => stagedTask.ID.Equals(taskID));
                         if (maniphestTask == null)
                         {
-                            maniphestTask = maniphestStorage.Get(database, taskID);
+                            maniphestTask = maniphestStorage.Get(database, taskID, browser.Session.Locale);
                             if (maniphestTask == null) return false;
                         }
 
@@ -80,6 +83,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            return innerText;
         }
     }
 }

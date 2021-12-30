@@ -23,6 +23,7 @@ bld/
 [Oo]bj/
 /[Rr]untime/
 */[Rr]untime/
+*/Generated/
 
 # Visual Studio 2015 cache/options directory
 .vs/

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Phabrico.Http;
+using Phabrico.Miscellaneous;
 using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace Phabrico.Phabricator.API
             List<Data.PhamePost> newPhamePosts = new List<Data.PhamePost>();
 
             // ignore modifiedSince from parameter list, take last record from database instead
-            modifiedSince = phamePostStorage.Get(database)
+            modifiedSince = phamePostStorage.Get(database, Language.NotApplicable)
                                             .DefaultIfEmpty()
                                             .Max(post => post?.DateModified ?? new DateTimeOffset(DateTime.Now.AddYears(-1)));
             double minimumDateTime = modifiedSince.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;

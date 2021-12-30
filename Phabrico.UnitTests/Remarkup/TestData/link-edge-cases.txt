@@ -17,3 +17,15 @@ Quick! http://www.example.com/!
 (example <a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a>)<p class='paragraph'></p>
 Quick! <a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a>!
 ~~~~~~~~~~
+<A f="u" u="http%3A%2F%2Fwww.example.com%2F"></A><N>[2]</N>
+<N>[3]</N>
+<BR><A f="u" u="http%3A%2F%2Fwww.example.com%2F"></A></BR><N>[4]</N>
+<N>[5]</N>
+<A f="a" u="http%3A%2F%2Fwww.example.com%2F"></A><N>[6]</N>
+<N>[7]</N>
+<A f="u" u="http%3A%2F%2Fwww.example.com%2Fwiki%2Fexample_%28disambiguation%29"></A><N>[8]</N>
+<N>[9]</N>
+<BR>example <A f="u" u="http%3A%2F%2Fwww.example.com%2F"></A></BR><N>[10]</N>
+<N>[11]</N>
+Quick! <A f="u" u="http%3A%2F%2Fwww.example.com%2F"></A>!
+~~~~~~~~~~

@@ -1,5 +1,4 @@
-= Memes =
-
+= Memes
 You can also use image macros in the context of memes. For example, if you
 have an image macro named `grumpy`, you can create a meme by doing the
 following:
@@ -11,8 +10,7 @@ the more authentic feel of `impact.ttf`, you simply have to place the Impact
 TrueType font in the Phabricator subfolder `/resources/font/`. If Remarkup
 detects the presence of `impact.ttf`, it will automatically use it.
 
-= Mentioning Users =
-
+= Mentioning Users
 In Differential and Maniphest, you can mention another user by writing:
 
 @username
@@ -20,9 +18,7 @@ In Differential and Maniphest, you can mention another user by writing:
 When you submit your comment, this will add them as a CC on the revision or task
 if they aren't already CC'd.
 
-Icons
-=====
-
+= Icons
 You can add icons to comments using the `{icon ...}` syntax. For example:
 
   {icon camera}
@@ -37,7 +33,7 @@ This renders: {icon camera color=blue}
 
 For a list of available icons and colors, check the UIExamples application.
 (The icons are sourced from
-[[ https://fontawesome.com/v4.7.0/icons/ | FontAwesome ]], so you can also
+[[https://fontawesome.com/v4.7.0/icons/ | FontAwesome]], so you can also
 browse the collection there.)
 
 You can add `spin` to make the icon spin:
@@ -47,8 +43,7 @@ You can add `spin` to make the icon spin:
 This renders: {icon cog spin}
 
 
-= Phriction Documents =
-
+= Phriction Documents
 You can link to Phriction documents with a name or path:
 
   Make sure you sign and date your [[legal/Letter of Marque and Reprisal]]!
@@ -60,7 +55,7 @@ opponents:
   Check out these [[legal/boring_documents/ | exciting legal documents]]!
 
 ~~~~~~~~~~
-<h1 class='remarkup-header'><a name='hdrMemes' style='padding-top: 80px;'></a>Memes </h1>
+<h1 class='remarkup-header'><a name='memes' style='padding-top: 80px;'></a>Memes </h1>
 You can also use image macros in the context of memes. For example, if you<br>
 have an image macro named <tt class='remarkup-monospaced'>grumpy</tt>, you can create a meme by doing the<br>
 following:<p class='paragraph'></p>
@@ -69,13 +64,12 @@ By default, the font used to create the text for the meme is <tt class='remarkup
 the more authentic feel of <tt class='remarkup-monospaced'>impact.ttf</tt>, you simply have to place the Impact<br>
 TrueType font in the Phabricator subfolder <tt class='remarkup-monospaced'>/resources/font/</tt>. If Remarkup<br>
 detects the presence of <tt class='remarkup-monospaced'>impact.ttf</tt>, it will automatically use it.<br>
-<h1 class='remarkup-header'><a name='hdrMentioning_Users' style='padding-top: 80px;'></a>Mentioning Users </h1>
+<h1 class='remarkup-header'><a name='mentioning-users' style='padding-top: 80px;'></a>Mentioning Users </h1>
 In Differential and Maniphest, you can mention another user by writing:<p class='paragraph'></p>
 @username<p class='paragraph'></p>
 When you submit your comment, this will add them as a CC on the revision or task<br>
 if they aren&#39;t already CC&#39;d.<br>
-<h1 class='remarkup-header'><a name='hdrIcons' style='padding-top: 80px;'></a>Icons </h1>
-<br>
+<h1 class='remarkup-header'><a name='icons' style='padding-top: 80px;'></a>Icons </h1>
 You can add icons to comments using the <tt class='remarkup-monospaced'>{icon ...}</tt> syntax. For example:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>{icon camera}</code></pre></div>
 This renders: <span class='visual-only phui-icon-view phui-font-fa fa-camera ' style='color:unset;;'></span><p class='paragraph'></p>
@@ -89,11 +83,71 @@ browse the collection there.)<p class='paragraph'></p>
 You can add <tt class='remarkup-monospaced'>spin</tt> to make the icon spin:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>{icon cog spin}</code></pre></div>
 This renders: <span class='visual-only phui-icon-view phui-font-fa fa-cog fa-spin' style='color:unset;;'></span><br>
-<h1 class='remarkup-header'><a name='hdrPhriction_Documents' style='padding-top: 80px;'></a>Phriction Documents </h1>
+<h1 class='remarkup-header'><a name='phriction-documents' style='padding-top: 80px;'></a>Phriction Documents </h1>
 You can link to Phriction documents with a name or path:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>Make sure you sign and date your [[legal/Letter of Marque and Reprisal]]!</code></pre></div>
 By default, the link will render with the document title as the link name.<br>
 With a pipe (<tt class='remarkup-monospaced'>|</tt>), you can retitle the link. Use this to mislead your<br>
 opponents:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>Check out these [[legal/boring_documents/ | exciting legal documents]]!</code></pre></div>
+~~~~~~~~~~
+<H d="1" t="2">Memes</H>
+You can also use image macros in the context of memes. For example, if you<N>[33]</N>
+have an image macro named <M>`grumpy`</M>, you can create a meme by doing the<N>[62]</N>
+following:<N>[65]</N>
+<N>[66]</N>
+{meme, src = grumpy, above = toptextgoeshere, below = bottomtextgoeshere}<N>[90]</N>
+<N>[91]</N>
+By default, the font used to create the text for the meme is <M>`tuffy.ttf`</M>. For<N>[122]</N>
+the more authentic feel of <M>`impact.ttf`</M>, you simply have to place the Impact<N>[149]</N>
+TrueType font in the Phabricator subfolder <M>`/resources/font/`</M>. If Remarkup<N>[168]</N>
+detects the presence of <M>`impact.ttf`</M>, it will automatically use it.<N>[190]</N>
+<N>[191]</N>
+<H d="1" t="2">Mentioning Users</H>
+In Differential and Maniphest, you can mention another user by writing:<N>[215]</N>
+<N>[216]</N>
+@username<N>[218]</N>
+<N>[219]</N>
+When you submit your comment, this will add them as a CC on the revision or task<N>[253]</N>
+if they aren't already CC'd.<N>[268]</N>
+<N>[269]</N>
+<H d="1" t="2">Icons</H>
+You can add icons to comments using the <M>`{icon ...}`</M> syntax. For example:<N>[295]</N>
+<N>[296]</N>
+<WS>  {icon camera}
+</WS>
+This renders: <IC>{icon camera}</IC>
+<N>[303]</N>
+<N>[304]</N>
+You can select a color for icons:<N>[318]</N>
+<N>[319]</N>
+<WS>  {icon camera color=blue}
+</WS>
+This renders: <IC>{icon camera color=blue}</IC>
+<N>[326]</N>
+<N>[327]</N>
+For a list of available icons and colors, check the UIExamples application.<N>[352]</N>
+<BR>The icons are sourced from<N>[9]</N>
+<A f="n" u="https%3A%2F%2Ffontawesome.com%2Fv4.7.0%2Ficons%2F">FontAwesome</A>, so you can also<N>[20]</N>
+browse the collection there.</BR><N>[354]</N>
+<N>[355]</N>
+You can add <M>`spin`</M> to make the icon spin:<N>[373]</N>
+<N>[374]</N>
+<WS>  {icon cog spin}
+</WS>
+This renders: <IC>{icon cog spin}</IC>
+<N>[381]</N>
+<N>[382]</N>
+<N>[383]</N>
+<H d="1" t="2">Phriction Documents</H>
+You can link to Phriction documents with a name or path:<N>[405]</N>
+<N>[406]</N>
+<WS>  Make sure you sign and date your [[legal/Letter of Marque and Reprisal]]!
+</WS>
+By default, the link will render with the document title as the link name.<N>[436]</N>
+With a pipe <BR><M>`|`</M></BR>, you can retitle the link. Use this to mislead your<N>[466]</N>
+opponents:<N>[469]</N>
+<N>[470]</N>
+<WS>  Check out these [[legal/boring_documents/ | exciting legal documents]]!
+</WS>
 ~~~~~~~~~~

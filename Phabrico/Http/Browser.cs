@@ -43,7 +43,7 @@ namespace Phabrico.Http
         /// <summary>
         /// Language of the web browser
         /// </summary>
-        public string Language
+        public Language Language
         {
             get;
             set;
@@ -164,7 +164,7 @@ namespace Phabrico.Http
                     {
                         Language = database.GetSessionVariable(this, "language");
 
-                        if (string.IsNullOrEmpty(Language))
+                        if (string.IsNullOrWhiteSpace(Language))
                         {
                             // no session-variable found: set default language to the language of the browser
                             Language = httpListenerContext.Request
@@ -200,7 +200,7 @@ namespace Phabrico.Http
                                     || httpListenerContext.Request.RawUrl.StartsWith("/images/", StringComparison.OrdinalIgnoreCase)
                                     || httpListenerContext.Request.RawUrl.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase)
                                     || httpListenerContext.Request.RawUrl.StartsWith("/css/", StringComparison.OrdinalIgnoreCase)
-                                    || httpListenerContext.Request.RawUrl.StartsWith("/scripts/", StringComparison.OrdinalIgnoreCase);
+                                    || httpListenerContext.Request.RawUrl.StartsWith("/js/", StringComparison.OrdinalIgnoreCase);
 
             if (allowBrowserCaching)
             {
@@ -390,7 +390,7 @@ namespace Phabrico.Http
                                         || httpListenerContext.Request.RawUrl.StartsWith("/images/", StringComparison.OrdinalIgnoreCase)
                                         || httpListenerContext.Request.RawUrl.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase)
                                         || httpListenerContext.Request.RawUrl.StartsWith("/css/", StringComparison.OrdinalIgnoreCase)
-                                        || httpListenerContext.Request.RawUrl.StartsWith("/scripts/", StringComparison.OrdinalIgnoreCase);
+                                        || httpListenerContext.Request.RawUrl.StartsWith("/js/", StringComparison.OrdinalIgnoreCase);
 
                 if (allowBrowserCaching)
                 {
@@ -432,6 +432,11 @@ namespace Phabrico.Http
                 httpListenerContext.Response.OutputStream.Write(compressedData, 0, compressedData.Length);
                 httpListenerContext.Response.OutputStream.Flush();
                 httpListenerContext.Response.OutputStream.Close();
+
+                if (Token?.EncryptionKey != null)
+                {
+                    HttpServer.PreloadFileMacros(Token.EncryptionKey);
+                }
 
                 return nbrBytesWrite;
             }

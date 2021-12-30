@@ -162,15 +162,22 @@ namespace Phabrico.Storage
                         
 
                 string nonCJKBlobContent = RegexSafe.Replace(blobContent, @"[\p{P}\p{IsCJKUnifiedIdeographs}\p{IsThai}$^+=<>`|~]", " ", RegexOptions.Singleline);
-                IEnumerable<string> words = nonCJKBlobContent.Split(new char[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
-                                                             .Where(word => word.Length >= 2)                                                              // only store words which are at least 2 characters and ...
-                                                             .Where(word => word.Length <= 50)                                                             // ... at maximum 50 characters long
-                                                             .Where(word => word.All(ch => ch == '-' || ch == '_' || ch == '*' || ch == '#') == false)     // do not store words which do only contain some specific symbols
-                                                             .Concat(assemblyLikeWords.Select(m => m.Value))                                               // store also all assembly-like or url-like words (i.e. words with a dot in)
-                                                             .Concat(assemblyLikeWords.Select(m => m.Groups.OfType<Group>().Last().Value.Substring(1)))    // store the last word of an assembly-like word (e.g.  databaseName.dbo.tableName -> tableName)
-                                                             .Concat(taskOrBlogPostReferences)
-                                                             .Concat(emailAddresses)
-                                                             .Select(word => word.ToLower());
+                List<string> words = nonCJKBlobContent.Split(new char[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
+                                                      .Where(word => word.Length >= 2)                                                              // only store words which are at least 2 characters and ...
+                                                      .Where(word => word.Length <= 50)                                                             // ... at maximum 50 characters long
+                                                      .Where(word => word.All(ch => ch == '-' || ch == '_' || ch == '*' || ch == '#') == false)     // do not store words which do only contain some specific symbols
+                                                      .Concat(assemblyLikeWords.Select(m => m.Value))                                               // store also all assembly-like or url-like words (i.e. words with a dot in)
+                                                      .Concat(assemblyLikeWords.Select(m => m.Groups.OfType<Group>().Last().Value.Substring(1)))    // store the last word of an assembly-like word (e.g.  databaseName.dbo.tableName -> tableName)
+                                                      .Concat(taskOrBlogPostReferences)
+                                                      .Concat(emailAddresses)
+                                                      .Select(word => word.ToLower())
+                                                      .ToList();
+
+                // add division-like formulas (e.g. U/I)
+                words.AddRange(RegexSafe.Matches(blobContent, "[A-Za-z]+[A-Za-z0-9]*/[A-Za-z0-9]+")
+                                        .OfType<Match>()
+                                        .Select(m => m.Value)
+                              );
 
                 // store everything in lowercase
                 foreach (var wordCount in words.GroupBy(key => key))
@@ -240,7 +247,7 @@ namespace Phabrico.Storage
         /// <param name="key"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public override Phabricator.Data.Keyword Get(Database database, string key, bool ignoreStageData = false)
+        public override Phabricator.Data.Keyword Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
             return null;
         }
@@ -249,8 +256,9 @@ namespace Phabrico.Storage
         /// Returns all available keywords from the SQLite database
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.Keyword> Get(Database database)
+        public override IEnumerable<Phabricator.Data.Keyword> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT name, token, description, nbrocc

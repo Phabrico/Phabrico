@@ -50,23 +50,57 @@ namespace Phabrico.Controllers
         /// </summary>
         /// <param name="database"></param>
         /// <param name="phrictionDocument"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        private string GenerateCrumbs(Database database, Phabricator.Data.Phriction phrictionDocument)
+        private string GenerateCrumbs(Database database, Phabricator.Data.Phriction phrictionDocument, Language language)
         {
             string completeCrumb = "";
             List<JObject> crumbs = new List<JObject>();
+            Storage.Stage stageStorage = new Storage.Stage();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             string[] urlParts = phrictionDocument.Path.Split('?');
             string url = urlParts.FirstOrDefault();
+            Content content = new Content(database);
+            Content.Translation translation;
+
             foreach (string slug in url.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
             {
+                bool documentIsStaged = true;
                 completeCrumb += slug + "/";
 
-                Phabricator.Data.Phriction crumbPhrictionReference = phrictionStorage.Get(database, completeCrumb);
+                Phabricator.Data.Phriction crumbPhrictionReference = stageStorage.Get<Phabricator.Data.Phriction>(database, language)
+                                                                                 .FirstOrDefault(document => document.Path.Equals(completeCrumb));
+                if (crumbPhrictionReference == null)
+                {
+                    documentIsStaged = false;
+                    crumbPhrictionReference = phrictionStorage.Get(database, completeCrumb, language);
+                }
+
+                if (documentIsStaged && crumbPhrictionReference.Language.Equals(browser.Session.Locale))
+                {
+                    // we have a staged translation: keep staged data (=modified translation) instead of (original) translation
+                    translation = null;
+                }
+                else
+                if (crumbPhrictionReference?.Token == null)
+                {
+                    // this is our first wiki document
+                    translation = null;
+                }
+                else
+                {
+                    // get translation
+                    translation = content.GetTranslation(crumbPhrictionReference.Token, language);
+                }
+
+
                 crumbs.Add(new JObject
                 {
                     new JProperty("slug", slug),
-                    new JProperty("name", crumbPhrictionReference?.Name ?? ConvertPhabricatorUrlPartToDescription(slug)),
+                    new JProperty("name", translation?.TranslatedTitle
+                                          ?? crumbPhrictionReference?.Name
+                                          ?? ConvertPhabricatorUrlPartToDescription(slug)
+                                 ),
                     new JProperty("inexistant", crumbPhrictionReference == null)
                 });
             }
@@ -108,12 +142,14 @@ namespace Phabrico.Controllers
             Storage.Account accountStorage = new Storage.Account();
             string subscriberTokens = "";
             string projectTokens = "";
+            Content.Translation translation = null;
 
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 bool editMode = false;
                 bool documentIsStaged = false;
                 string documentState = "";
+                string unreviewedTranslation = "";
                 string url = string.Join("/", parameters.TakeWhile(parameter => parameter.StartsWith("?action=") == false));
                 url = url.Split(new string[] { "?" }, StringSplitOptions.None).FirstOrDefault();
                 url = url.TrimEnd('/') + "/";
@@ -124,7 +160,7 @@ namespace Phabrico.Controllers
                 Phabricator.Data.Phriction phrictionDocument = null;
 
                 // search for a staged phriction document
-                foreach (Phabricator.Data.Phriction stagedPhrictionDocument in stageStorage.Get<Phabricator.Data.Phriction>(database))
+                foreach (Phabricator.Data.Phriction stagedPhrictionDocument in stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale))
                 {
                     if (stagedPhrictionDocument.Path != null &&
                         stagedPhrictionDocument.Path.Equals(HttpUtility.UrlDecode(url).Replace(" ", "_"), StringComparison.OrdinalIgnoreCase))
@@ -140,11 +176,11 @@ namespace Phabrico.Controllers
                     // no staged document found -> search for a downloaded document
                     if (parameters.Any())
                     {
-                        phrictionDocument = phrictionStorage.Get(database, HttpUtility.UrlDecode(url));
+                        phrictionDocument = phrictionStorage.Get(database, HttpUtility.UrlDecode(url), browser.Session.Locale);
                     }
                     else
                     {
-                        phrictionDocument = phrictionStorage.Get(database, "/");
+                        phrictionDocument = phrictionStorage.Get(database, "/", browser.Session.Locale);
                     }
 
                     if (phrictionDocument == null)
@@ -192,7 +228,7 @@ namespace Phabrico.Controllers
 
                                 viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionNoDocumentFound", parameters);
                                 viewPage.SetText("OPERATION", "new");
-                                viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                                viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument, browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                                 viewPage.HttpStatusCode = 202;  // send notification to browser that document doesn't exist
                                 viewPage.HttpStatusMessage = "No Content";
                             }
@@ -205,13 +241,24 @@ namespace Phabrico.Controllers
                     // if document was modified, draw a flame next to the document's title and take the document info from the staging area
                     if (documentIsStaged)
                     {
+                        Content content = new Content(database);
+                        translation = content.GetTranslation(phrictionDocument.Token, browser.Session.Locale);
+                        if (translation != null)
+                        {
+                            documentState = "translated";
+                            if (translation.IsReviewed == false)
+                            {
+                                unreviewedTranslation = "unreviewed";
+                            }
+                        }
+                        else
                         if (phrictionDocument.Token.StartsWith("PHID-NEWTOKEN-"))
                         {
                             documentState = "created";
                         }
                         else
                         {
-                            if (stageStorage.IsFrozen(database, phrictionDocument.Token))
+                            if (stageStorage.IsFrozen(database, browser, phrictionDocument.Token))
                             {
                                 documentState = "frozen";
                             }
@@ -224,6 +271,27 @@ namespace Phabrico.Controllers
                     else
                     {
                         documentState = "";
+                    }
+                }
+
+                if (phrictionDocument != null)
+                {
+                    if (documentIsStaged && phrictionDocument.Language.Equals(browser.Session.Locale))
+                    {
+                        // we have a staged translation: keep staged data (=modified translation) instead of (original) translation
+                        translation = null;
+                    }
+                    else
+                    if (phrictionDocument.Token == null)
+                    {
+                        // this is our first wiki document
+                        translation = null;
+                    }
+                    else
+                    {
+                        // get translation
+                        Content content = new Content(database);
+                        translation = content.GetTranslation(phrictionDocument.Token, browser.Session.Locale);
                     }
                 }
 
@@ -248,11 +316,22 @@ namespace Phabrico.Controllers
                             break;
 
                         case "edit":
-                            documentState = "";
+                        case "translate":
+                            if (action.Equals("translate") == false)
+                            {
+                                documentState = "";
+                            }
                             editMode = true;
                             viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionEdit", parameters);
-                            viewPage.SetText("OPERATION", "edit");
-                            formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, true);
+                            viewPage.SetText("OPERATION", action);
+                            if (translation == null)
+                            {
+                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, true);
+                            }
+                            else
+                            {
+                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, true);
+                            }
                             break;
 
                         case "new":
@@ -288,18 +367,33 @@ namespace Phabrico.Controllers
                             break;
 
                         default:
-                            formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                            if (translation == null)
+                            {
+                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                            }
+                            else
+                            {
+                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false);
+                            }
                             break;
                     }
                 }
                 else
                 {
-                    formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                    if (translation == null)
+                    {
+                        formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                    }
+                    else
+                    {
+                        formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false);
+                    }
                 }
 
                 if (phrictionDocument.Token != null && 
                     action.Equals("new") == false && 
-                    action.Equals("edit") == false
+                    action.Equals("edit") == false &&
+                    action.Equals("translate") == false
                    )
                 {
                     PhrictionDocumentTree documentHierarchy = phrictionStorage.GetHierarchy(database, browser, phrictionDocument.Token);
@@ -317,11 +411,19 @@ namespace Phabrico.Controllers
 
                 Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database, browser);
 
+                if (translation == null)
+                {
+                    viewPage.SetText("DOCUMENT-TITLE", phrictionDocument.Name, editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                }
+                else
+                {
+                    viewPage.SetText("DOCUMENT-TITLE", translation.TranslatedTitle, editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                }
+
                 viewPage.SetText("DOCUMENT-TOKEN", phrictionDocument.Token, editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                viewPage.SetText("DOCUMENT-TITLE", phrictionDocument.Name, editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("DOCUMENT-PATH", phrictionDocument.Path, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 viewPage.SetText("DOCUMENT-CONTENT", formattedDocumentContent, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                viewPage.SetText("DOCUMENT-CRUMBS", GenerateCrumbs(database, phrictionDocument, browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                 viewPage.SetText("PHABRICATOR-URL", currentAccount.PhabricatorUrl.TrimEnd('/') + "/", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
                 if (phrictionDocument.Token != null && phrictionDocument.Token.StartsWith(Phabricator.Data.Phriction.PrefixCoverPage))
@@ -337,10 +439,19 @@ namespace Phabrico.Controllers
                     viewPage.SetText("SHOW-SIDE-WINDOW", "yes");
                     viewPage.SetText("HIDE-NEW-DOCUMENT-ACTION", "no");
                     viewPage.SetText("DOCUMENT-STATE", documentState, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    viewPage.SetText("UNREVIEWED-TRANSLATION", unreviewedTranslation, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     viewPage.SetText("DOCUMENT-TIMESTAMP", phrictionDocument.DateModified.ToUnixTimeSeconds().ToString(), editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    viewPage.SetText("DOCUMENT-RAW-CONTENT", phrictionDocument.Content, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    viewPage.SetText("DOCUMENT-DATE", FormatDateTimeOffset(phrictionDocument.DateModified, browser.Session.Locale ?? browser.Language ?? "en"), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    viewPage.SetText("DOCUMENT-DATE", FormatDateTimeOffset(phrictionDocument.DateModified, browser.Session.Locale ?? browser.Language), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     viewPage.SetText("DOCUMENT-LAST-MODIFIED-BY", getAccountName(phrictionDocument.LastModifiedBy), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+
+                    if (translation == null)
+                    {
+                        viewPage.SetText("DOCUMENT-RAW-CONTENT", phrictionDocument.Content, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    }
+                    else
+                    {
+                        viewPage.SetText("DOCUMENT-RAW-CONTENT", translation.TranslatedRemarkup, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                    }
 
                     // verify if only Phriction should be visible
                     if (httpServer.Customization.HideConfig &&
@@ -350,7 +461,7 @@ namespace Phabrico.Controllers
                         httpServer.Customization.HideProjects &&
                         httpServer.Customization.HideUsers &&
                         httpServer.Customization.HidePhriction == false &&
-                        Http.Server.Plugins.All(plugin => plugin.IsVisible(browser) == false)
+                        Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false)
                        )
                     {
                         viewPage.SetText("ONLY-PHRICTION", "True", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -370,7 +481,7 @@ namespace Phabrico.Controllers
                         viewPage.SetText("IS-MEMBER-OF-FAVORITES", "no");
                     }
 
-                    if (phrictionDocument.Token != null && database.GetDependentObjects(phrictionDocument.Token).Any())
+                    if (phrictionDocument.Token != null && database.GetDependentObjects(phrictionDocument.Token, browser.Session.Locale).Any())
                     {
                         viewPage.SetText("HAS-REFERENCES", "yes");
                     }
@@ -406,6 +517,33 @@ namespace Phabrico.Controllers
                     {
                         viewPage.SetText("DOCUMENT-CONFIRMATION-UNDO-LOCAL-CHANGES", "Are you sure you want to undo all your local changes for this document ?");
                     }
+
+                    if (phrictionDocument.Token != null) // if first wiki-document -> no translation
+                    {
+                        // prepare content translation
+                        Content content = new Content(database);
+                        int numberUnreviewedTranslations = content.GetUnreviewedTranslations(browser.Session.Locale).Count();
+                        translation = content.GetTranslation(phrictionDocument.Token, browser.Session.Locale);
+                        if (numberUnreviewedTranslations > 0)
+                        {
+                            viewPage.SetText("SHOW-ALL-UNREVIEWED-TRANSLATIONS", "yes");
+                            viewPage.SetText("NUMBER-UNREVIEWED-TRANSLATIONS", numberUnreviewedTranslations.ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+
+                            if (translation != null && translation.IsReviewed == false)
+                            {
+                                viewPage.SetText("SHOW-APPROVE-TRANSLATION", "yes");
+                            }
+                        }
+                    }
+
+                    if (translation == null)
+                    {
+                        viewPage.SetText("CONTENT-IS-TRANSLATION", "no");
+                    }
+                    else
+                    {
+                        viewPage.SetText("CONTENT-IS-TRANSLATION", "yes");
+                    }
                 }
 
                 if (phrictionDocument.Projects != null)
@@ -413,7 +551,7 @@ namespace Phabrico.Controllers
                     List<Phabricator.Data.Project> projects = phrictionDocument.Projects
                                                                                .Split(',')
                                                                                .Where(token => string.IsNullOrEmpty(token) == false)
-                                                                               .Select(token => projectStorage.Get(database, token))
+                                                                               .Select(token => projectStorage.Get(database, token, browser.Session.Locale))
                                                                                .Where(p => p != null)
                                                                                .OrderBy(p => p.Name)
                                                                                .ToList();
@@ -464,12 +602,36 @@ namespace Phabrico.Controllers
                                                                   .FirstOrDefault(pluginTypeAttribute => pluginTypeAttribute.Usage == Plugin.PluginTypeAttribute.UsageType.PhrictionDocument);
                     if (pluginType == null) continue;
 
-                    HtmlPartialViewPage phrictionPluginData = viewPage.GetPartialView("PHRICTION-PLUGINS");
-                    if (phrictionPluginData == null) break;  // we're in edit-mode, no need for plugins
+                    if (plugin.IsVisibleInApplication(database, browser, phrictionDocument.Token))
+                    {
+                        HtmlPartialViewPage phrictionPluginData = viewPage.GetPartialView("PHRICTION-PLUGINS");
+                        if (phrictionPluginData == null) break;  // we're in edit-mode, no need for plugins
 
-                    phrictionPluginData.SetText("PHRICTION-PLUGIN-URL", plugin.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    phrictionPluginData.SetText("PHRICTION-PLUGIN-ICON", plugin.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    phrictionPluginData.SetText("PHRICTION-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
+                        phrictionPluginData.SetText("PHRICTION-PLUGIN-URL", plugin.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        phrictionPluginData.SetText("PHRICTION-PLUGIN-ICON", plugin.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        phrictionPluginData.SetText("PHRICTION-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
+                    }
+
+                    foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions)
+                    {
+                        if (pluginExtension.IsVisibleInApplication(database, browser, phrictionDocument.Token))
+                        {
+                            if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
+                            {
+                                pluginExtension.Database = new Storage.Database(database.EncryptionKey);
+                                pluginExtension.Initialize();
+                                pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                            }
+
+                            HtmlPartialViewPage htmlPluginNavigatorMenuItem = viewPage.GetPartialView("PHRICTION-PLUGINS");
+                            if (htmlPluginNavigatorMenuItem != null)
+                            {
+                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            }
+                        }
+                    }
                 }
 
                 if (phrictionDocument.Subscribers != null)
@@ -479,7 +641,7 @@ namespace Phabrico.Controllers
                                                                     .Where(token => string.IsNullOrEmpty(token) == false)
                                                                     .Select(token =>
                                                                     {
-                                                                        var user = userStorage.Get(database, token);
+                                                                        var user = userStorage.Get(database, token, browser.Session.Locale);
                                                                         if (user != null)
                                                                         {
                                                                             return new Subscriber
@@ -490,7 +652,7 @@ namespace Phabrico.Controllers
                                                                         }
                                                                         else
                                                                         {
-                                                                            var project = projectStorage.Get(database, token);
+                                                                            var project = projectStorage.Get(database, token, browser.Session.Locale);
                                                                             if (project == null) return null;
 
                                                                             return new Subscriber
@@ -526,7 +688,7 @@ namespace Phabrico.Controllers
 
                     if (phrictionDocument.Token != null)
                     {
-                        foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(phrictionDocument.Token))
+                        foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(phrictionDocument.Token, Language.NotApplicable))
                         {
                             Phabricator.Data.Phriction phrictionDocumentReferencer = dependentObject as Phabricator.Data.Phriction;
                             Phabricator.Data.Maniphest maniphestTaskReferencer = dependentObject as Phabricator.Data.Maniphest;
@@ -586,7 +748,7 @@ namespace Phabrico.Controllers
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 string phrictionToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
-                Phabricator.Data.FavoriteObject[] allFavoriteObjects = favoriteObjectStorage.Get(database).ToArray();
+                Phabricator.Data.FavoriteObject[] allFavoriteObjects = favoriteObjectStorage.Get(database, browser.Session.Locale).ToArray();
                 Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
                 Phabricator.Data.FavoriteObject favoriteObject = allFavoriteObjects.FirstOrDefault(fav => fav.Token.Equals(phrictionToken) && fav.AccountUserName.Equals(accountData.UserName));
                 if (favoriteObject == null)
@@ -600,7 +762,7 @@ namespace Phabrico.Controllers
                                                                     : 1;
                     favoriteObjectStorage.Add(database, favoriteObject);
 
-                    InvalidatePhrictionDocumentFromCache(httpServer, database, phrictionToken);
+                    InvalidatePhrictionDocumentFromCache(httpServer, database, phrictionToken, browser.Session.Locale);
                 }
             }
 
@@ -687,7 +849,7 @@ namespace Phabrico.Controllers
                 {
                     favoriteObjectStorage.Remove(database, favoriteObject);
 
-                    InvalidatePhrictionDocumentFromCache(httpServer, database, phrictionToken);
+                    InvalidatePhrictionDocumentFromCache(httpServer, database, phrictionToken, browser.Session.Locale);
                 }
             }
 
@@ -716,6 +878,7 @@ namespace Phabrico.Controllers
                     database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                     Phabricator.Data.Phriction parentPhrictionDocument = null;
+                    Content content = new Content(database);
                     string tokenCurrentDocument = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
 
                     string action = parameters.FirstOrDefault(parameter => parameter.StartsWith("?action="));
@@ -734,10 +897,20 @@ namespace Phabrico.Controllers
                         Storage.Stage stageStorage = new Storage.Stage();
 
                         string phrictionDocumentToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
-                        Phabricator.Data.Phriction originalPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phrictionDocumentToken);
-                        if (originalPhrictionDocument == null)
+                        Phabricator.Data.Phriction originalPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phrictionDocumentToken, browser.Session.Locale);
+                        if (originalPhrictionDocument == null || originalPhrictionDocument.Language.Equals(browser.Session.Locale) == false)
                         {
-                            originalPhrictionDocument = phrictionStorage.Get(database, phrictionDocumentToken);
+                            originalPhrictionDocument = phrictionStorage.Get(database, phrictionDocumentToken, browser.Session.Locale);
+                        }
+
+                        string documentContent = originalPhrictionDocument?.Content;
+                        if (originalPhrictionDocument.Language.Equals(browser.Session.Locale) == false)
+                        {
+                            Content.Translation translation = content.GetTranslation(tokenCurrentDocument, browser.Session.Locale);
+                            if (translation != null)
+                            {
+                                documentContent = translation.TranslatedRemarkup;
+                            }
                         }
 
                         List<int> referencedFileIDs = browser.Session.FormVariables[browser.Request.RawUrl]["referencedFiles"]
@@ -751,7 +924,7 @@ namespace Phabrico.Controllers
                             // analyze original wiki content and remove all the file-references from
                             // the current wiki content that were also found in the original one
                             Regex matchFileAttachments = new Regex("{F(-?[0-9]+)[^}]*}");
-                            foreach (Match match in matchFileAttachments.Matches(originalPhrictionDocument.Content).OfType<Match>().ToArray())
+                            foreach (Match match in matchFileAttachments.Matches(documentContent).OfType<Match>().ToArray())
                             {
                                 int fileID;
 
@@ -762,14 +935,14 @@ namespace Phabrico.Controllers
                             }
                         }
 
-                        Phabricator.Data.File[] stagedFiles = stageStorage.Get<Phabricator.Data.File>(database).ToArray();
+                        Phabricator.Data.File[] stagedFiles = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale).ToArray();
 
                         foreach (int unreferencedFileID in referencedFileIDs)
                         {
                             Phabricator.Data.File unreferencedFile = stagedFiles.FirstOrDefault(stagedFile => stagedFile.ID == unreferencedFileID);
                             if (unreferencedFile != null)
                             {
-                                stageStorage.Remove(browser, database, unreferencedFile);
+                                stageStorage.Remove(database, browser, unreferencedFile);
                             }
                         }
 
@@ -778,8 +951,11 @@ namespace Phabrico.Controllers
                     else
                     if (action.Equals("save"))
                     {
-                        Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, true);
-                        parentPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, false);
+                        Content.Translation translation = content.GetTranslation(tokenCurrentDocument, browser.Session.Locale);
+                        bool isTranslation = translation != null;
+
+                        Phabricator.Data.Phriction originalPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, browser.Session.Locale, isTranslation == false);
+                        parentPhrictionDocument = phrictionStorage.Get(database, tokenCurrentDocument, browser.Session.Locale, false);
 
                         if (parentPhrictionDocument == null ||
                             browser.Session.FormVariables[browser.Request.RawUrl]["operation"] == "new")
@@ -797,7 +973,7 @@ namespace Phabrico.Controllers
                             {
                                 newPhrictionDocument.Path = "/";
 
-                                newPhrictionDocument.Token = newStage.Create(database, newPhrictionDocument);
+                                newPhrictionDocument.Token = newStage.Create(database, browser, newPhrictionDocument);
                             }
                             else
                             {
@@ -823,7 +999,7 @@ namespace Phabrico.Controllers
                                     if (pathElements.Any() == false) break;  // we're at the root -> stop
 
                                     string parentPath = string.Join("/", pathElements) + "/";
-                                    parentPhrictionDocument = phrictionStorage.Get(database, parentPath, false);
+                                    parentPhrictionDocument = phrictionStorage.Get(database, parentPath, browser.Session.Locale, false);
                                     if (parentPhrictionDocument != null) break;  // parent document found -> stop
 
                                     Phabricator.Data.Phriction newParentPhrictionDocument = new Phabricator.Data.Phriction();
@@ -841,7 +1017,7 @@ namespace Phabrico.Controllers
                                 inexistantParentDocuments.Reverse();
                                 foreach (Phabricator.Data.Phriction newParentPhrictionDocument in inexistantParentDocuments)
                                 {
-                                    newParentPhrictionDocument.Token = newStage.Create(database, newParentPhrictionDocument);
+                                    newParentPhrictionDocument.Token = newStage.Create(database, browser, newParentPhrictionDocument);
 
                                     database.DescendTokenFrom(parentPhrictionDocument.Token, newParentPhrictionDocument.Token);
 
@@ -849,7 +1025,7 @@ namespace Phabrico.Controllers
                                 }
 
                                 // create document
-                                newPhrictionDocument.Token = newStage.Create(database, newPhrictionDocument);
+                                newPhrictionDocument.Token = newStage.Create(database, browser, newPhrictionDocument);
 
                                 database.DescendTokenFrom(parentPhrictionDocument.Token, newPhrictionDocument.Token);
                             }
@@ -858,12 +1034,12 @@ namespace Phabrico.Controllers
                             keywordStorage.AddPhabricatorObject(this, database, newPhrictionDocument);
 
                             // (re)assign dependent Phabricator objects
-                            database.ClearAssignedTokens(newPhrictionDocument.Token);
+                            database.ClearAssignedTokens(newPhrictionDocument.Token, Language.NotApplicable);
                             RemarkupParserOutput remarkupParserOutput;
                             ConvertRemarkupToHTML(database, newPhrictionDocument.Path, newPhrictionDocument.Content, out remarkupParserOutput, false);
                             foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                             {
-                                database.AssignToken(newPhrictionDocument.Token, linkedPhabricatorObject.Token);
+                                database.AssignToken(newPhrictionDocument.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
                             }
 
                             string redirectUrl = string.Format("/w/{0}", newPhrictionDocument.Path);
@@ -891,7 +1067,9 @@ namespace Phabrico.Controllers
                             Stage stageStorage = new Stage();
                             stageStorage.Modify(database, modifiedPhrictionDocument, browser);
 
-                            bool doFreezeReferencedFiles = stageStorage.Get(database)
+                            content.DisapproveTranslationForAllLanguages(modifiedPhrictionDocument.Token);
+
+                            bool doFreezeReferencedFiles = stageStorage.Get(database, browser.Session.Locale)
                                                                        .FirstOrDefault(stagedObject => stagedObject.Token.Equals(modifiedPhrictionDocument.Token))
                                                                        .Frozen;
 
@@ -899,26 +1077,39 @@ namespace Phabrico.Controllers
                             keywordStorage.DeletePhabricatorObject(database, parentPhrictionDocument);
                             keywordStorage.AddPhabricatorObject(this, database, modifiedPhrictionDocument);
 
+                            Language language = browser.Session.Locale;
+                            if (isTranslation == false)
+                            {
+                                language = Language.NotApplicable;
+                            }
+
                             // (re)assign dependent Phabricator objects
-                            List<Phabricator.Data.PhabricatorObject> referencedObjects = database.GetReferencedObjects(modifiedPhrictionDocument.Token).ToList();
-                            database.ClearAssignedTokens(modifiedPhrictionDocument.Token);
+                            List<Phabricator.Data.PhabricatorObject> referencedObjects = database.GetReferencedObjects(modifiedPhrictionDocument.Token, browser.Session.Locale).ToList();
+                            database.ClearAssignedTokens(modifiedPhrictionDocument.Token, language);
                             RemarkupParserOutput remarkupParserOutput;
                             List<Phabricator.Data.PhabricatorObject> linkedPhabricatorObjects;
                             ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, modifiedPhrictionDocument.Content, out remarkupParserOutput, false);
                             linkedPhabricatorObjects = remarkupParserOutput.LinkedPhabricatorObjects;
                             if (originalPhrictionDocument != null)
                             {
-                                ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, originalPhrictionDocument.Content, out remarkupParserOutput, false);  // remember also references in original content, so we can always undo our modifications
+                                if (isTranslation)
+                                {
+                                    ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false);  // remember also references in original content, so we can always undo our modifications
+                                }
+                                else
+                                {
+                                    ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, originalPhrictionDocument.Content, out remarkupParserOutput, false);  // remember also references in original content, so we can always undo our modifications
+                                }
                                 linkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                             }
                             foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in linkedPhabricatorObjects.Distinct())
                             {
-                                database.AssignToken(modifiedPhrictionDocument.Token, linkedPhabricatorObject.Token);
+                                database.AssignToken(modifiedPhrictionDocument.Token, linkedPhabricatorObject.Token, language);
 
                                 Phabricator.Data.File linkedFile = linkedPhabricatorObject as Phabricator.Data.File;
                                 if (linkedFile != null && linkedFile.ID < 0)  // linkedFile.ID < 0: file is staged
                                 {
-                                    stageStorage.Freeze(database, linkedFile.Token, doFreezeReferencedFiles);
+                                    stageStorage.Freeze(database, browser, linkedFile.Token, doFreezeReferencedFiles);
                                 }
 
                                 referencedObjects.RemoveAll(obj => obj.Token.Equals(linkedPhabricatorObject.Token));
@@ -927,9 +1118,11 @@ namespace Phabrico.Controllers
                             // delete all unreferenced Phabricator objects from staging area (if existant)
                             foreach (Phabricator.Data.PhabricatorObject oldReferencedObject in referencedObjects)
                             {
-                                if (database.GetReferencedObjects(oldReferencedObject.Token).Any() == false)
+                                if (database.GetReferencedObjects(oldReferencedObject.Token, language).Any() == false &&
+                                    database.GetDependentObjects(oldReferencedObject.Token, language).Any() == false
+                                   )
                                 {
-                                    stageStorage.Remove(browser, database, oldReferencedObject);
+                                    stageStorage.Remove(database, browser, oldReferencedObject, language);
                                 }
                             }
                         }
@@ -967,10 +1160,11 @@ namespace Phabrico.Controllers
         /// <param name="httpServer"></param>
         /// <param name="database"></param>
         /// <param name="phrictionToken"></param>
-        private void InvalidatePhrictionDocumentFromCache(Http.Server httpServer, Storage.Database database, string phrictionToken)
+        /// <param name="language"></param>
+        private void InvalidatePhrictionDocumentFromCache(Http.Server httpServer, Storage.Database database, string phrictionToken, Language language)
         {
             Storage.Phriction phrictionStorage = new Storage.Phriction();
-            Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken);
+            Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken, language);
             if (phrictionDocument != null)
             {
                 string url = phrictionDocument.Path;

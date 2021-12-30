@@ -1,5 +1,7 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using Phabrico.Storage;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -8,7 +10,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// <summary>
     /// Remarkup parser for monospaced text
     /// </summary>
-    public class RuleFormattingMonospace : RemarkupRule
+    [RuleXmlTag("M")]
+    public class RuleFormattingMonospace : RuleFormatting
     {
         /// <summary>
         /// Converts Remarkup encoded text into HTML
@@ -26,31 +29,37 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (matchSquare.Success)
             {
                 remarkup = remarkup.Substring(matchSquare.Length);
-                html = string.Format("<tt class='remarkup-monospaced'>{0}{1}</tt>", HttpUtility.HtmlEncode(matchSquare.Groups[1].Value), HttpUtility.HtmlEncode(matchSquare.Groups[3].Value));
+                UnformattedText = HttpUtility.HtmlEncode(matchSquare.Groups[1].Value) + HttpUtility.HtmlEncode(matchSquare.Groups[3].Value);
+                html = string.Format("<tt class='remarkup-monospaced'>{0}</tt>", UnformattedText);
 
                 Length = matchSquare.Length;
 
                 return true;
             }
 
-            Match matchBackTick = RegexSafe.Match(remarkup, @"^(\W)`([^`\r\n]+)`", RegexOptions.Singleline);
-            if (matchBackTick.Success)
+            if (RuleStartAfterWhiteSpace)
             {
-                remarkup = remarkup.Substring(matchBackTick.Length);
-                html = string.Format("{0}<tt class='remarkup-monospaced'>{1}</tt>", matchBackTick.Groups[1].Value, HttpUtility.HtmlEncode(matchBackTick.Groups[2].Value));
+                Match matchBackTick = RegexSafe.Match(remarkup, @"^`([^`\r\n]+)`", RegexOptions.Singleline);
+                if (matchBackTick.Success)
+                {
+                    remarkup = remarkup.Substring(matchBackTick.Length);
+                    UnformattedText = HttpUtility.HtmlEncode(matchBackTick.Groups[1].Value);
+                    html = string.Format("<tt class='remarkup-monospaced'>{0}</tt>", UnformattedText);
 
-                Length = matchBackTick.Length;
+                    Length = matchBackTick.Length;
 
-                return true;
+                    return true;
+                }
             }
 
             if (RuleStartOnNewLine)
             {
-                matchBackTick = RegexSafe.Match(remarkup, @"^`([^`\r\n]+)`", RegexOptions.Singleline);
+                Match matchBackTick = RegexSafe.Match(remarkup, @"^`([^`\r\n]+)`", RegexOptions.Singleline);
                 if (matchBackTick.Success)
                 {
                     remarkup = remarkup.Substring(matchBackTick.Length);
-                    html = string.Format("<tt class='remarkup-monospaced'>{0}</tt>", HttpUtility.HtmlEncode(matchBackTick.Groups[1].Value));
+                    UnformattedText = HttpUtility.HtmlEncode(matchBackTick.Groups[1].Value);
+                    html = string.Format("<tt class='remarkup-monospaced'>{0}</tt>", UnformattedText);
 
                     Length = matchBackTick.Length;
 
@@ -59,6 +68,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            return innerText;
         }
     }
 }

@@ -7,3 +7,7 @@
 <a class="phriction-link banned" href="w/\evil.com">\evil.com</a><p class='paragraph'></p>
 <a class="phriction-link banned" href="w//evil.com">evil.com</a>
 ~~~~~~~~~~
+<A f="i" u="%5B%5B%20%2F%5Cevil.com%20%5D%5D"></A><N>[2]</N>
+<N>[3]</N>
+<A f="i" u="%5B%5B%20%2F%0D%0A%2Fevil.com%20%5D%5D"></A>
+~~~~~~~~~~

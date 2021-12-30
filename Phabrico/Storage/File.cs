@@ -1,4 +1,5 @@
-﻿using Phabrico.Miscellaneous;
+﻿using Phabrico.Http;
+using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Base64;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace Phabrico.Storage
         internal static long CachedMedianSize = -1;
 
         /// <summary>
-        /// Contains the median size of all file objects in the SQLite database
+        /// Contains the maximum size of all file objects in the SQLite database
         /// In case this property is set to a value lower than zero, the value will be recalculated by 
         /// reading all the file objects in the database
         /// </summary>
@@ -80,9 +81,11 @@ namespace Phabrico.Storage
         /// Adds a new record to the fileChunkInfo table
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="browser"></param>
         /// <param name="fileName"></param>
         /// <param name="fileChunk"></param>
-        public void AddChunk(Database database, string fileName, Phabricator.Data.File.Chunk fileChunk)
+        /// <param name="language"></param>
+        public void AddChunk(Database database, Browser browser, string fileName, Phabricator.Data.File.Chunk fileChunk, Language language)
         {
             SQLiteCommand dbCommand;
             using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
@@ -172,6 +175,7 @@ namespace Phabrico.Storage
                         newFileObject.Size = (int)newFileObject.DataStream.Length;
                         newFileObject.ID = fileChunk.FileID;
                         newFileObject.DateModified = DateTimeOffset.UtcNow;
+                        newFileObject.Language = language;
                     }
                 }
 
@@ -187,7 +191,7 @@ namespace Phabrico.Storage
                 }
 
                 // write new File object
-                stageStorage.Create(database, newFileObject);
+                stageStorage.Create(database, browser, newFileObject);
 
                 // delete chunk data
                 using (dbCommand = new SQLiteCommand(@"
@@ -232,17 +236,16 @@ namespace Phabrico.Storage
         /// <param name="key"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public override Phabricator.Data.File Get(Database database, string key, bool ignoreStageData = false)
+        public override Phabricator.Data.File Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
+            // search by token
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, id, fileName, macroName, data, size, dateModified, properties
                        FROM fileInfo
-                       WHERE token = @key
-                          OR macroName = @macroName;
+                       WHERE token = @key;
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "key", key, Database.EncryptionMode.None);
-                database.AddParameter(dbCommand, "macroName", key, Database.EncryptionMode.Default);
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     if (reader.Read())
@@ -265,17 +268,64 @@ namespace Phabrico.Storage
                         return record;
                     }
                 }
-
-                return null;
             }
+
+            // token not found: search further by macro name
+            if (key.StartsWith(":"))
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       SELECT token, id, fileName, macroName, data, size, dateModified, properties
+                       FROM fileInfo
+                   ", database.Connection))
+                {
+                    using (var reader = dbCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string macroName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["macroName"]);
+                            if (string.IsNullOrEmpty(macroName)) continue;
+                            if (macroName.Equals(key) == false) continue;
+
+                            string decryptedBase64Data = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["data"]);
+                            byte[] decryptedData = System.Convert.FromBase64String(decryptedBase64Data);
+                            Base64EIDOStream base64EIDOStream = new Base64EIDOStream();
+                            base64EIDOStream.WriteDecodedData(decryptedData);
+
+                            Phabricator.Data.File record = new Phabricator.Data.File();
+                            record.Token = (string)reader["token"];
+                            record.ID = (Int32)reader["id"];
+                            record.FileName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["fileName"]);
+                            record.DataStream = base64EIDOStream;
+                            record.DateModified = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateModified"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
+                            record.Properties = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["properties"]);
+                            record.MacroName = macroName;
+                            record.Size = Int32.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["size"]));
+
+                            return record;
+                        }
+                    }
+                }
+            }
+
+            if (ignoreStageData == false && key.StartsWith("PHID-NEWTOKEN"))
+            {
+                int fileID = Int32.Parse(key.Substring("PHID-NEWTOKEN".Length));
+
+                Storage.Stage stageStorage = new Storage.Stage();
+                Phabricator.Data.File record = stageStorage.Get<Phabricator.Data.File>(database, language, Phabricator.Data.File.Prefix, fileID, true);
+                return record;
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Returns a bunch of FileInfo records
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.File> Get(Database database)
+        public override IEnumerable<Phabricator.Data.File> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, id, fileName, macroName, data, size, dateModified, properties
@@ -292,7 +342,48 @@ namespace Phabrico.Storage
                         Phabricator.Data.File record = new Phabricator.Data.File();
                         record.Token = (string)reader["token"];
                         record.ID = (Int32)reader["id"];
-                        record.DataStream = new Base64EIDOStream(decryptedData);
+                        record.DataStream = new Base64EIDOStream();
+                        record.DataStream.WriteDecodedData(decryptedData);
+                        record.DateModified = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateModified"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
+                        record.FileName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["fileName"]);
+                        record.MacroName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["macroName"]);
+                        record.Properties = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["properties"]);
+                        record.Size = Int32.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["size"]));
+
+                        yield return record;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a bunch of FileInfo records
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="language"></param>
+        /// <returns></returns>
+        public IEnumerable<Phabricator.Data.File> GetMacroFiles(Database database, Language language)
+        {
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       SELECT token, id, fileName, macroName, data, size, dateModified, properties
+                       FROM fileInfo
+                       WHERE macroName <> @macroName;
+                   ", database.Connection))
+            {
+                database.AddParameter(dbCommand, "macroName", "", Database.EncryptionMode.Default);
+
+                using (var reader = dbCommand.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string decryptedBase64Data = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["data"]);
+                        byte[] decryptedData = System.Convert.FromBase64String(decryptedBase64Data);
+
+                        Phabricator.Data.File record = new Phabricator.Data.File();
+                        record.Token = (string)reader["token"];
+                        record.ID = (Int32)reader["id"];
+                        record.DataStream = new Base64EIDOStream();
+                        record.DataStream.WriteDecodedData(decryptedData);
                         record.DateModified = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateModified"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
                         record.FileName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["fileName"]);
                         record.MacroName = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["macroName"]);
@@ -373,8 +464,9 @@ namespace Phabrico.Storage
         /// Returns an ID which can be used for a new File object
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="browser"></param>
         /// <returns></returns>
-        public int GetNewID(Database database)
+        public int GetNewID(Database database, Browser browser)
         {
             lock (ReentrancyLock)
             {
@@ -400,7 +492,7 @@ namespace Phabrico.Storage
                             dummyFileChunk.FileID = -(Int32.Parse(reader["latestNewToken"].ToString()) + 1);
                             dummyFileChunk.ChunkID = -1;
                             dummyFileChunk.Data = new byte[0];
-                            AddChunk(database, "", dummyFileChunk);
+                            AddChunk(database, browser, "", dummyFileChunk, Language.NotApplicable);
 
                             // return new id
                             return dummyFileChunk.FileID;
@@ -409,7 +501,7 @@ namespace Phabrico.Storage
 
                     // mark -1 as 'reserved' by writing a dummy file chunk into the database
                     dummyFileChunk.FileID = -1;
-                    AddChunk(database, "", dummyFileChunk);
+                    AddChunk(database, browser, "", dummyFileChunk, Language.NotApplicable);
 
                     return -1;
                 }

@@ -45,7 +45,7 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.Transaction> Get(Database database)
+        public override IEnumerable<Phabricator.Data.Transaction> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT parentToken, id, type, author, oldValue, newValue, dateModified
@@ -75,8 +75,9 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database"></param>
         /// <param name="parentToken"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public IEnumerable<Phabricator.Data.Transaction> GetAll(Database database, string parentToken)
+        public IEnumerable<Phabricator.Data.Transaction> GetAll(Database database, string parentToken, Language language)
         {
             List<Phabricator.Data.Transaction> result = new List<Phabricator.Data.Transaction>();
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
@@ -106,7 +107,7 @@ namespace Phabrico.Storage
                 }
 
                 Stage stageStorage = new Stage();
-                result.AddRange(stageStorage.Get<Phabricator.Data.Transaction>(database)
+                result.AddRange(stageStorage.Get<Phabricator.Data.Transaction>(database, language)
                                             .Where(stageData => stageData.Token.Equals(parentToken))
                                             .Select(stagedTransaction => new Phabricator.Data.Transaction(stagedTransaction)
                                             {
@@ -125,7 +126,7 @@ namespace Phabrico.Storage
         /// <param name="id"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public override Phabricator.Data.Transaction Get(Database database, string id, bool ignoreStageData)
+        public override Phabricator.Data.Transaction Get(Database database, string id, Language language, bool ignoreStageData)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                 SELECT parentToken, id, type, author, oldValue, newValue, dateModified

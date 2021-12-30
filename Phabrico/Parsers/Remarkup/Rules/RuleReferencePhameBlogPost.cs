@@ -1,6 +1,7 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
 using Phabrico.Phabricator.Data;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +13,13 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// Rmarkup parser for links to Phame blog posts
     /// it will convert "{J1}" to a CSS-styled blog post link
     /// </summary>
+    [RuleXmlTag("BL")]
     public class RuleReferencePhameBlogPost : RemarkupRule
     {
         public int BlogPostID { get; private set; }
 
         /// <summary>
-        /// Creates a copy of the current RuleReferenceFile
+        /// Creates a copy of the current RuleReferencePhameBlogPost
         /// </summary>
         /// <returns></returns>
         public override RemarkupRule Clone()
@@ -45,7 +47,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Storage.PhamePost phamePostStorage = new Storage.PhamePost();
 
             BlogPostID = Int32.Parse(match.Groups[1].Value);
-            Phabricator.Data.PhamePost phamePost = phamePostStorage.Get(database, BlogPostID.ToString());
+            Phabricator.Data.PhamePost phamePost = phamePostStorage.Get(database, BlogPostID.ToString(), browser.Session.Locale);
             if (phamePost == null) return false;
 
 
@@ -58,6 +60,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Length = match.Length;
 
             return true;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            return innerText;
         }
     }
 }

@@ -5,6 +5,7 @@ using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
 using Phabrico.Parsers.Remarkup.Rules;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -92,7 +93,7 @@ namespace Phabrico.Plugin
                             if (fileObjectName.StartsWith("F-"))
                             {
                                 Storage.Stage stageStorage = new Storage.Stage();
-                                fileObject = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, fileObjectId, true);
+                                fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileObjectId, true);
                             }
                             else
                             {
@@ -133,60 +134,89 @@ namespace Phabrico.Plugin
                 Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
                 theme = accountData.Theme;
                 darkenImageStyle = accountData.Parameters.DarkenBrightImages;
-            }
 
-            HtmlViewPage htmlViewPage = new HtmlViewPage(httpServer, browser, true, "DiagramEditor", parameters);
+                HtmlViewPage htmlViewPage = new HtmlViewPage(httpServer, browser, true, "DiagramEditor", parameters);
 
-            if (fileObject == null)
-            {
-                // use "empty" XML/PNG as initial template for IFrame content
-                htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAACyHRFWHRteGZpbGUAJTNDbXhmaWxlJTIwaG9zdCUzRCUyMkVsZWN0cm9uJTIyJTIwbW9kaWZpZWQlM0QlMjIyMDIxLTAzLTA4VDE1JTNBNDElM0ExNy45NzZaJTIyJTIwYWdlbnQlM0QlMjI1LjAlMjAoV2luZG93cyUyME5UJTIwMTAuMCUzQiUyMFdpbjY0JTNCJTIweDY0KSUyMEFwcGxlV2ViS2l0JTJGNTM3LjM2JTIwKEtIVE1MJTJDJTIwbGlrZSUyMEdlY2tvKSUyMGRyYXcuaW8lMkYxMy42LjIlMjBDaHJvbWUlMkY4My4wLjQxMDMuMTIyJTIwRWxlY3Ryb24lMkY5LjIuMCUyMFNhZmFyaSUyRjUzNy4zNiUyMiUyMGV0YWclM0QlMjJWNng2Y0xyd2FEalRTZmphWnV6WCUyMiUyMHZlcnNpb24lM0QlMjIxMy42LjIlMjIlMjB0eXBlJTNEJTIyZGV2aWNlJTIyJTNFJTNDZGlhZ3JhbSUyMGlkJTNEJTIyWmh6TlJTbUxhbVhLdzB6enhJc0klMjIlMjBuYW1lJTNEJTIyUGFnZS0xJTIyJTNFZFpGQkU0SWdFSVYlMkZEWGVWY3V4c1ZwZE9Iam96c2drejZESklvJTJGWHIwd0V5eGpxeGZPODlGaFpDeTI0Nkc2YkZGVGtva2lWOEl2UklzaXhOaW54ZUZ2SjBwRWc5YUkzazNyU0NXcjRnSkQxOVNBNURaTFNJeWtvZHd3YjdIaG9iTVdZTWpySHRqaXJ1cWxrTEcxQTNURzNwVFhJclBNMzN1MVc0Z0d4RmFKM21CNmQwTExqOVV3YkJPSTVmaUZhRWxnYlJ1cXFiU2xETDlNSmdYTzcwUiUyRjNjekVCdmZ3VG1ZajE3M2tSZlJLczMlM0MlMkZkaWFncmFtJTNFJTNDJTJGbXhmaWxlJTNFZhx3AwAAAA1JREFUGFdj+P///38ACfsD/QVDRcoAAAAASUVORK5CYII=", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-            }
-            else
-            {
-                // use loaded XML/PNG content from fileobject as initial template for IFrame content
-                string base64Data = fileObject.DataStream.ReadEncodedBlock(0, (int)fileObject.DataStream.LengthEncodedData);
-                htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64," + base64Data, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-            }
-
-            if (parameters.Any() || openedFromRemarkupEditor)
-            {
-                htmlViewPage.SetText("HIDE-EXIT-BTN", "False", HtmlViewPage.ArgumentOptions.Default);
-            }
-            else
-            {
-                htmlViewPage.SetText("HIDE-EXIT-BTN", "True", HtmlViewPage.ArgumentOptions.Default);
-            }
-
-
-            htmlViewPage.SetText("DIAGRAM-NAME", diagramName, HtmlViewPage.ArgumentOptions.Default);
-            htmlViewPage.SetText("NEW-DIAGRAM-NAME", Locale.TranslateText("(New)", browser.Session.Locale), HtmlViewPage.ArgumentOptions.Default);
-            htmlViewPage.SetText("LANGUAGE", browser.Session.Locale, HtmlViewPage.ArgumentOptions.Default);
-
-            if (theme.Equals("dark"))
-            {
-                switch (darkenImageStyle)
+                if (fileObject == null)
                 {
-                    case Phabricator.Data.Account.DarkenImageStyle.Extreme:
-                        htmlViewPage.SetText("IFRAME-FILTER", "invert(80.7%) sepia(0%) saturate(302%) hue-rotate(180deg) brightness(139%) contrast(100%)", HtmlViewPage.ArgumentOptions.Default);
-                        break;
-
-                    case Phabricator.Data.Account.DarkenImageStyle.Moderate:
-                        htmlViewPage.SetText("IFRAME-FILTER", "brightness(60%) contrast(150%)", HtmlViewPage.ArgumentOptions.Default);
-                        break;
-
-                    case Phabricator.Data.Account.DarkenImageStyle.Disabled:
-                    default:
-                        htmlViewPage.SetText("IFRAME-FILTER", "none", HtmlViewPage.ArgumentOptions.Default);
-                        break;
+                    // use "empty" XML/PNG as initial template for IFrame content
+                    htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAACyHRFWHRteGZpbGUAJTNDbXhmaWxlJTIwaG9zdCUzRCUyMkVsZWN0cm9uJTIyJTIwbW9kaWZpZWQlM0QlMjIyMDIxLTAzLTA4VDE1JTNBNDElM0ExNy45NzZaJTIyJTIwYWdlbnQlM0QlMjI1LjAlMjAoV2luZG93cyUyME5UJTIwMTAuMCUzQiUyMFdpbjY0JTNCJTIweDY0KSUyMEFwcGxlV2ViS2l0JTJGNTM3LjM2JTIwKEtIVE1MJTJDJTIwbGlrZSUyMEdlY2tvKSUyMGRyYXcuaW8lMkYxMy42LjIlMjBDaHJvbWUlMkY4My4wLjQxMDMuMTIyJTIwRWxlY3Ryb24lMkY5LjIuMCUyMFNhZmFyaSUyRjUzNy4zNiUyMiUyMGV0YWclM0QlMjJWNng2Y0xyd2FEalRTZmphWnV6WCUyMiUyMHZlcnNpb24lM0QlMjIxMy42LjIlMjIlMjB0eXBlJTNEJTIyZGV2aWNlJTIyJTNFJTNDZGlhZ3JhbSUyMGlkJTNEJTIyWmh6TlJTbUxhbVhLdzB6enhJc0klMjIlMjBuYW1lJTNEJTIyUGFnZS0xJTIyJTNFZFpGQkU0SWdFSVYlMkZEWGVWY3V4c1ZwZE9Iam96c2drejZESklvJTJGWHIwd0V5eGpxeGZPODlGaFpDeTI0Nkc2YkZGVGtva2lWOEl2UklzaXhOaW54ZUZ2SjBwRWc5YUkzazNyU0NXcjRnSkQxOVNBNURaTFNJeWtvZHd3YjdIaG9iTVdZTWpySHRqaXJ1cWxrTEcxQTNURzNwVFhJclBNMzN1MVc0Z0d4RmFKM21CNmQwTExqOVV3YkJPSTVmaUZhRWxnYlJ1cXFiU2xETDlNSmdYTzcwUiUyRjNjekVCdmZ3VG1ZajE3M2tSZlJLczMlM0MlMkZkaWFncmFtJTNFJTNDJTJGbXhmaWxlJTNFZhx3AwAAAA1JREFUGFdj+P///38ACfsD/QVDRcoAAAAASUVORK5CYII=", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                 }
-            }
-            else
-            {
-                htmlViewPage.SetText("IFRAME-FILTER", "none", HtmlViewPage.ArgumentOptions.Default);
-            }
+                else
+                {
+                    // use loaded XML/PNG content from fileobject as initial template for IFrame content
+                    string base64Data = fileObject.DataStream.ReadEncodedBlock(0, (int)fileObject.DataStream.LengthEncodedData);
+                    htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64," + base64Data, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                }
 
-            httpFound = htmlViewPage;
+                if (parameters.Any() || openedFromRemarkupEditor)
+                {
+                    htmlViewPage.SetText("HIDE-EXIT-BTN", "False", HtmlViewPage.ArgumentOptions.Default);
+                }
+                else
+                {
+                    htmlViewPage.SetText("HIDE-EXIT-BTN", "True", HtmlViewPage.ArgumentOptions.Default);
+                }
+
+
+                htmlViewPage.SetText("DIAGRAM-NAME", diagramName, HtmlViewPage.ArgumentOptions.Default);
+                htmlViewPage.SetText("NEW-DIAGRAM-NAME", Locale.TranslateText("(New)", browser.Session.Locale), HtmlViewPage.ArgumentOptions.Default);
+                htmlViewPage.SetText("LANGUAGE", browser.Session.Locale, HtmlViewPage.ArgumentOptions.Default);
+
+                if (theme.Equals("dark"))
+                {
+                    switch (darkenImageStyle)
+                    {
+                        case Phabricator.Data.Account.DarkenImageStyle.Extreme:
+                            htmlViewPage.SetText("IFRAME-FILTER", "invert(80.7%) sepia(0%) saturate(302%) hue-rotate(180deg) brightness(139%) contrast(100%)", HtmlViewPage.ArgumentOptions.Default);
+                            break;
+
+                        case Phabricator.Data.Account.DarkenImageStyle.Moderate:
+                            htmlViewPage.SetText("IFRAME-FILTER", "brightness(60%) contrast(150%)", HtmlViewPage.ArgumentOptions.Default);
+                            break;
+
+                        case Phabricator.Data.Account.DarkenImageStyle.Disabled:
+                        default:
+                            htmlViewPage.SetText("IFRAME-FILTER", "none", HtmlViewPage.ArgumentOptions.Default);
+                            break;
+                    }
+                }
+                else
+                {
+                    htmlViewPage.SetText("IFRAME-FILTER", "none", HtmlViewPage.ArgumentOptions.Default);
+                }
+
+                if (fileObject == null || fileObject.ID > 0)
+                {
+                    htmlViewPage.SetText("SHOW-APPROVE-TRANSLATION-BTN", "False", HtmlViewPage.ArgumentOptions.Default);
+                }
+                else
+                {
+                    Content content = new Content(database);
+                    Content.Translation translation = content.GetTranslation(fileObject.Token, browser.Session.Locale);
+                    if (translation == null ||  translation.IsReviewed == true)
+                    {
+                        htmlViewPage.SetText("SHOW-APPROVE-TRANSLATION-BTN", "False", HtmlViewPage.ArgumentOptions.Default);
+                    }
+                    else
+                    {
+                        htmlViewPage.SetText("SHOW-APPROVE-TRANSLATION-BTN", "True", HtmlViewPage.ArgumentOptions.Default);
+                        htmlViewPage.SetText("DIAGRAM-TOKEN", fileObject.Token, HtmlViewPage.ArgumentOptions.Default);
+
+                        if (fileObject.DateModified == DateTimeOffset.MinValue)
+                        {
+                            // diagram was cloned from another existing (non-translated) diagram, but has not been modified yet
+                            htmlViewPage.SetText("DISABLE-APPROVE-TRANSLATION-BTN", "True", HtmlViewPage.ArgumentOptions.Default);
+                        }
+                        else
+                        {
+                            htmlViewPage.SetText("DISABLE-APPROVE-TRANSLATION-BTN", "False", HtmlViewPage.ArgumentOptions.Default);
+                        }
+                    }
+                }
+
+                httpFound = htmlViewPage;
+            }
         }
 
         /// <summary>
@@ -293,7 +323,7 @@ namespace Phabrico.Plugin
                         if (fileID.StartsWith("-"))
                         {
                             // negative fileID -> file is aleady staged
-                            file = stageStorage.Get<Phabricator.Data.File>(database, Phabricator.Data.File.Prefix, Int32.Parse(fileID), true);
+                            file = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, Int32.Parse(fileID), true);
 
                             if (file == null)
                             {
@@ -318,7 +348,7 @@ namespace Phabrico.Plugin
                             }
 
 
-                            stageStorage.Create(database, file);
+                            stageStorage.Create(database, browser, file);
 
                             // search for all wiki/task objects in which the original file is referenced
                             int numericFileID;
@@ -326,7 +356,7 @@ namespace Phabrico.Plugin
                             {
                                 Storage.File fileStorage = new Storage.File();
                                 Phabricator.Data.File originalFile = fileStorage.GetByID(database, Int32.Parse(fileID), true);
-                                IEnumerable<Phabricator.Data.PhabricatorObject> referrers = database.GetDependentObjects(originalFile.Token);
+                                IEnumerable<Phabricator.Data.PhabricatorObject> referrers = database.GetDependentObjects(originalFile.Token, Language.NotApplicable);
 
                                 RemarkupEngine remarkupEngine = new RemarkupEngine();
                                 foreach (Phabricator.Data.PhabricatorObject referrer in referrers)

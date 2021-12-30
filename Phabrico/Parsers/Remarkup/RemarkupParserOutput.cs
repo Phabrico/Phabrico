@@ -23,7 +23,7 @@ namespace Phabrico.Parsers.Remarkup
         /// <summary>
         /// Contains all the token rules of the given remarkup content
         /// </summary>
-        public List<Rules.RemarkupRule> TokenList { get; set; }
+        public RemarkupTokenList TokenList { get; set; }
 
         /// <summary>
         /// Constructor
@@ -32,7 +32,7 @@ namespace Phabrico.Parsers.Remarkup
         {
             LinkedPhabricatorObjects = new List<Phabricator.Data.PhabricatorObject>();
             Text = "";
-            TokenList = new List<Rules.RemarkupRule>();
+            TokenList = new RemarkupTokenList();
         }
     }
 }

@@ -124,6 +124,14 @@ namespace Phabrico.Controllers
             return result;
         }
 
+        /// <summary>
+        /// This method is executed after some HTML is generated from Remarkup content.
+        /// If the Remarkup content itself contains some weird stuff (e.g. non-sequential header levels), the generated HTML
+        /// will also contain these errors.
+        /// These kind of errors are fixed in here.
+        /// </summary>
+        /// <param name="html">Generated HTML</param>
+        /// <returns>Corrected HTML</returns>
         private string CorrectInvalidHTML(string html)
         {
             // == fix non-sequential header tags ==============
@@ -194,7 +202,7 @@ namespace Phabrico.Controllers
         /// <param name="locale"></param>
         /// <param name="addDateTimeHTMLSeparator"></param>
         /// <returns>Human readable timestamp</returns>
-        public static string FormatDateTimeOffset(DateTimeOffset timeStamp, string locale, bool addDateTimeHTMLSeparator = true)
+        public static string FormatDateTimeOffset(DateTimeOffset timeStamp, Language locale, bool addDateTimeHTMLSeparator = true)
         {
             if (locale == null)
             {
@@ -202,7 +210,7 @@ namespace Phabrico.Controllers
             }
 
             DateTimeOffset localTimeStamp = timeStamp.ToLocalTime();
-            CultureInfo cultureInfo = new CultureInfo(locale);
+            CultureInfo cultureInfo = new CultureInfo(locale.ToString());
             string formatTimeStamp = cultureInfo.DateTimeFormat.LongDatePattern;
             string longFormatTimeStamp = localTimeStamp.ToString(formatTimeStamp, cultureInfo);
 
@@ -236,7 +244,7 @@ namespace Phabrico.Controllers
                     using (Storage.Database database = new Storage.Database(EncryptionKey))
                     {
                         Storage.User phabricatorUsers = new Storage.User();
-                        AccountByToken = phabricatorUsers.Get(database)
+                        AccountByToken = phabricatorUsers.Get(database, Language.NotApplicable)
                                                          .ToDictionary(key => key.Token, value => value);
                     }
                 }
@@ -272,7 +280,7 @@ namespace Phabrico.Controllers
                     using (Storage.Database database = new Storage.Database(EncryptionKey))
                     {
                         Storage.Project phabricatorProjects = new Storage.Project();
-                        ProjectByToken = phabricatorProjects.Get(database)
+                        ProjectByToken = phabricatorProjects.Get(database, Language.NotApplicable)
                                                             .ToDictionary(key => key.Token, value => value);
                     }
                 }

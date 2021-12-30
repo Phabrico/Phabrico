@@ -51,7 +51,7 @@ namespace Phabrico.Plugin
         /// </summary>
         /// <param name="locale"></param>
         /// <returns></returns>
-        public override string GetName(string locale)
+        public override string GetName(Language locale)
         {
             return Locale.TranslateText("Gitanos", locale);
         }
@@ -69,7 +69,7 @@ namespace Phabrico.Plugin
         /// </summary>
         /// <param name="browser"></param>
         /// <returns></returns>
-        public override bool IsVisible(Browser browser)
+        public override bool IsVisibleInNavigator(Browser browser)
         {
             return true;
         }
@@ -115,7 +115,7 @@ namespace Phabrico.Plugin
 
                 // start monitoring the local git repositories
                 Storage.GitanosConfigurationRootPath gitanosConfigurationRootPathStorage = new Storage.GitanosConfigurationRootPath();
-                IEnumerable<Model.GitanosConfigurationRootPath> rootPaths = gitanosConfigurationRootPathStorage.Get(Database);
+                IEnumerable<Model.GitanosConfigurationRootPath> rootPaths = gitanosConfigurationRootPathStorage.Get(Database, Language.NotApplicable);
                 DirectoryMonitor.Start(rootPaths);
 
                 SynchronizationReadData = GitanosSynchronizationReadData;
@@ -132,7 +132,7 @@ namespace Phabrico.Plugin
         private void GitanosSynchronizationReadData(Synchronization.SynchronizationParameters synchronizationParameters, int processedDuration, int totalDuration)
         {
             Storage.GitanosPhabricatorRepository gitanosPhabricatorRepositoryStorage = new Storage.GitanosPhabricatorRepository();
-            DateTimeOffset modifiedSince = gitanosPhabricatorRepositoryStorage.Get(synchronizationParameters.database)
+            DateTimeOffset modifiedSince = gitanosPhabricatorRepositoryStorage.Get(synchronizationParameters.database, Language.NotApplicable)
                                                                               .Select(record => record.DateModified)
                                                                               .DefaultIfEmpty(new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan()))
                                                                               .Max(dateTimeOffset => dateTimeOffset)

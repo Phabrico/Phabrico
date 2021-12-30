@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Phabrico.Miscellaneous;
+using System.Collections.Generic;
 
 namespace Phabrico.Storage
 {
@@ -38,16 +39,18 @@ namespace Phabrico.Storage
         /// Returns all records
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public abstract IEnumerable<T> Get(Database database);
+        public abstract IEnumerable<T> Get(Database database, Language language);
 
         /// <summary>
         /// Returns a specific record
         /// </summary>
         /// <param name="database"></param>
         /// <param name="key"></param>
+        /// <param name="language"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public abstract T Get(Database database, string key, bool ignoreStageData);
+        public abstract T Get(Database database, string key, Language language, bool ignoreStageData);
     }
 }

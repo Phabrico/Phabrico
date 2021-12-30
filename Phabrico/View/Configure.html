@@ -166,22 +166,24 @@
                         </label>
                     </td>
                 </tr>
-                <tr class="setting VisibleManiphestStates">
-                    <td class="aphront-form-label">
-                        <label class="aphront-form-label">Visible Maniphest states</label>
-                    </td>
-                    <td>
-                        <p class="instructions">Show only those tasks assigned to me that have one of the following states:</p>
-                        <div class="config-tables-header" style="width:auto; min-width: 100ch;">
-                            <div class="visibleManiphestStates">
-                                @{VISIBILE-MANIPHEST-STATES
-                                    <input id="@@VISIBILE-MANIPHEST-STATE-NAME@@" name="visible-manipheststate-@@VISIBILE-MANIPHEST-STATE-NAME@@" type="checkbox" @@VISIBILE-MANIPHEST-STATE-CHECKED@@>
-                                    <label for="@@VISIBILE-MANIPHEST-STATE-NAME@@">@@VISIBILE-MANIPHEST-STATE-DESCRIPTION@@</label>
-                                }@
+                @{IF @@MULTIPLE-OPEN-MANIPHEST-STATES@@=True@
+                    <tr class="setting VisibleManiphestStates">
+                        <td class="aphront-form-label">
+                            <label class="aphront-form-label">Visible Maniphest states</label>
+                        </td>
+                        <td>
+                            <p class="instructions">Show only those tasks assigned to me that have one of the following states:</p>
+                            <div class="config-tables-header" style="width:auto; min-width: 100ch;">
+                                <div class="visibleManiphestStates">
+                                    @{VISIBILE-MANIPHEST-STATES
+                                        <input id="@@VISIBILE-MANIPHEST-STATE-NAME@@" name="visible-manipheststate-@@VISIBILE-MANIPHEST-STATE-NAME@@" type="checkbox" @@VISIBILE-MANIPHEST-STATE-CHECKED@@>
+                                        <label for="@@VISIBILE-MANIPHEST-STATE-NAME@@">@@VISIBILE-MANIPHEST-STATE-DESCRIPTION@@</label>
+                                    }@
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
+                }@
             </table>
         </div>
         }@
@@ -346,23 +348,6 @@
         </div>
         }@
     </form>
-</div>
-
-<div id="dlgYesNo" class="aphront-dialog-view modalview" style="display:none;position: fixed; width: 600px; top: 0px; left: calc(50vw - 300px);">
-    <div class="aphront-dialog-overlay"></div>
-    <div class="aphront-dialog-head">
-        <span class="phui-header-header title"></span>
-    </div>
-    <div class="aphront-dialog-body phabrico-remarkup">
-        <div class="phabrico-remarkup">
-            <p class="message"></p>
-        </div>
-        <br>
-    </div>
-    <div class="aphront-dialog-tail grouped" style="text-align: right;">
-        <a data-accesskey="Button-AccessKey-Yes" href="#" class="button button-blue yes">Yes</a>
-        <a data-accesskey="Button-AccessKey-No" href="#" class="button button-gray no">No</a>
-    </div>
 </div>
 
 @{IF @@IIS-MODULE@@=False@
@@ -802,44 +787,6 @@
         xmlhttp.open('POST', "configure/table-useraccounts/", true);
         xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         xmlhttp.send(data);
-    }
-
-    function showHideConfirmationMessage(show, title, text, fnYes, fnNo) {
-        if (show) {
-            dlgYesNo.style.display = 'block';
-            document.querySelector('html').style.overflow = 'hidden';
-
-            var btnNo = dlgYesNo.querySelector('.no');
-            var btnYes = dlgYesNo.querySelector('.yes');
-
-            // set title and text
-            dlgYesNo.querySelector('.title').innerText = title;
-            dlgYesNo.querySelector('.message').innerHTML = text;
-
-            // disable all TABs
-            document.querySelectorAll('input, button, a, textarea').forEach(function (input) {
-                input.setAttribute('tabindex', '-1');
-            });
-
-            // fix TABs for dialog
-            btnYes.setAttribute('tabindex', '1');
-            btnNo.setAttribute('tabindex', '2');
-
-            // set functions to buttons
-            btnNo.onclick = function () { fnNo(); return false; }
-            btnYes.onclick = function () { fnYes(); return false; }
-
-            // set focus
-            btnNo.focus();
-        } else {
-            dlgYesNo.style.display = 'none';
-            document.querySelector('html').style.overflow = 'unset';
-
-            // restore all TABs
-            document.querySelectorAll('input, button, a, textarea').forEach(function (input) {
-                input.removeAttribute('tabindex');
-            });
-        }
     }
 
     function inputFieldModified(item) {

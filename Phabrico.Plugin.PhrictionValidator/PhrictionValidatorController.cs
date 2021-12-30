@@ -4,11 +4,8 @@ using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Storage;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Phabrico.Plugin
@@ -33,7 +30,7 @@ namespace Phabrico.Plugin
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/PhrictionValidator")]
-        public JsonMessage HttpPostExportToPDF(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostValidateDocument(Http.Server httpServer, Browser browser, string[] parameters)
         {
             Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
@@ -42,7 +39,7 @@ namespace Phabrico.Plugin
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 string jsonData;
-                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, PhrictionData.Path);
+                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, PhrictionData.Path, browser.Session.Locale);
 
                 if (phrictionDocument != null)
                 {
@@ -127,7 +124,7 @@ namespace Phabrico.Plugin
                             List<string> origins = (List<string>)record[1];
                             foreach (string origin in origins.OrderBy(o => o.ToUpperInvariant()))
                             {
-                                phrictionDocument = phrictionStorage.Get(database, origin);
+                                phrictionDocument = phrictionStorage.Get(database, origin, browser.Session.Locale);
                                 string title = HttpUtility.HtmlEncode(phrictionDocument.Name);
                                 string phrictionDocumentPath = origin.TrimEnd('/');
                                 while (PhrictionData.Path.TrimEnd('/').Equals(phrictionDocumentPath.TrimEnd('/')) == false)
@@ -136,7 +133,7 @@ namespace Phabrico.Plugin
                                     if (pathParts.Length <= 1) break;
                                     phrictionDocumentPath = string.Join("/", pathParts.Take(pathParts.Length - 1));
 
-                                    phrictionDocument = phrictionStorage.Get(database, phrictionDocumentPath);
+                                    phrictionDocument = phrictionStorage.Get(database, phrictionDocumentPath, browser.Session.Locale);
                                     if (phrictionDocument == null)
                                     {
                                         title = phrictionDocumentPath.Split('/').LastOrDefault() + " > " + title;
@@ -196,7 +193,7 @@ namespace Phabrico.Plugin
             List<string> invalidFileReferences;
             List<string> invalidHyperlinkReferences;
 
-            Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken);
+            Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken, browser.Session.Locale);
             if (phrictionDocument != null)
             {
                 if (string.IsNullOrWhiteSpace(phrictionDocument.Content)) return;
@@ -215,7 +212,7 @@ namespace Phabrico.Plugin
 
                         if (referencedFile.FileID < 0)
                         {
-                            fileExists = stageStorage.Get(database).Any(stageData => stageData.ObjectID == referencedFile.FileID);
+                            fileExists = stageStorage.Get(database, browser.Session.Locale).Any(stageData => stageData.ObjectID == referencedFile.FileID);
                         }
                         else
                         {
@@ -256,66 +253,6 @@ namespace Phabrico.Plugin
         }
 
         /// <summary>
-        /// This method is fired when the user confirms or declines to export underlying Phriction documents to PDF
-        /// See also HttpPostExportToPDF
-        /// </summary>
-        /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        [UrlController(URL = "/PhrictionValidator/confirm")]
-        public JsonMessage HttpPostValidationConfirmation(Http.Server httpServer, Browser browser, string[] parameters)
-        {
-            string content = browser.Session.FormVariables["PhrictionToPDF"]["content"];
-            string toc = browser.Session.FormVariables["PhrictionToPDF"]["toc"];
-            string crumbs = browser.Session.FormVariables["PhrictionToPDF"]["crumbs"];
-            string path = browser.Session.FormVariables["PhrictionToPDF"]["path"];
-
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
-            Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
-
-            List<string> underlyingPhrictionTokens = new List<string>();
-            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
-            {
-                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, path);
-
-                if (phrictionDocument != null)
-                {
-                    RetrieveUnderlyingPhrictionDocuments(database, phrictionDocument.Token, ref underlyingPhrictionTokens);
-                }
-
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.Append(content);
-
-                foreach (string underlyingPhrictionToken in underlyingPhrictionTokens)
-                {
-                    Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
-                    phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken);
-                    string html = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
-                }
-            }
-
-            string jsonData;
-            if (underlyingPhrictionTokens.Any())
-            {
-                jsonData = JsonConvert.SerializeObject(new
-                {
-                    Status = "Confirm",
-                    Message = Locale.TranslateText("There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to export these as well ?", browser.Session.Locale)
-                });
-            }
-            else
-            {
-                jsonData = JsonConvert.SerializeObject(new
-                {
-                    Status = "Finished"
-                });
-            }
-
-            return new JsonMessage(jsonData);
-        }
-
-        /// <summary>
         /// Downloads recursively all underlying Phriction documents for a given Phriction document
         /// </summary>
         /// <param name="database">Phabrico database</param>
@@ -325,11 +262,11 @@ namespace Phabrico.Plugin
         {
             Storage.Stage stageStorage = new Storage.Stage();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
-            Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken);
-            List<Phabricator.Data.Phriction> underlyingDocuments = phrictionStorage.Get(database)
+            Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken, browser.Session.Locale);
+            List<Phabricator.Data.Phriction> underlyingDocuments = phrictionStorage.Get(database, browser.Session.Locale)
                                                                                    .Where(wiki => wiki.Path.StartsWith(phrictionDocument.Path.TrimStart('/')))
                                                                                    .ToList();
-            underlyingDocuments.AddRange( stageStorage.Get<Phabricator.Data.Phriction>(database)
+            underlyingDocuments.AddRange( stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale)
                                                       .Where(stagedWiki => stagedWiki.Token.StartsWith("PHID-NEWTOKEN-")
                                                                         && stagedWiki.Path.StartsWith(phrictionDocument.Path.TrimStart('/'))
                                                             )

@@ -28,5 +28,22 @@ Content: (content)
 Argv: (x=y)
 
 <p class='paragraph'></p>
-<div class='remarkup-warning'>No interpreter found: phutil_fake_test_block_interpreter</div>
+<div class='remarkup-notification warning'>No interpreter found: phutil_fake_test_block_interpreter</div>
+~~~~~~~~~~
+<IN>phutil_test_block_interpreter (foo=bar) {{{
+content
+}}}</IN>
+<N>[2]</N>
+<N>[3]</N>
+<IN>phutil_test_block_interpreter {{{ content
+content }}}</IN>
+<N>[4]</N>
+<N>[5]</N>
+<IN>phutil_test_block_interpreter {{{ content }}}</IN>
+<N>[6]</N>
+<N>[7]</N>
+<IN>phutil_test_block_interpreter(x=y){{{content}}}</IN>
+<N>[8]</N>
+<N>[9]</N>
+<IN>phutil_fake_test_block_interpreter {{{ content }}}</IN>
 ~~~~~~~~~~

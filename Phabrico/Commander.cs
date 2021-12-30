@@ -321,7 +321,7 @@ namespace Phabrico
                     {
                         foreach (string tag in secondaryUser.tags)
                         {
-                            Phabricator.Data.Project userRoleTag = projectStorage.Get(database, tag);
+                            Phabricator.Data.Project userRoleTag = projectStorage.Get(database, tag, Language.NotApplicable);
                             if (userRoleTag != null)
                             {
                                 newUserAccount.Parameters.DefaultUserRoleTag += userRoleTag.Token + ",";
@@ -342,7 +342,7 @@ namespace Phabrico
                     // filter by projects
 
                     // unselect (None)
-                    Phabricator.Data.Project project = projectStorage.Get(database, Phabricator.Data.Project.None);
+                    Phabricator.Data.Project project = projectStorage.Get(database, Phabricator.Data.Project.None, Language.NotApplicable);
                     project.Selected = Phabricator.Data.Project.Selection.Unselected;
                     projectStorage.Add(database, project);
 
@@ -352,7 +352,7 @@ namespace Phabrico
                     // select all projects from json config
                     foreach (string projectTag in maniphestProjectTags.Concat(phrictionProjectTags).Distinct())
                     {
-                        project = projectStorage.Get(database, projectTag);
+                        project = projectStorage.Get(database, projectTag, Language.NotApplicable);
                         if (project != null)
                         {
                             project.Selected = Phabricator.Data.Project.Selection.Selected;
@@ -367,7 +367,7 @@ namespace Phabrico
                     // filter by users
 
                     // unselect (None)
-                    Phabricator.Data.User user = userStorage.Get(database, Phabricator.Data.User.None);
+                    Phabricator.Data.User user = userStorage.Get(database, Phabricator.Data.User.None, Language.NotApplicable);
                     user.Selected = false;
                     userStorage.Add(database, user);
 
@@ -377,7 +377,7 @@ namespace Phabrico
                     // select all users from json config
                     foreach (string userTag in maniphestUserTags.Concat(phrictionUserTags).Distinct())
                     {
-                        user = userStorage.Get(database, userTag);
+                        user = userStorage.Get(database, userTag, Language.NotApplicable);
                         if (user != null)
                         {
                             user.Selected = true;
@@ -413,13 +413,14 @@ namespace Phabrico
                 synchronizationController.ProgressMethod_DeleteOldData(synchronizationParameters, 0, 0);
                 ConsoleWriteStatus("Saving synchronization timestamp...");
                 synchronizationController.ProgressMethod_SaveLastSynchronizeTimeStamp(synchronizationParameters, 0, 0);
-                ConsoleWriteStatus("Finalizing...");
+
+                ConsoleWriteStatus("Finalizing master data...");
                 synchronizationController.ProgressMethod_Finalize(synchronizationParameters, 0, 0);
 
                 // clear sensitive information in database (1)
                 List<string> referencedTokens = new List<string>();
-                Phabricator.Data.Maniphest[] downloadedManiphestTasks = maniphestStorage.Get(database).ToArray();
-                Phabricator.Data.Phriction[] downloadedPhrictionDocuments = phrictionStorage.Get(database).ToArray();
+                Phabricator.Data.Maniphest[] downloadedManiphestTasks = maniphestStorage.Get(database, Language.NotApplicable).ToArray();
+                Phabricator.Data.Phriction[] downloadedPhrictionDocuments = phrictionStorage.Get(database, Language.NotApplicable).ToArray();
 
                 synchronizationParameters.existingAccount.PhabricatorUrl = "";
                 accountStorage.Add(database, synchronizationParameters.existingAccount);
@@ -522,7 +523,7 @@ namespace Phabrico
                     {
                         if (referencedTokens.Contains(ruleReferenceUser.UserToken) == false)
                         {
-                            Phabricator.Data.User user = userStorage.Get(database, ruleReferenceUser.UserToken);
+                            Phabricator.Data.User user = userStorage.Get(database, ruleReferenceUser.UserToken, Language.NotApplicable);
                             if (user != null)
                             {
                                 userStorage.Remove(database, user);
@@ -535,7 +536,7 @@ namespace Phabrico
                     {
                         if (referencedTokens.Contains(ruleReferenceProject.ProjectToken) == false)
                         {
-                            Phabricator.Data.Project project = projectStorage.Get(database, ruleReferenceProject.ProjectToken);
+                            Phabricator.Data.Project project = projectStorage.Get(database, ruleReferenceProject.ProjectToken, Language.NotApplicable);
                             if (project != null)
                             {
                                 projectStorage.Remove(database, project);
@@ -570,7 +571,7 @@ namespace Phabrico
                 
                 // clear sensitive information in database (2)
                 // remove all users which are not referenced
-                foreach (Phabricator.Data.User user in userStorage.Get(database).ToArray())
+                foreach (Phabricator.Data.User user in userStorage.Get(database, Language.NotApplicable).ToArray())
                 {
                     if (referencedTokens.Contains(user.Token) == false)
                     {
@@ -579,7 +580,7 @@ namespace Phabrico
                 }
 
                 // remove all projects which are not referenced
-                foreach (Phabricator.Data.Project project in projectStorage.Get(database).ToArray())
+                foreach (Phabricator.Data.Project project in projectStorage.Get(database, Language.NotApplicable).ToArray())
                 {
                     if (referencedTokens.Contains(project.Token) == false)
                     {
@@ -592,7 +593,7 @@ namespace Phabrico
 
                 // show all referenced projects
                 Phabricator.Data.Project[] referencedProjects = referencedTokens.Where(projectToken => projectToken.StartsWith(Phabricator.Data.Project.Prefix))
-                                                                                .Select(projectToken => projectStorage.Get(database, projectToken))
+                                                                                .Select(projectToken => projectStorage.Get(database, projectToken, Language.NotApplicable))
                                                                                 .Where(project => project != null)
                                                                                 .ToArray();
                 if (referencedProjects.Any())
@@ -607,7 +608,7 @@ namespace Phabrico
 
                 // show all referenced users
                 Phabricator.Data.User[] referencedUsers = referencedTokens.Where(userToken => userToken.StartsWith(Phabricator.Data.User.Prefix))
-                                                                                .Select(userToken => userStorage.Get(database, userToken))
+                                                                                .Select(userToken => userStorage.Get(database, userToken, Language.NotApplicable))
                                                                                 .Where(user => user != null)
                                                                                 .ToArray();
                 if (referencedUsers.Any())

@@ -25,12 +25,7 @@ namespace Phabrico.Storage
         private static string _datasource = null;
         internal static int _dbVersionInDataFile = 0;
 
-        public void SetConfigurationParameter(string v, object p)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static int _dbVersionInApplication = 4;
+        private static int _dbVersionInApplication = 5;
         private static DateTime _utcNextTimeToVacuum = DateTime.MinValue;
 
         private string encryptionKey;
@@ -100,6 +95,15 @@ namespace Phabrico.Storage
         /// References to the underlying SQLite database connection
         /// </summary>
         public SQLiteConnection Connection
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// References to the underlying SQLite translation database connection
+        /// </summary>
+        public SQLiteConnection TranslationConnection
         {
             get;
             private set;
@@ -191,6 +195,14 @@ namespace Phabrico.Storage
                 this.Connection.Open();
                 this.IsConnected = true;
 
+                // set up translation database
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                           ATTACH DATABASE 'Phabrico.translation' AS Translation;
+                       ", Connection))
+                {
+                    dbCommand.ExecuteNonQuery();
+                }
+            
                 if (_dbVersionInDataFile == 0)
                 {
                     string version = GetConfigurationParameter("version");
@@ -412,9 +424,9 @@ namespace Phabrico.Storage
 
                 case EncryptionMode.None:
                     dbCommand.Parameters.Add(parameterName, System.Data.DbType.UInt64);
-                    dbCommand.Parameters[parameterName].Value = parameterValue.ToString();
+                    dbCommand.Parameters[parameterName].Value = parameterValue.ToUnixTimeSeconds();
 
-                    dbCommand.Parameters.Add(new System.Data.SQLite.SQLiteParameter(parameterName, parameterValue.ToString()));
+                    dbCommand.Parameters.Add(new System.Data.SQLite.SQLiteParameter(parameterName, parameterValue.ToUnixTimeSeconds()));
                     break;
 
                 case EncryptionMode.Private:
@@ -519,19 +531,20 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="mainToken"></param>
         /// <param name="dependentToken"></param>
-        public void AssignToken(string mainToken, string dependentToken)
+        public void AssignToken(string mainToken, string dependentToken, Language language)
         {
             if (mainToken.Equals(dependentToken)) return;
 
             using (SQLiteTransaction transaction = Connection.BeginTransaction())
             {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                           INSERT OR REPLACE INTO objectRelationInfo(token, linkedToken) 
-                           VALUES (@token, @linkedToken);
+                           INSERT OR REPLACE INTO objectRelationInfo(token, linkedToken, language) 
+                           VALUES (@token, @linkedToken, @language);
                        ", Connection, transaction))
                 {
                     AddParameter(dbCommand, "token", mainToken, EncryptionMode.None);
                     AddParameter(dbCommand, "linkedToken", dependentToken, EncryptionMode.None);
+                    AddParameter(dbCommand, "language", language, EncryptionMode.None);
                     dbCommand.ExecuteNonQuery();
 
                     transaction.Commit();
@@ -541,20 +554,46 @@ namespace Phabrico.Storage
 
         /// <summary>
         /// Removes all files from the SQLite database which are no more referenced in Phriction or Maniphest
+        /// and which have no macro names
         /// </summary>
         internal void CleanupUnusedObjectRelations()
         {
             using (SQLiteTransaction transaction = Connection.BeginTransaction())
             {
-                using (SQLiteCommand cmdDeleteUnrelatedFiles = new SQLiteCommand(@"
-                            DELETE FROM fileinfo 
+                List<string> tokensToRemove = new List<string>();
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                            SELECT * FROM fileinfo 
                             WHERE token NOT IN (
-                                SELECT linkedToken 
-                                FROM objectRelationInfo
-                            );
+                                      SELECT linkedToken 
+                                      FROM objectRelationInfo
+                                  )
+                            ;
                        ", Connection, transaction))
                 {
-                    cmdDeleteUnrelatedFiles.ExecuteNonQuery();
+                    using (var reader = dbCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string macroName = Encryption.Decrypt(EncryptionKey, (byte[])reader["macroName"]);
+                            if (string.IsNullOrWhiteSpace(macroName) == false) continue;
+
+                            string token = (string)reader["token"];
+                            tokensToRemove.Add(token);
+                        }
+                    }
+
+                }
+
+                foreach (string tokenToRemove in tokensToRemove)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                                 DELETE FROM fileinfo 
+                                 WHERE token = @token;
+                            ", Connection, transaction))
+                    {
+                        AddParameter(dbCommand, "token", tokenToRemove, EncryptionMode.None);
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
 
                 transaction.Commit();
@@ -565,16 +604,27 @@ namespace Phabrico.Storage
         /// Deletes all references for a given token
         /// </summary>
         /// <param name="mainToken">Token to be freed</param>
-        public void ClearAssignedTokens(string mainToken)
+        public void ClearAssignedTokens(string mainToken, Language language)
         {
             using (SQLiteTransaction transaction = Connection.BeginTransaction())
             {
                 using (SQLiteCommand cmdDeleteObjectRelationInfo = new SQLiteCommand(@"
                            DELETE FROM objectRelationInfo
-                           WHERE token = @token;
+                           WHERE token = @token
+                             AND (@language IS NULL
+                                  OR language = @language
+                                 );
                        ", Connection, transaction))
                 {
                     AddParameter(cmdDeleteObjectRelationInfo, "token", mainToken, EncryptionMode.None);
+                    if (language == null)
+                    {
+                        cmdDeleteObjectRelationInfo.Parameters.Add(new SQLiteParameter("language", DBNull.Value));
+                    }
+                    else
+                    {
+                        AddParameter(cmdDeleteObjectRelationInfo, "language", language, EncryptionMode.None);
+                    }
                     cmdDeleteObjectRelationInfo.ExecuteNonQuery();
                 }
                 
@@ -675,14 +725,15 @@ namespace Phabrico.Storage
         /// Return all Phabricator objects which are dependent on a specific token
         /// </summary>
         /// <param name="linkedToken">Token to be searched for</param>
+        /// <param name="language"></param>
         /// <returns>Dependent Phabricator objects</returns>
-        public IEnumerable<Phabricator.Data.PhabricatorObject> GetDependentObjects(string linkedToken)
+        public IEnumerable<Phabricator.Data.PhabricatorObject> GetDependentObjects(string linkedToken, Language language)
         {
-            List<string> dependerTokens = new List<string>();
+            List<string[]> dependerTokens = new List<string[]>();
 
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                    SELECT * FROM objectRelationInfo
-                    WHERE linkedToken = @linkedToken;
+                    SELECT DISTINCT token, language FROM objectRelationInfo
+                    WHERE linkedToken = @linkedToken
                 ", Connection))
             {
                 AddParameter(dbCommand, "linkedToken", linkedToken, EncryptionMode.None);
@@ -690,17 +741,23 @@ namespace Phabrico.Storage
                 {
                     while (reader.Read())
                     {
-                        dependerTokens.Add((string)reader["token"]);
+                        dependerTokens.Add(new string[] {
+                            (string)reader["token"],
+                            (string)reader["language"]
+                        });
                     }
                 }
             }
 
-            foreach (string dependeeToken in dependerTokens)
+            foreach (string[] dependeeTokenData in dependerTokens)
             {
+                string dependeeToken = dependeeTokenData[0];
+                string dependeeLanguage = dependeeTokenData[1];
+
                 if (dependeeToken.StartsWith("PHID-NEWTOKEN-"))
                 {
                     Stage stageStorage = new Stage();
-                    foreach (Stage.Data stageData in stageStorage.Get(this))
+                    foreach (Stage.Data stageData in stageStorage.Get(this, language))
                     {
                         if (stageData.Token.Equals(dependeeToken))
                         {
@@ -720,6 +777,11 @@ namespace Phabrico.Storage
                                 Phabricator.Data.Phriction phrictionDocument = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Phriction)) as Phabricator.Data.Phriction;
                                 if (phrictionDocument != null)
                                 {
+                                    if (dependeeLanguage.Equals(Language.NotApplicable) == false)
+                                    {
+                                        phrictionDocument.Name += " (" + dependeeLanguage + ")";
+                                    }
+
                                     yield return phrictionDocument;
                                 }
                             }
@@ -730,31 +792,31 @@ namespace Phabrico.Storage
                 if (dependeeToken.StartsWith(Phabricator.Data.Phriction.Prefix))
                 {
                     Phriction phrictionStorage = new Phriction();
-                    yield return phrictionStorage.Get(this, dependeeToken);
+                    yield return phrictionStorage.Get(this, dependeeToken, language);
                 }
 
                 if (dependeeToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
                 {
                     Maniphest maniphestStorage = new Maniphest();
-                    yield return maniphestStorage.Get(this, dependeeToken);
+                    yield return maniphestStorage.Get(this, dependeeToken, language);
                 }
                 
                 if (dependeeToken.StartsWith(Phabricator.Data.File.Prefix))
                 {
                     File fileStorage = new File();
-                    yield return fileStorage.Get(this, dependeeToken);
+                    yield return fileStorage.Get(this, dependeeToken, language);
                 }
                 
                 if (dependeeToken.StartsWith(Phabricator.Data.User.Prefix))
                 {
                     User userStorage = new User();
-                    yield return userStorage.Get(this, dependeeToken);
+                    yield return userStorage.Get(this, dependeeToken, language);
                 }
                 
                 if (dependeeToken.StartsWith(Phabricator.Data.Project.Prefix))
                 {
                     Project projectStorage = new Project();
-                    yield return projectStorage.Get(this, dependeeToken);
+                    yield return projectStorage.Get(this, dependeeToken, language);
                 }
             }
         }
@@ -763,8 +825,9 @@ namespace Phabrico.Storage
         /// Return all Phabricator objects which are referenced by a given Phabricator object
         /// </summary>
         /// <param name="token">Token of Phabricator object to be searched for</param>
+        /// <param name="language"></param>
         /// <returns>A bunch of referenced Phabricator objects</returns>
-        public IEnumerable<Phabricator.Data.PhabricatorObject> GetReferencedObjects(string token)
+        public IEnumerable<Phabricator.Data.PhabricatorObject> GetReferencedObjects(string token, Language language)
         {
             List<string> referencedTokens = new List<string>();
 
@@ -788,7 +851,7 @@ namespace Phabrico.Storage
                 if (referencedToken.StartsWith("PHID-NEWTOKEN-"))
                 {
                     Stage stageStorage = new Stage();
-                    foreach (Stage.Data stageData in stageStorage.Get(this))
+                    foreach (Stage.Data stageData in stageStorage.Get(this, language))
                     {
                         if (stageData.Token.Equals(referencedToken))
                         {
@@ -829,31 +892,31 @@ namespace Phabrico.Storage
                     if (referencedToken.StartsWith(Phabricator.Data.Phriction.Prefix))
                     {
                         Phriction phrictionStorage = new Phriction();
-                        phabricatorObject = phrictionStorage.Get(this, referencedToken);
+                        phabricatorObject = phrictionStorage.Get(this, referencedToken, language);
                     }
                     else
                     if (referencedToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
                     {
                         Maniphest maniphestStorage = new Maniphest();
-                        phabricatorObject = maniphestStorage.Get(this, referencedToken);
+                        phabricatorObject = maniphestStorage.Get(this, referencedToken, language);
                     }
                     else
                     if (referencedToken.StartsWith(Phabricator.Data.File.Prefix))
                     {
                         File fileStorage = new File();
-                        phabricatorObject = fileStorage.Get(this, referencedToken);
+                        phabricatorObject = fileStorage.Get(this, referencedToken, language);
                     }
                     else
                     if (referencedToken.StartsWith(Phabricator.Data.User.Prefix))
                     {
                         User userStorage = new User();
-                        phabricatorObject = userStorage.Get(this, referencedToken);
+                        phabricatorObject = userStorage.Get(this, referencedToken, language);
                     }
                     else
                     if (referencedToken.StartsWith(Phabricator.Data.Project.Prefix))
                     {
                         Project projectStorage = new Project();
-                        phabricatorObject = projectStorage.Get(this, referencedToken);
+                        phabricatorObject = projectStorage.Get(this, referencedToken, language);
                     }
 
                     if (phabricatorObject != null)
@@ -869,8 +932,9 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="token">Phabricator object for which all underlying objects should be returned</param>
         /// <param name="dependentTokenType">Type of objects to be returned</param>
+        /// <param name="browser"></param>
         /// <returns>A bunch of tokens of the underlying Phabricator objects</returns>
-        public IEnumerable<string> GetUnderlyingTokens(string token, string dependentTokenType)
+        public IEnumerable<string> GetUnderlyingTokens(string token, string dependentTokenType, Browser browser)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT * FROM objectHierarchyInfo
@@ -907,11 +971,11 @@ namespace Phabrico.Storage
                         switch (dependentTokenType)
                         {
                             case "WIKI":
-                                phabricatorObject = stageStorage.Get<Phabricator.Data.Phriction>(this, tokenOfflineItem);
+                                phabricatorObject = stageStorage.Get<Phabricator.Data.Phriction>(this, tokenOfflineItem, browser.Session.Locale);
                                 break;
 
                             case "TASK":
-                                phabricatorObject = stageStorage.Get<Phabricator.Data.Maniphest>(this, tokenOfflineItem);
+                                phabricatorObject = stageStorage.Get<Phabricator.Data.Maniphest>(this, tokenOfflineItem, browser.Session.Locale);
                                 break;
 
                             default:
@@ -961,6 +1025,17 @@ namespace Phabrico.Storage
                        CREATE TABLE IF NOT EXISTS bannedObjectInfo(
                            key BLOB,
                            title BLOB
+                       );
+
+                       CREATE TABLE IF NOT EXISTS Translation.contentTranslation(
+                           token VARCHAR(30),
+                           language VARCHAR(30),
+                           title BLOB,
+                           translation BLOB,
+                           reviewed INT,
+                           dateModified SQLITE3_UINT64,
+
+                           PRIMARY KEY (token, language)
                        );
 
                        CREATE TABLE IF NOT EXISTS dbInfo(
@@ -1250,7 +1325,7 @@ namespace Phabrico.Storage
             RemarkupEngine remarkupEngine = new RemarkupEngine();
             RemarkupParserOutput remarkupParserOutput;
 
-            foreach (Phabricator.Data.PhabricatorObject referencer in GetDependentObjects(referencedPhabricatorObject.Token))
+            foreach (Phabricator.Data.PhabricatorObject referencer in GetDependentObjects(referencedPhabricatorObject.Token, browser.Session.Locale))
             {
                 string remarkupContent = null;
 
@@ -1500,6 +1575,60 @@ namespace Phabrico.Storage
                              ADD isDisabled BLOB;
                        ", Connection))
                 {
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
+
+            if (dbVersion == 5)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       CREATE TABLE IF NOT EXISTS stageInfoCopy(
+                           token VARCHAR(30),
+                           tokenPrefix BLOB,
+                           language TEXT,
+                           objectID BLOB,
+                           operation VARCHAR,
+                           dateModified BLOB,
+                           headerData BLOB,
+                           contentData BLOB,
+                           frozen BLOB,
+
+                           PRIMARY KEY (token, operation, language)
+                       );
+
+                       INSERT INTO stageInfoCopy(token, tokenPrefix, language, objectID, operation, dateModified, headerData, contentData, frozen)
+                          SELECT token, tokenPrefix, @language, objectID, operation, dateModified, headerData, contentData, frozen
+                          FROM stageInfo;
+
+                       DROP TABLE stageInfo;
+
+                       ALTER TABLE stageInfoCopy RENAME TO stageInfo;
+                    ", Connection))
+                {
+                    AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
+                    dbCommand.ExecuteNonQuery();
+                }
+
+
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       CREATE TABLE IF NOT EXISTS objectRelationInfoCopy(
+                           token VARCHAR(30),
+                           linkedToken VARCHAR(30),
+                           language TEXT,
+
+                           PRIMARY KEY (token, linkedToken, language)
+                       );
+
+                       INSERT INTO objectRelationInfoCopy(token, linkedToken, language)
+                          SELECT token, linkedToken, @language
+                          FROM objectRelationInfo;
+
+                       DROP TABLE objectRelationInfo;
+
+                       ALTER TABLE objectRelationInfoCopy RENAME TO objectRelationInfo;
+                    ", Connection))
+                {
+                    AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
                     dbCommand.ExecuteNonQuery();
                 }
             }

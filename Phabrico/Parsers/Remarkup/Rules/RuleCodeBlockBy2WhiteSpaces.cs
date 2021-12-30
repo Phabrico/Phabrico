@@ -1,6 +1,7 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
 using Phabrico.Phabricator.Data;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -10,6 +11,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// <summary>
     /// Remarkup parser for code block defined by a line starting with 2 spaces
     /// </summary>
+    [RuleXmlTag("WS")]
     public class RuleCodeBlockBy2WhiteSpaces : RuleCodeBlock
     {
         /// <summary>
@@ -96,6 +98,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Storage.Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            return innerText + "\n";
         }
     }
 }

@@ -7,6 +7,9 @@ namespace Phabrico
     {
         static Phabrico.Http.Server httpServer;
 
+        /// <summary>
+        /// Static constructor
+        /// </summary>
         static IISModule()
         {
             httpServer = new Phabrico.Http.Server(true, -1, "holiday", true);
@@ -36,11 +39,18 @@ namespace Phabrico
             httpServer.Customization.IsReadonly = true;
         }
 
+        /// <summary>
+        /// Initializes the IISModule
+        /// </summary>
+        /// <param name="application"></param>
         public void Init(HttpApplication application)
         {
             httpServer.Init(application);
         }
 
+        /// <summary>
+        /// Disposes the IISModule
+        /// </summary>
         public void Dispose()
         {
         }

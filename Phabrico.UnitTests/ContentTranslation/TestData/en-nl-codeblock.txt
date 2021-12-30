@@ -1,0 +1,20 @@
+﻿I am. **You //are//**.
+You & I are.
+
+``` lang=html, name=vegetables.html, lines=3, counterexample
+He is.
+We are.
+```
+
+They are.
+~~~~~~~~~~
+Ik ben. **Jij //bent//**.
+Jij & Ik bent.
+
+``` lang=html, name=vegetables.html, lines=3, counterexample
+He is.
+We are.
+```
+
+Zij zijn.
+~~~~~~~~~~

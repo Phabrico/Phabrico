@@ -28,6 +28,11 @@ namespace Phabrico.Controllers
             public IEnumerable<Phabricator.Data.Maniphest> Tasks { get; set; }
         }
 
+        /// <summary>
+        /// Converts a list of project tokens into a list of readable project names
+        /// </summary>
+        /// <param name="projectToken"></param>
+        /// <returns></returns>
         private string getProjectToken(string projectToken)
         {
             if (string.IsNullOrEmpty(projectToken))
@@ -55,11 +60,11 @@ namespace Phabrico.Controllers
 
             string maniphestTaskToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
             bool stagedManiphestTask = true;
-            Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTaskToken);
+            Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTaskToken, browser.Session.Locale);
             if (maniphestTask == null)
             {
                 stagedManiphestTask = false;
-                maniphestTask = maniphestStorage.Get(database, maniphestTaskToken);
+                maniphestTask = maniphestStorage.Get(database, maniphestTaskToken, browser.Session.Locale);
             }
 
             if (maniphestTask != null)
@@ -138,7 +143,7 @@ namespace Phabrico.Controllers
                                     if (_maniphestStatuses == null)
                                     {
                                         Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
-                                        _maniphestStatuses = maniphestStatusStorage.Get(database)
+                                        _maniphestStatuses = maniphestStatusStorage.Get(database, Language.NotApplicable)
                                                                                    .ToDictionary(key => key.Value, value => value);
                                     }
 
@@ -222,19 +227,19 @@ namespace Phabrico.Controllers
             newManiphestTask.Status = "open";
 
             Stage newStage = new Stage();
-            newManiphestTask.Token = newStage.Create(database, newManiphestTask);
+            newManiphestTask.Token = newStage.Create(database, browser, newManiphestTask);
             newManiphestTask.ID = string.Format("-{0}", Int32.Parse(newManiphestTask.Token.Substring("PHID-NEWTOKEN-".Length)));
             newStage.Modify(database, newManiphestTask, browser);
 
             keywordStorage.AddPhabricatorObject(this, database, newManiphestTask);
 
             // (re)assign dependent Phabricator objects
-            database.ClearAssignedTokens(newManiphestTask.Token);
+            database.ClearAssignedTokens(newManiphestTask.Token, Language.NotApplicable);
             RemarkupParserOutput remarkupParserOutput;
             ConvertRemarkupToHTML(database, "/", newManiphestTask.Description, out remarkupParserOutput, false);
             foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
             {
-                database.AssignToken(newManiphestTask.Token, linkedPhabricatorObject.Token);
+                database.AssignToken(newManiphestTask.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
             }
         }
 
@@ -308,7 +313,7 @@ namespace Phabrico.Controllers
                 if (_maniphestPriorities == null)
                 {
                     Storage.ManiphestPriority maniphestPriorityStorage = new Storage.ManiphestPriority();
-                    _maniphestPriorities = maniphestPriorityStorage.Get(database)
+                    _maniphestPriorities = maniphestPriorityStorage.Get(database, Language.NotApplicable)
                                                                    .ToDictionary(key => key.Priority, value => value);
                 }
 
@@ -316,7 +321,7 @@ namespace Phabrico.Controllers
                 if (_maniphestStatuses == null)
                 {
                     Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
-                    _maniphestStatuses = maniphestStatusStorage.Get(database)
+                    _maniphestStatuses = maniphestStatusStorage.Get(database, Language.NotApplicable)
                                                                .ToDictionary(key => key.Value, value => value);
                 }
 
@@ -330,8 +335,8 @@ namespace Phabrico.Controllers
                 else
                 {
                     // load and filter all maniphest tasks
-                    List<Phabricator.Data.Maniphest> stagedTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database).ToList();
-                    visibleManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database)
+                    List<Phabricator.Data.Maniphest> stagedTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).ToList();
+                    visibleManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database, browser.Session.Locale)
                                                                                .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
                                                                                .Where(task => httpServer.ValidUserRoles(database, browser, task))
                                                                                .ToList();
@@ -339,7 +344,7 @@ namespace Phabrico.Controllers
                     foreach (Phabricator.Data.Maniphest stagedTask in visibleManiphestTasks)
                     {
                         // load staged transactions (e.g. new owner, new priority, ...) into maniphestTask
-                        maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedTask);
+                        maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedTask, browser.Session.Locale);
                     }
 
                     switch (parameter)
@@ -398,14 +403,14 @@ namespace Phabrico.Controllers
                                                    && ProjectByToken.ContainsKey(task.Projects) == false
                                              ))
                 {
-                    ProjectByToken = projectStorage.Get(database)
+                    ProjectByToken = projectStorage.Get(database, Language.NotApplicable)
                                                    .ToDictionary(key => key.Token, value => value);
                 }
 
                 // load all users again in case there's a task with an unknown author user token
                 if (visibleManiphestTasks.Any(task => AccountByToken.ContainsKey(task.Author) == false))
                 {
-                    AccountByToken = userStorage.Get(database)
+                    AccountByToken = userStorage.Get(database, Language.NotApplicable)
                                                  .ToDictionary(key => key.Token, value => value);
                 }
 
@@ -430,7 +435,7 @@ namespace Phabrico.Controllers
                         }
 
                         // collect all projects for all the maniphest tasks into a TaskGroup list
-                        var projectInfo = projectStorage.Get(database)
+                        var projectInfo = projectStorage.Get(database, Language.NotApplicable)
                                                         .Where(project => projectTokens.Contains(project.Token))
                                                         .OrderBy(project => project.Name)
                                                         .Select(project => new TaskGroup {
@@ -548,7 +553,7 @@ namespace Phabrico.Controllers
                             userTokens = new List<string>( new string[] { filterCategory } );
                         }
 
-                        var userInfo = userStorage.Get(database)
+                        var userInfo = userStorage.Get(database, Language.NotApplicable)
                                                   .Where(user => userTokens.Contains(user.Token))
                                                   .OrderBy(user => user.RealName)
                                                   .Select(user => new TaskGroup {
@@ -791,10 +796,10 @@ namespace Phabrico.Controllers
 
                             // if task was modified, draw a flame and take the task info from the staging area
                             string taskState;
-                            Phabricator.Data.Maniphest stagedManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTask.Token);
+                            Phabricator.Data.Maniphest stagedManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTask.Token, browser.Session.Locale);
                             if (stagedManiphestTask != null)
                             {
-                                if (stageStorage.IsFrozen(database, maniphestTask.Token))
+                                if (stageStorage.IsFrozen(database, browser, maniphestTask.Token))
                                 {
                                     taskState = "frozen";
                                 }
@@ -832,7 +837,7 @@ namespace Phabrico.Controllers
                                     HtmlPartialViewPage projectPartialViewPage = task.GetPartialView("TASKDETAIL-PROJECTS");
 
                                     string rgbColor = "rgb(0, 128, 255)";
-                                    Phabricator.Data.Project project = projectStorage.Get(database, projectToken);
+                                    Phabricator.Data.Project project = projectStorage.Get(database, projectToken, browser.Session.Locale);
                                     if (project != null && string.IsNullOrWhiteSpace(project.Color) == false)
                                     {
                                         rgbColor = project.Color;
@@ -909,14 +914,14 @@ namespace Phabrico.Controllers
                 else
                 {
                     // load and filter all maniphest tasks
-                    List<Phabricator.Data.Maniphest> stagedTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database).ToList();
+                    List<Phabricator.Data.Maniphest> stagedTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).ToList();
                     foreach (Phabricator.Data.Maniphest stagedTask in stagedTasks)
                     {
                         // load staged transactions (e.g. new owner, new priority, ...) into maniphestTask
-                        maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedTask);
+                        maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedTask, browser.Session.Locale);
                     }
 
-                    availableManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database)
+                    availableManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database, browser.Session.Locale)
                                                                                  .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
                                                                                  .ToList();
 
@@ -993,10 +998,10 @@ namespace Phabrico.Controllers
                     Storage.Maniphest maniphestStorage = new Storage.Maniphest();
 
                     string maniphestTaskToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
-                    Phabricator.Data.Maniphest originalManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTaskToken);
+                    Phabricator.Data.Maniphest originalManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTaskToken, browser.Session.Locale);
                     if (originalManiphestTask == null)
                     {
-                        originalManiphestTask = maniphestStorage.Get(database, maniphestTaskToken);
+                        originalManiphestTask = maniphestStorage.Get(database, maniphestTaskToken, browser.Session.Locale);
                     }
 
                     List<int> referencedFileIDs = browser.Session.FormVariables[browser.Request.RawUrl]["referencedFiles"]
@@ -1021,14 +1026,14 @@ namespace Phabrico.Controllers
                         }
                     }
 
-                    Phabricator.Data.File[] stagedFiles = stageStorage.Get<Phabricator.Data.File>(database).ToArray();
+                    Phabricator.Data.File[] stagedFiles = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale).ToArray();
 
                     foreach (int unreferencedFileID in referencedFileIDs)
                     {
                         Phabricator.Data.File unreferencedFile = stagedFiles.FirstOrDefault(stagedFile => stagedFile.ID == unreferencedFileID);
                         if (unreferencedFile != null)
                         {
-                            stageStorage.Remove(browser, database, unreferencedFile);
+                            stageStorage.Remove(database, browser, unreferencedFile);
                         }
                     }
 
@@ -1131,7 +1136,7 @@ namespace Phabrico.Controllers
                     // set private encryption key
                     database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
-                    foreach (Phabricator.Data.ManiphestPriority maniphestPriority in maniphestPriorityStorage.Get(database).OrderByDescending(priority => priority.Priority))
+                    foreach (Phabricator.Data.ManiphestPriority maniphestPriority in maniphestPriorityStorage.Get(database, Language.NotApplicable).OrderByDescending(priority => priority.Priority))
                     {
                         HtmlPartialViewPage priorityData = viewPage.GetPartialView("TASK-PRIORITIES");
                         if (priorityData != null)
@@ -1170,12 +1175,12 @@ namespace Phabrico.Controllers
                     {
                         // newly created task -> take last staged maniphest task
                         Storage.Stage stage = new Storage.Stage();
-                        maniphestTask = stage.Get<Phabricator.Data.Maniphest>(database).OrderByDescending(s => s.DateModified).FirstOrDefault();
+                        maniphestTask = stage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).OrderByDescending(s => s.DateModified).FirstOrDefault();
                     }
                     else
                     {
                         Storage.Stage stageStorage = new Storage.Stage();
-                        foreach (Phabricator.Data.Maniphest stagedManiphestTask in stageStorage.Get<Phabricator.Data.Maniphest>(database))
+                        foreach (Phabricator.Data.Maniphest stagedManiphestTask in stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale))
                         {
                             if (stagedManiphestTask.ID.Equals(taskId))
                             {
@@ -1187,14 +1192,14 @@ namespace Phabrico.Controllers
                         if (maniphestTask == null)
                         {
                             // no staged maniphest task found -> search for a downloaded maniphest task
-                            maniphestTask = maniphest.Get(database, taskId);
+                            maniphestTask = maniphest.Get(database, taskId, browser.Session.Locale);
                         }
 
                         if (maniphestTask != null)
                         {
                             // load staged transactions (e.g. new owner, new priority, ...) into maniphestTask
                             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                            maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, maniphestTask);
+                            maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, maniphestTask, browser.Session.Locale);
                         }
                     }
 
@@ -1203,10 +1208,10 @@ namespace Phabrico.Controllers
                         // if task was modified, draw a flame and take the task info from the staging area
                         string taskState;
                         Storage.Stage stageStorage = new Storage.Stage();
-                        Phabricator.Data.Maniphest stagedManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTask.Token);
+                        Phabricator.Data.Maniphest stagedManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTask.Token, browser.Session.Locale);
                         if (stagedManiphestTask != null)
                         {
-                            if (stageStorage.IsFrozen(database, maniphestTask.Token))
+                            if (stageStorage.IsFrozen(database, browser, maniphestTask.Token))
                             {
                                 taskState = "frozen";
                             }
@@ -1220,11 +1225,11 @@ namespace Phabrico.Controllers
                             taskState = "";
                         }
 
-                        Phabricator.Data.ManiphestPriority maniphestTaskPriority = maniphestPriorityStorage.Get(database, maniphestTask.Priority);
+                        Phabricator.Data.ManiphestPriority maniphestTaskPriority = maniphestPriorityStorage.Get(database, maniphestTask.Priority, browser.Session.Locale);
                         if (maniphestTaskPriority != null)
                         {
                             string statusText = "";
-                            Phabricator.Data.ManiphestStatus maniphestTaskStatus = storageManiphestStatus.Get(database, maniphestTask.Status);
+                            Phabricator.Data.ManiphestStatus maniphestTaskStatus = storageManiphestStatus.Get(database, maniphestTask.Status, browser.Session.Locale);
                             if (maniphestTaskStatus != null)
                             {
                                 string translatedStatusText = Locale.TranslateText("ManiphestStatus." + maniphestTaskStatus.Name, browser.Session.Locale);
@@ -1267,7 +1272,7 @@ namespace Phabrico.Controllers
                             List<Phabricator.Data.Project> projects = maniphestTask.Projects
                                                                                    .Split(',')
                                                                                    .Where(token => string.IsNullOrEmpty(token) == false)
-                                                                                   .Select(token => projectStorage.Get(database, token))
+                                                                                   .Select(token => projectStorage.Get(database, token, browser.Session.Locale))
                                                                                    .Where(p => p != null)
                                                                                    .OrderBy(p => p.Name)
                                                                                    .ToList();
@@ -1276,14 +1281,14 @@ namespace Phabrico.Controllers
                             var subscribers = maniphestTask.Subscribers
                                                            .Split(',')
                                                            .Where(token => string.IsNullOrEmpty(token) == false)
-                                                           .Select(token => userStorage.Get(database, token))
+                                                           .Select(token => userStorage.Get(database, token, browser.Session.Locale))
                                                            .Where(s => s != null)
                                                            .Select(s => new { Token = s.Token, Name = s.RealName, Icon = "fa-user" })
                                                            .ToList();
                             subscribers.AddRange(maniphestTask.Subscribers
                                                                .Split(',')
                                                                .Where(token => string.IsNullOrEmpty(token) == false)
-                                                               .Select(token => projectStorage.Get(database, token))
+                                                               .Select(token => projectStorage.Get(database, token, browser.Session.Locale))
                                                                .Where(s => s != null)
                                                                .Select(s => new { Token = s.Token, Name = s.Name, Icon = "fa-briefcase" })
                                                                .ToList());
@@ -1344,7 +1349,10 @@ namespace Phabrico.Controllers
                             }
                             else
                             {
-                                Phabricator.Data.User whoAmI = userStorage.Get(database, accountStorage.WhoAmI(database, browser).Parameters.UserToken);
+                                Phabricator.Data.User whoAmI = userStorage.Get(database,
+                                                                               accountStorage.WhoAmI(database, browser).Parameters.UserToken,
+                                                                               browser.Session.Locale
+                                                                              );
                                 viewPage.SetText("COMMENT-AUTHOR", whoAmI.RealName);
                             }
 
@@ -1356,12 +1364,36 @@ namespace Phabrico.Controllers
                                                                               .FirstOrDefault(pluginTypeAttribute => pluginTypeAttribute.Usage == Plugin.PluginTypeAttribute.UsageType.ManiphestTask);
                                 if (pluginType == null) continue;
 
-                                HtmlPartialViewPage maniphestTaskPluginData = viewPage.GetPartialView("MANIPHEST-TASK-PLUGINS");
-                                if (maniphestTaskPluginData == null) break;  // we're in edit-mode, no need for plugins
+                                if (plugin.IsVisibleInApplication(database, browser, maniphestTask.Token))
+                                {
+                                    HtmlPartialViewPage maniphestTaskPluginData = viewPage.GetPartialView("MANIPHEST-TASK-PLUGINS");
+                                    if (maniphestTaskPluginData == null) break;  // we're in edit-mode, no need for plugins
 
-                                maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-URL", plugin.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-ICON", plugin.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
+                                    maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-URL", plugin.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                    maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-ICON", plugin.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                    maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
+                                }
+
+                                foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions)
+                                {
+                                    if (pluginExtension.IsVisibleInApplication(database, browser, maniphestTask.Token))
+                                    {
+                                        if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
+                                        {
+                                            pluginExtension.Database = new Storage.Database(database.EncryptionKey);
+                                            pluginExtension.Initialize();
+                                            pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                                        }
+
+                                        HtmlPartialViewPage htmlPluginNavigatorMenuItem = viewPage.GetPartialView("MANIPHEST-TASK-PLUGINS");
+                                        if (htmlPluginNavigatorMenuItem != null)
+                                        {
+                                            htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                            htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                            htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                        }
+                                    }
+                                }
                             }
 
                             foreach (Phabricator.Data.Project project in projects)
@@ -1410,7 +1442,7 @@ namespace Phabrico.Controllers
                                 if (tokenType.Equals("proj"))
                                 {
                                     string rgbColor = "rgb(0, 128, 255)";
-                                    Phabricator.Data.Project project = projectStorage.Get(database, subscriber.Token);
+                                    Phabricator.Data.Project project = projectStorage.Get(database, subscriber.Token, browser.Session.Locale);
                                     if (project != null && string.IsNullOrWhiteSpace(project.Color) == false)
                                     {
                                         rgbColor = project.Color;
@@ -1436,7 +1468,7 @@ namespace Phabrico.Controllers
                             }
 
                             Storage.Transaction transactionStorage = new Storage.Transaction();
-                            maniphestTask.Transactions = transactionStorage.GetAll(database, maniphestTask.Token);
+                            maniphestTask.Transactions = transactionStorage.GetAll(database, maniphestTask.Token, browser.Session.Locale);
 
                             string[] validTransactionTypes = new string[] { "owner", "priority", "status", "comment", "subscriber-0", "project-0" };
                             foreach (var maniphestTransaction in maniphestTask.Transactions)
@@ -1493,7 +1525,7 @@ namespace Phabrico.Controllers
                         }
 
 
-                        foreach (Phabricator.Data.ManiphestStatus maniphestStatus in storageManiphestStatus.Get(database).OrderBy(status => status.Name))
+                        foreach (Phabricator.Data.ManiphestStatus maniphestStatus in storageManiphestStatus.Get(database, Language.NotApplicable).OrderBy(status => status.Name))
                         {
                             HtmlPartialViewPage priorityData = viewPage.GetPartialView("TASK-STATUSES");
                             if (priorityData == null) break;
@@ -1518,7 +1550,7 @@ namespace Phabrico.Controllers
                         }
 
 
-                        foreach (Phabricator.Data.ManiphestPriority maniphestPriority in maniphestPriorityStorage.Get(database).OrderBy(priority => priority.Priority))
+                        foreach (Phabricator.Data.ManiphestPriority maniphestPriority in maniphestPriorityStorage.Get(database, Language.NotApplicable).OrderBy(priority => priority.Priority))
                         {
                             HtmlPartialViewPage priorityData = viewPage.GetPartialView("TASK-PRIORITIES");
                             if (priorityData == null) break;
@@ -1568,11 +1600,11 @@ namespace Phabrico.Controllers
 
             string maniphestTaskToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
 			if (maniphestTaskToken is null) throw new Phabrico.Exception.AccessDeniedException("/maniphest", "Invalid token");
-            Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, maniphestTaskToken);
+            Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, maniphestTaskToken, browser.Session.Locale);
             if (originalManiphestTask == null)
             {
                 Storage.Stage stage = new Storage.Stage();
-                originalManiphestTask = stage.Get<Phabricator.Data.Maniphest>(database, maniphestTaskToken);
+                originalManiphestTask = stage.Get<Phabricator.Data.Maniphest>(database, maniphestTaskToken, browser.Session.Locale);
             }
 
             if (originalManiphestTask != null)
@@ -1598,7 +1630,7 @@ namespace Phabrico.Controllers
                 Stage stageStorage = new Stage();
                 stageStorage.Modify(database, modifiedManiphestTask, browser);
 
-                bool doFreezeReferencedFiles = stageStorage.Get(database)
+                bool doFreezeReferencedFiles = stageStorage.Get(database, browser.Session.Locale)
                                                            .FirstOrDefault(stagedObject => stagedObject.Token.Equals(modifiedManiphestTask.Token))
                                                            .Frozen;
 
@@ -1606,8 +1638,8 @@ namespace Phabrico.Controllers
                 keywordStorage.AddPhabricatorObject(this, database, modifiedManiphestTask);
 
                 // (re)assign dependent Phabricator objects
-                List<Phabricator.Data.PhabricatorObject> referencedObjects = database.GetReferencedObjects(modifiedManiphestTask.Token).ToList();
-                database.ClearAssignedTokens(modifiedManiphestTask.Token);
+                List<Phabricator.Data.PhabricatorObject> referencedObjects = database.GetReferencedObjects(modifiedManiphestTask.Token, browser.Session.Locale).ToList();
+                database.ClearAssignedTokens(modifiedManiphestTask.Token, Language.NotApplicable);
                 RemarkupParserOutput remarkupParserOutput;
                 List<Phabricator.Data.PhabricatorObject> linkedPhabricatorObjects;
                 ConvertRemarkupToHTML(database, "/", modifiedManiphestTask.Description, out remarkupParserOutput, false);
@@ -1616,12 +1648,12 @@ namespace Phabrico.Controllers
                 linkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in linkedPhabricatorObjects)
                 {
-                    database.AssignToken(modifiedManiphestTask.Token, linkedPhabricatorObject.Token);
+                    database.AssignToken(modifiedManiphestTask.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
 
                     Phabricator.Data.File linkedFile = linkedPhabricatorObject as Phabricator.Data.File;
                     if (linkedFile != null && linkedFile.ID < 0)  // linkedFile.ID < 0: file is staged
                     {
-                        stageStorage.Freeze(database, linkedFile.Token, doFreezeReferencedFiles);
+                        stageStorage.Freeze(database, browser, linkedFile.Token, doFreezeReferencedFiles);
                     }
 
                     referencedObjects.RemoveAll(obj => obj.Token.Equals(linkedPhabricatorObject.Token));
@@ -1630,9 +1662,9 @@ namespace Phabrico.Controllers
                 // delete all unreferenced Phabricator objects from staging area (if existant)
                 foreach (Phabricator.Data.PhabricatorObject oldReferencedObject in referencedObjects)
                 {
-                    if (database.GetReferencedObjects(oldReferencedObject.Token).Any() == false)
+                    if (database.GetReferencedObjects(oldReferencedObject.Token, browser.Session.Locale).Any() == false)
                     {
-                        stageStorage.Remove(browser, database, oldReferencedObject);
+                        stageStorage.Remove(database, browser, oldReferencedObject);
                     }
                 }
             }
@@ -1720,9 +1752,9 @@ namespace Phabrico.Controllers
             Phabricator.Data.ManiphestPriority oldPriority = null;
             if (maniphestTransaction.OldValue != null)
             {
-                oldPriority = maniphestPriorityStorage.Get(database, maniphestTransaction.OldValue);
+                oldPriority = maniphestPriorityStorage.Get(database, maniphestTransaction.OldValue, browser.Session.Locale);
             }
-            Phabricator.Data.ManiphestPriority newPriority = maniphestPriorityStorage.Get(database, maniphestTransaction.NewValue);
+            Phabricator.Data.ManiphestPriority newPriority = maniphestPriorityStorage.Get(database, maniphestTransaction.NewValue, browser.Session.Locale);
 
             if (oldPriority != null && maniphestTask.Token.StartsWith("PHID-NEWTOKEN-") == false)
             {
@@ -1797,7 +1829,7 @@ namespace Phabrico.Controllers
                 bool isFirstProject = taskProjectTransactions.FirstOrDefault().Equals(projectTransaction) == true;
                 bool isLastProject = taskProjectTransactions.LastOrDefault().Equals(projectTransaction) == true;
 
-                Phabricator.Data.Project project = projectStorage.Get(database, projectTransaction.NewValue);
+                Phabricator.Data.Project project = projectStorage.Get(database, projectTransaction.NewValue, browser.Session.Locale);
                 if (project != null)
                 {
                     // translate project-token to project/tag name
@@ -1870,9 +1902,9 @@ namespace Phabrico.Controllers
             Phabricator.Data.ManiphestStatus oldStatus = null;
             if (maniphestTransaction.OldValue != null)
             {
-                oldStatus = storageManiphestStatus.Get(database, maniphestTransaction.OldValue);
+                oldStatus = storageManiphestStatus.Get(database, maniphestTransaction.OldValue, browser.Session.Locale);
             }
-            Phabricator.Data.ManiphestStatus newStatus = storageManiphestStatus.Get(database, maniphestTransaction.NewValue);
+            Phabricator.Data.ManiphestStatus newStatus = storageManiphestStatus.Get(database, maniphestTransaction.NewValue, browser.Session.Locale);
 
             if (oldStatus != null && maniphestTask.Token.StartsWith("PHID-NEWTOKEN-") == false)
             {
@@ -1954,7 +1986,7 @@ namespace Phabrico.Controllers
                 bool isFirstSubscriber = taskSubscriberTransactions.FirstOrDefault().Equals(subscriberTransaction) == true;
                 bool isLastSubscriber = taskSubscriberTransactions.LastOrDefault().Equals(subscriberTransaction) == true;
 
-                Phabricator.Data.User subscriberUser = userStorage.Get(database, subscriberTransaction.NewValue);
+                Phabricator.Data.User subscriberUser = userStorage.Get(database, subscriberTransaction.NewValue, browser.Session.Locale);
                 if (subscriberUser != null)
                 {
                     // translate subscriber-token to username
@@ -1962,7 +1994,7 @@ namespace Phabrico.Controllers
                 }
                 else
                 {
-                    Phabricator.Data.Project subscriberProject = projectStorage.Get(database, subscriberTransaction.NewValue);
+                    Phabricator.Data.Project subscriberProject = projectStorage.Get(database, subscriberTransaction.NewValue, browser.Session.Locale);
                     if (subscriberProject != null)
                     {
                         // translate subscriber-token to project/tag name

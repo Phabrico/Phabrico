@@ -1,6 +1,8 @@
 ﻿using Phabrico.Http;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {
@@ -9,6 +11,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
     /// </summary>
     public abstract class RemarkupRule
     {
+        public const string BGN = "\x02";   // During XML Export the < and > characters in the XML tags will be replaced by BGN and END
+        public const string END = "\x03";   // During XML Export the < and > characters in the XML tags will be replaced by BGN and END
+
         /// <summary>
         /// Decoded HTML
         /// </summary>
@@ -78,9 +83,59 @@ namespace Phabrico.Parsers.Remarkup.Rules
         }
 
         /// <summary>
+        /// This attribute defines the XML tag for the Remarkup to XML export functionality
+        /// </summary>
+        [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+        public class RuleXmlTag : Attribute
+        {
+            /// <summary>
+            /// Defines the XML tag for the Remarkup to XML export functionality
+            /// </summary>
+            public string XmlTag { get; private set; }
+
+            /// <summary>
+            /// Initializes a new instance of RuleXmlTag
+            /// </summary>
+            /// <param name="parentRuleType"></param>
+            public RuleXmlTag(string xmlTag)
+            {
+                XmlTag = xmlTag;
+            }
+
+            /// <summary>
+            /// Returns the XML tag name of a specified RemarkupRule class
+            /// </summary>
+            /// <param name="RemarkupRuleClass"></param>
+            /// <returns></returns>
+            public static string GetXmlTag(Type RemarkupRuleClass)
+            {
+                RuleXmlTag ruleXmlTag = RemarkupRuleClass.GetCustomAttributes(typeof(RuleXmlTag), false).OfType<RuleXmlTag>().FirstOrDefault();
+                if (ruleXmlTag == null)
+                    return null;
+                else
+                    return ruleXmlTag.XmlTag;
+            }
+        }
+
+        /// <summary>
+        /// string which represents the Remarkup-rule-specific XML attributes
+        /// </summary>
+        public virtual string Attributes { get; } = null;
+
+        /// <summary>
+        /// Link to browser (used in XML generation)
+        /// </summary>
+        public Browser Browser;
+
+        /// <summary>
         /// List of underlying tokens
         /// </summary>
-        public List<Rules.RemarkupRule> ChildTokenList { get; set; } = new List<RemarkupRule>();
+        public RemarkupTokenList ChildTokenList { get; set; } = new RemarkupTokenList();
+
+        /// <summary>
+        /// Link to database (used in XML generation)
+        /// </summary>
+        public Database Database;
 
         /// <summary>
         /// Reference to the Remarkup engine
@@ -111,7 +166,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <summary>
         /// List of processed tokens
         /// </summary>
-        public List<Rules.RemarkupRule> TokenList { get; set; }
+        public RemarkupTokenList TokenList { get; set; }
+
+        /// <summary>
+        /// Link to Phriction URL from where the token is parsed (used in XML generation)
+        /// </summary>
+        public string DocumentURL;
 
         /// <summary>
         /// Creates a copy of the current RemarkupRule
@@ -139,6 +199,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public virtual void Clone(RemarkupRule originalRemarkupRule)
         {
         }
+
+        /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal abstract string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes);
 
         /// <summary>
         /// This method is executed before the ToHTML() is executed.

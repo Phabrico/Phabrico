@@ -317,7 +317,7 @@ namespace Phabrico.Plugin
 
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
-                string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database).FirstOrDefault().Directory.TrimEnd('\\');
+                string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database, Language.NotApplicable).FirstOrDefault().Directory.TrimEnd('\\');
 
                 // show overview screen
                 viewPage = new HtmlViewPage(httpServer, browser, true, "GitanosOverviewRemoteRepositories", parameters);
@@ -490,8 +490,7 @@ namespace Phabrico.Plugin
         }
 
         /// <summary>
-        /// This method is fired when the user clicks on the Confirm button of the commit-dialog.
-        /// The commit-dialog is shown when user selects 1 or more files and clicks on the commit button.
+        /// This method is fired when the user clicks on the Clone button
         /// </summary>
         /// <param name="httpServer"></param>
         /// <param name="browser"></param>
@@ -511,11 +510,11 @@ namespace Phabrico.Plugin
 
                     SessionManager.Token token = SessionManager.GetToken(browser);
 
-                    string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database).FirstOrDefault().Directory.TrimEnd('\\');
+                    string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database, Language.NotApplicable).FirstOrDefault().Directory.TrimEnd('\\');
                     string workingDirectory = firstRootDirectory + "\\" + browser.Session.FormVariables[browser.Request.RawUrl]["txtCloneDestination"];
                     string repositoryName = browser.Session.FormVariables[browser.Request.RawUrl]["uriRepository"];
 
-                    Phabricator.Data.Diffusion repository = storageGitanosPhabricatorRepository.Get(database).FirstOrDefault(record => record.Name.Equals(repositoryName));
+                    Phabricator.Data.Diffusion repository = storageGitanosPhabricatorRepository.Get(database, Language.NotApplicable).FirstOrDefault(record => record.Name.Equals(repositoryName));
 
                     // get authentication
                     string password;
@@ -554,7 +553,7 @@ namespace Phabrico.Plugin
                 {
                     // start monitoring the local git repositories
                     Storage.GitanosConfigurationRootPath gitanosConfigurationRootPathStorage = new Storage.GitanosConfigurationRootPath();
-                    IEnumerable<Model.GitanosConfigurationRootPath> rootPaths = gitanosConfigurationRootPathStorage.Get(database);
+                    IEnumerable<Model.GitanosConfigurationRootPath> rootPaths = gitanosConfigurationRootPathStorage.Get(database, Language.NotApplicable);
 
                     DirectoryMonitor.Start(rootPaths);
                 }
@@ -962,8 +961,7 @@ namespace Phabrico.Plugin
         }
 
         /// <summary>
-        /// This method is fired when the user clicks on the Confirm button of the commit-dialog.
-        /// The commit-dialog is shown when user selects 1 or more files and clicks on the commit button.
+        /// This method is fired when the repositories table is loaded by means of AJAX call
         /// </summary>
         /// <param name="httpServer"></param>
         /// <param name="browser"></param>
@@ -978,7 +976,7 @@ namespace Phabrico.Plugin
             {
                 Storage.GitanosPhabricatorRepository storageGitanosPhabricatorRepository = new Storage.GitanosPhabricatorRepository();
                 Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
-                IEnumerable<Phabricator.Data.Diffusion> repositories = storageGitanosPhabricatorRepository.Get(database);
+                IEnumerable<Phabricator.Data.Diffusion> repositories = storageGitanosPhabricatorRepository.Get(database, Language.NotApplicable);
 
                 if (parameters.Any())
                 {
@@ -1060,7 +1058,7 @@ namespace Phabrico.Plugin
                 repositories = repositories.Select(record =>
                 {
                     string defaultCloneDestination = record.Name;
-                    string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database).FirstOrDefault().Directory.TrimEnd('\\');
+                    string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database, Language.NotApplicable).FirstOrDefault().Directory.TrimEnd('\\');
                     int indexer = 2;
 
                     while (true)
@@ -1415,7 +1413,7 @@ namespace Phabrico.Plugin
                 }
 
                 // root directories
-                foreach (GitanosConfigurationRootPath rootPath in storageGitanosConfigurationRootPath.Get(database))
+                foreach (GitanosConfigurationRootPath rootPath in storageGitanosConfigurationRootPath.Get(database, Language.NotApplicable))
                 {
                     HtmlPartialViewPage viewLocalGitRepository = configurationTabContent.GetPartialView("LOCAL-GIT-REPOSITORIES");
 

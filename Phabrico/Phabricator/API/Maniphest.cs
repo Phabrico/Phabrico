@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Phabrico.Http;
+using Phabrico.Miscellaneous;
 using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace Phabrico.Phabricator.API
             double minimumDateTime = modifiedSince.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;
 
             Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
-            Dictionary<string, Phabricator.Data.ManiphestStatus> maniphestStatuses = maniphestStatusStorage.Get(database)
+            Dictionary<string, Phabricator.Data.ManiphestStatus> maniphestStatuses = maniphestStatusStorage.Get(database, Language.NotApplicable)
                                                                                                            .ToDictionary(key => key.Value, value => value);
 
             List<Constraint> internalConstraints = constraints.ToList();
@@ -150,7 +151,7 @@ namespace Phabrico.Phabricator.API
             // merge transactions together
             bool maniphestTaskModified = false;
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-            Data.Maniphest maniphestTask = maniphestStorage.Get(database, transactions.FirstOrDefault().Token);
+            Data.Maniphest maniphestTask = maniphestStorage.Get(database, transactions.FirstOrDefault().Token, Language.NotApplicable);
 
             IEnumerable<Data.Transaction> projectTransactions = transactions.Where(transaction => transaction.Type.StartsWith("project-"));
             if (projectTransactions.Any())
@@ -221,7 +222,7 @@ namespace Phabrico.Phabricator.API
         public void Edit(Browser browser, Database database, Conduit conduit, Data.Maniphest maniphestTask)
         {
             Storage.ManiphestPriority maniphestPriority = new Storage.ManiphestPriority();
-            string priorityName = maniphestPriority.Get(database, maniphestTask.Priority)?.Identifier;
+            string priorityName = maniphestPriority.Get(database, maniphestTask.Priority, Language.NotApplicable)?.Identifier;
             JObject conduitParameters = new JObject
             {
                 {  "transactions",  new JArray {

@@ -5,7 +5,7 @@
 = http://www.example.com =
 
 ~~~~~~~~~~
-<h1 class='remarkup-header'><a name='hdr___http___www_example_com____link_name___' style='padding-top: 80px;'></a><a class='phriction-link' href='http://www.example.com/'>link_name</a> </h1>
-<h2 class='remarkup-header'><a name='hdr__bold__' style='padding-top: 80px;'></a><strong>bold</strong> </h2>
-<h1 class='remarkup-header'><a name='hdrhttp___www_example_com' style='padding-top: 80px;'></a><a class='phriction-link' href='http://www.example.com'>http://www.example.com</a> </h1>
+<h1 class='remarkup-header'><a name='http-www-example-com-link-name' style='padding-top: 80px;'></a><a class='phriction-link' href='http://www.example.com/'>link_name</a> </h1>
+<h2 class='remarkup-header'><a name='bold' style='padding-top: 80px;'></a><strong>bold</strong> </h2>
+<h1 class='remarkup-header'><a name='http-www-example-com' style='padding-top: 80px;'></a><a class='phriction-link' href='http://www.example.com'>http://www.example.com</a> </h1>
 ~~~~~~~~~~

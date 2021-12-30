@@ -7,6 +7,9 @@
 <div class="edit-container phriction-edit-container
             @{IF @@SHOW-PHRICTION-METADATA@@=yes@
                 phriction-with-metadata
+            }@
+            @{IF @@CONTENT-IS-TRANSLATION@@=yes@
+                translation
             }@ ">
     <div class="edit-left" id="left" style="width:50%;">
         <div>
@@ -45,6 +48,7 @@
                         @{IF @@PLUGIN-DIAGRAM-AVAILABLE@@=yes@
                             <span class="phui-font-fa fa-sitemap tooltip-top"><span class="tooltiptext">Diagram</span></span>
                         }@
+                        <span class="phui-font-fa fa-lock tooltip-top"><span class="tooltiptext">Unlock edit and view windows</span></span>
                         <a href="remarkup/syntax" target="_blank" tabindex="7">&#x200B;
                             <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
                         </a>
@@ -58,6 +62,9 @@
                     <div style="float: right;margin-right: 6px;">
                         <button class="button-blue" id="btnSave" type="button" tabindex="5" onclick="saveInputData(this)">Save Changes</button>
                         <button class="button-gray" id="btnCancel" type="button" tabindex="6" onclick="cancelInputData(this)">Cancel</button>
+                        @{IF @@DOCUMENT-STATE@@=translated@
+                            <button class="button-red" id="btnRevert" type="button" tabindex="6" onclick="revertTranslation(this)">Revert to original translation</button>
+                        }@
                     </div>
                 </div>
             </form>
@@ -68,7 +75,7 @@
         @@DOCUMENT-CONTENT@@
     </div>
 
-    <script src="scripts/simpledrag.js?version=@@PHABRICO-VERSION@@"></script>
+    <script src="js/simpledrag.js?version=@@PHABRICO-VERSION@@"></script>
     <script>
         var remarkup = null;
         var newPath = ""
@@ -121,6 +128,31 @@
             remarkup.Decode(value, right);
         }
 
+        function revertTranslation() {
+            showHideConfirmationMessage( true, Locale.Translate("Approve translation"), Locale.Translate("Are you sure you want to completely undo your translation ?"),
+                                            function() {
+                                                showHideConfirmationMessage(false);
+
+                                                var data = new FormData();
+                                                data.append('token', '@@DOCUMENT-TOKEN@@');
+
+                                                var xmlRequest = new XMLHttpRequest();
+                                                xmlRequest.onreadystatechange = function() {
+                                                    if (xmlRequest.readyState == 4 && xmlRequest.status == 200) {
+                                                        document.location.reload();
+                                                    }
+                                                };
+
+                                                xmlRequest.open('POST', 'translations/revert', true);
+                                                xmlRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+                                                xmlRequest.send(data);
+                                            },
+                                            function() {
+                                                showHideConfirmationMessage(false);
+                                            }
+                                        );
+        }
+
         function saveInputData(button) {
             if (newPath != "") {
                 path.value = newPath;
@@ -131,7 +163,9 @@
         }
 
         function titleChanged() {
-            btnSave.disabled = true;
+            if (operation.value !== "translate") {
+                btnSave.disabled = true;
+            }
 
             if (title.value != "") {
                 if (tmrVerificationDocumentExists != null) {
@@ -215,13 +249,18 @@
             }
         }, false);
 
-        // if title was available during creation, the document was created by a ref-link
-        if ("@@DOCUMENT-TITLE@@" !== "" && operation.value !== "new") {
-            // make title uneditable
-            title.readOnly = true;
+        if ("@@CONTENT-IS-TRANSLATION@@" == "yes") {
+            tags.closest('div').style.display = 'none';
+            subscribers.closest('div').style.display = 'none';
+        } else {
+            // if title was available during creation, the document was created by a ref-link
+            if ("@@DOCUMENT-TITLE@@" !== "" && operation.value !== "new") {
+                // make title uneditable
+                title.readOnly = true;
 
-            // move focus to textarea
-            document.getElementsByName('textarea')[0].focus();
+                // move focus to textarea
+                document.getElementsByName('textarea')[0].focus();
+            }
         }
 
         var leftPane = document.getElementById('left');

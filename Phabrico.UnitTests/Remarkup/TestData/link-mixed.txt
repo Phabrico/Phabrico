@@ -8,3 +8,9 @@
 (<a class='phriction-link' href='http://www.alternate.org/'>http://www.alternate.org/</a>)<a class='phriction-link' href='http://www.example.com/'>Example</a><p class='paragraph'></p>
 &lt;<a class='phriction-link' href='http://www.example.com/'>http://www.example.com/</a> <a class='phriction-link' href='http://www.example.net/'>Example</a>&gt;
 ~~~~~~~~~~
+<A f="n" u="http%3A%2F%2Fwww.example.com%2F">Example</A><BR><A f="u" u="http%3A%2F%2Fwww.alternate.org%2F"></A></BR><N>[3]</N>
+<N>[4]</N>
+<BR><A f="u" u="http%3A%2F%2Fwww.alternate.org%2F"></A></BR><A f="n" u="http%3A%2F%2Fwww.example.com%2F">Example</A><N>[6]</N>
+<N>[7]</N>
+&lt;<A f="u" u="http%3A%2F%2Fwww.example.com%2F"></A> <A f="n" u="http%3A%2F%2Fwww.example.net%2F">Example</A>&gt;
+~~~~~~~~~~

@@ -43,6 +43,76 @@
 				    iframe.contentWindow.postMessage(JSON.stringify({action: 'load',
 						autosave: 1, xmlpng: image.getAttribute('src')}), '*');
 				}
+                else if (msg.event == 'load')
+                {
+                    @{IF @@SHOW-APPROVE-TRANSLATION-BTN@@=True@
+                        var menubar = iframe.contentWindow.document.querySelector('.geMenubarContainer');
+                        var btnSave = menubar.querySelector('.geMenuItem.gePrimaryBtn');
+                        var btnApproveAnchor = iframe.contentWindow.document.createElement('a');
+                        btnApproveAnchor.id = 'btnApproveAnchor';
+                        btnApproveAnchor.className = 'geMenuItem geGreenBtn';
+                        btnApproveAnchor.style.marginLeft = '8px';
+                        btnApproveAnchor.style.paddingTop = '6px';
+                        btnApproveAnchor.title = Locale.Translate("Approve translation");
+                        btnApproveAnchor.innerText = Locale.Translate("Approve translation");
+                        @{IF @@DISABLE-APPROVE-TRANSLATION-BTN@@=True@
+                            btnApproveAnchor.style.opacity = 0.2;
+                            btnApproveAnchor.style.pointerEvents = 'none';
+                            btnApproveAnchor.LastState = false;
+                            btnApproveAnchor.NumberOfModifications = 0;
+                        }@
+                        @{ELSE
+                            btnApproveAnchor.LastState = true;
+                            btnApproveAnchor.NumberOfModifications = 1;
+                        }@
+                        btnSave.parentElement.insertBefore(btnApproveAnchor, btnSave.nextSibling)
+                        btnApproveAnchor.addEventListener('click', function(e) {
+                            showHideConfirmationMessage( true, Locale.Translate("Approve translation"), Locale.Translate("Are you sure you want to approve this translation?"),
+                                function() {
+                                    var data = new FormData();
+                                    data.append('token', '@@DIAGRAM-TOKEN@@');
+
+                                    var xmlRequest = new XMLHttpRequest();
+                                    xmlRequest.onreadystatechange = function() {
+                                        if (xmlRequest.readyState == 4 && xmlRequest.status == 200) {
+                                            var jsonResponse = JSON.parse(xmlRequest.responseText);
+                                            if (jsonResponse.Status == 'OK') {
+                                                document.location.reload();
+                                                return;
+                                            }
+                                            if (jsonResponse.Status == 'MasterDataModified') {
+                                                showHideMessageDialog(true, Locale.Translate('ERROR'), jsonResponse.Message);
+                                                return;
+                                            }
+                                        }
+                                    };
+
+                                    btnApproveAnchor.NumberOfModifications = 0;
+
+                                    xmlRequest.open('POST', 'translations/approve', true);
+                                    xmlRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+                                    xmlRequest.send(data);
+                                },
+                                function() {
+                                    showHideConfirmationMessage(false);
+                                },
+                                null
+                            );
+                        });
+
+                        iframe.contentWindow.setInterval(function(e) {
+                            // check periodically if btnApproveAnchor should be enabled or disabled
+                            if (btnApproveAnchor.NumberOfModifications > 0 && iframe.contentWindow.sb.editorUi.editor.modified == false) {
+                                btnApproveAnchor.style.opacity = null;
+                                btnApproveAnchor.style.pointerEvents = null;
+                            }
+                            else if (btnApproveAnchor.LastState != iframe.contentWindow.sb.editorUi.editor.modified) {
+                                btnApproveAnchor.LastState = iframe.contentWindow.sb.editorUi.editor.modified;
+                                btnApproveAnchor.NumberOfModifications++;
+                            }
+                        }, 500);
+                    }@
+                }
 				else if (msg.event == 'export')
 				{
 				    saveFlowchart(name, msg.data, iframe);
@@ -78,8 +148,12 @@
 
 	function saveFlowchart(name, flowchartData, iframe)
 	{
-	    var isStaged = document.location.pathname.startsWith("/diagrams.net/F-");
-	    var fileID = parseInt(document.location.pathname.substring("/diagrams.net/F".length).split('/')[0]);
+        var fileID = parseInt(
+                        document.location.pathname.split("/diagrams.net/")
+                                                  .reverse()[0]
+                                                  .substring("F".length)
+                     );
+	    var isStaged = fileID < 0;
 
 	    var data = new FormData();
 	    data.append('data', flowchartData);

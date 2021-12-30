@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.IISModule", "Phabr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.PhrictionValidator", "Phabrico.Plugin.PhrictionValidator\Phabrico.Plugin.PhrictionValidator.csproj", "{FDB2C8E2-6241-460A-9F87-80A236E51AC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.PhrictionTranslator", "Phabrico.Plugin.PhrictionTranslator\Phabrico.Plugin.PhrictionTranslator.csproj", "{B077D1D5-E109-4274-89A4-731FCD521DD9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,18 @@ Global
 		{FDB2C8E2-6241-460A-9F87-80A236E51AC4}.Release|x64.Build.0 = Release|Any CPU
 		{FDB2C8E2-6241-460A-9F87-80A236E51AC4}.Release|x86.ActiveCfg = Release|Any CPU
 		{FDB2C8E2-6241-460A-9F87-80A236E51AC4}.Release|x86.Build.0 = Release|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Debug|x64.Build.0 = Debug|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Debug|x86.Build.0 = Debug|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|x64.ActiveCfg = Release|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|x64.Build.0 = Release|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|x86.ActiveCfg = Release|Any CPU
+		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -144,6 +158,7 @@ Global
 		{6A943228-8E29-4824-80B8-3C6A56B6C219} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 		{C9C64C86-1BF0-4991-AA99-12022761ABC3} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 		{FDB2C8E2-6241-460A-9F87-80A236E51AC4} = {E880A15A-096B-46D3-9188-5DB02C33696E}
+		{B077D1D5-E109-4274-89A4-731FCD521DD9} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8CA4E2F5-1D04-44E3-8945-1ACEC09B246F}

@@ -1,6 +1,9 @@
 ﻿using Phabrico.Http;
 using Phabrico.Miscellaneous;
+using Phabrico.Storage;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
@@ -18,10 +21,42 @@ namespace Phabrico.Parsers.Remarkup.Rules
     [RuleNotInnerRuleFor(typeof(RuleNotification))]
     [RuleNotInnerRuleFor(typeof(RuleQuote))]
     [RuleNotInnerRuleFor(typeof(RuleTable))]
+    [RuleXmlTag("H")]
     public class RuleHeader : RemarkupRule
     {
-        List<string> existingHeaderNames;
         RemarkupParserOutput remarkupParserOutput;
+
+        public enum LineTypes {
+            Hash = 0,
+            Single = 1,
+            Double = 2
+        }
+
+        public int Depth;
+        public LineTypes LineType;
+        public int HeaderNameCopy;
+        public string HeaderName;
+
+        public override string Attributes
+        {
+            get
+            {
+                return "d=\"" + Depth + "\" t=\"" + (int)LineType + "\"";
+            }
+        }
+
+        /// <summary>
+        /// clones a RemarkupRule into another one
+        /// </summary>
+        /// <param name="originalRemarkupRule"></param>
+        public override void Clone(RemarkupRule originalRemarkupRule)
+        {
+            RuleHeader originalRuleHeader = originalRemarkupRule as RuleHeader;
+            Depth = originalRuleHeader.Depth;
+            HeaderName = originalRuleHeader.HeaderName;
+            HeaderNameCopy = originalRuleHeader.HeaderNameCopy;
+            LineType = originalRuleHeader.LineType;
+        }
 
         /// <summary>
         /// This method is executed before the ToHTML() is executed.
@@ -29,7 +64,10 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// </summary>
         public override void Initialize()
         {
-            existingHeaderNames = new List<string>();
+            Depth = 0;
+            LineType = LineTypes.Single;
+            HeaderName = "";
+            HeaderNameCopy = 0;
         }
 
         /// <summary>
@@ -67,6 +105,48 @@ namespace Phabrico.Parsers.Remarkup.Rules
         }
 
         /// <summary>
+        /// Generates remarkup content
+        /// </summary>
+        /// <param name="database">Reference to Phabrico database</param>
+        /// <param name="browser">Reference to browser</param>
+        /// <param name="innerText">Text between XML opening and closing tags</param>
+        /// <param name="attributes">XML attributes</param>
+        /// <returns>Remarkup content, translated from the XML</returns>
+        internal override string ConvertXmlToRemarkup(Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
+        {
+            Depth = Int32.Parse(attributes["d"]);
+            LineType = (LineTypes)Int32.Parse(attributes["t"]);
+
+            switch (LineType)
+            {
+                case LineTypes.Hash:
+                    return (new string('#', Depth)) + " " + innerText + "\n";
+
+                case LineTypes.Double:
+                    if (Depth == 0)
+                    {
+                        return innerText + "\n" + (new string('=', innerText.Length)) + "\n";
+                    }
+                    else
+                    {
+                        return (new string('=', Depth)) + " " + innerText + "\n";
+                    }
+
+                case LineTypes.Single:
+                    if (Depth == 0)
+                    {
+                        return innerText + "\n" + (new string('-', innerText.Length)) + "\n";
+                    }
+                    else
+                    {
+                        return "- " + innerText + "\n";
+                    }
+            }
+
+            return "";
+        }
+
+        /// <summary>
         /// Adds a soft hyphen character (&shy;) before some specific characters.
         /// This way the browser can correctly wrap some text if the text doesn't fit on 1 line
         /// </summary>
@@ -75,6 +155,48 @@ namespace Phabrico.Parsers.Remarkup.Rules
         private string FormatHeaderText(string headerText)
         {
             return headerText.Replace("@", "&shy;@");  // for prettier text-wrapping
+        }
+
+        /// <summary>
+        /// Generates a name for a non-href anchor tag (which is used to for navigating through the table of contents)
+        /// </summary>
+        /// <param name="headerText"></param>
+        /// <returns></returns>
+        private string GenerateHeaderName(string headerText)
+        {
+            // replace all non-alphanumeric characters by dashes (and convert all characters to lowercase characters)
+            string result = RegexSafe.Replace(headerText.ToLower(), "[^a-z0-9]", "-", RegexOptions.Singleline);
+
+            // remove all duplicated dashes
+            result = RegexSafe.Replace(result, "-+", "-");
+
+            // in case a dash ppears at the end: remove it
+            result = result.Trim('-');
+
+            // name should contain all words until the 30th position
+            string[] words = result.Split('-');
+            result = "";
+            foreach (string word in words)
+            {
+                if (result.Length >= 30) break;
+
+                result += word + "-";
+            }
+
+            // remove generated dash at end
+            result = result.TrimEnd('-');
+
+            // remember results
+            HeaderName = result;
+            HeaderNameCopy = TokenList.OfType<RuleHeader>().Count(header => header.HeaderName.Equals(result));
+
+            // if a duplicated header was found -> add counter
+            if (HeaderNameCopy >= 1)
+            {
+                result = result + "-" + HeaderNameCopy;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -91,31 +213,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^= *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h2 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h2>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Double;
+                Depth = 1;
 
                 return true;
             }
@@ -137,31 +246,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^== *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h3 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h3>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Double;
+                Depth = 2;
 
                 return true;
             }
@@ -183,31 +279,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^=== *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h4 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h4>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Double;
+                Depth = 3;
 
                 return true;
             }
@@ -229,31 +312,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^==== *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h5 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h5>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Double;
+                Depth = 4;
 
                 return true;
             }
@@ -275,31 +345,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^===== *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h6 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h6>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Double;
+                Depth = 5;
 
                 return true;
             }
@@ -321,31 +378,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^# +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h2 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h2>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Hash;
+                Depth = 1;
 
                 return true;
             }
@@ -367,31 +411,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^## +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h3 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h3>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Hash;
+                Depth = 2;
 
                 return true;
             }
@@ -413,31 +444,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^### +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h4 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h4>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Hash;
+                Depth = 3;
 
                 return true;
             }
@@ -459,31 +477,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^#### +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h5 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h5>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Hash;
+                Depth = 4;
 
                 return true;
             }
@@ -505,31 +510,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^##### +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h6 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h6>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Hash;
+                Depth = 5;
 
                 return true;
             }
@@ -551,31 +543,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^([^\r\n]+)\r?\n-+ *\r?\n", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h3 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h3>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Single;
+                Depth = 0;
 
                 return true;
             }
@@ -597,31 +576,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, "^([^\r\n]+)\r?\n=+ *\r?\n", RegexOptions.Singleline);
             if (match.Success)
             {
-                string headerName = "hdr" + RegexSafe.Replace(match.Groups[1].Value, "[^A-Za-z0-9]", "_", RegexOptions.Singleline);
+                string headerName = GenerateHeaderName(match.Groups[1].Value);
                 string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
-
-                if (existingHeaderNames.Contains(headerName))
-                {
-                    int counter = 1;
-                    string newHeaderName;
-                    do
-                    {
-                        newHeaderName = string.Format("{0}-{1}", headerName, counter);
-                        counter++;
-                    }
-                    while (existingHeaderNames.Contains(newHeaderName));
-
-                    headerName = newHeaderName;
-                }
-
-                existingHeaderNames.Add(headerName);
 
                 html = string.Format("<h2 class='remarkup-header'><a name='{0}' style='padding-top: 80px;'></a>{1} </h2>", headerName, FormatHeaderText(headerText));
                 remarkup = remarkup.Substring(match.Length);
 
                 Length = match.Length;
+
+                LineType = LineTypes.Double;
+                Depth = 0;
 
                 return true;
             }

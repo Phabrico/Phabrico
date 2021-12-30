@@ -1,5 +1,9 @@
 <script>
     window.addEventListener('load', function() {
+        if (typeof phabrico == 'undefined') {
+            alert('ERROR: Not all javascript files were loaded');
+        }
+
         Object.defineProperty( phabrico, "autoLogOff", {
             value: new AutoLogOff(@@AUTOLOGOUTAFTERMINUTESOFINACTIVITY@@),
             writable: false,

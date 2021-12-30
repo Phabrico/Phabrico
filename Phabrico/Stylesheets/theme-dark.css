@@ -82,6 +82,8 @@
     --unfrozen-background2: linear-gradient(to bottom,#f00,#fa0,#ff0);
     --unfrozen-color: #f09040;
     --unfrozen-webkit-text-fill-color: transparent;
+    --translated-background: #18b;
+    --translated-color: #fff;
     --homepage-line-color: #846b33;
     --list-item-separator-border-top: solid 1px #ebeced;
     --list-item-view-a-color: #bbb;
@@ -89,6 +91,8 @@
     --navigator-menuitem-notification-error-color: #fff;
     --navigator-menuitem-notification-information-background: #06f;
     --navigator-menuitem-notification-information-color: #fff;
+    --navigator-menuitem-notification-warning-background: #fc0;
+    --navigator-menuitem-notification-warning-color: #000;
     --maniphest-link-background-image: linear-gradient(to bottom,#ccc,#888);
     --maniphest-link-border: solid 1px #ccc;
     --maniphest-link-color: #000;
@@ -171,8 +175,11 @@
     --button-gray-background-image-hover: linear-gradient(to bottom,#ccc,#666);
     --button-gray-color-hover: #FFF;
     --button-red-background-image: linear-gradient(to bottom,#fc5368,#900000);
-    ;
     --button-red-hover-background-image: linear-gradient(to bottom,#fe74b8,#e94040);
+    --button-yellow-background-image: linear-gradient(to bottom,#f3ce00,#d39e00);
+    --button-yellow-hover-background-image: linear-gradient(to bottom,#f3fe20,#d39e00);
+    --button-yellow-color: #000;
+    --button-yellow-color-hover: #000;
     --counterexample-background: #672626;
     --img-darkness-extreme-filter: invert(80.7%) sepia(0%) saturate(302%) hue-rotate(180deg) brightness(139%) contrast(100%);
     --img-darkness-moderate-filter: brightness(60%) contrast(150%);

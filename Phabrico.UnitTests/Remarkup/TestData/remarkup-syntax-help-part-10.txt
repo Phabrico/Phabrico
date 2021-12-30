@@ -1,5 +1,4 @@
 == Embedding Mocks (Pholio)
-
 You can embed a Pholio mock by using braces to refer to it:
 
 {M123}
@@ -14,7 +13,6 @@ You can set the image (or images) to display like this:
 {M123, image=12345 & 6789}
 
 == Embedding Pastes
-
 You can embed a Paste using braces:
 
 {P123}
@@ -29,7 +27,7 @@ You can highlight specific lines with the `highlight` option:
 {P123, highlight="23-25, 31"}
 
 ~~~~~~~~~~
-<h1 class='remarkup-header'><a name='hdrEmbedding_Mocks__Pholio_' style='padding-top: 80px;'></a>Embedding Mocks (Pholio) </h1>
+<h1 class='remarkup-header'><a name='embedding-mocks-pholio' style='padding-top: 80px;'></a>Embedding Mocks (Pholio) </h1>
 You can embed a Pholio mock by using braces to refer to it:<p class='paragraph'></p>
 {M123}<p class='paragraph'></p>
 By default the first four images from the mock set are displayed. This behavior<br>
@@ -38,7 +36,7 @@ provide one or more image IDs to display.<p class='paragraph'></p>
 You can set the image (or images) to display like this:<p class='paragraph'></p>
 {M123, image=12345}<br>
 {M123, image=12345 &amp; 6789}<br>
-<h1 class='remarkup-header'><a name='hdrEmbedding_Pastes' style='padding-top: 80px;'></a>Embedding Pastes </h1>
+<h1 class='remarkup-header'><a name='embedding-pastes' style='padding-top: 80px;'></a>Embedding Pastes </h1>
 You can embed a Paste using braces:<p class='paragraph'></p>
 {P123}<p class='paragraph'></p>
 You can adjust the embed height with the <tt class='remarkup-monospaced'>lines</tt> option:<p class='paragraph'></p>
@@ -46,4 +44,32 @@ You can adjust the embed height with the <tt class='remarkup-monospaced'>lines</
 You can highlight specific lines with the <tt class='remarkup-monospaced'>highlight</tt> option:<p class='paragraph'></p>
 {P123, highlight=15}<br>
 {P123, highlight=&quot;23-25, 31&quot;}
+~~~~~~~~~~
+<H d="2" t="2">Embedding Mocks <BR>Pholio</BR></H>
+You can embed a Pholio mock by using braces to refer to it:<N>[28]</N>
+<N>[29]</N>
+{M123}<N>[32]</N>
+<N>[33]</N>
+By default the first four images from the mock set are displayed. This behavior<N>[61]</N>
+can be overridden with the <B>image</B> option. With the <B>image</B> option you can<N>[88]</N>
+provide one or more image IDs to display.<N>[105]</N>
+<N>[106]</N>
+You can set the image <BR>or images</BR> to display like this:<N>[126]</N>
+<N>[127]</N>
+{M123, image=12345}<N>[135]</N>
+{M123, image=12345 &amp; 6789}<N>[148]</N>
+<N>[149]</N>
+<H d="2" t="2">Embedding Pastes</H>
+You can embed a Paste using braces:<N>[164]</N>
+<N>[165]</N>
+{P123}<N>[168]</N>
+<N>[169]</N>
+You can adjust the embed height with the <M>`lines`</M> option:<N>[189]</N>
+<N>[190]</N>
+{P123, lines=15}<N>[198]</N>
+<N>[199]</N>
+You can highlight specific lines with the <M>`highlight`</M> option:<N>[217]</N>
+<N>[218]</N>
+{P123, highlight=15}<N>[226]</N>
+{P123, highlight="23-25, 31"}
 ~~~~~~~~~~

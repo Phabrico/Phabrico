@@ -5,7 +5,9 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs;
 using WebDriverManager.DriverConfigs.Impl;
@@ -27,10 +29,71 @@ namespace Phabrico.UnitTests.Selenium
         }
 
         /// <summary>
+        /// Verifies that there are no javascript errors generated in the browser
+        /// </summary>
+        public void AssertNoJavascriptErrors()
+        {
+            var errorStrings = new List<string>
+            {
+                "SyntaxError",
+                "EvalError",
+                "ReferenceError",
+                "RangeError",
+                "TypeError",
+                "URIError"
+            };
+
+            var jsErrors = WebBrowser.Manage()
+                                     .Logs
+                                     .GetLog(LogType.Browser)
+                                     .Where(x => errorStrings.Any(e => x.Message.Contains(e)));
+
+            if (jsErrors.Any())
+            {
+                Assert.Fail("JavaScript error(s):" + Environment.NewLine + jsErrors.Aggregate("", (s, entry) => s + entry.Message + Environment.NewLine));
+            }
+        }
+
+        /// <summary>
+        /// Executes some last tests before cleaning up the BrowserUnitTest
+        /// </summary>
+        [TestCleanup]
+        public void CleanupTest()
+        {
+            AssertNoJavascriptErrors();
+        }
+
+        /// <summary>
+        /// Disposes a BrowserUnitTest instance
+        /// </summary>
+        public override void Dispose()
+        {
+            if (WebBrowser != null)
+            {
+                WebBrowser.Quit();
+            }
+
+            if (System.IO.Directory.Exists(DownloadDirectory))
+            {
+                System.IO.DirectoryInfo directoryInfo = new System.IO.DirectoryInfo(DownloadDirectory);
+                foreach (System.IO.FileInfo file in directoryInfo.EnumerateFiles("*.*", System.IO.SearchOption.AllDirectories).ToArray())
+                {
+                    file.Attributes = System.IO.FileAttributes.Archive;
+                    file.Delete();
+                }
+
+                System.IO.Directory.Delete(DownloadDirectory, true);
+            }
+
+            base.Dispose();
+        }
+
+        /// <summary>
         /// Initializes a BrowserUnitTest
         /// </summary>
         public virtual void Initialize(Type browser, string httpRootPath)
         {
+            Http.Server.UnitTesting = true;
             string singleBrowserTest = Environment.GetEnvironmentVariable("PHABRICO.TEST.BROWSER", EnvironmentVariableTarget.Machine);
 
             // (re)create directory where files can downloaded into
@@ -126,31 +189,6 @@ namespace Phabrico.UnitTests.Selenium
         }
 
         /// <summary>
-        /// Disposes a BrowserUnitTest instance
-        /// </summary>
-        public override void Dispose()
-        {
-            if (WebBrowser != null)
-            {
-                WebBrowser.Quit();
-            }
-
-            if (System.IO.Directory.Exists(DownloadDirectory))
-            {
-                System.IO.DirectoryInfo directoryInfo = new System.IO.DirectoryInfo(DownloadDirectory);
-                foreach (System.IO.FileInfo file in directoryInfo.EnumerateFiles("*.*", System.IO.SearchOption.AllDirectories).ToArray())
-                {
-                    file.Attributes = System.IO.FileAttributes.Archive;
-                    file.Delete();
-                }
-
-                System.IO.Directory.Delete(DownloadDirectory, true);
-            }
-
-            base.Dispose();
-        }
-
-        /// <summary>
         /// Completes the authentication dialog
         /// </summary>
         public void Logon(bool navigateToAuthenticationScreen = true)
@@ -176,6 +214,11 @@ namespace Phabrico.UnitTests.Selenium
             wait.Until(condition => condition.FindElements(By.ClassName("phabrico-page-content"))
                                              .Any(elem => elem.Enabled && elem.Displayed)
                       );
+
+            // wait until some init-javascript functions are finished (e.g. for enabling the Synchronize button)
+            Thread.Sleep(1000);
+
+            AssertNoJavascriptErrors();
         }
     }
 }

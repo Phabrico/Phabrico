@@ -1,6 +1,6 @@
-[[ mailto:alincoln@example.com | mail me ]]
+[[mailto:alincoln@example.com | mail me]]
 
-[ mail me ]( mailto:alincoln@example.com )
+[mail me](mailto:alincoln@example.com)
 
 [[mailto:alincoln@example.com]]
 
@@ -8,4 +8,10 @@
 <a class='email-link' href='mailto:alincoln@example.com'>mail me</a><p class='paragraph'></p>
 <a class='email-link' href='mailto:alincoln@example.com'>mail me</a><p class='paragraph'></p>
 <a class='email-link' href='mailto:alincoln@example.com'>alincoln@example.com</a>
+~~~~~~~~~~
+<A f="n" u="mailto%3Aalincoln%40example.com">mail me</A><N>[2]</N>
+<N>[3]</N>
+<A f="m" u="mailto%3Aalincoln%40example.com">mail me</A><N>[4]</N>
+<N>[5]</N>
+<A f="l" u="mailto%3Aalincoln%40example.com"></A>
 ~~~~~~~~~~

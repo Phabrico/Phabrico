@@ -282,7 +282,7 @@ DriveClient.prototype.execute = function(fn)
 				fn();
 			}), mxUtils.bind(this, function(resp)
 			{
-				var msg = mxResources.get('cannotLogin');
+				var msg = (resp.message != null) ? resp.message : mxResources.get('cannotLogin');
 				
 				// Handles special domain policy errors
 				if (resp != null && resp.error != null)
@@ -732,6 +732,10 @@ DriveClient.prototype.authorizeStep2 = function(state, immediate, success, error
 				
 					popup.focus();
 				}
+				else if (error != null)
+				{
+					error({message: mxResources.get('allowPopups')});
+				}
 			}
 		}
 	}
@@ -1175,7 +1179,7 @@ DriveClient.prototype.getXmlFile = function(resp, success, error, ignoreMime, re
 							
 							if (Graph.fileSupport && new XMLHttpRequest().upload && this.ui.isRemoteFileFormat(data, url))
 							{
-								this.ui.parseFile(new Blob([data], {type: 'application/octet-stream'}), mxUtils.bind(this, function(xhr)
+								this.ui.parseFileData(data, mxUtils.bind(this, function(xhr)
 								{
 									try
 									{

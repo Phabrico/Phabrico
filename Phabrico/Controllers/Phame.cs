@@ -25,7 +25,7 @@ namespace Phabrico.Controllers
         public void HttpGetLoadPosts(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HidePhame) throw new Phabrico.Exception.HttpNotFound("/phame");
-            
+
             string blogName = HttpUtility.UrlDecode(parameters.FirstOrDefault() ?? "");
 
             Storage.PhamePost phamePostStorage = new Storage.PhamePost();
@@ -38,7 +38,7 @@ namespace Phabrico.Controllers
 
                 viewPage.SetText("BLOG-TITLE", blogName);
 
-                foreach (Phabricator.Data.PhamePost phamePost in phamePostStorage.Get(database).OrderByDescending(post => post.DateModified))
+                foreach (Phabricator.Data.PhamePost phamePost in phamePostStorage.Get(database, browser.Session.Locale).OrderByDescending(post => post.DateModified))
                 {
                     if (string.IsNullOrWhiteSpace(blogName) == false && phamePost.Blog.Equals(blogName, StringComparison.OrdinalIgnoreCase) == false) continue;
 
@@ -60,11 +60,11 @@ namespace Phabrico.Controllers
                         }
                     }
 
-                    string shortedContent = string.Join( "\n", firstLines );
+                    string shortedContent = string.Join("\n", firstLines);
                     string formattedDocumentContent = ConvertRemarkupToHTML(database, "/", shortedContent, out remarkupParserOutput, false);
 
                     string authorName = "";
-                    Phabricator.Data.User author = userStorage.Get(database, phamePost.Author);
+                    Phabricator.Data.User author = userStorage.Get(database, phamePost.Author, browser.Session.Locale);
                     if (author != null) authorName = author.UserName;
 
                     HtmlPartialViewPage blogPost = viewPage.GetPartialView("BLOG-POST");
@@ -77,14 +77,22 @@ namespace Phabrico.Controllers
             }
         }
 
+        /// <summary>
+        /// This method is fired when the user clicks on 'Read more...'
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="viewPage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
         [UrlController(URL = "/phame/post/view/", HtmlViewPageOptions = HtmlViewPage.ContentOptions.NoFormatting)]
         public void HttpGetLoadPostData(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HidePhame) throw new Phabrico.Exception.HttpNotFound("/phame");
- 
+
             Storage.PhamePost phamePostStorage = new Storage.PhamePost();
             Storage.User userStorage = new Storage.User();
-            
+
             string blogPostID = parameters.FirstOrDefault();
 
             viewPage = new HtmlViewPage(httpServer, browser, true, "PhamePost", parameters);
@@ -94,11 +102,11 @@ namespace Phabrico.Controllers
                 // set private encryption key
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
-                Phabricator.Data.PhamePost phamePost = phamePostStorage.Get(database, blogPostID);
+                Phabricator.Data.PhamePost phamePost = phamePostStorage.Get(database, blogPostID, browser.Session.Locale);
                 if (phamePost == null) throw new Phabrico.Exception.HttpNotFound("/phame/post/view/" + blogPostID);
 
                 string authorName = "";
-                Phabricator.Data.User author = userStorage.Get(database, phamePost.Author);
+                Phabricator.Data.User author = userStorage.Get(database, phamePost.Author, browser.Session.Locale);
                 if (author != null) authorName = author.UserName;
 
                 RemarkupParserOutput remarkupParserOutput;
@@ -109,12 +117,20 @@ namespace Phabrico.Controllers
                 viewPage.SetText("AUTHOR", authorName);
                 viewPage.SetText("DATE-MODIFIED", FormatDateTimeOffset(phamePost.DateModified, browser.Language), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
-       }
+        }
 
+        /// <summary>
+        /// This method is fired when the user clicks on a Phame search result
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="browser"></param>
+        /// <param name="viewPage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
         [UrlController(URL = "/phame/post/", HtmlViewPageOptions = HtmlViewPage.ContentOptions.Default)]
         public void HttpGetLoadPostReference(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             HttpGetLoadPostData(httpServer, browser, ref viewPage, parameters, parameterActions);
         }
-   }
+    }
 }

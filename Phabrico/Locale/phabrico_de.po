@@ -127,7 +127,7 @@ msgid "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
 msgstr "Hochladen von @@FILE@@ (@@PERCENTAGE@@ %)"
 
 msgid "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
-msgstr "Einige Änderungen konnten nicht hochgeladen werden, weil neuere Versionen dieser Dokumente oder Aufgaben bereits auf Phabricator existieren. Überprüfen Sie diese unter 'Lokale Änderungen'."
+msgstr "Einige Änderungen konnten nicht hochgeladen werden, weil neuere Versionen dieser Dokumente oder Aufgaben bereits auf Phabricator existieren. Überprüfen Sie diese unter \'Lokale Änderungen\'."
 
 msgid "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
 msgstr "Sind Sie sicher, dass Sie den public Phabricator-Server und Ihren privaten Phabrico-Server synchronisieren wollen ?"
@@ -319,6 +319,12 @@ msgstr "Abschluss...";
 
 msgid "Synchronization.Status.Failed"
 msgstr "Fehlgeschlagen";
+
+msgid "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+msgstr "Einige Wiki-Dokumente werden nicht hochgeladen, weil ihre Slug-Pfade zu lang sind. Sie können diese auf dem Bildschirm 'Lokale Änderungen' kürzen.\n\nMöchten Sie die anderen Wiki-Dokumente und Aufgaben hochladen?"
+
+msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+msgstr "Einige Phriction-Dokumente haben lange Slug-Pfade, die bei der Erstellung der zugrunde liegenden Dokumente zu Problemen führen können.\n\nMöchten Sie fortfahren?"
 
 # Maniphest
 msgid "Create Task"
@@ -579,6 +585,48 @@ msgstr "Referenzen anzeigen"
 
 msgid "Parameters"
 msgstr "Parameter"
+
+msgid "This page has been translated but it's translated content hasn't been reviewed yet"
+msgstr "Diese Seite wurde übersetzt, aber der übersetzte Inhalt wurde noch nicht überprüft."
+
+msgid "Edit translation"
+msgstr "Übersetzung bearbeiten"
+
+msgid "Approve translation"
+msgstr "Übersetzung freigeben"
+
+msgid "Are you sure you want to approve this translation?"
+msgstr "Sind Sie sicher, dass Sie diese Übersetzung akzeptieren wollen?"
+
+msgid "Unreviewed translations"
+msgstr "Nicht überprüfte Übersetzungen"
+
+msgid "Revert to original translation"
+msgstr "Originalübersetzung wiederherstellen"
+
+msgid "Are you sure you want to completely undo your translation ?"
+msgstr "Sind Sie sicher, dass Sie Ihre Übersetzung vollständig rückgängig machen wollen?"
+
+msgid "Action"
+msgstr "Aktion"
+
+msgid "Original Title"
+msgstr "Originaltitel"
+
+msgid "All translations have been approved"
+msgstr "Alle Übersetzungen sind freigegeben"
+
+msgid "Type some text to filter the list of unreviewed translations..."
+msgstr "Geben Sie Text ein, um die Liste der nicht überprüften Übersetzungen zu filtern..."
+
+msgid "Are you sure you don't need a translation for this document ?"
+msgstr "Sind Sie sicher, dass Sie für dieses Dokument keine Übersetzung benötigen?"
+
+msgid "No translation needed"
+msgstr "Keine Übersetzung nötig"
+
+msgid "The original content of this document has changed. You must update the translation before you can approve it."
+msgstr "Der ursprüngliche Inhalt dieses Dokuments hat sich geändert. Sie müssen die Übersetzung aktualisieren, bevor Sie diese freigeben können."
 
 # Phame
 msgid "Phame"
@@ -999,6 +1047,30 @@ msgstr "Eingefroren"
 msgid "Modified"
 msgstr "Geändert"
 
+msgid "Rename path"
+msgstr "URL ändern"
+
+msgid "New path:"
+msgstr "Neuer Pfad:"
+
+msgid "Current path:"
+msgstr "Aktueller Pfad:"
+
+msgid "Change path"
+msgstr "URL ändern"
+
+msgid "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+msgstr "Der Pfad zu diesem Dokument ist länger als 100 Zeichen. Dieses Dokument kann immer noch in Phabricator hochgeladen werden, aber neu erstellte zugrundeliegende Dokumente können dies nicht."
+
+msgid "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+msgstr "Der Pfad zu diesem Dokument ist länger als 115 Zeichen. Dieses Dokument kann nicht in Phabricator hochgeladen werden."
+
+msgid "An internal error occurred"
+msgstr "Ein interner Fehler ist aufgetreten"
+
+msgid "A document already exists with this slug path"
+msgstr "Es existiert bereits ein Dokument mit diesem Slug-Pfad"
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Fett"
@@ -1035,6 +1107,9 @@ msgstr "Tabelle"
 
 msgid "Diagram"
 msgstr "Diagramm"
+
+msgid "Unlock edit and view windows"
+msgstr "Bearbeiten und Anzeigen freischalten"
 
 msgid "Help"
 msgstr "Hilfe"

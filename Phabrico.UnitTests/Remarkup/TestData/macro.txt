@@ -1,15 +1,29 @@
-:mymacro
-  :mymacro
-- :mymacro
-:mymacro :mymacro
+mymacro
+  mymacro
+- mymacro
+
+mymacro mymacro
 ~~~~~~~~~~
 <img alt='small.png' src='file/data/1234/'>
 <br>
 <img alt='small.png' src='file/data/1234/'>
 <br>
 <ul class='remarkup-list'>
-  <li class='remarkup-list-item'>:mymacro</li>
+  <li class='remarkup-list-item'>
+    <p><img alt='small.png' src='file/data/1234/'></p>
+    <p><br></p>
+  </li>
 </ul>
 
-:mymacro :mymacro
+mymacro mymacro
+~~~~~~~~~~
+<MA>mymacro</MA>
+<N>[2]</N>
+<MA>  mymacro</MA>
+<N>[4]</N>
+<LS>
+  <b1><MA>mymacro</MA>
+&lt;N&gt;[1]&lt;/N&gt;</b1>
+</LS>
+mymacro mymacro
 ~~~~~~~~~~

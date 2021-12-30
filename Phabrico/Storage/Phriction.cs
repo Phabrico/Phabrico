@@ -105,17 +105,22 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.Phriction> Get(Database database)
+        public override IEnumerable<Phabricator.Data.Phriction> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(string.Format(@"
-                       SELECT token,
-                              path,
-                              info
+                       SELECT phrictionInfo.token,
+                              phrictionInfo.path,
+                              phrictionInfo.info,
+                              contentTranslation.translation
                        FROM phrictionInfo
-                       WHERE token LIKE '{0}%';
+                       LEFT OUTER JOIN Translation.contentTranslation
+                         ON phrictionInfo.token = contentTranslation.token
+                        AND contentTranslation.language = @language
+                       WHERE phrictionInfo.token LIKE '{0}%';
                    ", Phabricator.Data.Phriction.Prefix),
                    database.Connection))
             {
+                database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.Default);
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     while (reader.Read())
@@ -126,7 +131,14 @@ namespace Phabrico.Storage
                         string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                         JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
 
-                        record.Content = (string)info["Content"];
+                        if (reader["translation"] is DBNull)
+                        {
+                            record.Content = (string)info["Content"];
+                        }
+                        else
+                        {
+                            record.Content = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["translation"]);
+                        }
                         record.Author = (string)info["Author"];
                         record.LastModifiedBy = (string)info["LastModifiedBy"];
                         record.Name = (string)info["Name"];
@@ -147,7 +159,7 @@ namespace Phabrico.Storage
         /// <param name="key"></param>
         /// <param name="ignoreStageData"></param>
         /// <returns></returns>
-        public override Phabricator.Data.Phriction Get(Database database, string key, bool ignoreStageData = false)
+        public override Phabricator.Data.Phriction Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
             Phabricator.Data.Phriction result = null;
             string url = key;
@@ -156,7 +168,7 @@ namespace Phabrico.Storage
             if (ignoreStageData == false)
             {
                 Stage stageStorage = new Stage();
-                result = stageStorage.Get<Phabricator.Data.Phriction>(database)
+                result = stageStorage.Get<Phabricator.Data.Phriction>(database, language)
                                      .FirstOrDefault(phrictionDocument => (phrictionDocument.Token ?? "").Equals(key)
                                                                        || phrictionDocument.Path.TrimEnd('/').Equals(url.TrimEnd('/'))
                                                     );
@@ -165,17 +177,22 @@ namespace Phabrico.Storage
             if (result == null)
             {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       SELECT token,
-                              path,
-                              info
+                       SELECT phrictionInfo.token,
+                              phrictionInfo.path,
+                              phrictionInfo.info,
+                              contentTranslation.translation
                        FROM phrictionInfo
-                       WHERE token = @key
-                          OR path = @url
-                       ORDER BY token;              -- first PHID-WIKI-, then PHID-WIKIALIAS, then PHID-WIKICOVER
+                       LEFT OUTER JOIN Translation.contentTranslation
+                         ON phrictionInfo.token = contentTranslation.token
+                        AND contentTranslation.language = @language
+                       WHERE phrictionInfo.token = @key
+                          OR phrictionInfo.path = @url
+                       ORDER BY phrictionInfo.token;              -- first PHID-WIKI-, then PHID-WIKIALIAS, then PHID-WIKICOVER
                    ", database.Connection))
                 {
                     database.AddParameter(dbCommand, "key", key, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "url", Encryption.Encrypt(database.EncryptionKey, System.Web.HttpUtility.UrlDecode(url).ToLower().Replace(' ', '_')));
+                    database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.Default);
                     using (var reader = dbCommand.ExecuteReader())
                     {
                         if (reader.Read())
@@ -188,7 +205,14 @@ namespace Phabrico.Storage
                                 string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                                 JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
 
-                                record.Content = (string)info["Content"];
+                                if (reader["translation"] is DBNull)
+                                {
+                                    record.Content = (string)info["Content"];
+                                }
+                                else
+                                {
+                                    record.Content = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["translation"]);
+                                }
                                 record.Author = (string)info["Author"];
                                 record.LastModifiedBy = (string)info["LastModifiedBy"];
                                 record.Name = (string)info["Name"];
@@ -202,7 +226,7 @@ namespace Phabrico.Storage
                             {
                                 // document is an alias -> retrieve underlying document
                                 string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
-                                result = Get(database, decryptedInfo);
+                                result = Get(database, decryptedInfo, language);
                             }
                         }
                     }
@@ -216,12 +240,12 @@ namespace Phabrico.Storage
                 {
                     if (alias.Path.Equals(key.TrimEnd('/') + "/")) continue;
 
-                    Phabricator.Data.Phriction reference = Get(database, alias.Content);
+                    Phabricator.Data.Phriction reference = Get(database, alias.Content, language);
                     if (reference != null)
                     {
                         if (key.StartsWith(reference.Path)) continue;
 
-                        result = Get(database, reference.Path + key.TrimEnd('/') + "/");
+                        result = Get(database, reference.Path + key.TrimEnd('/') + "/", language);
                         if (result != null) break;
                     }
                 }
@@ -234,6 +258,7 @@ namespace Phabrico.Storage
         /// Returns all PhrictionInfo records which represent an alias
         /// </summary>
         /// <param name="database"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
         internal IEnumerable<Phabricator.Data.Phriction> GetAliases(Database database)
         {
@@ -279,14 +304,19 @@ namespace Phabrico.Storage
                        SELECT phrictionInfo.token,
                               phrictionInfo.path,
                               phrictionInfo.info,
-                              favoriteObject.displayOrder
+                              favoriteObject.displayOrder,
+                              contentTranslation.translation
                        FROM phrictionInfo
                        INNER JOIN favoriteObject
                          ON phrictionInfo.token = favoriteObject.token
+                       LEFT OUTER JOIN Translation.contentTranslation
+                         ON phrictionInfo.token = contentTranslation.token
+                        AND contentTranslation.language = @language
                        WHERE favoriteObject.accountUserName = @accountUserName
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "accountUserName", accountUserName, Database.EncryptionMode.Default);
+                database.AddParameter(dbCommand, "language", browser.Session.Locale, Database.EncryptionMode.Default);
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     while (reader.Read())
@@ -300,7 +330,14 @@ namespace Phabrico.Storage
                             string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                             JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
 
-                            record.Content = (string)info["Content"];
+                            if (reader["translation"] is DBNull)
+                            {
+                                record.Content = (string)info["Content"];
+                            }
+                            else
+                            {
+                                record.Content = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["translation"]);
+                            }
                             record.Author = (string)info["Author"];
                             record.LastModifiedBy = (string)info["LastModifiedBy"];
                             record.Name = (string)info["Name"];
@@ -317,7 +354,7 @@ namespace Phabrico.Storage
             // return favorite staged phriction documents
             FavoriteObject favoriteObjectStorage = new FavoriteObject();
             Stage stageStorage = new Stage();
-            result.AddRange( stageStorage.Get<Phabricator.Data.Phriction>(database)
+            result.AddRange( stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale)
                                          .Where(document => document.Token.StartsWith("PHID-NEWTOKEN-")
                                                          && favoriteObjectStorage.Get(database, accountUserName, document.Token) != null
                                                )
@@ -365,20 +402,33 @@ namespace Phabrico.Storage
         {
             PhrictionDocumentTree result = new PhrictionDocumentTree();
 
-            foreach (string childToken in database.GetUnderlyingTokens(key, "WIKI"))
+            foreach (string childToken in database.GetUnderlyingTokens(key, "WIKI", browser))
             {
-                Phabricator.Data.Phriction childDocument = Get(database, childToken);
-                if (childDocument == null || string.IsNullOrEmpty(childDocument.Content)) continue;
+                Phabricator.Data.Phriction childDocument = Get(database, childToken, browser.Session.Locale);
+                if (childDocument == null) continue;
+                if (string.IsNullOrEmpty(childDocument.Content))
+                {
+                    if (database.GetUnderlyingTokens(childDocument.Token, "WIKI", browser).Any() == false)
+                    {
+                        continue;
+                    }
+                }
                 if (browser.HttpServer.ValidUserRoles(database, browser, childDocument) == false) continue;
 
                 PhrictionDocumentTree childTree = new PhrictionDocumentTree();
                 childTree.Data = childDocument;
                 result.Add(childTree);
 
-                foreach (string grandchildToken in database.GetUnderlyingTokens(childToken, "WIKI"))
+                foreach (string grandchildToken in database.GetUnderlyingTokens(childToken, "WIKI", browser))
                 {
-                    Phabricator.Data.Phriction grandchildDocument = Get(database, grandchildToken);
-                    if (grandchildDocument == null || string.IsNullOrEmpty(grandchildDocument.Content)) continue;
+                    Phabricator.Data.Phriction grandchildDocument = Get(database, grandchildToken, browser.Session.Locale);
+                    if (string.IsNullOrEmpty(grandchildDocument.Content))
+                    {
+                        if (database.GetUnderlyingTokens(grandchildDocument.Token, "WIKI", browser).Any() == false)
+                        {
+                            continue;
+                        }
+                    }
                     if (browser.HttpServer.ValidUserRoles(database, browser, grandchildDocument) == false) continue;
 
                     PhrictionDocumentTree grandchildTree = new PhrictionDocumentTree();
@@ -449,7 +499,16 @@ namespace Phabrico.Storage
                         cmdDeleteFavorites.ExecuteNonQuery();
                     }
 
-                    database.ClearAssignedTokens(phrictionDocument.Token);
+                    using (SQLiteCommand cmdDeleteContentTranslations = new SQLiteCommand(@"
+                               DELETE FROM Translation.contentTranslation
+                               WHERE token = @token;
+                           ", database.Connection))
+                    {
+                        database.AddParameter(cmdDeleteContentTranslations, "token", phrictionDocument.Token, Database.EncryptionMode.None);
+                        cmdDeleteContentTranslations.ExecuteNonQuery();
+                    }
+
+                    database.ClearAssignedTokens(phrictionDocument.Token, null);  // language=null => all languages
 
                     database.CleanupUnusedObjectRelations();
                 }

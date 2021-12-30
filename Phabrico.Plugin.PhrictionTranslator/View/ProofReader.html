@@ -1,0 +1,258 @@
+﻿<style>
+    .proofreader {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        margin: 15px -15px -20px -15px;
+        padding: 2px;
+        height: calc(100vh - 45px);
+        width: 100%;
+        z-index: 5;
+    }
+
+    .proofreader .content {
+        display: flex;
+        height: 100%;
+    }
+
+    .proofreader .content .title {
+        font-size: 1.25em;
+        font-weight: bold;
+        margin-bottom: 6px;
+        display: block;
+        border-bottom: solid 1px;
+    }
+
+    .proofreader .content #right .title {
+        margin-top: -6px;
+        margin-bottom: 10px;
+    }
+
+    .proofreader .content .remarkup,
+    .proofreader .content .remarkup textarea {
+        height: 100%;
+        margin-bottom: -15px;
+    }
+
+    .proofreader .content .remarkup button {
+        position: absolute;
+        right: 15px;
+        margin-top: 22px;
+    }
+
+    .proofreader .content .remarkup {
+        height: calc(100% - 1.25em - 10px);
+        width: calc(100% - 5px);
+    }
+
+    .proofreader .content #right .remarkup textarea {
+        height: calc(100% - 1.25em - 10px);
+    }
+
+    .proofreader .content #right .remarkup #edit {
+        height: calc(100% - 68px);
+    }
+
+    .edit-left {
+        flex: auto;
+        padding: 16px !important;
+        overflow-y: auto;
+    }
+
+    .edit-right #right {
+        height: calc(100% - 48px);
+        width: calc(100% - 17px);
+        margin: 10px 0px -20px 9px;
+        padding: 0px;
+    }
+
+    .proofreader .toolbar .tooltip-top .tooltiptext {
+        z-index: 9;
+    }
+
+    .proofreader .toolbar .tooltip-top.fa-eye .tooltiptext {
+        left: -18px;
+    }
+
+    .tooltip-top.fa-eye .tooltiptext::after {
+        right: 81%;
+    }
+
+    .proofreader .toolbar .tooltip-top.fa-code .tooltiptext {
+        left: 20px;
+        width: 143px;
+    }
+
+    .tooltip-top.fa-code .tooltiptext::after {
+        right: 81%;
+    }
+
+    [data-locale="nl"] .proofreader .toolbar .tooltip-top.fa-code .tooltiptext {
+        left: 20px;
+        width: 143px;
+    }
+</style>
+
+<input type="hidden" id="documentToken" value="@@PHRICTION-DOCUMENT-TOKEN@@" />
+<div class="proofreader">
+    <div class="toolbar">
+        <div class="app-edit-window-head" style="margin-top:9px;">
+            <span class="phui-font-fa fa-eye tooltip-top" style="display:none"><span class="tooltiptext">View result</span></span>
+            <span class="phui-font-fa fa-code tooltip-top"><span class="tooltiptext">View remarkup code</span></span>
+        </div>
+    </div>
+    <div class="content">
+        <div class="edit-left" id="left" style="width:50%;">
+            <span class="title">@@ORIGINAL-TITLE@@</span>
+            <div class="remarkup" style="display:none;">
+                <textarea readonly>@@ORIGINAL-REMARKUP@@</textarea>
+            </div>
+            <div class="html">
+                @@ORIGINAL-HTML@@
+            </div>
+        </div>
+        <div class="edit-slider" id="slider">&nbsp;</div>
+        <div class="edit-right remarkupContent" id="right" style="width:50%;">
+            <span class="title">@@TRANSLATED-TITLE@@</span>
+            <div class="remarkup" style="display:none;">
+                <div id="edit" class="app-window-body edit">
+                    <div class="app-edit-window-head">
+                        <span class="phui-font-fa fa-bold tooltip-top"><span class="tooltiptext">Bold</span></span>
+                        <span class="phui-font-fa fa-italic tooltip-top"><span class="tooltiptext">Italic</span></span>
+                        <span class="phui-font-fa fa-text-width tooltip-top"><span class="tooltiptext">Monospaced</span></span>
+                        <span class="phui-font-fa fa-list-ul tooltip-top"><span class="tooltiptext">Bulleted List</span></span>
+                        <span class="phui-font-fa fa-list-ol tooltip-top"><span class="tooltiptext">Numbered List</span></span>
+                        <span class="phui-font-fa fa-code tooltip-top"><span class="tooltiptext">Code Block</span></span>
+                        <span class="phui-font-fa fa-quote-right tooltip-top"><span class="tooltiptext">Quote</span></span>
+                        <span class="phui-font-fa fa-table tooltip-top"><span class="tooltiptext">Table</span></span>
+                        @{IF @@PLUGIN-DIAGRAM-AVAILABLE@@=yes@
+                            <span class="phui-font-fa fa-sitemap tooltip-top"><span class="tooltiptext">Diagram</span></span>
+                        }@
+                        <span class="phui-font-fa fa-lock tooltip-top"><span class="tooltiptext">Unlock edit and view windows</span></span>
+                        <a href="remarkup/syntax" target="_blank" tabindex="7">&#x200B;
+                            <span class="right phui-font-fa fa-book tooltip-top" style="padding: 0px 8px;"><span class="tooltiptext">Help</span></span>
+                        </a>
+                    </div>
+                    <textarea id="textarea" name="textarea" tabindex="4" class="dropzone">@@TRANSLATED-REMARKUP@@</textarea>
+                </div>
+                <button class="save" disabled>Save translation</button>
+            </div>
+            <div class="html">
+                @@TRANSLATED-HTML@@
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/simpledrag.js?version=@@PHABRICO-VERSION@@"></script>
+<script>
+    // set up toolbar buttons
+    document.querySelectorAll('.proofreader .toolbar .phui-font-fa').forEach(function(toolbarButton) {
+        toolbarButton.onclick = function(ev) {
+            var span = ev.target;
+
+            if (span.classList.contains('fa-eye'))
+            {
+                var otherButton = document.querySelector('.proofreader .toolbar .phui-font-fa.fa-code');
+                toolbarButton.style.display = 'none';
+                otherButton.style.display = null;
+
+                document.querySelectorAll('.proofreader .content .html').forEach(function(html) {
+                    html.style.display = null;
+                });
+                document.querySelectorAll('.proofreader .content .remarkup').forEach(function(remarkup) {
+                    remarkup.style.display = 'none';
+                });
+                return;
+            }
+
+            if (span.classList.contains('fa-code'))
+            {
+                var otherButton = document.querySelector('.proofreader .toolbar .phui-font-fa.fa-eye');
+                toolbarButton.style.display = 'none';
+                otherButton.style.display = null;
+
+                document.querySelectorAll('.proofreader .content .html').forEach(function(html) {
+                    html.style.display = 'none';
+                });
+                document.querySelectorAll('.proofreader .content .remarkup').forEach(function(remarkup) {
+                    remarkup.style.display = null;
+                });
+                return;
+            }
+        }
+    });
+
+    // set up textarea
+    textarea.addEventListener('input', function(e) {
+        var btnSave = document.querySelector('button.save');
+        btnSave.disabled = false;
+    });
+
+    // set up save button
+    var btnSave = document.querySelector('button.save');
+    btnSave.addEventListener('click', function(e) {
+        var data = new FormData();
+        data.append('token', documentToken.value);
+        data.append('remarkup', textarea.value);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                try {
+                    var result = JSON.parse(xmlhttp.responseText);
+                    if (result.Status == "Redirect") {
+                        document.location.href = result.URL;
+                        return;
+                    }
+
+                    showHideMessageDialog(true, Locale.Translate("ERROR"), result.Message);
+                }
+                catch(exc) {
+                    document.location = document.baseURI;
+                }
+            }
+        }
+        xmlhttp.open('POST', "proofedit", true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    });
+
+    var leftPane = document.getElementById('left');
+    var rightPane = document.getElementById('right');
+    var paneSep = document.getElementById('slider');
+
+    // The script below constrains the target to move horizontally between a left and a right virtual boundaries.
+    // - the left limit is positioned at 10% of the screen width
+    // - the right limit is positioned at 90% of the screen width
+    var leftLimit = 10;
+    var rightLimit = 90;
+
+    paneSep.sdrag(function (el, pageX, startX, pageY, startY, fix) {
+        fix.skipX = true;
+
+        pageX = pageX - 22;
+
+        var totalWidth = window.innerWidth;
+        if (pageX < totalWidth * leftLimit / 100) {
+                pageX = totalWidth * leftLimit / 100;
+                fix.pageX = pageX;
+            }
+        if (pageX > totalWidth * rightLimit / 100) {
+            pageX = totalWidth * rightLimit / 100;
+            fix.pageX = pageX;
+        }
+
+        var cur = pageX / totalWidth * 100;
+        if (cur < 0) {
+            cur = 0;
+        }
+        if (cur > totalWidth) {
+            cur = totalWidth;
+        }
+
+        var right = (100-cur-2);
+
+        leftPane.style.width = cur + '%';
+        rightPane.style.width = right + '%';
+    }, null, 'horizontal');
+</script>

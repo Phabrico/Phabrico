@@ -42,3 +42,27 @@ Use ``` or indent two spaces for code.
 Use %%% for a literal block.
 Use | ... | ... for tables.</code></pre></div>
 ~~~~~~~~~~
+These are block styles, and must be separated from surrounding text by<N>[25]</N>
+empty lines:<N>[30]</N>
+<BT>```
+= Large Header =
+
+== Smaller Header ==
+
+## This is a Header As Well
+
+Also a Large Header
+===================
+
+Also a Smaller Header
+---------------------
+
+&gt; Quoted Text
+
+Use `-` or `*` for bulleted lists, and `#` for numbered lists.
+Use ``` or indent two spaces for code.
+Use %%% for a literal block.
+Use | ... | ... for tables.
+```
+</BT>
+~~~~~~~~~~

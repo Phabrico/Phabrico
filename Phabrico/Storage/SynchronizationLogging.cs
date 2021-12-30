@@ -7,7 +7,7 @@ using System.Globalization;
 namespace Phabrico.Storage
 {
     /// <summary>
-    /// Database mapper for ProjectInfo table
+    /// Database mapper for SynchronizationLogging table
     /// </summary>
     public class SynchronizationLogging : PhabricatorObject<Phabricator.Data.SynchronizationLogging>
     {
@@ -86,7 +86,7 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database"></param>
         /// <returns></returns>
-        public override IEnumerable<Phabricator.Data.SynchronizationLogging> Get(Database database)
+        public override IEnumerable<Phabricator.Data.SynchronizationLogging> Get(Database database, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, title, url, previousContent, metadataModified, dateModified, lastModifiedBy
@@ -119,7 +119,7 @@ namespace Phabrico.Storage
         /// <param name="token">Token to be searched for</param>
         /// <param name="ignoreStageData">Not used</param>
         /// <returns></returns>
-        public override Phabricator.Data.SynchronizationLogging Get(Database database, string token, bool ignoreStageData)
+        public override Phabricator.Data.SynchronizationLogging Get(Database database, string token, Language language, bool ignoreStageData)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT token, title, url, previousContent, metadataModified, dateModified, lastModifiedBy

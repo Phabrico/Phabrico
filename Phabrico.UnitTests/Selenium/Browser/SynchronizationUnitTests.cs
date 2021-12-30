@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using Phabrico.Miscellaneous;
 using Phabrico.UnitTests.Synchronization;
 using System;
 using System.Linq;
@@ -60,20 +61,20 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
                 // modify Maniphest task directly in database
                 Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                Phabricator.Data.Maniphest maniphestTask = maniphestStorage.Get(Database).FirstOrDefault(task => task.Name.Contains("Make coffee"));
+                Phabricator.Data.Maniphest maniphestTask = maniphestStorage.Get(Database, Language.NotApplicable).FirstOrDefault(task => task.Name.Contains("Make coffee"));
                 maniphestTask.Description += "\n# Go to bed";
                 maniphestStorage.Add(Database, maniphestTask);
 
                 // overwrite latest-sync-timestamps
                 Storage.Project projectStorage = new Storage.Project();
-                foreach (Phabricator.Data.Project project in projectStorage.Get(Database).ToArray())
+                foreach (Phabricator.Data.Project project in projectStorage.Get(Database, Language.NotApplicable).ToArray())
                 {
                     project.DateSynchronized = DateTimeOffset.FromUnixTimeSeconds(1578831320 - 1);  // timestamp take from maniphest.search.json
                     projectStorage.Add(Database, project);
                 }
 
                 Storage.User userStorage = new Storage.User();
-                foreach (Phabricator.Data.User user in userStorage.Get(Database).ToArray())
+                foreach (Phabricator.Data.User user in userStorage.Get(Database, Language.NotApplicable).ToArray())
                 {
                     user.DateSynchronized = DateTimeOffset.FromUnixTimeSeconds(1578831320 - 1);  // timestamp take from maniphest.search.json
                     userStorage.Add(Database, user);

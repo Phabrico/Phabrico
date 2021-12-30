@@ -320,6 +320,12 @@ msgstr "Voltooien...";
 msgid "Synchronization.Status.Failed"
 msgstr "Gefaald";
 
+msgid "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+msgstr "Sommige wiki-documenten zullen niet worden geüpload omdat hun slug-paden te lang zijn. U kunt deze inkorten in het scherm 'Lokale wijzigingen'.\n\nWilt u de andere wiki-documenten en taken uploaden?"
+
+msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+msgstr "Sommige Phriction-documenten hebben lange slug paths en kunnen problemen veroorzaken wanneer u onderliggende documenten aanmaakt.\n\nWilt U verder gaan ?"
+
 # Maniphest
 msgid "Create Task"
 msgstr "Maak taak aan"
@@ -579,6 +585,48 @@ msgstr "Toon verwijzingen"
 
 msgid "Parameters"
 msgstr "Parameters"
+
+msgid "This page has been translated but it's translated content hasn't been reviewed yet"
+msgstr "Deze pagina is vertaald, maar de vertaalde inhoud is nog niet geëvalueerd."
+
+msgid "Edit translation"
+msgstr "Vertaling bewerken"
+
+msgid "Approve translation"
+msgstr "Vertaling goedkeuren"
+
+msgid "Are you sure you want to approve this translation?"
+msgstr "Weet u zeker dat u deze vertaling wilt goedkeuren?"
+
+msgid "Unreviewed translations"
+msgstr "Niet gereviseerde vertalingen"
+
+msgid "Revert to original translation"
+msgstr "Oorspronkelijke vertaling terugzetten"
+
+msgid "Are you sure you want to completely undo your translation ?"
+msgstr "Weet u zeker dat u uw vertaling helemaal ongedaan wilt maken?"
+
+msgid "Action"
+msgstr "Actie"
+
+msgid "Original Title"
+msgstr "Oorspronkelijke titel"
+
+msgid "All translations have been approved"
+msgstr "Alle vertalingen zijn goedgekeurd"
+
+msgid "Type some text to filter the list of unreviewed translations..."
+msgstr "Typ wat tekst om de lijst van niet gereviseerde vertalingen te filteren..."
+
+msgid "Are you sure you don't need a translation for this document ?"
+msgstr "Weet u zeker dat u geen vertaling nodig heeft voor dit document?"
+
+msgid "No translation needed"
+msgstr "Geen vertaling nodig"
+
+msgid "The original content of this document has changed. You must update the translation before you can approve it."
+msgstr "De oorspronkelijke inhoud van dit document is gewijzigd. U moet de vertaling bijwerken voordat u deze kunt goedkeuren."
 
 # Phame
 msgid "Phame"
@@ -999,6 +1047,30 @@ msgstr "Bevroren"
 msgid "Modified"
 msgstr "Gewijzigd"
 
+msgid "Rename path"
+msgstr "URL wijzigen"
+
+msgid "New path:"
+msgstr "Nieuw path:"
+
+msgid "Current path:"
+msgstr "Huidig path:"
+
+msgid "Change path"
+msgstr "Wijzig path"
+
+msgid "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+msgstr "Het pad naar dit document is langer dan 100 tekens. Dit document kan nog steeds worden geüpload naar Phabricator, maar nieuw aangemaakte onderliggende documenten mogelijk niet."
+
+msgid "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+msgstr "Het pad naar dit document is langer dan 115 tekens. Dit document kan niet worden geüpload naar Phabricator."
+
+msgid "An internal error occurred"
+msgstr "Er is een interne fout opgetreden"
+
+msgid "A document already exists with this slug path"
+msgstr "Er bestaat al een document met dit slug-pad"
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Vetgedrukt"
@@ -1035,6 +1107,9 @@ msgstr "Tabel"
 
 msgid "Diagram"
 msgstr "Diagram"
+
+msgid "Unlock edit and view windows"
+msgstr "Bewerken en bekijken ontgrendelen"
 
 msgid "Help"
 msgstr "Help"

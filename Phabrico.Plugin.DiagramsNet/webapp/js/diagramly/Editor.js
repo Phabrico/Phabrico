@@ -144,10 +144,15 @@
 	Editor.syncDisabledImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTAgNi4zNVY0LjI2Yy0uOC4yMS0xLjU1LjU0LTIuMjMuOTZsMS40NiAxLjQ2Yy4yNS0uMTIuNS0uMjQuNzctLjMzem0tNy4xNC0uOTRsMi4zNiAyLjM2QzQuNDUgOC45OSA0IDEwLjQ0IDQgMTJjMCAyLjIxLjkxIDQuMiAyLjM2IDUuNjRMNCAyMGg2di02bC0yLjI0IDIuMjRDNi42OCAxNS4xNSA2IDEzLjY2IDYgMTJjMC0xIC4yNS0xLjk0LjY4LTIuNzdsOC4wOCA4LjA4Yy0uMjUuMTMtLjUuMjUtLjc3LjM0djIuMDljLjgtLjIxIDEuNTUtLjU0IDIuMjMtLjk2bDIuMzYgMi4zNiAxLjI3LTEuMjdMNC4xNCA0LjE0IDIuODYgNS40MXpNMjAgNGgtNnY2bDIuMjQtMi4yNEMxNy4zMiA4Ljg1IDE4IDEwLjM0IDE4IDEyYzAgMS0uMjUgMS45NC0uNjggMi43N2wxLjQ2IDEuNDZDMTkuNTUgMTUuMDEgMjAgMTMuNTYgMjAgMTJjMC0yLjIxLS45MS00LjItMi4zNi01LjY0TDIwIDR6Ii8+PC9zdmc+';
 
 	/**
+	 * 
+	 */
+	Editor.calendarImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDI0IDI0IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0cHgiIGZpbGw9IiMwMDAwMDAiPjxnPjxwYXRoIGQ9Ik0wLDBoMjR2MjRIMFYweiIgZmlsbD0ibm9uZSIvPjwvZz48Zz48cGF0aCBkPSJNMjAsNEg0QzIuOSw0LDIsNC45LDIsNnYxMmMwLDEuMSwwLjksMiwyLDJoMTZjMS4xLDAsMi0wLjksMi0yVjZDMjIsNC45LDIxLjEsNCwyMCw0eiBNOCwxMUg0VjZoNFYxMXogTTE0LDExaC00VjZoNFYxMXogTTIwLDExaC00VjZoNFYxMXogTTgsMThINHYtNWg0VjE4eiBNMTQsMThoLTR2LTVoNFYxOHogTTIwLDE4aC00di01aDRWMTh6Ii8+PC9nPjwvc3ZnPg==';
+	
+	/**
 	 *
 	 */
-	Editor.syncProblemImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMyAxMmMwIDIuMjEuOTEgNC4yIDIuMzYgNS42NEwzIDIwaDZ2LTZsLTIuMjQgMi4yNEM1LjY4IDE1LjE1IDUgMTMuNjYgNSAxMmMwLTIuNjEgMS42Ny00LjgzIDQtNS42NVY0LjI2QzUuNTUgNS4xNSAzIDguMjcgMyAxMnptOCA1aDJ2LTJoLTJ2MnpNMjEgNGgtNnY2bDIuMjQtMi4yNEMxOC4zMiA4Ljg1IDE5IDEwLjM0IDE5IDEyYzAgMi42MS0xLjY3IDQuODMtNCA1LjY1djIuMDljMy40NS0uODkgNi00LjAxIDYtNy43NCAwLTIuMjEtLjkxLTQuMi0yLjM2LTUuNjRMMjEgNHptLTEwIDloMlY3aC0ydjZ6Ii8+PC9zdmc+';
-	
+ 	Editor.syncProblemImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMyAxMmMwIDIuMjEuOTEgNC4yIDIuMzYgNS42NEwzIDIwaDZ2LTZsLTIuMjQgMi4yNEM1LjY4IDE1LjE1IDUgMTMuNjYgNSAxMmMwLTIuNjEgMS42Ny00LjgzIDQtNS42NVY0LjI2QzUuNTUgNS4xNSAzIDguMjcgMyAxMnptOCA1aDJ2LTJoLTJ2MnpNMjEgNGgtNnY2bDIuMjQtMi4yNEMxOC4zMiA4Ljg1IDE5IDEwLjM0IDE5IDEyYzAgMi42MS0xLjY3IDQuODMtNCA1LjY1djIuMDljMy40NS0uODkgNi00LjAxIDYtNy43NCAwLTIuMjEtLjkxLTQuMi0yLjM2LTUuNjRMMjEgNHptLTEwIDloMlY3aC0ydjZ6Ii8+PC9zdmc+';
+
 	/**
 	 *
 	 */
@@ -401,15 +406,13 @@
         {
         	var graph = format.editorUi.editor.graph;
         	
-    		return urlParams['test'] == '1' && state.vertices.length == 1 &&
-				state.edges.length == 0 && graph.isTableCell(state.vertices[0]);
+    		return state.vertices.length == 1 && state.edges.length == 0 && graph.isTableCell(state.vertices[0]);
         }},
         {name: 'rowspan', dispName: 'Rowspan', type: 'int', min: 1, defVal: 1, isVisible: function(state, format)
         {
         	var graph = format.editorUi.editor.graph;
         	
-    		return urlParams['test'] == '1' && state.vertices.length == 1 &&
-				state.edges.length == 0 && graph.isTableCell(state.vertices[0]);
+    		return state.vertices.length == 1 && state.edges.length == 0 && graph.isTableCell(state.vertices[0]);
         }},
         {type: 'separator'},
         {name: 'resizeLastRow', dispName: 'Resize Last Row', type: 'bool', getDefaultValue: function(state, format)
@@ -541,6 +544,8 @@
         	
         	return format.editorUi.editor.graph.isSwimlane(state.vertices[0]) ||
         		fillColor == null || fillColor == mxConstants.NONE ||
+				mxUtils.getValue(state.style, mxConstants.STYLE_FILL_OPACITY, 100) == 0 ||
+				mxUtils.getValue(state.style, mxConstants.STYLE_OPACITY, 100) == 0 ||
 				state.style['pointerEvents'] != null;
         }},
         {name: 'moveCells', dispName: 'Move Cells on Fold', type: 'bool', defVal: false, isVisible: function(state, format)
@@ -894,7 +899,7 @@
 			}
 			else
 			{
-				delete style.stroke;
+				style.stroke = 'none';
 			}
 			
 			var gradient = null;
@@ -932,7 +937,7 @@
 			
 			if (fillStyle == 'auto')
 			{
-				var bg = mxUtils.hex2rgba((this.shape.state != null) ?
+				var bg = mxUtils.hex2rgb((this.shape.state != null) ?
 					this.shape.state.view.graph.shapeBackgroundColor :
 					(Editor.isDarkMode() ? Editor.darkColor : '#ffffff'));
 				fillStyle = (style.fill != null && (gradient != null || (bg != null &&
@@ -1252,7 +1257,18 @@
 				return shapeCreateHandJiggle.apply(this, arguments);
 			}
 		};
-		
+
+		// Avoids duplicate painting of images
+		var imageShapePaintVertexShape = mxImageShape.prototype.paintVertexShape;
+
+		mxImageShape.prototype.paintVertexShape = function(c, x, y, w, h)
+		{
+			if (c.handJiggle == null || !c.handJiggle.passThrough)
+			{
+				imageShapePaintVertexShape.apply(this, arguments);
+			}
+		};
+
 		// Overrides for event handling on transparent background for sketch style
 		var shapePaint = mxShape.prototype.paint;
 		mxShape.prototype.paint = function(c)
@@ -2328,7 +2344,6 @@
 				if (tmp != null && tmp.length > 0)
 				{
 					var node = mxUtils.parseXml(tmp).documentElement;
-					
 					
 					return node.nodeName == 'mxfile' || node.nodeName == 'mxGraphModel';
 				}
@@ -4227,6 +4242,8 @@
 		mxCellRenderer.defaultShapes['swimlane'].prototype.customProperties = [
 	        {name: 'arcSize', dispName: 'Arc Size', type: 'float', min:0, defVal: 15},
 	        {name: 'startSize', dispName: 'Header Size', type: 'float'},
+			{name: 'swimlaneHead', dispName: 'Head Border', type: 'bool', defVal: true},
+			{name: 'swimlaneBody', dispName: 'Body Border', type: 'bool', defVal: true},
 	        {name: 'horizontal', dispName: 'Horizontal', type: 'bool', defVal: true},
 	        {name: 'separatorColor', dispName: 'Separator Color', type: 'color', defVal: null},
 	    ];
@@ -4237,7 +4254,12 @@
 			{name: 'fixedRows', dispName: 'Fixed Rows', type: 'bool', defVal: false},
 			{name: 'resizeLast', dispName: 'Resize Last Column', type: 'bool', defVal: false},
 			{name: 'resizeLastRow', dispName: 'Resize Last Row', type: 'bool', defVal: false}].
-			concat(mxCellRenderer.defaultShapes['swimlane'].prototype.customProperties);
+			concat(mxCellRenderer.defaultShapes['swimlane'].prototype.customProperties).
+			concat(mxCellRenderer.defaultShapes['partialRectangle'].prototype.customProperties);
+
+		mxCellRenderer.defaultShapes['tableRow'].prototype.customProperties =
+			mxCellRenderer.defaultShapes['swimlane'].prototype.customProperties.
+			concat(mxCellRenderer.defaultShapes['partialRectangle'].prototype.customProperties);
 		
 		mxCellRenderer.defaultShapes['doubleEllipse'].prototype.customProperties = [
 	        {name: 'margin', dispName: 'Indent', type: 'float', min:0, defVal:4}
@@ -4458,8 +4480,7 @@
 		
 		StyleFormatPanel.prototype.init = function()
 		{
-			// TODO: Update sstate in Format
-			var sstate = this.format.getSelectionState();
+			var sstate = this.editorUi.getSelectionState();
 
 			if (sstate.style.shape != 'image' && !sstate.containsLabel && sstate.cells.length > 0)
 			{
@@ -4498,40 +4519,7 @@
 		
 		StyleFormatPanel.prototype.addStyleOps = function(div)
 		{
-			var ss = this.format.getSelectionState();
-			var graph = this.editorUi.editor.graph;
-			
-			var btn = mxUtils.button(mxResources.get('copyStyle'), mxUtils.bind(this, function(evt)
-			{
-				this.editorUi.actions.get('copyStyle').funct();
-			}));
-			
-			btn.setAttribute('title', mxResources.get('copyStyle') + ' (' + this.editorUi.actions.get('copyStyle').shortcut + ')');
-			btn.style.marginBottom = '2px';
-			btn.style.width = '104px';
-			btn.style.marginRight = '2px';
-			
-			div.appendChild(btn);
-			
-			if (ss.cells.length > 0)
-			{
-				var btn = mxUtils.button(mxResources.get('pasteStyle'), mxUtils.bind(this, function(evt)
-				{
-					this.editorUi.actions.get('pasteStyle').funct();
-				}));
-				
-				btn.setAttribute('title', mxResources.get('pasteStyle') + ' (' + this.editorUi.actions.get('pasteStyle').shortcut + ')');
-				btn.style.marginBottom = '2px';
-				btn.style.width = '104px';
-				
-				div.appendChild(btn);
-			}
-			else
-			{
-				btn.style.width = '210px';
-			}
-			
-			mxUtils.br(div);
+			this.addActions(div, ['copyStyle', 'pasteStyle']);
 			
 			return styleFormatPanelAddStyleOps.apply(this, arguments);
 		};
@@ -5206,7 +5194,7 @@
 						graph.getModel().beginUpdate();
 						try
 						{
-							var cells = this.format.getSelectionState().cells;
+							var cells = ui.getSelectionState().cells;
 							
 							for (var i = 0; i < cells.length; i++)
 							{
@@ -5430,7 +5418,8 @@
 		
 		StyleFormatPanel.prototype.addEditOps = function(div)
 		{
-			var ss = this.format.getSelectionState();
+			var ss = this.editorUi.getSelectionState();
+			var graph = this.editorUi.editor.graph;
 			var btn = null;
 			
 			if (ss.cells.length == 1)
@@ -5447,7 +5436,6 @@
 				div.appendChild(btn);
 			}
 			
-			var graph = this.editorUi.editor.graph;
 			var state = (ss.cells.length == 1) ? graph.view.getState(ss.cells[0]) : null;
 			
 			if (state != null && state.shape != null && state.shape.stencil != null)
@@ -5853,43 +5841,9 @@
 	 * Adds support for custom fonts in cell styles.
 	 */
 	var graphPostProcessCellStyle = Graph.prototype.postProcessCellStyle;
-	Graph.prototype.postProcessCellStyle = function(style)
+	Graph.prototype.postProcessCellStyle = function(cell, style)
 	{
-		this.replaceDefaultColors(style);
-
 		return Graph.processFontStyle(graphPostProcessCellStyle.apply(this, arguments));
-	};
-
-	/**
-	 * Replaces default colors. 
-	 */
-	Graph.prototype.replaceDefaultColors = function(style)
-	{
-		if (style != null)
-		{
-			var bg = mxUtils.hex2rgba(this.shapeBackgroundColor);
-			var fg = mxUtils.hex2rgba(this.shapeForegroundColor);
-
-			this.replaceDefaultColor(style, mxConstants.STYLE_FONTCOLOR, fg);
-			this.replaceDefaultColor(style, mxConstants.STYLE_FILLCOLOR, bg);
-			this.replaceDefaultColor(style, mxConstants.STYLE_STROKECOLOR, fg);
-			this.replaceDefaultColor(style, mxConstants.STYLE_IMAGE_BORDER, fg);
-			this.replaceDefaultColor(style, mxConstants.STYLE_IMAGE_BACKGROUND, bg);
-			this.replaceDefaultColor(style, mxConstants.STYLE_LABEL_BORDERCOLOR, fg);
-			this.replaceDefaultColor(style, mxConstants.STYLE_SWIMLANE_FILLCOLOR, bg);
-			this.replaceDefaultColor(style, mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, bg);
-		}
-	};
-
-	/**
-	 * Replaces the colors for the given key.
-	 */
-	Graph.prototype.replaceDefaultColor = function(style, key, value)
-	{
-		if (style != null && style[key] == 'default' && value != null)
-		{
-			style[key] = value;
-		}
 	};
 
 	/**

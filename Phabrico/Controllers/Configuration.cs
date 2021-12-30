@@ -111,7 +111,7 @@ namespace Phabrico.Controllers
                         viewPage.SetText("CONFIG-CONFIDENTIAL-TABLE-HEADERS", confidentialTableHeaders, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
                         string secondaryUserAccounts = "";
-                        foreach (Phabricator.Data.Account secondaryAccount in accountStorage.Get(database).Where(account => account.Parameters.AccountType == AccountTypes.SecondaryUser))
+                        foreach (Phabricator.Data.Account secondaryAccount in accountStorage.Get(database, Language.NotApplicable).Where(account => account.Parameters.AccountType == AccountTypes.SecondaryUser))
                         {
                             secondaryUserAccounts += ", ['" + secondaryAccount.UserName.Replace("\\", "\\\\'")
                                                                                       .Replace("'", "\\'") 
@@ -127,7 +127,7 @@ namespace Phabrico.Controllers
                     }
 
                     // check if we need to show some help for the first time
-                    Phabricator.Data.Account accountData = accountStorage.Get(database).FirstOrDefault();
+                    Phabricator.Data.Account accountData = accountStorage.Get(database, Language.NotApplicable).FirstOrDefault();
                     if (accountData != null && accountData.Parameters.LastSynchronizationTimestamp == DateTimeOffset.MinValue)
                     {
                         viewPage.SetText("SHOW-FIRSTTIME-HELP", "Yes");
@@ -140,28 +140,37 @@ namespace Phabrico.Controllers
                     viewPage.Customize(browser);
 
                     Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
-                    ManiphestStatus[] openManiphestStates = maniphestStatusStorage.Get(database).Where(status => status.Closed == false).OrderBy(status => status.Name).ToArray();
+                    ManiphestStatus[] openManiphestStates = maniphestStatusStorage.Get(database, Language.NotApplicable).Where(status => status.Closed == false).OrderBy(status => status.Name).ToArray();
 
-                    IEnumerable<string> visibleManiphestStates = database.GetConfigurationParameter("VisibleManiphestStates")?.Split('\t');
-                    if (visibleManiphestStates == null)
+                    if (openManiphestStates.Length > 1)
                     {
-                        visibleManiphestStates = openManiphestStates.Select(state => state.Value);
+                        viewPage.SetText("MULTIPLE-OPEN-MANIPHEST-STATES", "True");
+
+                        IEnumerable<string> visibleManiphestStates = database.GetConfigurationParameter("VisibleManiphestStates")?.Split('\t');
+                        if (visibleManiphestStates == null)
+                        {
+                            visibleManiphestStates = openManiphestStates.Select(state => state.Value);
+                        }
+
+                        foreach (ManiphestStatus maniphestStatus in openManiphestStates)
+                        {
+                            HtmlPartialViewPage htmlVisibleManiphestStatus = viewPage.GetPartialView("VISIBILE-MANIPHEST-STATES");
+                            htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-NAME", maniphestStatus.Value);
+                            htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-DESCRIPTION", maniphestStatus.Name);
+
+                            if (visibleManiphestStates.Contains(maniphestStatus.Value))
+                            {
+                                htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-CHECKED", "checked");
+                            }
+                            else
+                            {
+                                htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-CHECKED", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            }
+                        }
                     }
-
-                    foreach (ManiphestStatus maniphestStatus in openManiphestStates)
+                    else
                     {
-                        HtmlPartialViewPage htmlVisibleManiphestStatus = viewPage.GetPartialView("VISIBILE-MANIPHEST-STATES");
-                        htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-NAME", maniphestStatus.Value);
-                        htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-DESCRIPTION", maniphestStatus.Name);
-
-                        if (visibleManiphestStates.Contains(maniphestStatus.Value))
-                        {
-                            htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-CHECKED", "checked");
-                        }
-                        else
-                        {
-                            htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-CHECKED", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        }
+                        viewPage.SetText("MULTIPLE-OPEN-MANIPHEST-STATES", "False");
                     }
 
                     foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
@@ -382,10 +391,15 @@ namespace Phabrico.Controllers
                         accountStorage.Set(database, existingAccount);
 
 
-                        string[] visibleManiphestStates = browser.Session.FormVariables[browser.Request.RawUrl].Keys.Where(key => key.StartsWith("visible-manipheststate-")).ToArray();
-                        database.SetConfigurationParameter("VisibleManiphestStates", 
-                                                            string.Join("\t", visibleManiphestStates.Select(state => state.Substring("visible-manipheststate-".Length)))
-                                                          );
+                        Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
+                        ManiphestStatus[] openManiphestStates = maniphestStatusStorage.Get(database, Language.NotApplicable).Where(status => status.Closed == false).OrderBy(status => status.Name).ToArray();
+                        if (openManiphestStates.Length > 1)
+                        {
+                            string[] visibleManiphestStates = browser.Session.FormVariables[browser.Request.RawUrl].Keys.Where(key => key.StartsWith("visible-manipheststate-")).ToArray();
+                            database.SetConfigurationParameter("VisibleManiphestStates",
+                                                                string.Join("\t", visibleManiphestStates.Select(state => state.Substring("visible-manipheststate-".Length)))
+                                                              );
+                        }
 
                         Http.Server.InvalidateNonStaticCache(database, DateTime.MaxValue);
                     }
@@ -462,7 +476,7 @@ namespace Phabrico.Controllers
                 {
                     string jsonArrayConfidentialTableHeaders = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
                     JArray userAccounts = JsonConvert.DeserializeObject(jsonArrayConfidentialTableHeaders) as JArray;
-                    Dictionary<string, bool> accountsToRemove = accountStorage.Get(database).ToDictionary(user => user.UserName, user => true);
+                    Dictionary<string, bool> accountsToRemove = accountStorage.Get(database, Language.NotApplicable).ToDictionary(user => user.UserName, user => true);
 
                     accountsToRemove[existingAccount.UserName] = false;  // do not remove myself
 
@@ -496,7 +510,7 @@ namespace Phabrico.Controllers
                         }
                         else
                         {
-                            existingAccount = accountStorage.Get(database)
+                            existingAccount = accountStorage.Get(database, Language.NotApplicable)
                                                             .FirstOrDefault(account => account.UserName.Equals(user.Name, StringComparison.OrdinalIgnoreCase));
                             existingAccount.Parameters.DefaultUserRoleTag = user.Role;
                             accountStorage.Set(database, existingAccount);
@@ -507,7 +521,7 @@ namespace Phabrico.Controllers
 
                     foreach (string userNameToRemove in accountsToRemove.Where(kvp => kvp.Value == true).Select(kvp => kvp.Key))
                     {
-                        Account oldUserAccount = accountStorage.Get(database).FirstOrDefault(user => user.UserName.Equals(userNameToRemove, StringComparison.OrdinalIgnoreCase));
+                        Account oldUserAccount = accountStorage.Get(database, Language.NotApplicable).FirstOrDefault(user => user.UserName.Equals(userNameToRemove, StringComparison.OrdinalIgnoreCase));
                         if (oldUserAccount != null)
                         {
                             accountStorage.Remove(database, oldUserAccount);
@@ -521,7 +535,7 @@ namespace Phabrico.Controllers
         }
 
         /// <summary>
-        /// Last-sync time of the selected users will be reset.
+        /// Last-sync time of the selected projects will be reset.
         /// This will cause during the next Phabricator-sync, that all Users records will be downloaded
         /// </summary>
         /// <param name="database"></param>
@@ -529,7 +543,7 @@ namespace Phabrico.Controllers
         {
             Storage.Project projectStorage = new Storage.Project();
 
-            IEnumerable<Phabricator.Data.Project> selectedProjects = projectStorage.Get(database)
+            IEnumerable<Phabricator.Data.Project> selectedProjects = projectStorage.Get(database, Language.NotApplicable)
                                                                                    .Where(project => project.Selected == Phabricator.Data.Project.Selection.Selected);
 
             foreach (Phabricator.Data.Project selectedProject in selectedProjects.ToList())
@@ -548,8 +562,8 @@ namespace Phabrico.Controllers
         {
             Storage.User userStorage = new Storage.User();
 
-            IEnumerable<Phabricator.Data.User> selectedUsers = userStorage.Get(database)
-                                                                                   .Where(user => user.Selected == true);
+            IEnumerable<Phabricator.Data.User> selectedUsers = userStorage.Get(database, Language.NotApplicable)
+                                                                          .Where(user => user.Selected == true);
 
             foreach (Phabricator.Data.User selectedUser in selectedUsers.ToList())
             {

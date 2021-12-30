@@ -229,7 +229,7 @@ namespace Phabrico.Miscellaneous
         /// <param name="modifiedText">Second block of text to be compared. The differences with the first block will be written in this variable.</param>
         /// <param name="isReadOnly">If false, the HTML result wil also contain merge buttons</param>
         /// <param name="locale">Language code in which some of the fixed text (e.g. button tooltips) should be translated to</param>
-        public static void GenerateDiffLeftRight(ref string originalText, ref string modifiedText, bool isReadOnly, string locale)
+        public static void GenerateDiffLeftRight(ref string originalText, ref string modifiedText, bool isReadOnly, Language locale)
         {
             Diff diff = new Diff();
 
@@ -441,7 +441,7 @@ namespace Phabrico.Miscellaneous
         /// <param name="actionRight"></param>
         /// <param name="locale"></param>
         /// <returns></returns>
-        private object GenerateInsertButtons(int lineCounterLeft, string actionRight, string locale)
+        private object GenerateInsertButtons(int lineCounterLeft, string actionRight, Language locale)
         {
             if (actionRight.Equals("empty"))
             {

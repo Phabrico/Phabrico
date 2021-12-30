@@ -130,7 +130,7 @@ namespace Phabrico.Miscellaneous
         }
 
         /// <summary>
-        /// Clones an existing dictionary into a safe dictionary
+        /// Clones an existing dictionary into a transient dictionary
         /// </summary>
         /// <param name="originalSafeDictionary"></param>
         public TransientDictionary(TransientDictionary<TKey, TValue> originalSafeDictionary)

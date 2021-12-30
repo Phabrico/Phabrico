@@ -10,12 +10,12 @@
                 <table id="tblOfflineChanges" class="aphront-table-view">
                     <thead>
                         <tr>
-                            <th class=""></th>
+                            <th class="" colspan="2"></th>
                             <th class="wide">Content</th>
                             <th class="wide">Last modified at</th>
-                            <th class="action" style="text-align:center">Undo</th>
-                            <th class="action" style="text-align:center">Freeze</th>
-                            <th class="action" style="text-align:center">Modification</th>
+                            <th class="action undo" style="text-align:center">Undo</th>
+                            <th class="action freeze" style="text-align:center">Freeze</th>
+                            <th class="action modification" style="text-align:center">Modification</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,6 +46,31 @@
     <div class="aphront-dialog-tail grouped">
         <button type="button" data-accesskey="Button-AccessKey-No" class="button-gray" onclick="cancelUndo()">No</button>
         <button type="button" data-accesskey="Button-AccessKey-Yes" onclick="confirmUndo()">Yes</button>
+    </div>
+</div>
+
+<div id="dlgRenameSlugDialog" class="aphront-dialog-view modal" style="display:none">
+    <div class="aphront-dialog-overlay"></div>
+    <div class="aphront-dialog-head">
+        <span class="phui-header-header">Change path</span>
+    </div>
+    <div class="aphront-dialog-body phabrico-remarkup" style="">
+        <div class="phabrico-remarkup">
+            <p style="">Current path:</p>
+            <p style="background: #ccc4;color: #cccf;">
+                <code id="dlgRenameSlugDialogCurrentPath"></code>
+            </p>
+            <p>&nbsp;</p>
+            <p>New path:</p>
+            <p><input id="dlgRenameSlugDialogNewPath" type="text"></p>
+            <p>&nbsp;</p>
+            <p id="dlgConfirmUndoDetail" style="text-align: center;font-weight:bold;"></p>
+        </div>
+        <br>
+    </div>
+    <div class="aphront-dialog-tail grouped">
+        <button type="button" class="button-blue" id="btnDoRenameSlugDialog" onclick="doRenameSlug()">Rename path</button>
+        <button type="button" class="button-gray" id="btnCancelRenameSlugDialog" onclick="cancelRenameSlug()">Cancel</button>
     </div>
 </div>
 
@@ -101,6 +126,39 @@ function populateTable()
             }
             document.getElementById('no-data-found').style.display = 'none';
             frmStaging.style.maxHeight = 'unset';
+
+            // add warning icon (e.g. for phriction paths that are too long)
+            var cell = row.insertCell();
+            cell.style.verticalAlign = 'top';
+            var anchorSolveIssue = document.createElement('a');
+            anchorSolveIssue.href = "#" + record.Token + "[" + record.TransactionModifier + "]";
+            anchorSolveIssue.classList.add("button");
+            anchorSolveIssue.classList.add("small");
+            anchorSolveIssue.style.minWidth = "15px";
+            fontAwesome = document.createElement('i');
+            fontAwesome.classList.add('phui-font-fa');
+            anchorSolveIssue.appendChild(fontAwesome);
+
+            var fontAwesomeWrapper = document.createElement('span');
+            if (record.Issue == "SlugIsTooLong") {
+                anchorSolveIssue.classList.add("button-red");
+                anchorSolveIssue.addEventListener("click", renameSlug, false);
+                fontAwesome.classList.add('fa-ban');
+                fontAwesome.style.fontWeight = "bold";
+                fontAwesome.style.fontSize = "1.5em";
+                anchorSolveIssue.title = Locale.Translate("The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator.");
+                cell.appendChild(anchorSolveIssue);
+            }
+            else if (record.Issue == "SlugIsLong") {
+                anchorSolveIssue.classList.add("button-yellow");
+                anchorSolveIssue.style.padding = "0px 8px 0px 8px";
+                anchorSolveIssue.addEventListener("click", renameSlug, false);
+                fontAwesome.classList.add('fa-exclamation');
+                fontAwesome.style.fontWeight = "bold";
+                fontAwesome.style.fontSize = "1.5em";
+                anchorSolveIssue.title = Locale.Translate("The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not.");
+                cell.appendChild(anchorSolveIssue);
+            }
 
             // add merge-conflict/frozen/unfrozen icon
             var cell = row.insertCell();
@@ -160,6 +218,7 @@ function populateTable()
             // add undo button
             cell = row.insertCell();
             cell.classList.add('action');
+            cell.classList.add('undo');
             if (record.URL.startsWith('file/data/') == false)
             {
                 anchorUndo = document.createElement('a');
@@ -181,7 +240,8 @@ function populateTable()
             // add Freeze/Unfreeze button
             cell = row.insertCell();
             cell.classList.add('action');
-            if (record.URL.startsWith('file/data/') == false)
+            cell.classList.add('freeze');
+            if (record.IsTranslation == false && record.URL.startsWith('file/data/') == false)
             {
                 anchorFreeze = document.createElement('a');
                 anchorFreeze.href = "#" + record.Token + "[" + record.TransactionModifier + "]";
@@ -211,6 +271,7 @@ function populateTable()
             // add modification action (can be a 'View changes' button or some text)
             cell = row.insertCell();
             cell.classList.add('action');
+            cell.classList.add('modification');
             if (record.URL.startsWith('file/data/') == false)
             {
                 cell.style.textAlign = 'center';
@@ -247,13 +308,35 @@ function populateTable()
                 }
             }
         });
+
+        if (document.querySelectorAll('td.action.freeze').length == document.querySelectorAll('td.action.freeze:empty').length) {
+            // no freeze/unfreeze buttons visible: hide column
+            document.querySelectorAll('td.action.freeze, th.action.freeze').forEach(function (cell) {
+                cell.style.display = 'none';
+            });
+        }
     };
     xmlhttp.send(null);
 }
 
+function showRenameSlugDialog(elem)
+{
+   var url = elem.closest('tr').querySelectorAll('td')[2].querySelector('a').pathname.substring('/w/'.length);
+   var slugParts = url.replace(/\/$/, "").split('/');
+   var parentSlug = slugParts.slice(0, slugParts.length - 1).join('/');
+
+   dlgRenameSlugDialogCurrentPath.innerText = url;
+   dlgRenameSlugDialogNewPath.value = url;
+   dlgRenameSlugDialog.tagElement = elem;
+   dlgRenameSlugDialog.style.display = 'block';
+
+   dlgRenameSlugDialogNewPath.focus();
+   dlgRenameSlugDialogNewPath.setSelectionRange(parentSlug.length + 1, 999);
+}
+
 function showUndoConfirmation(elem)
 {
-   dlgConfirmUndoDetail.innerText = elem.closest('tr').querySelector('td a').innerText;
+   dlgConfirmUndoDetail.innerText = elem.closest('tr').querySelectorAll('td')[2].querySelector('a').innerText;
 
    var modificationDetails = elem.closest('tr').querySelectorAll('td')[3].querySelector('div');
    if (modificationDetails != null) {
@@ -304,6 +387,46 @@ function freeze(ev)
 {
     ev.preventDefault();
     submitItem(ev.target, "offline/changes/freeze");
+}
+
+function renameSlug(ev) {
+    ev.preventDefault();
+    showRenameSlugDialog(ev.target);
+}
+
+function cancelRenameSlug() {
+    dlgRenameSlugDialog.style.display = 'none';
+}
+
+function doRenameSlug() {
+    var data = new FormData();
+    data.append('old', dlgRenameSlugDialogCurrentPath.innerText);
+    data.append('new', dlgRenameSlugDialogNewPath.value);
+
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+        if(xmlhttp.readyState == 4)
+        {
+            var response = null;
+
+            cancelRenameSlug();
+
+            if (xmlhttp.status == 200) {
+                response = JSON.parse(xmlhttp.responseText);
+            }
+
+            if (response == null || response.Status == "NOK") {
+                showHideMessageDialog(true, Locale.Translate('ERROR'), Locale.Translate("An internal error occurred"));
+            } else if (response.Status == "AlreadyExists") {
+                showHideMessageDialog(true, Locale.Translate('ERROR'), Locale.Translate("A document already exists with this slug path"));
+            } else {
+                window.location.reload();
+            }
+        }
+    }
+    xmlhttp.open('POST', "offline/changes/rename/slug", true);
+    xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+    xmlhttp.send(data);
 }
 
 function undo(ev)

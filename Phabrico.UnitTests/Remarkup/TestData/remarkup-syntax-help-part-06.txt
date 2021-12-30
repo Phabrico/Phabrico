@@ -10,8 +10,8 @@ depth, like this:
 As expected, this produces:
 
 - Tree
--- Branch
---- Twig
+  - Branch
+    - Twig
 
 You can add checkboxes to items by prefacing them with `[ ]` or `[X]`, like
 this:
@@ -82,4 +82,56 @@ g(f);</code></pre></div>
 You can specify a language for syntax highlighting with <tt class='remarkup-monospaced'>lang=xxx</tt>:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>lang=html
 &lt;a href=&quot;#&quot;&gt;...&lt;/a&gt;</code></pre></div>
+~~~~~~~~~~
+If you prefer, you can indent lists using multiple characters to show indent<N>[27]</N>
+depth, like this:<N>[35]</N>
+<N>[36]</N>
+<BT>```
+- Tree
+-- Branch
+--- Twig
+```
+</BT>
+<N>[37]</N>
+As expected, this produces:<N>[47]</N>
+<N>[48]</N>
+<LS>
+  <b1>Tree
+    <b2>Branch
+      <b3>Twig</b3>
+    </b2>
+  </b1>
+</LS>
+You can add checkboxes to items by prefacing them with <M>`[ ]`</M> or <M>`[X]`</M>, like<N>[77]</N>
+this:<N>[80]</N>
+<N>[81]</N>
+<BT>```
+- [X] Preheat oven to 450 degrees.
+- [ ] Zest 35 lemons.
+```
+</BT>
+<N>[82]</N>
+When rendered, this produces:<N>[92]</N>
+<N>[93]</N>
+<LS>
+  <c1>Preheat oven to 450 degrees.</c1>
+  <u1>Zest 35 lemons.</u1>
+</LS>
+Make <B>code blocks</B> by indenting two spaces:<N>[106]</N>
+<N>[107]</N>
+<WS>  f(x, y);
+</WS>
+You can also use three backticks to enclose the code block:<N>[130]</N>
+<N>[131]</N>
+<BT>```
+f(x, y);
+g(f);
+```
+</BT>
+<N>[132]</N>
+You can specify a language for syntax highlighting with <M>`lang=xxx`</M>:<N>[153]</N>
+<WS>  lang=text
+  lang=html
+  &lt;a href="#"&gt;...&lt;/a&gt;
+</WS>
 ~~~~~~~~~~

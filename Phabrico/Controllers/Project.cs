@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Http.Response;
+using Phabrico.Miscellaneous;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,7 +78,7 @@ namespace Phabrico.Controllers
 
                 string[] filtersProject = browser.Session.FormVariables[browser.Request.RawUrl]["filterProject"]
                                                          .Split(' ');
-                IEnumerable<Phabricator.Data.Project> projects = projectStorage.Get(database)
+                IEnumerable<Phabricator.Data.Project> projects = projectStorage.Get(database, Language.NotApplicable)
                                                                                 .Where(project => filtersProject.All(filter => project.Name
                                                                                                                                         .Split(' ', '-')
                                                                                                                                         .Any(name => name.StartsWith(filter, System.StringComparison.OrdinalIgnoreCase)))
@@ -87,7 +88,7 @@ namespace Phabrico.Controllers
                 {
                     foreach (Phabricator.Data.Project project in projects)
                     {
-                        projectStorage.SelectProject(database, project.Token, Phabricator.Data.Project.Selection.Selected);
+                        projectStorage.SelectProject(database, browser.Session.Locale, project.Token, Phabricator.Data.Project.Selection.Selected);
                     }
                 }
                 else
@@ -95,7 +96,7 @@ namespace Phabrico.Controllers
                 {
                     foreach (Phabricator.Data.Project project in projects)
                     {
-                        projectStorage.SelectProject(database, project.Token, Phabricator.Data.Project.Selection.Unselected);
+                        projectStorage.SelectProject(database, browser.Session.Locale, project.Token, Phabricator.Data.Project.Selection.Unselected);
                     }
                 }
                 else
@@ -105,7 +106,7 @@ namespace Phabrico.Controllers
                     {
                         if (project.Token.Equals(Phabricator.Data.Project.None)) continue;
 
-                        projectStorage.SelectProject(database, project.Token, Phabricator.Data.Project.Selection.Disallowed);
+                        projectStorage.SelectProject(database, browser.Session.Locale, project.Token, Phabricator.Data.Project.Selection.Disallowed);
                     }
                 }
                 else
@@ -153,7 +154,7 @@ namespace Phabrico.Controllers
                 // set private encryption key
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
-                IEnumerable<Phabricator.Data.Project> projects = projectStorage.Get(database).OrderBy(project => project.Name);
+                IEnumerable<Phabricator.Data.Project> projects = projectStorage.Get(database, Language.NotApplicable).OrderBy(project => project.Name);
                 totalNumberSelected = projects.Count(project => project.Selected == Phabricator.Data.Project.Selection.Selected);
                 noneProjectSelected = projects.Any(project => project.Selected == Phabricator.Data.Project.Selection.Selected && project.Token.Equals(Phabricator.Data.Project.None));
 
@@ -218,7 +219,7 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.Project projectStorage = new Storage.Project();
-                projectStorage.SelectProject(database, projectToken, Phabricator.Data.Project.Selection.Disallowed);
+                projectStorage.SelectProject(database, browser.Session.Locale, projectToken, Phabricator.Data.Project.Selection.Disallowed);
             }
         }
 
@@ -241,7 +242,7 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.Project projectStorage = new Storage.Project();
-                projectStorage.SelectProject(database, projectToken, Phabricator.Data.Project.Selection.Selected);
+                projectStorage.SelectProject(database, browser.Session.Locale, projectToken, Phabricator.Data.Project.Selection.Selected);
             }
         }
 
@@ -264,12 +265,12 @@ namespace Phabrico.Controllers
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 Storage.Project projectStorage = new Storage.Project();
-                projectStorage.SelectProject(database, projectToken, Phabricator.Data.Project.Selection.Unselected);
+                projectStorage.SelectProject(database, browser.Session.Locale, projectToken, Phabricator.Data.Project.Selection.Unselected);
 
-                if (projectStorage.Get(database).Any(project => project.Selected == Phabricator.Data.Project.Selection.Selected) == false)
+                if (projectStorage.Get(database, browser.Session.Locale).Any(project => project.Selected == Phabricator.Data.Project.Selection.Selected) == false)
                 {
                     // no projects selected -> select 'None' project instead (otherwise we can't track the difference between 2 synchronizations)
-                    projectStorage.SelectProject(database, Phabricator.Data.Project.None, Phabricator.Data.Project.Selection.Selected);
+                    projectStorage.SelectProject(database, browser.Session.Locale, Phabricator.Data.Project.None, Phabricator.Data.Project.Selection.Selected);
                 }
             }
         }
@@ -303,7 +304,7 @@ namespace Phabrico.Controllers
                     string projectColor = browser.Session.FormVariables[browser.Request.RawUrl]["color"];
 
                     Storage.Project projectStorage = new Storage.Project();
-                    Phabricator.Data.Project project = projectStorage.Get(database, projectToken);
+                    Phabricator.Data.Project project = projectStorage.Get(database, projectToken, Language.NotApplicable);
                     if (project == null) throw new ArgumentException();
 
                     project.Color = projectColor;

@@ -40,7 +40,7 @@ namespace Phabrico.UnitTests.Locale
 
             Assembly phabrico = Assembly.LoadFrom("Phabrico.exe");
             Type locale = phabrico.GetType("Phabrico.Miscellaneous.Locale");
-            MethodInfo translateHTML = locale.GetMethod("TranslateHTML", new Type[] { typeof(string), typeof(string), typeof(List<string>).MakeByRefType() });
+            MethodInfo translateHTML = locale.GetMethod("TranslateHTML", new Type[] { typeof(string), typeof(Language), typeof(List<string>).MakeByRefType() });
 
             Dictionary<string, string> views = phabrico.GetManifestResourceNames()
                                                        .Where(resource => resource.StartsWith("Phabrico.View.", System.StringComparison.OrdinalIgnoreCase))
@@ -77,7 +77,7 @@ namespace Phabrico.UnitTests.Locale
 
             foreach (KeyValuePair<string, string> view in views)
             {
-                object[] parametersTranslateHTML = new object[] { view.Value, "en", null };
+                object[] parametersTranslateHTML = new object[] { view.Value, (Language)"en", null };
                 translateHTML.Invoke(null, parametersTranslateHTML);
 
                 List<string> missingTranslations = parametersTranslateHTML[2] as List<string>;
@@ -168,11 +168,11 @@ namespace Phabrico.UnitTests.Locale
             }
 
             MethodInfo readLocaleFile = locale.GetMethod("ReadLocaleFile");
-            DictionarySafe<string,string> firstTranslations = readLocaleFile.Invoke(null, new object[] { languageCodes.FirstOrDefault() }) as DictionarySafe<string,string>;
+            DictionarySafe<string,string> firstTranslations = readLocaleFile.Invoke(null, new object[] { (Language)languageCodes.FirstOrDefault() }) as DictionarySafe<string,string>;
 
             foreach (string otherLanguageCode in languageCodes.Skip(1))
             {
-                DictionarySafe<string,string> otherTranslations = readLocaleFile.Invoke(null, new object[] { otherLanguageCode }) as DictionarySafe<string,string>;
+                DictionarySafe<string,string> otherTranslations = readLocaleFile.Invoke(null, new object[] { (Language)otherLanguageCode }) as DictionarySafe<string,string>;
 
                 foreach (string msgid in firstTranslations.Keys)
                 {
