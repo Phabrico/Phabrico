@@ -2,6 +2,7 @@
 using Phabrico.Miscellaneous;
 using Phabrico.Storage;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
@@ -36,6 +37,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
             html = "";
             Match match = RegexSafe.Match(remarkup, @"^//(.+?(?<!//))?//", RegexOptions.Singleline);
             if (match.Success == false) return false;
+            if (match.Value.Split('\n')
+                           .Skip(1)
+                           .Any(line => string.IsNullOrWhiteSpace(line)     // no empty line
+                                     || line.StartsWith("=")                // no line should start with a '=' character
+                                     || line.StartsWith("*")                // no line should start with a '*' character
+                                     || line.StartsWith("%%%")              // no line should start with "%%%"
+                               ))
+            {
+                return false;
+            }
 
             RemarkupParserOutput remarkupParserOutput;
             remarkup = remarkup.Substring(match.Length);

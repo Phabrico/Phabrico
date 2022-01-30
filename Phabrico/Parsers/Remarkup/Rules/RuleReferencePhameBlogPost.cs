@@ -25,7 +25,10 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override RemarkupRule Clone()
         {
             RuleReferencePhameBlogPost copy = base.Clone() as RuleReferencePhameBlogPost;
-            copy.BlogPostID = BlogPostID;
+            if (copy != null)
+            {
+                copy.BlogPostID = BlogPostID;
+            }
             return copy;
         }
 

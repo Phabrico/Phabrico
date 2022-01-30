@@ -1,0 +1,618 @@
+﻿= Remarkup-syntaksin viite =
+
+Phabrico käyttää kevyttä merkintäkieltä nimeltä "Remarkup", joka on samanlainen kuin muita kevyitä merkintäkieliä, kuten Markdownia ja Wiki-merkintää.
+
+Tässä dokumentissa kuvataan, miten tekstiä muotoillaan Remarkupin avulla.
+
+= Pikaohje =
+
+Kaikki syntaksi selitetään tarkemmin alla, mutta tämä on pikaopas tekstin muotoiluun Remarkupilla.
+
+Nämä ovat inline-tyylejä, ja niitä voidaan soveltaa useimpaan tekstiin:
+```
+**rohkea** //kursiivilla// `yksirivinen` ##yksirivinen## ~~poistettu~~ __alleviivattu__
+!!korostettu!!
+T123                      # Linkki tehtäviin
+{T123}                    # Linkki tehtäviin (Koko nimi)
+{F123}                    # Kuvien lisääminen
+@username                 # Mainitse käyttäjä
+#project                  # Mainitse hanke
+[[wiki page]]             # Linkki Phrictioniin
+[[wiki page | name]]      # Nimetty linkki Phrictioniin
+http://xyz/               # Linkki verkkoon
+[[http://xyz/ | name]]    # Nimetty linkki verkkoon
+[name](http://xyz/)       # Vaihtoehtoinen linkki
+```
+Nämä ovat lohkotyylejä, ja ne on erotettava ympäröivästä tekstistä tyhjillä riveillä:
+```
+= Suuri otsikko =
+
+== Pienempi otsikko ==
+
+## Tämä on myös otsikko
+
+Myös suuri otsikko
+===================
+
+Myös pienempi otsikko
+---------------------
+
+> Lainattu teksti
+
+Käytä `-` tai `*` luetteloita varten ja `#` numeroituja luetteloita varten.
+Käytä ``` tai sisennystä kaksi välilyöntiä koodissa.
+Käytä %%% kirjainlohkoa varten.
+Käytä | ... | ... taulukoissa.
+```
+
+= Perusmuotoilu =
+
+Muotoile **perustekstityylit** näin:
+```
+**paksua tekstiä**
+//kursivoitu teksti//
+`yksirivinen teksti`
+##yksirivinen teksti##
+~~poistettu teksti~~
+__alleviivattu teksti__
+!!korostettu teksti!!!
+```
+
+Nämä tuottavat **korkeaa tekstiä**, //kursivoitua tekstiä//, `yksirivinen teksti`, ##yksirivinen teksti##,
+~~poistettu teksti~~, __alasviivattu teksti__ ja !!korostettu teksti!! vastaavasti.
+
+= Asettelu =
+
+Tee **otsikot** näin:
+```
+= Suuri otsikko =
+
+== Pienempi otsikko ==
+
+===== Erittäin pieni otsikko =====
+
+Vaihtoehtoinen suuri otsikko
+============================
+
+Vaihtoehtoinen pienempi otsikko
+-------------------------------
+```
+
+Voit valinnaisesti jättää perässä olevat `=`-merkit pois - eli nämä ovat samat:
+
+```
+== Pienempi otsikko ==
+
+== Pienempi otsikko
+```
+
+Tämä tuottaa tämän asiakirjan kaltaisia otsikoita. Varmista, että ennen ja jälkeen otsikon on tyhjä rivi.
+
+Luettelot
+=====
+
+Tee **luetteloita** aloittamalla jokainen kohta `-`- tai `*`-merkillä:
+```
+lang=text
+- maito
+- munat
+- leipä
+
+* ankka
+* ankka
+* hanhi
+```
+
+Tämä tuottaa tällaisen luettelon:
+
+- maito
+- munat
+- leipä
+
+(Huomaa, että sinun on laitettava välilyönti `-` tai `*` jälkeen.)
+
+Voit tehdä numeroituja luetteloita käyttämällä `-`:n tai `*`:n sijasta `#`:
+
+# Osta tuote
+# Laajenna tuotetta
+# Myy tuote takaisin suurella voitolla
+
+Numeroidut luettelot voidaan aloittaa myös sanoilla `1.` tai `1)`.
+Jos käytät muuta numeroa kuin `1`, lista alkaa kyseisestä numerosta.
+Esimerkiksi tämä:
+
+```
+200) OK
+201) Luotu
+202) Hyväksytty
+```
+
+...tuottaa tämän:
+
+200) OK
+201) Luotu
+202) Hyväksytty
+
+Voit myös sijoittaa luetteloita:
+
+```
+- Runko
+  - Pää
+  - Käsivarsi
+    - Kyynärpää
+    - Käsi
+      # Peukalo
+      # Indeksi
+      # Keskisormi
+      # Sormus
+      # Pinkie
+  - Jalka
+    - Polvi
+    - Jalkaterä
+```
+
+...which produces:
+
+- Runko
+  - Pää
+  - Käsivarsi
+    - Kyynärpää
+    - Käsi
+      # Peukalo
+      # Indeksi
+      # Keskisormi
+      # Sormus
+      # Pinkie
+  - Jalka
+    - Polvi
+    - Jalkaterä
+
+Voit halutessasi sisennyttää luetteloita käyttämällä useita merkkejä sisennyksen näyttämiseksi. syvyyttä, esimerkiksi näin:
+
+```
+- Puu
+-- Oksa
+--- Lehdet
+```
+
+As expected, this produces:
+
+- Puu
+-- Oksa
+--- Lehdet
+
+Voit lisätä valintaruutuja kohteisiin kirjoittamalla niiden eteen `[ ]` tai `[X]`, kuten seuraavalla tavalla näin:
+
+```
+- [X] Kuumenna uuni 450 asteeseen.
+- [ ] Kuori 35 sitruunaa.
+```
+
+Kun tämä renderöidään, tuloksena on:
+
+- [X] Kuumenna uuni 450 asteeseen.
+- [ ] Kuori 35 sitruunaa.
+
+Tee **koodilohkoja** sisennyksellä 2 välilyöntiä:
+
+  f(x, y);
+
+Voit myös käyttää 3 backtick-merkkiä ympäröimään koodilohkon:
+
+```
+f(x, y);
+g(f);
+```
+
+Voit määrittää syntaksin korostuksen kielen komennolla `lang=xxx`:
+  lang=text
+  lang=html
+  <a href="#">...</a>
+
+Tämä korostaa lohkon käyttämällä kyseisen kielen korostuskomentoa, jos sellainen on olemassa. käytettävissä:
+  lang=html
+  <a href="#">...</a>
+
+Voit myös käyttää `COUNTEREXAMPLE`-otsikkoa osoittamaan, että koodilohko on huono eikä sitä pitäisi kopioida:
+  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Tämä tuottaa tällaisen lohkon:
+
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Voit käyttää `lines=N` rajoittaaksesi koodikappaleen pystysuoraa kokoa, sekä `name=joku_nimi.ext` antaa sille nimen.
+Esimerkiksi tämä:
+
+  lang=text
+  lang=html, name=example.html, lines=4, counterexample
+  <p>Omena </p>
+  <p>Aprikoosi</p>
+  <p>Avokado</p>
+  <p>Banaani</p>
+  <p>Mustikka</p>
+  <p>Viinirypäle</p>
+
+...tuottaa tämän:
+
+  lang=html, name=example.html, lines=4, counterexample
+  <p>Omena </p>
+  <p>Aprikoosi</p>
+  <p>Avokado</p>
+  <p>Banaani</p>
+  <p>Mustikka</p>
+  <p>Viinirypäle</p>
+
+
+Voit käyttää `NOTE:`, `WARNING:` tai `IMPORTANT:` elementtejä kiinnittämään huomiota tärkeään ajatukseen.
+
+Kirjoita esimerkiksi tämä:
+
+```
+NOTE: Pidä säännöllisiä kokouksia, jotta työntekijät pysyvät hereillä.
+```
+
+...tuottamaan tämän:
+
+NOTE: Pidä säännöllisiä kokouksia, jotta työntekijät pysyvät hereillä.
+
+Jos rivin alussa käytetään `WARNING:` tai `IMPORTANT:`, muuttuu kutsun väriä:
+
+WARNING: Liian monet kokoukset voivat aiheuttaa unettomuutta.
+
+IMPORTANT: Älä osallistu liian moneen kokoukseen
+
+Lisäksi voit käyttää `(NOTE)`, `(WARNING)` tai `(WARNING)` saadaksesi tiedon saman vaikutuksen, mutta ilman,
+että `(NOTE)`, `(WARNING)` tai `(WARNING)` näkyy tekstissä. renderöidyssä tuloksessa.
+Esimerkiksi tässä kutsussa käytetään `(NOTE)`:
+
+(NOTE) Älä osallistu liian harvoihin kokouksiin.
+
+
+Vaakasuorat viivat
+==================
+
+Voit jakaa osioita laittamalla kolme tai useampia viivoja riville seuraavasti itsestään.
+Tämä luo jakajan tai vaakasuuntaisen säännön, joka muistuttaa `<hr />` tagia, kuten tämä:
+
+---
+
+Viivojen on oltava omalla rivillään ja ne on erotettava muista viivoista. sisällöstä. Esimerkiksi näin:
+
+```
+Tämä osa erotetaan visuaalisesti toisistaan.
+
+---
+
+Kokonaan eri aiheesta...
+```
+
+
+= Linkitys URI:t =
+
+URI:t linkitetään automaattisesti: http://phabricator.org/
+
+Jos sinulla on URI, jossa on ongelmallisia merkkejä, kuten `"http://comma.org/,"`, voit ympäröidä sen hakasulkeilla:
+```
+<http://comma.org/,>
+```
+
+Tämä pakottaa jäsentäjän käyttämään koko URI:n: <http://comma.org/,>
+
+Voit myös käyttää create named links -menetelmää, jossa voit valita näytettävän tekstin. Nämä toimivat internetissä yleisesti:
+```
+[[http://www.boring-legal-documents.com/ | jännittävät oikeudelliset asiakirjat]]
+```
+
+Myös markdown-tyylisiä linkkejä tuetaan:
+```
+[Toil](http://www.trouble.com)
+```
+
+= Linkittäminen kohteisiin =
+
+Voit linkittää Phabricatorin objekteihin, kuten Maniphest-tehtäviin, mainitsemalla objektin nimen:
+```
+T123          # Linkki Maniphest-tehtävään T123
+```
+
+= Esineiden lisääminen
+
+Voit myös luoda täysnimisiä viittauksia joihinkin objekteihin käyttämällä hakasulkeita:
+```
+{T123}        # Linkki Maniphest-tehtävään T123 koko nimellä
+```
+
+Nämä viittaukset näyttävät myös, kun objekti vaihtaa tilaa (esim. tehtävä tai tarkistus suljetaan).
+Jotkin objektityypit tukevat monipuolista upottamista.
+
+== Linkittäminen projektin tunnisteisiin
+
+Projekteihin voidaan linkittää käyttämällä hashtagia `#`. Tämä toimii oletusarvoisesti käyttämällä projektin nimeä
+(pienellä alkukirjaimella, alleviivattuna). Lisäksi voit voit asettaa useita muita hashtageja muokkaamalla projektin
+tietoja Phabricatorissa.
+```
+#qa, #quality_assurance
+```
+
+== Kuvien upottaminen
+
+Voit upottaa kuvan tai muun tiedoston viittaamalla siihen käyttämällä hakasulkeita:
+```
+{F123}
+```
+
+Useimmissa käyttöliittymissä voit vetää ja pudottaa kuvan tietokoneelta ikkunaan. tekstialueelle ladataksesi ja viitataksesi siihen.
+
+Useimmat selaimet tukevat myös kuvatietojen lataamista vain liittämällä ne kentästä leikepöydästä tekstialueelle.
+
+Voit asettaa tiedostojen näyttöasetukset seuraavasti:
+```
+{F123, layout=left, float, size=full, alt="ankanpoikanen"}
+```
+
+Kaikkien tiedostojen kelvolliset vaihtoehdot ovat:
+
+- **layout**
+  - left : Asettaa kuvan vasemmalle (oletus).
+  - center : Asettaa kuvan vaakasuoraan keskelle.
+  - right : Asettaa kuvan oikealle
+  - inline : Asettaa kuvan vasemmalle, mutta lähemmäs edellistä ja seuraavaa riviä.
+  - link : näyttää linkin itse kuvan sijasta.
+- **name** : Kun `layout` on asetettu arvoon `link`, tai jos kyseessä ei ole kuva, tätä nimeä käytetään linkin tekstinä.
+- **alt** Tarjoaa vaihtoehtoisen tekstin avustavia teknologioita varten.
+
+Kuvatiedostot tukevat näitä vaihtoehtoja:
+
+- **float** Jos asettelun arvoksi on asetettu vasen tai oikea, kuva kelluu niin, että teksti kiertyy sen ympärille.
+- **size** thumb (oletusarvo), full.
+- **width** Skaalaa kuva tiettyyn leveyteen.
+- **height** Skaalaa kuva tiettyyn korkeuteen.
+
+Ääni- ja videotiedostot tukevat näitä vaihtoehtoja:
+
+- **media**: Määritä mediatyypiksi `audio` tai `video`. Näin voit määrittää, miten tiedostomuoto, joka voi sisältää joko ääntä tai videota, pitäisi renderöidä.
+- **loop**: Silmukoi tätä mediaa.
+- **autoplay**: Aloittaa automaattisesti tämän median toiston.
+
+= Quoting Text =
+
+Jos haluat lainata tekstiä, laita sen eteen `>`:
+```
+  > Tämä on lainattua tekstiä.
+```
+
+Tämä näyttää tältä:
+
+> Tämä on lainattua tekstiä.
+
+= Memes =
+
+Voit käyttää kuvamakroja myös meemien yhteydessä. Jos esimerkiksi on kuvamakro nimeltä `äreä`, voit luoda meemin tekemällä seuraavasti seuraavasti:
+```
+{meme, src=äreä, above=tekstiylhäällä, below=tekstialhaalla}
+```
+
+= Käyttäjien mainitseminen =
+
+Maniphestissa voit mainita toisen käyttäjän kirjoittamalla:
+```
+@username
+```
+
+Kuvakkeet
+=====
+
+Voit lisätä kuvakkeita kommentteihin käyttämällä `{icon ...}`-syntaksia. Esimerkiksi:
+```
+  {icon camera}
+```
+
+Tämä tekee: {icon camera}
+
+Voit valita kuvakkeiden värin:
+```
+  {icon camera color=blue}
+```
+
+Tämä tekee: {icon camera color=blue}
+
+Luettelo saatavilla olevista kuvakkeista on [[ https://fontawesome.com/v4.7.0/icons/ | FontAwesome-sivustolla]]
+Seuraavat värit ovat käytettävissä:
+  - dark              {icon phabrico-square, color=dark}
+  - bluegrey          {icon phabrico-square, color=bluegrey}
+  - white             {icon phabrico-square, color=white}
+  - red               {icon phabrico-square, color=red}
+  - orange            {icon phabrico-square, color=orange}
+  - yellow            {icon phabrico-square, color=yellow}
+  - green             {icon phabrico-square, color=green}
+  - blue              {icon phabrico-square, color=blue}
+  - sky               {icon phabrico-square, color=sky}
+  - indigo            {icon phabrico-square, color=indigo}
+  - pink              {icon phabrico-square, color=pink}
+  - fire              {icon phabrico-square, color=fire}
+  - violet            {icon phabrico-square, color=violet}
+  - lightbluetext     {icon phabrico-square, color=lightbluetext}
+  - lightgreytext     {icon phabrico-square, color=lightgreytext}
+  - grey              {icon phabrico-square, color=grey}
+
+Voit lisätä `spin` saadaksesi kuvakkeen pyörimään:
+```
+  {icon cog spin}
+```
+
+Tämä tekee: {icon cog spin}
+
+
+= Phriction-asiakirjat =
+
+Voit linkittää Phriction-asiakirjoihin niiden polun avulla:
+```
+  Varmista, että allekirjoitat ja päivität [[legal/Letter of Marque and Reprisal]]!
+```
+
+Oletusarvoisesti linkki renderöidään siten, että linkin nimenä on asiakirjan otsikko.
+Piipun (`|`) avulla voit nimetä linkin uudelleen. Käytä tätä harhaanjohtamiseen vastustajia:
+```
+  Tutustu näihin [[legal/boring_documents/ | jännittävät oikeudelliset asiakirjat]]!
+```
+
+Jos aloitat linkkipolun kirjaimella `./` tai `../`, polun loppuosa tulee olemaan arvioidaan
+suhteessa nykyiseen wikisivuun.
+Jos esimerkiksi kirjoitat sisältöä dokumenttiin `hedelmät/`, linkki osoitteeseen `[[./guava]]` on
+sama kuin linkki osoitteeseen `[[hedelmät/guava]]` muualta.
+
+Suhteellisissa linkeissä voidaan käyttää `../`, kun halutaan siirtyä asiakirjapuussa ylöspäin.
+Alkaen `Tuote/vihannekset/`-sivulta voit käyttää `[[../hedelmät/guava]]` linkkiä linkittääksesi
+sivun `Tuote/hedelmät/guava` -sivulle.
+
+Suhteelliset linkit eivät toimi, kun niitä käytetään wikisivujen ulkopuolella.
+Et voi esimerkiksi käyttää suhteellista linkkiä tehtävän kommentissa, koska ei ole mitään järkevää paikkaa,
+josta linkki alkaisi purkautua.
+
+Kun dokumentteja siirretään, suhteelliset linkit eivät päivity automaattisesti:
+Ne säilyvät sellaisina kuin ne on tällä hetkellä kirjoitettu. Asiakirjan siirtämisen jälkeen voit tarkistettava
+ja mukautettava sen sisältämiä suhteellisia linkkejä.
+
+= Kirjaimelliset lohkot =
+
+Voit sijoittaa tekstiä kirjainlohkoon käyttämällä `%%%`:
+```
+%%%Teksti, jota remarkup ei käsittele.
+[[http://www.example.com | Esimerkki]]
+%%%
+```
+
+Remarkup ei käsittele tekstiä kirjainlohkojen sisällä (muutoin kuin HTML:n poistamiseksi ja rivinvaihdon säilyttämiseksi).
+
+= Taulukot =
+
+Remarkup tukee yksinkertaista taulukkosyntaksia. Esimerkiksi tämä:
+
+```
+| Hedelmä | Väri      | Hinta   | Kuori?
+| ------- | ----      | -----   | -----
+| Omena   | punainen  | `$0.93` | ei
+| Banaani | keltainen | `$0,19` | **KYLLÄ**
+```
+
+...tuottaa tämän:
+
+| Hedelmä | Väri      | Hinta   | Kuori?
+| ------- | ----      | -----   | -----
+| Omena   | punainen  | `$0.93` | ei
+| Banaani | keltainen | `$0,19` | **KYLLÄ**
+
+Remarkup tukee myös yksinkertaistettua HTML-taulukkosyntaksia. Esimerkiksi tämä:
+
+```
+<table>
+    <tr>
+        <th>Hedelmä</th>
+        <th>Väri</th>
+        <th>Hinta</th>
+        <th>Kuori?</th>
+    </tr>
+    <tr>
+        <td>Omena</td>
+        <td>punainen</td>
+        <td>`$0.93`</td>
+        <td>ei</td>
+    </tr>
+    <tr>
+        <td>Banaani</td>
+        <td>keltainen</td>
+        <td>`$0.19`</td>
+        <td>**KYLLÄ**</td>
+    </tr>
+</table>
+```
+
+...tuottaa tämän:
+
+<table>
+    <tr>
+        <th>Hedelmä</th>
+        <th>Väri</th>
+        <th>Hinta</th>
+        <th>Kuori?</th>
+    </tr>
+    <tr>
+        <td>Omena</td>
+        <td>punainen</td>
+        <td>`$0.93`</td>
+        <td>ei</td>
+    </tr>
+    <tr>
+        <td>Banaani</td>
+        <td>keltainen</td>
+        <td>`$0.19`</td>
+        <td>**KYLLÄ**</td>
+    </tr>
+</table>
+
+Joitakin yleisiä huomautuksia tästä syntaksista:
+
+- Kaikkien tunnisteidesi on oltava oikein tasapainossa;
+- tageissa EI saa olla attribuutteja (`<td>` on OK, `<td style="...">` ei ole);
+  - voit käyttää muita Remarkup-sääntöjä (kuten **bold**, //talics// jne.) sisällä.
+    taulukon solujen sisällä.
+
+Navigointijaksot
+================
+
+Voit käyttää `{nav ...}` näyttämään tyylitellyn navigointisekvenssin, kun autat jotakuta löytämään jotakin.
+Tästä voi olla hyötyä dokumentaatiota kirjoitettaessa.
+Voit esimerkiksi antaa jollekin ohjeet sitruunoiden ostamiseen:
+
+{nav icon=home, name=Koti >
+Ruokakauppa >
+Tuoteosasto >
+icon=lemon-o, name=Sitruunat}
+
+Voit esittää tämän esimerkin käyttämällä tätä merkintää:
+
+```
+{nav icon=home, name=Koti >
+Ruokakauppa >
+Tuoteosasto >
+icon=lemon-o, name=Sitruunat}
+```
+
+Yleisesti ottaen:
+
+  - Erottele osiot `>`:llä.
+  - Jokaisella osiolla voi olla vain nimi, jolla lisätään elementti navigointiin. sekvenssiin, tai luettelo avain-arvopareista.
+  - Tuetut avaimet ovat `icon`, `name`, `type` ja `href`.
+  - `type`-vaihtoehto voidaan asettaa arvoon `instructions` osoittaakseen, että elementti on pyytää käyttäjää tekemään valinnan tai noudattamaan tiettyjä ohjeita.
+
+Näppäinpainallukset
+==========
+
+Voit käyttää `{key ...}` näyttämään tyylitellyn näppäinpainalluksen. Esimerkiksi tämä:
+
+```
+Näytä tähtikartta painamalla {key M}.
+```
+
+...renderöi tämän:
+
+> Näytä tähtikartta painamalla {key M}.
+
+Voit myös renderöidä sekvenssejä modifiointinäppäimillä.
+
+```
+Käytä {näppäinkomentovaihtoehto shift 3} ottaaksesi kuvakaappauksen.
+Aktivoi hadoken-tekniikka painamalla {näppäin alas alas oikealle alas oikealle LP}.
+```
+
+...renderöi tämän:
+
+> Käytä {näppäinkomentovaihtoehto shift 3} ottaaksesi kuvakaappauksen.
+> Aktivoi hadoken-tekniikka painamalla {näppäin alas alas oikealle alas oikealle LP}.

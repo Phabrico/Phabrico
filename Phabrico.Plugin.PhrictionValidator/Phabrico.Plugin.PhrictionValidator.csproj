@@ -79,6 +79,11 @@
     <None Include="..\LICENSE">
       <Link>LICENSE</Link>
     </None>
+    <EmbeddedResource Include="Locale\phabrico_sv.po" />
+    <EmbeddedResource Include="Locale\phabrico_da.po" />
+    <EmbeddedResource Include="Locale\phabrico_fi.po" />
+    <EmbeddedResource Include="Locale\phabrico_ro.po" />
+    <EmbeddedResource Include="Locale\phabrico_ru.po" />
     <None Include="packages.config" />
     <None Include="Phabrico.Plugin.PhrictionValidator.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

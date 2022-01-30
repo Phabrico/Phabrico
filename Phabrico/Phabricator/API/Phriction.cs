@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Phabrico.Http;
+using Phabrico.Miscellaneous;
 using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,12 @@ namespace Phabrico.Phabricator.API
     /// </summary>
     class Phriction
     {
+        class Metadata
+        {
+            public string Projects { get; set; }
+            public string Subscribers { get; set; }
+        }
+
         /// <summary>
         /// Time difference between the Phabricator server and the local (Phabrico) computer.
         /// There shouldn't be any clock difference, but just in case...
@@ -26,10 +33,10 @@ namespace Phabrico.Phabricator.API
         /// </summary>
         /// <param name="database">SQLite database</param>
         /// <param name="conduit">Reference to Conduit API</param>
-        /// <param name="constraints">COnstraints to filter the list of Phriction documents to be downloaded</param>
+        /// <param name="constraints">Constraints to filter the list of Phriction documents to be downloaded</param>
         /// <param name="modifiedSince">Timestamp since when the Phriction documents need to be downloaded</param>
         /// <returns></returns>
-        public IEnumerable<Data.Phriction> GetAll(Database database, Conduit conduit, Constraint[] constraints, DateTimeOffset modifiedSince)
+        public IEnumerable<Data.Phriction> GetModifiedPhrictionDocuments(Database database, Conduit conduit, Constraint[] constraints, DateTimeOffset modifiedSince)
         {
             double minimumDateTime = modifiedSince.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;
             Dictionary<string, string> dateModifiedPerPhrictionDocumentToken = new Dictionary<string, string>();
@@ -46,6 +53,7 @@ namespace Phabrico.Phabricator.API
                                             firstItemId
                                            );
                 JObject phrictionData = JsonConvert.DeserializeObject(json) as JObject;
+                if (phrictionData == null) break;
 
                 List<JObject> phrictionDocumentChanges = phrictionData["result"]["data"].OfType<JObject>().ToList();
                 if (phrictionDocumentChanges.Any() == false) break;
@@ -100,6 +108,7 @@ namespace Phabrico.Phabricator.API
                                             firstItemId
                                            );
                 JObject phrictionData = JsonConvert.DeserializeObject(json) as JObject;
+                if (phrictionData == null) break;
 
                 foreach (JObject phrictionDocument in phrictionData["result"]["data"].OfType<JObject>())
                 {
@@ -150,8 +159,74 @@ namespace Phabrico.Phabricator.API
         }
 
         /// <summary>
+        /// Downloads some Phriction documents from Phabricator based on some filter constraints and since a given timestamp
+        /// </summary>
+        /// <param name="database">SQLite database</param>
+        /// <param name="conduit">Reference to Conduit API</param>
+        /// <param name="constraints">Constraints to filter the list of Phriction documents to be downloaded</param>
+        /// <param name="modifiedSince">Timestamp since when the Phriction documents need to be downloaded</param>
+        /// <returns></returns>
+        public void DownloadModifiedMetadataPhrictionDocuments(Database database, Conduit conduit)
+        {
+            Storage.Phriction phrictionStorage = new Storage.Phriction();
+            Dictionary<string,Metadata> currentMetadata = phrictionStorage.Get(database, Language.NotApplicable)
+                            .Select(record => new 
+                            {
+                                Token = record.Token,
+                                Projects = record.Projects,
+                                Subscribers = record.Subscribers
+                            })
+                            .ToDictionary(key => key.Token,
+                                          value => new Metadata
+                                          {
+                                              Projects = value.Projects,
+                                              Subscribers = value.Subscribers
+                                          });
+
+            string firstItemId = "";
+
+            bool searchForModifications = true;
+            while (searchForModifications)
+            {
+                // get list of phriction documents
+                string jsonDocument = conduit.Query("phriction.document.search",
+                                            null,
+                                            new Attachment[] {
+                                                new Attachment("projects"),
+                                                new Attachment("subscribers")
+                                            },
+                                            "oldest",
+                                            firstItemId
+                                           );
+                JObject phrictionData = JsonConvert.DeserializeObject(jsonDocument) as JObject;
+                if (phrictionData == null) break;
+
+                JObject[] phrictionDocuments = phrictionData["result"]["data"].OfType<JObject>().ToArray();
+                searchForModifications = phrictionDocuments.Length == 100;
+
+                foreach (JObject phrictionDocument in phrictionDocuments)
+                {
+                    string phrictionToken = phrictionDocument["phid"].ToString();
+                    string phrictionProjects = string.Join(",", phrictionDocument["attachments"]["projects"]["projectPHIDs"].Select(c => c.ToString()));
+                    string phrictionSubscribers = string.Join(",", phrictionDocument["attachments"]["subscribers"]["subscriberPHIDs"].Select(c => c.ToString()));
+
+                    Metadata metadata;
+                    if (currentMetadata.TryGetValue(phrictionToken, out metadata) == false) continue;
+                    if (metadata.Projects.Equals(phrictionProjects) && metadata.Subscribers.Equals(phrictionSubscribers)) continue;
+
+                    Phabricator.Data.Phriction wikiDocument = phrictionStorage.Get(database, phrictionToken, Language.NotApplicable);
+                    wikiDocument.Projects = phrictionProjects;
+                    wikiDocument.Subscribers = phrictionSubscribers;
+                    phrictionStorage.Add(database, wikiDocument);
+                }
+
+                firstItemId = phrictionDocuments.Select(c => c.SelectToken("id").Value<string>()).LastOrDefault();
+            }
+        }
+
+        /// <summary>
         /// Downloads all Phriction documents based on constraints (e.g. projects or users)
-        /// Unlike the GetAll() method, this GetPhrictionDocuments() method does not work with incremental downloads
+        /// Unlike the GetContentModifiedPhrictionDocuments() method, this GetPhrictionDocuments() method does not work with incremental downloads
         /// </summary>
         /// <param name="database"></param>
         /// <param name="conduit"></param>
@@ -176,6 +251,8 @@ namespace Phabrico.Phabricator.API
                                             firstItemId
                                            );
                 JObject phrictionData = JsonConvert.DeserializeObject(jsonDocument) as JObject;
+                if (phrictionData == null) break;
+
                 JObject[] phrictionDocuments = phrictionData["result"]["data"].OfType<JObject>().ToArray();
                 searchForModifications = phrictionDocuments.Length == 100;
 

@@ -1,0 +1,618 @@
+# Finnish translations
+
+# General
+msgid "Diagram"
+msgstr "Kaavio"
+
+msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
+msgstr "Virtauskaavioiden, prosessikaavioiden, organisaatiokaavioiden, UML-, ER- ja verkkokaavioiden editori."
+
+# Help shortcuts
+msgid "Styles"
+msgstr "Tyylit"
+
+msgid "Document"
+msgstr "Dokumentti"
+
+msgid "Sidebar / Connect"
+msgstr "Sivupalkki / Yhdistä"
+
+msgid "View"
+msgstr "Näytä"
+
+msgid "Canvas"
+msgstr "Canvas"
+
+msgid "Cursor / Page keys"
+msgstr "Kursori / Sivunäppäimet"
+
+msgid "Tools"
+msgstr "Työkalut"
+
+msgid "Selection"
+msgstr "Valinta"
+
+msgid "Labels"
+msgstr "Tarrat"
+
+msgid "(Shift+)Tab"
+msgstr "(Vaihto+)välilehti"
+
+msgid "Alt+(Shift / Ctrl)+Click on a sidebar item"
+msgstr "Alt+(Shift / Ctrl)+Klikkaa sivupalkin kohdetta."
+
+msgid "Alt+(Shift+)Drag from sidebar"
+msgstr "Alt+(Shift+)Vedä sivupalkista"
+
+msgid "Alt+(Shift+)Tab"
+msgstr "Alt+(Shift+)Tab"
+
+msgid "Alt+Click"
+msgstr "Alt+Klikkaa"
+
+msgid "Alt+Connect"
+msgstr "Alt+Kytke"
+
+msgid "Alt+Cursor"
+msgstr "Alt+Kursori"
+
+msgid "Alt+Mouse wheel"
+msgstr "Alt+hiiren pyörä"
+
+msgid "Alt+Shift+A"
+msgstr "Alt+Shift+A"
+
+msgid "Alt+Shift+C/T"
+msgstr "Alt+Shift+C/T"
+
+msgid "Alt+Shift+Cursor"
+msgstr "Alt+Vaihto+Kursori"
+
+msgid "Alt+Drag"
+msgstr "Alt+Vetää"
+
+msgid "Alt+Shift+P"
+msgstr "Alt+Shift+P"
+
+msgid "Alt+Shift+V"
+msgstr "Alt+Shift+V"
+
+msgid "Alt+Shift+X"
+msgstr "Alt+Shift+X"
+
+msgid "Backspace or Delete"
+msgstr "Backspace tai Delete"
+
+msgid "Click on a sidebar item"
+msgstr "Napsauta sivupalkin kohdetta"
+
+msgid "Ctrl - (Numpad)"
+msgstr "Ctrl - (Numpad)"
+
+msgid "Ctrl / Meta+Resize"
+msgstr "Ctrl / Meta+Koon muuttaminen"
+
+msgid "Ctrl / Shift+Click"
+msgstr "Ctrl / Shift+Klikkaa"
+
+msgid "Ctrl / Shift+Delete"
+msgstr "Ctrl / Vaihto+Poista"
+
+msgid "Ctrl / Shift+Drag"
+msgstr "Ctrl / Shift+Vetää"
+
+msgid "Ctrl + (Numpad)"
+msgstr "Ctrl + (Numpad)"
+
+msgid "Ctrl+(Shift+)A"
+msgstr "Ctrl+(Shift+)A"
+
+msgid "Ctrl+. / ,"
+msgstr "Ctrl+. / ,"
+
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+msgid "Ctrl+B / I"
+msgstr "Ctrl+B / I"
+
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+msgid "Ctrl+Click"
+msgstr "Ctrl+Click"
+
+msgid "Ctrl+Cursor"
+msgstr "Ctrl+Kursori"
+
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+msgid "Ctrl+End"
+msgstr "Ctrl+End"
+
+msgid "Ctrl+Enter / D"
+msgstr "Ctrl+Enter / D"
+
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+msgid "Ctrl+Home"
+msgstr "Ctrl+Koti"
+
+msgid "Ctrl+J"
+msgstr "Ctrl+J"
+
+msgid "Ctrl+K"
+msgstr "Ctrl+K"
+
+msgid "Ctrl+L / Alt+Shift+L"
+msgstr "Ctrl+L / Alt+Shift+L"
+
+msgid "Ctrl+M"
+msgstr "Ctrl+M"
+
+msgid "Ctrl+P"
+msgstr "Ctrl+P"
+
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+msgid "Ctrl+Shift+B"
+msgstr "Ctrl+Shift+B"
+
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+msgid "Ctrl+Shift+Connect"
+msgstr "Ctrl+Shift+Connect"
+
+msgid "Ctrl+Shift+Cursor"
+msgstr "Ctrl+Shift+Cursor"
+
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Ctrl+Shift+Vetää"
+
+msgid "Ctrl+Shift+End"
+msgstr "Ctrl+Shift+End"
+
+msgid "Ctrl+Shift+F"
+msgstr "Ctrl+Shift+F"
+
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+msgid "Ctrl+Shift+H"
+msgstr "Ctrl+Shift+H"
+
+msgid "Ctrl+Shift+Home"
+msgstr "Ctrl+Shift+Home"
+
+msgid "Ctrl+Shift+I / E"
+msgstr "Ctrl+Shift+I / E"
+
+msgid "Ctrl+Shift+J"
+msgstr "Ctrl+Shift+J"
+
+msgid "Ctrl+Shift+K"
+msgstr "Ctrl+Shift+K"
+
+msgid "Ctrl+Shift+L"
+msgstr "Ctrl+Shift+L"
+
+msgid "Ctrl+Shift+M"
+msgstr "Ctrl+Shift+M"
+
+msgid "Ctrl+Shift+Mouse wheel"
+msgstr "Ctrl+Shift+hiiren pyörä"
+
+msgid "Ctrl+Shift+O"
+msgstr "Ctrl+Shift+O"
+
+msgid "Ctrl+Shift+P"
+msgstr "Ctrl+Shift+P"
+
+msgid "Ctrl+Shift+Pg Down"
+msgstr "Ctrl+Shift+Pg alas"
+
+msgid "Ctrl+Shift+Pg Up"
+msgstr "Ctrl+Shift+Pg Up"
+
+msgid "Ctrl+Shift+R"
+msgstr "Ctrl+Shift+R"
+
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+msgid "Ctrl+Shift+U"
+msgstr "Ctrl+Shift+U"
+
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+msgid "Ctrl+Shift+X"
+msgstr "Ctrl+Shift+X"
+
+msgid "Ctrl+Shift+Y"
+msgstr "Ctrl+Shift+Y"
+
+msgid "Ctrl+U"
+msgstr "Ctrl+U"
+
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+msgid "Cursor"
+msgstr "Kursori"
+
+msgid "Double click"
+msgstr "Kaksoisnapsautus"
+
+msgid "End"
+msgstr "Lopeta"
+
+msgid "Enter"
+msgstr "Enter"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "F1"
+msgstr "F1"
+
+msgid "F2 / Enter"
+msgstr "F2 / Enter"
+
+msgid "F2 / Tab / Esc"
+msgstr "F2 / Tab / Esc"
+
+msgid "Hold Alt"
+msgstr "Pidä Alt painettuna"
+
+msgid "Mouse wheel"
+msgstr "Hiiren pyörä"
+
+msgid "Rightclick"
+msgstr "Klikkaa hiiren oikealla"
+
+msgid "Shift+Click on a sidebar item"
+msgstr "Shift+Klikkaa sivupalkin kohdetta"
+
+msgid "Shift+Connect"
+msgstr "Shift+Yhteys"
+
+msgid "Shift+Cursor"
+msgstr "Vaihto+Kursori"
+
+msgid "Shift+Drag"
+msgstr "Vaihto+Vetää"
+
+msgid "Shift+Enter"
+msgstr "Shift+Enter"
+
+msgid "Shift+Home"
+msgstr "Vaihto+Koti"
+
+msgid "Shift+Mouse wheel"
+msgstr "Shift+hiiren pyörä"
+
+msgid "Shift+Resize"
+msgstr "Shift+Kokoa uudelleen"
+
+msgid "Space / Right mouse Drag"
+msgstr "Välilyönti / hiiren oikean puoleinen veto"
+
+msgid "About"
+msgstr "Tietoja"
+
+msgid "Toggle to Selection"
+msgstr "Vaihda valintaan"
+
+msgid "Autosize"
+msgstr "Autosize"
+
+msgid "Bring to Front"
+msgstr "Tuo eteen"
+
+msgid "Cancel Action"
+msgstr "Peruuta toiminto"
+
+msgid "Canvas Horizontal Scroll"
+msgstr "Canvas Vaakasuora vieritys"
+
+msgid "Canvas Vertical Scroll"
+msgstr "Canvas Vertical Scroll"
+
+msgid "Canvas Zoom In/Out"
+msgstr "Canvas Zoom In/Out"
+
+msgid "Centered / Group Resize"
+msgstr "Keskitetty / ryhmän koon muuttaminen"
+
+msgid "Clear Default Style"
+msgstr "Tyhjennä oletustyyli"
+
+msgid "Clear Waypoints / Edit Tooltip"
+msgstr "Tyhjennä reittipisteet / Muokkaa työkaluvihjettä"
+
+msgid "Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone)."
+msgstr "Yhdistä ja kloonaa napsauttamalla (ctrl+napsauta kloonataksesi, shift+napsauta yhdistääksesi). Yhdistä vetämällä (ctrl+vetämällä kloonaa)."
+
+msgid "Click to rotate 90° clockwise. Drag to rotate."
+msgstr "Kierrä 90° myötäpäivään napsauttamalla. Vedä kiertääksesi."
+
+msgid "Clone and connect"
+msgstr "Kloonaus ja yhdistäminen"
+
+msgid "Clone cell/Disconnect edge"
+msgstr "Solun kloonaus/reunan irrottaminen"
+
+msgid "Collapse Container"
+msgstr "Säiliön romuttaminen"
+
+msgid "Connect to a Fixed Point"
+msgstr "Yhdistä kiinteään pisteeseen"
+
+msgid "Connect to shape outline (ignore connection points)"
+msgstr "Yhdistä muodon ääriviivaan (jätä liitospisteet huomiotta)"
+
+msgid "Connection Arrows"
+msgstr "Yhteyden nuolet"
+
+msgid "Connection Points"
+msgstr "Yhteyspisteet"
+
+msgid "Connects unconnected side of selected edge"
+msgstr "Yhdistää valitun reunan yhdistämättömän sivun"
+
+msgid "Context Menu"
+msgstr "Kontekstivalikko"
+
+msgid "Copy"
+msgstr "Kopioi"
+
+msgid "Copy Size"
+msgstr "Kopioi koko"
+
+msgid "Copy Style"
+msgstr "Kopioi tyyli"
+
+msgid "Create / Remove Space"
+msgstr "Luo / Poista väli"
+
+msgid "Ctrl / Shift+Enter: New Line"
+msgstr "Ctrl / Shift+Enter: Uusi rivi"
+
+msgid "Ctrl / Shift+Esc: Cancel Editing"
+msgstr "Ctrl / Shift+Esc: Peruuta muokkaus"
+
+msgid "Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML"
+msgstr "Ctrl: Alt: Alkuperä, Shift: XML:n huomiotta jättäminen"
+
+msgid "Ctrl+Resize for non-recursive group resize"
+msgstr "Ctrl+Resize ei-rekursiiviseen ryhmän koon muuttamiseen."
+
+msgid "Ctrl+Meta+Resize for centered group resize"
+msgstr "Ctrl+Meta+Resize keskitettyyn ryhmän koon muuttamiseen."
+
+msgid "Custom Zoom"
+msgstr "Mukautettu zoomaus"
+
+msgid "Cut"
+msgstr "Leikkaa"
+
+msgid "Delete Selected Cells"
+msgstr "Poista valitut solut"
+
+msgid "Delete Selected Cells with Connections / Labels"
+msgstr "Poista valitut solut, joissa on yhteyksiä / tarroja."
+
+msgid "Disable Connections"
+msgstr "Poista liitännät käytöstä"
+
+msgid "Disable replace, connect on drop (drop targets), Shift ignores current style"
+msgstr "Poista käytöstä korvaaminen, yhdistäminen pudotettaessa (pudotuskohteet), Shift ei huomioi nykyistä tyyliä."
+
+msgid "Duplicate"
+msgstr "Duplicate"
+
+msgid "Edit Metadata"
+msgstr "Muokkaa metatietoja"
+
+msgid "Edit Style"
+msgstr "Muokkaa tyyliä"
+
+msgid "Edit Vertex Geometry"
+msgstr "Edit Vertex Geometry"
+
+msgid "Enter Group"
+msgstr "Syötä ryhmä"
+
+msgid "Exit Group"
+msgstr "Poistu ryhmästä"
+
+msgid "Expand Container"
+msgstr "Laajenna säiliö"
+
+msgid "Fit Page"
+msgstr "Sovita sivu"
+
+msgid "Fit Two Pages"
+msgstr "Sovita kaksi sivua"
+
+msgid "Fit Window"
+msgstr "Sovita ikkuna"
+
+msgid "Group"
+msgstr "Ryhmä"
+
+msgid "Home"
+msgstr "Etusivu"
+
+msgid "Ignores handles under the mouse"
+msgstr "Ei huomioi hiiren alla olevia kahvoja"
+
+msgid "Insert Ellipse"
+msgstr "Lisää ellipsi"
+
+msgid "Insert Rectangle"
+msgstr "Lisää suorakulmio"
+
+msgid "Insert Text"
+msgstr "Lisää teksti"
+
+msgid "Insert text or add an edge label"
+msgstr "Tekstin lisääminen tai reunamerkinnän lisääminen"
+
+msgid "Inserts and connects the selected item (Shift ignores current style)"
+msgstr "Lisää ja yhdistää valitun kohteen (Shift ei huomioi nykyistä tyyliä)."
+
+msgid "Lock/Unlock / Edit Link"
+msgstr "Lukitse/avainta/muokkaa linkkiä"
+
+msgid "Maintain Proportions"
+msgstr "Säilytä mittasuhteet"
+
+msgid "Move cell (grid) or page"
+msgstr "Siirrä solua (ruudukkoa) tai sivua"
+
+msgid "New Line in Formatted Labels"
+msgstr "Uusi rivi muotoilluissa merkinnöissä"
+
+msgid "New Paragraph in Formatted Labels"
+msgstr "Uusi kappale muotoilluissa merkinnöissä"
+
+msgid "Next Page"
+msgstr "Seuraava sivu"
+
+msgid "Pan Canvas"
+msgstr "Panoraamakangas"
+
+msgid "Paste"
+msgstr "Liitä"
+
+msgid "Paste Size"
+msgstr "Liitä koko"
+
+msgid "Paste Style"
+msgstr "Liitä-tyyli"
+
+msgid "Previous Page"
+msgstr "Edellinen sivu"
+
+msgid "Print"
+msgstr "Tulosta"
+
+msgid "Redo"
+msgstr "Uudelleen"
+
+msgid "Refresh"
+msgstr "Päivitä"
+
+msgid "Select intersection"
+msgstr "Valitse leikkaus"
+
+msgid "Replaces the selected item with the clicked one"
+msgstr "Korvaa valitun kohteen napsautetulla kohteella."
+
+msgid "Reset View"
+msgstr "Nollaa näkymä"
+
+msgid "Resize cell (grid size)"
+msgstr "Solun koon muuttaminen (ruudukon koko)"
+
+msgid "Resize cell (pt) or select page"
+msgstr "Muuta solun kokoa (pt) tai valitse sivu"
+
+msgid "Save"
+msgstr "Tallenna"
+
+msgid "Save as"
+msgstr "Tallenna nimellä"
+
+msgid "Scroll / Move cell (pt)"
+msgstr "Selaa/siirrä solua (pt)"
+
+msgid "Scroll Page"
+msgstr "Vieritä sivua"
+
+msgid "Select All / None"
+msgstr "Valitse Kaikki / Ei mitään"
+
+msgid "Select Cell Below"
+msgstr "Valitse solu alla"
+
+msgid "Select Child / Parent"
+msgstr "Valitse lapsi / vanhempi"
+
+msgid "Select Next / Previous"
+msgstr "Valitse Seuraava / Edellinen"
+
+msgid "Select Vertices / Edges"
+msgstr "Valitse Verteksit / Reunat"
+
+msgid "Send to Back"
+msgstr "Lähetä takaisin"
+
+msgid "Set as Default Style"
+msgstr "Aseta oletustyyliksi"
+
+msgid "Start Editing Label of Selected Cell"
+msgstr "Aloita valitun solun etiketin muokkaus"
+
+msgid "Stop Editing and Apply Value"
+msgstr "Lopeta muokkaus ja ota arvo käyttöön"
+
+msgid "Superscript/Subscript on Selected Text"
+msgstr "Ylä- ja alaindeksi valittuun tekstiin"
+
+msgid "Toggle Bold/Italic on Selected Text"
+msgstr "Vaihda lihavointi/tekstin lihavointi valittuun tekstiin."
+
+msgid "Toggle Format Panel"
+msgstr "Muotoilupaneelin vaihtaminen"
+
+msgid "Toggle grid"
+msgstr "Ruudukon vaihtaminen"
+
+msgid "Toggle Layers Window"
+msgstr "Layers-ikkunan vaihtaminen"
+
+msgid "Toggle Outline Window"
+msgstr "Vaihda ääriviivat-ikkunaa"
+
+msgid "Toggle Selection State"
+msgstr "Valinnan tilan vaihtaminen"
+
+msgid "Toggle Underline on Selected Text"
+msgstr "Vaihda valitun tekstin alleviivaus"
+
+msgid "Turn / Rotate 90° Clockwise"
+msgstr "Käännä / käännä 90° myötäpäivään"
+
+msgid "Undo"
+msgstr "Kumoa"
+
+msgid "Ungroup"
+msgstr "Purkaa ryhmiä"
+
+msgid "Zoom In"
+msgstr "Suurenna"
+
+msgid "Zoom Out"
+msgstr "Pienennä"

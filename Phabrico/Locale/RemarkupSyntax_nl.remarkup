@@ -314,8 +314,8 @@ Over iets helemaal anders gesproken, ...
 
 URI's worden automatisch getoond: http://phabricator.org/
 
-Als je een URI hebt met problematische karakters erin, zoals
-"http://comma.org/,`", je kunt het omringen met kleiner-dan en groter-dan karakters:
+Als je een URI hebt met problematische karakters erin, zoals `"http://comma.org/,"`, je kunt het omringen met 
+kleiner-dan en groter-dan karakters:
 ```
 <http://comma.org/,>
 ```

@@ -20,11 +20,12 @@
 <script>
     window.addEventListener('load', function() {
         phabrico.crumbsHeader = new CrumbsHeader(crumbsContainer, 'Phriction', @@DOCUMENT-CRUMBS@@);
-        @{IF @@ONLY-PHRICTION@@=True@
+        @{IF @@HIDE-PHRICTION-IN-CRUMBS@@=True@
             if (crumbsContainer.children.length <= 3) {
                 crumbsContainer.style.display = 'none';
                 document.querySelector('.phui-document').style.top = '44px';
                 document.querySelector('.toc').style.top = '44px';
+                document.querySelector('.phabrico-page-content').classList.add('no-crumbs');
             } else {
                 crumbsContainer.removeChild(crumbsContainer.children[2]);
                 crumbsContainer.removeChild(crumbsContainer.children[1]);

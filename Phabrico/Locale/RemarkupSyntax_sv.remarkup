@@ -1,0 +1,644 @@
+﻿= Remarkup Syntaxreferens =
+
+Phabrico använder ett lättviktigt markupspråk som kallas "Remarkup", som liknar
+andra lättviktsmarkeringsspråk som Markdown och Wiki-markering.
+
+Det här dokumentet beskriver hur man formaterar text med hjälp av Remarkup.
+
+= Snabbreferens =
+
+All syntax förklaras mer ingående nedan, men detta är en snabbguide till
+formatering av text i Remarkup.
+
+Det här är inline-stilar och kan tillämpas på den mesta texten:
+```
+**fett** //viktigt// `monospaced` ##monospaced## ~~deleted~~ __underlined__
+!!markerad!!
+T123                      # Länk till en uppgift
+{T123}                    # Länk till en uppgift (med titel)
+{F123}                    # Infoga bild
+@username                 # Nämn en användare
+#project                  # Nämn ett projekt
+[[wiki page]]             # Länk till ett Phriction-dokument
+[[wiki page | name]]      # Namngivna länk till ett Phriction-dokument
+http://xyz/               # Länk till en webbplats
+[[http://xyz/ | name]]    # Namngivna länk till en webbplats
+[name](http://xyz/)       # Alternativt länkformat
+```
+Dessa stilar är blockformat och måste separeras från omgivande text med
+tomma rader:
+```
+= Stor rubrik =
+
+== Mindre rubrik ==
+
+## Detta är också en rubrik
+
+Också en stor rubrik
+====================
+
+Också en mindre rubrik
+----------------------
+
+> Citerad Text
+
+Använd `-` eller `*` för punktlistor och `#` för numrerade listor.
+Använd ``` eller två mellanslag för kod.
+Använd %%% för ett bokstavsblock.
+Använd | ... | ... för tabeller.
+```
+
+= Grundläggande styling =
+
+Formatera **grundläggande textstilar** så här:
+```
+**fet text**
+//kursiv text//
+`Monospaced text`
+##monospaced text##
+~~raderad text ~~
+__understruken text__
+!!markerad text!!
+```
+
+Dessa producerar **fet text**, //kursiv text//, `monospaced text`,
+##monospaced text###, ~~raderad text~~, __understruken text__, och
+!!markerad text!! respektive.
+
+= Layout =
+
+Gör **rubriker** så här:
+```
+= Stor rubrik =
+
+== Mindre rubrik ==
+
+===== Mycket liten rubrik =====
+
+Alternativ stor rubrik
+======================
+
+Alternativ mindre rubrik
+------------------------
+```
+
+Du kan valfritt utelämna de avslutande `=`-tecknen - det vill säga, de är samma sak:
+
+```
+== Mindre rubrik ==
+
+== Mindre rubrik
+```
+
+Detta ger rubriker som de som finns i det här dokumentet.
+Se till att du har en tom rad före och efter rubriken.
+
+Listor
+=====
+
+Gör **listor** genom att börja varje punkt med `-` eller `*`:
+```
+lang=text
+- mjölk
+- Ägg.
+- bröd
+
+* anka
+* anka
+* gås
+```
+
+Detta ger en sådan här lista:
+
+- mjölk
+- Ägg.
+- bröd
+
+(Observera: du måste sätta ett mellanslag efter `-` eller `*`.)
+
+Du kan göra numrerade listor med `#` i stället för `-` eller `*`:
+
+# Köp produkten
+# Utöka produkten
+# Sälj tillbaka produkten med stor vinst
+
+Numrerade listor kan också inledas med `1.` eller `1)`. Om du använder ett
+annat nummer än än `1` kommer listan att börja med det numret istället.
+Till exempel, detta:
+
+```
+200) OK
+201) Skapad
+202) Godkänd
+```
+
+...producerar detta:
+
+200) OK
+201) Skapad
+202) Godkänd
+
+Du kan skapa inbäddade listor:
+
+```
+- Kropp
+  - Huvud
+  - Arm
+    - Armbåge
+    - Hand
+      # Tumme
+      # Pekfinger
+      # Mittfinger
+      # Ringfinger
+      # Lillfinger
+  - Ben
+    - Knä
+    - Fot
+```
+
+...producerar detta:
+
+- Kropp
+  - Huvud
+  - Arm
+    - Armbåge
+    - Hand
+      # Tumme
+      # Pekfinger
+      # Mittfinger
+      # Ringfinger
+      # Lillfinger
+  - Ben
+    - Knä
+    - Fot
+
+Om du föredrar det kan du indraget listor genom att använda flera tecken för
+att visa indrag. djup, på det här sättet:
+
+```
+- Trädet
+-- Gren
+--- Kvist
+```
+
+...producerar detta:
+
+- Trädet
+-- Gren
+--- Kvist
+
+Du kan lägga till kryssrutor till objekt genom att inleda dem med `[ ]`
+eller `[X]`, som till exempel så här:
+
+```
+- [X] Förvärm ugnen till 450 grader.
+- [ ] Skala 35 citroner.
+```
+
+...producerar detta:
+
+- [X] Förvärm ugnen till 450 grader.
+- [ ] Skala 35 citroner.
+
+Skapa **kodblock** genom att skriva två mellanslag framför dem:
+
+  f(x, y);
+
+Du kan också använda tre backticks för att innesluta kodblocket:
+
+```
+f(x, y);
+g(f);
+```
+
+Du kan ange ett språk för syntaxmarkering med `lang=xxx`:
+  lang=text
+  lang=html
+  <a href="#">...</a>
+
+Detta kommer att färga kodblocket enligt syntaxen för det angivna språket, om
+det finns tillgängligt:
+  lang=html
+  <a href="#">...</a>
+
+Du kan också använda en `COUNTEREXAMPLE`-rubrik för att visa att ett kodblock
+är dåligt och inte bör kopieras:
+  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Detta ger ett block som ser ut så här:
+
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Du kan använda `lines=N` för att begränsa den vertikala storleken på en kodbit, och
+`name=some_name.ext` för att ge den ett namn. Till exempel detta:
+
+  lang=text
+  lang=html, name=exempel.html, lines=4, counterexample
+  <p>Äpplet</p>
+  <p>Aprikos</p>
+  <p>Avokado</p>
+  <p>Banan</p>
+  <p>Blåbär</p>
+  <p>Granatäpple</p>
+
+...produces this:
+
+  lang=html, name=exempel.html, lines=4, counterexample
+  <p>Äpplet</p>
+  <p>Aprikos</p>
+  <p>Avokado</p>
+  <p>Banan</p>
+  <p>Blåbär</p>
+  <p>Granatäpple</p>
+
+
+Du kan använda elementen `NOTE:`, `WARNING:` eller `IMPORTANT:` för att
+uppmärksamma till en viktig idé.
+
+Skriv till exempel så här:
+
+```
+NOTE: Håll regelbundna möten för att hålla dina anställda vakna.
+```
+
+...för att få fram detta:
+
+NOTE: Håll regelbundna möten för att hålla dina anställda vakna.
+
+Om du använder `WARNING:` eller `IMPORTANT:` i början av raden ändras
+färgen på utropet:
+
+WARNING: För många möten kan leda till sömnproblem
+
+IMPORTANT: Delta inte i för många möten
+
+In addition, you can use `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` to get the
+same effect but without `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` appearing
+in the rendered result.
+For example, this callout uses `(NOTE)`:
+
+(NOTE) Delta inte i för få möten.
+
+
+Horisontella linjer
+===================
+
+Du kan dela upp sektioner genom att sätta tre eller fler streck på en rad
+genom att själva. På så sätt skapas en delare eller en horisontell regel
+som liknar en `<hr />`. tagg, som den här:
+
+---
+
+Strecken måste stå på en egen rad och vara separerade från andra innehåll.
+Till exempel så här:
+
+```
+Denna sektion kommer att vara visuellt åtskild.
+
+---
+
+På ett helt annat område ...
+```
+
+
+= Länkning av URI:er =
+
+URI:er länkas automatiskt: http://phabricator.org/
+
+Om du har en URI med problematiska tecken i den, till exempel `"http://comma.org/,"`, kan du omge det med hakparenteser:
+```
+<http://comma.org/,>
+```
+
+Detta tvingar analysatorn att använda hela URI:n: <http://comma.org/,>
+
+Du kan också skapa namngivna länkar där du väljer den text som ska visas.
+Dessa fungerar på Internet i stort:
+```
+[[http://www.boring-legal-documents.com/ | spännande juridiska dokument]]
+```
+
+Länkar i Markdown-stil stöds också:
+```
+[Toil](http://www.trouble.com)
+```
+
+= Länka till objekt =
+
+Du kan länka till Phabricator-objekt, t.ex. Maniphest-uppgifter, genom att nämna objektets namn:
+```
+T123          # Länk till Maniphest-uppgift T123
+```
+
+= Infoga objekt
+
+Du kan också skapa fullständiga referenser till vissa objekt genom att
+använda hakparenteser:
+```
+{T123}        # Länk till Maniphest-uppgiften T123 med det fullständiga namnet
+```
+
+Dessa referenser visar också när ett objekt ändrar tillstånd (t.ex. en uppgift
+eller revidering avslutas). Vissa typer av objekt har stöd för rik inbäddning.
+
+== Länka till Projektmärken
+
+Projekt kan länkas till med hjälp av hashtaggen `#`. Detta fungerar som standard
+med projektets namn (små bokstäver, med understrykning).
+Dessutom kan du kan du ställa in flera ytterligare hashtaggar genom att redigera
+projektinformationen i Phabricator.
+```
+#qa, #quality_assurance
+```
+
+== Infoga bilder
+
+Du kan bädda in en bild eller annan fil genom att använda krullparenteser för
+att hänvisa till den:
+```
+{F123}
+```
+
+I de flesta gränssnitt kan du dra och släppa en bild från din dator till textområdet
+för att ladda upp och referera till den.
+
+De flesta webbläsare stöder också uppladdning av bilddata genom att bara klistra in
+dem från klippbordet till textområdet.
+
+Du kan ställa in filvisningsalternativ så här:
+```
+{F123, layout=left, float, size=full, alt="en ankunge"}
+```
+
+Giltiga alternativ för alla filer är:
+
+- **layout**
+  - left : Placerar bilden till vänster (standard).
+  - center : Placerar bilden horisontellt i mitten.
+  - right : placerar bilden till höger
+  - inline : Bilden placeras till vänster men närmare föregående och nästa rad.
+  - link : visar en länk i stället för själva bilden.
+- **name** : När `layout` är satt till `link`, eller för icke-bilder, används det här namnet som länktext.
+- **alt** Ger alternativ text för tekniska hjälpmedel.
+
+Bildfiler har stöd för dessa alternativ:
+
+- **float** Om layout är inställd på vänster eller höger kommer bilden att flyta så att texten sveps runt den.
+- **size** tumme (standard), full storlek
+- **width** Skala bilden till en viss bredd.
+- **height** Skala bilden till en viss höjd.
+
+Ljud- och videofiler har stöd för dessa alternativ:
+
+- **media**: Ange medietyp som `audio` eller `video`. På så sätt kan du särskilja hur filformat som kan innehålla antingen ljud eller video ska återges.
+- **loop**: Släpp detta media.
+- **autoplay**: Börjar automatiskt spela upp det här mediet.
+
+= Citattext =
+
+Om du vill citera en text, börja den med ett `>`:
+```
+  > Detta är citerad text.
+```
+
+Detta kan illustreras på följande sätt:
+
+> Detta är citerad text.
+
+= Memes =
+
+Du kan också använda bildmakron i samband med memer. Om du till exempel har ett
+bildmakro som heter `grinig`, kan du skapa en meme genom att göra följande följande:
+```
+{meme, src=grinig, above=övretext, below=nedretext}
+```
+
+= Nämna användare =
+
+I Maniphest kan du nämna en annan användare genom att skriva:
+```
+@username
+```
+
+Ikoner
+======
+
+Du kan lägga till ikoner i kommentarer med hjälp av syntaxen `{icon ...}`. Till exempel:
+```
+  {icon camera}
+```
+
+...producerar detta: {icon camera}
+
+Du kan välja en färg för ikonerna:
+```
+  {icon camera color=blue}
+```
+
+...producerar detta: {icon camera color=blue}
+
+En lista över tillgängliga ikoner finns på [[ https://fontawesome.com/v4.7.0/icons/ | FontAwesome-webbplats]].
+Följande färger är tillgängliga:
+  - dark              {icon phabrico-square, color=dark}
+  - bluegrey          {icon phabrico-square, color=bluegrey}
+  - white             {icon phabrico-square, color=white}
+  - red               {icon phabrico-square, color=red}
+  - orange            {icon phabrico-square, color=orange}
+  - yellow            {icon phabrico-square, color=yellow}
+  - green             {icon phabrico-square, color=green}
+  - blue              {icon phabrico-square, color=blue}
+  - sky               {icon phabrico-square, color=sky}
+  - indigo            {icon phabrico-square, color=indigo}
+  - pink              {icon phabrico-square, color=pink}
+  - fire              {icon phabrico-square, color=fire}
+  - violet            {icon phabrico-square, color=violet}
+  - lightbluetext     {icon phabrico-square, color=lightbluetext}
+  - lightgreytext     {icon phabrico-square, color=lightgreytext}
+  - grey              {icon phabrico-square, color=grey}
+
+Du kan lägga till `spin` för att få ikonen att snurra:
+```
+  {icon cog spin}
+```
+
+Detta kan illustreras på följande sätt: {icon cog spin}
+
+
+= Phriction-dokument =
+
+Du kan länka till Phriction-dokument med hjälp av deras sökväg:
+```
+  Se till att du undertecknar och daterar ditt [[legal/Letter of Marque and Reprisal]]!
+```
+
+Som standard kommer länken att återges med dokumentets titel som länknamn.
+Med en pipa (`|`) kan du ändra titeln på länken. Använd detta för att vilseleda dina
+motståndare:
+```
+  Kolla in dessa [[legal/boring_documents/ | spännande juridiska dokument]]!
+```
+
+Om du börjar en länksökväg med `./` eller `../` kommer resten av sökvägen att
+utvärderas relativt till den aktuella wikisidan.
+Om du till exempel skriver innehåll för dokumentet `fruit/` är en länk till
+`[[./guava]]` samma sak som en länk till `[[fruit/guava]]` från en annan plats.
+
+Relativa länkar kan använda `../` för att gå uppåt i dokumentträdet.
+Från den sidan `produce/vegetables/` kan du använda `[[../fruit/guava]]`
+för att länka till sidan `produce/vegetables/`. sidan `produce/fruit/guava`.
+
+Relativa länkar fungerar inte när de används utanför wikisidor.
+Du kan till exempel inte använda en relativ länk i en kommentar till en uppgift,
+eftersom det inte finns någon rimlig plats för länken att börja lösa upp från.
+
+När dokument flyttas uppdateras inte relativa länkar automatiskt:
+De bevaras som de är skrivna för närvarande. När du har flyttat ett dokument kan
+du behöva granska och justera eventuella relativa länkar som det innehåller.
+
+= Bokstavliga block =
+
+Använd `%%%` för att placera text i ett bokstavsblock:
+```
+%%%Text som inte kommer att behandlas av remarkup
+[[http://www.exempel.com | exempel]]
+%%%
+```
+
+Remarkup bearbetar inte texten i bokstavsblock (annat än för att undvika HTML och bevara radbrytningar).
+
+= Tabeller =
+
+Remarkup stöder enkel syntax för tabeller. Till exempel detta:
+
+```
+| Frukt  | Färg   | Pris    | Skala?
+| -----  | -----  | -----   | -----
+| äpple  | röd    | `$0.93` | nej
+| banan  | gul    | `$0.19` | **JA**
+```
+
+...producerar detta:
+
+| Frukt  | Färg   | Pris    | Skala?
+| -----  | -----  | -----   | -----
+| äpple  | röd    | `$0.93` | nej
+| banan  | gul    | `$0.19` | **JA**
+
+Remarkup stöder också en förenklad HTML-tabellsyntax.
+Till exempel detta:
+
+```
+<table>
+    <tr>
+        <th>Frukt</th>
+        <th>Färg</th>
+        <th>Pris</th>
+        <th>Skala?</th>
+    </tr>
+    <tr>
+        <td>äpple</td>
+        <td>röd</td>
+        <td>`$0.93`</td>
+        <td>nej</td>
+    </tr>
+    <tr>
+        <td>banan</td>
+        <td>gul</td>
+        <td>`$0.19`</td>
+        <td>**JA**</td>
+    </tr>
+</table>
+```
+
+...producerar detta:
+
+<table>
+    <tr>
+        <th>Frukt</th>
+        <th>Färg</th>
+        <th>Pris</th>
+        <th>Skala?</th>
+    </tr>
+    <tr>
+        <td>äpple</td>
+        <td>röd</td>
+        <td>`$0.93`</td>
+        <td>nej</td>
+    </tr>
+    <tr>
+        <td>banan</td>
+        <td>gul</td>
+        <td>`$0.19`</td>
+        <td>**JA**</td>
+    </tr>
+</table>
+
+Några allmänna anmärkningar om denna syntax:
+
+- Alla dina taggar måste vara väl avvägda;
+- dina taggar får INTE innehålla attribut (`<td>` är OK, `<td style="...">` är inte OK);
+  - Du kan använda andra Remarkup-regler (t.ex. **fett**, //viktig//, etc.) inuti
+    tabellceller.
+
+Navigationssekvenser
+====================
+
+Du kan använda `{nav ...}` för att skapa en stiliserad navigeringssekvens när
+du hjälper till med någon att hitta något.
+Detta kan vara användbart när du skriver dokumentation.
+Du kan till exempel ge någon en vägbeskrivning för att köpa citroner:
+
+{nav icon=home, Hem >
+Livsmedelsbutik >
+Grönsaksavdelningen >
+icon=lemon-o, name=Citroner}
+
+
+To render this example, use this markup:
+
+```
+{nav icon=home, Hem >
+Livsmedelsbutik >
+Grönsaksavdelningen >
+icon=lemon-o, name=Citroner}
+```
+
+I allmänhet:
+  - Separera sektioner med `>`.
+  - Varje avsnitt kan bara ha ett namn för att lägga till ett element i navigeringssekvensen,
+    eller en lista med nyckel-värdepar.
+  - Nycklar som stöds är `icon`, `name`, `type` och `href`.
+  - Alternativet `type` kan sättas till `instructions` för att ange att ett element ber
+    användaren att göra ett val eller följa specifika instruktioner.
+
+Tangenttryckningar
+==========
+
+Du kan använda `{key ...}` för att återge en stiliserad tangenttryckning. Till exempel detta:
+
+```
+Tryck på {key M} för att visa stjärnkartan.
+```
+
+...producerar detta:
+
+> Tryck på {key M} för att visa stjärnkartan.
+
+Du kan också göra sekvenser med modifieringstangenter, till exempel så här:
+
+```
+Använd {key command option shift 3} för att ta en skärmdump.
+Tryck på {key down down-right right LP} för att aktivera hadoken-tekniken.
+```
+
+...producerar detta:
+
+> Använd {key command option shift 3} för att ta en skärmdump.
+> Tryck på {key down down-right right LP} för att aktivera hadoken-tekniken.

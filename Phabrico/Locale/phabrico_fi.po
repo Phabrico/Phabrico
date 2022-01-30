@@ -1,0 +1,1197 @@
+# Finnish translations
+
+# general
+msgid "Phabrico"
+msgstr "Phabrico"
+
+msgid "There's a new Phabrico version available"
+msgstr "Saatavilla on uusi Phabrico-versio"
+
+msgid "Yes"
+msgstr "Kyllä"
+
+msgid "No"
+msgstr "Ei"
+
+msgid "Button-AccessKey-Yes"
+msgstr "K"
+
+msgid "Button-AccessKey-No"
+msgstr "E"
+
+msgid "Undo"
+msgstr "Kumoa"
+
+msgid "EmptyParameter"
+msgstr "(ei yhtään)"
+
+msgid "No projects assigned"
+msgstr "(ei yhtään)"
+
+msgid "No users assigned"
+msgstr "(ei yhtään)"
+
+msgid "ERROR"
+msgstr "VIRHE"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Peruuta"
+
+# login dialog
+msgid "Username"
+msgstr "Käyttäjätunnus"
+
+msgid "Password"
+msgstr "Salasana"
+
+msgid "Log In"
+msgstr "Kirjaudu sisään"
+
+msgid "Invalid"
+msgstr "Virheellinen"
+
+msgid "Search"
+msgstr "Etsi"
+
+msgid "Username or password are incorrect."
+msgstr "Käyttäjätunnus tai salasana on virheellinen."
+
+msgid "Create New User"
+msgstr "Luo uusi käyttäjä"
+
+msgid "Verify Password"
+msgstr "Vahvista salasana"
+
+msgid "Create User"
+msgstr "Luo käyttäjä"
+
+# home page
+msgid "Change language"
+msgstr "Vaihda kieli"
+
+msgid "Language"
+msgstr "Kieli"
+
+msgid "Change password"
+msgstr "Vaihda salasana"
+
+msgid "Current password"
+msgstr "Nykyinen salasana"
+
+msgid "New password"
+msgstr "Uusi salasana"
+
+msgid "Verify new password"
+msgstr "Vahvista uusi salasana"
+
+msgid "Password is incorrect."
+msgstr "Salasana on väärä."
+
+msgid "Password should contain at least 1 punctuation character"
+msgstr "Salasanan tulisi sisältää vähintään 1 välimerkki."
+
+msgid "The passwords entered do not match"
+msgstr "Syötetyt salasanat eivät täsmää"
+
+msgid "Password should contain at least 1 number"
+msgstr "Salasanan pitäisi sisältää vähintään 1 numero"
+
+msgid "Password should contain at least 1 lowercase letter"
+msgstr "Salasanan pitäisi sisältää vähintään 1 pieni kirjain"
+
+msgid "Password should contain at least 1 capital letter"
+msgstr "Salasanan tulisi sisältää vähintään 1 iso kirjain"
+
+msgid "Password should be at least 12 characters long"
+msgstr "Salasanan on oltava vähintään 12 merkkiä pitkä"
+
+msgid "Log out"
+msgstr "Kirjaudu ulos"
+
+msgid "Synchronizing"
+msgstr "Synkronointi"
+
+msgid "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
+msgstr "Phabricator-palvelimelle on ladattavissa [b]1 paikallinen muutos[/b]."
+
+msgid "There are [b]@@NBR-CHANGES@@ local modifications[/b] ready to be uploaded the Phabricator server."
+msgstr "Phabricator-palvelimelle on ladattavissa [b]@@NBR-CHANGES@@ paikallisia muutoksia[/b]."
+
+msgid "@@FILE@@ uploaded..."
+msgstr "@@FILE@@ ladattu..."
+
+msgid "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
+msgstr "@@FILE@@ (@@PERCENTAGE@@ %) ladataan."
+
+msgid "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
+msgstr "Joitakin muutoksia ei voitu ladata, koska Phabricator-palvelimella oli saatavilla näistä asiakirjoista tai tehtävistä uudempia versioita. Tarkista ne \'Offline Changes\':n avulla."
+
+msgid "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
+msgstr "Haluatko todella synkronoida julkisen Phabricator-palvelimen ja yksityisen Phabrico-palvelimesi?"
+
+msgid "Favorites"
+msgstr "Suosikit"
+
+msgid "General Overview"
+msgstr "Yleiskatsaus"
+
+msgid "Phabrico Version:"
+msgstr "Phabrico-versio:"
+
+msgid "Phabrico Build date:"
+msgstr "Phabricon rakentamispäivä:"
+
+msgid "Last synchronized with Phabricator at:"
+msgstr "Viimeksi synkronoitu Phabricatorin kanssa klo:"
+
+msgid "Phabrico Database Location:"
+msgstr "Phabrico-tietokannan sijainti:"
+
+msgid "Phabrico Database size:"
+msgstr "Phabrico Tietokannan koko:"
+
+msgid "Remote access:"
+msgstr "Etäkäyttö:"
+
+msgid "Enabled"
+msgstr "käytössä"
+
+msgid "Disabled"
+msgstr "Ei käytössä"
+
+msgid "Number of Phriction documents:"
+msgstr "Lauseasiakirjojen määrä:"
+
+msgid "Number of Maniphest tasks:"
+msgstr "Maniphest-tehtävien määrä:"
+
+msgid "Number of Projects:"
+msgstr "Projektien määrä:"
+
+msgid "Number of Users:"
+msgstr "Käyttäjien määrä:"
+
+msgid "Number of File objects:"
+msgstr "Tiedosto-objektien määrä:"
+
+msgid "Number of uncommitted objects:"
+msgstr "Sitoutumattomien objektien määrä:"
+
+msgid "Number of frozen objects:"
+msgstr "Jäädytettyjen objektien määrä:"
+
+msgid "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+msgstr "@@PHABRICO-NUMBER-FILE-OBJECTS@@ (Mediaanikoko = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ Maksimikoko = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+
+# main menu navigator
+msgid "Maniphest"
+msgstr "Maniphest"
+
+msgid "Tasks and Bugs"
+msgstr "Tehtävät ja viat"
+
+msgid "Phriction"
+msgstr "Phriction"
+
+msgid "Wiki Documents"
+msgstr "Wiki-dokumentit"
+
+msgid "Projects"
+msgstr "Projektit"
+
+msgid "Projects to be synchronized"
+msgstr "Synkronoitavat projektit"
+
+msgid "Users"
+msgstr "Käyttäjät"
+
+msgid "User accounts to be synchronized"
+msgstr "Synkronoitavat käyttäjätilit"
+
+msgid "File objects"
+msgstr "Tiedosto-objektit"
+
+msgid "Referenced file objects"
+msgstr "Viitatut tiedosto-objektit"
+
+msgid "Config"
+msgstr "Konfigurointi"
+
+msgid "Configure Phabrico"
+msgstr "Phabricon määrittäminen"
+
+msgid "Offline changes"
+msgstr "Offline-muutokset"
+
+msgid "View local changes"
+msgstr "Paikallisten muutosten tarkastelu"
+
+msgid "Synchronize"
+msgstr "Synkronoi"
+
+# Synchronization
+msgid "No new data dowloaded from Phabricator"
+msgstr "Phabricatorista ei ole ladattu uusia tietoja."
+
+msgid "Latest synchronized data"
+msgstr "Viimeisimmät synkronoidut tiedot"
+
+msgid "View changes"
+msgstr "Näytä muutokset"
+
+msgid "Current version"
+msgstr "Nykyinen versio"
+
+msgid "Previous version"
+msgstr "Edellinen versio"
+
+msgid "Overview latest synchronization"
+msgstr "Katsaus viimeisimpään synkronointiin"
+
+msgid "Difference between previous and current version of @@SYNCHRONIZED-ITEM@@"
+msgstr "Edellisen ja nykyisen version ero @@SYNCHRONIZED-ITEM@@ välillä"
+
+msgid "Synchronization.Status.NotYetSynchronized"
+msgstr "Ei vielä"
+
+msgid "Synchronization.Status.Initializing"
+msgstr "Alustaminen..."
+
+msgid "Synchronization.Status.ConnectingToPhabricatorServer"
+msgstr "Yhteyden muodostaminen @@PHABRICATOR-SERVER@@..."
+
+msgid "Synchronization.Status.PreparingDownloadManiphestData"
+msgstr "Latauksen valmistelu Maniphest-tiedot..."
+
+msgid "Synchronization.Status.DownloadingManiphestData"
+msgstr "Maniphest-tietojen lataaminen..."
+
+msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
+msgstr "Maniphestin prioriteetti- ja tilatietojen lataaminen..."
+
+msgid "Synchronization.Status.DownloadingPhamePostData"
+msgstr "Phame-blogin tietojen lataaminen..."
+
+msgid "Synchronization.Status.DownloadingPhrictionData"
+msgstr "Phriction datan lataaminen..."
+
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "Phriction-metatietojen lataaminen..."
+
+msgid "Synchronization.Status.DownloadingProjects"
+msgstr "Projektien lataaminen..."
+
+msgid "Synchronization.Status.DownloadingUsers"
+msgstr "Käyttäjien lataaminen..."
+
+msgid "Synchronization.Status.LoadingAccountInfo"
+msgstr "Tilin tietojen lataaminen..."
+
+msgid "Synchronization.Status.LoadingMacroData"
+msgstr "Makrotietojen lataaminen..."
+
+msgid "Synchronization.Status.LoadingFileObjects"
+msgstr "Tiedosto-objektien lataaminen..."
+
+msgid "Synchronization.Status.UploadingManiphestData"
+msgstr "Maniphest-tehtävien lataaminen..."
+
+msgid "Synchronization.Status.UploadingPhrictionData"
+msgstr "Lauseasiakirjojen lataaminen..."
+
+msgid "Synchronization.Status.UploadingCommentsAndTransactions"
+msgstr "Kommenttien ja tapahtumien lataaminen..."
+
+msgid "Synchronization.Status.CleaningUp"
+msgstr "Vanhojen tietojen siivoaminen..."
+
+msgid "Synchronization.Status.CleaningUp.Phriction"
+msgstr "Vanhojen Phriction-asiakirjojen poistaminen"
+
+msgid "Synchronization.Status.CleaningUp.Maniphest"
+msgstr "Vanhojen Maniphest-tehtävien poistaminen"
+
+msgid "Synchronization.Status.CleaningUp.UnreferencedFiles"
+msgstr "Viittaamattomien tiedosto-objektien poistaminen"
+
+msgid "Synchronization.Status.Finishing"
+msgstr "Viimeistely..."
+
+msgid "Synchronization.Status.Failed"
+msgstr "Epäonnistunut"
+
+msgid "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+msgstr "Joitakin Phriction-asiakirjoja ei ladata, koska niiden slug-polut ovat liian pitkiä. Voit lyhentää niitä "Offline Changes" -näytössä.\n\nTahdotko ladata muut asiakirjat ja tehtävät ?"
+
+msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+msgstr "Joidenkin Phriction-asiakirjojen slug-polut ovat pitkiä, ja ne saattavat aiheuttaa ongelmia luodessasi taustalla olevia asiakirjoja.\n\nTahdotko jatkaa ?"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "Tämä asiakirja on tarkistamaton käännös. Tätä versiota asiakirjasta ei ladata Phabricatoriin."
+
+# Maniphest
+msgid "Create Task"
+msgstr "Luo tehtävä"
+
+msgid "Editing ##OBJECT##"
+msgstr "Muokkaaminen ##OBJECT##"
+
+msgid "Assigned"
+msgstr "Määrätty"
+
+msgid "Open Tasks"
+msgstr "Avaa tehtävät"
+
+msgid "Per User"
+msgstr "Käyttäjäkohtaisesti"
+
+msgid "Per Project"
+msgstr "Projekti"
+
+msgid "Authored"
+msgstr "Kirjoitetut"
+
+msgid "Subscribed"
+msgstr "Tilattu"
+
+msgid "Queries"
+msgstr "Kyselyt"
+
+msgid "No tasks found"
+msgstr "Tehtäviä ei löytynyt"
+
+msgid "Change Subscribers"
+msgstr "Vaihda tilaajia"
+
+msgid "Change Status"
+msgstr "Muuta tilaa"
+
+msgid "Change Project Tags"
+msgstr "Vaihda projektin tunnisteet"
+
+msgid "Change Priority"
+msgstr "Muuta prioriteettia"
+
+msgid "Assign / Claim"
+msgstr "Määritä / Vaadi"
+
+msgid "Authored By"
+msgstr "Kirjoittanut"
+
+msgid "Assigned To"
+msgstr "Nimetty"
+
+msgid "Edit Task"
+msgstr "Muokkaa tehtävää"
+
+msgid "View Task on Phabricator"
+msgstr "Näytä tehtävä Phabricatorissa"
+
+msgid "Description"
+msgstr "Kuvaus"
+
+msgid "Priority"
+msgstr "Prioriteetti"
+
+msgid "First"
+msgstr "Ensimmäinen"
+
+msgid "Previous"
+msgstr "Edellinen"
+
+msgid "Next"
+msgstr "Seuraava"
+
+msgid "Type a user or project name..."
+msgstr "Kirjoita käyttäjän tai projektin nimi..."
+
+msgid "Type a project name..."
+msgstr "Kirjoita projektin nimi..."
+
+msgid "Type a username..."
+msgstr "Kirjoita käyttäjänimi..."
+
+msgid "@@COMMENT-AUTHOR@@ added a comment."
+msgstr "@@COMMENT-AUTHOR@@ lisäsi kommentin."
+
+msgid "@@PERSON@@ marked this task as @@STATE@@"
+msgstr "@@PERSON@@ merkitsi tämän tehtävän @@STATE@@:ksi"
+
+msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
+msgstr "@@PERSON@@ merkitsi tämän tehtävän tilalle @@OLDSTATE@@ tilalle @@NEWSTATE@@"
+
+msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
+msgstr "@@PERSON@@ ha añadido a @@PERSONS@@ como supervisores."
+
+msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
+msgstr "@@PERSON1@@ siirsi tehtävän @@PERSON2@@:lle"
+
+msgid "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
+msgstr "@@PERSON1@@ siirsi tehtävän @@PERSON2@@:lta @@PERSON3@@:lle"
+
+msgid "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
+msgstr "@@PERSON@@ muutti tehtävän prioriteetin @@PRIORITY1@@::stä @@PRIORITY2@@:ksi."
+
+msgid "@@PERSON@@ changed the task priority to @@PRIORITY@@"
+msgstr "@@PERSON@@ muutti tehtävän prioriteetin @@PRIORITY@@:ksi."
+
+msgid "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
+msgstr "@@PERSON@@ määritteli seuraavan projektin: @@PROJECT-NAME@@"
+
+msgid "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
+msgstr "@@PERSON@@ määritteli seuraavat hankkeet: @@PROJECT-NAMES@@"
+
+msgid "and"
+msgstr "ja"
+
+msgid "ManiphestPriority.Unbreak Now!"
+msgstr "Suorita nyt!"
+
+msgid "ManiphestPriority.Needs Triage"
+msgstr "Tarpeiden arviointi"
+
+msgid "ManiphestPriority.High"
+msgstr "Korkea"
+
+msgid "ManiphestPriority.Normal"
+msgstr "Normaali"
+
+msgid "ManiphestPriority.Low"
+msgstr "Alhainen"
+
+msgid "ManiphestPriority.Wishlist"
+msgstr "Toivomuslista"
+
+msgid "ManiphestStatus.Closed"
+msgstr "Suljettu"
+
+msgid "ManiphestStatus.Duplicate"
+msgstr "Duplikaatti"
+
+msgid "ManiphestStatus.Invalid"
+msgstr "Virheellinen"
+
+msgid "ManiphestStatus.On hold"
+msgstr "Pidossa"
+
+msgid "ManiphestStatus.Ongoing"
+msgstr "Käynnissä"
+
+msgid "ManiphestStatus.Open"
+msgstr "Avoinna"
+
+msgid "ManiphestStatus.Planned"
+msgstr "Suunniteltu"
+
+msgid "ManiphestStatus.Programmed"
+msgstr "Ohjelmoitu"
+
+msgid "ManiphestStatus.Resolved"
+msgstr "Ratkaistu"
+
+msgid "ManiphestStatus.Spite"
+msgstr "Peukut alas"
+
+msgid "ManiphestStatus.To be QAd"
+msgstr "Laaditaan QAd"
+
+msgid "ManiphestStatus.Wontfix"
+msgstr "Ei korjata"
+
+msgid "This modified task hasn't been uploaded yet to the Phabricator server"
+msgstr "Tätä muutettua tehtävää ei ole vielä ladattu Phabricator-palvelimelle."
+
+# Phriction
+msgid "Subscribers"
+msgstr "Tilaajat"
+
+msgid "Subscribe"
+msgstr "Tilaa"
+
+msgid "Tags"
+msgstr "Tunnisteet"
+
+msgid "Last modified at"
+msgstr "Viimeksi muokattu osoitteessa"
+
+msgid "Last modified by"
+msgstr "Viimeksi muokannut"
+
+msgid "Printable Page"
+msgstr "Tulostettava sivu"
+
+msgid "Return to web view"
+msgstr "Paluu verkkonäkymään"
+
+msgid "Add to favorites"
+msgstr "Lisää suosikkeihin"
+
+msgid "Remove from favorites"
+msgstr "Poista suosikeista"
+
+msgid "Dismiss local changes"
+msgstr "Hylkää paikalliset muutokset"
+
+msgid "View Document on Phabricator"
+msgstr "Näytä asiakirja Phabricatorissa"
+
+msgid "Contents"
+msgstr "Sisältö"
+
+msgid "New Document"
+msgstr "Uusi asiakirja"
+
+msgid "Document Hierarchy"
+msgstr "Dokumentin hierarkia"
+
+msgid "Edit Document"
+msgstr "Muokkaa dokumenttia"
+
+msgid "Save Changes"
+msgstr "Tallenna muutokset"
+
+msgid "Title"
+msgstr "Otsikko"
+
+msgid "Title already exists"
+msgstr "Otsikko on jo olemassa"
+
+msgid "Type a title..."
+msgstr "Kirjoita otsikko..."
+
+msgid "Create this Document"
+msgstr "Luo tämä asiakirja"
+
+msgid "There is no document here, but you may create it."
+msgstr "Tässä ei ole asiakirjaa, mutta voit luoda sen."
+
+msgid "No Document Here"
+msgstr "Täällä ei ole asiakirjaa"
+
+msgid "Page Not Found"
+msgstr "Sivua ei löydy"
+
+msgid "This newly created page hasn't been uploaded yet to the Phabricator server"
+msgstr "Tätä äskettäin luotua sivua ei ole vielä ladattu Phabricator-palvelimelle"
+
+msgid "This modified page hasn't been uploaded yet to the Phabricator server"
+msgstr "Tätä muokattua sivua ei ole vielä ladattu Phabricator-palvelimelle."
+
+msgid "One moment please..."
+msgstr "Hetkinen..."
+
+msgid "References"
+msgstr "Viitteet"
+
+msgid "Show references"
+msgstr "Näytä viitteet"
+
+msgid "Parameters"
+msgstr "Parametrit"
+
+msgid "This page has been translated but it's translated content hasn't been reviewed yet"
+msgstr "Tämä sivu on käännetty, mutta sen käännettyä sisältöä ei ole vielä tarkistettu"
+
+msgid "Edit translation"
+msgstr "Muokkaa käännöstä"
+
+msgid "Approve translation"
+msgstr "Hyväksy käännös"
+
+msgid "Are you sure you want to approve this translation?"
+msgstr "Haluatko varmasti hyväksyä tämän käännöksen?"
+
+msgid "Unreviewed translations"
+msgstr "Tarkistamattomat käännökset"
+
+msgid "Revert to original translation"
+msgstr "Palauta alkuperäinen käännös"
+
+msgid "Are you sure you want to completely undo your translation ?"
+msgstr "Oletko varma, että haluat kumota käännöksen kokonaan ?"
+
+msgid "Action"
+msgstr "Toiminta"
+
+msgid "Original Title"
+msgstr "Alkuperäinen otsikko"
+
+msgid "All translations have been approved"
+msgstr "Kaikki käännökset on hyväksytty"
+
+msgid "Type some text to filter the list of unreviewed translations..."
+msgstr "Kirjoita tekstiä suodattaaksesi tarkistamattomien käännösten luettelon..."
+
+msgid "Are you sure you don't need a translation for this document ?"
+msgstr "Oletko varma, ettet tarvitse käännöstä tähän asiakirjaan ?"
+
+msgid "No translation needed"
+msgstr "Käännöstä ei tarvita"
+
+msgid "The original content of this document has changed. You must update the translation before you can approve it."
+msgstr "Tämän asiakirjan alkuperäinen sisältö on muuttunut. Sinun on päivitettävä käännös ennen kuin voit hyväksyä sen."
+
+# Phame
+msgid "Phame"
+msgstr "Phame"
+
+msgid "Blog posts"
+msgstr "Blogikirjoitukset"
+
+msgid "Read more..."
+msgstr "Lue lisää..."
+
+# Projects & Users
+msgid "Project"
+msgstr "Projekti"
+
+msgid "User"
+msgstr "Käyttäjä"
+
+msgid "Disallow"
+msgstr "Estä"
+
+msgid "Select"
+msgstr "Valitse"
+
+msgid "Unselect"
+msgstr "Poista valinta"
+
+msgid "Show all projects"
+msgstr "Näytä kaikki projektit"
+
+msgid "Show selected projects"
+msgstr "Näytä valitut projektit"
+
+msgid "Disallow all projects"
+msgstr "Poista kaikki projektit käytöstä"
+
+msgid "Unselect all projects"
+msgstr "Poista kaikkien projektien valinta"
+
+msgid "Select all projects"
+msgstr "Valitse kaikki projektit"
+
+msgid "Unselect all users"
+msgstr "Poista kaikkien käyttäjien valinta"
+
+msgid "Select all users"
+msgstr "Valitse kaikki käyttäjät"
+
+msgid "Show all users"
+msgstr "Näytä kaikki käyttäjät"
+
+msgid "Show selected users"
+msgstr "Näytä valitut käyttäjät"
+
+msgid "Set color"
+msgstr "Aseta väri"
+
+msgid "Set project tag color"
+msgstr "Aseta projektitunnisteen väri"
+
+msgid "Set color for all shown project tags"
+msgstr "Aseta väri kaikille näytettäville projektitunnisteille"
+
+# File objects
+msgid "Type"
+msgstr "Tyyppi"
+
+msgid "Size"
+msgstr "Koko"
+
+msgid "Number of references"
+msgstr "Viitteiden määrä"
+
+msgid "File name"
+msgstr "Tiedoston nimi"
+
+msgid "File object"
+msgstr "Tiedoston kohde"
+
+msgid "Type some text to filter the list of file objects..."
+msgstr "Kirjoita tekstiä suodattaaksesi tiedostokohteiden luetteloa..."
+
+msgid "File @@FILEID@@ is referenced in:"
+msgstr "Tiedostoon @@FILEID@@ viitataan:"
+
+msgid "File references"
+msgstr "Tiedostoviittaukset"
+
+# Config
+msgid "Phabricator"
+msgstr "Phabricator"
+
+msgid "UI Controls"
+msgstr "Käyttöliittymän ohjaimet"
+
+msgid "General"
+msgstr "Yleistä"
+
+msgid "Enter the URL of your Phabricator server:"
+msgstr "Kirjoita Phabricator-palvelimen URL-osoite:"
+
+msgid "Phabricator URL"
+msgstr "Phabricatorin URL-osoite"
+
+msgid "Enter the Conduit API Token for your Phabricator account:"
+msgstr "Syötä Phabricator-tilisi Conduit API Token:"
+
+msgid "Conduit API Token"
+msgstr "Conduit API Token"
+
+msgid "Choose the synchronization method for Maniphest tasks:"
+msgstr "Valitse Maniphest-tehtävien synkronointimenetelmä:"
+
+msgid "Synchronize Maniphest tasks for"
+msgstr "Synkronoi Maniphest-tehtävät"
+
+msgid "Selected users only"
+msgstr "Vain valitut käyttäjät"
+
+msgid "Choose the default state for new or modified Maniphest tasks:"
+msgstr "Valitse uusien tai muutettujen Maniphest-tehtävien oletustila:"
+
+msgid "Mark new/modified Maniphest tasks as"
+msgstr "Merkitse uudet/muokatut Maniphest-tehtävät seuraavasti"
+
+msgid "Delete closed Maniphest tasks from Phabrico older than:"
+msgstr "Poista Phabricon suljetut Maniphest-tehtävät, jotka ovat vanhempia kuin:"
+
+msgid "Maximum lifetime closed Maniphest tasks"
+msgstr "Suljettujen Maniphest-tehtävien enimmäiselinaika"
+
+msgid "1 day"
+msgstr "1 päivä"
+
+msgid "1 week"
+msgstr "1 viikko"
+
+msgid "2 weeks"
+msgstr "2 viikkoa"
+
+msgid "1 month"
+msgstr "1 kuukausi"
+
+msgid "3 months"
+msgstr "3 kuukautta"
+
+msgid "6 months"
+msgstr "6 kuukautta"
+
+msgid "1 year"
+msgstr "1 vuosi"
+
+msgid "10 years"
+msgstr "10 vuotta"
+
+msgid "Visible Maniphest states"
+msgstr "Näkyvät tilat"
+
+msgid "Show only those tasks assigned to me that have one of the following states:"
+msgstr "Näytä vain ne minulle osoitetut tehtävät, joilla on jokin seuraavista tiloista:"
+
+msgid "Choose the synchronization method for Phriction documents:"
+msgstr "Valitse synkronointimenetelmä Phriction-asiakirjoille:"
+
+msgid "Synchronize Phriction documents for"
+msgstr "Synkronoi Phriction-asiakirjat"
+
+msgid "All projects"
+msgstr "Kaikki projektit"
+
+msgid "Selected projects only"
+msgstr "Vain valitut projektit"
+
+msgid "Selected projects only including document tree"
+msgstr "Vain valitut projektit, mukaan lukien asiakirjapuu"
+
+msgid "Selected projects combined"
+msgstr "Valitut projektit yhdistettynä"
+
+msgid "Selected projects combined including document tree"
+msgstr "Valitut projektit yhdistettynä, mukaan lukien asiakirjapuu"
+
+msgid "Choose the default state for new or modified Phriction documents:"
+msgstr "Valitse oletustila uusille tai muutetuille Phriction-asiakirjoille:"
+
+msgid "Mark new/modified Phriction documents as"
+msgstr "Merkitse uudet/muokatut Phriction-asiakirjat seuraavasti"
+
+msgid "Add information about the Phriction document in the action menu on the right"
+msgstr "Lisää tietoja Phriction-asiakirjasta oikealla olevassa toimintovalikossa."
+
+msgid "Show Phriction metadata"
+msgstr "Näytä Phriction-metatiedot"
+
+msgid "Download project tags and subcribers for all Phriction documents"
+msgstr "Lataa kaikkien Phriction-asiakirjojen projektitunnisteet ja alatunnisteet."
+
+msgid "Force download all Phriction metadata"
+msgstr "Pakota lataamaan kaikki Phriction-metatiedot"
+
+msgid "Frozen: local modifications will not be uploaded during synchronization"
+msgstr "Jäädytetty: paikallisia muutoksia ei ladata synkronoinnin aikana"
+
+msgid "Unfrozen: local modifications will be uploaded during synchronization"
+msgstr "Unfrozen: paikalliset muutokset ladataan synkronoinnin aikana."
+
+msgid "Add Copy button:"
+msgstr "Lisää kopio-painike:"
+
+msgid "Add Copy-to-clipboard button to code blocks:"
+msgstr "Lisää Copy-to-clipboard-painike koodilohkoihin:"
+
+msgid "Use dynamic coloring for project tags:"
+msgstr "Käytä dynaamista väritystä projektin tunnisteille:"
+
+msgid "Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:"
+msgstr "Salli HUOMAUTUS-, VAROITUS- tai TÄRKEÄ-ilmoituslohkon otsikon kääntäminen:"
+
+msgid "Translate notification block titles:"
+msgstr "Käännä ilmoituslohkojen otsikot:"
+
+msgid "Generate a separate color for each project tag shown:"
+msgstr "Luo erillinen väri jokaiselle näytettävälle projektitunnisteelle:"
+
+msgid "Confidential Table Headers"
+msgstr "Luottamukselliset taulukkootsikot"
+
+msgid "Confidential Table Header"
+msgstr "Luottamuksellinen taulukkootsikko"
+
+msgid "Enter the text of table row/column headers which should only be visible when you move the mouse over it:"
+msgstr "Syötä taulukon rivin/sarakkeen otsikoiden teksti, jonka pitäisi näkyä vain, kun siirrät hiiren sen päälle:"
+
+msgid "Add Confidential Table Header"
+msgstr "Lisää luottamuksellinen taulukkootsikko"
+
+msgid "Auto log on"
+msgstr "Automaattinen kirjautuminen"
+
+msgid "Yes (Windows authentication)"
+msgstr "Kyllä (Windows-todennus)"
+
+msgid "Allow to log on automatically but disable synchronization and configuration"
+msgstr "Salli automaattinen kirjautuminen, mutta poista synkronointi ja konfigurointi käytöstä"
+
+msgid "Remove"
+msgstr "Poista"
+
+msgid "WARNING: this will create a security risk by storing the encryption key in the Phabrico database"
+msgstr "VAROITUS: tämä aiheuttaa turvallisuusriskin, koska salausavain tallennetaan Phabrico-tietokantaan."
+
+msgid "Maximum Duration of Inactivity"
+msgstr "Inaktiivisuuden enimmäiskesto"
+
+msgid "Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)"
+msgstr "Jokainen istunto on määritetty kirjautumaan automaattisesti ulos tietyn määrän minuuttien jälkeen (0 tai pienempi = ei automaattista uloskirjautumista, 1440 on enimmäisarvo)."
+
+msgid "Theme"
+msgstr "Teema"
+
+msgid "Choose the color theme you want to use:"
+msgstr "Valitse haluamasi väriteema:"
+
+msgid "Light"
+msgstr "Vaalea"
+
+msgid "Dark"
+msgstr "Tumma"
+
+msgid "Darken light images"
+msgstr "Tummentaa vaaleat kuvat"
+
+msgid "Moderate"
+msgstr "Kohtalainen"
+
+msgid "Extreme"
+msgstr "Äärimmäinen"
+
+msgid "Select a user role tag..."
+msgstr "Valitse käyttäjäroolin tunniste..."
+
+msgid "User account"
+msgstr "Käyttäjätili"
+
+msgid "Tag"
+msgstr "Tag"
+
+msgid "Add user"
+msgstr "Lisää käyttäjä"
+
+msgid "Remove user"
+msgstr "Poista käyttäjä"
+
+msgid "Are you sure you want to remove @@USER@@ ?"
+msgstr "Haluatko varmasti poistaa @@USER@@ ?"
+
+msgid "Phabrico user accounts"
+msgstr "Phabrico käyttäjätilit"
+
+msgid "Secondary User Accounts:"
+msgstr "Toissijaiset käyttäjätilit:"
+
+msgid "Getting started with Phabrico"
+msgstr "Phabricon käytön aloittaminen"
+
+msgid "In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator."
+msgstr "Tässä määritysnäytössä voit muuttaa Phabricon ulkoasua ja määrittää, mitkä tiedot synkronoidaan Phabricatorin kanssa."
+
+msgid "Which Phabricator accounts should be monitored ?"
+msgstr "Mitä Phabricatorin tilejä pitäisi seurata ?"
+
+msgid "In this Users screen, you can select for which Phabricator users you want to have your data always available."
+msgstr "Tässä Käyttäjät-näytössä voit valita, minkä Phabricator-käyttäjien osalta haluat, että tietosi ovat aina saatavilla."
+
+msgid "Currently, only your Phabricator account is selected."
+msgstr "Tällä hetkellä vain sinun Phabricator-tilisi on valittu."
+
+msgid "Which Phabricator projects should be monitored ?"
+msgstr "Mitä Phabricator-projekteja pitäisi valvoa ?"
+
+msgid "In this Projects screen, you can select for which Phabricator projects you want to have your data always available."
+msgstr "Tässä Projektit-näytössä voit valita, minkä Phabricator-projektien osalta haluat, että tietosi ovat aina saatavilla."
+
+msgid "You can here also change the colors of the project tags."
+msgstr "Voit tässä myös muuttaa projektitunnisteiden värejä."
+
+msgid "In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...)."
+msgstr "Nykyisessä kokoonpanossa Phabrico synkronoi kaikki Phriction-asiakirjat ja synkronoi vain ne avoimet Maniphest-tehtävät, joissa olit mukana (esim. osoitettu, tilattu, ...)."
+
+msgid "Click on the Synchronize button to download all requested data from Phabricator"
+msgstr "Lataa kaikki pyydetyt tiedot Phabricatorista napsauttamalla Synkronoi-painiketta."
+
+# Offline changes
+msgid "Offline changes for $$ITEM$$"
+msgstr "$$ITEM$$$:n paikalliset muutokset"
+
+msgid "Overview offline changes"
+msgstr "Yleiskatsaus paikallisiin muutoksiin"
+
+msgid "Dismiss local version"
+msgstr "Hylkää paikallinen versio"
+
+msgid "Save local version"
+msgstr "Tallenna paikallinen versio"
+
+msgid "Phabricator version"
+msgstr "Phabricator-versio"
+
+msgid "Local version"
+msgstr "Paikallinen versio"
+
+msgid "Are you sure you want to dismiss all your local changes for this document ?"
+msgstr "Haluatko varmasti hylätä kaikki tämän asiakirjan paikalliset muutokset ?"
+
+msgid "Modification"
+msgstr "Muutos"
+
+msgid "Content"
+msgstr "Sisältö"
+
+msgid "Freeze"
+msgstr "Pysäytä"
+
+msgid "Unfreeze"
+msgstr "Vapauttaa"
+
+msgid "No offline changes found"
+msgstr "Ei offline-muutoksia löydetty"
+
+msgid "Are you sure you want to undo this local change ?"
+msgstr "Haluatko varmasti peruuttaa tämän paikallisen muutoksen ?"
+
+msgid "(New)"
+msgstr "(Uusi)"
+
+msgid "(Metadata modified)"
+msgstr "(Metatietoja muutettu)"
+
+msgid "(Priority modified)"
+msgstr "(Prioriteettia muutettu)"
+
+msgid "(Owner modified)"
+msgstr "(Omistaja muutettu)"
+
+msgid "(Status modified)"
+msgstr "(Tila muutettu)"
+
+msgid "Project @@PROJECT@@ tagged"
+msgstr "Hanke @@PROJECT@@ merkitty"
+
+msgid "Subscriber @@SUBSCRIBER@@ added"
+msgstr "Tilaaja @@SUBSCRIBER@@ lisätty."
+
+msgid "Append left line after right line"
+msgstr "Lisätään vasen rivi oikean rivin jälkeen"
+
+msgid "Append left block after right block"
+msgstr "Lisätään vasen lohko oikean lohkon jälkeen"
+
+msgid "Insert left line before right line"
+msgstr "Lisää vasen rivi ennen oikeaa riviä"
+
+msgid "Insert left block before right block"
+msgstr "Lisää vasen lohko ennen oikeaa lohkoa"
+
+msgid "Replace right line with left line"
+msgstr "Korvaa oikea rivi vasemmalla rivillä"
+
+msgid "Replace right block with left block"
+msgstr "Korvaa oikea lohko vasemmalla lohkolla"
+
+msgid "The Phabricator server contains a newer version"
+msgstr "Phabricator-palvelin sisältää uudemman version"
+
+msgid "Frozen"
+msgstr "Jäädytetty"
+
+msgid "Modified"
+msgstr "Muutettu"
+
+msgid "Rename path"
+msgstr "Muokkaa URL-osoitetta"
+
+msgid "New path:"
+msgstr "Uusi polku:"
+
+msgid "Current path:"
+msgstr "Nykyinen polku:"
+
+msgid "Change path"
+msgstr "Vaihda polku"
+
+msgid "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+msgstr "Tämän asiakirjan polku on yli 100 merkkiä pitkä. Tämän asiakirjan voi edelleen ladata Phabricatoriin, mutta äskettäin luotuja asiakirjoja ei ehkä voi ladata."
+
+msgid "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+msgstr "Tämän asiakirjan polku on yli 115 merkkiä pitkä. Tätä asiakirjaa ei voi ladata Phabricatoriin."
+
+msgid "An internal error occurred"
+msgstr "Tapahtui sisäinen virhe"
+
+msgid "A document already exists with this slug path"
+msgstr "Asiakirja on jo olemassa tällä nimipolulla"
+
+# Remarkup editor
+msgid "Bold"
+msgstr "Lihavoitu"
+
+msgid "Bold text"
+msgstr "Lihavoitu teksti"
+
+msgid "Italic"
+msgstr "Kursivoitu"
+
+msgid "Italic text"
+msgstr "Kursivoitu teksti"
+
+msgid "Monospaced"
+msgstr "Monospaced"
+
+msgid "Monospaced text"
+msgstr "Yksirivinen teksti"
+
+msgid "Bulleted List"
+msgstr "Luettelo"
+
+msgid "Numbered List"
+msgstr "Numeroitu luettelo"
+
+msgid "Code Block"
+msgstr "Koodilohko"
+
+msgid "Quote"
+msgstr "Lainaus"
+
+msgid "Table"
+msgstr "Taulukko"
+
+msgid "Diagram"
+msgstr "Kaavio"
+
+msgid "Unlock edit and view windows"
+msgstr "Muokkaus- ja katseluikkunoiden lukituksen avaaminen"
+
+msgid "Help"
+msgstr "Ohje"
+
+msgid "Set Sail for Adventure"
+msgstr "Purjehdi seikkailuun"
+
+msgid "Add Action..."
+msgstr "Lisää toiminto..."
+
+msgid "CodeBlock.Copy"
+msgstr "Kopioi"
+
+msgid "Notification.IMPORTANT"
+msgstr "TÄRKEÄÄ"
+
+msgid "Notification.NOTE"
+msgstr "HUOMAUTUS"
+
+msgid "Notification.WARNING"
+msgstr "VAROITUS"
+
+msgid "FileReference.Download"
+msgstr "Lataa"
+
+# Browser not supported
+msgid "Browser not supported"
+msgstr "Selain ei tuettu"
+
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access @@CUSTOM-APPLICATION-NAME@@"
+msgstr "Käytä Mozilla Firefoxia, Operaa, Google Chromea tai Microsoft Edgeä käyttääksesi @@CUSTOM-APPLICATION-NAME@@"
+
+# URL Not Found
+msgid "404"
+msgstr "404"
+
+msgid "Url not found:"
+msgstr "Url ei löytynyt:"
+
+msgid "Show content in Phabricator instead"
+msgstr "Näytä sisältö Phabricatorissa sen sijaan"
+
+# Access denied
+msgid "ACCESS DENIED"
+msgstr "PÄÄSY KIELLETTY"
+
+msgid "Details:"
+msgstr "Yksityiskohdat:"
+
+msgid "URL:"
+msgstr "URL:"
+
+msgid "Comment:"
+msgstr "Kommentti:"
+
+msgid "You don't have sufficient rights to configure Phabrico"
+msgstr "Phabrico: Sinulla ei ole riittäviä oikeuksia Phabricon konfigurointiin."
+
+msgid "You don't have sufficient rights to synchronize Phabrico with Phabricator"
+msgstr "Sinulla ei ole riittäviä oikeuksia Phabricon synkronointiin Phabricatorin kanssa"
+
+msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
+msgstr "Tätä Phriction-asiakirjaa tai Maniphest-tehtävää ei ladattu Phabricator-palvelimelta, koska sen on tilannut yksi tai useampi kielletty projekti tai käyttäjä."
+
+# Invalid configuration
+msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
+msgstr "Vahvista @@APP-CONFIG-FILENAME@@ sisältö."
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "Vahvista @@IISMODULE-CONFIG-FILENAME@@ sisältö."
+
+msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
+msgstr "Tarkista, onko @@APP-CONFIG-FILENAME@@ olemassa."
+
+msgid "Error:"
+msgstr "Virhe:"
+
+msgid "CONFIGURATION INVALID OR MISSING"
+msgstr "KONFIGURAATIO VIRHEELLINEN TAI PUUTTUU"

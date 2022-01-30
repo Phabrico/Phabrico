@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using static Phabrico.Phabricator.Data.Account;
 
@@ -22,12 +23,11 @@ namespace Phabrico.Controllers
         /// This method is fired when the Configuration screen in Phabrico is opened
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/configure", ServerCache = false)]
-        public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetLoadParameters(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound("/configure");
 
@@ -114,7 +114,7 @@ namespace Phabrico.Controllers
                         foreach (Phabricator.Data.Account secondaryAccount in accountStorage.Get(database, Language.NotApplicable).Where(account => account.Parameters.AccountType == AccountTypes.SecondaryUser))
                         {
                             secondaryUserAccounts += ", ['" + secondaryAccount.UserName.Replace("\\", "\\\\'")
-                                                                                      .Replace("'", "\\'") 
+                                                                                       .Replace("'", "\\'") 
                                                    + "', '" + (secondaryAccount.Parameters.DefaultUserRoleTag ?? "") + "']";
                         }
                         secondaryUserAccounts = secondaryUserAccounts.TrimStart(',', ' ');
@@ -215,10 +215,13 @@ namespace Phabrico.Controllers
                                                                                                                                         | BindingFlags.DeclaredOnly
                                                                                                                                     );
                                         Controller pluginController = loadConfigurationParametersControllerType.GetConstructor(Type.EmptyTypes).Invoke(null) as Controller;
-                                        pluginController.browser = browser;
-                                        pluginController.EncryptionKey = EncryptionKey;
-                                        pluginController.TokenId = TokenId;
-                                        loadConfigurationParameters.Invoke(pluginController, new object[] { plugin, htmlPluginNavigatorTabContent });
+                                        if (pluginController != null)
+                                        {
+                                            pluginController.browser = browser;
+                                            pluginController.EncryptionKey = EncryptionKey;
+                                            pluginController.TokenId = TokenId;
+                                            loadConfigurationParameters.Invoke(pluginController, new object[] { plugin, htmlPluginNavigatorTabContent });
+                                        }
                                     }
                                     catch (System.Exception loadConfigurationParametersException)
                                     {
@@ -239,10 +242,9 @@ namespace Phabrico.Controllers
         /// This will happen when the input field loses focus
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/configure")]
-        public Http.Response.HttpMessage HttpPostSave(Http.Server httpServer, Browser browser, string[] parameters)
+        public Http.Response.HttpMessage HttpPostSave(Http.Server httpServer, string[] parameters)
         {
             if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
             if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound("/configure");
@@ -326,7 +328,7 @@ namespace Phabrico.Controllers
                         }
 
 
-                        existingAccount.Parameters.RemovalPeriodClosedManiphests = (RemovalPeriod)Enum.Parse(typeof(RemovalPeriod), (string)browser.Session.FormVariables[browser.Request.RawUrl]["removalPeriodClosedManiphests"]);
+                        existingAccount.Parameters.RemovalPeriodClosedManiphests = (RemovalPeriod)Enum.Parse(typeof(RemovalPeriod), browser.Session.FormVariables[browser.Request.RawUrl]["removalPeriodClosedManiphests"]);
 
                         try
                         {
@@ -344,36 +346,51 @@ namespace Phabrico.Controllers
                             existingAccount.Parameters.AutoLogOutAfterMinutesOfInactivity = 5;
                         }
 
-                        existingAccount.Parameters.DefaultStateModifiedManiphest = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables[browser.Request.RawUrl]["defaultStateModifiedManiphest"]);
-                        existingAccount.Parameters.DefaultStateModifiedPhriction = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), (string)browser.Session.FormVariables[browser.Request.RawUrl]["defaultStateModifiedPhriction"]);
+                        existingAccount.Parameters.DefaultStateModifiedManiphest = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), browser.Session.FormVariables[browser.Request.RawUrl]["defaultStateModifiedManiphest"]);
+                        existingAccount.Parameters.DefaultStateModifiedPhriction = (DefaultStateModification)Enum.Parse(typeof(DefaultStateModification), browser.Session.FormVariables[browser.Request.RawUrl]["defaultStateModifiedPhriction"]);
 
-                        existingAccount.Parameters.ShowPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables[browser.Request.RawUrl]["showPhrictionMetadata"]);
-                        existingAccount.Parameters.ForceDownloadAllPhrictionMetadata = bool.Parse((string)browser.Session.FormVariables[browser.Request.RawUrl]["forceDownloadAllPhrictionMetadata"]);
+                        existingAccount.Parameters.ShowPhrictionMetadata = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["showPhrictionMetadata"]);
+                        existingAccount.Parameters.ForceDownloadAllPhrictionMetadata = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["forceDownloadAllPhrictionMetadata"]);
 
                         existingAccount.Theme = browser.Session.FormVariables[browser.Request.RawUrl]["theme"];
 
                         string darkenImages = "Disabled";
                         if (browser.Session.FormVariables[browser.Request.RawUrl]?.ContainsKey("darkenImages") == true)
                         {
-                            darkenImages = (string)browser.Session.FormVariables[browser.Request.RawUrl]["darkenImages"];
+                            darkenImages = browser.Session.FormVariables[browser.Request.RawUrl]["darkenImages"];
                         }
 
                         existingAccount.Parameters.DarkenBrightImages = (DarkenImageStyle)Enum.Parse(typeof(DarkenImageStyle), darkenImages);
 
-                        existingAccount.Parameters.ClipboardCopyForCodeBlock = bool.Parse((string)browser.Session.FormVariables[browser.Request.RawUrl]["clipboardCopyForCodeBlock"]);
-                        existingAccount.Parameters.UITranslation = bool.Parse((string)browser.Session.FormVariables[browser.Request.RawUrl]["uiTranslation"]);
+                        existingAccount.Parameters.ClipboardCopyForCodeBlock = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["clipboardCopyForCodeBlock"]);
+                        existingAccount.Parameters.UITranslation = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["uiTranslation"]);
 
-                        string autoLogonValue = (string)browser.Session.FormVariables[browser.Request.RawUrl]["autoLogon"];
+                        string autoLogonValue = browser.Session.FormVariables[browser.Request.RawUrl]["autoLogon"];
                         switch (autoLogonValue)
                         {
                             case "Windows":
-                                database.SetConfigurationParameter("EncryptionKey", null);
+                                // generate some random bytes
+                                byte[] dpapiEncryptedRandomBytes;
+                                byte[] randomEncryptionKeyBytes = new byte[256];
+                                Random randomizer = new Random(Environment.TickCount);
+                                randomizer.NextBytes(randomEncryptionKeyBytes);
+
+                                // encrypt random bytes
+                                dpapiEncryptedRandomBytes = Encryption.EncryptDPAPI(randomEncryptionKeyBytes);
+
+                                // generate strings from random bytes and encrypted random bytes
+                                string dpapiEncryptedRandomByteString = string.Join("", dpapiEncryptedRandomBytes.Select(c => c.ToString("X2")));
+                                string unencryptedRandomByteString = string.Join("", randomEncryptionKeyBytes.Select(c => c.ToString("X2")));
+
+                                // save encrypted random byte string
+                                database.SetConfigurationParameter("EncryptionKey", dpapiEncryptedRandomByteString);
                                 database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
 
-                                string newPassword = Encryption.GetDPAPIKey();
-                                UInt64[] newPublicDpapiXorValue = Encryption.GetXorValue(EncryptionKey, newPassword);
-                                UInt64[] newPrivateDpapiXorValue = Encryption.GetXorValue(database.PrivateEncryptionKey, newPassword);
+                                // calculate DPAPI XOR values for random byte string and encryption keys
+                                UInt64[] newPublicDpapiXorValue = Encryption.GetXorValue(EncryptionKey, unencryptedRandomByteString);
+                                UInt64[] newPrivateDpapiXorValue = Encryption.GetXorValue(database.PrivateEncryptionKey, unencryptedRandomByteString);
 
+                                // save DPAPI XOR values
                                 accountStorage.UpdateDpapiXorCipher(database, newPublicDpapiXorValue, newPrivateDpapiXorValue);
                                 break;
 
@@ -417,10 +434,9 @@ namespace Phabrico.Controllers
         /// This method is fired when one or more confidential table headers are modified in the Configuration screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/configure/table-headers")]
-        public void HttpPostSaveConfidentialTableHeaders(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostSaveConfidentialTableHeaders(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound("/configure/table-headers");
 
@@ -442,7 +458,8 @@ namespace Phabrico.Controllers
                     string jsonArrayConfidentialTableHeaders = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
                     JArray confidentialTableHeaders = JsonConvert.DeserializeObject(jsonArrayConfidentialTableHeaders) as JArray;
 
-                    existingAccount.Parameters.ColumnHeadersToHide = confidentialTableHeaders.Select(jtoken => jtoken.ToString()).ToArray();
+                    existingAccount.Parameters.ColumnHeadersToHide = confidentialTableHeaders?.Select(jtoken => jtoken.ToString())
+                                                                                              .ToArray();
                     accountStorage.Set(database, existingAccount);
                 }
             }
@@ -452,10 +469,9 @@ namespace Phabrico.Controllers
         /// This method is fired when one or more confidential table headers are modified in the Configuration screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/configure/table-useraccounts")]
-        public void HttpPostSaveUserAccounts(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostSaveUserAccounts(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideConfig) throw new Phabrico.Exception.HttpNotFound("/configure/table-useraccounts");
 
@@ -480,12 +496,12 @@ namespace Phabrico.Controllers
 
                     accountsToRemove[existingAccount.UserName] = false;  // do not remove myself
 
-                    foreach (var user in userAccounts.OfType<JObject>()
-                                                     .Select(userAccount => new
-                                                     {
-                                                         Name = userAccount["user"].Value<string>(),
-                                                         Role = userAccount["role"].Value<string>()
-                                                     }))
+                    foreach (var user in userAccounts?.OfType<JObject>()
+                                                      .Select(userAccount => new
+                                                      {
+                                                          Name = userAccount["user"].Value<string>(),
+                                                          Role = userAccount["role"].Value<string>()
+                                                      }))
                     {
                         if (accountsToRemove.ContainsKey(user.Name) == false)  // is user not known in database ?
                         {

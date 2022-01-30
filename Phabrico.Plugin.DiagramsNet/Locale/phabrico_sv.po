@@ -1,0 +1,618 @@
+# Swedish translations
+
+# General
+msgid "Diagram"
+msgstr "Diagram"
+
+msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
+msgstr "Redigerare för flödesscheman, processdiagram, organisationsdiagram, UML-, ER- och nätverksdiagram."
+
+# Help shortcuts
+msgid "Styles"
+msgstr "Stilar"
+
+msgid "Document"
+msgstr "Dokument"
+
+msgid "Sidebar / Connect"
+msgstr "Sidebar / Connect"
+
+msgid "View"
+msgstr "Visa"
+
+msgid "Canvas"
+msgstr "Canvas"
+
+msgid "Cursor / Page keys"
+msgstr "Cursor / sidnycklar"
+
+msgid "Tools"
+msgstr "Verktyg"
+
+msgid "Selection"
+msgstr "Urval"
+
+msgid "Labels"
+msgstr "Etiketter"
+
+msgid "(Shift+)Tab"
+msgstr "(Shift+)Tab"
+
+msgid "Alt+(Shift / Ctrl)+Click on a sidebar item"
+msgstr "Alt+(Shift / Ctrl)+Klicka på ett objekt i sidofältet"
+
+msgid "Alt+(Shift+)Drag from sidebar"
+msgstr "Alt+(Shift+)Dra från sidofältet"
+
+msgid "Alt+(Shift+)Tab"
+msgstr "Alt+(Shift+)Tab"
+
+msgid "Alt+Click"
+msgstr "Alt+Klicka"
+
+msgid "Alt+Connect"
+msgstr "Alt+Koppla ihop"
+
+msgid "Alt+Cursor"
+msgstr "Alt+Cursor"
+
+msgid "Alt+Mouse wheel"
+msgstr "Alt+Mushjul"
+
+msgid "Alt+Shift+A"
+msgstr "Alt+Shift+A"
+
+msgid "Alt+Shift+C/T"
+msgstr "Alt+Shift+C/T"
+
+msgid "Alt+Shift+Cursor"
+msgstr "Alt+Shift+Cursor"
+
+msgid "Alt+Drag"
+msgstr "Alt+Släpp"
+
+msgid "Alt+Shift+P"
+msgstr "Alt+Shift+P"
+
+msgid "Alt+Shift+V"
+msgstr "Alt+Shift+V"
+
+msgid "Alt+Shift+X"
+msgstr "Alt+Shift+X"
+
+msgid "Backspace or Delete"
+msgstr "Backspace eller Radera"
+
+msgid "Click on a sidebar item"
+msgstr "Klicka på ett objekt i sidofältet"
+
+msgid "Ctrl - (Numpad)"
+msgstr "Ctrl - (Numpad)"
+
+msgid "Ctrl / Meta+Resize"
+msgstr "Ctrl / Meta+Restorlek"
+
+msgid "Ctrl / Shift+Click"
+msgstr "Ctrl / Shift+Klicka"
+
+msgid "Ctrl / Shift+Delete"
+msgstr "Ctrl / Shift+Ta bort"
+
+msgid "Ctrl / Shift+Drag"
+msgstr "Ctrl / Shift+Släpp"
+
+msgid "Ctrl + (Numpad)"
+msgstr "Ctrl + (Numpad)"
+
+msgid "Ctrl+(Shift+)A"
+msgstr "Ctrl+(Shift+)A"
+
+msgid "Ctrl+. / ,"
+msgstr "Ctrl+. / ,"
+
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+msgid "Ctrl+B / I"
+msgstr "Ctrl+B / I"
+
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+msgid "Ctrl+Click"
+msgstr "Ctrl+Klicka"
+
+msgid "Ctrl+Cursor"
+msgstr "Ctrl+Cursor"
+
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+msgid "Ctrl+End"
+msgstr "Ctrl+End"
+
+msgid "Ctrl+Enter / D"
+msgstr "Ctrl+Enter / D"
+
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+msgid "Ctrl+Home"
+msgstr "Ctrl+Hem"
+
+msgid "Ctrl+J"
+msgstr "Ctrl+J"
+
+msgid "Ctrl+K"
+msgstr "Ctrl+K"
+
+msgid "Ctrl+L / Alt+Shift+L"
+msgstr "Ctrl+L / Alt+Shift+L"
+
+msgid "Ctrl+M"
+msgstr "Ctrl+M"
+
+msgid "Ctrl+P"
+msgstr "Ctrl+P"
+
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+msgid "Ctrl+Shift+B"
+msgstr "Ctrl+Shift+B"
+
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+msgid "Ctrl+Shift+Connect"
+msgstr "Ctrl+Shift+Koppla ihop"
+
+msgid "Ctrl+Shift+Cursor"
+msgstr "Ctrl+Shift+Cursor"
+
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Ctrl+Shift+Släpp"
+
+msgid "Ctrl+Shift+End"
+msgstr "Ctrl+Shift+End"
+
+msgid "Ctrl+Shift+F"
+msgstr "Ctrl+Shift+F"
+
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+msgid "Ctrl+Shift+H"
+msgstr "Ctrl+Shift+H"
+
+msgid "Ctrl+Shift+Home"
+msgstr "Ctrl+Shift+Home"
+
+msgid "Ctrl+Shift+I / E"
+msgstr "Ctrl+Shift+I / E"
+
+msgid "Ctrl+Shift+J"
+msgstr "Ctrl+Shift+J"
+
+msgid "Ctrl+Shift+K"
+msgstr "Ctrl+Shift+K"
+
+msgid "Ctrl+Shift+L"
+msgstr "Ctrl+Shift+L"
+
+msgid "Ctrl+Shift+M"
+msgstr "Ctrl+Shift+M"
+
+msgid "Ctrl+Shift+Mouse wheel"
+msgstr "Ctrl+Shift+Mushjul"
+
+msgid "Ctrl+Shift+O"
+msgstr "Ctrl+Shift+O"
+
+msgid "Ctrl+Shift+P"
+msgstr "Ctrl+Shift+P"
+
+msgid "Ctrl+Shift+Pg Down"
+msgstr "Ctrl+Shift+Pg nedåt"
+
+msgid "Ctrl+Shift+Pg Up"
+msgstr "Ctrl+Shift+Pg Upp"
+
+msgid "Ctrl+Shift+R"
+msgstr "Ctrl+Shift+R"
+
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+msgid "Ctrl+Shift+U"
+msgstr "Ctrl+Shift+U"
+
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+msgid "Ctrl+Shift+X"
+msgstr "Ctrl+Shift+X"
+
+msgid "Ctrl+Shift+Y"
+msgstr "Ctrl+Shift+Y"
+
+msgid "Ctrl+U"
+msgstr "Ctrl+U"
+
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+msgid "Cursor"
+msgstr "Markör"
+
+msgid "Double click"
+msgstr "Dubbelklicka"
+
+msgid "End"
+msgstr "Slut"
+
+msgid "Enter"
+msgstr "Enter"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "F1"
+msgstr "F1"
+
+msgid "F2 / Enter"
+msgstr "F2 / Enter"
+
+msgid "F2 / Tab / Esc"
+msgstr "F2 / Tab / Esc"
+
+msgid "Hold Alt"
+msgstr "Håll kvar Alt"
+
+msgid "Mouse wheel"
+msgstr "Mushjul"
+
+msgid "Rightclick"
+msgstr "Högerklick"
+
+msgid "Shift+Click on a sidebar item"
+msgstr "Shift+Klicka på ett objekt i sidofältet"
+
+msgid "Shift+Connect"
+msgstr "Skift+Koppla ihop"
+
+msgid "Shift+Cursor"
+msgstr "Skift+Cursor"
+
+msgid "Shift+Drag"
+msgstr "Skift+Släpp"
+
+msgid "Shift+Enter"
+msgstr "Skift+Engång"
+
+msgid "Shift+Home"
+msgstr "Skift+Hem"
+
+msgid "Shift+Mouse wheel"
+msgstr "Skift+Mushjul"
+
+msgid "Shift+Resize"
+msgstr "Shift+Resize"
+
+msgid "Space / Right mouse Drag"
+msgstr "Spalt / Höger mus drar"
+
+msgid "About"
+msgstr "Om"
+
+msgid "Toggle to Selection"
+msgstr "Växla till urval"
+
+msgid "Autosize"
+msgstr "Automatisk storlek"
+
+msgid "Bring to Front"
+msgstr "Flytta till framsidan"
+
+msgid "Cancel Action"
+msgstr "Avbryt åtgärd"
+
+msgid "Canvas Horizontal Scroll"
+msgstr "Canvas horisontell rullning"
+
+msgid "Canvas Vertical Scroll"
+msgstr "Vertikal rullning på canvas"
+
+msgid "Canvas Zoom In/Out"
+msgstr "Canvas zoomar in/ut"
+
+msgid "Centered / Group Resize"
+msgstr "Centrerad / Gruppanpassad storlek"
+
+msgid "Clear Default Style"
+msgstr "Rensa standardstilen"
+
+msgid "Clear Waypoints / Edit Tooltip"
+msgstr "Rensa vägpunkter / Redigera verktygstips"
+
+msgid "Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone)."
+msgstr "Klicka för att ansluta och klona (ctrl+klicka för att klona, shift+klicka för att ansluta). Dra för att ansluta (ctrl+drag för att klona)."
+
+msgid "Click to rotate 90° clockwise. Drag to rotate."
+msgstr "Klicka för att rotera 90° medurs. Dra för att rotera."
+
+msgid "Clone and connect"
+msgstr "Klona och ansluta"
+
+msgid "Clone cell/Disconnect edge"
+msgstr "Klona cell / Koppla bort kant"
+
+msgid "Collapse Container"
+msgstr "Kollapsa behållaren"
+
+msgid "Connect to a Fixed Point"
+msgstr "Anslut till en fast punkt"
+
+msgid "Connect to shape outline (ignore connection points)"
+msgstr "Anslut till formens kontur (ignorera anslutningspunkter)."
+
+msgid "Connection Arrows"
+msgstr "Förbindelsepilar"
+
+msgid "Connection Points"
+msgstr "Anslutningspunkter"
+
+msgid "Connects unconnected side of selected edge"
+msgstr "Ansluter den icke anslutna sidan av den valda kanten."
+
+msgid "Context Menu"
+msgstr "Kontextmeny"
+
+msgid "Copy"
+msgstr "Kopiera"
+
+msgid "Copy Size"
+msgstr "Kopiera storlek"
+
+msgid "Copy Style"
+msgstr "Kopiera stil"
+
+msgid "Create / Remove Space"
+msgstr "Skapa / Ta bort utrymme"
+
+msgid "Ctrl / Shift+Enter: New Line"
+msgstr "Ctrl / Shift+Enter: Ny rad"
+
+msgid "Ctrl / Shift+Esc: Cancel Editing"
+msgstr "Ctrl / Shift+Esc: Avbryt redigering"
+
+msgid "Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML"
+msgstr "Ctrl: Visa dialog, Alt: Origin, Shift: Ignorera XML"
+
+msgid "Ctrl+Resize for non-recursive group resize"
+msgstr "Ctrl+Resize för icke-rekursiv gruppstorlek"
+
+msgid "Ctrl+Meta+Resize for centered group resize"
+msgstr "Ctrl+Meta+Resize för centrerad gruppstorlek."
+
+msgid "Custom Zoom"
+msgstr "Anpassad zoom"
+
+msgid "Cut"
+msgstr "Klipp"
+
+msgid "Delete Selected Cells"
+msgstr "Radera valda celler"
+
+msgid "Delete Selected Cells with Connections / Labels"
+msgstr "Radera valda celler med kopplingar / etiketter."
+
+msgid "Disable Connections"
+msgstr "Inaktivera anslutningar"
+
+msgid "Disable replace, connect on drop (drop targets), Shift ignores current style"
+msgstr "Inaktivera ersättningar, anslutningar vid nedsläpp (mål för nedsläpp), Shift ignorerar aktuell stil."
+
+msgid "Duplicate"
+msgstr "Duplicera"
+
+msgid "Edit Metadata"
+msgstr "Redigera metadata"
+
+msgid "Edit Style"
+msgstr "Redigera stil"
+
+msgid "Edit Vertex Geometry"
+msgstr "Redigera Vertex-geometri"
+
+msgid "Enter Group"
+msgstr "Ange grupp"
+
+msgid "Exit Group"
+msgstr "Avsluta grupp"
+
+msgid "Expand Container"
+msgstr "Expandera behållare"
+
+msgid "Fit Page"
+msgstr "Anpassa sidan"
+
+msgid "Fit Two Pages"
+msgstr "Anpassa två sidor"
+
+msgid "Fit Window"
+msgstr "Anpassa fönstret"
+
+msgid "Group"
+msgstr "Grupp"
+
+msgid "Home"
+msgstr "Hem"
+
+msgid "Ignores handles under the mouse"
+msgstr "Ignorerar handtag under musen"
+
+msgid "Insert Ellipse"
+msgstr "Infoga ellips"
+
+msgid "Insert Rectangle"
+msgstr "Infoga rektangel"
+
+msgid "Insert Text"
+msgstr "Infoga text"
+
+msgid "Insert text or add an edge label"
+msgstr "Infoga text eller lägg till en kantmärkning"
+
+msgid "Inserts and connects the selected item (Shift ignores current style)"
+msgstr "Infogar och ansluter det markerade objektet (Shift ignorerar aktuell stil)."
+
+msgid "Lock/Unlock / Edit Link"
+msgstr "Lås/Upplåsning / Redigera länk"
+
+msgid "Maintain Proportions"
+msgstr "Behåll proportioner"
+
+msgid "Move cell (grid) or page"
+msgstr "Flytta cell (rutnät) eller sida"
+
+msgid "New Line in Formatted Labels"
+msgstr "Ny rad i formaterade etiketter"
+
+msgid "New Paragraph in Formatted Labels"
+msgstr "Nytt stycke i formaterade etiketter"
+
+msgid "Next Page"
+msgstr "Nästa sida"
+
+msgid "Pan Canvas"
+msgstr "Panorera canvas"
+
+msgid "Paste"
+msgstr "Klistra in"
+
+msgid "Paste Size"
+msgstr "Klistra in storlek"
+
+msgid "Paste Style"
+msgstr "Klistra in stil"
+
+msgid "Previous Page"
+msgstr "Föregående sida"
+
+msgid "Print"
+msgstr "Skriv ut"
+
+msgid "Redo"
+msgstr "Gör om"
+
+msgid "Refresh"
+msgstr "Uppdatera"
+
+msgid "Select intersection"
+msgstr "Välj skärningspunkt"
+
+msgid "Replaces the selected item with the clicked one"
+msgstr "Ersätter det markerade objektet med det klickade objektet."
+
+msgid "Reset View"
+msgstr "Återställer vyn"
+
+msgid "Resize cell (grid size)"
+msgstr "Ändra storlek på cell (rutstorlek)"
+
+msgid "Resize cell (pt) or select page"
+msgstr "Ändra storlek på cell (pt) eller välj sida"
+
+msgid "Save"
+msgstr "Spara"
+
+msgid "Save as"
+msgstr "Spara som"
+
+msgid "Scroll / Move cell (pt)"
+msgstr "Rulla / Flytta cell (pt)"
+
+msgid "Scroll Page"
+msgstr "Rulla sida"
+
+msgid "Select All / None"
+msgstr "Välj alla / ingen"
+
+msgid "Select Cell Below"
+msgstr "Välj cell nedan"
+
+msgid "Select Child / Parent"
+msgstr "Välj barn / förälder"
+
+msgid "Select Next / Previous"
+msgstr "Välj nästa / föregående"
+
+msgid "Select Vertices / Edges"
+msgstr "Välj hörn / kanter"
+
+msgid "Send to Back"
+msgstr "Skicka till baksidan"
+
+msgid "Set as Default Style"
+msgstr "Ställ in som standardstil"
+
+msgid "Start Editing Label of Selected Cell"
+msgstr "Börja redigera etiketten för vald cell"
+
+msgid "Stop Editing and Apply Value"
+msgstr "Stoppa redigeringen och tillämpa värdet"
+
+msgid "Superscript/Subscript on Selected Text"
+msgstr "Superscript/Subscript på markerad text"
+
+msgid "Toggle Bold/Italic on Selected Text"
+msgstr "Växla fet/talisk text på vald text."
+
+msgid "Toggle Format Panel"
+msgstr "Växla formatpanelen"
+
+msgid "Toggle grid"
+msgstr "Växla rutnätet"
+
+msgid "Toggle Layers Window"
+msgstr "Växla mellan lagerfönster"
+
+msgid "Toggle Outline Window"
+msgstr "Växla översiktsfönster"
+
+msgid "Toggle Selection State"
+msgstr "Växla urvalsstatus"
+
+msgid "Toggle Underline on Selected Text"
+msgstr "Växla understrykning på markerad text"
+
+msgid "Turn / Rotate 90° Clockwise"
+msgstr "Vänd / Rotera 90° medurs"
+
+msgid "Undo"
+msgstr "Ångra"
+
+msgid "Ungroup"
+msgstr "Ta bort gruppering"
+
+msgid "Zoom In"
+msgstr "Zooma in"
+
+msgid "Zoom Out"
+msgstr "Zooma ut"

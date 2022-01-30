@@ -79,17 +79,22 @@ namespace Phabrico.Http.Response
                                        .FirstOrDefault(name => name.StartsWith(resourceName, System.StringComparison.OrdinalIgnoreCase)); // get case-sensitive correct name
             }
 
-            Stream stream = assembly.GetManifestResourceStream(resourceName);
-
-            if (stream == null)
+            if (resourceName == null)
             {
                 throw new Exception.HttpNotFound(url);
             }
 
-            byte[] _content = new byte[stream.Length];
-            stream.Read(_content, 0, _content.Length);
+            byte[] _content;
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream == null)
+                {
+                    throw new Exception.HttpNotFound(url);
+                }
 
-            stream.Dispose();
+                _content = new byte[stream.Length];
+                stream.Read(_content, 0, _content.Length);
+            }
 
             // make data available for Phabrico
             base64EIDOStream = new Base64EIDOStream();

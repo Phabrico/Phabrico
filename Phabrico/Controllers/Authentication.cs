@@ -15,21 +15,15 @@ namespace Phabrico.Controllers
     public class Authentication : Controller
     {
         /// <summary>
-        /// variable which is used to initialize some stuff after the first user is connected to Phabrico
-        /// </summary>
-        private static bool firstAuthentication = true;
-
-        /// <summary>
         /// This method is fired after the user has posted its username and password to the HTTP server
         /// </summary>
         /// <param name="httpServer">webserver object</param>
-        /// <param name="browser">webbrowser connection</param>
         /// <param name="parameters">
         /// First parameter should be 'login', the second one and others construct the local url to be redirected 
         /// to after the authentication process is finished
         /// </param>
         [UrlController(URL = "/auth")]
-        public void HttpPostAuthenticate(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostAuthenticate(Http.Server httpServer, string[] parameters)
         {
             if (httpServer == null) return;
             if (browser == null) return;
@@ -124,37 +118,6 @@ namespace Phabrico.Controllers
 
                         // send content to browser
                         httpResponse.Send(browser, string.Join("/", parameters.Skip(1)));
-
-                        if (httpResponse.Status == HomePage.HomePageStatus.Authenticated)
-                        {
-                            // postpone some after-initialization stuff to make te response the browser faster
-                            // E.g. Firefox has a slower visible response when this code is not executed in a postponed task
-                            Task.Delay(500)
-                                .ContinueWith((task, obj) =>
-                            {
-                                object[] objects = (object[])obj;
-                                Browser localBrowser = (Browser)objects[0];
-                                Storage.Database localDatabase = (Storage.Database)objects[1];
-                                using (localDatabase = new Storage.Database(localDatabase.EncryptionKey))
-                                {
-                                    // initialize some stuff after the first time we authenticate
-                                    if (firstAuthentication && httpResponse.Status == Http.Response.HomePage.HomePageStatus.Authenticated)
-                                    {
-                                        firstAuthentication = false;
-
-                                        // clean up unreferenced staged files
-                                        Storage.Stage.DeleteUnreferencedFiles(localDatabase, localBrowser);
-                                    }
-                                }
-
-                                // start preloading
-                                if (httpResponse.Status == Http.Response.HomePage.HomePageStatus.Authenticated)
-                                {
-                                    string encryptionKey = Encryption.XorString(publicEncryptionKey, publicXorCipher);
-                                    httpServer.PreloadContent(localBrowser, encryptionKey, accountDataUserName);
-                                }
-                            }, new object[] { browser, database });
-                        }
                     }
 
                     return;
@@ -168,10 +131,9 @@ namespace Phabrico.Controllers
         /// This method is fired when the AutoLogoff functionality is disabled by the browser client (i.e. autoLogoff.disable())
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/poke")]
-        public void HttpPostDisablePoke(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostDisablePoke(Http.Server httpServer, string[] parameters)
         {
             bool enabled = Int32.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["enabled"] ?? "0") != 0;
 
@@ -186,7 +148,7 @@ namespace Phabrico.Controllers
         /// This method is fired when the user has changed the language in the Create-User dialog.
         /// </summary>
         [UrlController(URL = "/auth/setLanguage")]
-        public void HttpPostModifyInitialLanguage(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostModifyInitialLanguage(Http.Server httpServer, string[] parameters)
         {
             string newLanguage = parameters.FirstOrDefault();
             if (string.IsNullOrEmpty(newLanguage)) return;
@@ -199,18 +161,18 @@ namespace Phabrico.Controllers
         /// This method is only fired when the user is logged on (see also HttpPostModifyInitialLanguage)
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/auth/language")]
-        public JsonMessage HttpPostModifyLanguage(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostModifyLanguage(Http.Server httpServer, string[] parameters)
         {
-            if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
-
             string newLanguage = browser.Session.FormVariables[browser.Request.RawUrl]["newLanguage"];
-            Storage.Account accountStorage = new Storage.Account();
 
-            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (Locale.TranslateText("Phabrico", browser.Session.Locale).Equals(httpServer.Customization.ApplicationName))
+            {
+                // default application name is used -> translate it accordingly into the new language
+                httpServer.Customization.ApplicationName = Locale.TranslateText("Phabrico", newLanguage);
+            }
 
             browser.Session.Locale = newLanguage;
             browser.SetCookie("language", newLanguage, false);
@@ -233,11 +195,10 @@ namespace Phabrico.Controllers
         /// This method is fired when the user has confirmed its new password
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/auth/password")]
-        public JsonMessage HttpPostModifyPassword(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostModifyPassword(Http.Server httpServer, string[] parameters)
         {
             string currentPassword = browser.Session.FormVariables[browser.Request.RawUrl]["oldPassword"];
             string newPassword = browser.Session.FormVariables[browser.Request.RawUrl]["newPassword1"];

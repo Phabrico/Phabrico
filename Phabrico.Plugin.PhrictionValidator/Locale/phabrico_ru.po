@@ -1,0 +1,20 @@
+# Russian translations
+
+# General
+msgid "PluginName.PhrictionValidator"
+msgstr "Удостоверить документ"
+
+msgid "There is 1 underlying document. Would you like to validate this as well ?"
+msgstr "Существует 1 базовый документ. Вы хотите подтвердить и его?"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to validate these as well ?"
+msgstr "Есть документы @@NBR-CHILD-DOCUMENTS@@, лежащие в основе. Хотите ли вы подтвердить и их?"
+
+msgid "No errors were found"
+msgstr "Ошибок не найдено"
+
+msgid "Invalid file reference @@FILE-REFERENCE-ID@@"
+msgstr "Неверная ссылка на файл @@FILE-REFERENCE-ID@@"
+
+msgid "Invalid hyperlink @@URL@@"
+msgstr "Неверная гиперссылка @@URL@@"

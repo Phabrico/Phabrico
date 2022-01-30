@@ -1,0 +1,618 @@
+# Romanian translations
+
+# General
+msgid "Diagram"
+msgstr "Diagrama"
+
+msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
+msgstr "Editor pentru diagrame de flux, diagrame de proces, organigrame, UML, ER și diagrame de rețea."
+
+# Help shortcuts
+msgid "Styles"
+msgstr "Stiluri"
+
+msgid "Document"
+msgstr "Document"
+
+msgid "Sidebar / Connect"
+msgstr "Bară laterală / Connect"
+
+msgid "View"
+msgstr "Vizualizare"
+
+msgid "Canvas"
+msgstr "Canvas"
+
+msgid "Cursor / Page keys"
+msgstr "Cursor / Tastele de pagină"
+
+msgid "Tools"
+msgstr "Instrumente"
+
+msgid "Selection"
+msgstr "Selecție"
+
+msgid "Labels"
+msgstr "Etichete"
+
+msgid "(Shift+)Tab"
+msgstr "(Shift+)Tab"
+
+msgid "Alt+(Shift / Ctrl)+Click on a sidebar item"
+msgstr "Alt+(Shift / Ctrl)+Click pe un element din bara laterală"
+
+msgid "Alt+(Shift+)Drag from sidebar"
+msgstr "Alt+(Shift+)Trageți din bara laterală"
+
+msgid "Alt+(Shift+)Tab"
+msgstr "Alt+(Shift+)Tab"
+
+msgid "Alt+Click"
+msgstr "Alt+Click"
+
+msgid "Alt+Connect"
+msgstr "Alt+Connect"
+
+msgid "Alt+Cursor"
+msgstr "Alt+Cursor"
+
+msgid "Alt+Mouse wheel"
+msgstr "Alt+Roată de mouse"
+
+msgid "Alt+Shift+A"
+msgstr "Alt+Shift+A"
+
+msgid "Alt+Shift+C/T"
+msgstr "Alt+Shift+C/T"
+
+msgid "Alt+Shift+Cursor"
+msgstr "Alt+Shift+Cursor"
+
+msgid "Alt+Drag"
+msgstr "Alt+Drag"
+
+msgid "Alt+Shift+P"
+msgstr "Alt+Shift+P"
+
+msgid "Alt+Shift+V"
+msgstr "Alt+Shift+V"
+
+msgid "Alt+Shift+X"
+msgstr "Alt+Shift+X"
+
+msgid "Backspace or Delete"
+msgstr "Backspace sau Delete"
+
+msgid "Click on a sidebar item"
+msgstr "Faceți clic pe un element din bara laterală"
+
+msgid "Ctrl - (Numpad)"
+msgstr "Ctrl - (Numpad)"
+
+msgid "Ctrl / Meta+Resize"
+msgstr "Ctrl / Meta+Redimensionare"
+
+msgid "Ctrl / Shift+Click"
+msgstr "Ctrl / Shift+Click"
+
+msgid "Ctrl / Shift+Delete"
+msgstr "Ctrl / Shift+Delete"
+
+msgid "Ctrl / Shift+Drag"
+msgstr "Ctrl / Shift+Drag"
+
+msgid "Ctrl + (Numpad)"
+msgstr "Ctrl + (Numpad)"
+
+msgid "Ctrl+(Shift+)A"
+msgstr "Ctrl+(Shift+)A"
+
+msgid "Ctrl+. / ,"
+msgstr "Ctrl+. / ,"
+
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+msgid "Ctrl+B / I"
+msgstr "Ctrl+B / I"
+
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+msgid "Ctrl+Click"
+msgstr "Ctrl+Click"
+
+msgid "Ctrl+Cursor"
+msgstr "Ctrl+Cursor"
+
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+msgid "Ctrl+End"
+msgstr "Ctrl+Fin"
+
+msgid "Ctrl+Enter / D"
+msgstr "Ctrl+Enter / D"
+
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+msgid "Ctrl+Home"
+msgstr "Ctrl+Home"
+
+msgid "Ctrl+J"
+msgstr "Ctrl+J"
+
+msgid "Ctrl+K"
+msgstr "Ctrl+K"
+
+msgid "Ctrl+L / Alt+Shift+L"
+msgstr "Ctrl+L / Alt+Shift+L"
+
+msgid "Ctrl+M"
+msgstr "Ctrl+M"
+
+msgid "Ctrl+P"
+msgstr "Ctrl+P"
+
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+msgid "Ctrl+Shift+B"
+msgstr "Ctrl+Shift+B"
+
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+msgid "Ctrl+Shift+Connect"
+msgstr "Ctrl+Major+Conectare"
+
+msgid "Ctrl+Shift+Cursor"
+msgstr "Ctrl+Shift+Cursor"
+
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Ctrl+Shift+Drag"
+
+msgid "Ctrl+Shift+End"
+msgstr "Ctrl+Shift+Fin"
+
+msgid "Ctrl+Shift+F"
+msgstr "Ctrl+Shift+F"
+
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Major+G"
+
+msgid "Ctrl+Shift+H"
+msgstr "Ctrl+Shift+H"
+
+msgid "Ctrl+Shift+Home"
+msgstr "Ctrl+Shift+Home"
+
+msgid "Ctrl+Shift+I / E"
+msgstr "Ctrl+Shift+I / E"
+
+msgid "Ctrl+Shift+J"
+msgstr "Ctrl+Shift+J"
+
+msgid "Ctrl+Shift+K"
+msgstr "Ctrl+Shift+K"
+
+msgid "Ctrl+Shift+L"
+msgstr "Ctrl+Shift+L"
+
+msgid "Ctrl+Shift+M"
+msgstr "Ctrl+Shift+M"
+
+msgid "Ctrl+Shift+Mouse wheel"
+msgstr "Ctrl+Shift+Roată de mouse"
+
+msgid "Ctrl+Shift+O"
+msgstr "Ctrl+Shift+O"
+
+msgid "Ctrl+Shift+P"
+msgstr "Ctrl+Shift+P"
+
+msgid "Ctrl+Shift+Pg Down"
+msgstr "Ctrl+Shift+Pg jos"
+
+msgid "Ctrl+Shift+Pg Up"
+msgstr "Ctrl+Shift+Pg sus"
+
+msgid "Ctrl+Shift+R"
+msgstr "Ctrl+Shift+R"
+
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+msgid "Ctrl+Shift+U"
+msgstr "Ctrl+Shift+U"
+
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+msgid "Ctrl+Shift+X"
+msgstr "Ctrl+Shift+X"
+
+msgid "Ctrl+Shift+Y"
+msgstr "Ctrl+Shift+Y"
+
+msgid "Ctrl+U"
+msgstr "Ctrl+U"
+
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Double click"
+msgstr "Dublu clic"
+
+msgid "End"
+msgstr "Terminare"
+
+msgid "Enter"
+msgstr "Enter"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "F1"
+msgstr "F1"
+
+msgid "F2 / Enter"
+msgstr "F2 / Enter"
+
+msgid "F2 / Tab / Esc"
+msgstr "F2 / Tab / Esc"
+
+msgid "Hold Alt"
+msgstr "Menține Alt"
+
+msgid "Mouse wheel"
+msgstr "Roata mouse-ului"
+
+msgid "Rightclick"
+msgstr "Clic dreapta"
+
+msgid "Shift+Click on a sidebar item"
+msgstr "Shift+Click pe un element din bara laterală"
+
+msgid "Shift+Connect"
+msgstr "Shift+Conectare"
+
+msgid "Shift+Cursor"
+msgstr "Shift+Cursor"
+
+msgid "Shift+Drag"
+msgstr "Shift+Drag"
+
+msgid "Shift+Enter"
+msgstr "Shift+Intrare"
+
+msgid "Shift+Home"
+msgstr "Shift+Home"
+
+msgid "Shift+Mouse wheel"
+msgstr "Shift+Roată de mouse"
+
+msgid "Shift+Resize"
+msgstr "Shift+Redimensionare"
+
+msgid "Space / Right mouse Drag"
+msgstr "Spațiu / Tragere dreapta mouse-ului"
+
+msgid "About"
+msgstr "Despre"
+
+msgid "Toggle to Selection"
+msgstr "Treci la selecție"
+
+msgid "Autosize"
+msgstr "Autodimensionare"
+
+msgid "Bring to Front"
+msgstr "Aduceți în față"
+
+msgid "Cancel Action"
+msgstr "Anulează acțiunea"
+
+msgid "Canvas Horizontal Scroll"
+msgstr "Derulare orizontală Canvas"
+
+msgid "Canvas Vertical Scroll"
+msgstr "Derulare verticală Canvas"
+
+msgid "Canvas Zoom In/Out"
+msgstr "Canvas Zoom In/Out"
+
+msgid "Centered / Group Resize"
+msgstr "Centrare / Redimensionare grup"
+
+msgid "Clear Default Style"
+msgstr "Șterge stilul implicit"
+
+msgid "Clear Waypoints / Edit Tooltip"
+msgstr "Ștergere puncte de reper / Editare Tooltip"
+
+msgid "Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone)."
+msgstr "Faceți clic pentru a conecta și clona (ctrl+clic pentru a clona, shift+clic pentru a conecta). Trageți pentru a conecta (ctrl+trageți pentru a clona)."
+
+msgid "Click to rotate 90° clockwise. Drag to rotate."
+msgstr "Faceți clic pentru a roti cu 90° în sensul acelor de ceasornic. Trageți pentru a roti."
+
+msgid "Clone and connect"
+msgstr "Clonare și conectare"
+
+msgid "Clone cell/Disconnect edge"
+msgstr "Clonare celulă/Deconectare margine"
+
+msgid "Collapse Container"
+msgstr "Colapsarea containerului"
+
+msgid "Connect to a Fixed Point"
+msgstr "Conectare la un punct fix"
+
+msgid "Connect to shape outline (ignore connection points)"
+msgstr "Conectare la conturul formei (ignorați punctele de conectare)"
+
+msgid "Connection Arrows"
+msgstr "Săgeți de conectare"
+
+msgid "Connection Points"
+msgstr "Puncte de conexiune"
+
+msgid "Connects unconnected side of selected edge"
+msgstr "Conectează partea neconectată a muchiei selectate"
+
+msgid "Context Menu"
+msgstr "Meniul contextual"
+
+msgid "Copy"
+msgstr "Copiere"
+
+msgid "Copy Size"
+msgstr "Copiere dimensiune"
+
+msgid "Copy Style"
+msgstr "Copiere stil"
+
+msgid "Create / Remove Space"
+msgstr "Creează / Elimină spațiu"
+
+msgid "Ctrl / Shift+Enter: New Line"
+msgstr "Ctrl / Shift+Enter: Linie nouă"
+
+msgid "Ctrl / Shift+Esc: Cancel Editing"
+msgstr "Ctrl / Shift+Esc: Anulare editare"
+
+msgid "Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML"
+msgstr "Ctrl: Show Dialog, Alt: Origine, Shift: Ignoră XML"
+
+msgid "Ctrl+Resize for non-recursive group resize"
+msgstr "Ctrl+Redimensionare pentru redimensionarea nerecurentă a grupului"
+
+msgid "Ctrl+Meta+Resize for centered group resize"
+msgstr "Ctrl+Meta+Resize pentru redimensionarea centrată a grupului"
+
+msgid "Custom Zoom"
+msgstr "Zoom personalizat"
+
+msgid "Cut"
+msgstr "Tăiere"
+
+msgid "Delete Selected Cells"
+msgstr "Ștergerea celulelor selectate"
+
+msgid "Delete Selected Cells with Connections / Labels"
+msgstr "Ștergerea celulelor selectate cu conexiuni / etichete"
+
+msgid "Disable Connections"
+msgstr "Dezactivarea conexiunilor"
+
+msgid "Disable replace, connect on drop (drop targets), Shift ignores current style"
+msgstr "Dezactivează înlocuirea, conectarea la aruncare (drop targets), Shift ignoră stilul curent"
+
+msgid "Duplicate"
+msgstr "Duplicare"
+
+msgid "Edit Metadata"
+msgstr "Editarea metadatelor"
+
+msgid "Edit Style"
+msgstr "Editare stil"
+
+msgid "Edit Vertex Geometry"
+msgstr "Editare geometrie vertex"
+
+msgid "Enter Group"
+msgstr "Intrare grup"
+
+msgid "Exit Group"
+msgstr "Ieșire grup"
+
+msgid "Expand Container"
+msgstr "Extindeți containerul"
+
+msgid "Fit Page"
+msgstr "Ajustați pagina"
+
+msgid "Fit Two Pages"
+msgstr "Adaptare la două pagini"
+
+msgid "Fit Window"
+msgstr "Adaptare fereastră"
+
+msgid "Group"
+msgstr "Grup"
+
+msgid "Home"
+msgstr "Acasă"
+
+msgid "Ignores handles under the mouse"
+msgstr "Ignoră mânerele de sub mouse"
+
+msgid "Insert Ellipse"
+msgstr "Inserare elipsă"
+
+msgid "Insert Rectangle"
+msgstr "Inserare dreptunghi"
+
+msgid "Insert Text"
+msgstr "Inserare text"
+
+msgid "Insert text or add an edge label"
+msgstr "Inserați text sau adăugați o etichetă de margine"
+
+msgid "Inserts and connects the selected item (Shift ignores current style)"
+msgstr "Inserează și conectează elementul selectat (Shift ignoră stilul curent)"
+
+msgid "Lock/Unlock / Edit Link"
+msgstr "Blocare/Deblocare/Editare legătură"
+
+msgid "Maintain Proportions"
+msgstr "Menține proporțiile"
+
+msgid "Move cell (grid) or page"
+msgstr "Mutați celula (grila) sau pagina"
+
+msgid "New Line in Formatted Labels"
+msgstr "Linie nouă în etichete formatate"
+
+msgid "New Paragraph in Formatted Labels"
+msgstr "Paragraf nou în etichete formatate"
+
+msgid "Next Page"
+msgstr "Pagina următoare"
+
+msgid "Pan Canvas"
+msgstr "Panoramarea pânzei"
+
+msgid "Paste"
+msgstr "Lipire"
+
+msgid "Paste Size"
+msgstr "Dimensiune lipire"
+
+msgid "Paste Style"
+msgstr "Stil de lipire"
+
+msgid "Previous Page"
+msgstr "Pagina anterioară"
+
+msgid "Print"
+msgstr "Imprimă"
+
+msgid "Redo"
+msgstr "Refaceți"
+
+msgid "Refresh"
+msgstr "Reîmprospătare"
+
+msgid "Select intersection"
+msgstr "Selectați intersecția"
+
+msgid "Replaces the selected item with the clicked one"
+msgstr "Înlocuiește elementul selectat cu cel asupra căruia s-a făcut clic"
+
+msgid "Reset View"
+msgstr "Resetează vizualizarea"
+
+msgid "Resize cell (grid size)"
+msgstr "Redimensionează celula (dimensiunea grilei)"
+
+msgid "Resize cell (pt) or select page"
+msgstr "Redimensionează celula (pt) sau selectează pagina"
+
+msgid "Save"
+msgstr "Salvați"
+
+msgid "Save as"
+msgstr "Salvează ca"
+
+msgid "Scroll / Move cell (pt)"
+msgstr "Defilare / Deplasare celulă (pt)"
+
+msgid "Scroll Page"
+msgstr "Derulați pagina"
+
+msgid "Select All / None"
+msgstr "Selectați toate / Niciuna"
+
+msgid "Select Cell Below"
+msgstr "Selectați celula de mai jos"
+
+msgid "Select Child / Parent"
+msgstr "Selectați copil / părinte"
+
+msgid "Select Next / Previous"
+msgstr "Selectați Următorul / Precedentul"
+
+msgid "Select Vertices / Edges"
+msgstr "Selectați verigi / muchii"
+
+msgid "Send to Back"
+msgstr "Trimite în spate"
+
+msgid "Set as Default Style"
+msgstr "Setați ca stil implicit"
+
+msgid "Start Editing Label of Selected Cell"
+msgstr "Începe editarea etichetei celulei selectate"
+
+msgid "Stop Editing and Apply Value"
+msgstr "Opriți editarea și aplicați valoarea"
+
+msgid "Superscript/Subscript on Selected Text"
+msgstr "Superscript/Subscript pe textul selectat"
+
+msgid "Toggle Bold/Italic on Selected Text"
+msgstr "Comutare Bold/Italic pe textul selectat"
+
+msgid "Toggle Format Panel"
+msgstr "Comutarea panoului Format"
+
+msgid "Toggle grid"
+msgstr "Comutarea grilei"
+
+msgid "Toggle Layers Window"
+msgstr "Comutarea ferestrei de straturi"
+
+msgid "Toggle Outline Window"
+msgstr "Comutarea ferestrei de contur"
+
+msgid "Toggle Selection State"
+msgstr "Comutarea stării de selecție"
+
+msgid "Toggle Underline on Selected Text"
+msgstr "Alternează sublinierea pe textul selectat"
+
+msgid "Turn / Rotate 90° Clockwise"
+msgstr "Întoarceți / rotiți la 90° în sensul acelor de ceasornic"
+
+msgid "Undo"
+msgstr "Anulează"
+
+msgid "Ungroup"
+msgstr "Descompunere"
+
+msgid "Zoom In"
+msgstr "Zoom In"
+
+msgid "Zoom Out"
+msgstr "Zoom Out"

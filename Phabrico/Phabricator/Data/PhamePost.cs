@@ -60,12 +60,12 @@ namespace Phabrico.Phabricator.Data
         {
             this.TokenPrefix = Prefix;
 
-            this.Author = Author;
-            this.Blog = Blog;
-            this.Content = Content;
-            this.DateModified = DateModified;
-            this.ID = ID;
-            this.Title = Title;
+            this.Author = original.Author;
+            this.Blog = original.Blog;
+            this.Content = original.Content;
+            this.DateModified = original.DateModified;
+            this.ID = original.ID;
+            this.Title = original.Title;
         }
     }
 }

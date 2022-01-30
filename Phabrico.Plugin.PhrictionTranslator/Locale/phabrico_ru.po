@@ -1,0 +1,120 @@
+# Russian translations
+
+# General
+msgid "PluginName.PhrictionTranslator"
+msgstr "Перевести документ"
+
+msgid "Translation parameters"
+msgstr "Параметры перевода"
+
+msgid "There is 1 underlying document. Would you like to translate this as well ?"
+msgstr "Существует 1 базовый документ. Вы хотите перевести и его?"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to translate these as well ?"
+msgstr "Имеется @@NBR-CHILD-DOCUMENTS@@ базовых документов. Вы хотели бы перевести и их?"
+
+msgid "The translation will be performed by a machine translation service on the Internet. Be sure not to send any sensitive data over the Internet! Do you still want to continue ?"
+msgstr "Перевод будет выполнен службой машинного перевода через Интернет.\nУбедитесь, что не отправляете конфиденциальные данные через Интернет.\n\nВы все еще хотите продолжить?"
+
+msgid "Document is translated"
+msgstr "Документ переведен"
+
+msgid "@@NBR-DOCUMENTS@@ documents have been translated"
+msgstr "@@NBR-DOCUMENTS@@ документы переведены"
+
+msgid "Translation engine"
+msgstr "Механизм перевода"
+
+msgid "API Key"
+msgstr "API-ключ"
+
+msgid "Source language"
+msgstr "Исходный язык"
+
+msgid "Target language"
+msgstr "Язык перевода"
+
+msgid "Bulgarian"
+msgstr "Болгарский"
+
+msgid "Chinese"
+msgstr "Китайский"
+
+msgid "Czech"
+msgstr "Чешский"
+
+msgid "Danish"
+msgstr "Датский"
+
+msgid "Dutch"
+msgstr "голландский"
+
+msgid "English"
+msgstr "Английский"
+
+msgid "Estonian"
+msgstr "Эстонский"
+
+msgid "Finnish"
+msgstr "Финский"
+
+msgid "French"
+msgstr "Французский"
+
+msgid "German"
+msgstr "Немецкий"
+
+msgid "Greek"
+msgstr "Греческий"
+
+msgid "Hungarian"
+msgstr "Венгерский"
+
+msgid "Italian"
+msgstr "Итальянский"
+
+msgid "Japanese"
+msgstr "Японский"
+
+msgid "Latvian"
+msgstr "Латвийский"
+
+msgid "Lithuanian"
+msgstr "Литовский"
+
+msgid "Polish"
+msgstr "Польский"
+
+msgid "Portuguese"
+msgstr "Португальский"
+
+msgid "Romanian"
+msgstr "Румынский"
+
+msgid "Russian"
+msgstr "Русский"
+
+msgid "Slovak"
+msgstr "Словацкий"
+
+msgid "Slovenian"
+msgstr "Словенский"
+
+msgid "Spanish"
+msgstr "Испанский"
+
+msgid "Swedish"
+msgstr "Шведский"
+
+# ProofReader
+msgid "PluginName.PhrictionProofReader"
+msgstr "Вычитка"
+
+msgid "Save translation"
+msgstr "Сохранить перевод"
+
+msgid "View remarkup code"
+msgstr "Просмотр исходного кода"
+
+msgid "View result"
+msgstr "Просмотреть результат"

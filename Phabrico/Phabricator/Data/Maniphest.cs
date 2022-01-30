@@ -38,7 +38,7 @@ namespace Phabrico.Phabricator.Data
         public string Description { get; set; }
 
         /// <summary>
-        /// ID of the task (e.g. T123)
+        /// ID of the task (e.g. 123 in "T123")
         /// </summary>
         public string ID { get; set; }
 
@@ -150,6 +150,7 @@ namespace Phabrico.Phabricator.Data
         public override bool MergeStageData(Stage.Data stageData)
         {
             JObject stageInfo = JsonConvert.DeserializeObject(stageData.HeaderData) as JObject;
+            if (stageInfo == null) return false;
 
             if (stageData.Operation.Equals("owner"))
             {

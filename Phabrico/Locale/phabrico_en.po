@@ -278,6 +278,9 @@ msgstr "Downloading Phame blog data..."
 msgid "Synchronization.Status.DownloadingPhrictionData"
 msgstr "Downloading Phriction data..."
 
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "Downloading Phriction metadata..."
+
 msgid "Synchronization.Status.DownloadingProjects"
 msgstr "Downloading Projects..."
 
@@ -325,6 +328,9 @@ msgstr "Some Phriction documents will not be uploaded because their slug paths a
 
 msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
 msgstr "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
 
 # Maniphest
 msgid "Create Task"
@@ -418,7 +424,7 @@ msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
 msgstr "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
 
 msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
-msgstr "@@PERSON@@ ha añadido a @@PERSONS@@ como supervisores"
+msgstr "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
 
 msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
 msgstr "@@PERSON1@@ assigned the task to @@PERSON2@@"
@@ -1177,6 +1183,9 @@ msgstr "This Phriction document or Maniphest task wasn't downloaded from the Pha
 # Invalid configuration
 msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
 msgstr "Validate the contents of @@APP-CONFIG-FILENAME@@"
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
 
 msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
 msgstr "Verify if @@APP-CONFIG-FILENAME@@ exists"

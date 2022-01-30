@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Globalization;
+using System.Linq;
 
 namespace Phabrico.Storage
 {
@@ -38,6 +39,74 @@ namespace Phabrico.Storage
 
                 transaction.Commit();
             }
+        }
+
+        /// <summary>
+        /// Copies the User records from one Phabrico database to another Phabrico database
+        /// </summary>
+        /// <param name="sourcePhabricoDatabasePath">File path to the source Phabrico database</param>
+        /// <param name="sourceUsername">Username to use for authenticating the source Phabrico database</param>
+        /// <param name="sourcePassword">Password to use for authenticating the source Phabrico database</param>
+        /// <param name="destinationPhabricoDatabasePath">File path to the destination Phabrico database</param>
+        /// <param name="destinationUsername">Username to use for authenticating the destination Phabrico database</param>
+        /// <param name="destinationPassword">Username to use for authenticating the destination Phabrico database</param>
+        /// <param name="filter">LINQ method for filtering the records to be copied</param>
+        public static List<Phabricator.Data.User> Copy(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword, Func<Phabricator.Data.User,bool> filter = null)
+        {
+            string sourceTokenHash = Encryption.GenerateTokenKey(sourceUsername, sourcePassword);  // tokenHash is stored in the database
+            string sourcePublicEncryptionKey = Encryption.GenerateEncryptionKey(sourceUsername, sourcePassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string sourcePrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(sourceUsername, sourcePassword);  // privateEncryptionKey is not stored in database
+            string destinationTokenHash = Encryption.GenerateTokenKey(destinationUsername, destinationPassword);  // tokenHash is stored in the database
+            string destinationPublicEncryptionKey = Encryption.GenerateEncryptionKey(destinationUsername, destinationPassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string destinationPrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(destinationUsername, destinationPassword);  // privateEncryptionKey is not stored in database
+
+            string originalDataSource = Storage.Database.DataSource;
+
+            List<Phabricator.Data.User> users = new List<Phabricator.Data.User>();
+            try
+            {
+                Storage.User userStorage = new Storage.User();
+
+                Storage.Database.DataSource = sourcePhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(sourceTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(sourcePublicEncryptionKey, publicXorCipher);
+
+                        IEnumerable<Phabricator.Data.User> sourceUsers = userStorage.Get(database, Language.NotApplicable);
+                        if (filter != null)
+                        {
+                            sourceUsers = sourceUsers.Where(filter);
+                        }
+                        users = sourceUsers.ToList();
+                    }
+                }
+
+                Storage.Database.DataSource = destinationPhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(destinationTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(destinationPublicEncryptionKey, publicXorCipher);
+
+                        foreach (Phabricator.Data.User user in users)
+                        {
+                            userStorage.Add(database, user);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Storage.Database.DataSource = originalDataSource;
+            }
+
+            return users;
         }
 
         /// <summary>

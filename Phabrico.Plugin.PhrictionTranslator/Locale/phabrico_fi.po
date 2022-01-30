@@ -1,0 +1,120 @@
+# Finnish translations
+
+# General
+msgid "PluginName.PhrictionTranslator"
+msgstr "Käännä asiakirja"
+
+msgid "Translation parameters"
+msgstr "Käännösparametrit"
+
+msgid "There is 1 underlying document. Would you like to translate this as well ?"
+msgstr "Perusasiakirja on 1. Haluaisitko kääntää myös tämän ?"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to translate these as well ?"
+msgstr "Taustalla on @@NBR-CHILD-DOCUMENTS@@ asiakirjoja. Haluatteko kääntää myös nämä ?"
+
+msgid "The translation will be performed by a machine translation service on the Internet. Be sure not to send any sensitive data over the Internet! Do you still want to continue ?"
+msgstr "Käännöksen suorittaa konekäännöspalvelu Internetissä.\n\nVarmista, ettet lähetä mitään arkaluonteisia tietoja Internetin kautta!\n\n\nTahdotko vielä jatkaa?"
+
+msgid "Document is translated"
+msgstr "Asiakirja on käännetty"
+
+msgid "@@NBR-DOCUMENTS@@ documents have been translated"
+msgstr "@@NBR-DOCUMENTS@@ Asiakirjat on käännetty."
+
+msgid "Translation engine"
+msgstr "Käännösmoottori"
+
+msgid "API Key"
+msgstr "API-avain"
+
+msgid "Source language"
+msgstr "Lähdekieli"
+
+msgid "Target language"
+msgstr "Kohdekieli"
+
+msgid "Bulgarian"
+msgstr "Bulgarian"
+
+msgid "Chinese"
+msgstr "Kiina"
+
+msgid "Czech"
+msgstr "Tšekki"
+
+msgid "Danish"
+msgstr "Tanska"
+
+msgid "Dutch"
+msgstr "Hollanti"
+
+msgid "English"
+msgstr "Englanti"
+
+msgid "Estonian"
+msgstr "Viro"
+
+msgid "Finnish"
+msgstr "Suomi"
+
+msgid "French"
+msgstr "Ranska"
+
+msgid "German"
+msgstr "Saksa"
+
+msgid "Greek"
+msgstr "Kreikka"
+
+msgid "Hungarian"
+msgstr "Unkari"
+
+msgid "Italian"
+msgstr "Italian"
+
+msgid "Japanese"
+msgstr "Japani"
+
+msgid "Latvian"
+msgstr "Latvian"
+
+msgid "Lithuanian"
+msgstr "Liettuan"
+
+msgid "Polish"
+msgstr "Puola"
+
+msgid "Portuguese"
+msgstr "Portugali"
+
+msgid "Romanian"
+msgstr "Romanian"
+
+msgid "Russian"
+msgstr "Venäjä"
+
+msgid "Slovak"
+msgstr "Slovakki"
+
+msgid "Slovenian"
+msgstr "Slovenian"
+
+msgid "Spanish"
+msgstr "Espanja"
+
+msgid "Swedish"
+msgstr "Ruotsi"
+
+# ProofReader
+msgid "PluginName.PhrictionProofReader"
+msgstr "Oikoluku"
+
+msgid "Save translation"
+msgstr "Tallenna käännös"
+
+msgid "View remarkup code"
+msgstr "Näytä lähdekoodi"
+
+msgid "View result"
+msgstr "Näytä tulos"

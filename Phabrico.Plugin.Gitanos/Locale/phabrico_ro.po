@@ -1,0 +1,179 @@
+# Romanian translations
+
+# General
+msgid "Gitanos"
+msgstr "Gitanos"
+
+msgid "Shows the status of all local git repositories"
+msgstr "Afișează starea tuturor depozitelor git locale"
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "Introduceți directoarele în care sunt localizate toate directoarele depozitului dvs. git:"
+
+msgid "Local root directories"
+msgstr "Directoare rădăcină locale"
+
+msgid "Add root directory"
+msgstr "Adăugați directorul rădăcină"
+
+msgid "Gitanos::Notification"
+msgstr "Notificare"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "Rezumați următoarele stări pentru toate depozitele și afișați rezultatul sub forma unei notificări:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "Depozite git locale"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "Introduceți un text pentru a filtra lista de depozite git..."
+
+msgid "Show clean repositories"
+msgstr "Afișați depozitele curate"
+
+msgid "Hide clean repositories"
+msgstr "Ascundeți depozitele curate"
+
+msgid "Show Phabricator repositories"
+msgstr "Afișați depozitele Phabricator"
+
+msgid "Repository"
+msgstr "Depozit"
+
+msgid "Branch"
+msgstr "Ramură"
+
+msgid "Gitanos::Added"
+msgstr "Adăugat"
+
+msgid "Gitanos::Removed"
+msgstr "Eliminat"
+
+msgid "Gitanos::Modified"
+msgstr "Modificat"
+
+msgid "Gitanos::ModifiedTooLarge"
+msgstr "Modificat (prea mare)"
+
+msgid "Gitanos::Renamed"
+msgstr "Redenumit"
+
+msgid "Gitanos::Untracked"
+msgstr "Neluat în considerare"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "Există câteva comisioane locale care nu au fost încă împinse"
+
+# Repository modifications overview
+msgid "Git repository"
+msgstr "Depozitul Git"
+
+msgid "File"
+msgstr "Fișier"
+
+msgid "Modification Type"
+msgstr "Tip modificare"
+
+msgid "Timestamp"
+msgstr "Timestamp-ul"
+
+msgid "Unpushed commit"
+msgstr "Unpushed commit"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "Introduceți un text pentru a filtra lista de modificări..."
+
+msgid "COMMIT"
+msgstr "COMITEZ"
+
+msgid "PUSH"
+msgstr "PUSH"
+
+msgid "Actions"
+msgstr "Acțiuni"
+
+msgid "Select all files"
+msgstr "Selectați toate fișierele"
+
+msgid "Unselect all files"
+msgstr "Deselectați toate fișierele"
+
+msgid "Commit selected files"
+msgstr "Trimiterea fișierelor selectate"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "Sunteți sigur că doriți să renunțați la '@@MODIFICATION@@'?"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "Acesta este un fișier binar care a fost modificat."
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "Sunteți sigur că doriți să renunțați la modificările locale pentru @@FILENAME@@ ?"
+
+msgid "Undo modification"
+msgstr "Anulați modificarea"
+
+msgid "File was successfully saved"
+msgstr "Fișierul a fost salvat cu succes"
+
+msgid "File could not be saved"
+msgstr "Fișierul nu a putut fi salvat"
+
+msgid "Diff"
+msgstr "Diff"
+
+msgid "Save"
+msgstr "Salvați"
+
+msgid "Edit"
+msgstr "Editare"
+
+msgid "Line number:"
+msgstr "Numărul liniei:"
+
+msgid "This git repository is clean"
+msgstr "Acest depozit git este curat"
+
+msgid "Repository successfully cloned"
+msgstr "Depozitul a fost clonat cu succes"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "Directorul @@DIRECTORY@@ nu există"
+
+msgid "Error git push"
+msgstr "Eroare git push"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "Clonare"
+
+msgid "Destination:"
+msgstr "Destinație:"
+
+msgid "Clone repository"
+msgstr "Clonează depozitul"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "Indicativ de apel"
+
+msgid "Short name"
+msgstr "Denumire scurtă"
+
+msgid "Name"
+msgstr "Denumire"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "Nu au existat depozite sincronizate din Phabricator"
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "Lista de depozite sincronizate din Phabricator"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "Introduceți un text pentru a filtra lista de depozite..."

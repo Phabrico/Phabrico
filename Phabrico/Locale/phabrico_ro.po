@@ -1,0 +1,1197 @@
+# Romanian translations
+
+# general
+msgid "Phabrico"
+msgstr "Phabrico"
+
+msgid "There's a new Phabrico version available"
+msgstr "Este disponibilă o nouă versiune Phabrico"
+
+msgid "Yes"
+msgstr "Da"
+
+msgid "No"
+msgstr "Nu"
+
+msgid "Button-AccessKey-Yes"
+msgstr "D"
+
+msgid "Button-AccessKey-No"
+msgstr "N"
+
+msgid "Undo"
+msgstr "Anulați"
+
+msgid "EmptyParameter"
+msgstr "(niciunul)"
+
+msgid "No projects assigned"
+msgstr "(niciunul)"
+
+msgid "No users assigned"
+msgstr "(niciunul)"
+
+msgid "ERROR"
+msgstr "ERROR"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Anulare"
+
+# login dialog
+msgid "Username"
+msgstr "Nume utilizator"
+
+msgid "Password"
+msgstr "Parolă"
+
+msgid "Log In"
+msgstr "Autentificare"
+
+msgid "Invalid"
+msgstr "Invalid"
+
+msgid "Search"
+msgstr "Căutare"
+
+msgid "Username or password are incorrect."
+msgstr "Numele de utilizator sau parola sunt incorecte."
+
+msgid "Create New User"
+msgstr "Creați un nou utilizator"
+
+msgid "Verify Password"
+msgstr "Verifică parola"
+
+msgid "Create User"
+msgstr "Creați un utilizator"
+
+# home page
+msgid "Change language"
+msgstr "Schimbați limba"
+
+msgid "Language"
+msgstr "Limba"
+
+msgid "Change password"
+msgstr "Modificați parola"
+
+msgid "Current password"
+msgstr "Parola curentă"
+
+msgid "New password"
+msgstr "Parolă nouă"
+
+msgid "Verify new password"
+msgstr "Verificarea noii parole"
+
+msgid "Password is incorrect."
+msgstr "Parola este incorectă."
+
+msgid "Password should contain at least 1 punctuation character"
+msgstr "Parola trebuie să conțină cel puțin 1 caracter de punctuație"
+
+msgid "The passwords entered do not match"
+msgstr "Parolele introduse nu se potrivesc"
+
+msgid "Password should contain at least 1 number"
+msgstr "Parola trebuie să conțină cel puțin 1 număr"
+
+msgid "Password should contain at least 1 lowercase letter"
+msgstr "Parola trebuie să conțină cel puțin 1 literă minusculă"
+
+msgid "Password should contain at least 1 capital letter"
+msgstr "Parola trebuie să conțină cel puțin 1 literă majusculă"
+
+msgid "Password should be at least 12 characters long"
+msgstr "Parola trebuie să conțină cel puțin 12 caractere"
+
+msgid "Log out"
+msgstr "Deconectați-vă"
+
+msgid "Synchronizing"
+msgstr "Sincronizarea"
+
+msgid "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
+msgstr "Există [b]1 modificare locală[/b] pregătită pentru a fi încărcată pe serverul Phabricator."
+
+msgid "There are [b]@@NBR-CHANGES@@ local modifications[/b] ready to be uploaded the Phabricator server."
+msgstr "Există [b]@@NBR-CHANGES@@ modificări locale[/b] pregătite pentru a fi încărcate pe serverul Phabricator."
+
+msgid "@@FILE@@ uploaded..."
+msgstr "@@FILE@@ încărcate..."
+
+msgid "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
+msgstr "Încărcarea @@FILE@@ (@@PERCENTAGE@@ %)"
+
+msgid "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
+msgstr "Unele modificări nu au putut fi încărcate deoarece versiuni mai noi ale acestor documente sau sarcini erau disponibile pe serverul Phabricator. Verificați-le prin \'Modificări offline\'."
+
+msgid "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
+msgstr "Chiar doriți să sincronizați serverul Phabricator public și serverul Phabrico privat?"
+
+msgid "Favorites"
+msgstr "Favorite"
+
+msgid "General Overview"
+msgstr "Prezentare generală"
+
+msgid "Phabrico Version:"
+msgstr "Versiunea Phabrico:"
+
+msgid "Phabrico Build date:"
+msgstr "Phabrico Data construirii:"
+
+msgid "Last synchronized with Phabricator at:"
+msgstr "Ultima dată sincronizat cu Phabricator la: Phabricator:"
+
+msgid "Phabrico Database Location:"
+msgstr "Phabrico Locația bazei de date Phabrico:"
+
+msgid "Phabrico Database size:"
+msgstr "Phabrico Dimensiunea bazei de date:"
+
+msgid "Remote access:"
+msgstr "Acces de la distanță:"
+
+msgid "Enabled"
+msgstr "Activat"
+
+msgid "Disabled"
+msgstr "Dezactivat"
+
+msgid "Number of Phriction documents:"
+msgstr "Numărul de documente de frazare:"
+
+msgid "Number of Maniphest tasks:"
+msgstr "Număr de sarcini de manipulare:"
+
+msgid "Number of Projects:"
+msgstr "Număr de proiecte:"
+
+msgid "Number of Users:"
+msgstr "Număr de utilizatori:"
+
+msgid "Number of File objects:"
+msgstr "Numărul de obiecte de fișier:"
+
+msgid "Number of uncommitted objects:"
+msgstr "Numărul de obiecte neangajate:"
+
+msgid "Number of frozen objects:"
+msgstr "Numărul de obiecte înghețate:"
+
+msgid "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+msgstr "@@PHABRICO-NUMBER-FILE-OBJECTS@@ (Dimensiunea mediană = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ Dimensiunea maximă = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)."
+
+# main menu navigator
+msgid "Maniphest"
+msgstr "Maniphest"
+
+msgid "Tasks and Bugs"
+msgstr "Sarcini și bug-uri"
+
+msgid "Phriction"
+msgstr "Phriction"
+
+msgid "Wiki Documents"
+msgstr "Documente Wiki"
+
+msgid "Projects"
+msgstr "Proiecte"
+
+msgid "Projects to be synchronized"
+msgstr "Proiecte care urmează să fie sincronizate"
+
+msgid "Users"
+msgstr "Utilizatori"
+
+msgid "User accounts to be synchronized"
+msgstr "Conturi de utilizator care urmează să fie sincronizate"
+
+msgid "File objects"
+msgstr "Obiecte de fișiere"
+
+msgid "Referenced file objects"
+msgstr "Obiecte de fișier de referință"
+
+msgid "Config"
+msgstr "Configurație"
+
+msgid "Configure Phabrico"
+msgstr "Configurarea Phabrico"
+
+msgid "Offline changes"
+msgstr "Modificări offline"
+
+msgid "View local changes"
+msgstr "Vizualizați modificările locale"
+
+msgid "Synchronize"
+msgstr "Sincronizați"
+
+# Synchronization
+msgid "No new data dowloaded from Phabricator"
+msgstr "Nu există date noi descărcate din Phabricator"
+
+msgid "Latest synchronized data"
+msgstr "Ultimele date sincronizate"
+
+msgid "View changes"
+msgstr "Vizualizați modificările"
+
+msgid "Current version"
+msgstr "Versiunea curentă"
+
+msgid "Previous version"
+msgstr "Versiunea anterioară"
+
+msgid "Overview latest synchronization"
+msgstr "Prezentare generală a ultimei sincronizări"
+
+msgid "Difference between previous and current version of @@SYNCHRONIZED-ITEM@@"
+msgstr "Diferența dintre versiunea anterioară și cea curentă a @@SYNCHRONIZED-ITEM@@"
+
+msgid "Synchronization.Status.NotYetSynchronized"
+msgstr "Nu încă"
+
+msgid "Synchronization.Status.Initializing"
+msgstr "Inițializare..."
+
+msgid "Synchronization.Status.ConnectingToPhabricatorServer"
+msgstr "Conectarea la @@PHABRICATOR-SERVER@@..."
+
+msgid "Synchronization.Status.PreparingDownloadManiphestData"
+msgstr "Pregătirea descărcării datelor de manipulare..."
+
+msgid "Synchronization.Status.DownloadingManiphestData"
+msgstr "Descărcarea datelor Maniphest..."
+
+msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
+msgstr "Încărcarea informațiilor privind prioritatea și starea Maniphest..."
+
+msgid "Synchronization.Status.DownloadingPhamePostData"
+msgstr "Descărcarea datelor de pe blogul Phame..."
+
+msgid "Synchronization.Status.DownloadingPhrictionData"
+msgstr "Descărcarea datelor Phriction..."
+
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "Descărcarea metadatelor Phriction..."
+
+msgid "Synchronization.Status.DownloadingProjects"
+msgstr "Descărcarea proiectelor..."
+
+msgid "Synchronization.Status.DownloadingUsers"
+msgstr "Descărcarea utilizatorilor..."
+
+msgid "Synchronization.Status.LoadingAccountInfo"
+msgstr "Încărcarea informațiilor despre conturi..."
+
+msgid "Synchronization.Status.LoadingMacroData"
+msgstr "Încărcarea datelor macro..."
+
+msgid "Synchronization.Status.LoadingFileObjects"
+msgstr "Încărcarea obiectelor de fișier..."
+
+msgid "Synchronization.Status.UploadingManiphestData"
+msgstr "Încărcarea sarcinilor de manipulare..."
+
+msgid "Synchronization.Status.UploadingPhrictionData"
+msgstr "Încărcarea documentelor Phriction..."
+
+msgid "Synchronization.Status.UploadingCommentsAndTransactions"
+msgstr "Încărcarea comentariilor și a tranzacțiilor..."
+
+msgid "Synchronization.Status.CleaningUp"
+msgstr "Curățarea datelor vechi..."
+
+msgid "Synchronization.Status.CleaningUp.Phriction"
+msgstr "Ștergerea documentelor Phriction vechi"
+
+msgid "Synchronization.Status.CleaningUp.Maniphest"
+msgstr "Ștergerea sarcinilor Maniphest vechi"
+
+msgid "Synchronization.Status.CleaningUp.UnreferencedFiles"
+msgstr "Ștergerea obiectelor de dosar fără referință"
+
+msgid "Synchronization.Status.Finishing"
+msgstr "Finalizarea..."
+
+msgid "Synchronization.Status.Failed"
+msgstr "Eșuată"
+
+msgid "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+msgstr "Unele documente Phriction nu vor fi încărcate deoarece căile lor slug sunt prea lungi. Le puteți scurta în ecranul "Offline Changes" (Modificări offline).\n\nDoriți să încărcați celelalte documente și sarcini ?"
+
+msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+msgstr "Unele documente Phriction au trasee slug lungi și ar putea cauza probleme atunci când creați documente subiacente.\n\nDoriți să continuați ?"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "Prezentul document este o traducere nerevizuită. Această versiune a documentului nu va fi încărcată în Phabricator."
+
+# Maniphest
+msgid "Create Task"
+msgstr "Creați o sarcină"
+
+msgid "Editing ##OBJECT##"
+msgstr "Editare ##OBJECT##"
+
+msgid "Assigned"
+msgstr "Atribuit"
+
+msgid "Open Tasks"
+msgstr "Sarcini deschise"
+
+msgid "Per User"
+msgstr "Pe utilizator"
+
+msgid "Per Project"
+msgstr "Pe proiect"
+
+msgid "Authored"
+msgstr "Autori"
+
+msgid "Subscribed"
+msgstr "Abonat"
+
+msgid "Queries"
+msgstr "Întrebări"
+
+msgid "No tasks found"
+msgstr "Nu s-au găsit sarcini"
+
+msgid "Change Subscribers"
+msgstr "Modificați abonații"
+
+msgid "Change Status"
+msgstr "Schimbă starea"
+
+msgid "Change Project Tags"
+msgstr "Modificarea etichetelor de proiect"
+
+msgid "Change Priority"
+msgstr "Schimbă prioritatea"
+
+msgid "Assign / Claim"
+msgstr "Atribuire / Revendicare"
+
+msgid "Authored By"
+msgstr "Autori"
+
+msgid "Assigned To"
+msgstr "Atribuit la"
+
+msgid "Edit Task"
+msgstr "Editare sarcină"
+
+msgid "View Task on Phabricator"
+msgstr "Vizualizați sarcina pe Phabricator"
+
+msgid "Description"
+msgstr "Descriere"
+
+msgid "Priority"
+msgstr "Prioritate"
+
+msgid "First"
+msgstr "Prima"
+
+msgid "Previous"
+msgstr "Anterior"
+
+msgid "Next"
+msgstr "Următorul"
+
+msgid "Type a user or project name..."
+msgstr "Introduceți un nume de utilizator sau de proiect..."
+
+msgid "Type a project name..."
+msgstr "Introduceți un nume de proiect..."
+
+msgid "Type a username..."
+msgstr "Introduceți un nume de utilizator..."
+
+msgid "@@COMMENT-AUTHOR@@ added a comment."
+msgstr "@@COMMENT-AUTHOR@@ a adăugat un comentariu."
+
+msgid "@@PERSON@@ marked this task as @@STATE@@"
+msgstr "@@PERSON@@ a marcat această sarcină ca fiind @@STATE@@"
+
+msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
+msgstr "@@PERSON@@ a marcat această sarcină din @@OLDSTATE@@ în @@NEWSTATE@@"
+
+msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
+msgstr "@@PERSON@@ a adăugat @@PERSONS@@ ca supraveghetori"
+
+msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
+msgstr "@@PERSON1@@ a atribuit această sarcină lui @@PERSON2@@."
+
+msgid "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
+msgstr "@@PERSON1@@ a redistribuit sarcina de la @@PERSON2@@ la @@PERSON3@@."
+
+msgid "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
+msgstr "@@PERSON@@ a schimbat prioritatea sarcinii de la @@PRIORITY1@@ la @@PRIORITY2@@."
+
+msgid "@@PERSON@@ changed the task priority to @@PRIORITY@@"
+msgstr "@@PERSON@@ a schimbat prioritatea sarcinii în @@PRIORITY@@."
+
+msgid "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
+msgstr "@@PERSON@@ a atribuit următorul proiect: @@PROJECT-NAME@@"
+
+msgid "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
+msgstr "@@PERSON@@ a atribuit următoarele proiecte: @@PROJECT-NAMES@@"
+
+msgid "and"
+msgstr "și"
+
+msgid "ManiphestPriority.Unbreak Now!"
+msgstr "Executați acum!"
+
+msgid "ManiphestPriority.Needs Triage"
+msgstr "Triajul nevoilor"
+
+msgid "ManiphestPriority.High"
+msgstr "Mare"
+
+msgid "ManiphestPriority.Normal"
+msgstr "Normal"
+
+msgid "ManiphestPriority.Low"
+msgstr "Scăzut"
+
+msgid "ManiphestPriority.Wishlist"
+msgstr "Dorință"
+
+msgid "ManiphestStatus.Closed"
+msgstr "Închis"
+
+msgid "ManiphestStatus.Duplicate"
+msgstr "Duplicat"
+
+msgid "ManiphestStatus.Invalid"
+msgstr "Invalid"
+
+msgid "ManiphestStatus.On hold"
+msgstr "În așteptare"
+
+msgid "ManiphestStatus.Ongoing"
+msgstr "În curs de desfășurare"
+
+msgid "ManiphestStatus.Open"
+msgstr "Deschis"
+
+msgid "ManiphestStatus.Planned"
+msgstr "Planificat"
+
+msgid "ManiphestStatus.Programmed"
+msgstr "Programat"
+
+msgid "ManiphestStatus.Resolved"
+msgstr "Rezolvat"
+
+msgid "ManiphestStatus.Spite"
+msgstr "Dezaprobată"
+
+msgid "ManiphestStatus.To be QAd"
+msgstr "De evaluat din punct de vedere al calității"
+
+msgid "ManiphestStatus.Wontfix"
+msgstr "Nu se va repara"
+
+msgid "This modified task hasn't been uploaded yet to the Phabricator server"
+msgstr "Această sarcină modificată nu a fost încă încărcată pe serverul Phabricator"
+
+# Phriction
+msgid "Subscribers"
+msgstr "Abonați"
+
+msgid "Subscribe"
+msgstr "Abonează-te"
+
+msgid "Tags"
+msgstr "Etichete"
+
+msgid "Last modified at"
+msgstr "Ultima modificare la"
+
+msgid "Last modified by"
+msgstr "Modificat ultima dată de"
+
+msgid "Printable Page"
+msgstr "Pagina de tipărit"
+
+msgid "Return to web view"
+msgstr "Întoarceți-vă la vizualizarea web"
+
+msgid "Add to favorites"
+msgstr "Adăugați la favorite"
+
+msgid "Remove from favorites"
+msgstr "Eliminați din favorite"
+
+msgid "Dismiss local changes"
+msgstr "Respingeți modificările locale"
+
+msgid "View Document on Phabricator"
+msgstr "Vizualizați documentul pe Phabricator"
+
+msgid "Contents"
+msgstr "Cuprins"
+
+msgid "New Document"
+msgstr "Document nou"
+
+msgid "Document Hierarchy"
+msgstr "Ierarhia documentelor"
+
+msgid "Edit Document"
+msgstr "Editare document"
+
+msgid "Save Changes"
+msgstr "Salvare modificări"
+
+msgid "Title"
+msgstr "Titlu"
+
+msgid "Title already exists"
+msgstr "Titlul există deja"
+
+msgid "Type a title..."
+msgstr "Introduceți un titlu..."
+
+msgid "Create this Document"
+msgstr "Creați acest document"
+
+msgid "There is no document here, but you may create it."
+msgstr "Nu există niciun document aici, dar îl puteți crea."
+
+msgid "No Document Here"
+msgstr "Nu există niciun document aici"
+
+msgid "Page Not Found"
+msgstr "Pagina nu a fost găsită"
+
+msgid "This newly created page hasn't been uploaded yet to the Phabricator server"
+msgstr "Această pagină nou creată nu a fost încă încărcată pe serverul Phabricator"
+
+msgid "This modified page hasn't been uploaded yet to the Phabricator server"
+msgstr "Această pagină modificată nu a fost încă încărcată pe serverul Phabricator"
+
+msgid "One moment please..."
+msgstr "Un moment, vă rog..."
+
+msgid "References"
+msgstr "Referințe"
+
+msgid "Show references"
+msgstr "Afișați referințele"
+
+msgid "Parameters"
+msgstr "Parametrii"
+
+msgid "This page has been translated but it's translated content hasn't been reviewed yet"
+msgstr "Această pagină a fost tradusă, dar conținutul tradus nu a fost încă revizuit"
+
+msgid "Edit translation"
+msgstr "Editați traducerea"
+
+msgid "Approve translation"
+msgstr "Aprobați traducerea"
+
+msgid "Are you sure you want to approve this translation?"
+msgstr "Sunteți sigur că doriți să aprobați această traducere?"
+
+msgid "Unreviewed translations"
+msgstr "Traduceri nevizualizate"
+
+msgid "Revert to original translation"
+msgstr "Reveniți la traducerea originală"
+
+msgid "Are you sure you want to completely undo your translation ?"
+msgstr "Sunteți sigur că doriți să anulați complet traducerea ?"
+
+msgid "Action"
+msgstr "Acțiune"
+
+msgid "Original Title"
+msgstr "Titlul original"
+
+msgid "All translations have been approved"
+msgstr "Toate traducerile au fost aprobate"
+
+msgid "Type some text to filter the list of unreviewed translations..."
+msgstr "Introduceți un text pentru a filtra lista de traduceri nevizuite..."
+
+msgid "Are you sure you don't need a translation for this document ?"
+msgstr "Sunteți sigur că nu aveți nevoie de o traducere pentru acest document ?"
+
+msgid "No translation needed"
+msgstr "Nu este necesară nicio traducere"
+
+msgid "The original content of this document has changed. You must update the translation before you can approve it."
+msgstr "Conținutul original al acestui document a fost modificat. Trebuie să actualizați traducerea înainte de a o aproba."
+
+# Phame
+msgid "Phame"
+msgstr "Phame"
+
+msgid "Blog posts"
+msgstr "Postări pe blog"
+
+msgid "Read more..."
+msgstr "Citește mai mult..."
+
+# Projects & Users
+msgid "Project"
+msgstr "Proiect"
+
+msgid "User"
+msgstr "Utilizator"
+
+msgid "Disallow"
+msgstr "Nu permiteți"
+
+msgid "Select"
+msgstr "Selectați"
+
+msgid "Unselect"
+msgstr "Deosebiți"
+
+msgid "Show all projects"
+msgstr "Afișați toate proiectele"
+
+msgid "Show selected projects"
+msgstr "Afișați proiectele selectate"
+
+msgid "Disallow all projects"
+msgstr "Nu permite toate proiectele"
+
+msgid "Unselect all projects"
+msgstr "Deselectați toate proiectele"
+
+msgid "Select all projects"
+msgstr "Selectați toate proiectele"
+
+msgid "Unselect all users"
+msgstr "Deosebiți toți utilizatorii"
+
+msgid "Select all users"
+msgstr "Selectați toți utilizatorii"
+
+msgid "Show all users"
+msgstr "Afișați toți utilizatorii"
+
+msgid "Show selected users"
+msgstr "Afișați utilizatorii selectați"
+
+msgid "Set color"
+msgstr "Setați culoarea"
+
+msgid "Set project tag color"
+msgstr "Setați culoarea etichetei proiectului"
+
+msgid "Set color for all shown project tags"
+msgstr "Setați culoarea pentru toate etichetele de proiect afișate"
+
+# File objects
+msgid "Type"
+msgstr "Tip"
+
+msgid "Size"
+msgstr "Dimensiune"
+
+msgid "Number of references"
+msgstr "Numărul de referințe"
+
+msgid "File name"
+msgstr "Numele fișierului"
+
+msgid "File object"
+msgstr "Obiectul fișierului"
+
+msgid "Type some text to filter the list of file objects..."
+msgstr "Introduceți un text pentru a filtra lista de obiecte de fișier..."
+
+msgid "File @@FILEID@@ is referenced in:"
+msgstr "Fișierul @@FILEID@@ este referit în:"
+
+msgid "File references"
+msgstr "Referințe de fișiere"
+
+# Config
+msgid "Phabricator"
+msgstr "Phabricator"
+
+msgid "UI Controls"
+msgstr "Controale UI"
+
+msgid "General"
+msgstr "General"
+
+msgid "Enter the URL of your Phabricator server:"
+msgstr "Introduceți adresa URL a serverului Phabricator:"
+
+msgid "Phabricator URL"
+msgstr "Phabricator URL"
+
+msgid "Enter the Conduit API Token for your Phabricator account:"
+msgstr "Introduceți Tokenul API Conduit pentru contul dumneavoastră Phabricator:"
+
+msgid "Conduit API Token"
+msgstr "Conduit API Token"
+
+msgid "Choose the synchronization method for Maniphest tasks:"
+msgstr "Alegeți metoda de sincronizare pentru sarcinile Maniphest:"
+
+msgid "Synchronize Maniphest tasks for"
+msgstr "Sincronizarea sarcinilor Maniphest pentru"
+
+msgid "Selected users only"
+msgstr "Utilizatorii selectați numai"
+
+msgid "Choose the default state for new or modified Maniphest tasks:"
+msgstr "Alegeți starea implicită pentru sarcinile Maniphest noi sau modificate:"
+
+msgid "Mark new/modified Maniphest tasks as"
+msgstr "Marcați sarcinile Maniphest noi/modificate ca fiind "
+
+msgid "Delete closed Maniphest tasks from Phabrico older than:"
+msgstr "Ștergeți sarcinile Maniphest închise din Phabrico mai vechi de:"
+
+msgid "Maximum lifetime closed Maniphest tasks"
+msgstr "Durata maximă de viață a sarcinilor Maniphest închise"
+
+msgid "1 day"
+msgstr "1 zi"
+
+msgid "1 week"
+msgstr "1 săptămână"
+
+msgid "2 weeks"
+msgstr "2 săptămâni"
+
+msgid "1 month"
+msgstr "1 lună"
+
+msgid "3 months"
+msgstr "3 luni"
+
+msgid "6 months"
+msgstr "6 luni"
+
+msgid "1 year"
+msgstr "1 an"
+
+msgid "10 years"
+msgstr "10 ani"
+
+msgid "Visible Maniphest states"
+msgstr "Stări vizibile"
+
+msgid "Show only those tasks assigned to me that have one of the following states:"
+msgstr "Afișați numai sarcinile care mi-au fost atribuite și care au una dintre următoarele stări:"
+
+msgid "Choose the synchronization method for Phriction documents:"
+msgstr "Alegeți metoda de sincronizare pentru documentele Phriction:"
+
+msgid "Synchronize Phriction documents for"
+msgstr "Sincronizare documente Phriction pentru"
+
+msgid "All projects"
+msgstr "Toate proiectele"
+
+msgid "Selected projects only"
+msgstr "Numai proiectele selectate"
+
+msgid "Selected projects only including document tree"
+msgstr "Numai proiectele selectate, inclusiv arborele de documente"
+
+msgid "Selected projects combined"
+msgstr "Proiecte selectate combinate"
+
+msgid "Selected projects combined including document tree"
+msgstr "Proiecte selectate combinate, inclusiv arborele de documente"
+
+msgid "Choose the default state for new or modified Phriction documents:"
+msgstr "Alegeți starea implicită pentru documentele Phriction noi sau modificate:"
+
+msgid "Mark new/modified Phriction documents as"
+msgstr "Marcați documentele Phriction noi/modificate ca fiind"
+
+msgid "Add information about the Phriction document in the action menu on the right"
+msgstr "Adăugați informații despre documentul Phriction în meniul de acțiune din dreapta"
+
+msgid "Show Phriction metadata"
+msgstr "Afișați metadatele Phriction"
+
+msgid "Download project tags and subcribers for all Phriction documents"
+msgstr "Descărcați etichetele de proiect și subabonații pentru toate documentele Phriction"
+
+msgid "Force download all Phriction metadata"
+msgstr "Forțați descărcarea tuturor metadatelor Phriction"
+
+msgid "Frozen: local modifications will not be uploaded during synchronization"
+msgstr "Blocat: modificările locale nu vor fi încărcate în timpul sincronizării"
+
+msgid "Unfrozen: local modifications will be uploaded during synchronization"
+msgstr "Unfrozen: modificările locale vor fi încărcate în timpul sincronizării"
+
+msgid "Add Copy button:"
+msgstr "Adăugați Buton de copiere:"
+
+msgid "Add Copy-to-clipboard button to code blocks:"
+msgstr "Adăugați butonul Copy-to-clipboard la blocurile de cod:"
+
+msgid "Use dynamic coloring for project tags:"
+msgstr "Utilizați colorarea dinamică pentru etichetele proiectului:"
+
+msgid "Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:"
+msgstr "Permiteți traducerea titlului unui bloc de notificare NOTĂ, AVERTISMENT sau IMPORTANT:"
+
+msgid "Translate notification block titles:"
+msgstr "Traduceți titlurile blocurilor de notificare:"
+
+msgid "Generate a separate color for each project tag shown:"
+msgstr "Generați o culoare separată pentru fiecare etichetă de proiect afișată:"
+
+msgid "Confidential Table Headers"
+msgstr "Capetele de tabel confidențiale"
+
+msgid "Confidential Table Header"
+msgstr "Antet de tabel confidențial"
+
+msgid "Enter the text of table row/column headers which should only be visible when you move the mouse over it:"
+msgstr "Introduceți textul antetelor de rânduri/coloane de tabel care ar trebui să fie vizibile numai atunci când treceți cu mouse-ul peste ele:"
+
+msgid "Add Confidential Table Header"
+msgstr "Adăugați antet de tabel confidențial"
+
+msgid "Auto log on"
+msgstr "Conectare automată"
+
+msgid "Yes (Windows authentication)"
+msgstr "Da (autentificare Windows)"
+
+msgid "Allow to log on automatically but disable synchronization and configuration"
+msgstr "Permite conectarea automată, dar dezactivează sincronizarea și configurarea"
+
+msgid "Remove"
+msgstr "Eliminați"
+
+msgid "WARNING: this will create a security risk by storing the encryption key in the Phabrico database"
+msgstr "AVERTISMENT: acest lucru va crea un risc de securitate prin stocarea cheii de criptare în baza de date Phabrico"
+
+msgid "Maximum Duration of Inactivity"
+msgstr "Durata maximă a inactivității"
+
+msgid "Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)"
+msgstr "Fiecare sesiune este configurată să se deconecteze automat după un număr de minute (0 sau mai mic = fără deconectare automată, 1440 este valoarea maximă)"
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "Choose the color theme you want to use:"
+msgstr "Alegeți tema de culoare pe care doriți să o utilizați:"
+
+msgid "Light"
+msgstr "Deschisă"
+
+msgid "Dark"
+msgstr "Întunecată"
+
+msgid "Darken light images"
+msgstr "Întunecă imaginile luminoase"
+
+msgid "Moderate"
+msgstr "Moderat"
+
+msgid "Extreme"
+msgstr "Extrem"
+
+msgid "Select a user role tag..."
+msgstr "Selectați o etichetă de rol de utilizator..."
+
+msgid "User account"
+msgstr "Cont de utilizator"
+
+msgid "Tag"
+msgstr "Etichetă"
+
+msgid "Add user"
+msgstr "Adăugați un utilizator"
+
+msgid "Remove user"
+msgstr "Eliminați un utilizator"
+
+msgid "Are you sure you want to remove @@USER@@ ?"
+msgstr "Sunteți sigur că doriți să eliminați @@USER@@?"
+
+msgid "Phabrico user accounts"
+msgstr "Conturi de utilizator Phabrico"
+
+msgid "Secondary User Accounts:"
+msgstr "Conturi de utilizator secundare:"
+
+msgid "Getting started with Phabrico"
+msgstr "Noțiuni de bază pentru a începe cu Phabrico"
+
+msgid "In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator."
+msgstr "În acest ecran Configurație, puteți schimba aspectul Phabrico și puteți configura ce date trebuie sincronizate cu Phabricator."
+
+msgid "Which Phabricator accounts should be monitored ?"
+msgstr "Ce conturi Phabricator trebuie monitorizate ?"
+
+msgid "In this Users screen, you can select for which Phabricator users you want to have your data always available."
+msgstr "În acest ecran Utilizatori, puteți selecta pentru ce utilizatori Phabricator doriți ca datele dumneavoastră să fie întotdeauna disponibile."
+
+msgid "Currently, only your Phabricator account is selected."
+msgstr "În prezent, este selectat doar contul dumneavoastră Phabricator."
+
+msgid "Which Phabricator projects should be monitored ?"
+msgstr "Ce proiecte Phabricator ar trebui să fie monitorizate ?"
+
+msgid "In this Projects screen, you can select for which Phabricator projects you want to have your data always available."
+msgstr "În acest ecran Proiecte, puteți selecta proiectele Phabricator pentru care doriți ca datele dumneavoastră să fie întotdeauna disponibile."
+
+msgid "You can here also change the colors of the project tags."
+msgstr "Tot aici puteți schimba culorile etichetelor proiectelor."
+
+msgid "In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...)."
+msgstr "În configurația actuală, Phabrico va sincroniza toate documentele Phriction și va sincroniza numai sarcinile Maniphest deschise în care ați fost implicat (de exemplu, atribuit, abonat, ...)."
+
+msgid "Click on the Synchronize button to download all requested data from Phabricator"
+msgstr "Faceți clic pe butonul Sincronizare pentru a descărca toate datele solicitate de la Phabricator"
+
+# Offline changes
+msgid "Offline changes for $$ITEM$$"
+msgstr "Modificări locale pentru $$ITEM$$$"
+
+msgid "Overview offline changes"
+msgstr "Prezentare generală a modificărilor locale"
+
+msgid "Dismiss local version"
+msgstr "Renunțați la versiunea locală"
+
+msgid "Save local version"
+msgstr "Salvați versiunea locală"
+
+msgid "Phabricator version"
+msgstr "Versiunea Phabricator"
+
+msgid "Local version"
+msgstr "Versiunea locală"
+
+msgid "Are you sure you want to dismiss all your local changes for this document ?"
+msgstr "Sunteți sigur că doriți să respingeți toate modificările locale pentru acest document ?"
+
+msgid "Modification"
+msgstr "Modificare"
+
+msgid "Content"
+msgstr "Conținut"
+
+msgid "Freeze"
+msgstr "Îngheață"
+
+msgid "Unfreeze"
+msgstr "Dezghețare"
+
+msgid "No offline changes found"
+msgstr "Nu s-au găsit modificări offline"
+
+msgid "Are you sure you want to undo this local change ?"
+msgstr "Sunteți sigur că doriți să anulați această modificare locală?"
+
+msgid "(New)"
+msgstr "(Nou)"
+
+msgid "(Metadata modified)"
+msgstr "(Metadate modificate)"
+
+msgid "(Priority modified)"
+msgstr "(Prioritate modificată)"
+
+msgid "(Owner modified)"
+msgstr "(proprietar modificat)"
+
+msgid "(Status modified)"
+msgstr "(Stare modificată)"
+
+msgid "Project @@PROJECT@@ tagged"
+msgstr "Proiect @@PROJECT@@ etichetat"
+
+msgid "Subscriber @@SUBSCRIBER@@ added"
+msgstr "Abonat @@SUBSCRIBER@@ adăugat"
+
+msgid "Append left line after right line"
+msgstr "Adăugați linia din stânga după linia din dreapta"
+
+msgid "Append left block after right block"
+msgstr "Adăugarea blocului din stânga după blocul din dreapta"
+
+msgid "Insert left line before right line"
+msgstr "Inserarea liniei din stânga înaintea liniei din dreapta"
+
+msgid "Insert left block before right block"
+msgstr "Inserarea blocului din stânga înaintea blocului din dreapta"
+
+msgid "Replace right line with left line"
+msgstr "Înlocuiți linia dreaptă cu linia stângă"
+
+msgid "Replace right block with left block"
+msgstr "Înlocuirea blocului din dreapta cu blocul din stânga"
+
+msgid "The Phabricator server contains a newer version"
+msgstr "Serverul Phabricator conține o versiune mai nouă"
+
+msgid "Frozen"
+msgstr "Înghețat"
+
+msgid "Modified"
+msgstr "Modificat"
+
+msgid "Rename path"
+msgstr "Modificare URL"
+
+msgid "New path:"
+msgstr "Cale nouă:"
+
+msgid "Current path:"
+msgstr "Calea actuală:"
+
+msgid "Change path"
+msgstr "Modificarea căii"
+
+msgid "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+msgstr "Calea de acces la acest document are mai mult de 100 de caractere. Acest document poate fi încărcat în continuare în Phabricator, dar documentele subiacente nou create nu pot fi încărcate."
+
+msgid "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+msgstr "Calea de acces la acest document are mai mult de 115 caractere. Acest document nu poate fi încărcat în Phabricator."
+
+msgid "An internal error occurred"
+msgstr "A apărut o eroare internă"
+
+msgid "A document already exists with this slug path"
+msgstr "Există deja un document cu această cale slug"
+
+# Remarkup editor
+msgid "Bold"
+msgstr "Bold"
+
+msgid "Bold text"
+msgstr "Text în bold"
+
+msgid "Italic"
+msgstr "Italic"
+
+msgid "Italic text"
+msgstr "Text italic"
+
+msgid "Monospaced"
+msgstr "Monospaced"
+
+msgid "Monospaced text"
+msgstr "Monospaced text"
+
+msgid "Bulleted List"
+msgstr "Listă cu buline"
+
+msgid "Numbered List"
+msgstr "Listă numerotată"
+
+msgid "Code Block"
+msgstr "Bloc de coduri"
+
+msgid "Quote"
+msgstr "Citat"
+
+msgid "Table"
+msgstr "Tabel"
+
+msgid "Diagram"
+msgstr "Diagramă"
+
+msgid "Unlock edit and view windows"
+msgstr "Deblocați ferestrele de editare și vizualizare"
+
+msgid "Help"
+msgstr "Ajutor"
+
+msgid "Set Sail for Adventure"
+msgstr "Porniți spre aventură"
+
+msgid "Add Action..."
+msgstr "Adaugă acțiune..."
+
+msgid "CodeBlock.Copy"
+msgstr "Copiați"
+
+msgid "Notification.IMPORTANT"
+msgstr "IMPORTANT"
+
+msgid "Notification.NOTE"
+msgstr "NOTĂ"
+
+msgid "Notification.WARNING"
+msgstr "AVERTISMENT"
+
+msgid "FileReference.Download"
+msgstr "Descărcați"
+
+# Browser not supported
+msgid "Browser not supported"
+msgstr "Browser neacceptat"
+
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access @@CUSTOM-APPLICATION-NAME@@"
+msgstr "Utilizați Mozilla Firefox, Opera, Google Chrome sau Microsoft Edge pentru a accesa @@CUSTOM-APPLICATION-NAME@@."
+
+# URL Not Found
+msgid "404"
+msgstr "404"
+
+msgid "Url not found:"
+msgstr "Url nu a fost găsit:"
+
+msgid "Show content in Phabricator instead"
+msgstr "Afișați în schimb conținutul în Phabricator"
+
+# Access denied
+msgid "ACCESS DENIED"
+msgstr "ACCES REFUZAT"
+
+msgid "Details:"
+msgstr "Detalii:"
+
+msgid "URL:"
+msgstr "URL:"
+
+msgid "Comment:"
+msgstr "Comentariu:"
+
+msgid "You don't have sufficient rights to configure Phabrico"
+msgstr "Nu aveți drepturi suficiente pentru a configura Phabrico"
+
+msgid "You don't have sufficient rights to synchronize Phabrico with Phabricator"
+msgstr "Nu aveți suficiente drepturi pentru a sincroniza Phabrico cu Phabricator"
+
+msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
+msgstr "Acest document Phriction sau sarcină Maniphest nu a fost descărcat de pe serverul Phabricator deoarece a fost abonat de unul sau mai multe proiecte sau utilizatori nepermise."
+
+# Invalid configuration
+msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
+msgstr "Validați conținutul fișierului @@APP-CONFIG-FILENAME@@."
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "Validați conținutul fișierului @@IISMODULE-CONFIG-FILENAME@@."
+
+msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
+msgstr "Verificați dacă @@APP-CONFIG-FILENAME@@ există."
+
+msgid "Error:"
+msgstr "Eroare:"
+
+msgid "CONFIGURATION INVALID OR MISSING"
+msgstr "CONFIGURAȚIE INVALIDĂ SAU LIPSĂ"

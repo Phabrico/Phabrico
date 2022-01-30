@@ -72,6 +72,11 @@ namespace Phabrico.Http.Response
 
             foreach (string language in availableLanguages.Keys.OrderBy(lang => lang))
             {
+                if (HttpServer.Customization.AvailableLanguages != null && HttpServer.Customization.AvailableLanguages.All(lang => lang != availableLanguages[language]))
+                {
+                    continue;
+                }
+
                 if (availableLanguages[language].Equals(currentLanguageCode))
                 {
                     htmlResult += string.Format("<option selected='selected' value='{0}'>&nbsp;{1}</option>\n", availableLanguages[language], language);

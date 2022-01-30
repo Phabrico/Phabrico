@@ -122,7 +122,21 @@ namespace Phabrico.Phabricator.Data
         public override int CompareTo(object obj)
         {
             Phriction other = obj as Phriction;
+            if (other == null) return -1;
+
             return Name.CompareTo(other.Name);
+        }
+
+        /// <summary>
+        /// Compares a Phriction document with another Phriction document
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public bool Equals(Phriction otherPhrictionDocument)
+        {
+            if (otherPhrictionDocument == null) return false;
+
+            return base.Equals(otherPhrictionDocument);
         }
 
         /// <summary>

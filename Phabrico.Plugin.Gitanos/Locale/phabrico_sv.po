@@ -1,0 +1,179 @@
+# Swedish translations
+
+# General
+msgid "Gitanos"
+msgstr "Gitanos"
+
+msgid "Shows the status of all local git repositories"
+msgstr "Visar statusen för alla lokala git-förråd"
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "Ange de kataloger där alla dina git-arkivkataloger finns:"
+
+msgid "Local root directories"
+msgstr "Lokala rotkataloger"
+
+msgid "Add root directory"
+msgstr "Lägg till rotkatalogen"
+
+msgid "Gitanos::Notification"
+msgstr "Anmälan"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "Sammanfatta följande tillstånd för alla arkiv och visa resultatet som ett meddelande:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "Lokala git-förråd"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "Skriv en text för att filtrera listan över git-förvaringsställen..."
+
+msgid "Show clean repositories"
+msgstr "Visa rena förvaringsutrymmen"
+
+msgid "Hide clean repositories"
+msgstr "Dölj rena förvaringsutrymmen"
+
+msgid "Show Phabricator repositories"
+msgstr "Visa Phabricator-förråd"
+
+msgid "Repository"
+msgstr "Förråd"
+
+msgid "Branch"
+msgstr "Gren"
+
+msgid "Gitanos::Added"
+msgstr "Tillagd"
+
+msgid "Gitanos::Removed"
+msgstr "Borttagen"
+
+msgid "Gitanos::Modified"
+msgstr "Ändrat"
+
+msgid "Gitanos::ModifiedTooLarge"
+msgstr "Ändrad (för stor)"
+
+msgid "Gitanos::Renamed"
+msgstr "Omdöpt till"
+
+msgid "Gitanos::Untracked"
+msgstr "Ospårad"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "Det finns några lokala ändringar som ännu inte har lagts fram."
+
+# Repository modifications overview
+msgid "Git repository"
+msgstr "Git-förvaringsutrymme"
+
+msgid "File"
+msgstr "Fil"
+
+msgid "Modification Type"
+msgstr "Ändring Typ"
+
+msgid "Timestamp"
+msgstr "Tidsstämpel"
+
+msgid "Unpushed commit"
+msgstr "Ej framskjuten överföring"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "Skriv en text för att filtrera listan över ändringar..."
+
+msgid "COMMIT"
+msgstr "KOMMITERING"
+
+msgid "PUSH"
+msgstr "PUSH"
+
+msgid "Actions"
+msgstr "Åtgärder"
+
+msgid "Select all files"
+msgstr "Välj alla filer"
+
+msgid "Unselect all files"
+msgstr "Avmarkera alla filer"
+
+msgid "Commit selected files"
+msgstr "Överföra valda filer"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "Är du säker på att du vill kasta '@@MODIFICATION@@'?"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "Detta är en binär fil som har ändrats."
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "Är du säker på att du vill kasta dina lokala ändringar för @@FILENAME@@?"
+
+msgid "Undo modification"
+msgstr "Ångra ändring"
+
+msgid "File was successfully saved"
+msgstr "Filen sparades framgångsrikt"
+
+msgid "File could not be saved"
+msgstr "Filen kunde inte sparas"
+
+msgid "Diff"
+msgstr "Diff"
+
+msgid "Save"
+msgstr "Spara"
+
+msgid "Edit"
+msgstr "Redigera"
+
+msgid "Line number:"
+msgstr "Linjenummer:"
+
+msgid "This git repository is clean"
+msgstr "Detta git-förråd är rent"
+
+msgid "Repository successfully cloned"
+msgstr "Repository framgångsrikt klonat"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "Katalog @@DIRECTORY@@ finns inte."
+
+msgid "Error git push"
+msgstr "Fel git push"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "Klonering av"
+
+msgid "Destination:"
+msgstr "Destination:"
+
+msgid "Clone repository"
+msgstr "Klona arkiv"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "Uppropssignal"
+
+msgid "Short name"
+msgstr "Kortnamn"
+
+msgid "Name"
+msgstr "Namn"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "Det fanns inga arkiv som synkroniserades från Phabricator."
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "Listan över synkroniserade arkiv från Phabricator"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "Skriv in text för att filtrera listan över förvaringsutrymmen..."

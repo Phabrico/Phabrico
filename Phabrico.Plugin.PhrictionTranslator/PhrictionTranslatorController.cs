@@ -36,13 +36,11 @@ namespace Phabrico.Plugin
         /// After this HttpPostValidationConfirmation reponse is handled in the browser, this method is executed again
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/PhrictionTranslator")]
-        public JsonMessage HttpPostTranslateDocument(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostTranslateDocument(Http.Server httpServer, string[] parameters)
         {
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
             DictionarySafe<string, string> formVariables = browser.Session.FormVariables[browser.Request.RawUrl];
 
@@ -60,6 +58,23 @@ namespace Phabrico.Plugin
                 if (formVariables.ContainsKey("language-chosen") == false)
                 {
                     string javascript = @"
+                            function sortSelectOptions(select) {
+                                var sortedOptions = [];
+                                for (var i = 0; i < select.options.length; i++) {
+                                    sortedOptions.push(select.options[i]);
+                                }
+                                sortedOptions = sortedOptions.sort(function (a, b) {           
+                                    return a.innerHTML > b.innerHTML;
+                                });
+
+                                for (var i = 0; i <= select.options.length; i++) {            
+                                    select.options[i] = sortedOptions[i];
+                                }
+                            }
+
+                            sortSelectOptions(sourceLanguage);
+                            sortSelectOptions(targetLanguage);
+
                             function refreshTranslationEngine(eng) {
                                 var hasAPIKey = translationEngine.querySelector('option[value=""' + eng +'""]').classList.contains('apiKey1');
                                 if (hasAPIKey) {
@@ -91,6 +106,9 @@ namespace Phabrico.Plugin
                             }
 
                             refreshTargetLanguages(sourceLanguage.value);
+
+                            // set default source language via javascript because Firefox sets the wrong default selection when using Phabrico for example in Russian
+                            paramSourceLanguage.querySelector('select').value = 'en';
                     ";
 
                     string TranslationEngineName = Locale.TranslateText("Translation engine", browser.Session.Locale);
@@ -164,11 +182,11 @@ namespace Phabrico.Plugin
                                         <!-- <option value='bg'>{LanguageBulgarian}</option>              -->
                                              <option value='zh'>{LanguageChinese}</option>
                                         <!-- <option value='cs'>{LanguageCzech}</option>                  -->
-                                        <!-- <option value='da'>{LanguageDanish}</option>                 -->
+                                             <option value='da'>{LanguageDanish}</option>
                                              <option value='nl'>{LanguageDutch}</option>
                                              <option value='en' selected>{LanguageEnglish}</option>
                                         <!-- <option value='et'>{LanguageEstonian}</option>               -->
-                                        <!-- <option value='fi'>{LanguageFinnish}</option>                -->
+                                             <option value='fi'>{LanguageFinnish}</option>
                                         <!-- <option value='fr'>{LanguageFrench}</option>                 -->
                                              <option value='de'>{LanguageGerman}</option>
                                         <!-- <option value='el'>{LanguageGreek}</option>                  -->
@@ -179,12 +197,12 @@ namespace Phabrico.Plugin
                                         <!-- <option value='lt'>{LanguageLithuanian}</option>             -->
                                         <!-- <option value='pl'>{LanguagePolish}</option>                 -->
                                         <!-- <option value='pt'>{LanguagePortuguese}</option>             -->
-                                        <!-- <option value='ro'>{LanguageRomanian}</option>               -->
-                                        <!-- <option value='ru'>{LanguageRussian}</option>                -->
+                                             <option value='ro'>{LanguageRomanian}</option>
+                                             <option value='ru'>{LanguageRussian}</option>
                                         <!-- <option value='sk'>{LanguageSlovak}</option>                 -->
                                         <!-- <option value='sl'>{LanguageSlovenian}</option>              -->
                                              <option value='es'>{LanguageSpanish}</option>
-                                        <!-- <option value='sv'>{LanguageSwedish}</option>                -->
+                                             <option value='sv'>{LanguageSwedish}</option>
                                     </select>
                                 </td>
                             </tr>
@@ -196,11 +214,11 @@ namespace Phabrico.Plugin
                                         <!-- <option value='bg'>{LanguageBulgarian}</option>              -->
                                              <option value='zh'>{LanguageChinese}</option>
                                         <!-- <option value='cs'>{LanguageCzech}</option>                  -->
-                                        <!-- <option value='da'>{LanguageDanish}</option>                 -->
+                                             <option value='da'>{LanguageDanish}</option>
                                              <option value='nl'>{LanguageDutch}</option>
                                              <option value='en'>{LanguageEnglish}</option>
                                         <!-- <option value='et'>{LanguageEstonian}</option>               -->
-                                        <!-- <option value='fi'>{LanguageFinnish}</option>                -->
+                                             <option value='fi'>{LanguageFinnish}</option>
                                         <!-- <option value='fr'>{LanguageFrench}</option>                 -->
                                              <option value='de'>{LanguageGerman}</option>
                                         <!-- <option value='el'>{LanguageGreek}</option>                  -->
@@ -211,12 +229,12 @@ namespace Phabrico.Plugin
                                         <!-- <option value='lt'>{LanguageLithuanian}</option>             -->
                                         <!-- <option value='pl'>{LanguagePolish}</option>                 -->
                                         <!-- <option value='pt'>{LanguagePortuguese}</option>             -->
-                                        <!-- <option value='ro'>{LanguageRomanian}</option>               -->
-                                        <!-- <option value='ru'>{LanguageRussian}</option>                -->
+                                             <option value='ro'>{LanguageRomanian}</option>
+                                             <option value='ru'>{LanguageRussian}</option>
                                         <!-- <option value='sk'>{LanguageSlovak}</option>                 -->
                                         <!-- <option value='sl'>{LanguageSlovenian}</option>              -->
                                              <option value='es'>{LanguageSpanish}</option>
-                                        <!-- <option value='sv'>{LanguageSwedish}</option>                -->
+                                             <option value='sv'>{LanguageSwedish}</option>
                                     </select>
                                 </td>
                             </tr>
@@ -292,21 +310,22 @@ namespace Phabrico.Plugin
                     }
                     else
                     {
-                        Dictionary<int, List<string>> invalidFiles = new Dictionary<int, List<string>>();
-                        Dictionary<string, List<string>> invalidHyperlinks = new Dictionary<string, List<string>>();
                         List<string> errorMessages = new List<string>();
 
                         string sourceLanguage = formVariables["sourceLanguage"];
                         string targetLanguage = formVariables["targetLanguage"];
-                        string errorMessage = TranslateDocument(database, phrictionDocument.Token, translationEngine, apiKey, sourceLanguage, targetLanguage);
+                        string errorMessage = TranslateDocument(database, phrictionDocument?.Token, translationEngine, apiKey, sourceLanguage, targetLanguage);
                         if (errorMessage != null)
                         {
                             errorMessages.Add(errorMessage);
                         }
                         else
                         {
-                            // uncache document
-                            httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                            if (phrictionDocument != null)
+                            {
+                                // uncache document
+                                httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                            }
 
                             // do we also need to validate the underlying documents ?
                             if (formVariables["includeUnderlyingDocuments"] == "Yes")
@@ -432,30 +451,38 @@ namespace Phabrico.Plugin
             RemarkupParserOutput remarkupParserOutput;
             Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken, Language.NotApplicable);
 
-            if (string.IsNullOrWhiteSpace(phrictionDocument.Content)) return null;
-
             Language originalLanguage = browser.Session.Locale;
             browser.Session.Locale = targetLanguage;
 
             try
             {
-                string html = remarkup.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
-                string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
-
+                string translatedContent = "";
                 string translatedTitle = translator.TranslateText(sourceLanguage, targetLanguage, phrictionDocument.Name);
-                string translatedXmlContent = translator.TranslateXML(sourceLanguage, targetLanguage, xmlData);
-                string correctedTranslatedXmlContent = CorrectTranslatedXmlContent(translatedXmlContent);
-                string translatedContent = remarkupParserOutput.TokenList.FromXML(database, browser, "/", correctedTranslatedXmlContent, true);
+                if (string.IsNullOrWhiteSpace(phrictionDocument.Content) == false)
+                {
+                    remarkup.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+
+                    string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
+
+                    string translatedXmlContent = translator.TranslateXML(sourceLanguage, targetLanguage, xmlData);
+                    string correctedTranslatedXmlContent = CorrectTranslatedXmlContent(translatedXmlContent);
+                    browser.Language = targetLanguage;
+                    translatedContent = remarkupParserOutput.TokenList.FromXML(database, browser, "/", correctedTranslatedXmlContent, true);
+                    browser.Language = sourceLanguage;
+                }
 
                 Storage.Content content = new Content(database);
                 content.AddTranslation(phrictionDocument.Token, (Language)targetLanguage, translatedTitle, translatedContent);
 
-                // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
-                remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
-                database.ClearAssignedTokens(phrictionToken, targetLanguage);
-                foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                if (string.IsNullOrWhiteSpace(translatedContent) == false)
                 {
-                    database.AssignToken(phrictionDocument.Token, linkedPhabricatorObject.Token, targetLanguage);
+                    // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
+                    remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
+                    database.ClearAssignedTokens(phrictionToken, targetLanguage);
+                    foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                    {
+                        database.AssignToken(phrictionDocument.Token, linkedPhabricatorObject.Token, targetLanguage);
+                    }
                 }
 
                 // clean up old translations

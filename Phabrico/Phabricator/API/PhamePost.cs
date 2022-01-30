@@ -53,6 +53,7 @@ namespace Phabrico.Phabricator.API
                                             firstItemId
                                            );
                 JObject phamePostData = JsonConvert.DeserializeObject(json) as JObject;
+                if (phamePostData == null) break;
 
                 List<JObject> phamePosts = phamePostData["result"]["data"].OfType<JObject>().ToList();
                 if (phamePosts.Any() == false) break;
@@ -107,6 +108,7 @@ namespace Phabrico.Phabricator.API
                                             ""
                                            );
                 JObject phameBlogtData = JsonConvert.DeserializeObject(json) as JObject;
+                if (phameBlogtData == null) break;
 
                 string blogTitle = phameBlogtData["result"]["data"][0]["fields"]["name"].ToString();
 

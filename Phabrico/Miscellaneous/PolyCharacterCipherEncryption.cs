@@ -17,12 +17,12 @@ namespace Phabrico.Miscellaneous
         /// <summary>
         /// Translation table
         /// </summary>
-        private Dictionary<byte, Dictionary<byte, byte>> tabulaRecta = new Dictionary<byte, Dictionary<byte, byte>>();
+        private readonly Dictionary<byte, Dictionary<byte, byte>> tabulaRecta = new Dictionary<byte, Dictionary<byte, byte>>();
 
         /// <summary>
         /// The encrypted encryption/decryption key to be used
         /// </summary>
-        private byte[] key;
+        private readonly byte[] key;
 
         /// <summary>
         /// Initializes a new instance of the PolyCharacterCipherEncryption

@@ -8,7 +8,7 @@ namespace Phabrico.Http.Response
     /// </summary>
     public class FavIcon : HttpFound
     {
-        private byte[] _content;
+        private readonly byte[] _content;
 
         /// <summary>
         /// Initializes a FavIcon response

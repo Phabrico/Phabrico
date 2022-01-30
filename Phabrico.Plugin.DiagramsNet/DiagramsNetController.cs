@@ -25,12 +25,11 @@ namespace Phabrico.Plugin
         /// This method is fired when the user selects 'Diagram -> Help -> Keyboard Shortcuts'
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="htmlViewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/diagrams.net/help", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView | HtmlViewPage.ContentOptions.HideHeader)]
-        public void HttpGetHelpShortcuts(Http.Server httpServer, Browser browser, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
+        public void HttpGetHelpShortcuts(Http.Server httpServer, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
         {
             htmlViewPage = new HtmlViewPage(httpServer, browser, true, "HelpShortcuts", parameters);
         }
@@ -39,12 +38,11 @@ namespace Phabrico.Plugin
         /// This method is fired when the user selects 'Diagram -> Help -> Quick Start Video'
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="htmlViewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/diagrams.net/quickstart", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView | HtmlViewPage.ContentOptions.HideHeader)]
-        public void HttpGetHelpQuickStartDiagramsNet(Http.Server httpServer, Browser browser, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
+        public void HttpGetHelpQuickStartDiagramsNet(Http.Server httpServer, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
         {
             htmlViewPage = new HtmlViewPage(httpServer, browser, true, "HelpQuickStartDiagramsNet", parameters);
         }
@@ -53,12 +51,11 @@ namespace Phabrico.Plugin
         /// This method is fired when the user opens the Diagram screen (from the Phabrico navigator or via a Remarkup-editor)
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="httpFound"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/diagrams.net", ServerCache = false, HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
-        public void HttpGetDiagramsScreen(Http.Server httpServer, Browser browser, ref HttpFound httpFound, string[] parameters, string parameterActions)
+        public void HttpGetDiagramsScreen(Http.Server httpServer, ref HttpFound httpFound, string[] parameters, string parameterActions)
         {
             Phabricator.Data.File fileObject = null;
             Storage.Account accountStorage = new Storage.Account();
@@ -84,12 +81,44 @@ namespace Phabrico.Plugin
                         string fileObjectName = parameters.FirstOrDefault();
 
                         // check if parameter is really a file object
-                        Match matchFileObjectName = RegexSafe.Match(fileObjectName, "F(-?[0-9]+)", RegexOptions.None);
+                        Match matchFileObjectName = RegexSafe.Match(fileObjectName, "F(TRAN)?(-?[0-9]+)", RegexOptions.None);
                         if (matchFileObjectName.Success)
                         {
                             // open given file object
-                            int fileObjectId = Int32.Parse(matchFileObjectName.Groups[1].Value);
+                            bool isTranslatedObject = matchFileObjectName.Groups[1].Success;
+                            int fileObjectId = Int32.Parse(matchFileObjectName.Groups[2].Value);
 
+                            if (isTranslatedObject)
+                            {
+                                string token = string.Format("PHID-OBJECT-{0}", fileObjectId.ToString().PadLeft(18, '0'));
+                                Storage.Content content = new Content(database);
+                                Storage.Content.Translation translation = content.GetTranslation(token, browser.Session.Locale);
+                                if (translation != null)
+                                {
+                                    Newtonsoft.Json.Linq.JObject fileObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
+                                    if (fileObjectInfo != null)
+                                    {
+                                        fileObject = new Phabricator.Data.File();
+                                        fileObject.ID = fileObjectId;
+                                        fileObject.Token = token;
+
+                                        string base64EncodedData = (string)fileObjectInfo["Data"];
+                                        byte[] buffer = new byte[(int)(base64EncodedData.Length * 0.8)];
+                                        using (MemoryStream ms = new MemoryStream(buffer))
+                                        using (Phabrico.Parsers.Base64.Base64EIDOStream base64EIDOStream = new Parsers.Base64.Base64EIDOStream(base64EncodedData))
+                                        {
+                                            base64EIDOStream.CopyTo(ms);
+                                            Array.Resize(ref buffer, (int)base64EIDOStream.Length);
+                                        }
+
+                                        fileObject.Data = buffer;
+                                        fileObject.Size = buffer.Length;
+                                        fileObject.Properties = (string)fileObjectInfo["Properties"];
+                                        fileObject.FileName = (string)fileObjectInfo["FileName"];
+                                    }
+                                }
+                            }
+                            else
                             if (fileObjectName.StartsWith("F-"))
                             {
                                 Storage.Stage stageStorage = new Storage.Stage();
@@ -100,7 +129,9 @@ namespace Phabrico.Plugin
                                 fileObject = fileStorage.GetByID(database, fileObjectId, false);
                             }
 
-                            diagramName = string.Format("F{0}", fileObjectId);
+                            diagramName = string.Format("F{0}{1}", 
+                                isTranslatedObject ? "TRAN" : "",
+                                fileObjectId);
                         }
                         else
                         {
@@ -224,30 +255,16 @@ namespace Phabrico.Plugin
         /// The IFRAME will execute this method to load (and show) the Diagrams.Net application
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="httpFound"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         /// <returns></returns>
         [UrlController(URL = "/diagrams.net/webapp", HtmlViewPageOptions = HtmlViewPage.ContentOptions.IFrame)]
-        public HttpMessage HttpGetDiagramsNetEditorIFrame(Http.Server httpServer, Browser browser, ref HttpFound httpFound, string[] parameters, string parameterActions)
+        public HttpMessage HttpGetDiagramsNetEditorIFrame(Http.Server httpServer, ref HttpFound httpFound, string[] parameters, string parameterActions)
         {
-            string javascriptInitializationCode = null;
             if (parameters.TakeWhile(parameter => parameter.StartsWith("?") == false).Any() == false)
             {
                 parameters = new string[] { "index.html" };
-
-                javascriptInitializationCode = string.Format(@"
-                    urlParams.embed     = '1';
-                    urlParams.chrome    = '1';
-                    urlParams.ui    = 'min';
-                    urlParams.lang      = '{0}';
-                    urlParams.modified  = 'unsavedChanges';
-                    urlParams.noExitBtn = '1';
-                    urlParams.proto     = 'json';
-                    urlParams.spin      = '1';
-                    urlParams.sync      = 'manual';
-                ", browser.Language);
             }
             else
             {
@@ -290,11 +307,10 @@ namespace Phabrico.Plugin
         /// This method is fired when the user clicks on the Save button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/diagrams.net/save")]
-        public JsonMessage HttpPostSaveFlowchart(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostSaveFlowchart(Http.Server httpServer, string[] parameters)
         {
             try
             {
@@ -313,8 +329,6 @@ namespace Phabrico.Plugin
                         base64EIDOStream.CopyTo(ms);
                         Array.Resize(ref buffer, (int)base64EIDOStream.Length);
                     }
-
-                    Storage.Account accountStorage = new Storage.Account();
 
                     Phabricator.Data.File file;
                     using (Storage.Database database = new Storage.Database(EncryptionKey))
@@ -342,9 +356,11 @@ namespace Phabrico.Plugin
 
                             using (MemoryStream memoryStream = new MemoryStream(file.Data))
                             {
-                                Bitmap bitmap = new Bitmap(memoryStream);
-                                file.ImagePropertyPixelHeight = bitmap.Height;
-                                file.ImagePropertyPixelWidth = bitmap.Width;
+                                using (Bitmap bitmap = new Bitmap(memoryStream))
+                                {
+                                    file.ImagePropertyPixelHeight = bitmap.Height;
+                                    file.ImagePropertyPixelWidth = bitmap.Width;
+                                }
                             }
 
 
@@ -368,7 +384,7 @@ namespace Phabrico.Plugin
                                     // rename file object in referencing phriction document
                                     if (phrictionDocument != null)
                                     {
-                                        string html = remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+                                        remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
                                         List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
                                                                                                             .OfType<RuleReferenceFile>()
                                                                                                             .ToList();
@@ -383,7 +399,7 @@ namespace Phabrico.Plugin
                                                 if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
 
                                                 phrictionDocument.Content = phrictionDocument.Content.Substring(0, referencedFileObject.Start)
-                                                                          + "{F" + file.ID.ToString()
+                                                                          + "{F" + file.ID
                                                                           + phrictionDocument.Content.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
                                             }
                                         }
@@ -395,7 +411,7 @@ namespace Phabrico.Plugin
                                     // rename file object in referencing maniphest task
                                     if (maniphestTask != null)
                                     {
-                                        string html = remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false);
+                                        remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false);
                                         List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
                                                                                                             .OfType<RuleReferenceFile>()
                                                                                                             .ToList();
@@ -410,7 +426,7 @@ namespace Phabrico.Plugin
                                                 if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
 
                                                 maniphestTask.Description = maniphestTask.Description.Substring(0, referencedFileObject.Start)
-                                                                          + "{F" + file.ID.ToString()
+                                                                          + "{F" + file.ID
                                                                           + maniphestTask.Description.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
                                             }
                                         }

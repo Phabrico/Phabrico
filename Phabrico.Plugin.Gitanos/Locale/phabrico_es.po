@@ -142,7 +142,7 @@ msgstr "Repositorio clonado correctamente"
 
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
-msgstr "El directorio @@DIRECTORY@ no existe"
+msgstr "El directorio @@DIRECTORY@@ no existe"
 
 msgid "Error git push"
 msgstr "Problema con git push"

@@ -24,7 +24,7 @@ namespace Phabrico.Miscellaneous
         /// <summary>
         /// Synchronization object for keeping calls from different threads separately
         /// </summary>
-        private static object _synchronizationObject = new object();
+        private static readonly object _synchronizationObject = new object();
 
         /// <summary>
         /// Current Date (is used to detect if a new day arrived -> NewDay property)
@@ -115,12 +115,11 @@ namespace Phabrico.Miscellaneous
 
             // delete old logfiles
             string oldestLogFileToKeep = logDirectory + "\\" + DateTime.Now.AddDays(-5).ToString("yyyy-MM-dd") + ".log";  // keep log files for maximum 5 days
-            foreach (string oldLogFileName in Directory.EnumerateFiles(logDirectory, "????-??-??*.log", SearchOption.TopDirectoryOnly).ToList())
+            foreach (string oldLogFileName in Directory.EnumerateFiles(logDirectory, "????-??-??*.log", SearchOption.TopDirectoryOnly)
+                                                       .Where(file => file.CompareTo(oldestLogFileToKeep) <= 0)
+                                                       .ToList())
             {
-                if (oldLogFileName.CompareTo(oldestLogFileToKeep) <= 0)
-                {
-                    File.Delete(oldLogFileName);
-                }
+                File.Delete(oldLogFileName);
             }
 
             // create new logfile

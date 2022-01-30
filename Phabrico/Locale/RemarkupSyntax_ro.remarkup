@@ -1,0 +1,619 @@
+﻿= Referință la sintaxa Remarkup =
+
+Phabrico folosește un limbaj de marcare ușor numit "Remarkup", similar cu
+alte limbaje de marcare ușoare, cum ar fi Markdown și Wiki markup.
+
+Acest document descrie modul de formatare a textului cu ajutorul Remarkup.
+
+= Referință rapidă =
+
+Toată sintaxa este explicată mai în detaliu mai jos, dar acesta este un ghid rapid de formatare a textului în Remarkup.
+
+Acestea sunt stiluri inline și pot fi aplicate la majoritatea textului:
+```
+**bold** //italic// `monospaced` ##monospaced## ~~deleted~~ __underlined__
+!!highlighted!!
+T123                      # Legătura cu sarcinile
+{T123}                    # Legătura cu sarcinile (nume complet)
+{F123}                    # Încorporează imagini
+@username                 # Menționează un utilizator
+#project                  # Menționează un proiect
+[[wiki page]]             # Legătură către un document wiki
+[[wiki page | name]]      # Cerneală numită la un document wiki
+http://xyz/               # Legătură către web
+[[http://xyz/ | name]]    # Legătură numită către web
+[name](http://xyz/)       # Legătură alternativă
+```
+Acestea sunt stiluri de bloc și trebuie să fie separate de textul înconjurător prin linii goale:
+```
+= Antet mare =
+
+== Îndrumător mai mic ==
+
+## Acesta este și un antet
+
+De asemenea, un antet mare
+==========================
+
+De asemenea, un antet mai mic
+-----------------------------
+
+> Text citat
+
+Folosiți `-` sau `*` pentru listele cu buline și `#` pentru listele numerotate.
+Folosiți ``` sau indentați două spații pentru cod.
+Utilizați %%% pentru un bloc literal.
+Utilizați | ... | ... pentru tabele.
+```
+
+= Styling de bază =
+
+Formatați **Stiluri de text de bază** astfel:
+```
+**Text negru**
+//text în litere italice//.
+`monospaced text`
+##monospaced text##
+~~ text eliminat~~
+__text subliniat__
+!!text subliniat!!
+```
+
+Acestea produc **text bold**, //text în litere italice//, `text cu litere de tipar`,
+##monospaced text##, ~~text șters~~, __text subliniat__ și, respectiv, !!text evidențiat!!.
+
+= Layout =
+
+Faceți **titluri** ca acesta:
+```
+= Titlul mare =
+
+== Titlul mai mic ==
+
+===== Rubrică foarte mică =====
+
+Titlul mare alternativ
+======================
+
+Rubrica mică alternativă
+------------------------
+```
+
+Opțional, puteți omite semnele `=` de la sfârșit - adică, acestea sunt identice:
+
+```
+== Rubrică mai mică ==
+
+== Rubrică mai mică
+```
+
+Astfel se obțin titluri precum cele din acest document. Asigurați-vă că aveți o linie goală înainte și după titlu.
+
+Listele
+=====
+
+Creați **liste** începând fiecare element cu un `-` sau un `*`:
+```
+lang=text
+- lapte
+- ouă
+- pâine
+
+* rață
+* rață
+* gâscă
+```
+
+Acest lucru produce o listă ca aceasta:
+
+- lapte
+- ouă
+- pâine
+
+(Note that you need to put a space after the `-` or `*`.)
+
+You can make numbered lists with a `#` instead of `-` or `*`:
+
+# Buy the product
+# Extend the product
+# Sell the product back with big profit
+
+Numbered lists can also be started with `1.` or `1)`.
+If you use a number other than `1`, the list will start at that number instead.
+For example:
+
+```
+200) OK
+201) Creat
+202) Acceptat
+```
+
+...produce:
+
+200) OK
+201) Creat
+202) Acceptat
+
+Puteți, de asemenea, anina liste:
+
+```
+- Corp
+  - Cap
+  - Braț
+    - Cot
+    - Mână
+      # Degetul mare
+      # Degetul arătător
+      # Degetul mijlociu
+      # Degetul inelar
+      # Degetul mic
+  - Gamba
+    - Genunchi
+    - Picior
+```
+
+Codul de mai sus produce următorul rezultat:
+
+- Corp
+  - Cap
+  - Braț
+    - Cot
+    - Mână
+      # Degetul mare
+      # Degetul arătător
+      # Degetul mijlociu
+      # Degetul inelar
+      # Degetul mic
+  - Gamba
+    - Genunchi
+    - Picior
+
+Dacă preferați, puteți indenta listele folosind mai multe caractere pentru a arăta indentarea adâncime, astfel:
+
+```
+- Arbore
+-- Ramura
+--- Frunză
+```
+
+Codul de mai sus generează acest lucru:
+
+- Arbore
+-- Ramura
+--- Frunză
+
+Puteți adăuga căsuțe de selectare la elemente, precedându-le cu `[ ]` sau `[X]`, ca de exemplu astfel:
+
+```
+- [X] Preîncălziți cuptorul la 450 de grade.
+- [ ] Se curăță de coajă 35 de lămâi.
+```
+
+produce acest lucru:
+
+- [X] Preîncălziți cuptorul la 450 de grade.
+- [ ] Se curăță de coajă 35 de lămâi.
+
+Faceți **blocuri de cod** cu două spații de indentare:
+
+  f(x, y);
+
+De asemenea, puteți utiliza trei ghilimele pentru a închide blocul de cod:
+
+```
+f(x, y);
+g(f);
+```
+
+Puteți specifica o limbă pentru evidențierea sintaxei cu `lang=xxx`:
+  lang=text
+  lang=html
+  <a href="#">...</a>
+
+Acest lucru va evidenția blocul folosind un evidențator pentru limba respectivă, dacă există unul. disponibil:
+  lang=html
+  <a href="#">...</a>
+
+De asemenea, puteți utiliza un antet `COUNTEREXAMPLE` pentru a arăta că un bloc de cod este rău și nu trebuie copiat:
+  lang=text
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Acest lucru produce un bloc ca acesta:
+
+  COUNTEREXAMPLE
+  function f() {
+     global $$variable_variable;
+  }
+
+Puteți folosi `lines=N` pentru a limita dimensiunea verticală a unei bucăți de cod, și
+`name=some_name.ext` pentru a-i da un nume. De exemplu, aceasta:
+
+  lang=text
+  lang=html, name=exemplu.html, lines=4, counterexample
+  <p>Măr</p>
+  <p>Caisă</p>
+  <p>Avocado</p>
+  <p>Banană</p>
+  <p>Afine</p>
+  <p>Struguri</p>
+
+... produce acest lucru:
+
+  lang=html, name=exemplu.html, lines=4, counterexample
+  <p>Măr</p>
+  <p>Caisă</p>
+  <p>Avocado</p>
+  <p>Banană</p>
+  <p>Afine</p>
+  <p>Struguri</p>
+
+
+Puteți folosi elementele `NOTE:`, `WARNING:` sau `IMPORTANT:` pentru a atrage atenția asupra unei idei importante.
+
+De exemplu, scrieți următoarele:
+
+```
+NOTE: Organizați întâlniri regulate pentru a vă ține angajații treji.
+```
+
+...pentru a produce acest lucru:
+
+NOTE: Țineți întâlniri regulate pentru a vă ține angajații treji.
+
+Folosirea lui `WARNING:` sau `IMPORTANT:` la începutul liniei schimbă culoarea anunțului:
+
+WARNING: Prea multe ședințe pot deveni somnifere.
+
+IMPORTANT: Nu participați la prea multe ședințe
+
+În plus, puteți folosi `(NOTE)`, `(WARNING)` sau `(IMPORTANT)` pentru a obține același efect,
+dar fără ca `(NOTE)`, `(WARNING)` sau `(IMPORTANT)` să apară în în rezultatul redat.
+De exemplu, acest apel utilizează `(NOTE)`:
+
+(NOTE) Nu participați la prea puține ședințe.
+
+
+Linii orizontale
+=============
+
+Puteți împărți secțiuni prin punerea a trei sau mai multe liniuțe pe o linie de sine stătătoare.
+Acest lucru creează un separator sau o regulă orizontală similară cu o etichetă `<hr />`, ca aceasta:
+
+---
+
+Traducerea și scrierea liniuțelor trebuie să apară pe propria linie și să fie separate de alt conținut.
+De exemplu, așa:
+
+```
+Această secțiune va fi separată din punct de vedere vizual.
+
+---
+
+Pe un cu totul alt subiect, ...
+```
+
+
+= Linking URIs =
+
+URI-urile sunt legate automat: http://phabricator.org/
+
+Dacă aveți un URI cu caractere problematice în el, cum ar fi `"http://comma.org/,"`, îl puteți înconjura cu paranteze unghiulare:
+```
+<http://comma.org/,>
+```
+
+Acest lucru va forța parserul să consume întregul URI: <http://comma.org/,>
+
+De asemenea, puteți utiliza crearea de linkuri denumite, în care alegeți textul afișat. Acestea
+funcționează pe internet în general:
+```
+[[http://www.boring-legal-documents.com/ | documente juridice interesante]]
+```
+
+Legăturile de tip Markdown sunt, de asemenea, acceptate:
+```
+[Toil](http://www.trouble.com)
+```
+
+= Legătura cu obiectele =
+
+Puteți face legătura cu obiectele Phabricator, cum ar fi sarcinile Maniphest, menționând numele unui obiect:
+```
+T123    # Legătură către sarcina Maniphest T123
+```
+
+= Embedding Objects
+
+De asemenea, puteți genera referințe cu numele complet la unele obiecte folosind paranteze:
+```
+{T123}  # Legătură către sarcina Maniphest T123 cu numele complet
+```
+
+Aceste referințe vor apărea, de asemenea, atunci când un obiect își schimbă starea (de exemplu, o sarcină sarcină
+sau revizuire este închisă). Unele tipuri de obiecte suportă încorporarea bogată.
+
+== Legătura cu etichetele de proiect
+
+Proiectele pot fi asociate cu ajutorul unui hashtag `#`. Acest lucru funcționează în mod implicit folosind numele proiectului (cu minuscule, subliniat).
+În plus, puteți puteți seta mai multe hashtag-uri suplimentare prin editarea detaliilor proiectului în Phabricator.
+```
+#qa, #quality_assurance
+```
+
+== Încorporarea imaginilor
+
+Puteți încorpora o imagine sau un alt fișier utilizând paranteze pentru a face referire la acesta:
+```
+{F123}
+```
+
+În cele mai multe interfețe, puteți glisa și plasa o imagine de pe computer în câmpul zona de text pentru a o încărca și a o referi.
+
+Cele mai multe browsere acceptă, de asemenea, încărcarea datelor unei imagini doar prin lipirea lor din fereastra de text clipboard în zona de text.
+
+Puteți seta opțiunile de afișare a fișierelor astfel:
+```
+{F123, layout=left, float, size=full, alt="o rățușcă"}
+```
+
+Opțiunile valabile pentru toate fișierele sunt:
+
+- **layout**
+  - left : plasează imaginea în stânga (implicit)
+  - center : plasează imaginea orizontal în centru
+  - right : plasează imaginea în dreapta
+  - inline : plasează imaginea în stânga, dar mai aproape de linia anterioară și de linia următoare
+  - link : Afișează un link în locul imaginii în sine
+- **name** : Atunci când `layout` este setat la `link`, sau pentru alte imagini, acest nume este utilizat ca text al legăturii.
+- **alt** Oferă un text alternativ pentru tehnologiile de asistență.
+
+Fișierele de imagine acceptă aceste opțiuni:
+
+- **float** Dacă layout-ul este setat la stânga sau la dreapta, imaginea va fi flotantă, astfel încât textul se înfășoară în jurul ei.
+- **size** thumb (implicit), full
+- **width** Adaptați imaginea la o anumită lățime.
+- **height** Scalarea imaginii la o anumită înălțime.
+
+Fișierele audio și video acceptă aceste opțiuni:
+
+- **media**: Specificați tipul de suport ca fiind `audio` sau `video`. Acest lucru vă permite să dezambiguizați modul în care trebuie redat formatul de fișier care poate conține fie audio, fie video.
+- **loop**: Rulează în buclă acest suport media.
+- **autoplay**: Începe automat redarea acestui suport media.
+
+= Textul citatului =
+
+Pentru a cita un text, precedați-l cu un `>`:
+```
+  > Acesta este un text citat.
+```
+
+Acest lucru apare astfel:
+
+> Acesta este un text citat.
+
+= Memes =
+
+Puteți utiliza, de asemenea, macrourile de imagine în contextul meme-urilor. De exemplu, dacă aveți o macro de imagine
+numită `grumpy`, puteți crea un meme făcând următoarea operație următoarele:
+```
+{meme, src=grumpy, above=textdesus, below=textdejos}
+```
+
+= Menționarea utilizatorilor =
+
+În Maniphest, puteți menționa un alt utilizator scriind:
+```
+@username
+```
+
+Icoane
+=====
+
+Puteți adăuga pictograme la comentarii folosind sintaxa `{icon ...}`. De exemplu:
+```
+  {icon camera}
+```
+
+Aceasta înseamnă: {icon camera}
+
+Puteți selecta o culoare pentru pictograme:
+```
+  {icon camera color=blue}
+```
+
+Aceasta înseamnă: {icon camera color=blue}
+
+Pentru o listă de pictograme disponibile, consultați [[ https://fontawesome.com/v4.7.0/icons/ | FontAwesome website]]
+Sunt disponibile următoarele culori:
+  - dark              {icon phabrico-square, color=dark}
+  - bluegrey          {icon phabrico-square, color=bluegrey}
+  - white             {icon phabrico-square, color=white}
+  - red               {icon phabrico-square, color=red}
+  - orange            {icon phabrico-square, color=orange}
+  - yellow            {icon phabrico-square, color=yellow}
+  - green             {icon phabrico-square, color=green}
+  - blue              {icon phabrico-square, color=blue}
+  - sky               {icon phabrico-square, color=sky}
+  - indigo            {icon phabrico-square, color=indigo}
+  - pink              {icon phabrico-square, color=pink}
+  - fire              {icon phabrico-square, color=fire}
+  - violet            {icon phabrico-square, color=violet}
+  - lightbluetext     {icon phabrico-square, color=lightbluetext}
+  - lightgreytext     {icon phabrico-square, color=lightgreytext}
+  - grey              {icon phabrico-square, color=grey}
+
+Puteți adăuga `spin` pentru a face pictograma să se rotească:
+```
+  {icon cog spin}
+```
+
+Aceasta înseamnă: {icon cog spin}
+
+
+= Phriction Documents =
+
+Puteți face legătura cu documentele Phriction prin intermediul căii acestora:
+```
+  Asigură-te că semnezi și datezi [[legal/Letter of Marque and Reprisal]]!
+```
+
+În mod implicit, legătura va fi redată cu titlul documentului ca nume al legăturii.
+Cu ajutorul unei pipe (`|`), puteți redenumi link-ul. Utilizați acest lucru pentru a induce în eroare adversarii:
+```
+  Aruncați o privire la aceste [[legal/boring_documents/ | documente juridice interesante]]!
+```
+
+Dacă începeți o cale de legătură cu `./` sau `../`, restul căii va fi evaluată în raport cu pagina wiki curentă.
+De exemplu, dacă scrieți conținut pentru documentul `fruit/`, o legătură către `[[./guava]]` este același lucru
+cu un link către `[[fruit/guava]]` din altă parte.
+
+Legăturile relative pot folosi `../` pentru a traversa arborele de documente.
+De la pagina `produce/vegetables/`, puteți folosi `[[../fruit/guava]]` pentru a face legătura cu pagina pagina `produce/fruit/guava`.
+
+Legăturile relative nu funcționează atunci când sunt folosite în afara paginilor wiki.
+De exemplu, nu puteți utiliza o legătură relativă într-un comentariu la o sarcină, deoarece nu există un loc rezonabil
+de unde să înceapă rezolvarea legăturii.
+
+Atunci când documentele sunt mutate, legăturile relative nu sunt actualizate automat:
+ele sunt păstrate așa cum sunt scrise în prezent. După mutarea unui document, puteți fi necesar să revizuiți și să
+ajustați toate legăturile relative pe care le conține.
+
+
+= Literal Blocks =
+
+Pentru a plasa textul într-un bloc literal, utilizați `%%%`:
+```
+%%%Text care nu va fi procesat de remarkup
+[[http://www.example.com | exemplu]]
+%%%
+```
+
+Remarkup nu va procesa textul din interiorul blocurilor literale (cu excepția scăpării HTML și a păstrării pauzelor de linie).
+
+= Tabele =
+
+Remarkup acceptă o sintaxă simplă de tabel. De exemplu, aceasta:
+
+```
+| Fructe | Culoare | Preț    | Coajă?
+| ------ | ------- | -----   | -----
+| Măr    | roșu    | `$0.93` | nu
+| Banană | galben  | `$0.19` | **Da**.
+```
+
+...produce asta:
+
+| Fructe | Culoare | Preț    | Coajă?
+| ------ | ------- | -----   | -----
+| Măr    | roșu    | `$0.93` | nu
+| Banană | galben  | `$0.19` | **DA**.
+
+Remarkup acceptă, de asemenea, o sintaxă simplificată a tabelelor HTML.
+De exemplu, aceasta:
+
+```
+<table>
+    <tr>
+        <th>Fructe</th>
+        <th>Culoare</th>
+        <th>Preț</th>
+        <th>Coajă?</th>
+    </tr>
+    <tr>
+        <td>Măr</td>
+        <td>roșu</td>
+        <td>`$0.93`</td>
+        <td>nu</td>
+    </tr>
+    <tr>
+        <td>Banană</td>
+        <td>galben</td>
+        <td>`$0.19`</td>
+        <td>**DA**</td>
+    </tr>
+</table>
+```
+
+...produce acest lucru:
+
+<table>
+    <tr>
+        <th>Fructe</th>
+        <th>Culoare</th>
+        <th>Preț</th>
+        <th>Coajă?</th>
+    </tr>
+    <tr>
+        <td>Măr</td>
+        <td>roșu</td>
+        <td>`$0.93`</td>
+        <td>nu</td>
+    </tr>
+    <tr>
+        <td>Banană</td>
+        <td>galben</td>
+        <td>`$0.19`</td>
+        <td>**DA**</td>
+    </tr>
+</table>
+
+Câteva note generale despre această sintaxă:
+
+- etichetele dvs. trebuie să fie toate echilibrate corespunzător;
+- etichetele NU trebuie să includă atribute (`<td>` este OK, `<td style="...">` nu este);
+  - puteți utiliza alte reguli Remarkup (cum ar fi **bold**, //italics//, etc.) în interiorul lor. celulelor de tabel.
+
+Secvențe de navigare
+====================
+
+Puteți utiliza `{nav ...}` pentru a reda o secvență de navigare stilizată atunci când ajutați pe cineva să localizeze ceva. Acest lucru poate fi util la scrierea documentației.
+De exemplu, ați putea da cuiva indicații pentru a cumpăra lămâi:
+
+{nav icon=home, name=Acasă >
+Magazin alimentar >
+Secția de produse alimentare >
+icon=lemon-o, name=Lămâi}
+
+Pentru a reda acest exemplu, utilizați acest marcaj:
+
+```
+{nav icon=home, name=Acasă >
+Magazin alimentar >
+Secția de produse alimentare >
+icon=lemon-o, name=Lămâi}
+```
+
+În general:
+
+  - Separați secțiunile cu `>`.
+  - Fiecare secțiune poate avea doar un nume pentru a adăuga un element la navigare secvență, sau o listă de perechi cheie-valoare.
+  - Cheile acceptate sunt `icon`, `name`, `type` și `href`.
+  - Opțiunea `type` poate fi setată la `instructions` pentru a indica faptul că un element solicită utilizatorului să facă o alegere sau să urmeze instrucțiuni specifice.
+
+Apăsări de taste
+==========
+
+Puteți utiliza `{key ...}` pentru a reda o apăsare stilizată a tastelor. De exemplu, aceasta:
+
+```
+Apăsați {key M} pentru a vizualiza harta stelară.
+```
+
+...redă acest lucru:
+
+> Apăsați {key M} pentru a vizualiza harta stelară.
+
+De asemenea, puteți reda secvențe cu ajutorul tastelor modificatoare. Aceasta:
+
+```
+Folosiți {key command option shift 3} pentru a face o captură de ecran.
+Apăsați {key down down-right right right LP} pentru a activa tehnica hadoken.
+```
+
+...redă acest lucru:
+
+> Folosiți {key command option shift 3} pentru a face o captură de ecran.
+> Apăsați {key down down-right right right LP} pentru a activa tehnica hadoken.

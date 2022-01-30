@@ -1,0 +1,179 @@
+# Russian translations
+
+# General
+msgid "Gitanos"
+msgstr "Gitanos"
+
+msgid "Shows the status of all local git repositories"
+msgstr "Показывает статус всех локальных git-репозиториев"
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "Введите каталоги, в которых находятся все ваши каталоги git-репозиториев:"
+
+msgid "Local root directories"
+msgstr "Локальные корневые каталоги"
+
+msgid "Add root directory"
+msgstr "Добавить корневой каталог"
+
+msgid "Gitanos::Notification"
+msgstr "Уведомление"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "Суммируйте следующие состояния для всех репозиториев и покажите результат в виде уведомления:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "Локальные git-репозитории"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "Введите текст для фильтрации списка git-репозиториев..."
+
+msgid "Show clean repositories"
+msgstr "Показать чистые репозитории"
+
+msgid "Hide clean repositories"
+msgstr "Скрыть чистые репозитории"
+
+msgid "Show Phabricator repositories"
+msgstr "Показать репозитории Phabricator"
+
+msgid "Repository"
+msgstr "Репозиторий"
+
+msgid "Branch"
+msgstr "Ветвь"
+
+msgid "Gitanos::Added"
+msgstr "Добавлено"
+
+msgid "Gitanos::Removed"
+msgstr "Удалено"
+
+msgid "Gitanos::Modified"
+msgstr "Изменено"
+
+msgid "Gitanos::ModifiedTooLarge"
+msgstr "Изменен (слишком большой)"
+
+msgid "Gitanos::Renamed"
+msgstr "Переименовано"
+
+msgid "Gitanos::Untracked"
+msgstr "Неотслеживаемые"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "Есть несколько локальных коммитов, которые еще не были перенесены на новую страницу"
+
+# Repository modifications overview
+msgid "Git repository"
+msgstr "Гит-репозиторий"
+
+msgid "File"
+msgstr "Файл"
+
+msgid "Modification Type"
+msgstr "Тип модификации"
+
+msgid "Timestamp"
+msgstr "Временная метка"
+
+msgid "Unpushed commit"
+msgstr "Неотправленный коммит"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "Введите текст для фильтрации списка модификаций..."
+
+msgid "COMMIT"
+msgstr "КОММИТ"
+
+msgid "PUSH"
+msgstr "PUSH"
+
+msgid "Actions"
+msgstr "Действия"
+
+msgid "Select all files"
+msgstr "Выбрать все файлы"
+
+msgid "Unselect all files"
+msgstr "Снять выделение со всех файлов"
+
+msgid "Commit selected files"
+msgstr "Зафиксировать выбранные файлы"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "Вы уверены, что хотите отменить '@@MODIFICATION@@'?"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "Это бинарный файл, который был изменен."
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "Вы уверены, что хотите отменить локальные изменения для @@FILENAME@@?"
+
+msgid "Undo modification"
+msgstr "Отменить модификацию"
+
+msgid "File was successfully saved"
+msgstr "Файл был успешно сохранен"
+
+msgid "File could not be saved"
+msgstr "Файл не удалось сохранить"
+
+msgid "Diff"
+msgstr "Diff"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Edit"
+msgstr "Редактировать"
+
+msgid "Line number:"
+msgstr "Номер строки:"
+
+msgid "This git repository is clean"
+msgstr "Этот git-репозиторий чист"
+
+msgid "Repository successfully cloned"
+msgstr "Репозиторий успешно клонирован"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "Директория @@DIRECTORY@@ не существует"
+
+msgid "Error git push"
+msgstr "Ошибка git push"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "Клонирование"
+
+msgid "Destination:"
+msgstr "Назначение:"
+
+msgid "Clone repository"
+msgstr "Клонировать репозиторий"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "Позывной"
+
+msgid "Short name"
+msgstr "Краткое имя"
+
+msgid "Name"
+msgstr "Имя"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "Из Phabricator не было синхронизировано ни одного репозитория"
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "Список репозиториев, синхронизированных с Phabricator"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "Введите текст для фильтрации списка репозиториев..."

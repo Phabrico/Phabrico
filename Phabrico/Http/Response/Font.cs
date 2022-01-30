@@ -9,7 +9,7 @@ namespace Phabrico.Http.Response
     /// </summary>
     public class Font : HttpFound
     {
-        private byte[] _content;
+        private readonly byte[] _content;
 
         /// <summary>
         /// Initializes a new HTTP object which identifies a Font
@@ -27,16 +27,21 @@ namespace Phabrico.Http.Response
                                         .Split('?')
                                         .FirstOrDefault()
                                         .TrimEnd('.');
-            Stream stream = assembly.GetManifestResourceStream(resourceName);
-            if (stream == null)
+            if (resourceName == null)
             {
                 throw new Exception.HttpNotFound(url);
             }
+            
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream == null)
+                {
+                    throw new Exception.HttpNotFound(url);
+                }
 
-            _content = new byte[stream.Length];
-            stream.Read(_content, 0, _content.Length);
-
-            stream.Dispose();
+                _content = new byte[stream.Length];
+                stream.Read(_content, 0, _content.Length);
+            }
         }
 
         /// <summary>

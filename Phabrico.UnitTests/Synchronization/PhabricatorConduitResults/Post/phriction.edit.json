@@ -1,0 +1,16 @@
+{
+    "result": {
+        "phid": "@@WIKI-PHID@@",
+        "uri": "@@WIKI-URI@@",
+        "slug": "@@WIKI-SLUG@@",
+        "version": "128",
+        "authorPHID": "@@WIKI-AUTHOR@@",
+        "title": "@@WIKI-TITLE@@",
+        "content": "@@WIKI-CONTENT@@",
+        "status": "exists",
+        "description": "",
+        "dateCreated": @@WIKI-DATE@@
+    },
+    "error_code": null,
+    "error_info": null
+}

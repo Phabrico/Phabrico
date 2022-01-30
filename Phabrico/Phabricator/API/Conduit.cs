@@ -19,7 +19,7 @@ namespace Phabrico.Phabricator.API
         /// <summary>
         /// Exception class for handling communication issues with Phabricator
         /// </summary>
-        public class Exception : System.Exception
+        public class PhabricatorException : System.Exception
         {
             /// <summary>
             /// Error code from Phabricator
@@ -42,7 +42,7 @@ namespace Phabrico.Phabricator.API
             /// <param name="errorCode"></param>
             /// <param name="errorInfo"></param>
             /// <param name="request"></param>
-            public Exception(string errorCode, string errorInfo, string request)
+            public PhabricatorException(string errorCode, string errorInfo, string request)
             {
                 ErrorCode = errorCode;
                 ErrorInfo = errorInfo;
@@ -116,7 +116,7 @@ namespace Phabrico.Phabricator.API
         /// <returns></returns>
         public DateTime GetTimestampPhabricatorServer()
         {
-            DateTime result = DateTime.Now;
+            DateTime result;
 
             // The DateTime.TryParseExact() .NET API can not work with TimeZone names.
             // It can only work with numeric TimeZones. This array translates a TimeZone name into a numeric TimeZone.
@@ -317,13 +317,17 @@ namespace Phabrico.Phabricator.API
         private string ProcessConduitResponse(string jsonResponse, string request)
         {
             JObject conduitResult = JsonConvert.DeserializeObject(jsonResponse) as JObject;
+            if (conduitResult == null)
+            {
+                throw new Conduit.PhabricatorException("Invalid response from Phabricator", "Invalid response from Phabricator", request);
+            }
 
             if (conduitResult["error_code"].Type != JTokenType.Null)
             {
                 string errorCode = (string)conduitResult["error_code"];
                 string errorDescription = (string)conduitResult["error_info"];
 
-                throw new Conduit.Exception(errorCode, errorDescription, request);
+                throw new Conduit.PhabricatorException(errorCode, errorDescription, request);
             }
 
             return jsonResponse;

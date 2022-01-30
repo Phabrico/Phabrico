@@ -4,6 +4,7 @@ using Phabrico.Miscellaneous;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Linq;
 
 namespace Phabrico.Storage
 {
@@ -43,6 +44,68 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
+        /// Copies the ManiphestStatus records from one Phabrico database to another Phabrico database
+        /// </summary>
+        /// <param name="sourcePhabricoDatabasePath">File path to the source Phabrico database</param>
+        /// <param name="sourceUsername">Username to use for authenticating the source Phabrico database</param>
+        /// <param name="sourcePassword">Password to use for authenticating the source Phabrico database</param>
+        /// <param name="destinationPhabricoDatabasePath">File path to the destination Phabrico database</param>
+        /// <param name="destinationUsername">Username to use for authenticating the destination Phabrico database</param>
+        /// <param name="destinationPassword">Username to use for authenticating the destination Phabrico database</param>
+        public static List<Phabricator.Data.ManiphestStatus> Copy(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword)
+        {
+            string sourceTokenHash = Encryption.GenerateTokenKey(sourceUsername, sourcePassword);  // tokenHash is stored in the database
+            string sourcePublicEncryptionKey = Encryption.GenerateEncryptionKey(sourceUsername, sourcePassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string sourcePrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(sourceUsername, sourcePassword);  // privateEncryptionKey is not stored in database
+            string destinationTokenHash = Encryption.GenerateTokenKey(destinationUsername, destinationPassword);  // tokenHash is stored in the database
+            string destinationPublicEncryptionKey = Encryption.GenerateEncryptionKey(destinationUsername, destinationPassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string destinationPrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(destinationUsername, destinationPassword);  // privateEncryptionKey is not stored in database
+
+            string originalDataSource = Storage.Database.DataSource;
+
+            List<Phabricator.Data.ManiphestStatus> maniphestStatuses = new List<Phabricator.Data.ManiphestStatus>();
+            try
+            {
+                Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
+
+                Storage.Database.DataSource = sourcePhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(sourceTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(sourcePublicEncryptionKey, publicXorCipher);
+
+                        maniphestStatuses = maniphestStatusStorage.Get(database, Language.NotApplicable).ToList();
+                    }
+                }
+
+                Storage.Database.DataSource = destinationPhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(destinationTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(destinationPublicEncryptionKey, publicXorCipher);
+
+                        foreach (Phabricator.Data.ManiphestStatus maniphestStatus in maniphestStatuses)
+                        {
+                            maniphestStatusStorage.Add(database, maniphestStatus);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Storage.Database.DataSource = originalDataSource;
+            }
+
+            return maniphestStatuses;
+        }
+
+        /// <summary>
         /// Returns all available ManiphestStatusInfo records
         /// </summary>
         /// <param name="database"></param>
@@ -65,6 +128,7 @@ namespace Phabrico.Storage
                         record.Closed = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["closed"]).Equals("true", StringComparison.OrdinalIgnoreCase);
                         string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                         JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                        if (info == null) continue;
 
                         record.Icon = (string)info["Icon"];
 
@@ -100,6 +164,7 @@ namespace Phabrico.Storage
                         record.Closed = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["closed"]).Equals("true", StringComparison.OrdinalIgnoreCase);
                         string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                         JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                        if (info == null) return null;
 
                         record.Icon = (string)info["Icon"];
 

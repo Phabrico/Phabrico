@@ -25,7 +25,7 @@ namespace Phabrico.Storage
         private static string _datasource = null;
         internal static int _dbVersionInDataFile = 0;
 
-        private static int _dbVersionInApplication = 5;
+        private static readonly int _dbVersionInApplication = 6;
         private static DateTime _utcNextTimeToVacuum = DateTime.MinValue;
 
         private string encryptionKey;
@@ -118,7 +118,7 @@ namespace Phabrico.Storage
             {
                 if (_datasource == null)
                 {
-                    _datasource = (string)AppConfigLoader.AppSettings["DatabaseDirectory"];
+                    _datasource = AppConfigLoader.AppSettings["DatabaseDirectory"];
                     if (_datasource == null) throw new Exception.InvalidConfigurationException("DatabaseDirectory not found");
 
                     FileAttributes fileAttributes = System.IO.File.GetAttributes(_datasource);
@@ -133,6 +133,11 @@ namespace Phabrico.Storage
 
             set
             {
+                if (_datasource != value)
+                {
+                    _dbVersionInDataFile = 0;
+                }
+
                 _datasource = value;
             }
         }
@@ -196,9 +201,11 @@ namespace Phabrico.Storage
                 this.IsConnected = true;
 
                 // set up translation database
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                           ATTACH DATABASE 'Phabrico.translation' AS Translation;
-                       ", Connection))
+                using (SQLiteCommand dbCommand = new SQLiteCommand(
+                            string.Format(@"
+                               ATTACH DATABASE '{0}\\Phabrico.translation' AS Translation;
+                            ", System.IO.Path.GetDirectoryName(Connection.FileName))
+                       , Connection))
                 {
                     dbCommand.ExecuteNonQuery();
                 }
@@ -456,11 +463,17 @@ namespace Phabrico.Storage
             switch (encryptionMode)
             {
                 case EncryptionMode.Default:
-                    dbCommand.Parameters[parameterName].Value = Encryption.Encrypt(EncryptionKey, new BinaryReader(parameterValue.EncodedData).ReadBytes((int)parameterValue.LengthEncodedData));
+                    using (BinaryReader binaryReader = new BinaryReader(parameterValue.EncodedData))
+                    {
+                        dbCommand.Parameters[parameterName].Value = Encryption.Encrypt(EncryptionKey, binaryReader.ReadBytes((int)parameterValue.LengthEncodedData));
+                    }
                     break;
 
                 case EncryptionMode.None:
-                    dbCommand.Parameters[parameterName].Value = new BinaryReader(parameterValue).ReadBytes((int)parameterValue.Length);
+                    using (BinaryReader binaryReader = new BinaryReader(parameterValue))
+                    {
+                        dbCommand.Parameters[parameterName].Value = binaryReader.ReadBytes((int)parameterValue.Length);
+                    }
                     break;
 
                 case EncryptionMode.Private:
@@ -553,6 +566,178 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
+        /// Copies the ObjectHierarchy records from one Phabrico database to another Phabrico database
+        /// </summary>
+        /// <param name="sourcePhabricoDatabasePath">File path to the source Phabrico database</param>
+        /// <param name="sourceUsername">Username to use for authenticating the source Phabrico database</param>
+        /// <param name="sourcePassword">Password to use for authenticating the source Phabrico database</param>
+        /// <param name="destinationPhabricoDatabasePath">File path to the destination Phabrico database</param>
+        /// <param name="destinationUsername">Username to use for authenticating the destination Phabrico database</param>
+        /// <param name="destinationPassword">Username to use for authenticating the destination Phabrico database</param>
+        public void CopyObjectHierarchyInfo(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword)
+        {
+            string sourceTokenHash = Encryption.GenerateTokenKey(sourceUsername, sourcePassword);  // tokenHash is stored in the database
+            string sourcePublicEncryptionKey = Encryption.GenerateEncryptionKey(sourceUsername, sourcePassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string sourcePrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(sourceUsername, sourcePassword);  // privateEncryptionKey is not stored in database
+            string destinationTokenHash = Encryption.GenerateTokenKey(destinationUsername, destinationPassword);  // tokenHash is stored in the database
+            string destinationPublicEncryptionKey = Encryption.GenerateEncryptionKey(destinationUsername, destinationPassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string destinationPrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(destinationUsername, destinationPassword);  // privateEncryptionKey is not stored in database
+
+            string originalDataSource = Storage.Database.DataSource;
+
+            List<KeyValuePair<string,string>> objectHierarchyInfoRecords = new List<KeyValuePair<string,string>>();
+            try
+            {
+                Storage.Database.DataSource = sourcePhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(sourceTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(sourcePublicEncryptionKey, publicXorCipher);
+
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                                SELECT token, parentToken
+                                FROM objectHierarchyInfo;
+                           ", database.Connection))
+                        {
+                            using (var reader = dbCommand.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    string token = (string)reader["token"];
+                                    string parentToken = (string)reader["parentToken"];
+
+                                    objectHierarchyInfoRecords.Add(new KeyValuePair<string, string>(parentToken, token));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Storage.Database.DataSource = destinationPhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(destinationTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(destinationPublicEncryptionKey, publicXorCipher);
+
+                        Storage.Phriction phrictionStorage = new Storage.Phriction();
+                        Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+
+                        foreach (KeyValuePair<string, string> objectHierarchyInfoRecord in objectHierarchyInfoRecords)
+                        {
+                            bool tokenFound = (objectHierarchyInfoRecord.Key.StartsWith(Phabricator.Data.Phriction.Prefix) && phrictionStorage.Get(database, objectHierarchyInfoRecord.Key, Language.NotApplicable) != null)
+                                           || (objectHierarchyInfoRecord.Key.StartsWith(Phabricator.Data.Maniphest.Prefix) && maniphestStorage.Get(database, objectHierarchyInfoRecord.Key, Language.NotApplicable) != null);
+                            if (tokenFound == false) continue;
+
+                            bool parentTokenFound = (objectHierarchyInfoRecord.Value.StartsWith(Phabricator.Data.Phriction.Prefix) && phrictionStorage.Get(database, objectHierarchyInfoRecord.Value, Language.NotApplicable) != null)
+                                                 || (objectHierarchyInfoRecord.Value.StartsWith(Phabricator.Data.Maniphest.Prefix) && maniphestStorage.Get(database, objectHierarchyInfoRecord.Value, Language.NotApplicable) != null);
+                            if (parentTokenFound == false) continue;
+
+                            database.DescendTokenFrom(objectHierarchyInfoRecord.Key, objectHierarchyInfoRecord.Value);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Storage.Database.DataSource = originalDataSource;
+            }
+        }
+
+        /// <summary>
+        /// Copies the ObjectRelation records from one Phabrico database to another Phabrico database
+        /// </summary>
+        /// <param name="sourcePhabricoDatabasePath">File path to the source Phabrico database</param>
+        /// <param name="sourceUsername">Username to use for authenticating the source Phabrico database</param>
+        /// <param name="sourcePassword">Password to use for authenticating the source Phabrico database</param>
+        /// <param name="destinationPhabricoDatabasePath">File path to the destination Phabrico database</param>
+        /// <param name="destinationUsername">Username to use for authenticating the destination Phabrico database</param>
+        /// <param name="destinationPassword">Username to use for authenticating the destination Phabrico database</param>
+        public void CopyObjectRelationInfo(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword)
+        {
+            string sourceTokenHash = Encryption.GenerateTokenKey(sourceUsername, sourcePassword);  // tokenHash is stored in the database
+            string sourcePublicEncryptionKey = Encryption.GenerateEncryptionKey(sourceUsername, sourcePassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string sourcePrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(sourceUsername, sourcePassword);  // privateEncryptionKey is not stored in database
+            string destinationTokenHash = Encryption.GenerateTokenKey(destinationUsername, destinationPassword);  // tokenHash is stored in the database
+            string destinationPublicEncryptionKey = Encryption.GenerateEncryptionKey(destinationUsername, destinationPassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string destinationPrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(destinationUsername, destinationPassword);  // privateEncryptionKey is not stored in database
+
+            string originalDataSource = Storage.Database.DataSource;
+
+            List<Tuple<string,string,Language>> objectRelationInfoRecords = new List<Tuple<string, string, Language>>();
+            try
+            {
+                Storage.Database.DataSource = sourcePhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(sourceTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(sourcePublicEncryptionKey, publicXorCipher);
+
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                                SELECT DISTINCT token, linkedToken, language
+                                FROM objectRelationInfo;
+                           ", database.Connection))
+                        {
+                            using (var reader = dbCommand.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    string token = (string)reader["token"];
+                                    string linkedToken = (string)reader["linkedToken"];
+                                    Language language = (string)reader["language"];
+
+                                    objectRelationInfoRecords.Add(new Tuple<string, string, Language>(token, linkedToken, language));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Storage.Database.DataSource = destinationPhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(destinationTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(destinationPublicEncryptionKey, publicXorCipher);
+
+                        Storage.Phriction phrictionStorage = new Storage.Phriction();
+                        Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+                        Storage.File fileStorage = new Storage.File();
+
+                        foreach (Tuple<string, string, Language> objectRelationInfoRecord in objectRelationInfoRecords)
+                        {
+                            bool tokenFound = (objectRelationInfoRecord.Item1.StartsWith(Phabricator.Data.Phriction.Prefix) && phrictionStorage.Get(database, objectRelationInfoRecord.Item1, objectRelationInfoRecord.Item3) != null)
+                                           || (objectRelationInfoRecord.Item1.StartsWith(Phabricator.Data.Maniphest.Prefix) && maniphestStorage.Get(database, objectRelationInfoRecord.Item1, objectRelationInfoRecord.Item3) != null)
+                                           || (objectRelationInfoRecord.Item1.StartsWith(Phabricator.Data.File.Prefix) && fileStorage.Get(database, objectRelationInfoRecord.Item1, objectRelationInfoRecord.Item3) != null);
+                            if (tokenFound == false) continue;
+
+                            bool linkedTokenFound = (objectRelationInfoRecord.Item1.StartsWith(Phabricator.Data.Phriction.Prefix) && phrictionStorage.Get(database, objectRelationInfoRecord.Item2, objectRelationInfoRecord.Item3) != null)
+                                               || (objectRelationInfoRecord.Item1.StartsWith(Phabricator.Data.Maniphest.Prefix) && maniphestStorage.Get(database, objectRelationInfoRecord.Item2, objectRelationInfoRecord.Item3) != null)
+                                               || (objectRelationInfoRecord.Item1.StartsWith(Phabricator.Data.File.Prefix) && fileStorage.Get(database, objectRelationInfoRecord.Item2, objectRelationInfoRecord.Item3) != null);
+                            if (linkedTokenFound == false) continue;
+
+                            database.AssignToken(objectRelationInfoRecord.Item1, objectRelationInfoRecord.Item2, objectRelationInfoRecord.Item3);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Storage.Database.DataSource = originalDataSource;
+            }
+        }
+
+        /// <summary>
         /// Removes all files from the SQLite database which are no more referenced in Phriction or Maniphest
         /// and which have no macro names
         /// </summary>
@@ -631,7 +816,7 @@ namespace Phabrico.Storage
                 transaction.Commit();
             }
         }
-        
+
         /// <summary>
         /// Releases all resources
         /// </summary>
@@ -642,8 +827,9 @@ namespace Phabrico.Storage
                 IsConnected = false;
                 Connection.Close();
             }
-            catch
+            catch (System.Exception exception)
             {
+                Logging.WriteError("(internal)", "Database.Dispose: " + exception.Message);
             }
         }
 
@@ -757,34 +943,33 @@ namespace Phabrico.Storage
                 if (dependeeToken.StartsWith("PHID-NEWTOKEN-"))
                 {
                     Stage stageStorage = new Stage();
-                    foreach (Stage.Data stageData in stageStorage.Get(this, language))
+                    Stage.Data stageData = stageStorage.Get(this, language)
+                                                       .FirstOrDefault(record => record.Token.Equals(dependeeToken));
+                    if (stageData == null) continue;
+
+
+                    Newtonsoft.Json.Linq.JObject stageInfo = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(stageData.HeaderData);
+
+                    if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Maniphest.Prefix))
                     {
-                        if (stageData.Token.Equals(dependeeToken))
+                        Phabricator.Data.Maniphest maniphestTask = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Maniphest)) as Phabricator.Data.Maniphest;
+                        if (maniphestTask != null)
                         {
-                            Newtonsoft.Json.Linq.JObject stageInfo = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(stageData.HeaderData);
+                            yield return maniphestTask;
+                        }
+                    }
 
-                            if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Maniphest.Prefix))
+                    if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Phriction.Prefix))
+                    {
+                        Phabricator.Data.Phriction phrictionDocument = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Phriction)) as Phabricator.Data.Phriction;
+                        if (phrictionDocument != null)
+                        {
+                            if (dependeeLanguage.Equals(Language.NotApplicable) == false)
                             {
-                                Phabricator.Data.Maniphest maniphestTask = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Maniphest)) as Phabricator.Data.Maniphest;
-                                if (maniphestTask != null)
-                                {
-                                    yield return maniphestTask;
-                                }
+                                phrictionDocument.Name += " (" + dependeeLanguage + ")";
                             }
-                            
-                            if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Phriction.Prefix))
-                            {
-                                Phabricator.Data.Phriction phrictionDocument = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Phriction)) as Phabricator.Data.Phriction;
-                                if (phrictionDocument != null)
-                                {
-                                    if (dependeeLanguage.Equals(Language.NotApplicable) == false)
-                                    {
-                                        phrictionDocument.Name += " (" + dependeeLanguage + ")";
-                                    }
 
-                                    yield return phrictionDocument;
-                                }
-                            }
+                            yield return phrictionDocument;
                         }
                     }
                 }
@@ -851,38 +1036,36 @@ namespace Phabrico.Storage
                 if (referencedToken.StartsWith("PHID-NEWTOKEN-"))
                 {
                     Stage stageStorage = new Stage();
-                    foreach (Stage.Data stageData in stageStorage.Get(this, language))
+                    Stage.Data stageData = stageStorage.Get(this, language)
+                                                       .FirstOrDefault(record => record.Token.Equals(referencedToken));
+                    if (stageData == null) continue;
+
+                    Newtonsoft.Json.Linq.JObject stageInfo = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(stageData.HeaderData);
+
+                    if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Maniphest.Prefix))
                     {
-                        if (stageData.Token.Equals(referencedToken))
+                        Phabricator.Data.Maniphest maniphestTask = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Maniphest)) as Phabricator.Data.Maniphest;
+                        if (maniphestTask != null)
                         {
-                            Newtonsoft.Json.Linq.JObject stageInfo = JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject>(stageData.HeaderData);
+                            yield return maniphestTask;
+                        }
+                    }
 
-                            if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Maniphest.Prefix))
-                            {
-                                Phabricator.Data.Maniphest maniphestTask = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Maniphest)) as Phabricator.Data.Maniphest;
-                                if (maniphestTask != null)
-                                {
-                                    yield return maniphestTask;
-                                }
-                            }
+                    if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Phriction.Prefix))
+                    {
+                        Phabricator.Data.Phriction phrictionDocument = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Phriction)) as Phabricator.Data.Phriction;
+                        if (phrictionDocument != null)
+                        {
+                            yield return phrictionDocument;
+                        }
+                    }
 
-                            if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.Phriction.Prefix))
-                            {
-                                Phabricator.Data.Phriction phrictionDocument = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.Phriction)) as Phabricator.Data.Phriction;
-                                if (phrictionDocument != null)
-                                {
-                                    yield return phrictionDocument;
-                                }
-                            }
-
-                            if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.File.Prefix))
-                            {
-                                Phabricator.Data.File fileObject = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.File)) as Phabricator.Data.File;
-                                if (fileObject != null)
-                                {
-                                    yield return fileObject;
-                                }
-                            }
+                    if (stageInfo["TokenPrefix"].ToString().Equals(Phabricator.Data.File.Prefix))
+                    {
+                        Phabricator.Data.File fileObject = JsonConvert.DeserializeObject(stageData.HeaderData, typeof(Phabricator.Data.File)) as Phabricator.Data.File;
+                        if (fileObject != null)
+                        {
+                            yield return fileObject;
                         }
                     }
                 }
@@ -1627,6 +1810,33 @@ namespace Phabrico.Storage
 
                        ALTER TABLE objectRelationInfoCopy RENAME TO objectRelationInfo;
                     ", Connection))
+                {
+                    AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
+
+            if (dbVersion == 6)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       CREATE TABLE IF NOT EXISTS keywordInfoCopy(
+                           name VARCHAR,
+                           token BLOB,
+                           language TEXT,
+                           description BLOB,
+                           nbrocc BLOB,
+
+                           PRIMARY KEY (name, token, language)
+                       );
+
+                       INSERT INTO keywordInfoCopy(name, token, language, description, nbrocc)
+                          SELECT name, token, @language, description, nbrocc
+                          FROM keywordInfo;
+
+                       DROP TABLE keywordInfo;
+
+                       ALTER TABLE keywordInfoCopy RENAME TO keywordInfo;
+                       ", Connection))
                 {
                     AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
                     dbCommand.ExecuteNonQuery();

@@ -30,7 +30,7 @@ namespace Phabrico.Miscellaneous
         /// <summary>
         /// private collection of all used regular expressions
         /// </summary>
-        private Dictionary<string, Regex> regularExpressions = new Dictionary<string, Regex>();
+        private readonly Dictionary<string, Regex> regularExpressions = new Dictionary<string, Regex>();
 
         /// <summary>
         /// Indicates whether the specified regular expression finds a match in the specified input string.
@@ -86,10 +86,10 @@ namespace Phabrico.Miscellaneous
         {
             Regex regex;
 
-            if (Instance.regularExpressions.TryGetValue(pattern + ((int)regexOptions).ToString(), out regex) == false)
+            if (Instance.regularExpressions.TryGetValue(pattern + ((int)regexOptions), out regex) == false)
             {
                 regex = new Regex(pattern, regexOptions);
-                Instance.regularExpressions[pattern + ((int)regexOptions).ToString()] = regex;
+                Instance.regularExpressions[pattern + ((int)regexOptions)] = regex;
             }
 
             return regex.Matches(input ?? "");

@@ -36,17 +36,61 @@ namespace Phabrico.Controllers
             public int OriginalLevel { get; set; }
         }
 
-        private static RemarkupEngine remarkupEngine = new RemarkupEngine();
+        private static readonly object _synchronizationObject = new object();
+
+        private static readonly RemarkupEngine remarkupEngine = new RemarkupEngine();
 
         /// <summary>
         /// Dictionary containing user tokens (=key) and their corresponding user data (=value)
         /// </summary>
-        protected static Dictionary<string, Phabricator.Data.User> AccountByToken = new Dictionary<string, Phabricator.Data.User>();
+        private static Dictionary<string, Phabricator.Data.User> accountByToken = new Dictionary<string, Phabricator.Data.User>();
 
         /// <summary>
         /// Dictionary containing project tokens (=key) and their corresponding project data (=value)
         /// </summary>
-        protected static Dictionary<string, Phabricator.Data.Project> ProjectByToken = new Dictionary<string, Phabricator.Data.Project>();
+        private static Dictionary<string, Phabricator.Data.Project> projectByToken = new Dictionary<string, Phabricator.Data.Project>();
+
+        /// <summary>
+        /// Dictionary containing user tokens (=key) and their corresponding user data (=value)
+        /// </summary>
+        protected static Dictionary<string, Phabricator.Data.User> AccountByToken
+        {
+            get
+            {
+                lock (_synchronizationObject)
+                {
+                    return accountByToken;
+                }
+            }
+            set
+            {
+                lock (_synchronizationObject)
+                {
+                    accountByToken = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dictionary containing project tokens (=key) and their corresponding project data (=value)
+        /// </summary>
+        protected static Dictionary<string, Phabricator.Data.Project> ProjectByToken
+        {
+            get
+            {
+                lock (_synchronizationObject)
+                {
+                    return projectByToken;
+                }
+            }
+            set
+            {
+                lock (_synchronizationObject)
+                {
+                    projectByToken = value;
+                }
+            }
+        }
 
         /// <summary>
         /// This synchronization lock object prevents some methods from being run simultaneously.
@@ -78,7 +122,7 @@ namespace Phabrico.Controllers
         /// </summary>
         /// <param name="slug"></param>
         /// <returns></returns>
-        protected string ConvertPhabricatorUrlPartToDescription(string slug)
+        protected static string ConvertPhabricatorUrlPartToDescription(string slug)
         {
             string[] words = slug.Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             string result = string.Join(" ", 
@@ -185,9 +229,9 @@ namespace Phabrico.Controllers
             foreach (var modifiedHeaderTag in headerTags.Where(headerTag => headerTag.OriginalLevel != headerTag.NewLevel))
             {
                 html = html.Substring(0, modifiedHeaderTag.Match.Index + 2)
-                     + modifiedHeaderTag.NewLevel.ToString()
+                     + modifiedHeaderTag.NewLevel
                      + html.Substring(modifiedHeaderTag.Match.Index + 3, modifiedHeaderTag.Match.Length - 5)
-                     + modifiedHeaderTag.NewLevel.ToString()
+                     + modifiedHeaderTag.NewLevel
                      + ">"
                      + html.Substring(modifiedHeaderTag.Match.Index + modifiedHeaderTag.Match.Length);
             }
@@ -237,25 +281,28 @@ namespace Phabrico.Controllers
             }
             else
             {
-                Phabricator.Data.User user;
-                if (AccountByToken.TryGetValue(accountToken, out user) == false)
+                lock (_synchronizationObject)
                 {
-                    // load all users again in case there's a task with an unknown author user token
-                    using (Storage.Database database = new Storage.Database(EncryptionKey))
+                    Phabricator.Data.User user;
+                    if (accountByToken.TryGetValue(accountToken, out user) == false)
                     {
-                        Storage.User phabricatorUsers = new Storage.User();
-                        AccountByToken = phabricatorUsers.Get(database, Language.NotApplicable)
-                                                         .ToDictionary(key => key.Token, value => value);
+                        // load all users again in case there's a task with an unknown author user token
+                        using (Storage.Database database = new Storage.Database(EncryptionKey))
+                        {
+                            Storage.User phabricatorUsers = new Storage.User();
+                            accountByToken = phabricatorUsers.Get(database, Language.NotApplicable)
+                                                             .ToDictionary(key => key.Token, value => value);
+                        }
                     }
-                }
 
-                if (AccountByToken.TryGetValue(accountToken, out user) == false)
-                {
+                    if (accountByToken.TryGetValue(accountToken, out user) == false)
+                    {
                         return "(unknown)";
-                }
-                else
-                {
-                    return user.RealName;
+                    }
+                    else
+                    {
+                        return user.RealName;
+                    }
                 }
             }
         }
@@ -273,25 +320,28 @@ namespace Phabrico.Controllers
             }
             else
             {
-                Phabricator.Data.Project project;
-                if (ProjectByToken.TryGetValue(projectToken, out project) == false)
+                lock (_synchronizationObject)
                 {
-                    // load all projects again in case there's a task with an unknown project token
-                    using (Storage.Database database = new Storage.Database(EncryptionKey))
+                    Phabricator.Data.Project project;
+                    if (projectByToken.TryGetValue(projectToken, out project) == false)
                     {
-                        Storage.Project phabricatorProjects = new Storage.Project();
-                        ProjectByToken = phabricatorProjects.Get(database, Language.NotApplicable)
-                                                            .ToDictionary(key => key.Token, value => value);
+                        // load all projects again in case there's a task with an unknown project token
+                        using (Storage.Database database = new Storage.Database(EncryptionKey))
+                        {
+                            Storage.Project phabricatorProjects = new Storage.Project();
+                            projectByToken = phabricatorProjects.Get(database, Language.NotApplicable)
+                                                                .ToDictionary(key => key.Token, value => value);
+                        }
                     }
-                }
 
-                if (ProjectByToken.TryGetValue(projectToken, out project) == false)
-                {
-                    return "(unknown)";
-                }
-                else
-                {
-                    return project.Name;
+                    if (projectByToken.TryGetValue(projectToken, out project) == false)
+                    {
+                        return "(unknown)";
+                    }
+                    else
+                    {
+                        return project.Name;
+                    }
                 }
             }
         }

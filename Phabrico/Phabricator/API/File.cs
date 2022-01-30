@@ -27,6 +27,7 @@ namespace Phabrico.Phabricator.API
 
             string json = conduit.Query("macro.query");
             JObject macroListData = JsonConvert.DeserializeObject(json) as JObject;
+            if (macroListData == null) yield break;
 
             foreach (JProperty macro in macroListData["result"].Children())
             {
@@ -63,6 +64,7 @@ namespace Phabrico.Phabricator.API
                                             "newest",
                                             firstItemId);
                 JObject fileData = JsonConvert.DeserializeObject(json) as JObject;
+                if (fileData == null) break;
 
                 IEnumerable<JObject> files = fileData["result"]["data"].OfType<JObject>();
 
@@ -112,18 +114,20 @@ namespace Phabrico.Phabricator.API
                                             new Constraint("phids", new string[] { fileToken })
                                         });
             JObject fileData = JsonConvert.DeserializeObject(json) as JObject;
-
-            string downloadURL = fileData["result"]["data"][0]["fields"]["dataURI"].ToString();
-            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(downloadURL);
-            webRequest.Method = "GET";
-            HttpWebResponse response = (HttpWebResponse)webRequest.GetResponse();
-            using (BinaryReader binaryReader = new BinaryReader(response.GetResponseStream()))
+            if (fileData != null)
             {
-                byte[] buffer = binaryReader.ReadBytes(0x400000);
-                while (buffer.Length > 0)
+                string downloadURL = fileData["result"]["data"][0]["fields"]["dataURI"].ToString();
+                HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(downloadURL);
+                webRequest.Method = "GET";
+                HttpWebResponse response = (HttpWebResponse)webRequest.GetResponse();
+                using (BinaryReader binaryReader = new BinaryReader(response.GetResponseStream()))
                 {
-                    base64EIDOStream.WriteDecodedData(buffer);
-                    buffer = binaryReader.ReadBytes(buffer.Length);
+                    byte[] buffer = binaryReader.ReadBytes(0x400000);
+                    while (buffer.Length > 0)
+                    {
+                        base64EIDOStream.WriteDecodedData(buffer);
+                        buffer = binaryReader.ReadBytes(buffer.Length);
+                    }
                 }
             }
 

@@ -36,6 +36,8 @@ namespace Phabrico.UnitTests.Synchronization
             Children = new List<TreeNode>()
         };
 
+        public List<string> ReceivedRequests { get; private set; } = new List<string>();
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -244,6 +246,8 @@ namespace Phabrico.UnitTests.Synchronization
                     throw new NotImplementedException();
                 }
 
+                ReceivedRequests.Add(url);
+
                 if (url.Equals("phriction.create"))
                 {
                     string jsonData = formVariables["params"];
@@ -300,6 +304,36 @@ namespace Phabrico.UnitTests.Synchronization
                                 }".Replace("{0}", "PHID-WIKI-00001" + nbrPhrictionDocuments.ToString("0:D15"))
                                   .Replace("{1}", errorMessage == null ? "null" : "\"" + errorMessage + "\"")
                                 ;
+                    context.Response.StatusCode = 200;
+                    context.Response.StatusDescription = "OK";
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength64 = jsonData.Length;
+                    context.Response.AppendHeader("Accept-Ranges", "bytes");
+                    context.Response.AppendHeader("Pragma", "no-cache, no-store, must-revalidate");
+                    context.Response.AppendHeader("Expires", "0");
+                    context.Response.OutputStream.Write(UTF8Encoding.UTF8.GetBytes(jsonData), 0, jsonData.Length);
+                    context.Response.OutputStream.Flush();
+                    context.Response.OutputStream.Close();
+                    return;
+                }
+
+                if (url.Equals("phriction.edit"))
+                {
+                    string jsonData = formVariables["params"];
+                    JObject request = JObject.Parse(jsonData);
+                    string slug = ((JValue)request["slug"]).ToString();
+                    string content = ((JValue)request["content"]).ToString();
+                    string title = ((JValue)request["title"]).ToString();
+                    
+                    jsonData = System.IO.File.ReadAllText("Synchronization\\PhabricatorConduitResults\\Post\\phriction.edit.json");
+                    jsonData = jsonData.Replace("@@WIKI-PHID@@", "PHID-WIKI-SOMEDOCUMENT");
+                    jsonData = jsonData.Replace("@@WIKI-URI@@", httpListener.Prefixes.FirstOrDefault() + slug.TrimStart('/'));
+                    jsonData = jsonData.Replace("@@WIKI-SLUG@@", slug);
+                    jsonData = jsonData.Replace("@@WIKI-AUTHOR@@", "PHID-USER-SOMEUSER");
+                    jsonData = jsonData.Replace("@@WIKI-TITLE@@", title);
+                    jsonData = jsonData.Replace("@@WIKI-CONTENT@@", content);
+                    jsonData = jsonData.Replace("@@WIKI-DATE@@", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+
                     context.Response.StatusCode = 200;
                     context.Response.StatusDescription = "OK";
                     context.Response.ContentType = "application/json";

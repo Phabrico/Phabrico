@@ -1,0 +1,618 @@
+# Russian translations
+
+# General
+msgid "Diagram"
+msgstr "Диаграмма"
+
+msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
+msgstr "Редактор блок-схем, диаграмм процессов, оргсхем, UML, ER и сетевых диаграмм."
+
+# Help shortcuts
+msgid "Styles"
+msgstr "Стили"
+
+msgid "Document"
+msgstr "Документ"
+
+msgid "Sidebar / Connect"
+msgstr "Боковая панель / Подключение"
+
+msgid "View"
+msgstr "Вид"
+
+msgid "Canvas"
+msgstr "Холст"
+
+msgid "Cursor / Page keys"
+msgstr "Курсор / Клавиши страницы"
+
+msgid "Tools"
+msgstr "Инструменты"
+
+msgid "Selection"
+msgstr "Выбор"
+
+msgid "Labels"
+msgstr "Ярлыки"
+
+msgid "(Shift+)Tab"
+msgstr "(Shift+)Tab"
+
+msgid "Alt+(Shift / Ctrl)+Click on a sidebar item"
+msgstr "Alt+(Shift / Ctrl)+Клик по элементу боковой панели"
+
+msgid "Alt+(Shift+)Drag from sidebar"
+msgstr "Alt+(Shift+)Перетащить из боковой панели"
+
+msgid "Alt+(Shift+)Tab"
+msgstr "Alt+(Shift+)Tab"
+
+msgid "Alt+Click"
+msgstr "Alt+Клик"
+
+msgid "Alt+Connect"
+msgstr "Alt+Связать"
+
+msgid "Alt+Cursor"
+msgstr "Alt+Курсор"
+
+msgid "Alt+Mouse wheel"
+msgstr "Alt+Колесо мыши"
+
+msgid "Alt+Shift+A"
+msgstr "Alt+Shift+A"
+
+msgid "Alt+Shift+C/T"
+msgstr "Alt+Shift+C/T"
+
+msgid "Alt+Shift+Cursor"
+msgstr "Alt+Shift+Курсор"
+
+msgid "Alt+Drag"
+msgstr "Alt+Перетаскивание"
+
+msgid "Alt+Shift+P"
+msgstr "Alt+Shift+P"
+
+msgid "Alt+Shift+V"
+msgstr "Alt+Shift+V"
+
+msgid "Alt+Shift+X"
+msgstr "Alt+Shift+X"
+
+msgid "Backspace or Delete"
+msgstr "Backspace или Delete"
+
+msgid "Click on a sidebar item"
+msgstr "Щелкните элемент боковой панели"
+
+msgid "Ctrl - (Numpad)"
+msgstr "Ctrl - (Numpad)"
+
+msgid "Ctrl / Meta+Resize"
+msgstr "Ctrl / Meta+Размер"
+
+msgid "Ctrl / Shift+Click"
+msgstr "Ctrl / Shift+Клик"
+
+msgid "Ctrl / Shift+Delete"
+msgstr "Ctrl / Shift+Delete"
+
+msgid "Ctrl / Shift+Drag"
+msgstr "Ctrl / Shift+Перетащить"
+
+msgid "Ctrl + (Numpad)"
+msgstr "Ctrl + (Numpad)"
+
+msgid "Ctrl+(Shift+)A"
+msgstr "Ctrl+ (Shift+)A"
+
+msgid "Ctrl+. / ,"
+msgstr "Ctrl+. / ,"
+
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+msgid "Ctrl+B / I"
+msgstr "Ctrl+B / I"
+
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+msgid "Ctrl+Click"
+msgstr "Ctrl+Клик"
+
+msgid "Ctrl+Cursor"
+msgstr "Ctrl+Курсор"
+
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+msgid "Ctrl+End"
+msgstr "Ctrl+E"
+
+msgid "Ctrl+Enter / D"
+msgstr "Ctrl+Enter / D"
+
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+msgid "Ctrl+Home"
+msgstr "Ctrl+Home"
+
+msgid "Ctrl+J"
+msgstr "Ctrl+J"
+
+msgid "Ctrl+K"
+msgstr "Ctrl+K"
+
+msgid "Ctrl+L / Alt+Shift+L"
+msgstr "Ctrl+L / Alt+Shift+L"
+
+msgid "Ctrl+M"
+msgstr "Ctrl+M"
+
+msgid "Ctrl+P"
+msgstr "Ctrl+P"
+
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+msgid "Ctrl+Shift+B"
+msgstr "Ctrl+Shift+B"
+
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+msgid "Ctrl+Shift+Connect"
+msgstr "Ctrl+Shift+Connect"
+
+msgid "Ctrl+Shift+Cursor"
+msgstr "Ctrl+Shift+Курсор"
+
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Ctrl+Shift+Перетаскивание"
+
+msgid "Ctrl+Shift+End"
+msgstr "Ctrl+Shift+End"
+
+msgid "Ctrl+Shift+F"
+msgstr "Ctrl+Shift+F"
+
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+msgid "Ctrl+Shift+H"
+msgstr "Ctrl+Shift+H"
+
+msgid "Ctrl+Shift+Home"
+msgstr "Ctrl+Shift+Home"
+
+msgid "Ctrl+Shift+I / E"
+msgstr "Ctrl+Shift+I / E"
+
+msgid "Ctrl+Shift+J"
+msgstr "Ctrl+Shift+J"
+
+msgid "Ctrl+Shift+K"
+msgstr "Ctrl+Shift+K"
+
+msgid "Ctrl+Shift+L"
+msgstr "Ctrl+Shift+L"
+
+msgid "Ctrl+Shift+M"
+msgstr "Ctrl+Shift+M"
+
+msgid "Ctrl+Shift+Mouse wheel"
+msgstr "Ctrl+Shift+Колесо мыши"
+
+msgid "Ctrl+Shift+O"
+msgstr "Ctrl+Shift+O"
+
+msgid "Ctrl+Shift+P"
+msgstr "Ctrl+Shift+P"
+
+msgid "Ctrl+Shift+Pg Down"
+msgstr "Ctrl+Shift+Pg Down"
+
+msgid "Ctrl+Shift+Pg Up"
+msgstr "Ctrl+Shift+Pg Up"
+
+msgid "Ctrl+Shift+R"
+msgstr "Ctrl+Shift+R"
+
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+msgid "Ctrl+Shift+U"
+msgstr "Ctrl+Shift+U"
+
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+msgid "Ctrl+Shift+X"
+msgstr "Ctrl+Shift+X"
+
+msgid "Ctrl+Shift+Y"
+msgstr "Ctrl+Shift+Y"
+
+msgid "Ctrl+U"
+msgstr "Ctrl+U"
+
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+msgid "Cursor"
+msgstr "Курсор"
+
+msgid "Double click"
+msgstr "Двойной щелчок"
+
+msgid "End"
+msgstr "Завершить"
+
+msgid "Enter"
+msgstr "Enter"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "F1"
+msgstr "F1"
+
+msgid "F2 / Enter"
+msgstr "F2 / Enter"
+
+msgid "F2 / Tab / Esc"
+msgstr "F2 / Tab / Esc"
+
+msgid "Hold Alt"
+msgstr "Удерживать Alt"
+
+msgid "Mouse wheel"
+msgstr "Колесико мыши"
+
+msgid "Rightclick"
+msgstr "Щелкните правой кнопкой мыши"
+
+msgid "Shift+Click on a sidebar item"
+msgstr "Shift+щелчок на элементе боковой панели"
+
+msgid "Shift+Connect"
+msgstr "Shift+Связать"
+
+msgid "Shift+Cursor"
+msgstr "Shift+Курсор"
+
+msgid "Shift+Drag"
+msgstr "Shift+Перетащить"
+
+msgid "Shift+Enter"
+msgstr "Shift+Enter"
+
+msgid "Shift+Home"
+msgstr "Shift+Домой"
+
+msgid "Shift+Mouse wheel"
+msgstr "Shift+Колесо мыши"
+
+msgid "Shift+Resize"
+msgstr "Shift+Изменить размер"
+
+msgid "Space / Right mouse Drag"
+msgstr "Пробел / Перетаскивание правой кнопкой мыши"
+
+msgid "About"
+msgstr "О"
+
+msgid "Toggle to Selection"
+msgstr "Переключение на выделение"
+
+msgid "Autosize"
+msgstr "Авторазмер"
+
+msgid "Bring to Front"
+msgstr "Вывести на передний план"
+
+msgid "Cancel Action"
+msgstr "Отменить действие"
+
+msgid "Canvas Horizontal Scroll"
+msgstr "Горизонтальная прокрутка холста"
+
+msgid "Canvas Vertical Scroll"
+msgstr "Вертикальная прокрутка холста"
+
+msgid "Canvas Zoom In/Out"
+msgstr "Увеличение/уменьшение масштаба холста"
+
+msgid "Centered / Group Resize"
+msgstr "Центрирование / изменение размера группы"
+
+msgid "Clear Default Style"
+msgstr "Очистить стиль по умолчанию"
+
+msgid "Clear Waypoints / Edit Tooltip"
+msgstr "Очистить путевые точки / Редактировать всплывающую подсказку"
+
+msgid "Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone)."
+msgstr "Нажмите для соединения и клонирования (ctrl+клик для клонирования, shift+клик для соединения). Перетащите для соединения (ctrl+перетащить для клонирования)."
+
+msgid "Click to rotate 90° clockwise. Drag to rotate."
+msgstr "Нажмите, чтобы повернуть на 90° по часовой стрелке. Перетащите для поворота."
+
+msgid "Clone and connect"
+msgstr "Клонирование и соединение"
+
+msgid "Clone cell/Disconnect edge"
+msgstr "Клонировать ячейку/отсоединить край"
+
+msgid "Collapse Container"
+msgstr "Свернуть контейнер"
+
+msgid "Connect to a Fixed Point"
+msgstr "Соединить с фиксированной точкой"
+
+msgid "Connect to shape outline (ignore connection points)"
+msgstr "Соединить с контуром фигуры (игнорировать точки соединения)"
+
+msgid "Connection Arrows"
+msgstr "Стрелки соединения"
+
+msgid "Connection Points"
+msgstr "Точки соединения"
+
+msgid "Connects unconnected side of selected edge"
+msgstr "Соединяет неподключенную сторону выделенного края"
+
+msgid "Context Menu"
+msgstr "Контекстное меню"
+
+msgid "Copy"
+msgstr "Копировать"
+
+msgid "Copy Size"
+msgstr "Размер копирования"
+
+msgid "Copy Style"
+msgstr "Копировать стиль"
+
+msgid "Create / Remove Space"
+msgstr "Создать / Удалить пространство"
+
+msgid "Ctrl / Shift+Enter: New Line"
+msgstr "Ctrl / Shift+Enter: Новая строка"
+
+msgid "Ctrl / Shift+Esc: Cancel Editing"
+msgstr "Ctrl / Shift+Esc: Отменить редактирование"
+
+msgid "Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML"
+msgstr "Ctrl: Показать диалог, Alt: Происхождение, Shift: Игнорировать XML"
+
+msgid "Ctrl+Resize for non-recursive group resize"
+msgstr "Ctrl+Resize для нерекурсивного изменения размера группы"
+
+msgid "Ctrl+Meta+Resize for centered group resize"
+msgstr "Ctrl+Meta+Resize для изменения размера группы по центру"
+
+msgid "Custom Zoom"
+msgstr "Пользовательский масштаб"
+
+msgid "Cut"
+msgstr "Вырезать"
+
+msgid "Delete Selected Cells"
+msgstr "Удалить выделенные ячейки"
+
+msgid "Delete Selected Cells with Connections / Labels"
+msgstr "Удаление выделенных ячеек с соединениями / метками"
+
+msgid "Disable Connections"
+msgstr "Отключить соединения"
+
+msgid "Disable replace, connect on drop (drop targets), Shift ignores current style"
+msgstr "Отключить замену, соединение при падении (цели падения), Shift игнорирует текущий стиль"
+
+msgid "Duplicate"
+msgstr "Дублировать"
+
+msgid "Edit Metadata"
+msgstr "Редактировать метаданные"
+
+msgid "Edit Style"
+msgstr "Редактировать стиль"
+
+msgid "Edit Vertex Geometry"
+msgstr "Редактировать геометрию вершин"
+
+msgid "Enter Group"
+msgstr "Войти в группу"
+
+msgid "Exit Group"
+msgstr "Выйти из группы"
+
+msgid "Expand Container"
+msgstr "Развернуть контейнер"
+
+msgid "Fit Page"
+msgstr "Подогнать страницу"
+
+msgid "Fit Two Pages"
+msgstr "Подогнать две страницы"
+
+msgid "Fit Window"
+msgstr "Подогнать окно"
+
+msgid "Group"
+msgstr "Группа"
+
+msgid "Home"
+msgstr "Главная страница"
+
+msgid "Ignores handles under the mouse"
+msgstr "Игнорирует ручки под мышью"
+
+msgid "Insert Ellipse"
+msgstr "Вставить эллипс"
+
+msgid "Insert Rectangle"
+msgstr "Вставить прямоугольник"
+
+msgid "Insert Text"
+msgstr "Вставить текст"
+
+msgid "Insert text or add an edge label"
+msgstr "Вставка текста или добавление метки края"
+
+msgid "Inserts and connects the selected item (Shift ignores current style)"
+msgstr "Вставляет и соединяет выбранный элемент (Shift игнорирует текущий стиль)"
+
+msgid "Lock/Unlock / Edit Link"
+msgstr "Блокировка/разблокировка/редактирование ссылки"
+
+msgid "Maintain Proportions"
+msgstr "Сохранять пропорции"
+
+msgid "Move cell (grid) or page"
+msgstr "Перемещение ячейки (сетки) или страницы"
+
+msgid "New Line in Formatted Labels"
+msgstr "Новая строка в форматированных метках"
+
+msgid "New Paragraph in Formatted Labels"
+msgstr "Новый абзац в форматированных метках"
+
+msgid "Next Page"
+msgstr "Следующая страница"
+
+msgid "Pan Canvas"
+msgstr "Панорамирование холста"
+
+msgid "Paste"
+msgstr "Вставить"
+
+msgid "Paste Size"
+msgstr "Размер вставки"
+
+msgid "Paste Style"
+msgstr "Стиль вставки"
+
+msgid "Previous Page"
+msgstr "Предыдущая страница"
+
+msgid "Print"
+msgstr "Печать"
+
+msgid "Redo"
+msgstr "Повторить"
+
+msgid "Refresh"
+msgstr "Обновить"
+
+msgid "Select intersection"
+msgstr "Выбрать пересечение"
+
+msgid "Replaces the selected item with the clicked one"
+msgstr "Заменяет выбранный элемент на тот, по которому щелкнули мышью"
+
+msgid "Reset View"
+msgstr "Сбросить вид"
+
+msgid "Resize cell (grid size)"
+msgstr "Изменить размер ячейки (размер сетки)"
+
+msgid "Resize cell (pt) or select page"
+msgstr "Изменить размер ячейки (pt) или выбрать страницу"
+
+msgid "Save"
+msgstr "Сохранить"
+
+msgid "Save as"
+msgstr "Сохранить как"
+
+msgid "Scroll / Move cell (pt)"
+msgstr "Прокрутка / перемещение ячейки (pt)"
+
+msgid "Scroll Page"
+msgstr "Прокрутка страницы"
+
+msgid "Select All / None"
+msgstr "Выбрать все / ни одной"
+
+msgid "Select Cell Below"
+msgstr "Выбрать ячейку ниже"
+
+msgid "Select Child / Parent"
+msgstr "Выбрать дочернюю / родительскую ячейку"
+
+msgid "Select Next / Previous"
+msgstr "Выбрать следующую / предыдущую"
+
+msgid "Select Vertices / Edges"
+msgstr "Выбрать вершины / грани"
+
+msgid "Send to Back"
+msgstr "Отправить на задний план"
+
+msgid "Set as Default Style"
+msgstr "Установить стиль по умолчанию"
+
+msgid "Start Editing Label of Selected Cell"
+msgstr "Начать редактирование метки выделенной ячейки"
+
+msgid "Stop Editing and Apply Value"
+msgstr "Остановить редактирование и применить значение"
+
+msgid "Superscript/Subscript on Selected Text"
+msgstr "Надстрочный/подстрочный индекс для выделенного текста"
+
+msgid "Toggle Bold/Italic on Selected Text"
+msgstr "Переключить полужирный/италический шрифт для выделенного текста"
+
+msgid "Toggle Format Panel"
+msgstr "Переключить панель форматирования"
+
+msgid "Toggle grid"
+msgstr "Переключить сетку"
+
+msgid "Toggle Layers Window"
+msgstr "Переключить окно слоев"
+
+msgid "Toggle Outline Window"
+msgstr "Переключить окно контура"
+
+msgid "Toggle Selection State"
+msgstr "Переключить состояние выделения"
+
+msgid "Toggle Underline on Selected Text"
+msgstr "Переключить подчеркивание выделенного текста"
+
+msgid "Turn / Rotate 90° Clockwise"
+msgstr "Повернуть / Повернуть на 90° по часовой стрелке"
+
+msgid "Undo"
+msgstr "Отменить"
+
+msgid "Ungroup"
+msgstr "Разгруппировать"
+
+msgid "Zoom In"
+msgstr "Увеличить"
+
+msgid "Zoom Out"
+msgstr "Уменьшить масштаб"

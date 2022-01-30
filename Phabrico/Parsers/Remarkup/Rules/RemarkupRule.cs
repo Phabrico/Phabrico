@@ -180,14 +180,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public virtual RemarkupRule Clone()
         {
             RemarkupRule clonedRemarkupRule = GetType().GetConstructor(Type.EmptyTypes).Invoke(null) as RemarkupRule;
-
-            clonedRemarkupRule.Html = Html;
-            clonedRemarkupRule.Length = Length;
-            clonedRemarkupRule.Start = Start;
-            clonedRemarkupRule.Text = Text;
-            clonedRemarkupRule.Clone(this);
-            clonedRemarkupRule.LinkedPhabricatorObjects.AddRange(LinkedPhabricatorObjects);
-            clonedRemarkupRule.ChildTokenList.AddRange(ChildTokenList);
+            if (clonedRemarkupRule != null)
+            {
+                clonedRemarkupRule.Html = Html;
+                clonedRemarkupRule.Length = Length;
+                clonedRemarkupRule.Start = Start;
+                clonedRemarkupRule.Text = Text;
+                clonedRemarkupRule.Clone(this);
+                clonedRemarkupRule.LinkedPhabricatorObjects.AddRange(LinkedPhabricatorObjects);
+                clonedRemarkupRule.ChildTokenList.AddRange(ChildTokenList);
+            }
 
             return clonedRemarkupRule;
         }

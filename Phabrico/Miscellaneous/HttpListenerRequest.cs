@@ -36,7 +36,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerRequest.ContentLength64;
+                    return internalHttpListenerRequest?.ContentLength64 ?? 0;
                 }
             }
         }
@@ -59,7 +59,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerRequest.ContentType;
+                    return internalHttpListenerRequest?.ContentType ?? "";
                 }
             }
         } 
@@ -87,7 +87,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerRequest.Cookies;
+                    return internalHttpListenerRequest?.Cookies;
                 }
             }
 
@@ -115,7 +115,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerRequest.HttpMethod;
+                    return internalHttpListenerRequest?.HttpMethod ?? "";
                 }
             }
         } 
@@ -138,7 +138,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerRequest.InputStream;
+                    return internalHttpListenerRequest?.InputStream;
                 }
             }
         }
@@ -157,11 +157,18 @@ namespace Phabrico.Miscellaneous
 
                 if (internalHttpRequest != null)
                 {
-                    return internalHttpRequest.IsLocal;
+                    try
+                    {
+                        return internalHttpRequest.IsLocal;
+                    }
+                    catch
+                    {
+                        return true;
+                    }
                 }
                 else
                 {
-                    return internalHttpListenerRequest.IsLocal;
+                    return internalHttpListenerRequest?.IsLocal ?? true;
                 }
             }
         }
@@ -186,10 +193,11 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    rawUrl = internalHttpListenerRequest.RawUrl;
+                    rawUrl = internalHttpListenerRequest?.RawUrl;
                 }
 
-                return "/" + rawUrl.Substring(Http.Server.RootPath.TrimEnd('/').Length).TrimStart('/');
+                return "/" + rawUrl?.Substring(Http.Server.RootPath.TrimEnd('/').Length)
+                                   ?.TrimStart('/');
             }
 
             set
@@ -217,7 +225,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerRequest.RemoteEndPoint;
+                    return internalHttpListenerRequest?.RemoteEndPoint;
                 }
             }
 
@@ -246,7 +254,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerRequest.UserAgent;
+                    return internalHttpListenerRequest?.UserAgent;
                 }
             }
 
@@ -275,7 +283,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerRequest.UserLanguages ?? new string[] { "en-US" };
+                    return internalHttpListenerRequest?.UserLanguages ?? new string[] { "en-US" };
                 }
             }
 

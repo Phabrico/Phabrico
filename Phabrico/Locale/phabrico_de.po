@@ -278,6 +278,9 @@ msgstr "Herunterladen von Phame-Blog-Daten..."
 msgid "Synchronization.Status.DownloadingPhrictionData"
 msgstr "Herunterladen von Phrictionsdaten..."
 
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "Herunterladen von Phrictionsmetadaten..."
+
 msgid "Synchronization.Status.DownloadingProjects"
 msgstr "Projekte herunterladen..."
 
@@ -325,6 +328,9 @@ msgstr "Einige Wiki-Dokumente werden nicht hochgeladen, weil ihre Slug-Pfade zu 
 
 msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
 msgstr "Einige Phriction-Dokumente haben lange Slug-Pfade, die bei der Erstellung der zugrunde liegenden Dokumente zu Problemen führen können.\n\nMöchten Sie fortfahren?"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "Dieses Dokument ist eine nicht revidierte Übersetzung. Diese Version des Dokuments wird nicht in Phabricator hochgeladen."
 
 # Maniphest
 msgid "Create Task"
@@ -433,7 +439,7 @@ msgid "@@PERSON@@ changed the task priority to @@PRIORITY@@"
 msgstr "@@PERSON@@ hat die Priorität der Aufgabe auf @@PRIORITY@@ geändert"
 
 msgid "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
-msgstr "@@PERSON@@ hat das folgende Projekt zugewiesen: @@PROJEKT-NAME@@"
+msgstr "@@PERSON@@ hat das folgende Projekt zugewiesen: @@PROJECT-NAME@@"
 
 msgid "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
 msgstr "@@PERSON@@ hat die folgenden Projekte zugewiesen: @@PROJECT-NAMES@@"
@@ -1177,6 +1183,9 @@ msgstr "Dieses Phriction-Dokument oder diese Maniphest-Aufgabe wurde nicht vom P
 # Invalid configuration
 msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
 msgstr "Überprüfen Sie den Inhalt von @@APP-CONFIG-FILENAME@@"
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "Überprüfen Sie den Inhalt von @@IISMODULE-CONFIG-FILENAME@@"
 
 msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
 msgstr "Überprüfen Sie, ob @@APP-CONFIG-FILENAME@@ existiert"

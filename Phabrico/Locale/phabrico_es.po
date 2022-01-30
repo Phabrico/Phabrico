@@ -278,6 +278,9 @@ msgstr "Descarga de datos del blog de Phame..."
 msgid "Synchronization.Status.DownloadingPhrictionData"
 msgstr "Descargando los datos de Phriction..."
 
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "Descargando los metadatos de Phriction..."
+
 msgid "Synchronization.Status.DownloadingProjects"
 msgstr "Descargando proyectos..."
 
@@ -325,6 +328,9 @@ msgstr "Algunos documentos wiki no se subirán porque sus rutas de acceso son de
 
 msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
 msgstr "Algunos documentos de Phriction tienen rutas de acceso largas y pueden causar problemas al crear documentos subyacentes.\n\n¿Desea continuar?"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "Este documento es una traducción no revisada. Esta versión del documento no se subirá a Phabricator."
 
 # Maniphest
 msgid "Create Task"
@@ -415,7 +421,7 @@ msgid "@@PERSON@@ marked this task as @@STATE@@"
 msgstr "@@PERSON@@ marcó esta tarea como @@STATE@@"
 
 msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
-msgstr "@@PERSONA@@ cambió esta tarea de @@OLDSTATE@@ a @@NEWSTATE@@"
+msgstr "@@PERSON@@ cambió esta tarea de @@OLDSTATE@@ a @@NEWSTATE@@"
 
 msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
 msgstr "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
@@ -1177,6 +1183,9 @@ msgstr "Este documento de Phriction o tarea de Maniphest no fue descargado del s
 # Invalid configuration
 msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
 msgstr "Validar el contenido de @@APP-CONFIG-FILENAME@@"
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "Validar el contenido de @@IISMODULE-CONFIG-FILENAME@@"
 
 msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
 msgstr "Verificar si @@APP-CONFIG-FILENAME@@ existe"

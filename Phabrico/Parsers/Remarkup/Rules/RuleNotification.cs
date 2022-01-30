@@ -39,8 +39,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override RemarkupRule Clone()
         {
             RuleNotification copy = base.Clone() as RuleNotification;
-            copy.Style = Style;
-            copy.HideNotificationPrefix = HideNotificationPrefix;
+            if (copy != null)
+            {
+                copy.Style = Style;
+                copy.HideNotificationPrefix = HideNotificationPrefix;
+            }
+
             return copy;
         }
 

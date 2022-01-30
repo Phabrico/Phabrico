@@ -74,10 +74,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override RemarkupRule Clone()
         {
             RuleHyperLink copy = base.Clone() as RuleHyperLink;
-            copy.Description = Description;
-            copy.InvalidHyperlink = InvalidHyperlink;
-            copy.RemarkupFormatting = RemarkupFormatting;
-            copy.URL = URL;
+            if (copy != null)
+            {
+                copy.Description = Description;
+                copy.InvalidHyperlink = InvalidHyperlink;
+                copy.RemarkupFormatting = RemarkupFormatting;
+                copy.URL = URL;
+            }
+
             return copy;
         }
 
@@ -329,7 +333,6 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 string encryptionKey = browser.Token?.EncryptionKey;
                                 if (string.IsNullOrEmpty(encryptionKey) == false)
                                 {
-                                    Storage.Account accountStorage = new Storage.Account();
                                     Phabrico.Storage.Phriction phrictionStorage = new Storage.Phriction();
 
                                     string linkedDocument = urlHyperlink.Split('#')[0];

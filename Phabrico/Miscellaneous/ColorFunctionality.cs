@@ -24,7 +24,7 @@ namespace Phabrico.Miscellaneous
                 int G = Int32.Parse(rgbMatch.Groups[2].Value);
                 int B = Int32.Parse(rgbMatch.Groups[3].Value);
 
-                if (R * 0.2126 + G * 0.6052 + B * 0.0582 < 255 / 2)
+                if ((int)((double)R * 0.2126 + (double)G * 0.6052 + (double)B * 0.0582) < 255.0 / 2.0)
                 {
                     // rgbColorString is a dark color
                     return "white";

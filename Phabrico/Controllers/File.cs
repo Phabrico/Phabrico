@@ -4,6 +4,7 @@ using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Phabrico.Controllers
@@ -70,45 +71,91 @@ namespace Phabrico.Controllers
         /// or when a file is referenced in a Phriction document or Maniphest task
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
-        /// <param name="fileObject"></param>
+        /// <param name="fileObjectResponse"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/file/data")]
-        public void HttpGetFileContent(Http.Server httpServer, Browser browser, ref Http.Response.File fileObject, string[] parameters, string parameterActions)
+        public void HttpGetFileContent(Http.Server httpServer, ref Http.Response.File fileObjectResponse, string[] parameters, string parameterActions)
         {
             int fileId;
-            if (parameters.Length == 1 &&
-                Int32.TryParse(parameters[0], out fileId))
+            bool isTranslatedObject = false;
+
+            if (parameters.Length == 1)
             {
-                Storage.File fileStorage = new Storage.File();
-                Storage.Stage stageStorage = new Storage.Stage();
+                string firstParameter = parameters[0];
 
-                SessionManager.Token token = SessionManager.GetToken(browser);
-                if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
-
-                using (Storage.Database database = new Storage.Database(EncryptionKey))
+                if (RegexSafe.IsMatch(firstParameter, "^tran[0-9]+", System.Text.RegularExpressions.RegexOptions.Singleline))
                 {
-                    Phabricator.Data.File file = fileStorage.GetByID(database, fileId, false);
-                    if (file == null)
-                    {
-                        file = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileId, true);
-                    }
+                    isTranslatedObject = true;
+                    firstParameter = firstParameter.Substring("tran".Length);
+                }
 
-                    bool keepFilename = false;
-                    if (file != null)
-                    {
-                        fileObject = new Http.Response.File(file.DataStream, file.ContentType, file.FileName, file.FontAwesomeIcon != null);
+                if (Int32.TryParse(firstParameter, out fileId))
+                {
+                    Storage.File fileStorage = new Storage.File();
+                    Storage.Stage stageStorage = new Storage.Stage();
 
-                        if (file.ContentType.Equals("image/drawio"))
+                    SessionManager.Token token = SessionManager.GetToken(browser);
+                    if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+
+                    using (Storage.Database database = new Storage.Database(EncryptionKey))
+                    {
+                        Phabricator.Data.File file = null;
+
+                        if (isTranslatedObject)
                         {
-                            fileObject.EnableBrowserCache = false;  // diagram drawing can be edited and should not be cached by browser
-                            keepFilename = true;
+                            Storage.Content content = new Storage.Content(database);
+                            string fileToken = string.Format("PHID-OBJECT-{0}", fileId.ToString().PadLeft(18, '0'));
+                            Storage.Content.Translation translation = content.GetTranslation(fileToken, browser.Session.Locale);
+                            if (translation != null)
+                            {
+                                Newtonsoft.Json.Linq.JObject fileObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
+                                if (fileObjectInfo != null)
+                                {
+                                    file = new Phabricator.Data.File();
+                                    file.Token = fileToken;
+
+                                    string base64EncodedData = (string)fileObjectInfo["Data"];
+                                    byte[] buffer = new byte[(int)(base64EncodedData.Length * 0.8)];
+                                    using (MemoryStream ms = new MemoryStream(buffer))
+                                    using (Phabrico.Parsers.Base64.Base64EIDOStream base64EIDOStream = new Parsers.Base64.Base64EIDOStream(base64EncodedData))
+                                    {
+                                        base64EIDOStream.CopyTo(ms);
+                                        Array.Resize(ref buffer, (int)base64EIDOStream.Length);
+                                    }
+
+                                    file.Data = buffer;
+                                    file.Size = buffer.Length;
+                                    file.Properties = (string)fileObjectInfo["Properties"];
+                                    file.FileName = (string)fileObjectInfo["FileName"];
+                                }
+                            }
+                        }
+                        else
+                        {
+                            file = fileStorage.GetByID(database, fileId, false);
                         }
 
-                        if (keepFilename)
+                        if (file == null)
                         {
-                            fileObject.IsAttachment = true;
+                            file = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileId, true);
+                        }
+
+                        bool keepFilename = false;
+                        if (file != null)
+                        {
+                            fileObjectResponse = new Http.Response.File(file.DataStream, file.ContentType, file.FileName, file.FontAwesomeIcon != null);
+
+                            if (file.ContentType.Equals("image/drawio"))
+                            {
+                                fileObjectResponse.EnableBrowserCache = false;  // diagram drawing can be edited and should not be cached by browser
+                                keepFilename = true;
+                            }
+
+                            if (keepFilename)
+                            {
+                                fileObjectResponse.IsAttachment = true;
+                            }
                         }
                     }
                 }
@@ -120,12 +167,11 @@ namespace Phabrico.Controllers
         /// or when a file is referenced in a Phriction document or Maniphest task
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="fileObject"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/file/reference")]
-        public Http.Response.HttpMessage HttpGetFileReferences(Http.Server httpServer, Browser browser, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
+        public Http.Response.HttpMessage HttpGetFileReferences(Http.Server httpServer, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
         {
             int fileId;
             if (parameters.Length == 1 &&
@@ -181,12 +227,11 @@ namespace Phabrico.Controllers
         /// This JSON array will be shown as a HTML table
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="resultHttpMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/file/references/search")]
-        public void HttpGetPopulateFileReferenceTableData(Http.Server httpServer, Browser browser, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateFileReferenceTableData(Http.Server httpServer, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
         {
             List<JsonRecordReferenceData> tableRows = new List<JsonRecordReferenceData>();
 
@@ -269,12 +314,9 @@ namespace Phabrico.Controllers
         /// where this new File ID is sent with
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
-        /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
-        /// <param name="parameterActions"></param>
         [UrlController(URL = "/file/getIDForNewFile")]
-        public void HttpPostIDForNewFile(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostIDForNewFile(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/getIDForNewFile");
 
@@ -298,12 +340,11 @@ namespace Phabrico.Controllers
         /// It's also executed when the search filter is changed
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/file/query")]
-        public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateTableData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/query");
 
@@ -414,10 +455,9 @@ namespace Phabrico.Controllers
         /// A file is uploaded in chunks. Each chunk upload will trigger this method.
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/file/uploadChunk")]
-        public void HttpPostUploadChunk(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostUploadChunk(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/uploadChunk");
 

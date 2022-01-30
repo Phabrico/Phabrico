@@ -78,6 +78,7 @@ namespace Phabrico.UnitTests.ContentTranslation
                 }
                 catch
                 {
+                    // ignore all exceptions
                 }
             }
         }

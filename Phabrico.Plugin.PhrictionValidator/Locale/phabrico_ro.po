@@ -1,0 +1,20 @@
+# Romanian translations
+
+# General
+msgid "PluginName.PhrictionValidator"
+msgstr "Validarea documentului"
+
+msgid "There is 1 underlying document. Would you like to validate this as well ?"
+msgstr "Există un document de bază. Doriți să îl validați și pe acesta?"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to validate these as well ?"
+msgstr "Există documente de bază @@NBR-CHILD-DOCUMENTS@@. Doriți să le validați și pe acestea?"
+
+msgid "No errors were found"
+msgstr "Nu s-au găsit erori"
+
+msgid "Invalid file reference @@FILE-REFERENCE-ID@@"
+msgstr "Referință de fișier invalidă @@FILE-REFERENCE-ID@@"
+
+msgid "Invalid hyperlink @@URL@@"
+msgstr "Hyperlink nevalabil @@URL@@"

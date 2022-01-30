@@ -23,8 +23,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override void Clone(RemarkupRule originalRemarkupRule)
         {
             RuleReferenceProject originalRuleReferenceProject = originalRemarkupRule as RuleReferenceProject;
-            ProjectName = originalRuleReferenceProject.ProjectName;
-            ProjectToken = originalRuleReferenceProject.ProjectToken;
+            if (originalRuleReferenceProject != null)
+            {
+                ProjectName = originalRuleReferenceProject.ProjectName;
+                ProjectToken = originalRuleReferenceProject.ProjectToken;
+            }
         }
 
         /// <summary>
@@ -51,7 +54,6 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                 if (string.IsNullOrEmpty(encryptionKey) == false)
                 {
-                    Storage.Account accountStorage = new Storage.Account();
                     Storage.Project projectStorage = new Storage.Project();
                     Project project = projectStorage.Get(database, matchProjectName.Value, browser.Session.Locale);
                     if (project == null) return false;

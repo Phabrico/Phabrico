@@ -32,15 +32,16 @@ namespace Phabrico.Parsers.Remarkup
                                                                           type.GetCustomAttribute<RemarkupRule.RulePriority>().Priority
                                                                  )
                                                          .ToArray();
-                foreach (Type remarkupRuleType in availableRuleClassTypes)
+                foreach (Type remarkupRuleType in availableRuleClassTypes.Where(type => type.IsAbstract == false))
                 {
-                    if (remarkupRuleType.IsAbstract) continue;
-
                     RemarkupRule newRemarkupRule = Activator.CreateInstance(remarkupRuleType) as RemarkupRule;
-                    newRemarkupRule.Engine = this;
-                    remarkupRules.Add(newRemarkupRule);
+                    if (newRemarkupRule != null)
+                    {
+                        newRemarkupRule.Engine = this;
+                        remarkupRules.Add(newRemarkupRule);
 
-                    newRemarkupRule.Initialize();
+                        newRemarkupRule.Initialize();
+                    }
                 }
             }
         }

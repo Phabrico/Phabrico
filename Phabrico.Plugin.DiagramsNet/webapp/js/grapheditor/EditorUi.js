@@ -961,7 +961,7 @@ EditorUi = function(editor, container, lightbox)
 	   	
 		// Workaround for bug on iOS see
 		// http://stackoverflow.com/questions/19012135/ios-7-ipad-safari-landscape-innerheight-outerheight-layout-issue
-		if (mxClient.IS_IOS && !window.navigator.standalone)
+		if (mxClient.IS_IOS && !window.navigator.standalone && typeof Menus !== 'undefined')
 		{
 			this.scrollHandler = mxUtils.bind(this, function()
 		   	{
@@ -1307,45 +1307,60 @@ EditorUi.prototype.initSelectionState = function()
  */
 EditorUi.prototype.updateSelectionStateForTableCells = function(result)
 {
-	// Updates rowspan/colspan for table cell merging
-	// if (result.cells.length > 1 && result.cell)
-	// {
-		//var cells = mxUtils.sortCells(result.cells);
-		// var row = graph.model.getParent(cells[0]);
-		// var table = graph.model.getParent(row);
-		// var colIndex = row.getIndex(cells[0]);
-		// var rowIndex = table.getIndex(row);
-		// var colCount = 1;
+	if (result.cells.length > 1 && result.cell)
+	{
+		var cells = mxUtils.sortCells(result.cells);
+		var model = this.editor.graph.model;
+		var parent = model.getParent(cells[0]);
+		var table = model.getParent(parent);
+		var col = parent.getIndex(cells[0]);
+		var row = table.getIndex(parent);
+		var lastspan = null;
+		var colspan = 1;
+		var rowspan = 1;
+		var index = 0;
 
-		// while (colCount < cells.length && graph.model.getParent(cells[colCount]) == row)
-		// {
-		// 	colCount++;
-		// }
+		var nextRowCell = (row < table.getChildCount() - 1) ?
+			model.getChildAt(model.getChildAt(
+				table, row + 1), col) : null;
+		
+		while (index < cells.length - 1)
+		{
+			var next = cells[++index];
+			
+			if (nextRowCell != null && nextRowCell == next &&
+				(lastspan == null || colspan == lastspan))
+			{
+				lastspan = colspan;
+				colspan = 0;
+				rowspan++;
+				parent = model.getParent(nextRowCell);
+				nextRowCell = (row + rowspan < table.getChildCount()) ?
+					model.getChildAt(model.getChildAt(
+						table, row + rowspan), col) : null;
+			}
+			
+			var state = this.editor.graph.view.getState(next);
 
-		// var index = 1;
-		// var rowCount = 1;
-		// row = table.getChildAt(rowIndex + rowCount);
+			if (next == model.getChildAt(parent, col + colspan) && state != null &&
+				mxUtils.getValue(state.style, 'colspan', 1) == 1 &&
+				mxUtils.getValue(state.style, 'rowspan', 1) == 1)
+			{
+				colspan++;
+			}
+			else
+			{
+				break;
+			}
+		}
 
-		// while (cells[rowCount * colCount + index] == row.getChildAt(index))
-		// {
-		// 	index++;
-		// }
-
-		// row = graph.model.getParent(cells[rowCount * colCount + index]);
-
-		// var rowCount = 1;
-
-
-
-		// for (var i = 1; i < cells.length; i++)
-		// {
-
-		// }
-
-		// var colIndex = graph.getColumnIndex(cells[0]);
-		// var rowIndex = graph.getRowIndex(cells[0]);
-
-	// }
+		if (index == rowspan * colspan - 1)
+		{
+			result.mergeCell = cells[0];
+			result.colspan = colspan;
+			result.rowspan = rowspan;
+		}
+	}
 };
 
 /**
@@ -2985,98 +3000,101 @@ EditorUi.prototype.initCanvas = function()
 			window.clearTimeout(updateZoomTimeout);
 		}
 
-		window.setTimeout(function()
+		if (delay >= 0)
 		{
-			if (!graph.isMouseDown || forcedZoom)
+			window.setTimeout(function()
 			{
-				updateZoomTimeout = window.setTimeout(mxUtils.bind(this, function()
-		        {
-		        	if (graph.isFastZoomEnabled())
-		    		{
-		            	// Transforms background page
-		  				if (graph.view.backgroundPageShape != null && graph.view.backgroundPageShape.node != null)
-		  				{
-		  					mxUtils.setPrefixedStyle(graph.view.backgroundPageShape.node.style, 'transform-origin', null);
-		  					mxUtils.setPrefixedStyle(graph.view.backgroundPageShape.node.style, 'transform', null);
-		  				}
-		  				
-		  				// Transforms graph and background image
-		  				mainGroup.style.transformOrigin = '';
-		  				bgGroup.style.transformOrigin = '';
-
-		  				// Workaround for no reset of transform in Safari
-		  				if (mxClient.IS_SF)
-		  				{
-			  				mainGroup.style.transform = 'scale(1)';
-			  				bgGroup.style.transform = 'scale(1)';
-			  				
-			  				window.setTimeout(function()
-	  						{
-			  					mainGroup.style.transform = '';
-	  							bgGroup.style.transform = '';
-	  						}, 0)
-		  				}
-		  				else
-		  				{
-			  				mainGroup.style.transform = '';
-			  				bgGroup.style.transform = '';
-		  				}
-		  				
-		            	// Shows interactive elements
-		            	graph.view.getDecoratorPane().style.opacity = '';
-		            	graph.view.getOverlayPane().style.opacity = '';
-		    		}
-		        	
-		        	var sp = new mxPoint(graph.container.scrollLeft, graph.container.scrollTop);
-		            var offset = mxUtils.getOffset(graph.container);
-		        	var prev = graph.view.scale;
-		            var dx = 0;
-		            var dy = 0;
-		            
-		            if (cursorPosition != null)
-		            {
-		                dx = graph.container.offsetWidth / 2 - cursorPosition.x + offset.x;
-		                dy = graph.container.offsetHeight / 2 - cursorPosition.y + offset.y;
-		            }
-
-					graph.zoom(graph.cumulativeZoomFactor, null, 20);
-		            var s = graph.view.scale;
-		            
-		            if (s != prev)
-		            {
-			            if (scrollPosition != null)
-			            {
-			            	dx += sp.x - scrollPosition.x;
-			            	dy += sp.y - scrollPosition.y;
-			            }
-			            
-		                if (resize != null)
-		                {
-		                	ui.chromelessResize(false, null, dx * (graph.cumulativeZoomFactor - 1),
-		                		dy * (graph.cumulativeZoomFactor - 1));
-		                }
-		                
-		                if (mxUtils.hasScrollbars(graph.container) && (dx != 0 || dy != 0))
-		                {
-		                    graph.container.scrollLeft -= dx * (graph.cumulativeZoomFactor - 1);
-		                    graph.container.scrollTop -= dy * (graph.cumulativeZoomFactor - 1);
-		                }
-		            }
-		            
-					if (filter != null)
+				if (!graph.isMouseDown || forcedZoom)
+				{
+					updateZoomTimeout = window.setTimeout(mxUtils.bind(this, function()
 					{
-						mainGroup.setAttribute('filter', filter);
-					}
-					
-		            graph.cumulativeZoomFactor = 1;
-		            updateZoomTimeout = null;
-		            scrollPosition = null;
-		            cursorPosition = null;
-		            forcedZoom = null;
-		            filter = null;
-		        }), (delay != null) ? delay : ((graph.isFastZoomEnabled()) ? ui.wheelZoomDelay : ui.lazyZoomDelay));
-			}
-		}, 0);
+						if (graph.isFastZoomEnabled())
+						{
+							// Transforms background page
+							if (graph.view.backgroundPageShape != null && graph.view.backgroundPageShape.node != null)
+							{
+								mxUtils.setPrefixedStyle(graph.view.backgroundPageShape.node.style, 'transform-origin', null);
+								mxUtils.setPrefixedStyle(graph.view.backgroundPageShape.node.style, 'transform', null);
+							}
+							
+							// Transforms graph and background image
+							mainGroup.style.transformOrigin = '';
+							bgGroup.style.transformOrigin = '';
+
+							// Workaround for no reset of transform in Safari
+							if (mxClient.IS_SF)
+							{
+								mainGroup.style.transform = 'scale(1)';
+								bgGroup.style.transform = 'scale(1)';
+								
+								window.setTimeout(function()
+								{
+									mainGroup.style.transform = '';
+									bgGroup.style.transform = '';
+								}, 0)
+							}
+							else
+							{
+								mainGroup.style.transform = '';
+								bgGroup.style.transform = '';
+							}
+							
+							// Shows interactive elements
+							graph.view.getDecoratorPane().style.opacity = '';
+							graph.view.getOverlayPane().style.opacity = '';
+						}
+						
+						var sp = new mxPoint(graph.container.scrollLeft, graph.container.scrollTop);
+						var offset = mxUtils.getOffset(graph.container);
+						var prev = graph.view.scale;
+						var dx = 0;
+						var dy = 0;
+						
+						if (cursorPosition != null)
+						{
+							dx = graph.container.offsetWidth / 2 - cursorPosition.x + offset.x;
+							dy = graph.container.offsetHeight / 2 - cursorPosition.y + offset.y;
+						}
+
+						graph.zoom(graph.cumulativeZoomFactor, null, 20);
+						var s = graph.view.scale;
+						
+						if (s != prev)
+						{
+							if (scrollPosition != null)
+							{
+								dx += sp.x - scrollPosition.x;
+								dy += sp.y - scrollPosition.y;
+							}
+							
+							if (resize != null)
+							{
+								ui.chromelessResize(false, null, dx * (graph.cumulativeZoomFactor - 1),
+									dy * (graph.cumulativeZoomFactor - 1));
+							}
+							
+							if (mxUtils.hasScrollbars(graph.container) && (dx != 0 || dy != 0))
+							{
+								graph.container.scrollLeft -= dx * (graph.cumulativeZoomFactor - 1);
+								graph.container.scrollTop -= dy * (graph.cumulativeZoomFactor - 1);
+							}
+						}
+						
+						if (filter != null)
+						{
+							mainGroup.setAttribute('filter', filter);
+						}
+						
+						graph.cumulativeZoomFactor = 1;
+						updateZoomTimeout = null;
+						scrollPosition = null;
+						cursorPosition = null;
+						forcedZoom = null;
+						filter = null;
+					}), (delay != null) ? delay : ((graph.isFastZoomEnabled()) ? ui.wheelZoomDelay : ui.lazyZoomDelay));
+				}
+			}, 0);
+		}
 	};
 	
 	graph.lazyZoom = function(zoomIn, ignoreCursorPosition, delay, factor)
@@ -3229,14 +3247,23 @@ EditorUi.prototype.initCanvas = function()
 							new mxPoint(mxEvent.getClientX(evt), mxEvent.getClientY(evt));
 						forcedZoom = force;
 						var factor = graph.zoomFactor;
+						var delay = null;
 
-						// Slower zoom for pinch gesture on trackpad
-						if (evt.deltaY != null && Math.round(evt.deltaY) != evt.deltaY)
+						// Slower zoom for pinch gesture on trackpad with max delta to
+						// filter out mouse wheel events in Brave browser for Windows 
+						if (evt.ctrlKey && evt.deltaY != null && Math.abs(evt.deltaY) < 40 &&
+							Math.round(evt.deltaY) != evt.deltaY)
 						{
 							factor = 1 + (Math.abs(evt.deltaY) / 20) * (factor - 1);
 						}
-
-						graph.lazyZoom(up, null, null, factor);
+						// Slower zoom for pinch gesture on touch screens
+						else if (evt.movementY != null && evt.type == 'pointermove')
+						{
+							factor = 1 + (Math.max(1, Math.abs(evt.movementY)) / 20) * (factor - 1);
+							delay = -1;
+						}
+						
+						graph.lazyZoom(up, null, delay, factor);
 						mxEvent.consume(evt);
 				
 						return false;
@@ -4038,7 +4065,8 @@ EditorUi.prototype.updateActionStates = function()
 	               'editStyle', 'editTooltip', 'editLink', 'backgroundColor', 'borderColor',
 	               'edit', 'toFront', 'toBack', 'solid', 'dashed', 'pasteSize',
 	               'dotted', 'fillColor', 'gradientColor', 'shadow', 'fontColor',
-	               'formattedText', 'rounded', 'toggleRounded', 'sharp', 'strokeColor'];
+	               'formattedText', 'rounded', 'toggleRounded', 'strokeColor',
+				   'sharp', 'snapToGrid'];
 	
 	for (var i = 0; i < actions.length; i++)
 	{
@@ -4049,16 +4077,16 @@ EditorUi.prototype.updateActionStates = function()
 	this.actions.get('pasteSize').setEnabled(this.copiedSize != null && ss.vertices.length > 0);
 	this.actions.get('pasteData').setEnabled(this.copiedValue != null && ss.cells.length > 0);
 	this.actions.get('setAsDefaultStyle').setEnabled(graph.getSelectionCount() == 1);
-	this.actions.get('copySize').setEnabled(graph.getSelectionCount() == 1);
 	this.actions.get('lockUnlock').setEnabled(!graph.isSelectionEmpty());
 	this.actions.get('bringForward').setEnabled(ss.cells.length == 1);
 	this.actions.get('sendBackward').setEnabled(ss.cells.length == 1);
 	this.actions.get('rotation').setEnabled(ss.vertices.length == 1);
 	this.actions.get('wordWrap').setEnabled(ss.vertices.length == 1);
 	this.actions.get('autosize').setEnabled(ss.vertices.length == 1);
+	this.actions.get('copySize').setEnabled(ss.vertices.length == 1);
 	this.actions.get('clearWaypoints').setEnabled(ss.connections);
 	this.actions.get('curved').setEnabled(ss.edges.length > 0);
-	this.actions.get('turn').setEnabled(ss.resizable);
+	this.actions.get('turn').setEnabled(ss.cells.length > 0);
 	this.actions.get('group').setEnabled(!ss.row && !ss.cell &&
 		(ss.cells.length > 1 || (ss.vertices.length == 1 &&
 		graph.model.getChildCount(ss.cells[0]) == 0 &&
@@ -4099,7 +4127,7 @@ EditorUi.prototype.updateActionStates = function()
     this.menus.get('distribute').setEnabled(ss.unlocked &&
 		ss.vertices.length > 1);
     this.menus.get('align').setEnabled(ss.unlocked &&
-		ss.vertices.length > 1);
+		ss.cells.length > 0);
 
     this.updatePasteActionStates();
 };
@@ -4131,8 +4159,8 @@ EditorUi.prototype.refresh = function(sizeDidChange)
 	// http://stackoverflow.com/questions/19012135/ios-7-ipad-safari-landscape-innerheight-outerheight-layout-issue
 	// FIXME: Fix if footer visible
 	var off = 0;
-	
-	if (mxClient.IS_IOS && !window.navigator.standalone)
+
+	if (mxClient.IS_IOS && !window.navigator.standalone && typeof Menus !== 'undefined')
 	{
 		if (window.innerHeight != document.documentElement.clientHeight)
 		{

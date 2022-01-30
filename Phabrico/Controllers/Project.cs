@@ -48,13 +48,12 @@ namespace Phabrico.Controllers
         /// This method is fired when opening the Projects screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="htmlViewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         /// <returns></returns>
         [UrlController(URL = "/project")]
-        public Http.Response.HttpMessage HttpPostLoadProjectScreen(Http.Server httpServer, Browser browser, string[] parameters)
+        public Http.Response.HttpMessage HttpPostLoadProjectScreen(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project");
 
@@ -73,7 +72,6 @@ namespace Phabrico.Controllers
                 bool doSelectAll = firstParameter.Equals("selectAll");
                 bool doUnselectAll = firstParameter.Equals("unselectAll");
                 bool doDisallowAll = firstParameter.Equals("disallowAll");
-                bool doShowSelected = firstParameter.Equals("showSelected");
                 bool doSetColorForAll = firstParameter.Equals("setColorForAll");
 
                 string[] filtersProject = browser.Session.FormVariables[browser.Request.RawUrl]["filterProject"]
@@ -102,10 +100,8 @@ namespace Phabrico.Controllers
                 else
                 if (doDisallowAll)
                 {
-                    foreach (Phabricator.Data.Project project in projects)
+                    foreach (Phabricator.Data.Project project in projects.Where(p => p.Token.Equals(Phabricator.Data.Project.None) == false))
                     {
-                        if (project.Token.Equals(Phabricator.Data.Project.None)) continue;
-
                         projectStorage.SelectProject(database, browser.Session.Locale, project.Token, Phabricator.Data.Project.Selection.Disallowed);
                     }
                 }
@@ -131,12 +127,11 @@ namespace Phabrico.Controllers
         /// This method is fired when opening the Projects screen and when changing its search filter
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/project/query")]
-        public JsonMessage HttpPostPopulateTableData(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostPopulateTableData(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/query");
 
@@ -204,10 +199,9 @@ namespace Phabrico.Controllers
         /// This method is fired when the user clicks on a 'Disallow' button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/project/disallow")]
-        public void HttpPostDisallowProject(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostDisallowProject(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/disallow");
 
@@ -227,10 +221,9 @@ namespace Phabrico.Controllers
         /// This method is fired when the user clicks on a 'select' button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/project/select")]
-        public void HttpPostSelectProject(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostSelectProject(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/select");
 
@@ -250,10 +243,9 @@ namespace Phabrico.Controllers
         /// This method is fired when the user clicks on a 'unselect' button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/project/unselect")]
-        public void HttpPostUnselectProject(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostUnselectProject(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/unselect");
 
@@ -280,12 +272,11 @@ namespace Phabrico.Controllers
         /// This method is fired when the user clicks on a SetColor button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/project/setcolor")]
-        public JsonMessage HttpPostSetColor(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostSetColor(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/project/setcolor");
 

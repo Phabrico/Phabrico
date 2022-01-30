@@ -131,12 +131,20 @@ namespace Phabrico.Plugin
 
         private void GitanosSynchronizationReadData(Synchronization.SynchronizationParameters synchronizationParameters, int processedDuration, int totalDuration)
         {
+            DateTimeOffset modifiedSince;
             Storage.GitanosPhabricatorRepository gitanosPhabricatorRepositoryStorage = new Storage.GitanosPhabricatorRepository();
-            DateTimeOffset modifiedSince = gitanosPhabricatorRepositoryStorage.Get(synchronizationParameters.database, Language.NotApplicable)
-                                                                              .Select(record => record.DateModified)
-                                                                              .DefaultIfEmpty(new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan()))
-                                                                              .Max(dateTimeOffset => dateTimeOffset)
-                                                                              .AddSeconds(1);
+            try
+            {
+                modifiedSince = gitanosPhabricatorRepositoryStorage.Get(synchronizationParameters.database, Language.NotApplicable)
+                                                                   .Select(record => record.DateModified)
+                                                                   .DefaultIfEmpty(new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan()))
+                                                                   .Max(dateTimeOffset => dateTimeOffset)
+                                                                   .AddSeconds(1);
+            }
+            catch
+            {
+                modifiedSince = new DateTime(1970, 1, 1, 1, 0, 0, 0, System.DateTimeKind.Utc);
+            }
 
             Phabricator.API.Diffusion diffusion = new Phabricator.API.Diffusion();
             IEnumerable<Phabricator.Data.Diffusion> modifiedRepositories = diffusion.GetModifiedRepositories(synchronizationParameters.database,
@@ -144,12 +152,9 @@ namespace Phabrico.Plugin
                                                                                                              null,
                                                                                                              modifiedSince
                                                                                                             );
-            foreach (Phabricator.Data.Diffusion modifiedRepository in modifiedRepositories)
+            foreach (Phabricator.Data.Diffusion modifiedRepository in modifiedRepositories.Where(repo => repo.Status.Equals("Active", StringComparison.InvariantCultureIgnoreCase)))
             {
-                if (modifiedRepository.Status.Equals("Active", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    gitanosPhabricatorRepositoryStorage.Add(synchronizationParameters.database, modifiedRepository);
-                }
+                gitanosPhabricatorRepositoryStorage.Add(synchronizationParameters.database, modifiedRepository);
             }
         }
 

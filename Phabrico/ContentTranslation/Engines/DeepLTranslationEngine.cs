@@ -66,6 +66,7 @@ namespace Phabrico.ContentTranslation.Engines
                         {
                             string jsonResult = streamReader.ReadToEnd();
                             JObject json = JsonConvert.DeserializeObject(jsonResult) as JObject;
+                            if (json == null) return null;
                             return (string)json["translations"][0]["text"];
                         }
                     }
@@ -94,7 +95,7 @@ namespace Phabrico.ContentTranslation.Engines
                     }
                 }
 
-                throw exception;
+                throw;
             }
         }
     }

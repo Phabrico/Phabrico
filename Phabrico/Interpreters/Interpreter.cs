@@ -22,12 +22,18 @@ namespace Phabrico.Interpreters
                 if (_knownInterpreters == null)
                 {
                     _knownInterpreters = new Dictionary<string, Interpreter>();
-                    foreach (Type interpreterType in Assembly.GetExecutingAssembly().GetExportedTypes().Where(type => typeof(Phabrico.Interpreters.Interpreter).IsAssignableFrom(type)))
+                    foreach (Type interpreterType in Assembly.GetExecutingAssembly()
+                                                             .GetExportedTypes()
+                                                             .Where(type => type != typeof(Interpreter) 
+                                                                         && typeof(Phabrico.Interpreters.Interpreter).IsAssignableFrom(type)
+                                                                   )
+                            )
                     {
-                        if (interpreterType == typeof(Interpreter)) continue;
-
                         Interpreter interpreter = interpreterType.GetConstructor(new Type[0]).Invoke(null) as Interpreter;
-                        _knownInterpreters[interpreter.Name.ToLower()] = interpreter;
+                        if (interpreter != null)
+                        {
+                            _knownInterpreters[interpreter.Name.ToLower()] = interpreter;
+                        }
                     }
                 }
 

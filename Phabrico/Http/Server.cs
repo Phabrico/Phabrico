@@ -51,24 +51,25 @@ namespace Phabrico.Http
         /// <summary>
         /// The HTTP listener
         /// </summary>
-        private HttpListener httpListener;
+        private readonly HttpListener httpListener;
 
         /// <summary>
         /// Controllers cached per url
         /// </summary>
-        private Dictionary<string, CachedControllerInfo> cachedControllerInfo = new Dictionary<string, CachedControllerInfo>();
+        private readonly Dictionary<string, CachedControllerInfo> cachedControllerInfo = new Dictionary<string, CachedControllerInfo>();
 
         /// <summary>
         /// Dictionary containing static Http.Response.HttpMessage (e.g. css, javascript, fonts, ...).
         /// This is used for fast loading this static content instead of "slow" loading the embedded resourced
         /// </summary>
-        private Dictionary<string, Http.Response.HttpMessage> cachedFixedHttpMessages = new Dictionary<string, Response.HttpMessage>();
+        private readonly Dictionary<string, Http.Response.HttpMessage> cachedFixedHttpMessages = new Dictionary<string, Response.HttpMessage>();
 
         /// <summary>
         /// Dictionary containing the HTML of non-static Http.Response.HttpMessage (e.g. wiki, tasks).
         /// This dictionary is cleaned up periodically
         /// </summary>
-        private static Dictionary<string, CachedHttpMessage> cachedHttpMessages = new Dictionary<string, CachedHttpMessage>();
+        private static readonly Dictionary<string, CachedHttpMessage> cachedHttpMessages = new Dictionary<string, CachedHttpMessage>();
+        public static object synchronizationProcessHttpRequest = new object();
 
         /// <summary>
         /// If set to Invalid, the cache will be filled up by the PreloadContent method after the next GET request.
@@ -86,13 +87,13 @@ namespace Phabrico.Http
         /// Dictionary containing the latest notification messages sent to the browsers
         /// Key=WebSocket message identifier, Value=message content
         /// </summary>
-        private static Dictionary<string, string> currentNotifications = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> currentNotifications = new Dictionary<string, string>();
 
         /// <summary>
         /// Dictionary containing all file objects based on their macro names
         /// </summary>
         public static Dictionary<string, Phabricator.Data.File> FilesPerMacroName { get; } = new Dictionary<string, Phabricator.Data.File>() { { "", null } };
-        private static object filesPerMacroNameLock = new object();
+        private static readonly object filesPerMacroNameLock = new object();
 
         /// <summary>
         /// True if Phabrico is executed as IIS Http module
@@ -111,7 +112,7 @@ namespace Phabrico.Http
         /// <summary>
         /// Contains all the url paths which point to an unsecured controller method
         /// </summary>
-        private List<string> unsecuredUrlPaths = new List<string>();
+        private readonly List<string> unsecuredUrlPaths = new List<string>();
 
         /// <summary>
         /// The root address to where the webserver is listening to.
@@ -184,6 +185,15 @@ namespace Phabrico.Http
             this.RemoteAccessEnabled = remoteAccessEnabled;
             this.IsHttpModule = isHttpModule;
 
+            if (IsHttpModule)
+            {
+                Assembly callingAssembly = Assembly.GetCallingAssembly();
+                if (callingAssembly != null && callingAssembly.ExportedTypes.Any(type => typeof(IHttpModule).IsAssignableFrom(type)))
+                {
+                    AppConfigLoader.IISModuleAssembly = callingAssembly;
+                }
+            }
+
             RootPath = "/" + rootPath.Trim('/') + "/";
             RootPath = RegexSafe.Replace(RootPath, "//+", "/");
 
@@ -222,6 +232,8 @@ namespace Phabrico.Http
                     foreach (Type pluginType in pluginDLL.GetExportedTypes().Where(t => t.BaseType == typeof(Plugin.PluginBase)))
                     {
                         Plugin.PluginBase plugin = pluginType.GetConstructor(Type.EmptyTypes).Invoke(null) as Plugin.PluginBase;
+                        if (plugin == null) continue;
+
                         plugin.Assembly = pluginDLL;
                         plugin.Database = new Storage.Database(null);
                         Plugins.Add(plugin);
@@ -305,7 +317,7 @@ namespace Phabrico.Http
                 {
                     MethodInfo controllerMethod = controllerMethods.FirstOrDefault().Key;
                     UrlControllerAttribute urlControllerAttribute = controllerMethod.GetCustomAttributes(typeof(UrlControllerAttribute)).FirstOrDefault() as UrlControllerAttribute;
-                    if (urlControllerAttribute.IntegratedWindowsSecurity)
+                    if (urlControllerAttribute != null && urlControllerAttribute.IntegratedWindowsSecurity)
                     {
                         return AuthenticationSchemes.IntegratedWindowsAuthentication;
                     }
@@ -321,13 +333,13 @@ namespace Phabrico.Http
         public void CleanUpSessions()
         {
             foreach (SessionManager.Token activeToken in SessionManager.ActiveTokens
+                                                                       .Where(token => token.Invalid
+                                                                                    && token.Key != "temp"
+                                                                             )
                                                                        .ToArray()
-                                                                       .Where(token => token.Key != "temp"))
+                    )
             {
-                if (activeToken.Invalid)
-                {
-                    Session.CancelToken(activeToken.ID);
-                }
+                Session.CancelToken(activeToken.ID);
             }
         }
 
@@ -428,7 +440,7 @@ namespace Phabrico.Http
                 else
                 {
                     Controller newController = cachedController.ControllerConstructor.Invoke(null) as Controller;
-                    if (browser != null)
+                    if (browser != null && newController != null)
                     {
                         newController.GetType().GetProperty("browser").SetValue(newController, browser);
 
@@ -710,7 +722,7 @@ namespace Phabrico.Http
         /// <param name="database"></param>
         public static void InvalidateNonStaticCache(Database database, DateTime since)
         {
-            lock (cachedHttpMessages)
+            lock (synchronizationProcessHttpRequest)
             {
                 if (since == DateTime.MaxValue)
                 {
@@ -726,13 +738,11 @@ namespace Phabrico.Http
                 }
 
                 // delete old cached messages
-                int cacheSize = cachedHttpMessages.Sum(cachedHttpMessage => cachedHttpMessage.Value.Size);
-                foreach (var cachedHttpMessage in cachedHttpMessages.ToArray())
+                foreach (var cachedHttpMessage in cachedHttpMessages.Where(msg => msg.Value.Timestamp < since)
+                                                                    .ToArray()
+                        )
                 {
-                    if (cachedHttpMessage.Value.Timestamp < since)
-                    {
-                        cachedHttpMessages.Remove(cachedHttpMessage.Key);
-                    }
+                    cachedHttpMessages.Remove(cachedHttpMessage.Key);
                 }
 
                 cacheStatusHttpMessages = CacheState.Invalid;
@@ -746,15 +756,14 @@ namespace Phabrico.Http
         /// <param name="url"></param>
         public void InvalidateNonStaticCache(string url)
         {
-            lock (cachedHttpMessages)
+            lock (synchronizationProcessHttpRequest)
             {
                 // delete old cached messages
-                foreach (var cachedHttpMessage in cachedHttpMessages.ToArray())
+                foreach (var cachedHttpMessage in cachedHttpMessages.Where(msg => msg.Key.Contains(url))
+                                                                    .ToArray()
+                        )
                 {
-                    if (cachedHttpMessage.Key.Contains(url))
-                    {
-                        cachedHttpMessages.Remove(cachedHttpMessage.Key);
-                    }
+                    cachedHttpMessages.Remove(cachedHttpMessage.Key);
                 }
             }
         }
@@ -812,92 +821,88 @@ namespace Phabrico.Http
                 clonedBrowser.Session.Locale = browser.Session.Locale;
             }
 
-            Task.Delay(500)
-                .ContinueWith((task) =>
+            Logging.WriteInfo("(internal)", "PreloadContent");
+
+            using (Storage.Database database = new Database(encryptionKey))
             {
-                Logging.WriteInfo("(internal)", "PreloadContent");
+                string htmlContent;
+                string theme = database.ApplicationTheme;
+                Response.HtmlViewPage.ContentOptions htmlViewPageOptions;
 
-                using (Storage.Database database = new Database(encryptionKey))
+                // preload favorite phriction documents
+                Storage.Phriction phrictionStorage = new Storage.Phriction();
+                List<Phabricator.Data.Phriction> favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, browser, username).ToList();
+                favoritePhrictionDocuments.Add(phrictionStorage.Get(database, "/", browser.Session.Locale));
+                htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
+                Controllers.Phriction phrictionController = new Controllers.Phriction();
+                phrictionController.browser = clonedBrowser;
+                foreach (Phabricator.Data.Phriction phrictionDocument in favoritePhrictionDocuments.Where(document => document != null))
                 {
-                    string htmlContent;
-                    string theme = database.ApplicationTheme;
-                    Response.HtmlViewPage.ContentOptions htmlViewPageOptions;
-
-                    // preload favorite phriction documents
-                    Storage.Phriction phrictionStorage = new Storage.Phriction();
-                    List<Phabricator.Data.Phriction> favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, browser, username).ToList();
-                    favoritePhrictionDocuments.Add(phrictionStorage.Get(database, "/", browser.Session.Locale));
-                    htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
-                    Controllers.Phriction phrictionController = new Controllers.Phriction();
-                    phrictionController.browser = clonedBrowser;
-                    foreach (Phabricator.Data.Phriction phrictionDocument in favoritePhrictionDocuments.Where(document => document != null))
+                    lock (synchronizationProcessHttpRequest)
                     {
-                        lock (cachedHttpMessages)
-                        {
-                            string cacheKey = token + theme + clonedBrowser.Language + "/w/" + phrictionDocument.Path;
-                            if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
+                        string cacheKey = token + theme + clonedBrowser.Language + "/w/" + phrictionDocument.Path;
+                        if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
 
-                            string[] parameters = phrictionDocument.Path.Trim('/').Split('/');
-                            Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "Phriction", parameters);
+                        string[] parameters = phrictionDocument.Path.Trim('/').Split('/');
+                        Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "Phriction", parameters);
 
-                            phrictionController.EncryptionKey = encryptionKey;
+                        phrictionController.EncryptionKey = encryptionKey;
 
-                            phrictionController.HttpGetLoadParameters(this, clonedBrowser, ref viewPage, parameters, "");
+                        phrictionController.HttpGetLoadParameters(this, ref viewPage, parameters, "");
 
-                            viewPage.Theme = theme;
-                            htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
+                        viewPage.Theme = theme;
+                        htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
 
-                            cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
-                        }
-
-                        Thread.Sleep(100);
+                        cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
                     }
 
-                    // preload assigned maniphest tasks
-                    Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                    Storage.Stage stageStorage = new Storage.Stage();
-                    Phabricator.Data.Maniphest[] stagedManiphestTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).ToArray();
-                    foreach (Phabricator.Data.Maniphest stagedManiphestTask in stagedManiphestTasks)
+                    Thread.Sleep(100);
+                }
+
+                // preload assigned maniphest tasks
+                Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+                Storage.Stage stageStorage = new Storage.Stage();
+                Phabricator.Data.Maniphest[] stagedManiphestTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).ToArray();
+                foreach (Phabricator.Data.Maniphest stagedManiphestTask in stagedManiphestTasks)
+                {
+                    maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedManiphestTask, browser.Session.Locale);
+                }
+
+                Phabricator.Data.Maniphest[] assignedManiphestTasks = maniphestStorage.Get(database, browser.Session.Locale)
+                                                                                      .Where(maniphestTask => stagedManiphestTasks.All(stagedTask => stagedTask.Token.Equals(maniphestTask.Token) == false)
+                                                                                                           && maniphestTask.Owner.Equals(whoAmI.Parameters.UserToken)
+                                                                                                           && maniphestTask.IsOpen
+                                                                                            )
+                                                                                      .ToArray();
+                htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
+                Controllers.Maniphest maniphestController = new Controllers.Maniphest();
+                maniphestController.browser = clonedBrowser;
+                foreach (Phabricator.Data.Maniphest assignedManiphestTask in assignedManiphestTasks)
+                {
+                    lock (synchronizationProcessHttpRequest)
                     {
-                        maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedManiphestTask, browser.Session.Locale);
+                        string cacheKey = token + theme + clonedBrowser.Language + "/maniphest/T" + assignedManiphestTask.ID + "/";
+                        if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
+
+                        string[] parameters = new string[] { "T" + assignedManiphestTask.ID };
+                        Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "ManiphestTask", parameters);
+
+                        maniphestController.EncryptionKey = encryptionKey;
+
+                        maniphestController.HttpGetLoadParameters(this, ref viewPage, parameters, "");
+
+                        viewPage.Theme = theme;
+                        htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
+
+                        cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
                     }
 
-                    Phabricator.Data.Maniphest[] assignedManiphestTasks = maniphestStorage.Get(database, browser.Session.Locale)
-                                                                                          .Where(maniphestTask => stagedManiphestTasks.All(stagedTask => stagedTask.Token.Equals(maniphestTask.Token) == false)
-                                                                                                               && maniphestTask.Owner.Equals(whoAmI.Parameters.UserToken)
-                                                                                                               && maniphestTask.IsOpen.Equals("true")
-                                                                                                )
-                                                                                          .ToArray();
-                    htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
-                    Controllers.Maniphest maniphestController = new Controllers.Maniphest();
-                    maniphestController.browser = clonedBrowser;
-                    foreach (Phabricator.Data.Maniphest assignedManiphestTask in assignedManiphestTasks)
-                    {
-                        lock (cachedHttpMessages)
-                        {
-                            string cacheKey = token + theme + clonedBrowser.Language + "/maniphest/T" + assignedManiphestTask.ID + "/";
-                            if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
-
-                            string[] parameters = new string[] { "T" + assignedManiphestTask.ID.ToString() };
-                            Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "ManiphestTask", parameters);
-
-                            maniphestController.EncryptionKey = encryptionKey;
-
-                            maniphestController.HttpGetLoadParameters(this, clonedBrowser, ref viewPage, parameters, "");
-
-                            viewPage.Theme = theme;
-                            htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
-
-                            cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
-                        }
-
-                        Thread.Sleep(100);
-                    }
+                    Thread.Sleep(100);
                 }
 
                 // cache was filled up again
                 cacheStatusHttpMessages = CacheState.Valid;
-            });
+            }
         }
 
         /// <summary>
@@ -907,6 +912,8 @@ namespace Phabrico.Http
         /// <param name="encryptionKey"></param>
         public void PreloadFileMacros(string encryptionKey)
         {
+            Logging.WriteInfo("(internal)", "PreloadFileMacros");
+
             lock (filesPerMacroNameLock)
             {
                 if (Http.Server.FilesPerMacroName.ContainsKey(""))
@@ -933,9 +940,9 @@ namespace Phabrico.Http
                             FilesPerMacroName[macroName] = filesPerMacroName[macroName];
                         }
                     }
-                    catch
+                    catch (System.Exception exception)
                     {
-                        // ignore
+                        Logging.WriteError("(internal)", "PreloadFileMacros: " + exception.Message);
                     }
                 }
             }
@@ -1005,13 +1012,13 @@ namespace Phabrico.Http
             bool needAuthorization = false;
 
             // decode requested url from browser
-            string cmdGetUrl = browser.Request.RawUrl;
+            string cmdGetUrl = browser?.Request?.RawUrl;
             Logging.WriteInfo(browser?.Token?.ID, "GET {0}", cmdGetUrl);
 
             // in case the url is a global alias url, convert it to an internal url
             cmdGetUrl = RouteManager.GetInternalURL(cmdGetUrl);
 
-            string tokenId = browser.Request.Cookies["token"]?.Value;
+            string tokenId = browser?.Request?.Cookies["token"]?.Value;
             if (tokenId == null && IsStaticURL(cmdGetUrl) == false)
             {
                 // no token found -> redirect to homepage
@@ -1035,7 +1042,7 @@ namespace Phabrico.Http
                         (needAuthorization || cmdGetUrl.Split('?')[0].Equals("/") || cmdGetUrl.Split('?')[0].Equals(""))
                        )
                     {
-                        if (UserAgentIsSupported(browser.Request.UserAgent) == false)
+                        if (UserAgentIsSupported(browser?.Request?.UserAgent) == false)
                         {
                             Http.Response.HtmlViewPage browserNotSupportedPage = new Http.Response.HtmlViewPage(this, browser, true, "BrowserNotSupported", null);
                             browserNotSupportedPage.SetText("LOCALE", browser.Session.Locale, Http.Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -1054,143 +1061,134 @@ namespace Phabrico.Http
                     {
                         Http.Response.HttpMessage httpResponse = null;
 
-                        if (httpResponse == null)
+                        // check if url is correctly formatted (URL should end with a /)
+                        if (cmdGetUrl.Split('?').FirstOrDefault().EndsWith("/") == false)
                         {
-                            // check if url is correctly formatted (URL should end with a /)
-                            if (cmdGetUrl.Split('?').FirstOrDefault().EndsWith("/") == false)
-                            {
-                                string[] incorrectUrlParts = cmdGetUrl.Split('?');
-                                string cmdGetUrlParameters = string.Join("?", incorrectUrlParts.Skip(1));
+                            string[] incorrectUrlParts = cmdGetUrl.Split('?');
+                            string cmdGetUrlParameters = string.Join("?", incorrectUrlParts.Skip(1));
 
-                                cmdGetUrl = incorrectUrlParts[0] + "/";
-                                if (string.IsNullOrEmpty(cmdGetUrlParameters) == false)
-                                {
-                                    cmdGetUrl += "?" + cmdGetUrlParameters;
-                                }
+                            cmdGetUrl = incorrectUrlParts[0] + "/";
+                            if (string.IsNullOrEmpty(cmdGetUrlParameters) == false)
+                            {
+                                cmdGetUrl += "?" + cmdGetUrlParameters;
                             }
+                        }
 
-                            // check if we have a cached static url
-                            if (cachedFixedHttpMessages.ContainsKey(cmdGetUrl))
+                        // check if we have a cached static url
+                        if (cachedFixedHttpMessages.TryGetValue(cmdGetUrl, out httpResponse))
+                        {
+                            httpResponse.Send(browser);
+                            return;
+                        }
+
+                        lock (synchronizationProcessHttpRequest)
+                        {
+                            // check if we have a cached non-static url
+                            string theme = database.ApplicationTheme;
+                            CachedHttpMessage cachedHttpMessage;
+                            if (cachedHttpMessages.TryGetValue(browser?.Token?.ID + theme + browser.Language + cmdGetUrl, out cachedHttpMessage))
                             {
-                                httpResponse = cachedFixedHttpMessages[cmdGetUrl];
-                                httpResponse.Send(browser);
+                                cachedHttpMessage.Timestamp = DateTime.UtcNow;
+                                browser.Response.ContentType = cachedHttpMessage.ContentType;
+                                byte[] decryptedCachedData = UTF8Encoding.UTF8.GetBytes(Encryption.Decrypt(encryptionKey, cachedHttpMessage.EncryptedData));
+                                browser.Send(decryptedCachedData, cachedHttpMessage.EncryptedData.Length);
                                 return;
                             }
 
-                            lock (cachedHttpMessages)
+                            // check if we have a non-cached static url
+                            switch (cmdGetUrl.TrimEnd('/'))
                             {
-                                // check if we have a cached non-static url
-                                string theme = database.ApplicationTheme;
-                                if (cachedHttpMessages.ContainsKey(browser.Token?.ID + theme + browser.Language + cmdGetUrl))
-                                {
-                                    CachedHttpMessage cachedHttpMessage = cachedHttpMessages[browser.Token?.ID + theme + browser.Language + cmdGetUrl];
-                                    cachedHttpMessage.Timestamp = DateTime.UtcNow;
-                                    browser.Response.ContentType = cachedHttpMessage.ContentType;
-                                    byte[] decryptedCachedData = UTF8Encoding.UTF8.GetBytes(Encryption.Decrypt(encryptionKey, cachedHttpMessage.EncryptedData));
-                                    browser.Send(decryptedCachedData, cachedHttpMessage.EncryptedData.Length);
+                                case string css when css.StartsWith("/css/", StringComparison.OrdinalIgnoreCase):
+                                    httpResponse = new Http.Response.StyleSheet(this, browser, cmdGetUrl.Substring("/css/".Length));
+                                    if (httpResponse.Content != null)
+                                    {
+                                        cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
+                                        httpResponse.Send(browser);
+                                        return;
+                                    }
+                                    break;
+
+                                case string favicon when favicon.Split('?')
+                                                                .FirstOrDefault()
+                                                                .TrimEnd('/')
+                                                                .Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase):
+                                    httpResponse = new Http.Response.FavIcon(this, browser, cmdGetUrl);
+                                    cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
+                                    httpResponse.Send(browser);
                                     return;
-                                }
 
-                                // check if we have a non-cached static url
-                                switch (cmdGetUrl.TrimEnd('/'))
-                                {
-                                    case string css when css.StartsWith("/css/", StringComparison.OrdinalIgnoreCase):
-                                        httpResponse = new Http.Response.StyleSheet(this, browser, cmdGetUrl.Substring("/css/".Length));
-                                        if (httpResponse.Content != null)
-                                        {
-                                            cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
-                                            httpResponse.Send(browser);
-                                            return;
-                                        }
-                                        break;
+                                case string fonts when fonts.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase):
+                                    httpResponse = new Http.Response.Font(this, browser, cmdGetUrl.Substring("/fonts/".Length));
+                                    cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
+                                    httpResponse.Send(browser);
+                                    return;
 
-                                    case string favicon when favicon.Split('?')
-                                                                    .FirstOrDefault()
-                                                                    .TrimEnd('/')
-                                                                    .Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase):
-                                        httpResponse = new Http.Response.FavIcon(this, browser, cmdGetUrl);
+                                case string images when images.StartsWith("/images/", StringComparison.OrdinalIgnoreCase):
+                                    httpResponse = new Http.Response.File(this, browser, cmdGetUrl);
+                                    cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
+                                    httpResponse.Send(browser);
+                                    return;
+
+                                case string scripts when scripts.StartsWith("/js/", StringComparison.OrdinalIgnoreCase):
+                                    httpResponse = new Http.Response.Script(this, browser, cmdGetUrl.Substring("/js/".Length));
+                                    if (httpResponse.Content != null)
+                                    {
                                         cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
                                         httpResponse.Send(browser);
                                         return;
+                                    }
+                                    break;
 
-                                    case string fonts when fonts.StartsWith("/fonts/", StringComparison.OrdinalIgnoreCase):
-                                        httpResponse = new Http.Response.Font(this, browser, cmdGetUrl.Substring("/fonts/".Length));
-                                        cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
-                                        httpResponse.Send(browser);
-                                        return;
+                                case "/logout":
+                                    if (tokenId != null)
+                                    {
+                                        // set default language to current user's language (so the Login-dialog will appear in the last user's language)
+                                        Session.ClientSessions[SessionManager.TemporaryToken.ID].Locale = browser.Session.Locale;
 
-                                    case string images when images.StartsWith("/images/", StringComparison.OrdinalIgnoreCase):
-                                        httpResponse = new Http.Response.File(this, browser, cmdGetUrl);
-                                        cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
-                                        httpResponse.Send(browser);
-                                        return;
+                                        // cancel session
+                                        Session.CancelToken(tokenId);
 
-                                    case string scripts when scripts.StartsWith("/js/", StringComparison.OrdinalIgnoreCase):
-                                        httpResponse = new Http.Response.Script(this, browser, cmdGetUrl.Substring("/js/".Length));
-                                        if (httpResponse.Content != null)
+                                        // restore language
+                                        browser.Session.Locale = Session.ClientSessions[SessionManager.TemporaryToken.ID].Locale;
+                                    }
+
+                                    Http.Response.HomePage homepageResponse = new Http.Response.HomePage(this, browser, "/");
+                                    homepageResponse.Theme = database.ApplicationTheme;
+                                    homepageResponse.Send(browser, "");
+                                    return;
+
+                                case "/poke":
+                                    bool tokenIsValid = false;
+                                    if (tokenId != null)
+                                    {
+                                        tokenIsValid = Session.TokenValid(tokenId);
+                                        if (tokenIsValid)
                                         {
-                                            cachedFixedHttpMessages[cmdGetUrl] = httpResponse;
-                                            httpResponse.Send(browser);
-                                            return;
+                                            SessionManager.Token sessionToken = SessionManager.GetToken(browser);
+                                            sessionToken.ServerValidationCheckEnabled = true;
                                         }
-                                        break;
+                                    }
 
-                                    case "/logout":
-                                        if (tokenId != null)
-                                        {
-                                            // set default language to current user's language (so the Login-dialog will appear in the last user's language)
-                                            Session.ClientSessions[SessionManager.TemporaryToken.ID].Locale = browser.Session.Locale;
+                                    // get AutoLogOutAfterMinutesOfInactivity parameter
+                                    string json;
+                                    Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
+                                    if (accountData == null)
+                                    {
+                                        json = "{\"AutoLogOutAfterMinutesOfInactivity\":1}";
+                                    }
+                                    else
+                                    {
+                                        json = JsonConvert.SerializeObject(new { accountData.Parameters.AutoLogOutAfterMinutesOfInactivity });
+                                    }
 
-                                            // cancel session
-                                            Session.CancelToken(tokenId);
+                                    // send to browser
+                                    httpResponse = new Http.Response.JsonMessage(json);
+                                    httpResponse.Send(browser);
+                                    return;
 
-                                            // restore language
-                                            browser.Session.Locale = Session.ClientSessions[SessionManager.TemporaryToken.ID].Locale;
-                                        }
-
-                                        Http.Response.HomePage homepageResponse = new Http.Response.HomePage(this, browser, "/");
-                                        homepageResponse.Theme = database.ApplicationTheme;
-                                        homepageResponse.Send(browser, "");
-                                        return;
-
-                                    case "/poke":
-                                        bool tokenIsValid = false;
-                                        if (tokenId != null)
-                                        {
-                                            tokenIsValid = Session.TokenValid(tokenId);
-                                            if (tokenIsValid)
-                                            {
-                                                SessionManager.Token sessionToken = SessionManager.GetToken(browser);
-                                                sessionToken.ServerValidationCheckEnabled = true;
-                                            }
-                                        }
-
-                                        // get AutoLogOutAfterMinutesOfInactivity parameter
-                                        string json;
-                                        Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
-                                        if (accountData == null)
-                                        {
-                                            json = "{\"AutoLogOutAfterMinutesOfInactivity\":1}";
-                                        }
-                                        else
-                                        {
-                                            json = JsonConvert.SerializeObject(new { accountData.Parameters.AutoLogOutAfterMinutesOfInactivity });
-                                        }
-
-                                        // send to browser
-                                        httpResponse = new Http.Response.JsonMessage(json);
-                                        httpResponse.Send(browser);
-                                        return;
-
-                                    default:
-                                        break;
-                                }
+                                default:
+                                    break;
                             }
-                        }
-                        else
-                        {
-                            // return cached HTTP response
-                            httpResponse.Send(browser);
                         }
                     }
 
@@ -1255,7 +1253,7 @@ namespace Phabrico.Http
                     }
 
                     // separate action parameters from controller parameters
-                    string parameterActions = string.Join("&", browser.Request.RawUrl.Split('?', '&').Skip(1));
+                    string parameterActions = string.Join("&", browser?.Request?.RawUrl?.Split('?', '&')?.Skip(1));
                     if (string.IsNullOrEmpty(parameterActions) == false &&
                         controllerParameters != null &&
                         controllerParameters.Any() &&
@@ -1271,7 +1269,7 @@ namespace Phabrico.Http
                     if (controller != null)
                     {
                         // get correct GET controller method
-                        KeyValuePair<MethodInfo, Http.Response.HtmlViewPage.ContentOptions> controllerMethodInfo = controllerMethods.FirstOrDefault(m => m.Key.GetParameters().Length == 5);
+                        KeyValuePair<MethodInfo, Http.Response.HtmlViewPage.ContentOptions> controllerMethodInfo = controllerMethods.FirstOrDefault(m => m.Key.GetParameters().Length == 4);
                         if (controllerMethodInfo.Key != null)
                         {
                             MethodInfo controllerMethod = controllerMethodInfo.Key;
@@ -1282,7 +1280,7 @@ namespace Phabrico.Http
                             AuthenticationSchemes authenticationScheme = AuthenticationSchemes.Anonymous;
                             if (browser.WindowsIdentity != null)
                             {
-                                if (urlControllerAttribute.IntegratedWindowsSecurity)
+                                if (urlControllerAttribute != null && urlControllerAttribute.IntegratedWindowsSecurity)
                                 {
                                     authenticationScheme = AuthenticationSchemes.IntegratedWindowsAuthentication;
                                 }
@@ -1291,7 +1289,7 @@ namespace Phabrico.Http
                             // check in case we have found a viewpage, that the controller method also supports HTML for the 3rd parameter
                             if (viewPage != null)
                             {
-                                var outputParameter = controllerMethod.GetParameters().ElementAt(2).ParameterType;
+                                var outputParameter = controllerMethod.GetParameters().ElementAt(1).ParameterType;
                                 if (outputParameter.FullName.StartsWith(typeof(Http.Response.HtmlViewPage).FullName) == false &&
                                     outputParameter.FullName.StartsWith(typeof(Http.Response.HtmlPage).FullName) == false &&
                                     outputParameter.FullName.StartsWith(typeof(Http.Response.HttpFound).FullName) == false &&
@@ -1307,8 +1305,10 @@ namespace Phabrico.Http
                             if (authenticationScheme == AuthenticationSchemes.IntegratedWindowsAuthentication)
                             {
                                 IntPtr currentUserToken = ImpersonationHelper.GetCurrentUserToken();
-                                WindowsIdentity currentUser = new WindowsIdentity(currentUserToken);
-                                windowsImpersonationContext = currentUser.Impersonate();
+                                using (WindowsIdentity currentUser = new WindowsIdentity(currentUserToken))
+                                {
+                                    windowsImpersonationContext = currentUser.Impersonate();
+                                }
                             }
 
                             string tokenToLog = "(unsecure)";
@@ -1325,7 +1325,7 @@ namespace Phabrico.Http
 
                             // invoke method
                             Logging.WriteInfo(tokenToLog, "Invoking {0}.{1}", controller.GetType().Name, controllerMethod.Name);
-                            object[] methodArguments = new object[] { this, browser, viewPage, controllerParameters, parameterActions };
+                            object[] methodArguments = new object[] { this, viewPage, controllerParameters, parameterActions };
                             Http.Response.HttpMessage httpResponse;
                             try
                             {
@@ -1348,7 +1348,7 @@ namespace Phabrico.Http
                                 }
                                 else
                                 {
-                                    throw targetInvocationException;
+                                    throw;
                                 }
                             }
                             finally
@@ -1364,20 +1364,20 @@ namespace Phabrico.Http
                             }
 
                             Logging.WriteInfo(tokenToLog, "Finished {0}.{1}", controller.GetType().Name, controllerMethod.Name);
-                            if (httpResponse is Http.Response.HttpRedirect)
+                            Http.Response.HttpRedirect redirect = httpResponse as Http.Response.HttpRedirect;
+                            if (redirect != null)
                             {
-                                Http.Response.HttpRedirect redirect = httpResponse as Http.Response.HttpRedirect;
                                 redirect.Send(browser);
                                 return;
                             }
 
                             // get ref-values back
-                            viewPage = methodArguments[2] as Http.Response.HtmlViewPage;
-                            jsonMessage = methodArguments[2] as Http.Response.JsonMessage;
-                            fileObject = methodArguments[2] as Http.Response.File;
-                            plainTextMessage = methodArguments[2] as Http.Response.PlainTextMessage;
-                            script = methodArguments[2] as Http.Response.Script;
-                            styleSheet = methodArguments[2] as Http.Response.StyleSheet;
+                            viewPage = methodArguments[1] as Http.Response.HtmlViewPage;
+                            jsonMessage = methodArguments[1] as Http.Response.JsonMessage;
+                            fileObject = methodArguments[1] as Http.Response.File;
+                            plainTextMessage = methodArguments[1] as Http.Response.PlainTextMessage;
+                            script = methodArguments[1] as Http.Response.Script;
+                            styleSheet = methodArguments[1] as Http.Response.StyleSheet;
                         }
                     }
 
@@ -1392,7 +1392,7 @@ namespace Phabrico.Http
                         {
                             if (urlControllerAttribute != null && urlControllerAttribute.ServerCache)
                             {
-                                lock (cachedHttpMessages)
+                                lock (synchronizationProcessHttpRequest)
                                 {
                                     string theme = database.ApplicationTheme;
                                     cachedHttpMessages[browser.Token?.ID + theme + browser.Language + cmdGetUrl] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(dataSent), "text/html");
@@ -1451,7 +1451,7 @@ namespace Phabrico.Http
                             int maxCacheSizeInBytes = 20 * 1024 * 1024;   // set max cache size to 20MB
 
                             int cacheSize;
-                            lock (cachedHttpMessages)
+                            lock (synchronizationProcessHttpRequest)
                             {
                                 // detrmine current cache size
                                 cacheSize = cachedHttpMessages.Sum(cachedHttpMessage => cachedHttpMessage.Value.Size);
@@ -1568,20 +1568,32 @@ namespace Phabrico.Http
                         break;
 
                     case AuthenticationFactor.Ownership:
-                        // get DPAPI key
-                        string dpapiKey = Encryption.GetDPAPIKey();
-
-                        // calculate database keys
-                        UInt64[] dpapiXorCipherPublic, dpapiXorCipherPrivate;
-                        accountStorage.GetDpapiXorCiphers(database, out dpapiXorCipherPublic, out dpapiXorCipherPrivate);
-                        database.EncryptionKey = Encryption.XorString(dpapiKey, dpapiXorCipherPublic);
-                        database.PrivateEncryptionKey = Encryption.XorString(dpapiKey, dpapiXorCipherPrivate);
-
-                        // create new session token (or reuse the one with the same tokenId)
-                        Phabricator.Data.Account existingAccount = null;
                         bool ownershipFailed = false;
+                        Phabricator.Data.Account existingAccount = null;
+
                         try
                         {
+                            // get stored DPAPI-encrypted key
+                            string dpapiEncryptedKeyString = database.GetConfigurationParameter("EncryptionKey");
+                            byte[] dpapiEncryptedKeyBytes = new byte[dpapiEncryptedKeyString.Length / 2];
+                            for (var index = 0; index < dpapiEncryptedKeyBytes.Length; index++)
+                            {
+                                dpapiEncryptedKeyBytes[index] = Convert.ToByte(dpapiEncryptedKeyString[index * 2].ToString(), 16);
+                                dpapiEncryptedKeyBytes[index] *= 16;
+                                dpapiEncryptedKeyBytes[index] += Convert.ToByte(dpapiEncryptedKeyString[index * 2 + 1].ToString(), 16);
+                            }
+
+                            // decrypt DPAPI-encrypted key
+                            byte[] decryptedKeyBytes = Encryption.DecryptDPAPI(dpapiEncryptedKeyBytes);
+                            string decryptedKeyString = string.Join("", decryptedKeyBytes.Select(c => c.ToString("X2")));
+
+                            // calculate database keys
+                            UInt64[] dpapiXorCipherPublic, dpapiXorCipherPrivate;
+                            accountStorage.GetDpapiXorCiphers(database, out dpapiXorCipherPublic, out dpapiXorCipherPrivate);
+                            database.EncryptionKey = Encryption.XorString(decryptedKeyString, dpapiXorCipherPublic);
+                            database.PrivateEncryptionKey = Encryption.XorString(decryptedKeyString, dpapiXorCipherPrivate);
+
+                            // create new session token (or reuse the one with the same tokenId)
                             existingAccount = accountStorage.Get(database, Language.NotApplicable).FirstOrDefault();
                         }
                         catch
@@ -1597,7 +1609,7 @@ namespace Phabrico.Http
                         }
                         else
                         {
-                            tokenId = existingAccount.Token;
+                            tokenId = existingAccount?.Token;
                             token = Session.CreateToken(tokenId, browser);
                             browser.SetCookie("token", token.ID, true);
                             token.EncryptionKey = database.EncryptionKey;
@@ -1721,7 +1733,7 @@ namespace Phabrico.Http
             if (controller != null)
             {
                 // get correct controller method
-                MethodInfo controllerMethod = controllerMethods.FirstOrDefault(m => m.Key.GetParameters().Length == 3).Key;
+                MethodInfo controllerMethod = controllerMethods.FirstOrDefault(m => m.Key.GetParameters().Length == 2).Key;
                 if (controllerMethod == null)
                 {
                     Logging.WriteError(browser.Token.ID, "Controller method not found for {0}", controller.GetType().Name);
@@ -1735,7 +1747,7 @@ namespace Phabrico.Http
                     AuthenticationSchemes authenticationScheme = AuthenticationSchemes.Anonymous;
                     if (browser.WindowsIdentity != null)
                     {
-                        if (urlControllerAttribute.IntegratedWindowsSecurity)
+                        if (urlControllerAttribute != null && urlControllerAttribute.IntegratedWindowsSecurity)
                         {
                             authenticationScheme = AuthenticationSchemes.IntegratedWindowsAuthentication;
                         }
@@ -1748,8 +1760,10 @@ namespace Phabrico.Http
                         IntPtr currentUserToken = ImpersonationHelper.GetCurrentUserToken();
                         if (currentUserToken != IntPtr.Zero)
                         {
-                            WindowsIdentity currentUser = new WindowsIdentity(currentUserToken);
-                            windowsImpersonationContext = currentUser.Impersonate();
+                            using (WindowsIdentity currentUser = new WindowsIdentity(currentUserToken))
+                            {
+                                windowsImpersonationContext = currentUser.Impersonate();
+                            }
                         }
                     }
 
@@ -1805,7 +1819,7 @@ namespace Phabrico.Http
                             }
                         }
 
-                        httpResponse = controllerMethod.Invoke(controller, new object[] { this, browser, controllerParameters }) as Http.Response.HttpMessage;
+                        httpResponse = controllerMethod.Invoke(controller, new object[] { this, controllerParameters }) as Http.Response.HttpMessage;
                     }
                     catch (System.Exception httpResponseException)
                     {
@@ -2010,8 +2024,9 @@ namespace Phabrico.Http
                     httpListener.BeginGetContext(ProcessHttpRequest, httpListenerContext);
                     ProcessHttpRequest(httpListenerContext);
                 }
-                catch
+                catch (System.Exception exception)
                 {
+                    Logging.WriteError("(internal)", "ProcessHttpRequest: " + exception.Message);
                 }
             }, new { context });
         }
@@ -2028,6 +2043,17 @@ namespace Phabrico.Http
             htmlViewPage.SetContent(browser, htmlViewPage.GetViewData("InvalidConfiguration"));
             htmlViewPage.SetText("ERROR-MESSAGE", invalidConfigurationException.ErrorMessage);
             htmlViewPage.SetText("APP-CONFIG-FILENAME", AppConfigLoader.ConfigFileName);
+
+            string iisModuleConfigFileName = AppConfigLoader.IISModuleAssembly.Location + ".config";
+            if (System.IO.File.Exists(iisModuleConfigFileName))
+            {
+                htmlViewPage.SetText("IISMODULE-CONFIG-FILENAME", iisModuleConfigFileName);
+            }
+            else
+            {
+                htmlViewPage.SetText("IISMODULE-CONFIG-FILENAME", "", Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+            }
+
             htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
             htmlViewPage.Merge();
             htmlViewPage.Send(browser);
@@ -2228,6 +2254,12 @@ namespace Phabrico.Http
             Plugins.Clear();
 
             numberOfInstancesCreated--;
+
+            // shrinks the database
+            using (Database database = new Storage.Database(null))
+            {
+                database.Shrink();
+            }
         }
 
         /// <summary>

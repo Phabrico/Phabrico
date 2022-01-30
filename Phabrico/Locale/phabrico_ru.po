@@ -1,0 +1,1197 @@
+# Russian translations
+
+# general
+msgid "Phabrico"
+msgstr "Фабрико"
+
+msgid "There's a new Phabrico version available"
+msgstr "Доступна новая версия Фабрико"
+
+msgid "Yes"
+msgstr "Да"
+
+msgid "No"
+msgstr "Нет"
+
+msgid "Button-AccessKey-Yes"
+msgstr "Д"
+
+msgid "Button-AccessKey-No"
+msgstr "Н"
+
+msgid "Undo"
+msgstr "Отменить"
+
+msgid "EmptyParameter"
+msgstr "(нет)"
+
+msgid "No projects assigned"
+msgstr "(нет)"
+
+msgid "No users assigned"
+msgstr "(нет)"
+
+msgid "ERROR"
+msgstr "ОШИБКА"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Отменить"
+
+# login dialog
+msgid "Username"
+msgstr "Имя пользователя"
+
+msgid "Password"
+msgstr "Пароль"
+
+msgid "Log In"
+msgstr "Вход в систему"
+
+msgid "Invalid"
+msgstr "Неверный"
+
+msgid "Search"
+msgstr "Поиск"
+
+msgid "Username or password are incorrect."
+msgstr "Имя пользователя или пароль неверны."
+
+msgid "Create New User"
+msgstr "Создать нового пользователя"
+
+msgid "Verify Password"
+msgstr "Проверить пароль"
+
+msgid "Create User"
+msgstr "Создать пользователя"
+
+# home page
+msgid "Change language"
+msgstr "Изменить язык"
+
+msgid "Language"
+msgstr "Язык"
+
+msgid "Change password"
+msgstr "Изменить пароль"
+
+msgid "Current password"
+msgstr "Текущий пароль"
+
+msgid "New password"
+msgstr "Новый пароль"
+
+msgid "Verify new password"
+msgstr "Проверьте новый пароль"
+
+msgid "Password is incorrect."
+msgstr "Пароль неверный."
+
+msgid "Password should contain at least 1 punctuation character"
+msgstr "Пароль должен содержать как минимум 1 знак препинания"
+
+msgid "The passwords entered do not match"
+msgstr "Введенные пароли не совпадают"
+
+msgid "Password should contain at least 1 number"
+msgstr "Пароль должен содержать не менее 1 цифры"
+
+msgid "Password should contain at least 1 lowercase letter"
+msgstr "Пароль должен содержать не менее 1 строчной буквы"
+
+msgid "Password should contain at least 1 capital letter"
+msgstr "Пароль должен содержать не менее 1 заглавной буквы"
+
+msgid "Password should be at least 12 characters long"
+msgstr "Пароль должен содержать не менее 12 символов"
+
+msgid "Log out"
+msgstr "Выйдите из системы"
+
+msgid "Synchronizing"
+msgstr "Синхронизация"
+
+msgid "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
+msgstr "Имеется [b]1 локальная модификация[/b], готовая к загрузке на сервер Фабрикатор."
+
+msgid "There are [b]@@NBR-CHANGES@@ local modifications[/b] ready to be uploaded the Phabricator server."
+msgstr "Имеются [b]@@NBR-CHANGES@@ локальные модификации[/b], готовые к загрузке на сервер Фабрикатор."
+
+msgid "@@FILE@@ uploaded..."
+msgstr "@@FILE@@ загружен..."
+
+msgid "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
+msgstr "Загрузка @@FILE@@ (@@PERCENTAGE@@ %)"
+
+msgid "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
+msgstr "Некоторые изменения не удалось загрузить, так как на сервере Фабрикатор были доступны более новые версии этих документов или задач. Проверьте их с помощью \'Offline Changes\'."
+
+msgid "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
+msgstr "Вы действительно хотите синхронизировать публичный сервер Фабрикатор и ваш частный сервер Фабрико?"
+
+msgid "Favorites"
+msgstr "Избранное"
+
+msgid "General Overview"
+msgstr "Общий обзор"
+
+msgid "Phabrico Version:"
+msgstr "Версия Фабрико:"
+
+msgid "Phabrico Build date:"
+msgstr "Дата сборки Фабрико:"
+
+msgid "Last synchronized with Phabricator at:"
+msgstr "Последняя синхронизация с Фабрикатор в:"
+
+msgid "Phabrico Database Location:"
+msgstr "Фабрико Расположение базы данных:"
+
+msgid "Phabrico Database size:"
+msgstr "Размер базы данных Фабрико:"
+
+msgid "Remote access:"
+msgstr "Удаленный доступ:"
+
+msgid "Enabled"
+msgstr "Включено"
+
+msgid "Disabled"
+msgstr "Отключен"
+
+msgid "Number of Phriction documents:"
+msgstr "Количество документов Вики:"
+
+msgid "Number of Maniphest tasks:"
+msgstr "Количество задач Манифеста:"
+
+msgid "Number of Projects:"
+msgstr "Количество проектов:"
+
+msgid "Number of Users:"
+msgstr "Количество пользователей:"
+
+msgid "Number of File objects:"
+msgstr "Количество файловых объектов:"
+
+msgid "Number of uncommitted objects:"
+msgstr "Количество незафиксированных объектов:"
+
+msgid "Number of frozen objects:"
+msgstr "Количество замороженных объектов:"
+
+msgid "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+msgstr "@@PHABRICO-NUMBER-FILE-OBJECTS@@ (медианный размер = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ максимальный размер = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+
+# main menu navigator
+msgid "Maniphest"
+msgstr "Манифест"
+
+msgid "Tasks and Bugs"
+msgstr "Задачи и ошибки"
+
+msgid "Phriction"
+msgstr "Вики"
+
+msgid "Wiki Documents"
+msgstr "Вики-документы"
+
+msgid "Projects"
+msgstr "Проекты"
+
+msgid "Projects to be synchronized"
+msgstr "Проекты, которые необходимо синхронизировать"
+
+msgid "Users"
+msgstr "Пользователи"
+
+msgid "User accounts to be synchronized"
+msgstr "Учетные записи пользователей, которые необходимо синхронизировать"
+
+msgid "File objects"
+msgstr "Объекты файлов"
+
+msgid "Referenced file objects"
+msgstr "Ссылающиеся объекты файлов"
+
+msgid "Config"
+msgstr "Настройка"
+
+msgid "Configure Phabrico"
+msgstr "Конфигурирование Фабрико"
+
+msgid "Offline changes"
+msgstr "Автономные изменения"
+
+msgid "View local changes"
+msgstr "Просмотр локальных изменений"
+
+msgid "Synchronize"
+msgstr "Синхронизировать"
+
+# Synchronization
+msgid "No new data dowloaded from Phabricator"
+msgstr "Нет новых данных, загруженных из Фабрикатор"
+
+msgid "Latest synchronized data"
+msgstr "Последние синхронизированные данные"
+
+msgid "View changes"
+msgstr "Просмотр изменений"
+
+msgid "Current version"
+msgstr "Текущая версия"
+
+msgid "Previous version"
+msgstr "Предыдущая версия"
+
+msgid "Overview latest synchronization"
+msgstr "Обзор последней синхронизации"
+
+msgid "Difference between previous and current version of @@SYNCHRONIZED-ITEM@@"
+msgstr "Разница между предыдущей и текущей версией @@SYNCHRONIZED-ITEM@@"
+
+msgid "Synchronization.Status.NotYetSynchronized"
+msgstr "Еще нет"
+
+msgid "Synchronization.Status.Initializing"
+msgstr "Инициализация..."
+
+msgid "Synchronization.Status.ConnectingToPhabricatorServer"
+msgstr "Подключение к @@PHABRICATOR-SERVER@@..."
+
+msgid "Synchronization.Status.PreparingDownloadManiphestData"
+msgstr "Подготовка к загрузке данных Манифест..."
+
+msgid "Synchronization.Status.DownloadingManiphestData"
+msgstr "Загрузка данных Манифест..."
+
+msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
+msgstr "Загрузка информации о приоритете и состоянии Манифест..."
+
+msgid "Synchronization.Status.DownloadingPhamePostData"
+msgstr "Загрузка данных блога Phame..."
+
+msgid "Synchronization.Status.DownloadingPhrictionData"
+msgstr "Загрузка данных Вики..."
+
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "Загрузка метаданных вики..."
+
+msgid "Synchronization.Status.DownloadingProjects"
+msgstr "Загрузка проектов..."
+
+msgid "Synchronization.Status.DownloadingUsers"
+msgstr "Загрузка пользователей..."
+
+msgid "Synchronization.Status.LoadingAccountInfo"
+msgstr "Загрузка информации об учетной записи..."
+
+msgid "Synchronization.Status.LoadingMacroData"
+msgstr "Загрузка данных макросов..."
+
+msgid "Synchronization.Status.LoadingFileObjects"
+msgstr "Загрузка объектов файлов..."
+
+msgid "Synchronization.Status.UploadingManiphestData"
+msgstr "Загрузка задач Манифест..."
+
+msgid "Synchronization.Status.UploadingPhrictionData"
+msgstr "Загрузка вики-документов..."
+
+msgid "Synchronization.Status.UploadingCommentsAndTransactions"
+msgstr "Загрузка комментариев и транзакций..."
+
+msgid "Synchronization.Status.CleaningUp"
+msgstr "Очистка старых данных..."
+
+msgid "Synchronization.Status.CleaningUp.Phriction"
+msgstr "Удаление старых документов вики"
+
+msgid "Synchronization.Status.CleaningUp.Maniphest"
+msgstr "Удаление старых задач Манифеста"
+
+msgid "Synchronization.Status.CleaningUp.UnreferencedFiles"
+msgstr "Удаление объектов файлов без ссылок"
+
+msgid "Synchronization.Status.Finishing"
+msgstr "Завершение..."
+
+msgid "Synchronization.Status.Failed"
+msgstr "Неудача"
+
+msgid "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+msgstr "Некоторые документы вики не загружаются из-за слишком длинных путей ссылок. Вы можете сократить их на экране 'Offline Changes'.\n\n\nВы хотите загрузить другие документы и задачи?"
+
+msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+msgstr "Некоторые документы вики имеют длинные пути ссылок и могут вызвать проблемы при создании базовых документов.\n\n\nВы хотите продолжить?"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "Данный документ является неотредактированным переводом. Эта версия документа не будет загружена в Фабрикатор."
+
+# Maniphest
+msgid "Create Task"
+msgstr "Создание задачи"
+
+msgid "Editing ##OBJECT##"
+msgstr "Редактирование ##ОБЪЕКТ#"
+
+msgid "Assigned"
+msgstr "Назначение"
+
+msgid "Open Tasks"
+msgstr "Открытые задачи"
+
+msgid "Per User"
+msgstr "На пользователя"
+
+msgid "Per Project"
+msgstr "На проект"
+
+msgid "Authored"
+msgstr "Авторизованные"
+
+msgid "Subscribed"
+msgstr "Подписные"
+
+msgid "Queries"
+msgstr "Запросы"
+
+msgid "No tasks found"
+msgstr "Задачи не найдены"
+
+msgid "Change Subscribers"
+msgstr "Изменить подписчиков"
+
+msgid "Change Status"
+msgstr "Изменить статус"
+
+msgid "Change Project Tags"
+msgstr "Изменить метки проекта"
+
+msgid "Change Priority"
+msgstr "Изменить приоритет"
+
+msgid "Assign / Claim"
+msgstr "Назначить / Утвердить"
+
+msgid "Authored By"
+msgstr "Авторство"
+
+msgid "Assigned To"
+msgstr "Назначено на"
+
+msgid "Edit Task"
+msgstr "Редактировать задачу"
+
+msgid "View Task on Phabricator"
+msgstr "Просмотреть задание на Фабрикатор"
+
+msgid "Description"
+msgstr "Описание"
+
+msgid "Priority"
+msgstr "Приоритет"
+
+msgid "First"
+msgstr "Первый"
+
+msgid "Previous"
+msgstr "Предыдущий"
+
+msgid "Next"
+msgstr "Следующая"
+
+msgid "Type a user or project name..."
+msgstr "Введите имя пользователя или проекта..."
+
+msgid "Type a project name..."
+msgstr "Введите имя проекта..."
+
+msgid "Type a username..."
+msgstr "Введите имя пользователя..."
+
+msgid "@@COMMENT-AUTHOR@@ added a comment."
+msgstr "@@COMMENT-AUTHOR@@ добавил комментарий."
+
+msgid "@@PERSON@@ marked this task as @@STATE@@"
+msgstr "@@PERSON@@ отметил эту задачу как @@STATE@@"
+
+msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
+msgstr "@@PERSON@@ отметил эту задачу с @@OLDSTATE@@ на @@NEWSTATE@@"
+
+msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
+msgstr "@@PERSON@@ организовал подписку для @@PERSONS@@"
+
+msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
+msgstr "@@PERSON1@@ поручил задание @@PERSON2@@"
+
+msgid "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
+msgstr "@@PERSON1@@ переназначил задачу с @@PERSON2@@ на @@PERSON3@@"
+
+msgid "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
+msgstr "@@PERSON@@ изменил приоритет задачи с @@PRIORITY1@@ на @@PRIORITY2@@"
+
+msgid "@@PERSON@@ changed the task priority to @@PRIORITY@@"
+msgstr "@@PERSON@@ изменил приоритет задачи на @@PRIORITY@@"
+
+msgid "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
+msgstr "@@PERSON@@ назначил следующий проект: @@PROJECT-NAME@@"
+
+msgid "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
+msgstr "@@PERSON@@ назначил следующие проекты: @@PROJECT-NAMES@@"
+
+msgid "and"
+msgstr "и"
+
+msgid "ManiphestPriority.Unbreak Now!"
+msgstr "Выполняйте немедленно!"
+
+msgid "ManiphestPriority.Needs Triage"
+msgstr "Оценка потребностей"
+
+msgid "ManiphestPriority.High"
+msgstr "Высокая"
+
+msgid "ManiphestPriority.Normal"
+msgstr "Нормальная"
+
+msgid "ManiphestPriority.Low"
+msgstr "Низкая"
+
+msgid "ManiphestPriority.Wishlist"
+msgstr "Список пожеланий"
+
+msgid "ManiphestStatus.Closed"
+msgstr "Закрыто"
+
+msgid "ManiphestStatus.Duplicate"
+msgstr "Дубликат"
+
+msgid "ManiphestStatus.Invalid"
+msgstr "Недействительный"
+
+msgid "ManiphestStatus.On hold"
+msgstr "В режиме ожидания"
+
+msgid "ManiphestStatus.Ongoing"
+msgstr "В процессе"
+
+msgid "ManiphestStatus.Open"
+msgstr "Открыто"
+
+msgid "ManiphestStatus.Planned"
+msgstr "Запланировано"
+
+msgid "ManiphestStatus.Programmed"
+msgstr "Запрограммировано"
+
+msgid "ManiphestStatus.Resolved"
+msgstr "Решено"
+
+msgid "ManiphestStatus.Spite"
+msgstr "Плохая идея"
+
+msgid "ManiphestStatus.To be QAd"
+msgstr "Подлежит оценке"
+
+msgid "ManiphestStatus.Wontfix"
+msgstr "Не будет исправлено"
+
+msgid "This modified task hasn't been uploaded yet to the Phabricator server"
+msgstr "Это измененное задание еще не загружено на сервер Фабрикатор"
+
+# Phriction
+msgid "Subscribers"
+msgstr "Подписчики"
+
+msgid "Subscribe"
+msgstr "Подписаться"
+
+msgid "Tags"
+msgstr "Теги"
+
+msgid "Last modified at"
+msgstr "Последнее изменение в"
+
+msgid "Last modified by"
+msgstr "Последнее изменение"
+
+msgid "Printable Page"
+msgstr "Печатная страница"
+
+msgid "Return to web view"
+msgstr "Вернуться к просмотру веб-страницы"
+
+msgid "Add to favorites"
+msgstr "Добавить в избранное"
+
+msgid "Remove from favorites"
+msgstr "Удалить из избранного"
+
+msgid "Dismiss local changes"
+msgstr "Отклонить локальные изменения"
+
+msgid "View Document on Phabricator"
+msgstr "Просмотр документа на Фабрикатор"
+
+msgid "Contents"
+msgstr "Содержание"
+
+msgid "New Document"
+msgstr "Новый документ"
+
+msgid "Document Hierarchy"
+msgstr "Иерархия документов"
+
+msgid "Edit Document"
+msgstr "Редактирование документа"
+
+msgid "Save Changes"
+msgstr "Сохранить изменения"
+
+msgid "Title"
+msgstr "Заголовок"
+
+msgid "Title already exists"
+msgstr "Название уже существует"
+
+msgid "Type a title..."
+msgstr "Введите заголовок..."
+
+msgid "Create this Document"
+msgstr "Создать этот документ"
+
+msgid "There is no document here, but you may create it."
+msgstr "Здесь нет документа, но вы можете его создать."
+
+msgid "No Document Here"
+msgstr "Здесь нет документа"
+
+msgid "Page Not Found"
+msgstr "Страница не найдена"
+
+msgid "This newly created page hasn't been uploaded yet to the Phabricator server"
+msgstr "Эта недавно созданная страница еще не загружена на сервер Фабрикатор"
+
+msgid "This modified page hasn't been uploaded yet to the Phabricator server"
+msgstr "Эта измененная страница еще не загружена на сервер Фабрикатор"
+
+msgid "One moment please..."
+msgstr "Минутку, пожалуйста..."
+
+msgid "References"
+msgstr "Ссылки"
+
+msgid "Show references"
+msgstr "Показать ссылки"
+
+msgid "Parameters"
+msgstr "Параметры"
+
+msgid "This page has been translated but it's translated content hasn't been reviewed yet"
+msgstr "Эта страница была переведена, но ее переведенное содержимое еще не просмотрено"
+
+msgid "Edit translation"
+msgstr "Редактировать перевод"
+
+msgid "Approve translation"
+msgstr "Утвердить перевод"
+
+msgid "Are you sure you want to approve this translation?"
+msgstr "Вы уверены, что хотите одобрить этот перевод?"
+
+msgid "Unreviewed translations"
+msgstr "Неотрецензированные переводы"
+
+msgid "Revert to original translation"
+msgstr "Вернуться к исходному переводу"
+
+msgid "Are you sure you want to completely undo your translation ?"
+msgstr "Вы уверены, что хотите полностью отменить перевод?"
+
+msgid "Action"
+msgstr "Действие"
+
+msgid "Original Title"
+msgstr "Оригинальное название"
+
+msgid "All translations have been approved"
+msgstr "Все переводы были одобрены"
+
+msgid "Type some text to filter the list of unreviewed translations..."
+msgstr "Введите текст для фильтрации списка непросмотренных переводов..."
+
+msgid "Are you sure you don't need a translation for this document ?"
+msgstr "Вы уверены, что вам не нужен перевод для этого документа?"
+
+msgid "No translation needed"
+msgstr "Перевод не нужен"
+
+msgid "The original content of this document has changed. You must update the translation before you can approve it."
+msgstr "Оригинальное содержание этого документа изменилось. Вы должны обновить перевод, прежде чем утверждать его."
+
+# Phame
+msgid "Phame"
+msgstr "Фамe"
+
+msgid "Blog posts"
+msgstr "Записи в блоге"
+
+msgid "Read more..."
+msgstr "Читать далее..."
+
+# Projects & Users
+msgid "Project"
+msgstr "Проект"
+
+msgid "User"
+msgstr "Пользователь"
+
+msgid "Disallow"
+msgstr "Запретить"
+
+msgid "Select"
+msgstr "Выбрать"
+
+msgid "Unselect"
+msgstr "Снять выделение"
+
+msgid "Show all projects"
+msgstr "Показать все проекты"
+
+msgid "Show selected projects"
+msgstr "Показать выбранные проекты"
+
+msgid "Disallow all projects"
+msgstr "Запретить все проекты"
+
+msgid "Unselect all projects"
+msgstr "Снять выделение со всех проектов"
+
+msgid "Select all projects"
+msgstr "Выбрать все проекты"
+
+msgid "Unselect all users"
+msgstr "Снять выделение всех пользователей"
+
+msgid "Select all users"
+msgstr "Выбрать всех пользователей"
+
+msgid "Show all users"
+msgstr "Показать всех пользователей"
+
+msgid "Show selected users"
+msgstr "Показать выбранных пользователей"
+
+msgid "Set color"
+msgstr "Установить цвет"
+
+msgid "Set project tag color"
+msgstr "Установить цвет тегов проекта"
+
+msgid "Set color for all shown project tags"
+msgstr "Установка цвета для всех отображаемых тегов проекта"
+
+# File objects
+msgid "Type"
+msgstr "Тип"
+
+msgid "Size"
+msgstr "Размер"
+
+msgid "Number of references"
+msgstr "Количество ссылок"
+
+msgid "File name"
+msgstr "Имя файла"
+
+msgid "File object"
+msgstr "Объект файла"
+
+msgid "Type some text to filter the list of file objects..."
+msgstr "Введите текст для фильтрации списка объектов файлов..."
+
+msgid "File @@FILEID@@ is referenced in:"
+msgstr "Файл @@FILEID@@ является объектом ссылок:"
+
+msgid "File references"
+msgstr "Ссылки на файлы"
+
+# Config
+msgid "Phabricator"
+msgstr "Фабрикатор"
+
+msgid "UI Controls"
+msgstr "Элементы управления пользовательским интерфейсом"
+
+msgid "General"
+msgstr "Общие"
+
+msgid "Enter the URL of your Phabricator server:"
+msgstr "Введите URL вашего сервера Фабрикатор:"
+
+msgid "Phabricator URL"
+msgstr "URL Фабрикатор"
+
+msgid "Enter the Conduit API Token for your Phabricator account:"
+msgstr "Введите токен Conduit API для вашей учетной записи Фабрикатор:"
+
+msgid "Conduit API Token"
+msgstr "Токен API Кондуит"
+
+msgid "Choose the synchronization method for Maniphest tasks:"
+msgstr "Выберите метод синхронизации для задач Манифест:"
+
+msgid "Synchronize Maniphest tasks for"
+msgstr "Синхронизировать задачи Манифест для"
+
+msgid "Selected users only"
+msgstr "Только для выбранных пользователей"
+
+msgid "Choose the default state for new or modified Maniphest tasks:"
+msgstr "Выберите состояние по умолчанию для новых или измененных задач Манифест:"
+
+msgid "Mark new/modified Maniphest tasks as"
+msgstr "Пометить новые/измененные задачи Манифеста как"
+
+msgid "Delete closed Maniphest tasks from Phabrico older than:"
+msgstr "Удалить из Фабрико закрытые задачи Манифест старше:"
+
+msgid "Maximum lifetime closed Maniphest tasks"
+msgstr "Максимальное время жизни закрытых задач Манифеста"
+
+msgid "1 day"
+msgstr "1 день"
+
+msgid "1 week"
+msgstr "1 неделя"
+
+msgid "2 weeks"
+msgstr "2 недели"
+
+msgid "1 month"
+msgstr "1 месяц"
+
+msgid "3 months"
+msgstr "3 месяца"
+
+msgid "6 months"
+msgstr "6 месяцев"
+
+msgid "1 year"
+msgstr "1 год"
+
+msgid "10 years"
+msgstr "10 лет"
+
+msgid "Visible Maniphest states"
+msgstr "Видимые состояния"
+
+msgid "Show only those tasks assigned to me that have one of the following states:"
+msgstr "Показывать только те назначенные мне задачи, которые имеют одно из следующих состояний:"
+
+msgid "Choose the synchronization method for Phriction documents:"
+msgstr "Выберите метод синхронизации для документов вики:"
+
+msgid "Synchronize Phriction documents for"
+msgstr "Синхронизировать вики документы для"
+
+msgid "All projects"
+msgstr "Всех проектов"
+
+msgid "Selected projects only"
+msgstr "Только выбранные проекты"
+
+msgid "Selected projects only including document tree"
+msgstr "Только выбранные проекты, включая дерево документов"
+
+msgid "Selected projects combined"
+msgstr "Выбранные проекты вместе"
+
+msgid "Selected projects combined including document tree"
+msgstr "Выбранные проекты вместе, включая дерево документов"
+
+msgid "Choose the default state for new or modified Phriction documents:"
+msgstr "Выберите состояние по умолчанию для новых или измененных документов вики:"
+
+msgid "Mark new/modified Phriction documents as"
+msgstr "Пометить новые/модифицированные вики документы как"
+
+msgid "Add information about the Phriction document in the action menu on the right"
+msgstr "Добавить информацию о вики документе в меню действий справа"
+
+msgid "Show Phriction metadata"
+msgstr "Показать метаданные вики"
+
+msgid "Download project tags and subcribers for all Phriction documents"
+msgstr "Загрузить теги проекта и подтеги для всех документов вики"
+
+msgid "Force download all Phriction metadata"
+msgstr "Принудительно загрузить все метаданные вики"
+
+msgid "Frozen: local modifications will not be uploaded during synchronization"
+msgstr "Заморозить: локальные модификации не будут загружены во время синхронизации"
+
+msgid "Unfrozen: local modifications will be uploaded during synchronization"
+msgstr "Разморожено: локальные модификации будут загружены во время синхронизации"
+
+msgid "Add Copy button:"
+msgstr "Кнопка Добавить копию:"
+
+msgid "Add Copy-to-clipboard button to code blocks:"
+msgstr "Добавить кнопку Copy-to-clipboard в блоки кода:"
+
+msgid "Use dynamic coloring for project tags:"
+msgstr "Использовать динамическую раскраску для тегов проекта:"
+
+msgid "Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:"
+msgstr "Разрешить перевод заголовка блока уведомления NOTE, WARNING или IMPORTANT:"
+
+msgid "Translate notification block titles:"
+msgstr "Переводить заголовки блоков уведомлений:"
+
+msgid "Generate a separate color for each project tag shown:"
+msgstr "Генерировать отдельный цвет для каждого показанного тега проекта:"
+
+msgid "Confidential Table Headers"
+msgstr "Конфиденциальные заголовки таблиц"
+
+msgid "Confidential Table Header"
+msgstr "Конфиденциальный заголовок таблицы"
+
+msgid "Enter the text of table row/column headers which should only be visible when you move the mouse over it:"
+msgstr "Введите текст заголовков строк/столбцов таблицы, который должен быть виден только при наведении на него курсора мыши:"
+
+msgid "Add Confidential Table Header"
+msgstr "Добавить конфиденциальный заголовок таблицы"
+
+msgid "Auto log on"
+msgstr "Автоматический вход в систему"
+
+msgid "Yes (Windows authentication)"
+msgstr "Да (аутентификация Windows)"
+
+msgid "Allow to log on automatically but disable synchronization and configuration"
+msgstr "Разрешить автоматический вход в систему, но отключить синхронизацию и настройку"
+
+msgid "Remove"
+msgstr "Удалить"
+
+msgid "WARNING: this will create a security risk by storing the encryption key in the Phabrico database"
+msgstr "ВНИМАНИЕ: это создаст риск для безопасности, поскольку ключ шифрования будет храниться в базе данных Фабрико."
+
+msgid "Maximum Duration of Inactivity"
+msgstr "Максимальная продолжительность бездействия"
+
+msgid "Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)"
+msgstr "Каждый сеанс настроен на автоматический выход из системы через определенное количество минут (0 или меньше = нет автоматического выхода, 1440 - максимальное значение)."
+
+msgid "Theme"
+msgstr "Тема"
+
+msgid "Choose the color theme you want to use:"
+msgstr "Выберите цветовую тему, которую вы хотите использовать:"
+
+msgid "Light"
+msgstr "Светлый"
+
+msgid "Dark"
+msgstr "Темный"
+
+msgid "Darken light images"
+msgstr "Затемнить светлые изображения"
+
+msgid "Moderate"
+msgstr "Умеренный"
+
+msgid "Extreme"
+msgstr "Экстремальный"
+
+msgid "Select a user role tag..."
+msgstr "Выберите тег роли пользователя..."
+
+msgid "User account"
+msgstr "Учетная запись пользователя"
+
+msgid "Tag"
+msgstr "Тег"
+
+msgid "Add user"
+msgstr "Добавить пользователя"
+
+msgid "Remove user"
+msgstr "Удалить пользователя"
+
+msgid "Are you sure you want to remove @@USER@@ ?"
+msgstr "Вы уверены, что хотите удалить @@USER@@?"
+
+msgid "Phabrico user accounts"
+msgstr "Учетные записи пользователей Фабрико"
+
+msgid "Secondary User Accounts:"
+msgstr "Вторичные учетные записи пользователей:"
+
+msgid "Getting started with Phabrico"
+msgstr "Начало работы с Фабрико"
+
+msgid "In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator."
+msgstr "На этом экране конфигурации вы можете изменить внешний вид Фабрико и настроить, какие данные должны синхронизироваться с Фабрикатор."
+
+msgid "Which Phabricator accounts should be monitored ?"
+msgstr "Какие учетные записи Фабрикатор следует отслеживать?"
+
+msgid "In this Users screen, you can select for which Phabricator users you want to have your data always available."
+msgstr "На этом экране Пользователи вы можете выбрать, для каких пользователей Фабрикатор вы хотите, чтобы ваши данные были всегда доступны."
+
+msgid "Currently, only your Phabricator account is selected."
+msgstr "В настоящее время выбрана только ваша учетная запись Фабрикатор."
+
+msgid "Which Phabricator projects should be monitored ?"
+msgstr "Какие проекты Фабрикатор следует отслеживать?"
+
+msgid "In this Projects screen, you can select for which Phabricator projects you want to have your data always available."
+msgstr "На этом экране Проекты вы можете выбрать, для каких проектов Фабрикатор вы хотите, чтобы ваши данные были всегда доступны."
+
+msgid "You can here also change the colors of the project tags."
+msgstr "Здесь же вы можете изменить цвета тегов проектов."
+
+msgid "In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...)."
+msgstr "В текущей конфигурации Фабрико синхронизирует все документы вики и синхронизирует только открытые задачи Манифест, в которых вы принимали участие (например, были назначены, подписаны, ...)."
+
+msgid "Click on the Synchronize button to download all requested data from Phabricator"
+msgstr "Нажмите на кнопку Синхронизировать, чтобы загрузить все запрошенные данные из Фабрикатор"
+
+# Offline changes
+msgid "Offline changes for $$ITEM$$"
+msgstr "Локальные изменения для $$ITEM$$"
+
+msgid "Overview offline changes"
+msgstr "Обзор локальных изменений"
+
+msgid "Dismiss local version"
+msgstr "Отказаться от локальной версии"
+
+msgid "Save local version"
+msgstr "Сохранить локальную версию"
+
+msgid "Phabricator version"
+msgstr "Версия Фабрикатор"
+
+msgid "Local version"
+msgstr "Локальная версия"
+
+msgid "Are you sure you want to dismiss all your local changes for this document ?"
+msgstr "Вы уверены, что хотите отменить все локальные изменения для этого документа?"
+
+msgid "Modification"
+msgstr "Модификация"
+
+msgid "Content"
+msgstr "Содержание"
+
+msgid "Freeze"
+msgstr "Заморозить"
+
+msgid "Unfreeze"
+msgstr "Разморозить"
+
+msgid "No offline changes found"
+msgstr "Не найдено автономных изменений"
+
+msgid "Are you sure you want to undo this local change ?"
+msgstr "Вы уверены, что хотите отменить это локальное изменение?"
+
+msgid "(New)"
+msgstr "(Новое)"
+
+msgid "(Metadata modified)"
+msgstr "(Метаданные изменены)"
+
+msgid "(Priority modified)"
+msgstr "(Приоритет изменен)"
+
+msgid "(Owner modified)"
+msgstr "(Владелец изменен)"
+
+msgid "(Status modified)"
+msgstr "(Статус изменен)"
+
+msgid "Project @@PROJECT@@ tagged"
+msgstr "Проект @@PROJECT@@ помечен"
+
+msgid "Subscriber @@SUBSCRIBER@@ added"
+msgstr "Подписчик @@SUBSCRIBER@@ добавлен"
+
+msgid "Append left line after right line"
+msgstr "Добавление левой строки после правой строки"
+
+msgid "Append left block after right block"
+msgstr "Вставить левый блок после правого блока"
+
+msgid "Insert left line before right line"
+msgstr "Вставить левую строку перед правой строкой"
+
+msgid "Insert left block before right block"
+msgstr "Вставить левый блок перед правым блоком"
+
+msgid "Replace right line with left line"
+msgstr "Заменить правую строку на левую"
+
+msgid "Replace right block with left block"
+msgstr "Заменить правый блок на левый блок"
+
+msgid "The Phabricator server contains a newer version"
+msgstr "Сервер Фабрикатор содержит более новую версию"
+
+msgid "Frozen"
+msgstr "Заморожено"
+
+msgid "Modified"
+msgstr "Изменено"
+
+msgid "Rename path"
+msgstr "Изменить URL"
+
+msgid "New path:"
+msgstr "Новый путь:"
+
+msgid "Current path:"
+msgstr "Текущий путь:"
+
+msgid "Change path"
+msgstr "Изменить путь"
+
+msgid "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+msgstr "Путь к этому документу длиннее 100 символов. Этот документ все еще можно загрузить в Фабрикатор, но вновь созданные базовые документы - нет."
+
+msgid "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+msgstr "Путь к этому документу длиннее 115 символов. Этот документ не может быть загружен в Фабрикатор."
+
+msgid "An internal error occurred"
+msgstr "Произошла внутренняя ошибка"
+
+msgid "A document already exists with this slug path"
+msgstr "Документ с таким путем уже существует"
+
+# Remarkup editor
+msgid "Bold"
+msgstr "Полужирный"
+
+msgid "Bold text"
+msgstr "Полужирный текст"
+
+msgid "Italic"
+msgstr "Курсив"
+
+msgid "Italic text"
+msgstr "Курсивный текст"
+
+msgid "Monospaced"
+msgstr "Моноширинный"
+
+msgid "Monospaced text"
+msgstr "Текст с моноширинным шрифтом"
+
+msgid "Bulleted List"
+msgstr "Нумерованный список"
+
+msgid "Numbered List"
+msgstr "Нумерованный список"
+
+msgid "Code Block"
+msgstr "Кодовый блок"
+
+msgid "Quote"
+msgstr "Цитата"
+
+msgid "Table"
+msgstr "Таблица"
+
+msgid "Diagram"
+msgstr "Диаграмма"
+
+msgid "Unlock edit and view windows"
+msgstr "Разблокировка окон редактирования и просмотра"
+
+msgid "Help"
+msgstr "Помощь"
+
+msgid "Set Sail for Adventure"
+msgstr "Отправляйтесь на поиски приключений"
+
+msgid "Add Action..."
+msgstr "Добавить действие..."
+
+msgid "CodeBlock.Copy"
+msgstr "Копировать"
+
+msgid "Notification.IMPORTANT"
+msgstr "ВАЖНО"
+
+msgid "Notification.NOTE"
+msgstr "ВНИМАНИЕ"
+
+msgid "Notification.WARNING"
+msgstr "ПРЕДОСТЕРЕЖЕНИЕ"
+
+msgid "FileReference.Download"
+msgstr "Скачать"
+
+# Browser not supported
+msgid "Browser not supported"
+msgstr "Браузер не поддерживается"
+
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access @@CUSTOM-APPLICATION-NAME@@"
+msgstr "Используйте Mozilla Firefox, Opera, Google Chrome или Microsoft Edge для доступа к @@CUSTOM-APPLICATION-NAME@@."
+
+# URL Not Found
+msgid "404"
+msgstr "404"
+
+msgid "Url not found:"
+msgstr "Url не найден:"
+
+msgid "Show content in Phabricator instead"
+msgstr "Вместо этого покажите содержимое в Фабрикатор"
+
+# Access denied
+msgid "ACCESS DENIED"
+msgstr "ДОСТУП ЗАПРЕЩЕН"
+
+msgid "Details:"
+msgstr "Подробности:"
+
+msgid "URL:"
+msgstr "URL:"
+
+msgid "Comment:"
+msgstr "Комментарий:"
+
+msgid "You don't have sufficient rights to configure Phabrico"
+msgstr "У вас недостаточно прав для настройки Фабрико"
+
+msgid "You don't have sufficient rights to synchronize Phabrico with Phabricator"
+msgstr "У вас недостаточно прав для синхронизации Фабрико с Фабрикатор"
+
+msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
+msgstr "Этот документ вики или задача Манифест не были загружены с сервера Фабрикатор, потому что на них подписались один или несколько запрещенных проектов или пользователей."
+
+# Invalid configuration
+msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
+msgstr "Проверьте содержимое @@APP-CONFIG-FILENAME@@."
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "Проверьте содержимое @@IISMODULE-CONFIG-FILENAME@@."
+
+msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
+msgstr "Проверьте, существует ли @@APP-CONFIG-FILENAME@@."
+
+msgid "Error:"
+msgstr "Ошибка:"
+
+msgid "CONFIGURATION INVALID OR MISSING"
+msgstr "КОНФИГУРАЦИЯ НЕДЕЙСТВИТЕЛЬНА ИЛИ ОТСУТСТВУЕТ"

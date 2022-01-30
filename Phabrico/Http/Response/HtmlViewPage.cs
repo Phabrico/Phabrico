@@ -14,7 +14,7 @@ namespace Phabrico.Http.Response
     /// </summary>
     public class HtmlViewPage : HtmlPage
     {
-        private List<HtmlPartialViewPage> _partialSubViews = new List<HtmlPartialViewPage>();
+        private readonly List<HtmlPartialViewPage> _partialSubViews = new List<HtmlPartialViewPage>();
 
         /// <summary>
         /// How the content of a HtmlViewPage parameter should be encoded
@@ -187,7 +187,13 @@ namespace Phabrico.Http.Response
             string customApplicationLogo = HttpServer.Customization.CustomApplicationLogoBase64;
             string customApplicationName = HttpServer.Customization.ApplicationName;
 
-            bool useDefaultApplicationName = string.IsNullOrWhiteSpace(customApplicationLogo) && customApplicationName.Equals("Phabrico");
+            if (customApplicationName.Equals("Phabrico"))
+            {
+                customApplicationName = Locale.TranslateText("Phabrico", browser.Session.Locale);
+            }
+
+            bool useDefaultApplicationName = string.IsNullOrWhiteSpace(customApplicationLogo)
+                                          && customApplicationName.Equals(Locale.TranslateText("Phabrico", browser.Session.Locale));
 
             SetText("DEFAULT-APPLICATION-NAME", useDefaultApplicationName ? "True" : "False", ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
             SetText("GLOBAL-CSS", HttpServer.Customization.ApplicationCSS, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
@@ -213,10 +219,12 @@ namespace Phabrico.Http.Response
                 // correct css strings
                 string customApplicationLogoStyle = string.Join(";", HttpServer.Customization.ApplicationLogoStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value));
                 string customApplicationNameStyle = string.Join(";", HttpServer.Customization.ApplicationNameStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value));
+                string customApplicationHeaderStyle = string.Join(";", HttpServer.Customization.ApplicationHeaderStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value));
 
                 SetText("CUSTOM-APPLICATION-LOGO", customApplicationLogo, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
                 SetText("CUSTOM-APPLICATION-LOGO-STYLE", customApplicationLogoStyle, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
                 SetText("CUSTOM-APPLICATION-NAME-STYLE", customApplicationNameStyle, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
+                SetText("CUSTOM-APPLICATION-HEADER-STYLE", customApplicationHeaderStyle, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
             }
 
             // set the name of the Phabrico application
@@ -259,7 +267,7 @@ namespace Phabrico.Http.Response
             }
 
             // configure access management
-            bool hideChangeLanguage = string.IsNullOrWhiteSpace(HttpServer.Customization.Language) == false;
+            bool hideChangeLanguage = HttpServer.Customization.AvailableLanguages != null && HttpServer.Customization.AvailableLanguages.Count() == 1;
             bool hideChangePassword = browser.Token.AuthenticationFactor != AuthenticationFactor.Knowledge && browser.Token.AuthenticationFactor != AuthenticationFactor.Experience;
             bool hideConfig = HttpServer.Customization.HideConfig || browser.Token.AuthenticationFactor == AuthenticationFactor.Experience || browser.Token.AuthenticationFactor == AuthenticationFactor.Public;
             bool hideFiles = HttpServer.Customization.HideFiles;
@@ -297,10 +305,19 @@ namespace Phabrico.Http.Response
             SetText("ACCESS-HIDE-CONFIG-GENERAL", hideGeneralTabInConfiguration.ToString(), ArgumentOptions.AllowEmptyParameterValue);
 
             // show/hide user menu next to search field in case there are no visible menu items
-            bool hideUserMenu = hideChangeLanguage
-                             && ((HttpServer.IsHttpModule == false && browser.Token.AuthenticationFactor == AuthenticationFactor.Ownership)
-                             ||  (HttpServer.IsHttpModule == true && browser.Token.AuthenticationFactor == AuthenticationFactor.Public)
-                                );
+            bool hideUserMenu = hideChangeLanguage;
+            if (hideUserMenu)
+            {
+                if (HttpServer.IsHttpModule)
+                {
+                    hideUserMenu = browser.Token.AuthenticationFactor == AuthenticationFactor.Public;
+                }
+                else
+                {
+                    hideUserMenu = browser.Token.AuthenticationFactor == AuthenticationFactor.Ownership;
+                }
+            }
+
             SetText("HIDE-USER-MENU", hideUserMenu.ToString(), ArgumentOptions.AllowEmptyParameterValue);
 
             // override visibility action menu in Phriction
@@ -330,11 +347,13 @@ namespace Phabrico.Http.Response
             }
 
             // override language if needed
-            if (string.IsNullOrEmpty(HttpServer.Customization.Language) == false)
+            if (HttpServer.Customization.AvailableLanguages != null && HttpServer.Customization.AvailableLanguages.Count() == 1)
             {
-                SetText("LOCALE", HttpServer.Customization.Language, ArgumentOptions.AllowEmptyParameterValue);
-                browser.Language = HttpServer.Customization.Language;
-                browser.Session.Locale = HttpServer.Customization.Language;
+                Language language = HttpServer.Customization.AvailableLanguages.FirstOrDefault();
+
+                SetText("LOCALE", language, ArgumentOptions.AllowEmptyParameterValue);
+                browser.Language = language;
+                browser.Session.Locale = language;
             }
 
             // verify if only Maniphest should be visible
@@ -537,9 +556,7 @@ namespace Phabrico.Http.Response
                         using (Storage.Database database = new Storage.Database(encryptionKey))
                         {
                             // set private encryption key
-                            database.PrivateEncryptionKey = token.PrivateEncryptionKey;
-
-                            Storage.Account accountStorage = new Storage.Account();
+                            database.PrivateEncryptionKey = token?.PrivateEncryptionKey;
 
                             foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                             {
@@ -563,25 +580,24 @@ namespace Phabrico.Http.Response
 
                                 }
 
-                                foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions)
+                                foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
+                                                                                                        .Where(ext => ext.IsVisibleInNavigator(browser))
+                                        )
                                 {
-                                    if (pluginExtension.IsVisibleInNavigator(browser))
+                                    if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
                                     {
-                                        if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
-                                        {
-                                            pluginExtension.Database = new Storage.Database(database.EncryptionKey);
-                                            pluginExtension.Initialize();
-                                            pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
-                                        }
+                                        pluginExtension.Database = new Storage.Database(database.EncryptionKey);
+                                        pluginExtension.Initialize();
+                                        pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                                    }
 
-                                        HtmlPartialViewPage htmlPluginNavigatorMenuItem = htmlViewPage.GetPartialView("PLUGINS");
-                                        if (htmlPluginNavigatorMenuItem != null)
-                                        {
-                                            htmlPluginNavigatorMenuItem.SetText("PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                            htmlPluginNavigatorMenuItem.SetText("PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                            htmlPluginNavigatorMenuItem.SetText("PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                            htmlPluginNavigatorMenuItem.SetText("PLUGIN-DESCRIPTION", pluginExtension.GetDescription(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                        }
+                                    HtmlPartialViewPage htmlPluginNavigatorMenuItem = htmlViewPage.GetPartialView("PLUGINS");
+                                    if (htmlPluginNavigatorMenuItem != null)
+                                    {
+                                        htmlPluginNavigatorMenuItem.SetText("PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                        htmlPluginNavigatorMenuItem.SetText("PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                        htmlPluginNavigatorMenuItem.SetText("PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                        htmlPluginNavigatorMenuItem.SetText("PLUGIN-DESCRIPTION", pluginExtension.GetDescription(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                     }
                                 }
                             }

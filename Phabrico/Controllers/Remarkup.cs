@@ -31,10 +31,9 @@ namespace Phabrico.Controllers
         /// This can be in the Maniphest or Phriction screens (read and edit mode)
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/remarkup")]
-        public void HttpPostTranslateToHTML(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostTranslateToHTML(Http.Server httpServer, string[] parameters)
         {
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -67,12 +66,11 @@ namespace Phabrico.Controllers
         /// This method is fired when opening the Projects screen and when changing its search filter
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/remarkup/emoji")]
-        public JsonMessage HttpPostPopulateEmojiContextMenu(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostPopulateEmojiContextMenu(Http.Server httpServer, string[] parameters)
         {
             List<JsonEmojiData> emojis = new List<JsonEmojiData>()
             {
@@ -1738,12 +1736,11 @@ namespace Phabrico.Controllers
         /// This method is fired when the user clicks on the Remarkup Syntax help button in the Phriction and Maniphest edit screens
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="htmlViewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/remarkup/syntax", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.UseLocalTreeView | HtmlViewPage.ContentOptions.HideHeader)]
-        public void HttpGetRemarkupSyntaxHelp(Http.Server httpServer, Browser browser, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
+        public void HttpGetRemarkupSyntaxHelp(Http.Server httpServer, ref HtmlViewPage htmlViewPage, string[] parameters, string parameterActions)
         {
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
@@ -1752,6 +1749,11 @@ namespace Phabrico.Controllers
 
                 RemarkupParserOutput remarkupParserOutput;
                 string remarkupSyntaxLocalizedViewName = "RemarkupSyntax_" + browser.Session.Locale + ".remarkup";
+                if (HtmlViewPage.ViewExists(httpServer, remarkupSyntaxLocalizedViewName) == false)
+                {
+                    remarkupSyntaxLocalizedViewName = "RemarkupSyntax_en.remarkup";
+                }
+
                 HtmlViewPage remarkupViewPage = new HtmlViewPage(httpServer, browser, false, remarkupSyntaxLocalizedViewName, null);
                 string htmlData = ConvertRemarkupToHTML(database, remarkupViewPage.Url, remarkupViewPage.Content, out remarkupParserOutput, false);
 

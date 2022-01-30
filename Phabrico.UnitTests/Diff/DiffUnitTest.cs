@@ -13,7 +13,7 @@ namespace Phabrico.UnitTests.Diff
     [TestClass]
     public class DiffUnitTest : PhabricoUnitTest
     {
-        Phabrico.Miscellaneous.Diff diff;
+        readonly Phabrico.Miscellaneous.Diff diff;
 
         public DiffUnitTest()
         {

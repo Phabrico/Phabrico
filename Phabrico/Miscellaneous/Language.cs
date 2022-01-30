@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace Phabrico.Miscellaneous
 {
+    [JsonConverter(typeof(LanguageToStringConverter))]
     public class Language
     {
         private const string _defaultLanguageCode = "en";
@@ -40,23 +44,22 @@ namespace Phabrico.Miscellaneous
         /// <summary>
         /// Compares 2 languages
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="otherLanguage"></param>
         /// <returns></returns>
-        public override bool Equals(object other)
+        public bool Equals(Language otherLanguage)
         {
-            if (other is Language)
-            {
-                return language.Equals(((Language)other).language);
-            }
-            else
-            if (other is string)
-            {
-                return language.Equals(((Language)(string)other).language);
-            }
-            else
-            {
-                return false;
-            }
+            return language.Equals(otherLanguage.language);
+        }
+
+        /// <summary>
+        /// Compares 2 languages
+        /// </summary>
+        /// <param name="otherString"></param>
+        /// <returns></returns>
+        public bool Equals(string otherString)
+        {
+            Language otherLanguage = otherString;
+            return language.Equals(otherLanguage.language);
         }
 
         /// <summary>
@@ -75,6 +78,36 @@ namespace Phabrico.Miscellaneous
         public override string ToString()
         {
             return language;
+        }
+    }
+
+    /// <summary>
+    /// Json converter class for converting the Language object into a string while serializing
+    /// </summary>
+    public class LanguageToStringConverter : JsonConverter
+    {
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            JToken jt = JValue.ReadFrom(reader);
+
+            if (jt.Type == JTokenType.String)
+            {
+                return (Language)jt.Value<string>();
+            }
+            else
+            {
+                return Language.NotApplicable;
+            }
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            return typeof(Language).Equals(objectType);
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            serializer.Serialize(writer, value.ToString());
         }
     }
 }

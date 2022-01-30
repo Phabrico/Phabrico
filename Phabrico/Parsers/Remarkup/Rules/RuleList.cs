@@ -160,7 +160,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override RemarkupRule Clone()
         {
             RuleList copy = base.Clone() as RuleList;
-            copy.Tree = Tree;
+            if (copy != null)
+            {
+                copy.Tree = Tree;
+            }
+
             return copy;
         }
 

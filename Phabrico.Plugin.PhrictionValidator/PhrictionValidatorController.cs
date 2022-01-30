@@ -26,13 +26,11 @@ namespace Phabrico.Plugin
         /// After this HttpPostValidationConfirmation reponse is handled in the browser, this method is executed again
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/PhrictionValidator")]
-        public JsonMessage HttpPostValidateDocument(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostValidateDocument(Http.Server httpServer, string[] parameters)
         {
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
 
             List<string> underlyingPhrictionTokens = new List<string>();
@@ -74,7 +72,7 @@ namespace Phabrico.Plugin
                     Dictionary<int, List<string>> invalidFiles = new Dictionary<int, List<string>>();
                     Dictionary<string, List<string>> invalidHyperlinks = new Dictionary<string, List<string>>();
 
-                    ValidateDocument(database, phrictionDocument.Token, invalidFiles, invalidHyperlinks);
+                    ValidateDocument(database, phrictionDocument?.Token, invalidFiles, invalidHyperlinks);
 
                     // do we also need to validate the underlying documents ?
                     if (PhrictionData.ConfirmState == ConfirmResponse.Yes)
@@ -104,14 +102,14 @@ namespace Phabrico.Plugin
                         // generate row data
                         object[] tableData = invalidFiles.Select(kvp => new object[] {
                                                                     Locale.TranslateJavascript("Invalid file reference @@FILE-REFERENCE-ID@@", browser.Session.Locale)
-                                                                          .Replace("@@FILE-REFERENCE-ID@@", "<span style='color:var(--a-color)'>" + kvp.Key.ToString() + "</span>"),
+                                                                          .Replace("@@FILE-REFERENCE-ID@@", "<span style='color:var(--a-color)'>" + kvp.Key + "</span>"),
                                                                     kvp.Value
                                                                 })
                                                                 .Distinct()
                                                                 .Concat(
                                                 invalidHyperlinks.Select(kvp => new object[] {
                                                                     Locale.TranslateJavascript("Invalid hyperlink @@URL@@", browser.Session.Locale)
-                                                                          .Replace("@@URL@@", "<span style='color:var(--a-color)'>" + kvp.Key.ToString() + "</span>"),
+                                                                          .Replace("@@URL@@", "<span style='color:var(--a-color)'>" + kvp.Key + "</span>"),
                                                                     kvp.Value
                                                                  })
 
@@ -199,7 +197,8 @@ namespace Phabrico.Plugin
                 if (string.IsNullOrWhiteSpace(phrictionDocument.Content)) return;
 
                 Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
-                string html = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+                ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+
                 foreach (Parsers.Remarkup.Rules.RemarkupRule remarkupToken in GetAllRemarkupTokens(remarkupPerserOutput.TokenList))
                 {
                     Parsers.Remarkup.Rules.RuleReferenceFile referencedFile = remarkupToken as Parsers.Remarkup.Rules.RuleReferenceFile;

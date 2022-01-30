@@ -1,5 +1,4 @@
-﻿using Phabrico.Http;
-using Phabrico.Miscellaneous;
+﻿using Phabrico.Miscellaneous;
 using System;
 using System.Linq;
 using System.Text;
@@ -12,18 +11,22 @@ namespace Phabrico.Controllers
     /// </summary>
     public class Exception : Controller
     {
+        /// <summary>
+        /// Contains the path of the source from where Phabrico.exe was compiled.
+        /// This variable is initialized during the first HTTP exception request
+        /// by reading out the stacktrace of a intentional generated exception.
+        /// </summary>
         private static string sourceLocationInPDB = null;
 
         /// <summary>
         /// This method is fired as soon as an uncaught exception is thrown and will show an error message and a stack trace
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="httpMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/exception", Unsecure = true, HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView | Http.Response.HtmlViewPage.ContentOptions.HideHeader)]
-        public void HttpGetException(Http.Server httpServer, Browser browser, ref Http.Response.HttpMessage httpMessage, string[] parameters, string parameterActions)
+        public void HttpGetException(Http.Server httpServer, ref Http.Response.HttpMessage httpMessage, string[] parameters, string parameterActions)
         {
             try
             {
@@ -74,13 +77,16 @@ namespace Phabrico.Controllers
                     exceptionStackTrace = exceptionStackTrace.Replace(sourceLocationInPDB, "");
                 }
 
-                htmlViewPage.SetText("EXCEPTION-NAME", exceptionName);
-                htmlViewPage.SetText("EXCEPTION-MESSAGE", exceptionMessage);
-                htmlViewPage.SetText("EXCEPTION-STACKTRACE", exceptionStackTrace, Http.Response.HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                if (htmlViewPage != null)
+                {
+                    htmlViewPage.SetText("EXCEPTION-NAME", exceptionName);
+                    htmlViewPage.SetText("EXCEPTION-MESSAGE", exceptionMessage);
+                    htmlViewPage.SetText("EXCEPTION-STACKTRACE", exceptionStackTrace, Http.Response.HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                }
 
                 httpMessage = htmlViewPage;
             }
-            catch (System.Exception badException)
+            catch
             {
                 httpMessage = new Http.Response.HttpInternalServerError(httpServer, browser, browser.Request.RawUrl);
             }

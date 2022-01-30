@@ -1,4 +1,5 @@
-﻿using Phabrico.Parsers.Base64;
+﻿using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Base64;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,12 +13,14 @@ namespace Phabrico.Http.Response
     /// </summary>
     abstract public class HttpMessage
     {
-        private static Dictionary<string,string> cachedViewData = new Dictionary<string, string>();
+        private static readonly Dictionary<string,string> cachedViewData = new Dictionary<string, string>();
+        private static readonly object synchronizationCachedViewData = new object();
+
 
         /// <summary>
         /// List of view names which can not be accessed directly
         /// </summary>
-        private static string[] internalViewNames = new string[] {
+        private static readonly string[] internalViewNames = new string[] {
             "AccessDenied",
             "BrowserNotSupported",
             "HomePage.Authenticated.HeaderActions",
@@ -152,9 +155,12 @@ namespace Phabrico.Http.Response
             // check if we can get a cached version of the view
             string cacheKey = Browser.Session.Locale + assembly?.FullName + viewName;
             string cachedView;
-            if (cachedViewData.TryGetValue(cacheKey, out cachedView))
+            lock (synchronizationCachedViewData)
             {
-                return cachedView;
+                if (cachedViewData.TryGetValue(cacheKey, out cachedView))
+                {
+                    return cachedView;
+                }
             }
 
             // load view
@@ -201,7 +207,10 @@ namespace Phabrico.Http.Response
             if (resourceName == null)
             {
                 // should not happen
-                cachedViewData[cacheKey] = "ERROR: " + viewName + " was not found";
+                lock (synchronizationCachedViewData)
+                {
+                    cachedViewData[cacheKey] = "ERROR: " + viewName + " was not found";
+                }
             }
             else
             {
@@ -213,32 +222,43 @@ namespace Phabrico.Http.Response
                         string content = reader.ReadToEnd();
                         if (DoTranslateContent == false)
                         {
-                            cachedViewData[cacheKey] = content;
-                        }
-
-                        string locale = Browser.Session.Locale;
-                        if (locale == null)
-                        {
-                            locale = Browser.HttpServer.Session.ClientSessions[SessionManager.TemporaryToken.ID].Locale;
-                        }
-
-                        string translatedHtmlContent = Miscellaneous.Locale.TranslateHTML(content, locale);
-                        if (translatedHtmlContent.StartsWith("<!DOCTYPE html"))
-                        {
-                            // html viewpage
-                            string localizedHtmlContent = Miscellaneous.Locale.MergeLocaleCss(translatedHtmlContent, locale);
-                            cachedViewData[cacheKey] = localizedHtmlContent;
+                            lock (synchronizationCachedViewData)
+                            {
+                                cachedViewData[cacheKey] = content;
+                            }
                         }
                         else
                         {
-                            // partial view
-                            cachedViewData[cacheKey] = translatedHtmlContent;
+                            string locale = Browser.Session.Locale;
+                            if (locale == null)
+                            {
+                                locale = Browser.HttpServer.Session.ClientSessions[SessionManager.TemporaryToken.ID].Locale;
+                            }
+
+                            string translatedHtmlContent = Miscellaneous.Locale.TranslateHTML(content, locale);
+                            lock (synchronizationCachedViewData)
+                            {
+                                if (translatedHtmlContent.StartsWith("<!DOCTYPE html"))
+                                {
+                                    // html viewpage
+                                    string localizedHtmlContent = Miscellaneous.Locale.MergeLocaleCss(translatedHtmlContent, locale);
+                                    cachedViewData[cacheKey] = localizedHtmlContent;
+                                }
+                                else
+                                {
+                                    // partial view
+                                    cachedViewData[cacheKey] = translatedHtmlContent;
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            return cachedViewData[cacheKey];
+            lock (synchronizationCachedViewData)
+            {
+                return cachedViewData[cacheKey];
+            }
         }
 
         /// <summary>
@@ -264,8 +284,22 @@ namespace Phabrico.Http.Response
 
             // check if view exists
             Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = string.Format("Phabrico.View.{0}.html", viewName);
-            return assembly.GetManifestResourceNames().Any(name => name.Equals(resourceName, System.StringComparison.OrdinalIgnoreCase));
+            string[] resourceNames = new string[]
+            {
+                string.Format("Phabrico.View.{0}.html", viewName),  // internal Phabrico views
+                string.Format("Phabrico.Locale.{0}", viewName),     // internal localized views
+            };
+            foreach (string resourceName in resourceNames)
+            {
+                if (assembly.GetManifestResourceNames()
+                            .Any(name => name.Equals(resourceName, System.StringComparison.OrdinalIgnoreCase))
+                   )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -312,25 +346,23 @@ namespace Phabrico.Http.Response
                 try
                 {
                     // send data
-                    using (MemoryStream memoryStream = new MemoryStream())
+                    byte[] decodedData = new byte[0x400000];
+
+                    base64EIDOStream.Seek(0, SeekOrigin.Begin);
+
+                    browser.SetContentLength(base64EIDOStream.Length);
+
+                    while (true)
                     {
-                        byte[] decodedData = new byte[0x400000];
+                        int nbrBytesRead = base64EIDOStream.Read(decodedData, 0, decodedData.Length);
+                        int nbrBytesSent = browser.SendBlock(decodedData, nbrBytesRead);
 
-                        base64EIDOStream.Seek(0, SeekOrigin.Begin);
-
-                        browser.SetContentLength(base64EIDOStream.Length);
-
-                        while (true)
-                        {
-                            int nbrBytesRead = base64EIDOStream.Read(decodedData, 0, decodedData.Length);
-                            int nbrBytesSent = browser.SendBlock(decodedData, nbrBytesRead);
-
-                            if (nbrBytesSent != decodedData.Length) break;
-                        }
+                        if (nbrBytesSent != decodedData.Length) break;
                     }
                 }
-                catch
+                catch (System.Exception exception)
                 {
+                    Logging.WriteError(browser.Token.ID, "HttpMessage.Send(stream): " + exception.Message);
                 }
             }
         }
@@ -381,8 +413,9 @@ namespace Phabrico.Http.Response
                     browser.Send(data);
                     TimestampSent = DateTime.UtcNow;
                 }
-                catch
+                catch (System.Exception exception)
                 {
+                    Logging.WriteError(browser.Token.ID, "HttpMessage.Send(data): " + exception.Message);
                 }
             }
             else

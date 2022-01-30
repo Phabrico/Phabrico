@@ -278,6 +278,9 @@ msgstr "Bezig met Phame blog data te downloaden..."
 msgid "Synchronization.Status.DownloadingPhrictionData"
 msgstr "Bezig met Phriction data te downloaden..."
 
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "Bezig met Phriction metadata te downloaden..."
+
 msgid "Synchronization.Status.DownloadingProjects"
 msgstr "Bezig met projecten te downloaden..."
 
@@ -325,6 +328,9 @@ msgstr "Sommige wiki-documenten zullen niet worden geüpload omdat hun slug-pade
 
 msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
 msgstr "Sommige Phriction-documenten hebben lange slug paths en kunnen problemen veroorzaken wanneer u onderliggende documenten aanmaakt.\n\nWilt U verder gaan ?"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "Dit document is een niet-gereviseerde vertaling. Deze versie van het document zal niet worden geüpload naar Phabricator."
 
 # Maniphest
 msgid "Create Task"
@@ -1177,6 +1183,9 @@ msgstr "Dit Phriction-document of Maniphest-taak werd niet gedownload van de Pha
 # Invalid configuration
 msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
 msgstr "Controleer de inhoud van @@APP-CONFIG-FILENAME@@"
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "Controleer de inhoud van @@IISMODULE-CONFIG-FILENAME@@"
 
 msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
 msgstr "Controleer of @@APP-CONFIG-FILENAME@@ bestaat"

@@ -25,7 +25,10 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override RemarkupRule Clone()
         {
             RuleReferenceFile copy = base.Clone() as RuleReferenceFile;
-            copy.FileID = FileID;
+            if (copy != null)
+            {
+                copy.FileID = FileID;
+            }
             return copy;
         }
 
@@ -41,17 +44,19 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html)
         {
             html = "";
-            Match match = RegexSafe.Match(remarkup, @"^{F(-?[0-9]+)([^}]*)}", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, @"^{F(TRAN)?(-?[0-9]+)([^}]*)}", RegexOptions.Singleline);
             if (match.Success == false) return false;
 
             Storage.Account accountStorage = new Storage.Account();
+            Storage.Content content = new Storage.Content(database);
             Storage.File fileStorage = new Storage.File();
             Storage.Stage stageStorage = new Storage.Stage();
 
             Account existingAccount = accountStorage.WhoAmI(database, browser);
 
-            FileID = Int32.Parse(match.Groups[1].Value);
-            Dictionary<string, string> fileObjectOptions = match.Groups[2]
+            bool isTranslatedObject = match.Groups[1].Success;
+            FileID = Int32.Parse(match.Groups[2].Value);
+            Dictionary<string, string> fileObjectOptions = match.Groups[3]
                                                                          .Value
                                                                          .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                                                                          .ToDictionary(key => key.Split('=')
@@ -61,20 +66,55 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                                                                        value => value.Contains('=') ? value.Split('=')[1] : "");
 
             bool showImageAsLink = false;
-            if (fileObjectOptions.ContainsKey("layout") == false)
+            string layout;
+            if (fileObjectOptions.TryGetValue("layout", out layout) == false)
             {
                 fileObjectOptions["layout"] = "left";
             }
             else
-            if (fileObjectOptions["layout"].ToLower().Equals("link"))
+            if (layout.ToLower().Equals("link"))
             {
                 showImageAsLink = true;
             }
 
-            Phabricator.Data.File fileObject = fileStorage.GetByID(database, FileID, true);
-            if (fileObject == null)
+            Phabricator.Data.File fileObject = null;
+            if (isTranslatedObject)
             {
-                fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, FileID, false);
+                string token = string.Format("PHID-OBJECT-{0}", FileID.ToString().PadLeft(18, '0'));
+                Storage.Content.Translation translation = content.GetTranslation(token, browser.Session.Locale);
+                if (translation != null)
+                {
+                    Newtonsoft.Json.Linq.JObject fileObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
+                    if (fileObjectInfo != null)
+                    {
+                        fileObject = new Phabricator.Data.File();
+                        fileObject.ID = FileID;
+                        fileObject.Token = token;
+
+                        string base64EncodedData = (string)fileObjectInfo["Data"];
+                        byte[] buffer = new byte[(int)(base64EncodedData.Length * 0.8)];
+                        using (MemoryStream ms = new MemoryStream(buffer))
+                        using (Phabrico.Parsers.Base64.Base64EIDOStream base64EIDOStream = new Parsers.Base64.Base64EIDOStream(base64EncodedData))
+                        {
+                            base64EIDOStream.CopyTo(ms);
+                            Array.Resize(ref buffer, (int)base64EIDOStream.Length);
+                        }
+
+                        fileObject.Data = buffer;
+                        fileObject.Size = buffer.Length;
+                        fileObject.Properties = (string)fileObjectInfo["Properties"];
+                        fileObject.FileName = (string)fileObjectInfo["FileName"];
+                    }
+                }
+            }
+            else
+            {
+                fileObject = fileStorage.GetByID(database, FileID, true);
+                if (fileObject == null)
+                {
+                    fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, FileID, false);
+
+                }
             }
 
             if (fileObject != null)
@@ -104,16 +144,17 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         {
                             fileObject.FontAwesomeIcon = "fa-file-picture-o";
 
-                            if (fileObjectOptions.ContainsKey("name"))
+                            string imageName;
+                            if (fileObjectOptions.TryGetValue("name", out imageName))
                             {
-                                fileObject.FileName = fileObjectOptions["name"];
+                                fileObject.FileName = imageName;
                             }
 
                             html = ProcessGenericFile(fileObjectOptions, fileObject, browser);
                         }
                         else
                         {
-                            html = ProcessImageFile(database, browser, fileObjectOptions, existingAccount, fileObject, FileID);
+                            html = ProcessImageFile(database, browser, fileObjectOptions, existingAccount, fileObject, FileID, isTranslatedObject);
                         }
                         break;
 
@@ -147,8 +188,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>Remarkup content, translated from the XML</returns>
         internal override string ConvertXmlToRemarkup(Storage.Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
         {
-            Match match = RegexSafe.Match(innerText, @"^{F(-?[0-9]+)([^}]*)}", RegexOptions.Singleline);
-            FileID = Int32.Parse(match.Groups[1].Value);
+            Match match = RegexSafe.Match(innerText, @"^{F(TRAN)?(-?[0-9]+)([^}]*)}", RegexOptions.Singleline);
+            FileID = Int32.Parse(match.Groups[2].Value);
 
             Storage.Stage stageStorage = new Storage.Stage();
             Storage.File fileStorage = new Storage.File();
@@ -179,18 +220,20 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     clonedFileObject.TemplateFileName = "{0}";
                     clonedFileObject.ImagePropertyPixelHeight = fileObject.ImagePropertyPixelHeight;
                     clonedFileObject.ImagePropertyPixelWidth = fileObject.ImagePropertyPixelWidth;
+                    clonedFileObject.OriginalID = fileObject.ID;
+                    clonedFileObject.Language = browser.Session.Locale;
 
                     stageStorage.Create(database, browser, clonedFileObject);
 
                     // mark file object as 'unreviewed'
                     Storage.Content content = new Storage.Content(database);
-                    string clonedFileObjectTitle = string.Format("F{0} ({1})", fileObject.ID, browser.Session.Locale);
+                    string clonedFileObjectTitle = string.Format("F(TRAN)?{0} ({1})", fileObject.ID, browser.Session.Locale);
                     content.AddTranslation(clonedFileObject.Token, browser.Session.Locale, clonedFileObjectTitle, "");
 
                     // modify innerText
-                    innerText = innerText.Substring(0, match.Groups[1].Index)
+                    innerText = innerText.Substring(0, match.Groups[2].Index)
                               + clonedFileObject.ID
-                              + innerText.Substring(match.Groups[1].Index + match.Groups[1].Length);
+                              + innerText.Substring(match.Groups[2].Index + match.Groups[2].Length);
                 }
             }
 
@@ -314,8 +357,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <param name="existingAccount">Current Phabricator account</param>
         /// <param name="fileObject">The file data as found in the SQLite database</param>
         /// <param name="fileObjectID">ID of the fileObject</param>
+        /// <param name="isTranslatedImage">True if file is stored in ContentTranslation (e.g. a translated diagram)</param>
         /// <returns>img HTML tag</returns>
-        private string ProcessImageFile(Storage.Database database, Browser browser, Dictionary<string, string> fileObjectOptions, Account existingAccount, Phabricator.Data.File fileObject, int fileObjectID)
+        private string ProcessImageFile(Storage.Database database, Browser browser, Dictionary<string, string> fileObjectOptions, Account existingAccount, Phabricator.Data.File fileObject, int fileObjectID, bool isTranslatedImage)
         {
             Storage.File fileStorage = new Storage.File();
             string imgClass = "";
@@ -338,36 +382,37 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 {
                     // load image and count the 16 boundary colors of the image (10x10 pixels for each corner) + center
                     fileObject.DataStream.Seek(0, SeekOrigin.Begin);
-                    System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(fileObject.DataStream);
-                    Dictionary<uint, int> boundaryColorCount = new Dictionary<uint, int>();
-                    List<KeyValuePair<uint, int>> centerColorCount = new List<KeyValuePair<uint, int>>();
-                    if (bitmap.Height >= 10 && bitmap.Width >= 10)
+                    using (System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(fileObject.DataStream))
                     {
-                        // count colors in corners and center of bitmap
-                        boundaryColorCount = CountNumberOfColorsInCorners(bitmap);
-                        centerColorCount = CountNumberOfColorsInCenter(bitmap);
-
-                        // validate color count
-                        if (boundaryColorCount.Keys.Any(color => (color & 0xFF000000) == 0) ||  // image is transparent
-                            boundaryColorCount.Keys.All(color => color > 0xFFA0A0A0) ||         // 0xFFA0A0A0 = max brighest grey allowed
-                            centerColorCount.FirstOrDefault().Key > 0xFFA0A0A0 ||               //
-                            centerColorCount.Skip(1).FirstOrDefault().Key > 0xFFC0C0C0)         //
+                        if (bitmap.Height >= 10 && bitmap.Width >= 10)
                         {
-                            if (existingAccount.Parameters.DarkenBrightImages == Account.DarkenImageStyle.Extreme)
+                            // count colors in corners and center of bitmap
+                            Dictionary<uint, int> boundaryColorCount = CountNumberOfColorsInCorners(bitmap);
+                            List<KeyValuePair<uint, int>> centerColorCount = CountNumberOfColorsInCenter(bitmap);
+
+                            // validate color count
+                            if (boundaryColorCount.Keys.Any(color => (color & 0xFF000000) == 0) ||  // image is transparent
+                                boundaryColorCount.Keys.All(color => color > 0xFFA0A0A0) ||         // 0xFFA0A0A0 = max brighest grey allowed
+                                centerColorCount.FirstOrDefault().Key > 0xFFA0A0A0 ||               //
+                                centerColorCount.Skip(1).FirstOrDefault().Key > 0xFFC0C0C0)         //
                             {
-                                // tag image with "darkness-extreme"
-                                imgClass = " darkness-extreme";
-                            }
-                            else
-                            {
-                                // tag image with "darkness-moderate"
-                                imgClass = " darkness-moderate";
+                                if (existingAccount.Parameters.DarkenBrightImages == Account.DarkenImageStyle.Extreme)
+                                {
+                                    // tag image with "darkness-extreme"
+                                    imgClass = " darkness-extreme";
+                                }
+                                else
+                                {
+                                    // tag image with "darkness-moderate"
+                                    imgClass = " darkness-moderate";
+                                }
                             }
                         }
                     }
                 }
-                catch
+                catch (System.Exception exception)
                 {
+                    Logging.WriteError(browser.Token.ID, "RuleReferenceFile.ProcessImageFile(1): " + exception.Message);
                 }
             }
 
@@ -389,17 +434,20 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 {
                     // load image and count the 16 boundary colors of the image (10x10 pixels for each corner) + center
                     fileObject.DataStream.Seek(0, SeekOrigin.Begin);
-                    System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(fileObject.DataStream);
-
-                    // set width
-                    fileObject.ImagePropertyPixelWidth = bitmap.Width;
+                    using (System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(fileObject.DataStream))
+                    {
+                        // set width
+                        fileObject.ImagePropertyPixelWidth = bitmap.Width;
+                    }
                 }
-                catch
+                catch (System.Exception exception)
                 {
+                    Logging.WriteError(browser.Token.ID, "RuleReferenceFile.ProcessImageFile(2): " + exception.Message);
                 }
             }
 
             string imgStyles = "";
+            string imgLocatorClasses = "";
             string imgLocatorStyles;
             string alternativeText = "";
             string clickAction = "";
@@ -471,7 +519,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         if (fileObjectOptions[style].ToLower().Equals("full"))
                         {
                             isFullSize = true;
-                            imgStyles += "max-width: max-content;";
+                            imgLocatorClasses += "full-size";
                         }
                         break;
 
@@ -481,9 +529,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             // check if alternative text should be displayed
-            if (fileObjectOptions.ContainsKey("alt") && string.IsNullOrWhiteSpace(fileObjectOptions["alt"]) == false)
+            if (fileObjectOptions.TryGetValue("alt", out alternativeText) && string.IsNullOrWhiteSpace(alternativeText) == false)
             {
-                alternativeText = " alt=\"" + fileObjectOptions["alt"].Trim('"') + "\"";
+                alternativeText = " alt=\"" + alternativeText.Trim('"') + "\"";
             }
 
             // check if we need to add an 'Edit-button' to the image (which will be displayed when mouse-hovering over the image)
@@ -495,72 +543,80 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 {
                     isEditable = true;
                     imgClass += " diagram";
-                    btnEditImageHtml = string.Format("<a class='button' href='diagrams.net/F{0}' onclick='javascript:sessionStorage[\"originURL\"] = document.location.href; return true;'>" +
+                    btnEditImageHtml = string.Format("<a class='button' href='diagrams.net/F{0}{1}' onclick='javascript:sessionStorage[\"originURL\"] = document.location.href; return true;'>" +
                                                           "<span class='phui-font-fa fa-sitemap'></span>" +
                                                      "</a>", 
+                        isTranslatedImage ? "TRAN" : "",
                         fileObject.ID);
                 }
             }
 
             // return result
-            if (isEditable )
+            if (isEditable)
             {
                 if (isFullSize)
                 {
                     /* TODO: margin-left aanpassen voor image-locator */
-                    return string.Format("<div class='image-locator' style='{7}'>\n" +
-                                         "  <div class='image-container allow-full-screen'>\n" +
-                                         "     <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>\n" +
-                                         "     {6}\n" +
+                    return string.Format("<div class='image-locator allow-full-screen {9}' style='{8}'>\n" +
+                                         "  <div class='image-container'>\n" +
+                                         "     <img rel='{0}' src='file/data/{1}{2}/' class='{3}' style='{4}'{5}{6} onload='imageLoaded(this)'>\n" +
+                                         "     {7}\n" +
                                          "  </div>" +
                                          "</div>",
                         fileObject.FileName.Replace("'", ""),
+                        isTranslatedImage ? "tran" : "",
                         fileObject.ID,
                         imgClass,
                         imgStyles,
                         alternativeText,
                         clickAction,
                         btnEditImageHtml,
-                        imgLocatorStyles);
+                        imgLocatorStyles,
+                        imgLocatorClasses);
                 }
                 else
                 {
-                    return string.Format("<div class='image-locator' style='{7}'>\n" +
+                    return string.Format("<div class='image-locator {9}' style='{8}'>\n" +
                                          "  <div class='image-container'>\n" +
-                                         "     <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>\n" +
-                                         "     {6}\n" +
+                                         "     <img rel='{0}' src='file/data/{1}{2}/' class='{3}' style='{4}'{5}{6} onload='imageLoaded(this)'>\n" +
+                                         "     {7}\n" +
                                          "  </div>" +
                                          "</div>",
                         fileObject.FileName.Replace("'", ""),
+                        isTranslatedImage ? "tran" : "",
                         fileObject.ID,
                         imgClass,
                         imgStyles,
                         alternativeText,
                         clickAction,
                         btnEditImageHtml,
-                        imgLocatorStyles);
+                        imgLocatorStyles,
+                        imgLocatorClasses);
                 }
             }
             else
             {
                 if (isFullSize)
                 {
-                    return string.Format("<div class='image-locator' style='{5}'>\n" +
-                                         "  <div class='image-container allow-full-screen'>\n" +
-                                         "     <img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}>\n" +
+                    return string.Format("<div class='image-locator allow-full-screen {7}' style='{6}'>\n" +
+                                         "  <div class='image-container'>\n" +
+                                         "     <img rel='{0}' src='file/data/{1}{2}/' class='{3}' style='{4}'{5} onload='imageLoaded(this)'>\n" +
                                          "  </div>" +
                                          "</div>",
                         fileObject.FileName.Replace("'", ""),
+                        isTranslatedImage ? "tran" : "",
                         fileObject.ID,
                         imgClass,
                         imgStyles,
                         alternativeText,
-                        imgLocatorStyles);
+                        imgLocatorStyles,
+                        imgLocatorClasses);
                 }
                 else
                 {
-                    return string.Format(@"<img rel='{0}' src='file/data/{1}/' class='{2}' style='{3}'{4}{5}>",
+                    return string.Format(@"<img rel='{0}' src='file/data/{1}{2}/' class='{3}' style='{4}'{5}{6} onload='imageLoaded(this)'>",
                         fileObject.FileName.Replace("'", ""),
+                        isTranslatedImage ? "tran" : "",
                         fileObject.ID,
                         imgClass,
                         imgStyles,
@@ -569,6 +625,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 }
             }
         }
+
         /// <summary>
         /// Returns the HTML code for a file which cannot be typed as an audio, image or video file.
         /// It will show an anchor link showing the filename, size and an icon based on its content-type

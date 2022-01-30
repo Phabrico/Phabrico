@@ -11,7 +11,7 @@ namespace Phabrico.Plugin.Extensions
     public class PhrictionProofReaderController : PluginController
     {
         [UrlController(URL = "/proofread", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
-        public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetLoadParameters(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             string documentPath = string.Join("/", parameters.TakeWhile(parameter => parameter.StartsWith("?") == false));
 
@@ -47,7 +47,7 @@ namespace Phabrico.Plugin.Extensions
         }
 
         [UrlController(URL = "/proofedit")]
-        public JsonMessage HttpPostProofEditingDocument(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostProofEditingDocument(Http.Server httpServer, string[] parameters)
         {
             string jsonData;
             try
@@ -89,7 +89,7 @@ namespace Phabrico.Plugin.Extensions
         }
 
         [UrlController(URL = "/PhrictionProofReader")]
-        public JsonMessage HttpPostProofReadingDocument(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostProofReadingDocument(Http.Server httpServer, string[] parameters)
         {
             string jsonData = JsonConvert.SerializeObject(new
             {

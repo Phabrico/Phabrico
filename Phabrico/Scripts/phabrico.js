@@ -174,6 +174,10 @@ class CrumbsHeader {
             slug += '/' + crumbs[crumb].slug;
             a.href = slug + '/';
             a.innerText = crumbs[crumb].name;
+            if (crumbs[crumb].hidden) {
+                a.classList.add('hidden');
+                span.classList.add('hidden');
+            } else
             if (crumbs[crumb].inexistant) {
                 a.style.pointerEvents = 'none';
             }
@@ -2185,7 +2189,11 @@ function finishHyperlinks() {
             contextMenu.appendChild(menuItems);
 
             var clipboard = new ClipboardJS('.context-menu .copy a');
-            mnuCopyAnchor.setAttribute('data-clipboard-text', hyperlink.href);
+            if (hyperlink.href.startsWith('mailto:')) {
+                mnuCopyAnchor.setAttribute('data-clipboard-text', hyperlink.href.substr('mailto:'.length));
+            } else {
+                mnuCopyAnchor.setAttribute('data-clipboard-text', hyperlink.href);
+            }
             mnuCopyAnchor.addEventListener('mouseup', function (e) {
                 setTimeout(function () {
                     contextMenu.removeChild(menuItems);
@@ -2372,24 +2380,34 @@ function postForm(form, url)
 
         if (this.responseText.length > 0) {
             document.body.innerHTML = this.responseText;
+        } else
+        if (url.startsWith("auth/login")) {
+            var errorAuthentication = document.body.querySelector('.phui-info-severity-error');
+            if (errorAuthentication != null) {
+                errorAuthentication.style.display = 'none';
+            }
         }
 
         if (this.statusText != "NOK" && this.responseURL.indexOf('/exception/?data=') == -1) {
             // add redirect code in case postForm was called from /auth/login
             if (url.startsWith("auth/login")) {
-                if (url == "auth/login") url = "auth/login/";
+                // when running as IIS HTTP module, the statusText is overwritten by OK by IIS -> check again by means of error message
+                var errorAuthentication = document.body.querySelector('.phui-info-severity-error');
+                if (errorAuthentication == null || errorAuthentication.style.display != 'flex') {
+                    if (url == "auth/login") url = "auth/login/";
 
-                var refererURL = url.indexOf("?ReturnURL=");
-                if (refererURL > -1) {
-                    var redirectURL = refererURL + "?ReturnURL=".length;
-                    if (redirectURL == "poke") redirectURL = "";
-                    url = "auth/login" + url.substring(redirectURL);
+                    var refererURL = url.indexOf("?ReturnURL=");
+                    if (refererURL > -1) {
+                        var redirectURL = refererURL + "?ReturnURL=".length;
+                        if (redirectURL == "poke") redirectURL = "";
+                        url = "auth/login" + url.substring(redirectURL);
+                    }
+
+                    var temp = document.createElement('script');
+                    temp.innerHTML = 'window.location.replace("' + (document.baseURI + url.substring("auth/login/".length)).replace(/\/\/$/, "/") + '");';
+
+                    document.body.appendChild(temp);
                 }
-
-                var temp = document.createElement('script');
-                temp.innerHTML = 'window.location.replace("' + (document.baseURI + url.substring("auth/login/".length)).replace(/\/\/$/, "/") + '");';
-
-                document.body.appendChild(temp);
             }
         }
     };
@@ -2437,8 +2455,8 @@ function tabChanged(tabButton) {
 }
 
 function toggleFullScreenImage(e) {
-    var imageContainer = e.target.closest('div.image-container');
-    if (imageContainer.classList.toggle("full-screen")) {
+    var imageLocator = e.target.closest('div.image-locator');
+    if (imageLocator.classList.toggle("full-screen")) {
         document.body.classList.add('full-screen-image');
     } else {
         document.body.classList.remove('full-screen-image');
@@ -2826,7 +2844,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.diff #fileLeft, .diff #fileRight').forEach((diffContent) => {
         diffContent.addEventListener('scroll', function(e) {
-            var scrollTimeout = document.querySelectorAll('.diff').scrollTimeout;
+            var scrollTimeout = document.querySelector('.diff').scrollTimeout;
             if (scrollTimeout != null) clearTimeout(scrollTimeout);
 
             var thisDiffView = e.target, otherDiffView = null;
@@ -2842,6 +2860,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     otherDiffView.scrollTop = thisDiffView.scrollTop;
                     diffDrawLocationPane();
                 }, 1);
+
+                document.querySelector('.diff').scrollTimeout = scrollTimeout;
             }
         });
 
@@ -2955,18 +2975,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 }, false);
 
-
-
-window.addEventListener('load', function() {
-    // prepare images which can be zoomed in full screen
-    document.querySelectorAll('.image-container.allow-full-screen').forEach((imageContainer) => {
-        if (imageContainer.querySelector('img').naturalWidth >= parseInt(getComputedStyle(document.querySelector('main')).width)) {
-            imageContainer.onclick = toggleFullScreenImage;
-        } else {
-            imageContainer.classList.remove('allow-full-screen');
-        }
-    });
-
+function htmlLoaded() {
     // make sure all buttons in Phriction are visible when needed (e.g. codeblock buttons, diagram buttons)
     phrictionCorrectButtonLocations();
 
@@ -2983,6 +2992,10 @@ window.addEventListener('load', function() {
 
     // add some extra code to meta-elements (e.g. ip addresses in content)
     finishMetaDataElements();
+}
+
+window.addEventListener('load', function() {
+    htmlLoaded();
 }, false);
 
 

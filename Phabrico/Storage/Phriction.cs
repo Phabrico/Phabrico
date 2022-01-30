@@ -76,6 +76,102 @@ namespace Phabrico.Storage
             }
         }
 
+
+        /// <summary>
+        /// Copies the Phriction records from one Phabrico database to another Phabrico database
+        /// </summary>
+        /// <param name="sourcePhabricoDatabasePath">File path to the source Phabrico database</param>
+        /// <param name="sourceUsername">Username to use for authenticating the source Phabrico database</param>
+        /// <param name="sourcePassword">Password to use for authenticating the source Phabrico database</param>
+        /// <param name="destinationPhabricoDatabasePath">File path to the destination Phabrico database</param>
+        /// <param name="destinationUsername">Username to use for authenticating the destination Phabrico database</param>
+        /// <param name="destinationPassword">Username to use for authenticating the destination Phabrico database</param>
+        /// <param name="filter">LINQ method for filtering the records to be copied</param>
+        public static List<Phabricator.Data.Phriction> Copy(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword, Func<Phabricator.Data.Phriction,bool> filter = null)
+        {
+            string sourceTokenHash = Encryption.GenerateTokenKey(sourceUsername, sourcePassword);  // tokenHash is stored in the database
+            string sourcePublicEncryptionKey = Encryption.GenerateEncryptionKey(sourceUsername, sourcePassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string sourcePrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(sourceUsername, sourcePassword);  // privateEncryptionKey is not stored in database
+            string destinationTokenHash = Encryption.GenerateTokenKey(destinationUsername, destinationPassword);  // tokenHash is stored in the database
+            string destinationPublicEncryptionKey = Encryption.GenerateEncryptionKey(destinationUsername, destinationPassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string destinationPrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(destinationUsername, destinationPassword);  // privateEncryptionKey is not stored in database
+
+            string originalDataSource = Storage.Database.DataSource;
+
+            List<Phabricator.Data.Phriction> wikiDocuments = new List<Phabricator.Data.Phriction>();
+            try
+            {
+                Storage.Database.DataSource = sourcePhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(sourceTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(sourcePublicEncryptionKey, publicXorCipher);
+
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                                SELECT token, path, info
+                                FROM phrictionInfo;
+                           ", database.Connection))
+                        {
+                            using (var reader = dbCommand.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    Phabricator.Data.Phriction record = new Phabricator.Data.Phriction();
+                                    record.Token = (string)reader["token"];
+                                    record.Path = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["path"]);
+                                    string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
+                                    JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                                    if (info == null) continue;
+
+                                    record.Content = (string)info["Content"];
+                                    record.Author = (string)info["Author"];
+                                    record.LastModifiedBy = (string)info["LastModifiedBy"];
+                                    record.Name = (string)info["Name"];
+                                    record.Projects = (string)info["Projects"];
+                                    record.Subscribers = (string)info["Subscribers"];
+                                    record.DateModified = DateTimeOffset.ParseExact((string)info["DateModified"], "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
+
+                                    wikiDocuments.Add(record);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Storage.Database.DataSource = destinationPhabricoDatabasePath;
+                using (Storage.Database database = new Storage.Database(null))
+                {
+                    Storage.Phriction phrictionStorage = new Storage.Phriction();
+
+                    bool noUserConfigured;
+                    UInt64[] publicXorCipher = database.ValidateLogIn(destinationTokenHash, out noUserConfigured);
+                    if (publicXorCipher != null)
+                    {
+                        database.EncryptionKey = Encryption.XorString(destinationPublicEncryptionKey, publicXorCipher);
+
+                        if (filter != null)
+                        {
+                            wikiDocuments = wikiDocuments.Where(filter).ToList();
+                        }
+
+                        foreach (Phabricator.Data.Phriction wikiDocument in wikiDocuments)
+                        {
+                            phrictionStorage.Add(database, wikiDocument);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Storage.Database.DataSource = originalDataSource;
+            }
+
+            return wikiDocuments;
+        }
+
         /// <summary>
         /// Returns the number of PhrictionInfo records
         /// </summary>
@@ -130,6 +226,7 @@ namespace Phabrico.Storage
                         record.Path = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["path"]);
                         string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                         JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                        if (info == null) continue;
 
                         if (reader["translation"] is DBNull)
                         {
@@ -180,6 +277,7 @@ namespace Phabrico.Storage
                        SELECT phrictionInfo.token,
                               phrictionInfo.path,
                               phrictionInfo.info,
+                              contentTranslation.title,
                               contentTranslation.translation
                        FROM phrictionInfo
                        LEFT OUTER JOIN Translation.contentTranslation
@@ -192,7 +290,7 @@ namespace Phabrico.Storage
                 {
                     database.AddParameter(dbCommand, "key", key, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "url", Encryption.Encrypt(database.EncryptionKey, System.Web.HttpUtility.UrlDecode(url).ToLower().Replace(' ', '_')));
-                    database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.Default);
+                    database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
                     using (var reader = dbCommand.ExecuteReader())
                     {
                         if (reader.Read())
@@ -204,18 +302,20 @@ namespace Phabrico.Storage
                                 record.Path = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["path"]);
                                 string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                                 JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                                if (info == null) return null;
 
                                 if (reader["translation"] is DBNull)
                                 {
+                                    record.Name = (string)info["Name"];
                                     record.Content = (string)info["Content"];
                                 }
                                 else
                                 {
+                                    record.Name = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["title"]);
                                     record.Content = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["translation"]);
                                 }
                                 record.Author = (string)info["Author"];
                                 record.LastModifiedBy = (string)info["LastModifiedBy"];
-                                record.Name = (string)info["Name"];
                                 record.Projects = (string)info["Projects"];
                                 record.Subscribers = (string)info["Subscribers"];
                                 record.DateModified = DateTimeOffset.ParseExact((string)info["DateModified"], "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
@@ -329,6 +429,7 @@ namespace Phabrico.Storage
                             record.DisplayOrderInFavorites = (Int32)reader["displayOrder"];
                             string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                             JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                            if (info == null) continue;
 
                             if (reader["translation"] is DBNull)
                             {

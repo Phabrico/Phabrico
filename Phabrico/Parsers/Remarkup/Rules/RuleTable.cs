@@ -50,10 +50,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                 string tableContent = "<table>";
                 string lastLine = null;
-                foreach (string line in match.Value.Split('\n').Select(m => m.Trim('\r')))
+                foreach (string line in match.Value
+                                             .Split('\n')
+                                             .Select(m => m.Trim('\r'))
+                                             .Where(m => string.IsNullOrEmpty(m) == false)
+                        )
                 {
-                    if (string.IsNullOrEmpty(line)) continue;
-
                     string lineContent = line;
                     if (lineContent.EndsWith("|"))
                     {
@@ -216,13 +218,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
             Match match = RegexSafe.Match(remarkup, @"^ ?\<table\>(.*?(?<!\</table\>))\</table\>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             if (match.Success == false) return false;
 
-            string tableContent;
             MatchCollection rows = RegexSafe.Matches(match.Groups[1].Value, @"\<tr\>(.+?(?<!\</tr\>))\</tr\>", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-            if (rows.Count == 0)
-            {
-                tableContent = HttpUtility.HtmlEncode(match.Value);
-            }
-            else
+            if (rows.Count > 0)
             {
                 Storage.Account accountStorage = new Storage.Account();
                 Account existingAccount = accountStorage.WhoAmI(database, browser);
@@ -231,7 +228,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 List<int> concealedColumnIndices = new List<int>();
                 List<int> concealedHeaderIndices = new List<int>();
 
-                tableContent = "<table class='remarkup-table'>\n";
+                string tableContent = "<table class='remarkup-table'>\n";
                 foreach (Match row in rows.OfType<Match>())
                 {
                     List<Match> tableRowData = RegexSafe.Matches(row.Value, "<(th)>([^<]*)</th>|<(td)>([^<]*)</td>", RegexOptions.Singleline).OfType<Match>().ToList();

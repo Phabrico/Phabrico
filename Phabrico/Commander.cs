@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Remarkup;
 using Phabrico.Parsers.Remarkup.Rules;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,7 @@ namespace Phabrico
                 public string[] userTags { get; set; }
                 public bool combined { get; set; } = true;
                 public bool tree { get; set; } = true;
+                public string translation { get; set; }
             }
 
             public class SecondaryUser
@@ -54,6 +56,7 @@ namespace Phabrico
         public enum CommanderAction
         {
             Download,
+            Strip,
             Nothing
         }
 
@@ -65,7 +68,7 @@ namespace Phabrico
         /// <summary>
         /// List of messages which should be shown at the end of the Commander execution
         /// </summary>
-        private List<string> informationalMessages = new List<string>();
+        private readonly List<string> informationalMessages = new List<string>();
 
         /// <summary>
         /// Action to be executed from the command prompt
@@ -99,6 +102,7 @@ namespace Phabrico
                     switch (argument)
                     {
                         case "/download":
+                        case "/strip":
                             if (arg + 1 >= arguments.Length) throw new ArgumentException("Path to JSON file missing");
                             arg++;
 
@@ -128,7 +132,19 @@ namespace Phabrico
                                 throw new ArgumentException("password should be at least 12 characters and contain at least 1 uppercase, 1 lowercase, 1 number and 1 punctuation character");
                             }
 
-                            Action = CommanderAction.Download;
+                            if (Configuration.phriction != null && string.IsNullOrWhiteSpace(Configuration.phriction.translation) == false)
+                            {
+                                Configuration.phriction.translation = Configuration.phriction.translation.Replace('/', '\\');
+                                if (System.IO.File.Exists(Configuration.phriction.translation) == false)
+                                {
+                                    throw new ArgumentException(string.Format("ERROR: translation file \"{0}\" not found", Configuration.phriction.translation));
+                                }
+                            }
+
+                            if (argument.Equals("/download"))
+                                Action = CommanderAction.Download;
+                            else if (argument.Equals("/strip"))
+                                Action = CommanderAction.Strip;
                             break;
 
                         case "/?":
@@ -159,13 +175,56 @@ namespace Phabrico
         }
 
         /// <summary>
+        /// Reads a string inputed by the user.
+        /// The input data is not visible
+        /// </summary>
+        /// <param name="message">Text to be shown in front</param>
+        /// <returns>Input data</returns>
+        public string ConsoleReadString(string message = "")
+        {
+            string value = "";
+
+            ConsoleWriteStatus(message);
+            while (true)
+            {
+                ConsoleKeyInfo k = Console.ReadKey(true);
+
+                if (k.Key == ConsoleKey.Enter)
+                {
+                    Console.Write("\r");
+                    Console.Write(new string(' ', message.Length + value.Length));
+                    Console.Write("\r");
+                    break;
+                }
+
+                if (k.KeyChar == '\0') continue;
+
+                if (k.Key == ConsoleKey.Backspace)
+                {
+                    if (value.Length > 0)
+                    {
+                        value = value.Substring(0, value.Length - 1);
+                        Console.Write("\b \b");
+                    }
+                }
+                else
+                {
+                    value += k.KeyChar;
+                    Console.Write("*");
+                }
+            }
+
+            return value;
+        }
+
+        /// <summary>
         /// Writes a message to the command prompt on the same line as the previous message
         /// </summary>
         /// <param name="message"></param>
         public void ConsoleWriteStatus(string message)
         {
             Console.Write("\r");
-            foreach (char c in lastConsoleStatusMessage) Console.Write(" ");
+            Console.Write(new string(' ', lastConsoleStatusMessage.Length));
             Console.Write("\r" + message);
 
             lastConsoleStatusMessage = message;
@@ -207,6 +266,10 @@ namespace Phabrico
                     ExecuteDownload();
                     break;
 
+                case CommanderAction.Strip:
+                    ExecuteStrip();
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
@@ -230,6 +293,11 @@ namespace Phabrico
             }
 
             Storage.Database.DataSource = Configuration.destination;
+
+            if (string.IsNullOrWhiteSpace(Configuration.phriction.translation) == false)
+            {
+                System.IO.File.Copy(Configuration.phriction.translation, System.IO.Path.GetDirectoryName(Configuration.destination) + "\\Phabrico.translation", true);
+            }
 
             using (Storage.Database database = new Storage.Database(null))
             {
@@ -440,20 +508,20 @@ namespace Phabrico
                             referencedTokens.Add(phriction.LastModifiedBy);
                         }
 
-                        foreach (string referencedProject in phriction.Projects.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (string referencedProject in phriction.Projects
+                                                                      .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                                      .Where(project => referencedTokens.Contains(project) == false)
+                                )
                         {
-                            if (referencedTokens.Contains(referencedProject) == false)
-                            {
-                                referencedTokens.Add(referencedProject);
-                            }
+                            referencedTokens.Add(referencedProject);
                         }
 
-                        foreach (string referencedSubscriber in phriction.Subscribers.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (string referencedSubscriber in phriction.Subscribers
+                                                                         .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                                                         .Where(subscriber => referencedTokens.Contains(subscriber) == false)
+                                )
                         {
-                            if (referencedTokens.Contains(referencedSubscriber) == false)
-                            {
-                                referencedTokens.Add(referencedSubscriber);
-                            }
+                            referencedTokens.Add(referencedSubscriber);
                         }
                     }
                 }
@@ -519,28 +587,30 @@ namespace Phabrico
                     synchronizationController.ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
 
                     // collect all referenced users in Remarkup content
-                    foreach (RuleReferenceUser ruleReferenceUser in remarkupParserOutput.TokenList.OfType<RuleReferenceUser>().Distinct().ToArray())
+                    foreach (RuleReferenceUser ruleReferenceUser in remarkupParserOutput.TokenList
+                                                                                        .OfType<RuleReferenceUser>()
+                                                                                        .Distinct()
+                                                                                        .Where(usr => referencedTokens.Contains(usr.UserToken) == false)
+                                                                                        .ToArray())
                     {
-                        if (referencedTokens.Contains(ruleReferenceUser.UserToken) == false)
+                        Phabricator.Data.User user = userStorage.Get(database, ruleReferenceUser.UserToken, Language.NotApplicable);
+                        if (user != null)
                         {
-                            Phabricator.Data.User user = userStorage.Get(database, ruleReferenceUser.UserToken, Language.NotApplicable);
-                            if (user != null)
-                            {
-                                userStorage.Remove(database, user);
-                            }
+                            userStorage.Remove(database, user);
                         }
                     }
 
                     // collect all referenced projects in Remarkup content
-                    foreach (RuleReferenceProject ruleReferenceProject in remarkupParserOutput.TokenList.OfType<RuleReferenceProject>().Distinct().ToArray())
+                    foreach (RuleReferenceProject ruleReferenceProject in remarkupParserOutput.TokenList
+                                                                                              .OfType<RuleReferenceProject>()
+                                                                                              .Distinct()
+                                                                                              .Where(proj => referencedTokens.Contains(proj.ProjectToken) == false)
+                                                                                              .ToArray())
                     {
-                        if (referencedTokens.Contains(ruleReferenceProject.ProjectToken) == false)
+                        Phabricator.Data.Project project = projectStorage.Get(database, ruleReferenceProject.ProjectToken, Language.NotApplicable);
+                        if (project != null)
                         {
-                            Phabricator.Data.Project project = projectStorage.Get(database, ruleReferenceProject.ProjectToken, Language.NotApplicable);
-                            if (project != null)
-                            {
-                                projectStorage.Remove(database, project);
-                            }
+                            projectStorage.Remove(database, project);
                         }
                     }
 
@@ -568,24 +638,23 @@ namespace Phabrico
                     }
                 }
 
-                
+
                 // clear sensitive information in database (2)
                 // remove all users which are not referenced
-                foreach (Phabricator.Data.User user in userStorage.Get(database, Language.NotApplicable).ToArray())
+                foreach (Phabricator.Data.User user in userStorage.Get(database, Language.NotApplicable)
+                                                                  .Where(usr => referencedTokens.Contains(usr.Token) == false)
+                                                                  .ToArray())
                 {
-                    if (referencedTokens.Contains(user.Token) == false)
-                    {
-                        userStorage.Remove(database, user);
-                    }
+                    userStorage.Remove(database, user);
                 }
 
                 // remove all projects which are not referenced
-                foreach (Phabricator.Data.Project project in projectStorage.Get(database, Language.NotApplicable).ToArray())
+                foreach (Phabricator.Data.Project project in projectStorage.Get(database, Language.NotApplicable)
+                                                                           .Where(proj => referencedTokens.Contains(proj.Token) == false)
+                                                                           .ToArray()
+                        )
                 {
-                    if (referencedTokens.Contains(project.Token) == false)
-                    {
-                        projectStorage.Remove(database, project);
-                    }
+                    projectStorage.Remove(database, project);
                 }
 
                 // optimize database
@@ -626,6 +695,401 @@ namespace Phabrico
         }
 
         /// <summary>
+        /// Executes the strip action
+        /// </summary>
+        private void ExecuteStrip()
+        {
+            Logging.SetLoggingEventHandler(LoggingEvent);
+
+            Storage.Account accountStorage = new Storage.Account();
+            Storage.File fileStorage = new Storage.File();
+            Storage.Keyword keywordStorage = new Storage.Keyword();
+            Storage.Phriction phrictionStorage = new Storage.Phriction();
+            Storage.Stage stageStorage = new Storage.Stage();
+            Controllers.Synchronization synchronizationController = new Controllers.Synchronization();  // will be further initialized later
+
+            // enter credentials for accessing source Phabrico database
+            string sourceDatabasePath = Storage.Database.DataSource;
+            string sourcePhabricoUsername = ConsoleReadString("Enter user name of the source Phabrico: ");
+            string sourcePhabricoPassword = ConsoleReadString("Enter password of the source Phabrico: ");
+
+            // delete destination Phabrico database if existing
+            if (System.IO.File.Exists(Configuration.destination))
+            {
+                System.IO.File.Delete(Configuration.destination);
+            }
+            string translationFile = System.IO.Path.GetDirectoryName(Configuration.destination) + "\\Phabrico.translation";
+            if (System.IO.File.Exists(translationFile))
+            {
+                System.IO.File.Delete(translationFile);
+            }
+
+            // verify credentials
+            // create account in new database
+            Phabricator.Data.Account whoAmI;
+            string sourceTokenHash = Encryption.GenerateTokenKey(sourcePhabricoUsername, sourcePhabricoPassword);  // tokenHash is stored in the database
+            string sourcePublicEncryptionKey = Encryption.GenerateEncryptionKey(sourcePhabricoUsername, sourcePhabricoPassword);  // encryptionKey is not stored in database (except when security is disabled)
+            string sourcePrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(sourcePhabricoUsername, sourcePhabricoPassword);  // privateEncryptionKey is not stored in database
+            using (Storage.Database database = new Storage.Database(null))
+            {
+                bool noUserConfigured;
+
+                UInt64[] publicXorCipher = database.ValidateLogIn(sourceTokenHash, out noUserConfigured);
+                if (publicXorCipher == null)
+                {
+                    throw new ArgumentException("Invalid username or password");
+                }
+
+                database.EncryptionKey = sourcePublicEncryptionKey;
+                database.PrivateEncryptionKey = sourcePrivateEncryptionKey;
+                whoAmI = accountStorage.Get(database, sourceTokenHash, Language.NotApplicable);
+            }
+
+            string destinationTokenHash = Encryption.GenerateTokenKey(Configuration.username, Configuration.password);  // tokenHash is stored in the database
+            string destinationPublicEncryptionKey = Encryption.GenerateEncryptionKey(Configuration.username, Configuration.password);  // encryptionKey is not stored in database (except when security is disabled)
+            string destinationPrivateEncryptionKey = Encryption.GeneratePrivateEncryptionKey(Configuration.username, Configuration.password);  // privateEncryptionKey is not stored in database
+
+            // create account in new database
+            Storage.Database.DataSource = Configuration.destination;
+            Phabricator.Data.Account newAccount = new Phabricator.Data.Account();
+            using (Storage.Database database = new Storage.Database(null))
+            {
+                bool noUserConfigured;
+                UInt64[] publicXorCipher = database.ValidateLogIn(destinationTokenHash, out noUserConfigured);
+                if (publicXorCipher != null || noUserConfigured == false)
+                {
+                    throw new System.Exception("New database was not correctly initialized");
+                }
+
+                newAccount.ConduitAPIToken = "";
+                newAccount.PhabricatorUrl = "";
+                newAccount.Token = destinationTokenHash;
+                newAccount.UserName = Configuration.username;
+                newAccount.Parameters = new Phabricator.Data.Account.Configuration();
+                newAccount.Parameters.AccountType = Phabricator.Data.Account.AccountTypes.PrimaryUser;
+                newAccount.Parameters.ColumnHeadersToHide = "".Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                newAccount.Parameters.UserToken = whoAmI.Parameters.UserToken;
+                newAccount.Theme = "light";
+
+                database.EncryptionKey = destinationPublicEncryptionKey;
+                database.PrivateEncryptionKey = destinationPrivateEncryptionKey;
+
+                accountStorage.Add(database, newAccount);
+
+                // complete initialization synchronizationController
+                Http.Server httpServer = new Http.Server(false, -1, "/", true);
+                Miscellaneous.HttpListenerContext httpListenerContext = new Miscellaneous.HttpListenerContext();
+                synchronizationController.browser = new Http.Browser(httpServer, httpListenerContext);
+                synchronizationController.EncryptionKey = destinationPublicEncryptionKey;
+
+                Http.SessionManager.Token token = synchronizationController.browser.HttpServer.Session.CreateToken(newAccount.Token, synchronizationController.browser);
+                synchronizationController.browser.SetCookie("token", token.ID, true);
+                token.EncryptionKey = Encryption.XorString(database.EncryptionKey, newAccount.PublicXorCipher);
+                token.PrivateEncryptionKey = Encryption.XorString(database.PrivateEncryptionKey, newAccount.PrivateXorCipher);
+                synchronizationController.TokenId = token.ID;
+                synchronizationController.browser.ResetToken(token);
+
+            }
+
+            // copy Maniphest priorities and statuses
+            ConsoleWriteStatus("Copying Maniphest priorities and statuses...");
+            Storage.ManiphestPriority.Copy(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword, Configuration.destination, Configuration.username, Configuration.password);
+            Storage.ManiphestStatus.Copy(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword, Configuration.destination, Configuration.username, Configuration.password);
+
+            // copy all user and projects (will be filtered out later...)
+            List<Phabricator.Data.User> destinationUsers = Storage.User.Copy(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword, Configuration.destination, Configuration.username, Configuration.password);
+            List<Phabricator.Data.Project> destinationProjects = Storage.Project.Copy(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword, Configuration.destination, Configuration.username, Configuration.password);
+
+            // convert configured project tags to project tokens
+            Configuration.maniphest.projectTags = Configuration.maniphest.projectTags
+                                                                         ?.Select(project => destinationProjects.FirstOrDefault(p => p.InternalName.Equals(project)
+                                                                                                                                  || p.Token.Equals(project)
+                                                                                                                               )
+                                                                                 )
+                                                                          .Select(project => project.Token)
+                                                                          .ToArray();
+            Configuration.phriction.projectTags = Configuration.phriction.projectTags
+                                                                         ?.Select(project => destinationProjects.FirstOrDefault(p => p.InternalName.Equals(project)
+                                                                                                                                  || p.Token.Equals(project)
+                                                                                                                               )
+                                                                                 )
+                                                                          .Select(project => project.Token)
+                                                                          .ToArray();
+
+            // convert configured users to user tokens
+            Configuration.maniphest.userTags = Configuration.maniphest.userTags
+                                                                      ?.Select(user => destinationUsers.FirstOrDefault(u => u.UserName.Equals(user)
+                                                                                                                         || u.Token.Equals(user)
+                                                                                                                      )
+                                                                              )
+                                                                       .Select(user => user.Token)
+                                                                       .ToArray();
+            Configuration.phriction.userTags = Configuration.phriction.userTags
+                                                                      ?.Select(user => destinationUsers.FirstOrDefault(u => u.UserName.Equals(user)
+                                                                                                                         || u.Token.Equals(user)
+                                                                                                                      )
+                                                                              )
+                                                                       .Select(user => user.Token)
+                                                                       .ToArray();
+
+            List<Phabricator.Data.Phriction> destinationWikis = new List<Phabricator.Data.Phriction>();
+            List<Phabricator.Data.Maniphest> destinationTasks = new List<Phabricator.Data.Maniphest>();
+
+            if (Configuration.maniphest != null)
+            {
+                // copy Maniphest tasks
+                ConsoleWriteStatus("Copying Maniphest tasks...");
+                destinationTasks = Storage.Maniphest.Copy(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword,
+                                       Configuration.destination, Configuration.username, Configuration.password,
+                                       task => (Configuration.maniphest.projectTags != null
+                                                && Configuration.maniphest.projectTags.Any()
+                                                && Configuration.maniphest.projectTags.Any(project => task.Projects.Split(',').Contains(project))
+                                               )
+                                               ||
+                                               (Configuration.maniphest.userTags != null
+                                                && Configuration.maniphest.userTags.Any()
+                                                && Configuration.maniphest.userTags.Any(user => task.Owner.Equals(user)
+                                                                                             || task.Author.Equals(user)
+                                                                                             || task.Subscribers.Split(',').Contains(user)
+                                                                                       )
+                                               )
+                                    );
+            }
+
+            if (Configuration.phriction != null)
+            {
+                // copy all phriction documents (will be filtered out later)
+                ConsoleWriteStatus("Copying Phriction wiki documents...");
+                destinationWikis = Storage.Phriction.Copy(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword,
+                                                          Configuration.destination, Configuration.username, Configuration.password
+                                                         );
+
+                if (Configuration.phriction.projectTags != null)
+                {
+                    // search for wiki's which have at least one of the configured projects tagged
+                    Phabricator.Data.Phriction[] projectTaggedWikis = destinationWikis.Where(wiki => string.IsNullOrEmpty(wiki.Projects) == false
+                                                                                                  && wiki.Projects.Split(',')
+                                                                                                          .Any(project => Configuration.phriction.projectTags.Contains(project))
+                                                                                            )
+                                                                                      .ToArray();
+
+                    if (Configuration.phriction.combined)
+                    {
+                        if (Configuration.phriction.tree)
+                        {
+                            // remove wiki's from the list which don't have all tags in their (top) hierarchy tree
+                            Dictionary<Phabricator.Data.Phriction, List<string>> combinedProjectTaggedWikis = projectTaggedWikis.ToDictionary(key => key,
+                                                                                                                                             value => value.Projects.Split(',')
+                                                                                                                                                           .Where(p => Configuration.phriction.projectTags.Contains(p))
+                                                                                                                                                           .ToList()
+                                                                                                                                            );
+                            foreach (Phabricator.Data.Phriction wiki in combinedProjectTaggedWikis.OrderByDescending(key => key.Key.Path.Length)
+                                                                                                  .Select(k => k.Key)
+                                                                                                  .ToArray())
+                            {
+                                string[] missingProjects = Configuration.phriction.projectTags
+                                                                                  .Where(missingProject => combinedProjectTaggedWikis[wiki].Contains(missingProject) == false)
+                                                                                  .ToArray();
+                                foreach (string missingProject in missingProjects)
+                                {
+                                    string rootUrlForMissingProject = combinedProjectTaggedWikis.OrderBy(key => key.Key.Path.Length)
+                                                                                                .FirstOrDefault(key => key.Value.Contains(missingProject)
+                                                                                                                    && wiki.Path.StartsWith(key.Key.Path)
+                                                                                                               )
+                                                                                                .Key?.Path;
+                                    if (string.IsNullOrEmpty(rootUrlForMissingProject))
+                                    {
+                                        combinedProjectTaggedWikis.Remove(wiki);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // remove Phriction records which are not in the 'keeping' list
+                            Storage.Database.DataSource = Configuration.destination;
+                            using (Storage.Database database = new Storage.Database(destinationPublicEncryptionKey))
+                            {
+                                List<Phabricator.Data.Phriction> invalidWikiPages = destinationWikis.Where(wiki => combinedProjectTaggedWikis.Keys.All(w => wiki.Path.StartsWith(w.Path) == false))
+                                                                                                    .ToList();
+                                foreach (var invalidWikiPage in invalidWikiPages)
+                                {
+                                    phrictionStorage.Remove(database, invalidWikiPage);
+                                    destinationWikis.Remove(invalidWikiPage);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // remove Phriction records which do not have all project tags
+                            Storage.Database.DataSource = Configuration.destination;
+                            using (Storage.Database database = new Storage.Database(destinationPublicEncryptionKey))
+                            {
+                                List<Phabricator.Data.Phriction> invalidWikiPages = destinationWikis.Where(wiki => Configuration.phriction.projectTags.Any(project => wiki.Projects.Contains(project) == false))
+                                                                                                    .ToList();
+                                foreach (var invalidWikiPage in invalidWikiPages)
+                                {
+                                    phrictionStorage.Remove(database, invalidWikiPage);
+                                    destinationWikis.Remove(invalidWikiPage);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (Configuration.phriction.tree)
+                        {
+                            // TODO
+                        }
+                        else
+                        {
+                            // TODO
+                        }
+                    }
+
+                    // check if root wiki document is available
+                    if (destinationWikis.Any(wiki => wiki.Path.Equals("/")) == false)
+                    {
+                        // no root document -> create alias
+                        Storage.Database.DataSource = Configuration.destination;
+                        using (Storage.Database database = new Storage.Database(destinationPublicEncryptionKey))
+                        {
+                            int minimumLength = destinationWikis.Min(wiki => wiki.Path.Split('/').Length);
+                            IEnumerable<Phabricator.Data.Phriction> rootDocuments = phrictionStorage.Get(database, Language.NotApplicable)
+                                                                                                    .Where(document => document.Path.Split('/').Length == minimumLength);
+                            if (rootDocuments.Count() == 1)
+                            {
+                                Phabricator.Data.Phriction linkedDocument = rootDocuments.FirstOrDefault();
+                                phrictionStorage.AddAlias(database, "/", linkedDocument);
+                            }
+                            else
+                            {
+                                Phabricator.Data.Phriction coverPage = new Phabricator.Data.Phriction();
+                                coverPage.Path = "/";
+                                coverPage.Content = "";
+                                coverPage.Token = Phabricator.Data.Phriction.PrefixCoverPage + "HOMEPAGE";
+                                phrictionStorage.Add(database, coverPage);
+
+                                foreach (Phabricator.Data.Phriction rootDocument in rootDocuments)
+                                {
+                                    database.DescendTokenFrom(coverPage.Token, rootDocument.Token);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(Configuration.phriction.translation) == false)
+                {
+                    // copy translations
+                    ConsoleWriteStatus("Copying translation(s)...");
+
+                    string[] destinationPhrictionTokens = destinationWikis.Select(wiki => wiki.Token).ToArray();
+                    Phabrico.Storage.Content.Copy(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword,
+                                                  Configuration.destination, Configuration.username, Configuration.password,
+                                                  translation => destinationPhrictionTokens.Contains(translation.Token)
+                                                 );
+                }
+
+                // copy hierachies
+                ConsoleWriteStatus("Copying Phriction wiki hierarchies...");
+                using (Storage.Database database = new Storage.Database(destinationPublicEncryptionKey))
+                {
+                    database.CopyObjectHierarchyInfo(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword,
+                                                     Configuration.destination, Configuration.username, Configuration.password
+                                                    );
+                }
+            }
+
+            if (Configuration.phriction != null || Configuration.maniphest != null)
+            {
+                ConsoleWriteStatus("Generating search info...");
+                Storage.Database.DataSource = Configuration.destination;
+                using (Storage.Database database = new Storage.Database(destinationPublicEncryptionKey))
+                {
+                    database.PrivateEncryptionKey = destinationPrivateEncryptionKey;
+
+                    foreach (Phabricator.Data.Maniphest destinationTask in destinationTasks)
+                    {
+                        // get all available words from maniphest task and save it into search database
+                        keywordStorage.AddPhabricatorObject(synchronizationController, database, destinationTask);
+                    }
+                    foreach (Phabricator.Data.Phriction destintionWiki in destinationWikis)
+                    {
+                        // get all available words from phriction document and save it into search database
+                        keywordStorage.AddPhabricatorObject(synchronizationController, database, destintionWiki);
+                    }
+                }
+            }
+
+            // copying referenced files
+            ConsoleWriteStatus("Copying file objects...");
+            List<int> referencedFileIDs = destinationWikis.Select(wiki => wiki.Content)
+                                                          .Concat(destinationTasks.Select(task => task.Description))
+                                                          .Concat(destinationTasks.SelectMany(task => task.Transactions.Select(transaction => transaction.NewValue)))
+                                                          .SelectMany(remarkup => RegexSafe.Matches(remarkup, "{F(-?[0-9]+)([^}]*)}", RegexOptions.None)
+                                                                                           .OfType<Match>()
+                                                                                           .Select(m => m.Groups.OfType<Group>()
+                                                                                                         .Skip(1)
+                                                                                                         .FirstOrDefault()
+                                                                                                         ?.Value)
+                                                                     )
+                                                          .Distinct()
+                                                          .Select(fileID => Int32.Parse(fileID))
+                                                          .ToList();
+            List<Phabricator.Data.File> files = new List<Phabricator.Data.File>();
+            Storage.Database.DataSource = null;
+            using (Storage.Database database = new Storage.Database(sourcePublicEncryptionKey))
+            {
+                foreach (int fileID in referencedFileIDs)
+                {
+                    Phabricator.Data.File file;
+                    if (fileID > 0)
+                    {
+                        file = fileStorage.GetByID(database, fileID, false);
+                    }
+                    else
+                    {
+                        file = stageStorage.Get<Phabricator.Data.File>(database, Language.NotApplicable, Phabricator.Data.File.Prefix, fileID, true);
+                    }
+
+                    if (file == null)
+                    {
+                        informationalMessages.Add(string.Format("WARNING: Invalid referenced file found: \"F{0}\"", fileID));
+                    }
+                    else
+                    {
+                        files.Add(file);
+                    }
+                }
+            }
+
+            Storage.Database.DataSource = Configuration.destination;
+            using (Storage.Database database = new Storage.Database(destinationPublicEncryptionKey))
+            {
+                foreach (Phabricator.Data.File file in files)
+                {
+                    if (file.ID > 0)
+                    {
+                        fileStorage.Add(database, file);
+                    }
+                    else
+                    {
+                        stageStorage.Create(database, synchronizationController.browser, file);
+                    }
+                }
+            }
+
+            // copy relations
+            ConsoleWriteStatus("Copying object relations...");
+            using (Storage.Database database = new Storage.Database(destinationPublicEncryptionKey))
+            {
+                database.CopyObjectRelationInfo(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword,
+                                                Configuration.destination, Configuration.username, Configuration.password
+                                               );
+            }
+        }
+
+        /// <summary>
         /// Returns true if a given file path is in a valid format
         /// </summary>
         /// <param name="filePath"></param>
@@ -637,9 +1101,18 @@ namespace Phabrico
             {
                 fi = new System.IO.FileInfo(filePath);
             }
-            catch (ArgumentException) { }
-            catch (System.IO.PathTooLongException) { }
-            catch (NotSupportedException) { }
+            catch (ArgumentException)
+            {
+                // ignore exception
+            }
+            catch (System.IO.PathTooLongException)
+            {
+                // ignore exception
+            }
+            catch (NotSupportedException)
+            {
+                // ignore exception
+            }
 
             return fi != null;
         }

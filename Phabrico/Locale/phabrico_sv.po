@@ -1,0 +1,1197 @@
+﻿# Swedish translations
+
+# general
+msgid "Phabrico"
+msgstr "Phabrico"
+
+msgid "There's a new Phabrico version available"
+msgstr "Det finns en ny Phabrico-version tillgänglig"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nej"
+
+msgid "Button-AccessKey-Yes"
+msgstr "J"
+
+msgid "Button-AccessKey-No"
+msgstr "N"
+
+msgid "Undo"
+msgstr "Ångra"
+
+msgid "EmptyParameter"
+msgstr "(ingen)"
+
+msgid "No projects assigned"
+msgstr "(ingen)"
+
+msgid "No users assigned"
+msgstr "(ingen)"
+
+msgid "ERROR"
+msgstr "FEL"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Avbryt"
+
+# login dialog
+msgid "Username"
+msgstr "Användarnamn"
+
+msgid "Password"
+msgstr "Lösenord"
+
+msgid "Log In"
+msgstr "Logga in"
+
+msgid "Invalid"
+msgstr "Invalid"
+
+msgid "Search"
+msgstr "Sök"
+
+msgid "Username or password are incorrect."
+msgstr "Användarnamnet eller lösenordet är felaktigt."
+
+msgid "Create New User"
+msgstr "Skapa en ny användare"
+
+msgid "Verify Password"
+msgstr "Verifiera lösenordet"
+
+msgid "Create User"
+msgstr "Skapa användare"
+
+# home page
+msgid "Change language"
+msgstr "Ändra språk"
+
+msgid "Language"
+msgstr "Språk"
+
+msgid "Change password"
+msgstr "Ändra lösenord"
+
+msgid "Current password"
+msgstr "Nuvarande lösenord"
+
+msgid "New password"
+msgstr "Nytt lösenord"
+
+msgid "Verify new password"
+msgstr "Kontrollera det nya lösenordet"
+
+msgid "Password is incorrect."
+msgstr "Lösenordet är felaktigt."
+
+msgid "Password should contain at least 1 punctuation character"
+msgstr "Lösenordet bör innehålla minst 1 skiljetecken."
+
+msgid "The passwords entered do not match"
+msgstr "De angivna lösenorden stämmer inte överens."
+
+msgid "Password should contain at least 1 number"
+msgstr "Lösenordet ska innehålla minst 1 siffra"
+
+msgid "Password should contain at least 1 lowercase letter"
+msgstr "Lösenordet ska innehålla minst 1 liten bokstav"
+
+msgid "Password should contain at least 1 capital letter"
+msgstr "Lösenordet ska innehålla minst 1 stor bokstav"
+
+msgid "Password should be at least 12 characters long"
+msgstr "Lösenordet ska vara minst 12 tecken långt"
+
+msgid "Log out"
+msgstr "Logga ut"
+
+msgid "Synchronizing"
+msgstr "Synkronisering av"
+
+msgid "There is [b]1 local modification[/b] ready to be uploaded the Phabricator server."
+msgstr "Det finns [b]1 lokal ändring[/b] redo att laddas upp till Phabricator-servern."
+
+msgid "There are [b]@@NBR-CHANGES@@ local modifications[/b] ready to be uploaded the Phabricator server."
+msgstr "Det finns [b]@@NBR-CHANGES@@ lokala ändringar[/b] redo att laddas upp till Phabricator-servern."
+
+msgid "@@FILE@@ uploaded..."
+msgstr "@@FILE@@ uppladdad..."
+
+msgid "Uploading @@FILE@@  (@@PERCENTAGE@@ %)"
+msgstr "Uppladdning av @@FILE@@ (@@PERCENTAGE@@ %)"
+
+msgid "Some changes could not be uploaded because newer versions of these documents or tasks were available on the Phabricator server. Verify them via \'Offline Changes\'"
+msgstr "Vissa ändringar kunde inte laddas upp eftersom nyare versioner av dessa dokument eller uppgifter fanns tillgängliga på Phabricator-servern. Kontrollera dem via \'Offline Changes\'."
+
+msgid "Do you really want to synchronize the public Phabricator server and your private Phabrico server?"
+msgstr "Vill du verkligen synkronisera den offentliga Phabricator-servern och din privata Phabricator-server?"
+
+msgid "Favorites"
+msgstr "Favoriter"
+
+msgid "General Overview"
+msgstr "Allmän översikt"
+
+msgid "Phabrico Version:"
+msgstr "Version av Phabrico:"
+
+msgid "Phabrico Build date:"
+msgstr "Phabrico: Version: Phabrico Byggdatum: Phabrico"
+
+msgid "Last synchronized with Phabricator at:"
+msgstr "Senast synkroniserad med Phabricator kl:"
+
+msgid "Phabrico Database Location:"
+msgstr "Phabrico Databas placering: Phabrico"
+
+msgid "Phabrico Database size:"
+msgstr "Phabrico Databasens storlek: Phabrico"
+
+msgid "Remote access:"
+msgstr "Fjärråtkomst:: Phabrico: Storlek: Phabrico: Storlek: Storlek"
+
+msgid "Enabled"
+msgstr "Aktiverad"
+
+msgid "Disabled"
+msgstr "Inaktiverad"
+
+msgid "Number of Phriction documents:"
+msgstr "Antal språkliga dokument:"
+
+msgid "Number of Maniphest tasks:"
+msgstr "Antal maniphestuppdrag: Antal"
+
+msgid "Number of Projects:"
+msgstr "Antal projekt:"
+
+msgid "Number of Users:"
+msgstr "Antal användare:"
+
+msgid "Number of File objects:"
+msgstr "Antal filobjekt:"
+
+msgid "Number of uncommitted objects:"
+msgstr "Antal objekt som inte är engagerade:"
+
+msgid "Number of frozen objects:"
+msgstr "Antal frysta objekt:"
+
+msgid "@@PHABRICO-NUMBER-FILE-OBJECTS@@  (Median size = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ &nbsp; &nbsp;  Maximum size = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+msgstr "@@PHABRICO-NUMBER-FILE-OBJECTS@@ (Medianstorlek = @@PHABRICO-FILE-OBJECTS-MEDIAN-SIZE@@ Maximal storlek = @@PHABRICO-FILE-OBJECTS-MAXIMUM-SIZE@@)"
+
+# main menu navigator
+msgid "Maniphest"
+msgstr "Maniphest"
+
+msgid "Tasks and Bugs"
+msgstr "Uppgifter och buggar"
+
+msgid "Phriction"
+msgstr "Phriction"
+
+msgid "Wiki Documents"
+msgstr "Wiki-dokument"
+
+msgid "Projects"
+msgstr "Projekt"
+
+msgid "Projects to be synchronized"
+msgstr "Projekt som ska synkroniseras"
+
+msgid "Users"
+msgstr "Användare"
+
+msgid "User accounts to be synchronized"
+msgstr "Användarkonton som ska synkroniseras"
+
+msgid "File objects"
+msgstr "Filobjekt"
+
+msgid "Referenced file objects"
+msgstr "Hänvisade filobjekt"
+
+msgid "Config"
+msgstr "Konfiguration"
+
+msgid "Configure Phabrico"
+msgstr "Konfigurera Phabrico"
+
+msgid "Offline changes"
+msgstr "Offlineändringar"
+
+msgid "View local changes"
+msgstr "Visa lokala ändringar"
+
+msgid "Synchronize"
+msgstr "Synkronisera"
+
+# Synchronization
+msgid "No new data dowloaded from Phabricator"
+msgstr "Inga nya uppgifter har laddats ner från Phabricator."
+
+msgid "Latest synchronized data"
+msgstr "Senaste synkroniserade uppgifter"
+
+msgid "View changes"
+msgstr "Visa ändringar"
+
+msgid "Current version"
+msgstr "Nuvarande version"
+
+msgid "Previous version"
+msgstr "Föregående version"
+
+msgid "Overview latest synchronization"
+msgstr "Översikt över den senaste synkroniseringen"
+
+msgid "Difference between previous and current version of @@SYNCHRONIZED-ITEM@@"
+msgstr "Skillnad mellan tidigare och aktuell version av @@SYNCHRONIZED-ITEM@@"
+
+msgid "Synchronization.Status.NotYetSynchronized"
+msgstr "Ännu inte"
+
+msgid "Synchronization.Status.Initializing"
+msgstr "Initialisering..."
+
+msgid "Synchronization.Status.ConnectingToPhabricatorServer"
+msgstr "Anslutning till @@PHABRICATOR-SERVER@@..."
+
+msgid "Synchronization.Status.PreparingDownloadManiphestData"
+msgstr "Förbereder nedladdning Maniphest data..."
+
+msgid "Synchronization.Status.DownloadingManiphestData"
+msgstr "Nedladdning av Maniphest-data..."
+
+msgid "Synchronization.Status.LoadingManiphestPrioritiesAndStates"
+msgstr "Laddning av information om prioritet och tillstånd för Maniphest..."
+
+msgid "Synchronization.Status.DownloadingPhamePostData"
+msgstr "Nedladdning av data från Phame blog..."
+
+msgid "Synchronization.Status.DownloadingPhrictionData"
+msgstr "Hämta Phriction-dokument..."
+
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "Hämta Phriction metadata..."
+
+msgid "Synchronization.Status.DownloadingProjects"
+msgstr "Nedladdning av projekt..."
+
+msgid "Synchronization.Status.DownloadingUsers"
+msgstr "Nedladdning av användare..."
+
+msgid "Synchronization.Status.LoadingAccountInfo"
+msgstr "Laddning av kontoinformation..."
+
+msgid "Synchronization.Status.LoadingMacroData"
+msgstr "Laddning av makrodata..."
+
+msgid "Synchronization.Status.LoadingFileObjects"
+msgstr "Laddning av filobjekt..."
+
+msgid "Synchronization.Status.UploadingManiphestData"
+msgstr "Uppladdning av Maniphest-uppdrag..."
+
+msgid "Synchronization.Status.UploadingPhrictionData"
+msgstr "Överföring av texter..."
+
+msgid "Synchronization.Status.UploadingCommentsAndTransactions"
+msgstr "Uppladdning av kommentarer och transaktioner..."
+
+msgid "Synchronization.Status.CleaningUp"
+msgstr "Rensning av gamla uppgifter..."
+
+msgid "Synchronization.Status.CleaningUp.Phriction"
+msgstr "Radera gamla Phriction-dokument"
+
+msgid "Synchronization.Status.CleaningUp.Maniphest"
+msgstr "Radera gamla uppgifter från Maniphest"
+
+msgid "Synchronization.Status.CleaningUp.UnreferencedFiles"
+msgstr "Radering av filobjekt utan referens"
+
+msgid "Synchronization.Status.Finishing"
+msgstr "Avslutar..."
+
+msgid "Synchronization.Status.Failed"
+msgstr "Misslyckad"
+
+msgid "Some Phriction documents will not be uploaded because their slug paths are too long. You can shorten these in the 'Offline Changes' screen.\n\nDo you want to upload the other documents and tasks ?"
+msgstr "Vissa Phriction-dokument kan inte laddas upp eftersom deras slug-sökvägar är för långa. Du kan förkorta dessa i skärmen "Offline Changes" (ändringar offline).\n\nVill du ladda upp de andra dokumenten och uppgifterna?"
+
+msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
+msgstr "Vissa Phriction-dokument har långa sökvägar och kan orsaka problem när du skapar underliggande dokument.\n\nVill du fortsätta?"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "Detta dokument är en icke reviderad översättning. Denna version av dokumentet kommer inte att laddas upp till Phabricator."
+
+# Maniphest
+msgid "Create Task"
+msgstr "Skapa en uppgift"
+
+msgid "Editing ##OBJECT##"
+msgstr "Redigering av ##OBJECT###"
+
+msgid "Assigned"
+msgstr "Tilldelad"
+
+msgid "Open Tasks"
+msgstr "Öppna uppgifter"
+
+msgid "Per User"
+msgstr "Per användare"
+
+msgid "Per Project"
+msgstr "Per projekt"
+
+msgid "Authored"
+msgstr "Författat"
+
+msgid "Subscribed"
+msgstr "Prenumererade"
+
+msgid "Queries"
+msgstr "Förfrågningar"
+
+msgid "No tasks found"
+msgstr "Inga uppgifter hittades"
+
+msgid "Change Subscribers"
+msgstr "Ändra prenumeranter"
+
+msgid "Change Status"
+msgstr "Ändra status"
+
+msgid "Change Project Tags"
+msgstr "Ändra projektmärken"
+
+msgid "Change Priority"
+msgstr "Ändra prioritering"
+
+msgid "Assign / Claim"
+msgstr "Tilldela / hävda"
+
+msgid "Authored By"
+msgstr "Författat av"
+
+msgid "Assigned To"
+msgstr "Tilldelad till"
+
+msgid "Edit Task"
+msgstr "Redigera uppgift"
+
+msgid "View Task on Phabricator"
+msgstr "Visa uppgiften på Phabricator"
+
+msgid "Description"
+msgstr "Beskrivning"
+
+msgid "Priority"
+msgstr "Prioritet"
+
+msgid "First"
+msgstr "Först"
+
+msgid "Previous"
+msgstr "Föregående"
+
+msgid "Next"
+msgstr "Nästa"
+
+msgid "Type a user or project name..."
+msgstr "Ange ett användar- eller projektnamn..."
+
+msgid "Type a project name..."
+msgstr "Ange ett projektnamn..."
+
+msgid "Type a username..."
+msgstr "Ange ett användarnamn..."
+
+msgid "@@COMMENT-AUTHOR@@ added a comment."
+msgstr "@@COMMENT-AUTHOR@@ lade till en kommentar."
+
+msgid "@@PERSON@@ marked this task as @@STATE@@"
+msgstr "@@PERSON@@ markerade denna uppgift som @@STATE@@"
+
+msgid "@@PERSON@@ marked this task from @@OLDSTATE@@ to @@NEWSTATE@@"
+msgstr "@@PERSON@@ har markerat denna uppgift från @@OLDSTATE@@ till @@NEWSTATE@@."
+
+msgid "@@PERSON@@ arranged for @@PERSONS@@ to be subscribed"
+msgstr "@@PERSON@@ ha añadido a @@PERSONS@@ como supervisores"
+
+msgid "@@PERSON1@@ assigned the task to @@PERSON2@@"
+msgstr "@@PERSON1@@ har tilldelat uppgiften till @@PERSON2@@."
+
+msgid "@@PERSON1@@ reassigned the task from @@PERSON2@@ to @@PERSON3@@"
+msgstr "@@PERSON1@@ har omfördelat uppgiften från @@PERSON2@@ till @@PERSON3@@."
+
+msgid "@@PERSON@@ changed the task priority from @@PRIORITY1@@ to @@PRIORITY2@@"
+msgstr "@@PERSON@@ ändrade uppgiftens prioritet från @@PRIORITY1@@ till @@PRIORITY2@@."
+
+msgid "@@PERSON@@ changed the task priority to @@PRIORITY@@"
+msgstr "@@PERSON@@ ändrade uppgiftens prioritet till @@PRIORITY@@."
+
+msgid "@@PERSON@@ assigned the following project: @@PROJECT-NAME@@"
+msgstr "@@PERSON@@ har tilldelat följande projekt: @@PROJECT-NAME@@"
+
+msgid "@@PERSON@@ assigned the following projects: @@PROJECT-NAMES@@"
+msgstr "@@PERSON@@ har tilldelat följande projekt: @@PROJECT-NAMES@@"
+
+msgid "and"
+msgstr "och"
+
+msgid "ManiphestPriority.Unbreak Now!"
+msgstr "Verkställ nu!"
+
+msgid "ManiphestPriority.Needs Triage"
+msgstr "Bedömning av behov"
+
+msgid "ManiphestPriority.High"
+msgstr "Hög"
+
+msgid "ManiphestPriority.Normal"
+msgstr "Normal"
+
+msgid "ManiphestPriority.Low"
+msgstr "Låg"
+
+msgid "ManiphestPriority.Wishlist"
+msgstr "Önskelista"
+
+msgid "ManiphestStatus.Closed"
+msgstr "Stängt"
+
+msgid "ManiphestStatus.Duplicate"
+msgstr "Duplikat"
+
+msgid "ManiphestStatus.Invalid"
+msgstr "Ogiltig"
+
+msgid "ManiphestStatus.On hold"
+msgstr "I väntan"
+
+msgid "ManiphestStatus.Ongoing"
+msgstr "Pågående"
+
+msgid "ManiphestStatus.Open"
+msgstr "Öppet"
+
+msgid "ManiphestStatus.Planned"
+msgstr "Planerad"
+
+msgid "ManiphestStatus.Programmed"
+msgstr "Programmerad"
+
+msgid "ManiphestStatus.Resolved"
+msgstr "Löses"
+
+msgid "ManiphestStatus.Spite"
+msgstr "Trots"
+
+msgid "ManiphestStatus.To be QAd"
+msgstr "Ska kvalitetssäkras"
+
+msgid "ManiphestStatus.Wontfix"
+msgstr "Kommer att åtgärdas"
+
+msgid "This modified task hasn't been uploaded yet to the Phabricator server"
+msgstr "Den här modifierade uppgiften har ännu inte laddats upp till Phabricator-servern."
+
+# Phriction
+msgid "Subscribers"
+msgstr "Prenumeranter"
+
+msgid "Subscribe"
+msgstr "Prenumerera på"
+
+msgid "Tags"
+msgstr "Taggar"
+
+msgid "Last modified at"
+msgstr "Senast ändrad på"
+
+msgid "Last modified by"
+msgstr "Senast ändrad av"
+
+msgid "Printable Page"
+msgstr "Utskrivbar sida"
+
+msgid "Return to web view"
+msgstr "Tillbaka till webben"
+
+msgid "Add to favorites"
+msgstr "Lägg till favoriter"
+
+msgid "Remove from favorites"
+msgstr "Ta bort från favoriter"
+
+msgid "Dismiss local changes"
+msgstr "Avvisa lokala ändringar"
+
+msgid "View Document on Phabricator"
+msgstr "Visa dokumentet på Phabricator"
+
+msgid "Contents"
+msgstr "Innehåll"
+
+msgid "New Document"
+msgstr "Nytt dokument"
+
+msgid "Document Hierarchy"
+msgstr "Dokumenthierarki"
+
+msgid "Edit Document"
+msgstr "Redigera dokument"
+
+msgid "Save Changes"
+msgstr "Spara ändringar"
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Title already exists"
+msgstr "Titeln finns redan"
+
+msgid "Type a title..."
+msgstr "Ange en titel..."
+
+msgid "Create this Document"
+msgstr "Skapa detta dokument"
+
+msgid "There is no document here, but you may create it."
+msgstr "Det finns inget dokument här, men du kan skapa det."
+
+msgid "No Document Here"
+msgstr "Inget dokument här"
+
+msgid "Page Not Found"
+msgstr "Sidan hittades inte"
+
+msgid "This newly created page hasn't been uploaded yet to the Phabricator server"
+msgstr "Den här nyskapade sidan har ännu inte laddats upp till Phabricator-servern."
+
+msgid "This modified page hasn't been uploaded yet to the Phabricator server"
+msgstr "Den här ändrade sidan har ännu inte laddats upp till Phabricator-servern."
+
+msgid "One moment please..."
+msgstr "Ett ögonblick, tack..."
+
+msgid "References"
+msgstr "Referenser"
+
+msgid "Show references"
+msgstr "Visa referenser"
+
+msgid "Parameters"
+msgstr "Parametrar"
+
+msgid "This page has been translated but it's translated content hasn't been reviewed yet"
+msgstr "Den här sidan har översatts, men det översatta innehållet har inte granskats ännu."
+
+msgid "Edit translation"
+msgstr "Redigera översättning"
+
+msgid "Approve translation"
+msgstr "Godkänna översättning"
+
+msgid "Are you sure you want to approve this translation?"
+msgstr "Är du säker på att du vill godkänna den här översättningen?"
+
+msgid "Unreviewed translations"
+msgstr "Ogranskade översättningar"
+
+msgid "Revert to original translation"
+msgstr "Återgå till den ursprungliga översättningen"
+
+msgid "Are you sure you want to completely undo your translation ?"
+msgstr "Är du säker på att du vill ångra din översättning helt och hållet?"
+
+msgid "Action"
+msgstr "Åtgärd"
+
+msgid "Original Title"
+msgstr "Ursprunglig titel"
+
+msgid "All translations have been approved"
+msgstr "Alla översättningar har godkänts"
+
+msgid "Type some text to filter the list of unreviewed translations..."
+msgstr "Skriv en text för att filtrera listan över icke granskade översättningar..."
+
+msgid "Are you sure you don't need a translation for this document ?"
+msgstr "Är du säker på att du inte behöver någon översättning för det här dokumentet?"
+
+msgid "No translation needed"
+msgstr "Ingen översättning behövs"
+
+msgid "The original content of this document has changed. You must update the translation before you can approve it."
+msgstr "Det ursprungliga innehållet i detta dokument har ändrats. Du måste uppdatera översättningen innan du kan godkänna den."
+
+# Phame
+msgid "Phame"
+msgstr "Phame"
+
+msgid "Blog posts"
+msgstr "Blogginlägg"
+
+msgid "Read more..."
+msgstr "Läs mer..."
+
+# Projects & Users
+msgid "Project"
+msgstr "Projekt"
+
+msgid "User"
+msgstr "Användare"
+
+msgid "Disallow"
+msgstr "Avvisa"
+
+msgid "Select"
+msgstr "Välj"
+
+msgid "Unselect"
+msgstr "Avmarkera"
+
+msgid "Show all projects"
+msgstr "Visa alla projekt"
+
+msgid "Show selected projects"
+msgstr "Visa utvalda projekt"
+
+msgid "Disallow all projects"
+msgstr "Förneka alla projekt"
+
+msgid "Unselect all projects"
+msgstr "Avmarkera alla projekt"
+
+msgid "Select all projects"
+msgstr "Välj alla projekt"
+
+msgid "Unselect all users"
+msgstr "Avmarkera alla användare"
+
+msgid "Select all users"
+msgstr "Välj alla användare"
+
+msgid "Show all users"
+msgstr "Visa alla användare"
+
+msgid "Show selected users"
+msgstr "Visa utvalda användare"
+
+msgid "Set color"
+msgstr "Ställ in färg"
+
+msgid "Set project tag color"
+msgstr "Ange färg för projektmärken"
+
+msgid "Set color for all shown project tags"
+msgstr "Ange färg för alla visade projekttaggar"
+
+# File objects
+msgid "Type"
+msgstr "Typ"
+
+msgid "Size"
+msgstr "Storlek"
+
+msgid "Number of references"
+msgstr "Antal referenser"
+
+msgid "File name"
+msgstr "Filnamn"
+
+msgid "File object"
+msgstr "Filobjekt"
+
+msgid "Type some text to filter the list of file objects..."
+msgstr "Skriv en text för att filtrera listan över filobjekt..."
+
+msgid "File @@FILEID@@ is referenced in:"
+msgstr "Filen @@FILEID@@ refereras i:"
+
+msgid "File references"
+msgstr "Filreferenser"
+
+# Config
+msgid "Phabricator"
+msgstr "Phabricator"
+
+msgid "UI Controls"
+msgstr "UI-kontroller"
+
+msgid "General"
+msgstr "Allmänt"
+
+msgid "Enter the URL of your Phabricator server:"
+msgstr "Ange Phabricator-serverns URL:"
+
+msgid "Phabricator URL"
+msgstr "Phabricator URL"
+
+msgid "Enter the Conduit API Token for your Phabricator account:"
+msgstr "Ange Conduit API Token för ditt Phabricator-konto:"
+
+msgid "Conduit API Token"
+msgstr "Conduit API Token"
+
+msgid "Choose the synchronization method for Maniphest tasks:"
+msgstr "Välj synkroniseringsmetod för Maniphest-uppgifter:"
+
+msgid "Synchronize Maniphest tasks for"
+msgstr "Synkronisera Maniphest-uppgifter för"
+
+msgid "Selected users only"
+msgstr "Endast valda användare"
+
+msgid "Choose the default state for new or modified Maniphest tasks:"
+msgstr "Välj standardtillstånd för nya eller ändrade Maniphest-uppgifter:"
+
+msgid "Mark new/modified Maniphest tasks as"
+msgstr "Markera nya/modifierade Maniphest-uppgifter som"
+
+msgid "Delete closed Maniphest tasks from Phabrico older than:"
+msgstr "Ta bort stängda Maniphest-uppgifter från Phabrico som är äldre än:"
+
+msgid "Maximum lifetime closed Maniphest tasks"
+msgstr "Maximal livslängd för stängda Maniphest-uppgifter"
+
+msgid "1 day"
+msgstr "1 dag"
+
+msgid "1 week"
+msgstr "1 vecka"
+
+msgid "2 weeks"
+msgstr "2 veckor"
+
+msgid "1 month"
+msgstr "1 månad"
+
+msgid "3 months"
+msgstr "3 månader"
+
+msgid "6 months"
+msgstr "6 månader"
+
+msgid "1 year"
+msgstr "1 år"
+
+msgid "10 years"
+msgstr "10 år"
+
+msgid "Visible Maniphest states"
+msgstr "Synliga tillstånd"
+
+msgid "Show only those tasks assigned to me that have one of the following states:"
+msgstr "Visa endast de uppgifter som tilldelats mig och som har något av följande tillstånd:"
+
+msgid "Choose the synchronization method for Phriction documents:"
+msgstr "Välj synkroniseringsmetod för Phriction-dokument:"
+
+msgid "Synchronize Phriction documents for"
+msgstr "Synkronisera Phriction-dokument för"
+
+msgid "All projects"
+msgstr "Alla projekt"
+
+msgid "Selected projects only"
+msgstr "Endast valda projekt"
+
+msgid "Selected projects only including document tree"
+msgstr "Endast utvalda projekt inklusive dokumentträdet"
+
+msgid "Selected projects combined"
+msgstr "Valda projekt kombinerade"
+
+msgid "Selected projects combined including document tree"
+msgstr "Valda projekt kombinerade inklusive dokumentträd"
+
+msgid "Choose the default state for new or modified Phriction documents:"
+msgstr "Välj standardtillstånd för nya eller ändrade Phriction-dokument:"
+
+msgid "Mark new/modified Phriction documents as"
+msgstr "Markera nya/ändrade Phriction-dokument som"
+
+msgid "Add information about the Phriction document in the action menu on the right"
+msgstr "Lägg till information om Phriction-dokumentet i åtgärdsmenyn till höger."
+
+msgid "Show Phriction metadata"
+msgstr "Visa metadata för Phriction-dokumentet"
+
+msgid "Download project tags and subcribers for all Phriction documents"
+msgstr "Ladda ner projekttaggar och underskrivare för alla Phriction-dokument."
+
+msgid "Force download all Phriction metadata"
+msgstr "Forcera nedladdning av alla metadata om Phriction-dokumenten."
+
+msgid "Frozen: local modifications will not be uploaded during synchronization"
+msgstr "Fryst: lokala ändringar kommer inte att laddas upp under synkroniseringen."
+
+msgid "Unfrozen: local modifications will be uploaded during synchronization"
+msgstr "Uppfryst: lokala ändringar kommer att laddas upp under synkroniseringen."
+
+msgid "Add Copy button:"
+msgstr "Lägg till en kopia-knapp:"
+
+msgid "Add Copy-to-clipboard button to code blocks:"
+msgstr "Lägg till knappen Copy-to-clipboard till kodblock:"
+
+msgid "Use dynamic coloring for project tags:"
+msgstr "Använd dynamisk färgning för projekttaggar:"
+
+msgid "Allow the title of a NOTE, WARNING or IMPORTANT notification block to be translated:"
+msgstr "Låt titeln på ett meddelandeblock för NOTE, WARNING eller IMPORTANT översättas:"
+
+msgid "Translate notification block titles:"
+msgstr "Översätt titlar för anmälningsblock: Översätt titlar för anmälningsblock: Översätt titlar för anmälningsblock:"
+
+msgid "Generate a separate color for each project tag shown:"
+msgstr "Generera en separat färg för varje projekttagg som visas:"
+
+msgid "Confidential Table Headers"
+msgstr "För varje projektprojekt får man en egen färg för varje enskild projektprojekt."
+
+msgid "Confidential Table Header"
+msgstr "Sekretessbelagda tabellrubriker"
+
+msgid "Enter the text of table row/column headers which should only be visible when you move the mouse over it:"
+msgstr "Ange texten för tabellens rad- och kolumnrubriker som endast ska vara synliga när du för musen över den:"
+
+msgid "Add Confidential Table Header"
+msgstr "Lägg till konfidentiell tabellrubrik"
+
+msgid "Auto log on"
+msgstr "Automatisk inloggning"
+
+msgid "Yes (Windows authentication)"
+msgstr "Ja (Windows-autentisering)"
+
+msgid "Allow to log on automatically but disable synchronization and configuration"
+msgstr "Tillåt automatisk inloggning men inaktivera synkronisering och konfiguration."
+
+msgid "Remove"
+msgstr "Ta bort"
+
+msgid "WARNING: this will create a security risk by storing the encryption key in the Phabrico database"
+msgstr "VARNING: Detta skapar en säkerhetsrisk eftersom krypteringsnyckeln lagras i Phabricodatabasen."
+
+msgid "Maximum Duration of Inactivity"
+msgstr "Maximal varaktighet för inaktivitet"
+
+msgid "Each session is configured to automatically log out after a number of minutes (0 or lower = no automatic log out, 1440 is the maximum value)"
+msgstr "Varje session är konfigurerad för att automatiskt logga ut efter ett antal minuter (0 eller lägre = ingen automatisk utloggning, 1440 är det maximala värdet)."
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "Choose the color theme you want to use:"
+msgstr "Välj det färgtema du vill använda:"
+
+msgid "Light"
+msgstr "Ljus"
+
+msgid "Dark"
+msgstr "Mörk"
+
+msgid "Darken light images"
+msgstr "Mörka ljusa bilder"
+
+msgid "Moderate"
+msgstr "Måttliggör"
+
+msgid "Extreme"
+msgstr "Extremt"
+
+msgid "Select a user role tag..."
+msgstr "Välj en användarrollsmarkering..."
+
+msgid "User account"
+msgstr "Användarkonto"
+
+msgid "Tag"
+msgstr "Tagg"
+
+msgid "Add user"
+msgstr "Lägg till användare"
+
+msgid "Remove user"
+msgstr "Ta bort användare"
+
+msgid "Are you sure you want to remove @@USER@@ ?"
+msgstr "Är du säker på att du vill ta bort @@USER@@?"
+
+msgid "Phabrico user accounts"
+msgstr "Phabrico användarkonton"
+
+msgid "Secondary User Accounts:"
+msgstr "Sekundära användarkonton:"
+
+msgid "Getting started with Phabrico"
+msgstr "Kom igång med Phabrico"
+
+msgid "In this Configuration screen, you can change the look of Phabrico and configure which data should be synchronized with Phabricator."
+msgstr "På den här konfigurationsskärmen kan du ändra utseendet på Phabrico och konfigurera vilka data som ska synkroniseras med Phabricator."
+
+msgid "Which Phabricator accounts should be monitored ?"
+msgstr "Vilka Phabricator-konton ska övervakas ?"
+
+msgid "In this Users screen, you can select for which Phabricator users you want to have your data always available."
+msgstr "På den här skärmen Användare kan du välja för vilka Phabricator-användare du vill att dina data alltid ska vara tillgängliga."
+
+msgid "Currently, only your Phabricator account is selected."
+msgstr "För närvarande är endast ditt Phabricatorkonto valt."
+
+msgid "Which Phabricator projects should be monitored ?"
+msgstr "Vilka Phabricator-projekt ska övervakas?"
+
+msgid "In this Projects screen, you can select for which Phabricator projects you want to have your data always available."
+msgstr "På den här projektskärmen kan du välja för vilka Phabricatorprojekt du vill att dina uppgifter alltid ska vara tillgängliga."
+
+msgid "You can here also change the colors of the project tags."
+msgstr "Du kan här också ändra färgerna på projekttaggarna."
+
+msgid "In the current configuration, Phabrico will synchronize all Phriction documents and will only synchronize the open Maniphest tasks where you were involved in (e.g. assigned, subscribed, ...)."
+msgstr "I den nuvarande konfigurationen synkroniserar Phabrico alla Phriction-dokument och synkroniserar endast de öppna Maniphest-uppgifterna där du var involverad (t.ex. tilldelad, prenumererad, ...)."
+
+msgid "Click on the Synchronize button to download all requested data from Phabricator"
+msgstr "Klicka på knappen Synkronisera för att hämta alla begärda data från Phabricator."
+
+# Offline changes
+msgid "Offline changes for $$ITEM$$"
+msgstr "Lokala ändringar för $$ITEM$$$"
+
+msgid "Overview offline changes"
+msgstr "Översikt över lokala ändringar"
+
+msgid "Dismiss local version"
+msgstr "Avsluta lokal version"
+
+msgid "Save local version"
+msgstr "Spara lokal version"
+
+msgid "Phabricator version"
+msgstr "Phabricator-version"
+
+msgid "Local version"
+msgstr "Lokal version"
+
+msgid "Are you sure you want to dismiss all your local changes for this document ?"
+msgstr "Är du säker på att du vill avfärda alla dina lokala ändringar för det här dokumentet?"
+
+msgid "Modification"
+msgstr "Ändring"
+
+msgid "Content"
+msgstr "Innehåll"
+
+msgid "Freeze"
+msgstr "Frys"
+
+msgid "Unfreeze"
+msgstr "Frys upp"
+
+msgid "No offline changes found"
+msgstr "Inga offline-ändringar hittades"
+
+msgid "Are you sure you want to undo this local change ?"
+msgstr "Är du säker på att du vill ångra denna lokala ändring?"
+
+msgid "(New)"
+msgstr "(Ny)"
+
+msgid "(Metadata modified)"
+msgstr "(Metadata ändras)"
+
+msgid "(Priority modified)"
+msgstr "(Prioritet ändrad)"
+
+msgid "(Owner modified)"
+msgstr "(Ägare ändrad)"
+
+msgid "(Status modified)"
+msgstr "(Status ändrad)"
+
+msgid "Project @@PROJECT@@ tagged"
+msgstr "Projekt @@PROJECT@@ taggat"
+
+msgid "Subscriber @@SUBSCRIBER@@ added"
+msgstr "Abonnent @@SUBSCRIBER@@ läggs till"
+
+msgid "Append left line after right line"
+msgstr "Vänster rad läggs till efter höger rad"
+
+msgid "Append left block after right block"
+msgstr "Vänster block läggs till efter höger block"
+
+msgid "Insert left line before right line"
+msgstr "Infoga vänster rad före höger rad"
+
+msgid "Insert left block before right block"
+msgstr "Vänster block inför höger block"
+
+msgid "Replace right line with left line"
+msgstr "Ersätt höger rad med vänster rad"
+
+msgid "Replace right block with left block"
+msgstr "Ersätt höger block med vänster block"
+
+msgid "The Phabricator server contains a newer version"
+msgstr "Phabricator-servern innehåller en nyare version"
+
+msgid "Frozen"
+msgstr "Fryst"
+
+msgid "Modified"
+msgstr "Modifierad"
+
+msgid "Rename path"
+msgstr "Ändra URL"
+
+msgid "New path:"
+msgstr "Ny sökväg:"
+
+msgid "Current path:"
+msgstr "Nuvarande sökväg:"
+
+msgid "Change path"
+msgstr "Ändra sökväg"
+
+msgid "The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not."
+msgstr "Sökvägen till det här dokumentet är längre än 100 tecken. Det här dokumentet kan fortfarande laddas upp till Phabricator, men nyss skapade underliggande dokument kan inte laddas upp."
+
+msgid "The path to this document is longer than 115 characters. This document can not be uploaded to Phabricator."
+msgstr "Sökvägen till det här dokumentet är längre än 115 tecken. Det här dokumentet kan inte laddas upp till Phabricator."
+
+msgid "An internal error occurred"
+msgstr "Ett internt fel inträffade"
+
+msgid "A document already exists with this slug path"
+msgstr "Det finns redan ett dokument med den här sökvägen."
+
+# Remarkup editor
+msgid "Bold"
+msgstr "Fet stil"
+
+msgid "Bold text"
+msgstr "Fet text"
+
+msgid "Italic"
+msgstr "Kursiv stil"
+
+msgid "Italic text"
+msgstr "Kursiv text"
+
+msgid "Monospaced"
+msgstr "Monospaced"
+
+msgid "Monospaced text"
+msgstr "Monospaced text"
+
+msgid "Bulleted List"
+msgstr "Lista med punkter"
+
+msgid "Numbered List"
+msgstr "Numrerad lista"
+
+msgid "Code Block"
+msgstr "Kodblock"
+
+msgid "Quote"
+msgstr "Citat"
+
+msgid "Table"
+msgstr "Tabell"
+
+msgid "Diagram"
+msgstr "Diagram"
+
+msgid "Unlock edit and view windows"
+msgstr "Lås upp redigerings- och visningsfönster"
+
+msgid "Help"
+msgstr "Hjälp"
+
+msgid "Set Sail for Adventure"
+msgstr "Sätt segel för äventyr"
+
+msgid "Add Action..."
+msgstr "Lägg till åtgärd..."
+
+msgid "CodeBlock.Copy"
+msgstr "Kopiera"
+
+msgid "Notification.IMPORTANT"
+msgstr "VIKTIGT"
+
+msgid "Notification.NOTE"
+msgstr "OBS!"
+
+msgid "Notification.WARNING"
+msgstr "VARNING"
+
+msgid "FileReference.Download"
+msgstr "Ladda ner"
+
+# Browser not supported
+msgid "Browser not supported"
+msgstr "Webbläsare som inte stöds"
+
+msgid "Use Mozilla Firefox, Opera, Google Chrome or Microsoft Edge to access @@CUSTOM-APPLICATION-NAME@@"
+msgstr "Använd Mozilla Firefox, Opera, Google Chrome eller Microsoft Edge för att komma åt @@CUSTOM-APPLICATION-NAME@@"
+
+# URL Not Found
+msgid "404"
+msgstr "404"
+
+msgid "Url not found:"
+msgstr "Url inte hittad:"
+
+msgid "Show content in Phabricator instead"
+msgstr "Visa innehållet i Phabricator i stället"
+
+# Access denied
+msgid "ACCESS DENIED"
+msgstr "TILLGÅNG AVSLAGEN"
+
+msgid "Details:"
+msgstr "Detaljer:"
+
+msgid "URL:"
+msgstr "URL:"
+
+msgid "Comment:"
+msgstr "Kommentar:"
+
+msgid "You don't have sufficient rights to configure Phabrico"
+msgstr "Du har inte tillräckliga rättigheter för att konfigurera Phabrico."
+
+msgid "You don't have sufficient rights to synchronize Phabrico with Phabricator"
+msgstr "Du har inte tillräckliga rättigheter för att synkronisera Phabrico med Phabricator."
+
+msgid "This Phriction document or Maniphest task wasn't downloaded from the Phabricator server because it was subscribed by one or more disallowed projects or users."
+msgstr "Det här Phriction-dokumentet eller Maniphest-uppgiften hämtades inte från Phabricator-servern eftersom det prenumererades av ett eller flera otillåtna projekt eller användare."
+
+# Invalid configuration
+msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
+msgstr "Validera innehållet i @@APP-CONFIG-FILENAME@@."
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "Validera innehållet i @@IISMODULE-CONFIG-FILENAME@@."
+
+msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
+msgstr "Kontrollera om @@APP-CONFIG-FILENAME@@ finns."
+
+msgid "Error:"
+msgstr "Fel:"
+
+msgid "CONFIGURATION INVALID OR MISSING"
+msgstr "FEL: KONFIGURATIONEN ÄR OGILTIG ELLER SAKNAS."

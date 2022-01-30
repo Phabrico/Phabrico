@@ -5,7 +5,7 @@ namespace Phabrico
 {
     public class IISModule : IHttpModule
     {
-        static Phabrico.Http.Server httpServer;
+        static readonly Phabrico.Http.Server httpServer;
 
         /// <summary>
         /// Static constructor
@@ -23,7 +23,7 @@ namespace Phabrico
             httpServer.Customization.ApplicationLogo = new Bitmap(typeof(IISModule).Assembly.GetManifestResourceStream("Phabrico.Images.logo.png"));
 
             httpServer.Customization.Theme = ApplicationCustomization.ApplicationTheme.Dark;
-            httpServer.Customization.Language = "en";
+            httpServer.Customization.AvailableLanguages = new Phabrico.Miscellaneous.Language[] { "en" };
 
             httpServer.Customization.HideConfig = true;
             httpServer.Customization.HideFiles = true;

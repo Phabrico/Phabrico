@@ -6,16 +6,20 @@ namespace Phabrico.Plugin.Storage
     {
         public static Model.PhrictionToPDFConfiguration Load(Phabrico.Storage.Database database, Phabricator.Data.Phriction phrictionDocument)
         {
-            Model.PhrictionToPDFConfiguration result;
+            Model.PhrictionToPDFConfiguration result = null;
             string jsonConfiguration = database.GetConfigurationParameter("PhrictionToPDF::configuration");
             if (string.IsNullOrEmpty(jsonConfiguration) == false)
             {
                 result = JsonConvert.DeserializeObject(jsonConfiguration, typeof(Model.PhrictionToPDFConfiguration)) as Model.PhrictionToPDFConfiguration;
-                result.PhrictionDocument = phrictionDocument;
+            }
+
+            if (result == null)
+            {
+                result = new Model.PhrictionToPDFConfiguration(phrictionDocument);
             }
             else
             {
-                result = new Model.PhrictionToPDFConfiguration(phrictionDocument);
+                result.PhrictionDocument = phrictionDocument;
             }
 
             return result;

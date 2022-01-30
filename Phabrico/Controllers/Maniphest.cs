@@ -225,6 +225,7 @@ namespace Phabrico.Controllers
             newManiphestTask.IsOpen = true;
             newManiphestTask.DateModified = DateTimeOffset.UtcNow;
             newManiphestTask.Status = "open";
+            newManiphestTask.Language = browser.Session.Locale;
 
             Stage newStage = new Stage();
             newManiphestTask.Token = newStage.Create(database, browser, newManiphestTask);
@@ -247,12 +248,11 @@ namespace Phabrico.Controllers
         /// This method is fired when the user opens the Maniphest screen (overview or a specific task)
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/maniphest", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
-        public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetLoadParameters(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound("/maiphest");
 
@@ -261,7 +261,7 @@ namespace Phabrico.Controllers
             int nextIndex;
             int nbrTasksToShow = 10;
             int nbrTasksShown = 0;
-            bool firstTaskVisible = true;
+            bool firstTaskVisible;
             bool lastTaskVisible = true;
             string parameter = "assigned";
             string category = "";
@@ -292,7 +292,7 @@ namespace Phabrico.Controllers
             if (RegexSafe.IsMatch(parameter, @"^(T-?[0-9]*|\?action=new)$", System.Text.RegularExpressions.RegexOptions.None))
             {
                 // load task details
-                LoadTaskParameters(httpServer, browser, ref viewPage, parameters, parameterActions);
+                LoadTaskParameters(httpServer, ref viewPage, parameters, parameterActions);
                 return;
             }
 
@@ -882,12 +882,11 @@ namespace Phabrico.Controllers
         /// This number is shown in the navigator menu in the homepage
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/maniphest/count", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
-        public void HttpGetTaskCount(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetTaskCount(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound("/maniphest/count");
 
@@ -958,16 +957,13 @@ namespace Phabrico.Controllers
         /// This method is fired when the user modifies a Maniphest task (conten and/or metadata)
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/maniphest")]
-        public HttpMessage HttpPostSave(Http.Server httpServer, Browser browser, string[] parameters)
+        public HttpMessage HttpPostSave(Http.Server httpServer, string[] parameters)
         {
             if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
             if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound("/maniphest");
-
-            Storage.Account accountStorage = new Storage.Account();
 
             SessionManager.Token token = SessionManager.GetToken(browser);
             if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
@@ -1066,11 +1062,10 @@ namespace Phabrico.Controllers
         /// Show the ViewPage for a given Maniphest task
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
-        private void LoadTaskParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        private void LoadTaskParameters(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             string operation = "";
             RemarkupParserOutput remarkupParserOutput;
@@ -1180,14 +1175,8 @@ namespace Phabrico.Controllers
                     else
                     {
                         Storage.Stage stageStorage = new Storage.Stage();
-                        foreach (Phabricator.Data.Maniphest stagedManiphestTask in stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale))
-                        {
-                            if (stagedManiphestTask.ID.Equals(taskId))
-                            {
-                                maniphestTask = stagedManiphestTask;
-                                break;
-                            }
-                        }
+                        maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale)
+                                                    .FirstOrDefault(task => task.ID.Equals(taskId));
 
                         if (maniphestTask == null)
                         {
@@ -1340,6 +1329,8 @@ namespace Phabrico.Controllers
                             }
 
                             Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database, browser);
+                            if (currentAccount == null) throw new Phabrico.Exception.InvalidWhoAmIException();
+
                             viewPage.SetText("PHABRICATOR-URL", currentAccount.PhabricatorUrl.TrimEnd('/') + "/", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
                             string whoAmiToken = currentAccount.Parameters.UserToken;
@@ -1374,24 +1365,24 @@ namespace Phabrico.Controllers
                                     maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
                                 }
 
-                                foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions)
-                                {
-                                    if (pluginExtension.IsVisibleInApplication(database, browser, maniphestTask.Token))
-                                    {
-                                        if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
-                                        {
-                                            pluginExtension.Database = new Storage.Database(database.EncryptionKey);
-                                            pluginExtension.Initialize();
-                                            pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
-                                        }
+                                foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
+                                                                                                        .Where(ext => ext.IsVisibleInApplication(database, browser, maniphestTask.Token))
 
-                                        HtmlPartialViewPage htmlPluginNavigatorMenuItem = viewPage.GetPartialView("MANIPHEST-TASK-PLUGINS");
-                                        if (htmlPluginNavigatorMenuItem != null)
-                                        {
-                                            htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                            htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                            htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                        }
+                                        )
+                                {
+                                    if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
+                                    {
+                                        pluginExtension.Database = new Storage.Database(database.EncryptionKey);
+                                        pluginExtension.Initialize();
+                                        pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                                    }
+
+                                    HtmlPartialViewPage htmlPluginNavigatorMenuItem = viewPage.GetPartialView("MANIPHEST-TASK-PLUGINS");
+                                    if (htmlPluginNavigatorMenuItem != null)
+                                    {
+                                        htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                        htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                        htmlPluginNavigatorMenuItem.SetText("MANIPHEST-PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                     }
                                 }
                             }

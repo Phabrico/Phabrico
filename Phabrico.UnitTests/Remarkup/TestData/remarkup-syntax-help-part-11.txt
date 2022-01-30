@@ -64,9 +64,9 @@ of a dancing banana.
 ~~~~~~~~~~
 <h1 class='remarkup-header'><a name='embedding-images' style='padding-top: 80px;'></a>Embedding Images </h1>
 You can embed an image or other file by using braces to refer to it:<p class='paragraph'></p>
-<div class='image-locator' style='width: 24px;'>
-  <div class='image-container allow-full-screen'>
-     <img rel='small.png' src='file/data/1234/' class='' style='max-width: max-content;'>
+<div class='image-locator allow-full-screen full-size' style='width: 24px;'>
+  <div class='image-container'>
+     <img rel='small.png' src='file/data/1234/' class='' style='' onload='imageLoaded(this)'>
   </div></div>
 <p class='paragraph'></p>
 In most interfaces, you can drag-and-drop an image from your computer into the<br>
@@ -74,9 +74,9 @@ text area to upload and reference it.<p class='paragraph'></p>
 Most browsers also support uploading an image data just by pasting them from the<br>
 clipboard into the text area.<p class='paragraph'></p>
 You can set file display options like this:<p class='paragraph'></p>
-<div class='image-locator' style='width: 34px;float: left;'>
-  <div class='image-container allow-full-screen'>
-     <img rel='small.png' src='file/data/1234/' class='' style='max-width: max-content;' alt="a duckling">
+<div class='image-locator allow-full-screen full-size' style='width: 34px;float: left;'>
+  <div class='image-container'>
+     <img rel='small.png' src='file/data/1234/' class='' style='' alt="a duckling" onload='imageLoaded(this)'>
   </div></div>
 <p class='paragraph'></p>
 Valid options for all files are:<br>

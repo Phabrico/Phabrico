@@ -66,6 +66,7 @@ namespace Phabrico.Storage
                         record.Token = (string)reader["token"];
                         string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                         JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                        if (info == null) continue;
 
                         record.Author = (string)info["Author"];
                         record.Blog = (string)info["Blog"];
@@ -108,6 +109,7 @@ namespace Phabrico.Storage
                         record.Token = (string)reader["token"];
                         string decryptedInfo = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["info"]);
                         JObject info = JsonConvert.DeserializeObject(decryptedInfo) as JObject;
+                        if (info == null) return null;
 
                         record.Author = (string)info["Author"];
                         record.Blog = (string)info["Blog"];

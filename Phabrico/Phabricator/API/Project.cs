@@ -32,8 +32,9 @@ namespace Phabrico.Phabricator.API
                                             "oldest",
                                             firstItemId);
                 JObject projectData = JsonConvert.DeserializeObject(json) as JObject;
-                IEnumerable<JObject> projects = projectData["result"]["data"].OfType<JObject>();
+                if (projectData == null) break;
 
+                IEnumerable<JObject> projects = projectData["result"]["data"].OfType<JObject>();
                 if (projects.Any() == false) break;
 
                 foreach (JObject project in projects)

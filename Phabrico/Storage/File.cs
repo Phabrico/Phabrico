@@ -184,9 +184,11 @@ namespace Phabrico.Storage
                 {
                     using (MemoryStream memoryStream = new MemoryStream(newFileObject.Data))
                     {
-                        Bitmap bitmap = new Bitmap(memoryStream);
-                        newFileObject.ImagePropertyPixelHeight = bitmap.Height;
-                        newFileObject.ImagePropertyPixelWidth = bitmap.Width;
+                        using (Bitmap bitmap = new Bitmap(memoryStream))
+                        {
+                            newFileObject.ImagePropertyPixelHeight = bitmap.Height;
+                            newFileObject.ImagePropertyPixelWidth = bitmap.Width;
+                        }
                     }
                 }
 

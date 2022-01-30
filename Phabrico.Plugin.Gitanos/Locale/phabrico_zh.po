@@ -111,7 +111,7 @@ msgid "This is a binary file which has been modified."
 msgstr "这是一个被修改过的二进制文件。"
 
 msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
-msgstr "你确定要放弃对@@FILENAME@的本地修改吗？"
+msgstr "你确定要放弃对@@FILENAME@@的本地修改吗？"
 
 msgid "Undo modification"
 msgstr "撤消更改"
@@ -142,7 +142,7 @@ msgstr "成功克隆了"
 
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
-msgstr "@@DIRECTORY@目录不存在"
+msgstr "@@DIRECTORY@@目录不存在"
 
 msgid "Error git push"
 msgstr "git推送的问题"

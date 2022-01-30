@@ -14,7 +14,8 @@
     <tags></tags>
     <dependencies>
       <dependency id="Newtonsoft.Json" version="13.0.1"  />
-      <dependency id="System.Data.SQLite.Core" version="1.0.114.3"  />
+      <dependency id="System.Data.SQLite.Core" version="1.0.115.5"  />
+      <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.5" />
     </dependencies>
   </metadata>
   <files>

@@ -481,6 +481,10 @@ a:not(.button),
     color: var(--a-color);
 }
 
+.remarkup-notification.note a:not(.button) {
+    color: var(--a-in-notification-color);
+}
+
 blockquote {
     background-color: var(--blockquote-background-color);
     border-left: var(--blockquote-border-left);

@@ -1,0 +1,20 @@
+# Swedish translations
+
+# General
+msgid "PluginName.PhrictionValidator"
+msgstr "Validera dokumentet"
+
+msgid "There is 1 underlying document. Would you like to validate this as well ?"
+msgstr "Det finns 1 underliggande dokument. Vill du validera även detta dokument?"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to validate these as well ?"
+msgstr "Det finns @@NBR-CHILD-DOCUMENTS@@ underliggande dokument. Vill du också validera dessa?"
+
+msgid "No errors were found"
+msgstr "Inga fel hittades"
+
+msgid "Invalid file reference @@FILE-REFERENCE-ID@@"
+msgstr "Ogiltig filreferens @@FILE-REFERENCE-ID@@"
+
+msgid "Invalid hyperlink @@URL@@"
+msgstr "Ogiltig hyperlänk @@URL@@"

@@ -33,6 +33,8 @@ namespace Phabrico.UnitTests.Selenium
         /// </summary>
         public void AssertNoJavascriptErrors()
         {
+            if (WebBrowser == null) return;
+
             var errorStrings = new List<string>
             {
                 "SyntaxError",

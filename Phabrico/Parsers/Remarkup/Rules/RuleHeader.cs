@@ -52,10 +52,13 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override void Clone(RemarkupRule originalRemarkupRule)
         {
             RuleHeader originalRuleHeader = originalRemarkupRule as RuleHeader;
-            Depth = originalRuleHeader.Depth;
-            HeaderName = originalRuleHeader.HeaderName;
-            HeaderNameCopy = originalRuleHeader.HeaderNameCopy;
-            LineType = originalRuleHeader.LineType;
+            if (originalRuleHeader != null)
+            {
+                Depth = originalRuleHeader.Depth;
+                HeaderName = originalRuleHeader.HeaderName;
+                HeaderNameCopy = originalRuleHeader.HeaderNameCopy;
+                LineType = originalRuleHeader.LineType;
+            }
         }
 
         /// <summary>

@@ -10,6 +10,8 @@ using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Phabrico.Http
 {
@@ -21,6 +23,8 @@ namespace Phabrico.Http
         private SessionManager.Token _token = null;
 
         private Miscellaneous.HttpListenerContext httpListenerContext { get; set; }
+
+        private static readonly List<string> preloaded = new List<string>();
 
         /// <summary>
         /// Represents the fingerprint of the browser
@@ -147,10 +151,10 @@ namespace Phabrico.Http
             {
                 Fingerprint = httpListenerContext.Request.UserAgent
                             + string.Join("", httpListenerContext.Request.UserLanguages)
-                            + httpListenerContext.Request.RemoteEndPoint.Address.ToString();
+                            + httpListenerContext.Request.RemoteEndPoint.Address;
             }
 
-            if (string.IsNullOrWhiteSpace(httpServer.Customization.Language))
+            if (httpServer.Customization.AvailableLanguages == null || httpServer.Customization.AvailableLanguages.Count() != 1)
             {
                 // set language based on language-cookie
                 if (httpListenerContext.Request.Cookies["language"] != null)
@@ -185,7 +189,7 @@ namespace Phabrico.Http
             else
             {
                 // set language cookie
-                Language = httpServer.Customization.Language;
+                Language = httpServer.Customization.AvailableLanguages.FirstOrDefault();
                 Session.Locale = Language;
                 SetCookie("language", Language, false);
             }
@@ -435,7 +439,74 @@ namespace Phabrico.Http
 
                 if (Token?.EncryptionKey != null)
                 {
-                    HttpServer.PreloadFileMacros(Token.EncryptionKey);
+                    Phabricator.Data.Account whoAmI = null;
+                    bool systemDataIsPreloaded, userDataIsPreloaded = false;
+
+                    lock (Server.synchronizationProcessHttpRequest)
+                    {
+                        systemDataIsPreloaded = preloaded.Any();
+                    }
+
+                    if (systemDataIsPreloaded == false)
+                    {
+                        Task.Delay(1000)
+                            .ContinueWith((t) =>
+                        {
+                            // initialize some stuff after the first time we authenticate
+                            lock (Server.synchronizationProcessHttpRequest)
+                            {
+                                using (Storage.Database database = new Storage.Database(Token?.EncryptionKey))
+                                {
+                                    Storage.Stage.DeleteUnreferencedFiles(database, this);   // clean up unreferenced staged files
+                                }
+                            }
+
+                            Thread.Sleep(100);
+
+                            lock (Server.synchronizationProcessHttpRequest)
+                            {
+                                HttpServer.PreloadFileMacros(Token.EncryptionKey);  // preload file macro's
+                            }
+                        });
+                    }
+
+                    using (Storage.Database database = new Storage.Database(Token?.EncryptionKey))
+                    {
+                        Storage.Account accountStorage = new Storage.Account();
+                        whoAmI = accountStorage.WhoAmI(database, this);
+                        if (whoAmI != null)
+                        {
+                            lock (Server.synchronizationProcessHttpRequest)
+                            {
+                                userDataIsPreloaded = preloaded.Contains(whoAmI.UserName);
+                                if (userDataIsPreloaded == false)
+                                {
+                                    // initialize some user-specific stuff
+                                    preloaded.Add(whoAmI.UserName);
+                                }
+                            }
+                        }
+                    }
+
+                    if (whoAmI != null && userDataIsPreloaded == false)
+                    {
+                        Task.Delay(1250)
+                            .ContinueWith((t) =>
+                        {
+                            try
+                            {
+                                HttpServer.PreloadContent(this, Token.EncryptionKey, whoAmI.UserName);  // preload content like favorites
+                            }
+                            catch (Phabrico.Exception.InvalidWhoAmIException)
+                            {
+                                lock (Server.synchronizationProcessHttpRequest)
+                                {
+                                    // run preload again after user has been logged on again
+                                    preloaded.Clear();
+                                }
+                            }
+                        });
+                    }
                 }
 
                 return nbrBytesWrite;

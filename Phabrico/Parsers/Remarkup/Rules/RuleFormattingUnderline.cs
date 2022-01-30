@@ -2,6 +2,7 @@
 using Phabrico.Miscellaneous;
 using Phabrico.Storage;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
@@ -46,6 +47,17 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 Match match = RegexSafe.Match(remarkup, @"^__([^\r\n].+?(?<!__))?__", RegexOptions.Singleline);
                 if (match.Success)
                 {
+                    if (match.Value.Split('\n')
+                                   .Skip(1)
+                                   .Any(line => string.IsNullOrWhiteSpace(line)     // no empty line
+                                             || line.StartsWith("=")                // no line should start with a '=' character
+                                             || line.StartsWith("*")                // no line should start with a '*' character
+                                             || line.StartsWith("%%%")              // no line should start with "%%%"
+                                       ))
+                    {
+                        return false;
+                    }
+
                     if (remarkup.Substring(match.Length).StartsWith("/"))
                     {
                         // underline code is escaped by trailing slash

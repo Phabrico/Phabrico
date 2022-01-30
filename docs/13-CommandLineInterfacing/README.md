@@ -8,9 +8,14 @@ However, you might need to start it in a elevated command prompt as it tries to 
 Usage:
 ```
 Phabrico /download  [json-config-file]  /token:[phabricator-conduit-token]
+
+Phabrico /strip  [json-config-file]
 ```
 
-Downloads some Phriction documents and/or Maniphest tasks from Phabricator.
+With `/download` you can download some Phriction documents and/or Maniphest tasks from Phabricator.
+
+With `/strip` you can copy some Phriction documents and/or Maniphest tasks from a Phabrico file. You will be asked for the location of this database file when executing the command.
+
 The specification of these Phriction documents and Maniphest tasks is done by means of a JSON configuration file.
 
 An example of such JSON config file:

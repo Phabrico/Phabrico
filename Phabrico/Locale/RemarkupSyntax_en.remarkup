@@ -7,8 +7,7 @@ This document describes how to format text using Remarkup.
 
 = Quick Reference =
 
-All the syntax is explained in more detail below, but this is a quick guide to
-formatting text in Remarkup.
+All the syntax is explained in more detail below, but this is a quick guide to formatting text in Remarkup.
 
 These are inline styles, and can be applied to most text:
 ```
@@ -25,8 +24,7 @@ http://xyz/               # Link to web
 [[http://xyz/ | name]]    # Named link to web
 [name](http://xyz/)       # Alternate Link
 ```
-These are block styles, and must be separated from surrounding text by
-empty lines:
+These are block styles, and must be separated from surrounding text by empty lines:
 ```
 = Large Header =
 
@@ -62,8 +60,7 @@ __underlined text__
 ```
 
 Those produce **bold text**, //italic text//, `monospaced text`, ##monospaced
-text##, ~~deleted text~~, __underlined text__, and !!highlighted text!!
-respectively.
+text##, ~~deleted text~~, __underlined text__, and !!highlighted text!! respectively.
 
 = Layout =
 
@@ -90,8 +87,7 @@ You can optionally omit the trailing `=` signs -- that is, these are the same:
 == Smaller Header
 ```
 
-This produces headers like the ones in this document. Make sure you have an
-empty line before and after the header.
+This produces headers like the ones in this document. Make sure you have an empty line before and after the header.
 
 Lists
 =====
@@ -122,8 +118,9 @@ You can make numbered lists with a `#` instead of `-` or `*`:
 # Extend the product
 # Sell the product back with big profit
 
-Numbered lists can also be started with `1.` or `1)`. If you use a number other
-than `1`, the list will start at that number instead. For example, this:
+Numbered lists can also be started with `1.` or `1)`.
+If you use a number other than `1`, the list will start at that number instead.
+For example, this:
 
 ```
 200) OK
@@ -278,7 +275,7 @@ WARNING: Too many meetings can become sleep-inducing
 
 IMPORTANT: Don't attend too many meetings
 
-In addition, you can use `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` to get the
+In addition, you can use `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` to get the 
 same effect but without `(NOTE)`, `(WARNING)`, or `(IMPORTANT)` appearing in
 the rendered result. For example, this callout uses `(NOTE)`:
 
@@ -310,8 +307,7 @@ On an entirely different topic, ...
 
 URIs are automatically linked: http://phabricator.org/
 
-If you have a URI with problematic characters in it, like
-"`http://comma.org/,`", you can surround it with angle brackets:
+If you have a URI with problematic characters in it, like `"http://comma.org/,"`, you can surround it with angle brackets:
 ```
 <http://comma.org/,>
 ```

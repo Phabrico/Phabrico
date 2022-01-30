@@ -31,7 +31,7 @@ namespace Phabrico
         /// </summary>
         public const string Description = "Offline Reader and Editor for Phabricator documents and tasks";
 
-        private static Mutex singleInstanceMutex = new Mutex(false, MutexName);
+        private static readonly Mutex singleInstanceMutex = new Mutex(false, MutexName);
         private static Task serviceMainTask = null;
         private static TaskStatus serviceMainTaskStatus = TaskStatus.WaitingToRun; 
         private static CancellationTokenSource serviceMainTaskCancellationTokenSource;
@@ -112,7 +112,14 @@ namespace Phabrico
                     Commander commander = new Commander(program, arguments);
                     if (commander.Action != Commander.CommanderAction.Nothing)
                     {
-                        commander.Execute();
+                        try
+                        {
+                            commander.Execute();
+                        }
+                        catch (System.Exception e)
+                        {
+                            Console.WriteLine("ERROR: " + e.Message);
+                        }
                     }
                 }
                 else

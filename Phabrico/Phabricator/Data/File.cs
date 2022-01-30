@@ -242,6 +242,12 @@ namespace Phabrico.Phabricator.Data
         public int NumberOfReferences { get; set; }
 
         /// <summary>
+        /// In case an existing non-staged file object is staged, a new file ID will be generated.
+        /// This property will contain the original ID.
+        /// </summary>
+        public int OriginalID { get; set; }
+
+        /// <summary>
         /// Contains some file-type specific properties.
         /// E.g. for an image a Width property and a Height property exist
         /// </summary>
@@ -293,7 +299,7 @@ namespace Phabrico.Phabricator.Data
             {
                 _templateFileName = value;
 
-                FileName = _templateFileName.Replace("{0}", "F" + ID.ToString());
+                FileName = _templateFileName.Replace("{0}", "F" + ID);
             }
         }
 

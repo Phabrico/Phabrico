@@ -1,0 +1,120 @@
+# Romanian translations
+
+# General
+msgid "PluginName.PhrictionTranslator"
+msgstr "Traduceți documentul"
+
+msgid "Translation parameters"
+msgstr "Parametrii de traducere"
+
+msgid "There is 1 underlying document. Would you like to translate this as well ?"
+msgstr "Există 1 document de bază. Doriți să îl traduceți și pe acesta ?"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to translate these as well ?"
+msgstr "Există documente de bază @@NBR-CHILD-DOCUMENTS@@. Doriți să le traduceți și pe acestea ?"
+
+msgid "The translation will be performed by a machine translation service on the Internet. Be sure not to send any sensitive data over the Internet! Do you still want to continue ?"
+msgstr "Traducerea va fi efectuată de un serviciu de traducere automată pe Internet.\nAtenție, nu trimiteți date sensibile pe Internet!\n\nDoriți să continuați ?"
+
+msgid "Document is translated"
+msgstr "Documentul este tradus"
+
+msgid "@@NBR-DOCUMENTS@@ documents have been translated"
+msgstr "Documentele @@NBR-DOCUMENTS@@ au fost traduse"
+
+msgid "Translation engine"
+msgstr "Motor de traducere"
+
+msgid "API Key"
+msgstr "Cheia API"
+
+msgid "Source language"
+msgstr "Limba sursă"
+
+msgid "Target language"
+msgstr "Limba țintă"
+
+msgid "Bulgarian"
+msgstr "Bulgară"
+
+msgid "Chinese"
+msgstr "Chineză"
+
+msgid "Czech"
+msgstr "Cehă"
+
+msgid "Danish"
+msgstr "Daneză"
+
+msgid "Dutch"
+msgstr "Olandeză"
+
+msgid "English"
+msgstr "Engleză"
+
+msgid "Estonian"
+msgstr "Estoniană"
+
+msgid "Finnish"
+msgstr "Finlandeză"
+
+msgid "French"
+msgstr "Franceză"
+
+msgid "German"
+msgstr "Germană"
+
+msgid "Greek"
+msgstr "Greacă"
+
+msgid "Hungarian"
+msgstr "Maghiară"
+
+msgid "Italian"
+msgstr "Italiană"
+
+msgid "Japanese"
+msgstr "Japoneză"
+
+msgid "Latvian"
+msgstr "Letonă"
+
+msgid "Lithuanian"
+msgstr "lituaniană"
+
+msgid "Polish"
+msgstr "Poloneză"
+
+msgid "Portuguese"
+msgstr "Portugheză"
+
+msgid "Romanian"
+msgstr "română"
+
+msgid "Russian"
+msgstr "Rusă"
+
+msgid "Slovak"
+msgstr "Slovacă"
+
+msgid "Slovenian"
+msgstr "Slovenă"
+
+msgid "Spanish"
+msgstr "Spaniolă"
+
+msgid "Swedish"
+msgstr "Suedeză"
+
+# ProofReader
+msgid "PluginName.PhrictionProofReader"
+msgstr "Corectură"
+
+msgid "Save translation"
+msgstr "Salvați traducerea"
+
+msgid "View remarkup code"
+msgstr "Vezi codul sursă"
+
+msgid "View result"
+msgstr "Vezi rezultatul"

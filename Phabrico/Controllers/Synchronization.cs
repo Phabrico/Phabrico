@@ -266,7 +266,7 @@ namespace Phabrico.Controllers
         /// The synchronization process is executed in a separate thread.
         /// This ManualResetEvent checks that this thread can only be executed once.
         /// </summary>
-        private static ManualResetEvent evSynchronizationInProgress = new ManualResetEvent(false);
+        private static readonly ManualResetEvent evSynchronizationInProgress = new ManualResetEvent(false);
 
         /// <summary>
         /// Returns true if synchronization in progress
@@ -363,13 +363,12 @@ namespace Phabrico.Controllers
         /// This method is fired when opening the Latest synchronized data screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         /// <returns></returns>
         [UrlController(URL = "/synchronization/logging")]
-        public void HttpGetLoadSyncLoggingScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetLoadSyncLoggingScreen(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/logging");
 
@@ -384,12 +383,11 @@ namespace Phabrico.Controllers
         /// This JSON array will be shown as a HTML table
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="resultHttpMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/synchronization/search")]
-        public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateTableData(Http.Server httpServer, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/search");
 
@@ -490,20 +488,17 @@ namespace Phabrico.Controllers
 
         /// <summary>
         /// This method is fired via the View Changes in the Synchronization Logging screen.
-        /// It will return a JSON array which contain the differences between the document/task version before the synchronization and the one after.
-        /// This JSON array will be shown as a HTML table
+        /// It will return a the partial view SynchronizationDiff
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="resultHttpMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/synchronization/data")]
-        public void HttpGetLoadSynchronizedObject(Http.Server httpServer, Browser browser, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
+        public void HttpGetLoadSynchronizedObject(Http.Server httpServer, ref HttpMessage resultHttpMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronization/data");
 
-            List<JsonRecordData> tableRows = new List<JsonRecordData>();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.PhamePost phamePostStorage = new Storage.PhamePost();
@@ -573,10 +568,9 @@ namespace Phabrico.Controllers
         /// This method is fired when the user clicks on the 'Synchronize' button
         /// </summary>
         /// <param name="httpServer">webserver object</param>
-        /// <param name="browser">webbrowser connection</param>
         /// <param name="parameters">N/A</param>
         [UrlController(URL = "/synchronize/full")]
-        public void HttpPostStartFullSynchronization(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostStartFullSynchronization(Http.Server httpServer, string[] parameters)
         {
             if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
             if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/full");
@@ -595,17 +589,16 @@ namespace Phabrico.Controllers
             SharedResource.Instance.ProgressDescription = Miscellaneous.Locale.TranslateText("Synchronization.Status.Initializing", browser.Session.Locale);
 
             // start thread which executes the actual synchronization code
-            Task.Factory.StartNew(() => FullSynchronizationThread(httpServer, browser));
+            Task.Factory.StartNew(() => FullSynchronizationThread(httpServer));
         }
 
         /// <summary>
         /// This method is fired when the user clicks on the 'Synchronize' button
         /// </summary>
         /// <param name="httpServer">webserver object</param>
-        /// <param name="browser">webbrowser connection</param>
         /// <param name="parameters">N/A</param>
         [UrlController(URL = "/synchronize/light")]
-        public void HttpPostStartLightSynchronization(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostStartLightSynchronization(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/light");
 
@@ -621,7 +614,7 @@ namespace Phabrico.Controllers
             SharedResource.Instance.ProgressDescription = Miscellaneous.Locale.TranslateText("Synchronization.Status.Initializing", browser.Session.Locale);
 
             // start thread which executes the actual synchronization code
-            Task.Factory.StartNew(() => LightSynchronizationThread(httpServer, browser));
+            Task.Factory.StartNew(() => LightSynchronizationThread(httpServer));
         }
 
         /// <summary>
@@ -631,16 +624,14 @@ namespace Phabrico.Controllers
         /// When the user clicks 'yes', the unfrozen changes will be uploaded the Phabricator server
         /// </summary>
         /// <param name="httpServer">webserver object</param>
-        /// <param name="browser">webbrowser connection</param>
         /// <param name="jsonMessage">The JSON result that represents the number of unfrozen changes</param>
         /// <param name="parameters">N/A</param>
         /// <param name="parameterActions">N/A</param>
         [UrlController(URL = "/synchronize/prepare")]
-        public void HttpGetSynchronizationPrepare(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetSynchronizationPrepare(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/prepare");
 
-            Storage.Account accountStorage = new Storage.Account();
             SessionManager.Token token = SessionManager.GetToken(browser);
             if (token == null) throw new Phabrico.Exception.AccessDeniedException("/synchronization/prepare", "session expired");
 
@@ -662,12 +653,11 @@ namespace Phabrico.Controllers
         /// It sends back the current progress of the synchronization to the webbrowser
         /// </summary>
         /// <param name="httpServer">webserver object</param>
-        /// <param name="browser">webbrowser connection</param>
         /// <param name="jsonMessage">The JSON result that represents the current progress of synchronization</param>
         /// <param name="parameters">N/A</param>
         /// <param name="parameterActions">N/A</param>
         [UrlController(URL = "/synchronize/status")]
-        public void HttpGetSynchronizationStatus(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetSynchronizationStatus(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.MasterDataIsAccessible == false) throw new Phabrico.Exception.HttpNotFound("/synchronize/status");
 
@@ -686,8 +676,7 @@ namespace Phabrico.Controllers
         /// the content of the StageInfo table to the Phabricator server
         /// </summary>
         /// <param name="httpServer">webserver object</param>
-        /// <param name="browser">webbrowser connection</param>
-        public void FullSynchronizationThread(Http.Server httpServer, Browser browser)
+        public void FullSynchronizationThread(Http.Server httpServer)
         {
             evSynchronizationInProgress.Set();
 
@@ -772,7 +761,7 @@ namespace Phabrico.Controllers
             }
             catch (System.Exception exception)
             {
-                Phabricator.API.Conduit.Exception conduitException = exception as Phabricator.API.Conduit.Exception;
+                Phabricator.API.Conduit.PhabricatorException conduitException = exception as Phabricator.API.Conduit.PhabricatorException;
 
                 SharedResource.Instance.ProgressDescription = Miscellaneous.Locale.TranslateText("Synchronization.Status.Failed", browser.Session.Locale) + ": " + exception.Message;
                 SharedResource.Instance.ProgressPercentage = 100;
@@ -799,8 +788,7 @@ namespace Phabrico.Controllers
         /// the content of the StageInfo table to the Phabricator server
         /// </summary>
         /// <param name="httpServer">webserver object</param>
-        /// <param name="browser">webbrowser session object</param>
-        public void LightSynchronizationThread(Http.Server httpServer, Browser browser)
+        public void LightSynchronizationThread(Http.Server httpServer)
         {
             evSynchronizationInProgress.Set();
 
@@ -842,7 +830,7 @@ namespace Phabrico.Controllers
             }
             catch (System.Exception exception)
             {
-                Phabricator.API.Conduit.Exception conduitException = exception as Phabricator.API.Conduit.Exception;
+                Phabricator.API.Conduit.PhabricatorException conduitException = exception as Phabricator.API.Conduit.PhabricatorException;
 
                 SharedResource.Instance.ProgressDescription = Miscellaneous.Locale.TranslateText("Synchronization.Status.Failed", browser.Session.Locale) + ": " + exception.Message;
                 SharedResource.Instance.ProgressPercentage = 100;
@@ -971,86 +959,33 @@ namespace Phabrico.Controllers
             if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.PhrictionAllProjects) == false)
             {
                 // remove documents without a project tagged
-                if (keepUntaggedTasksOrDocuments == false)
+                if (keepUntaggedTasksOrDocuments == false &&
+                    synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree) == false
+                   )
                 {
                     documentsToRemove.AddRange(allDocuments.Where(document => string.IsNullOrWhiteSpace(document.Projects)));
                 }
 
                 // remove unselected projects
-                IEnumerable<Phabricator.Data.Phriction> unselectedProjectDocuments;
-                if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.PhrictionAllSelectedProjectsOnly))
+                if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree) == false)
                 {
-                    // remove all documents for which at least 1 of the selected projects is not tagged
-                    unselectedProjectDocuments = allDocuments.Where(document => selectedProjects.All(selectedProject => document.Projects
-                                                                                                                                .Split(',')
-                                                                                                                                .Contains(selectedProject)) == false);
-                }
-                else
-                {
-                    // remove all documents for which none of the selected projects was tagged
-                    unselectedProjectDocuments = allDocuments.Where(document => document.Projects
-                                                                                        .Split(',')
-                                                                                        .All(project => string.IsNullOrWhiteSpace(project) == false
-                                                                                                     && selectedProjects.Contains(project) == false));
-                }
-                documentsToRemove.AddRange(unselectedProjectDocuments);
-
-
-                if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree))
-                {
-                    Phabricator.Data.Phriction rootDocument = allDocuments.FirstOrDefault(document => document.Path.Equals("/"));
-
-                    if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.PhrictionAllSelectedProjectsOnlyIncludingDocumentTree))
+                    IEnumerable<Phabricator.Data.Phriction> unselectedProjectDocuments;
+                    if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(SynchronizationMethod.PhrictionAllSelectedProjectsOnly))
                     {
-                        if (rootDocument != null)
-                        {
-                            if (selectedProjects.All(selectedProject => rootDocument.Projects.Split(',').Contains(selectedProject)))
-                            {
-                                // root document is tagged with all selected project -> skip removing documents
-                                documentsToRemove.Clear();
-                            }
-                        }
-
-                        if (documentsToRemove.Any())
-                        {
-                            // get documents which are tagged by all selected projects
-                            IEnumerable<Phabricator.Data.Phriction> projectsTaggedDocuments;
-                            projectsTaggedDocuments = allDocuments.Where(document => selectedProjects.All(selectedProject => document.Projects
-                                                                                                                                     .Split(',')
-                                                                                                                                     .Contains(selectedProject)));
-
-                            // remove all sub-documents of project-tagged document from removal-list
-                            foreach (Phabricator.Data.Phriction projectTaggedDocument in projectsTaggedDocuments)
-                            {
-                                documentsToRemove.RemoveAll(document => document.Path.StartsWith(projectTaggedDocument.Path));
-                            }
-                        }
+                        // remove all documents for which at least 1 of the selected projects is not tagged
+                        unselectedProjectDocuments = allDocuments.Where(document => selectedProjects.All(selectedProject => document.Projects
+                                                                                                                                    .Split(',')
+                                                                                                                                    .Contains(selectedProject)) == false);
                     }
                     else
                     {
-                        if (rootDocument != null)
-                        {
-                            if (rootDocument.Projects.Split(',').Any(project => selectedProjects.Contains(project)))
-                            {
-                                // root document is tagged with selected project -> skip removing documents
-                                documentsToRemove.Clear();
-                            }
-                        }
-
-                        if (documentsToRemove.Any())
-                        {
-                            // get documents which are tagged by 1 or more selected projects
-                            IEnumerable<Phabricator.Data.Phriction> projectTaggedDocuments = allDocuments.Where(document => document.Projects
-                                                                                                                                   .Split(',')
-                                                                                                                                   .Any(project => string.IsNullOrWhiteSpace(project) == false
-                                                                                                                                                && selectedProjects.Contains(project)));
-                            // remove all sub-documents of project-tagged document from removal-list
-                            foreach (Phabricator.Data.Phriction projectTaggedDocument in projectTaggedDocuments)
-                            {
-                                documentsToRemove.RemoveAll(document => document.Path.StartsWith(projectTaggedDocument.Path));
-                            }
-                        }
+                        // remove all documents for which none of the selected projects was tagged
+                        unselectedProjectDocuments = allDocuments.Where(document => document.Projects
+                                                                                            .Split(',')
+                                                                                            .All(project => string.IsNullOrWhiteSpace(project) == false
+                                                                                                         && selectedProjects.Contains(project) == false));
                     }
+                    documentsToRemove.AddRange(unselectedProjectDocuments);
                 }
             }
 
@@ -1244,7 +1179,7 @@ namespace Phabrico.Controllers
 
             int index = 0;
             int count = phabricatorFileReferences.Count();
-            double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
             foreach (Phabricator.Data.File phabricatorFileReference in phabricatorFileReferences)
             {
                 string size;
@@ -1550,7 +1485,7 @@ namespace Phabrico.Controllers
             List<string> loggedManiphestTokens = new List<string>();
             int index = 0;
             int count = phabricatorManiphestTasks.Count();
-            double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
             string messageDownloadingManiphestData = Miscellaneous.Locale.TranslateText("Synchronization.Status.DownloadingManiphestData", browser.Session.Locale);
             foreach (Phabricator.Data.Maniphest phabricatorManiphestTask in phabricatorManiphestTasks)
             {
@@ -1569,7 +1504,7 @@ namespace Phabrico.Controllers
                     synchronizationLogging.DateModified = phabricatorManiphestTask.DateModified;
                     synchronizationLogging.LastModifiedBy = phabricatorManiphestTask.LastModifiedBy;
                     synchronizationLogging.Title = phabricatorManiphestTask.Name;
-                    synchronizationLogging.URL = "maniphest/T" + phabricatorManiphestTask.ID.ToString() + "/";
+                    synchronizationLogging.URL = "maniphest/T" + phabricatorManiphestTask.ID + "/";
 
                     if (string.IsNullOrEmpty(synchronizationLogging.LastModifiedBy))
                     {
@@ -1631,6 +1566,7 @@ namespace Phabrico.Controllers
                 ConvertRemarkupToHTML(synchronizationParameters.database, "/", phabricatorManiphestTask.Description, out remarkupParserOutput, false);
 
                 // get all available words from task content and save it into search database
+                keywordStorage.DeletePhabricatorObject(synchronizationParameters.database, phabricatorManiphestTask);
                 keywordStorage.AddPhabricatorObject(this, synchronizationParameters.database, phabricatorManiphestTask);
 
                 // (re)assign dependent Phabricator objects
@@ -1681,7 +1617,7 @@ namespace Phabrico.Controllers
                 synchronizationLogging.DateModified = newPhamePost.DateModified;
                 synchronizationLogging.LastModifiedBy = newPhamePost.Author;
                 synchronizationLogging.Title = newPhamePost.Blog + ": " + newPhamePost.Title;
-                synchronizationLogging.URL = "phame/post/" + newPhamePost.ID.ToString() + "/";
+                synchronizationLogging.URL = "phame/post/" + newPhamePost.ID + "/";
                 synchronizationLogging.PreviousContent = null;
                 synchronizationLoggingStorage.Add(synchronizationParameters.database, synchronizationLogging);
 
@@ -1693,6 +1629,7 @@ namespace Phabrico.Controllers
                 ConvertRemarkupToHTML(synchronizationParameters.database, "/", newPhamePost.Content, out remarkupParserOutput, false);
 
                 // get all available words from task content and save it into search database
+                keywordStorage.DeletePhabricatorObject(synchronizationParameters.database, newPhamePost);
                 keywordStorage.AddPhabricatorObject(this, synchronizationParameters.database, newPhamePost);
 
                 // (re)assign dependent Phabricator objects
@@ -1728,7 +1665,9 @@ namespace Phabrico.Controllers
 
             // prepare loading phriction documents: check if project filter (constraint) should be applied
             Phabricator.API.Constraint[] phabricatorPhrictionDocumentConstraints = new Phabricator.API.Constraint[0];
-            if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly))
+            if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly) &&
+                synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnlyIncludingDocumentTree) == false
+               )
             {
                 Phabricator.API.Constraint constraintActivatedProjects = new Phabricator.API.Constraint("projects", synchronizationParameters.projectSelected.Where(project => project.Value == Phabricator.Data.Project.Selection.Selected)
                                                                                                                                     .Select(project => project.Key)
@@ -1756,11 +1695,13 @@ namespace Phabrico.Controllers
             SharedResource.Instance.ProgressDescription = messageDownloadingPhrictionData;
             List<Phabricator.Data.Phriction> phabricatorPhrictionDocuments;
             if (synchronizationParameters.existingAccount.Parameters.Synchronization != SynchronizationMethod.All &&
-                synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly))
+                synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly) &&
+                synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnlyIncludingDocumentTree) == false
+               )
             {
                 if (synchronizationParameters.incrementalDownload)
                 {
-                    phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
+                    phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetModifiedPhrictionDocuments(synchronizationParameters.database,
                                                                                    synchronizationParameters.browser.Conduit,
                                                                                    phabricatorPhrictionDocumentConstraints,
                                                                                    lastDownloadTimestamp)
@@ -1787,7 +1728,7 @@ namespace Phabrico.Controllers
 
                     if (synchronizationParameters.incrementalDownload)
                     {
-                        phabricatorPhrictionDocuments.AddRange(phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
+                        phabricatorPhrictionDocuments.AddRange(phabricatorPhrictionAPI.GetModifiedPhrictionDocuments(synchronizationParameters.database,
                                                                                                synchronizationParameters.browser.Conduit,
                                                                                                phabricatorPhrictionDocumentConstraints,
                                                                                                lastDownloadTimestamp)
@@ -1806,7 +1747,7 @@ namespace Phabrico.Controllers
             {
                 if (synchronizationParameters.incrementalDownload)
                 {
-                    phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
+                    phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetModifiedPhrictionDocuments(synchronizationParameters.database,
                                                                                    synchronizationParameters.browser.Conduit,
                                                                                    phabricatorPhrictionDocumentConstraints,
                                                                                    lastDownloadTimestamp)
@@ -1854,7 +1795,7 @@ namespace Phabrico.Controllers
                         List<Phabricator.Data.Phriction> chilDocuments;
                         if (synchronizationParameters.incrementalDownload)
                         {
-                            chilDocuments = phabricatorPhrictionAPI.GetAll(synchronizationParameters.database,
+                            chilDocuments = phabricatorPhrictionAPI.GetModifiedPhrictionDocuments(synchronizationParameters.database,
                                                                            synchronizationParameters.browser.Conduit,
                                                                            phabricatorPhrictionDocumentConstraints,
                                                                            synchronizationParameters.lastDownloadTimestamp)
@@ -1883,9 +1824,52 @@ namespace Phabrico.Controllers
                                                                                                                         .Concat(phabricatorPhrictionDocuments.OrderBy(document => document.Path))
                                                                                                                         .Distinct()
                                                                                                                         .ToList();
+
+            if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.All) == false
+                && synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnlyIncludingDocumentTree)
+               )
+            {
+                string[] selectedProjects = synchronizationParameters.projectSelected.Where(p => p.Key.Equals(Phabricator.Data.Project.None) == false
+                                                                                              && p.Value == Phabricator.Data.Project.Selection.Selected
+                                                                                           )
+                                                                                     .Select(p => p.Key)
+                                                                                     .OrderBy(p => p)
+                                                                                     .ToArray();
+                var projectsPerProjectedDocuments = phabricatorPhrictionDocuments.Where(document => document.Projects.Split(',')
+                                                                                                            .Any(p => selectedProjects.Contains(p))
+                                                                                       )
+                                                                                 .ToDictionary(key => key, value => new List<string>());
+                foreach (var project in projectsPerProjectedDocuments.Keys)
+                {
+                    foreach (string assignedProject in project.Projects.Split(','))
+                    {
+                        if (selectedProjects.Contains(assignedProject))
+                        {
+                            projectsPerProjectedDocuments[project].Add(assignedProject);
+                        }
+                    }
+                }
+
+                foreach (var document in projectsPerProjectedDocuments.Keys.ToArray())
+                {
+                    foreach (string missingProject in selectedProjects.Where(p => projectsPerProjectedDocuments[document].Contains(p) == false))
+                    {
+                        if (projectsPerProjectedDocuments.Any(p => p.Value.Contains(missingProject) && document.Path.StartsWith(p.Key.Path)))
+                        {
+                            projectsPerProjectedDocuments[document].Add(missingProject);
+                        }
+                    }
+                }
+
+                Phabricator.Data.Phriction[] documentsWithCombinedProjects = projectsPerProjectedDocuments.Where(kvp => kvp.Value.OrderBy(v => v).SequenceEqual(selectedProjects))
+                                                                                                          .Select(kvp => kvp.Key)
+                                                                                                          .ToArray();
+                phabricatorPhrictionDocumentsInCorrectOrder.RemoveAll(document => documentsWithCombinedProjects.All(d => document.Path.StartsWith(d.Path) == false));
+            }
+
             int index = 0;
             int count = phabricatorPhrictionDocumentsInCorrectOrder.Count;
-            double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
 
             foreach (Phabricator.Data.Phriction phabricatorPhrictionDocument in phabricatorPhrictionDocumentsInCorrectOrder)
             {
@@ -1948,6 +1932,7 @@ namespace Phabrico.Controllers
                     ConvertRemarkupToHTML(synchronizationParameters.database, "/", phabricatorPhrictionDocument.Content, out remarkupParserOutput, false);
 
                     // get all available words from phriction document and save it into search database
+                    keywordStorage.DeletePhabricatorObject(synchronizationParameters.database, phabricatorPhrictionDocument);
                     keywordStorage.AddPhabricatorObject(this, synchronizationParameters.database, phabricatorPhrictionDocument);
 
                     // (re)assign dependent Phabricator objects
@@ -1963,6 +1948,13 @@ namespace Phabrico.Controllers
             foreach (Phabricator.Data.Phriction forbiddenDocument in forbiddenDocuments)
             {
                 phrictionStorage.Remove(synchronizationParameters.database, forbiddenDocument);
+            }
+
+            if (synchronizationParameters.incrementalDownload)
+            {
+                string messageDownloadingPhrictionMetaData = Miscellaneous.Locale.TranslateText("Synchronization.Status.DownloadingPhrictionMetaData", browser.Session.Locale);
+                SharedResource.Instance.ProgressDescription = messageDownloadingPhrictionMetaData;
+                phabricatorPhrictionAPI.DownloadModifiedMetadataPhrictionDocuments(synchronizationParameters.database, synchronizationParameters.browser.Conduit);
             }
         }
 
@@ -2070,7 +2062,7 @@ namespace Phabrico.Controllers
                                                                              .ToList();
             int index = 0;
             int count = phabricatorUsers.Count();
-            double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
             foreach (Phabricator.Data.User phabricatorUser in phabricatorUsers)
             {
                 SharedResource.Instance.ProgressDescription = string.Format("{0} [{1}/{2}]", messageDownloadingUserData, index++, count);
@@ -2316,7 +2308,7 @@ namespace Phabrico.Controllers
 
             int index = 0;
             int count = maniphestTasksLocallyModified.Count() - maniphestTasksRemotelyModified.Count();
-            double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
             List<Phabricator.Data.Maniphest> processedManiphestTasks = new List<Phabricator.Data.Maniphest>();
             foreach (var modifiedManiphestTask in maniphestTasksLocallyModified.Where(task => maniphestTasksRemotelyModified.Any(modification => modification.Token.Equals(task.Token)) == false))
             {
@@ -2342,7 +2334,7 @@ namespace Phabrico.Controllers
             synchronizationParameters.remotelyModifiedObjects.AddRange(maniphestTasksRemotelyModified);
             synchronizationParameters.stagedDataHasBeenUploaded = true;
 
-            SharedResource.Instance.ProgressPercentage = ((processedDuration * 100) / totalDuration) - 1;
+            SharedResource.Instance.ProgressPercentage = (int)(((double)processedDuration * 100) / (double)totalDuration) - 1;
         }
 
         /// <summary>
@@ -2372,7 +2364,7 @@ namespace Phabrico.Controllers
             // uploading phriction documents
             int index = 0;
             int count = phrictionDocumentsLocallyModified.Count() - phrictionDocumentsRemotelyModified.Count();
-            double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
             List<Phabricator.Data.Phriction> processedPhrictionDocuments = new List<Phabricator.Data.Phriction>();
             foreach (var modifiedPhrictionDocument in phrictionDocumentsLocallyModified.Where(doc => phrictionDocumentsRemotelyModified.Any(modification => modification.Token.Equals(doc.Token)) == false)
                                                                                        .OrderBy(doc => doc.Path.Length)
@@ -2403,7 +2395,7 @@ namespace Phabrico.Controllers
 
             synchronizationParameters.remotelyModifiedObjects.AddRange(phrictionDocumentsRemotelyModified);
 
-            SharedResource.Instance.ProgressPercentage = ((processedDuration * 100) / totalDuration) - 1;
+            SharedResource.Instance.ProgressPercentage = (int)(((double)processedDuration * 100) / (double)totalDuration) - 1;
         }
 
         /// <summary>
@@ -2424,7 +2416,7 @@ namespace Phabrico.Controllers
             IEnumerable<Phabricator.Data.Transaction> modifiedTransactions = stageStorage.Get<Phabricator.Data.Transaction>(synchronizationParameters.database, Language.NotApplicable, true);
             int index = 0;
             int count = modifiedTransactions.Count();
-            double stepsize = (synchronizationParameters.stepSize * 100.00) / (count * totalDuration);
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
             foreach (var modifiedTransactionsPerObject in modifiedTransactions.GroupBy(key => key.Token))
             {
                 SharedResource.Instance.ProgressDescription = string.Format("{0} [{1}/{2}]", messageUploadingCommentsAndTransactions, index++, count);
@@ -2574,7 +2566,7 @@ namespace Phabrico.Controllers
                         }
 
                         remarkupContent = remarkupContent.Substring(0, match.Groups[1].Index)
-                                        + phabricatorFileReference.ToString()
+                                        + phabricatorFileReference
                                         + remarkupContent.Substring(match.Groups[1].Index + match.Groups[1].Length);
 
                         // copy result into phabricatorObject

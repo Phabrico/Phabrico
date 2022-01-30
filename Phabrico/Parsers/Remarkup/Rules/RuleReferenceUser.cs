@@ -40,7 +40,6 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                 if (string.IsNullOrEmpty(encryptionKey) == false)
                 {
-                    Storage.Account accountStorage = new Storage.Account();
                     Storage.User userStorage = new Storage.User();
                     User user = userStorage.Get(database, matchUserName.Value, browser.Session.Locale);
                     if (user == null) return false;
@@ -96,8 +95,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override void Clone(RemarkupRule originalRemarkupRule)
         {
             RuleReferenceUser originalRuleReferenceUser = originalRemarkupRule as RuleReferenceUser;
-            UserName = originalRuleReferenceUser.UserName;
-            UserToken = originalRuleReferenceUser.UserToken;
+            if (originalRuleReferenceUser != null)
+            {
+                UserName = originalRuleReferenceUser.UserName;
+                UserToken = originalRuleReferenceUser.UserToken;
+            }
         }
     }
 }

@@ -36,3 +36,9 @@ msgstr "Mijn levensverhaal"
 
 msgid "Once upon a time, I was reading this story over and over again"
 msgstr "Er was eens een tijd dat ik dit verhaal steeds opnieuw aan het lezen was"
+
+msgid "Diagrams"
+msgstr "Diagrammen"
+
+msgid "This is a diagram"
+msgstr "Dit is een diagram"

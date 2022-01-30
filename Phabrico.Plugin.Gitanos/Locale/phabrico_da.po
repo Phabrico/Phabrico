@@ -1,0 +1,179 @@
+# Danish translations
+
+# General
+msgid "Gitanos"
+msgstr "Gitanos"
+
+msgid "Shows the status of all local git repositories"
+msgstr "Viser status for alle lokale git-repositorier"
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "Indtast de mapper, hvor alle dine git-opbevaringsmapper er placeret:"
+
+msgid "Local root directories"
+msgstr "Lokale rodmapper: Lokale rodmapper"
+
+msgid "Add root directory"
+msgstr "Tilføj rodmappe"
+
+msgid "Gitanos::Notification"
+msgstr "Meddelelse"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "Sammenfat følgende tilstande for alle repositorier og vis resultatet som en meddelelse:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "Lokale git-repositorier"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "Indtast noget tekst for at filtrere listen over git-repositories..."
+
+msgid "Show clean repositories"
+msgstr "Vis rene repositories"
+
+msgid "Hide clean repositories"
+msgstr "Skjul rene repositories"
+
+msgid "Show Phabricator repositories"
+msgstr "Vis Phabricator-repositories"
+
+msgid "Repository"
+msgstr "Repository"
+
+msgid "Branch"
+msgstr "Branch"
+
+msgid "Gitanos::Added"
+msgstr "Tilføjet"
+
+msgid "Gitanos::Removed"
+msgstr "Fjernet"
+
+msgid "Gitanos::Modified"
+msgstr "Ændret"
+
+msgid "Gitanos::ModifiedTooLarge"
+msgstr "Ændret (for stor)"
+
+msgid "Gitanos::Renamed"
+msgstr "Omdøbt"
+
+msgid "Gitanos::Untracked"
+msgstr "Usporet"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "Der er nogle lokale commits, som ikke er blevet pushet endnu"
+
+# Repository modifications overview
+msgid "Git repository"
+msgstr "Git-repositorium"
+
+msgid "File"
+msgstr "Fil"
+
+msgid "Modification Type"
+msgstr "Ændring Type"
+
+msgid "Timestamp"
+msgstr "Tidsstempel"
+
+msgid "Unpushed commit"
+msgstr "Ikke-pushet commit"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "Indtast noget tekst for at filtrere listen over ændringer..."
+
+msgid "COMMIT"
+msgstr "COMMIT"
+
+msgid "PUSH"
+msgstr "PUSH"
+
+msgid "Actions"
+msgstr "Handlinger"
+
+msgid "Select all files"
+msgstr "Vælg alle filer"
+
+msgid "Unselect all files"
+msgstr "Fravælg alle filer"
+
+msgid "Commit selected files"
+msgstr "Indberet valgte filer"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "Er du sikker på, at du ønsker at kassere '@@MODIFICATION@@' ?"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "Dette er en binær fil, som er blevet ændret."
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "Er du sikker på, at du vil kassere dine lokale ændringer til @@FILENAME@@ ?"
+
+msgid "Undo modification"
+msgstr "Fortryd ændring"
+
+msgid "File was successfully saved"
+msgstr "Filen blev gemt med succes"
+
+msgid "File could not be saved"
+msgstr "Filen kunne ikke gemmes"
+
+msgid "Diff"
+msgstr "Diff"
+
+msgid "Save"
+msgstr "Gem"
+
+msgid "Edit"
+msgstr "Rediger"
+
+msgid "Line number:"
+msgstr "Linjenummer:"
+
+msgid "This git repository is clean"
+msgstr "Dette git-repository er rent"
+
+msgid "Repository successfully cloned"
+msgstr "Arkivet er klonet med succes"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "Katalog @@DIRECTORY@@ eksisterer ikke"
+
+msgid "Error git push"
+msgstr "Fejl git push"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "Klon"
+
+msgid "Destination:"
+msgstr "Destination:"
+
+msgid "Clone repository"
+msgstr "Clone repository"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "Kaldesignal"
+
+msgid "Short name"
+msgstr "Kort navn"
+
+msgid "Name"
+msgstr "Navn"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "Der var ingen repositories synkroniseret fra Phabricator"
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "Liste over synkroniserede repositorier fra Phabricator"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "Indtast noget tekst for at filtrere listen over repositories..."

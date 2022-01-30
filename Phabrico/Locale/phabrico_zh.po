@@ -278,6 +278,9 @@ msgstr "下载博客数据..."
 msgid "Synchronization.Status.DownloadingPhrictionData"
 msgstr "维基文档正在下载中"
 
+msgid "Synchronization.Status.DownloadingPhrictionMetaData"
+msgstr "维基元数据下载"
+
 msgid "Synchronization.Status.DownloadingProjects"
 msgstr "正在下载项目名称"
 
@@ -325,6 +328,9 @@ msgstr "一些维基文件 将不会被上传，因为它们的slug路径太长�
 
 msgid "Some Phriction documents have long slug paths and might cause problems when you create underlying documents.\n\nDo you want to continue ?"
 msgstr "一些维基文档有很长的slug路径，在你创建底层文档时可能会导致问题。\n\n你想继续吗？"
+
+msgid "This document is an unrevised translation. This version of the document will not be uploaded to Phabricator."
+msgstr "该文件是一个未经修订的翻译。这个版本的文件将不会被上传到Phabricator。"
 
 # Maniphest
 msgid "Create Task"
@@ -1177,6 +1183,9 @@ msgstr "这个维基文档或任务没有从Phabricator服务器下载，因为�
 # Invalid configuration
 msgid "Validate the contents of @@APP-CONFIG-FILENAME@@"
 msgstr "验证@@APP-CONFIG-FILENAME@@的内容"
+
+msgid "Validate the contents of @@IISMODULE-CONFIG-FILENAME@@"
+msgstr "验证@@IISMODULE-CONFIG-FILENAME@@的内容"
 
 msgid "Verify if @@APP-CONFIG-FILENAME@@ exists"
 msgstr "验证@@APP-CONFIG-FILENAME@@是否存在"

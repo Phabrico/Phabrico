@@ -3,7 +3,6 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Phabrico.Controllers;
-using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Plugin.Model;
@@ -110,10 +109,11 @@ namespace Phabrico.Plugin
                     }
                 }
             }
-            catch
+            catch (System.Exception exception)
             {
+                Logging.WriteError("Gitanos", "GetRepositoryModifications: " + exception.Message);
             }
-            
+
             return modifications;
         }
 
@@ -121,12 +121,11 @@ namespace Phabrico.Plugin
         /// This method will show the DiffFile screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/gitanos/file", ServerCache = false)]
-        public HttpMessage HttpGetDiffFileScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public HttpMessage HttpGetDiffFileScreen(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
@@ -161,7 +160,6 @@ namespace Phabrico.Plugin
                         {
                             // all modifications have been unedited for current file -> go back to modifications overview of current repository
                             string redirectURL = "/gitanos/data/" + currentRepository.Directory.Replace("\\", "/") + "/";
-                            Http.Response.HttpRedirect httpResponse = null;
                             return new Http.Response.HttpRedirect(httpServer, browser, redirectURL);
                         }
                     }
@@ -223,18 +221,12 @@ namespace Phabrico.Plugin
         /// or from the Gitanos overview screen itself when browsing to the modifications of a given repository
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/gitanos", ServerCache = false)]
-        public void HttpGetOverviewScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetOverviewScreen(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
-            Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
-
-            SessionManager.Token token = SessionManager.GetToken(browser);
-
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 string repositoryDirectory = string.Join("\\", parameters.Skip(1));  // skip "data"-part in url
@@ -304,16 +296,13 @@ namespace Phabrico.Plugin
         /// This method is fired when the user clicks on the 'Show Phabricator repositories' button in the Gitanos screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/gitanos/repositories", ServerCache = false)]
-        public void HttpGetOverviewRemoteRepositoriesScreen(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetOverviewRemoteRepositoriesScreen(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
-
-            SessionManager.Token token = SessionManager.GetToken(browser);
 
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
@@ -330,12 +319,11 @@ namespace Phabrico.Plugin
         /// It's also executed when the search filter is changed
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/gitanos/query", ServerCache = false)]
-        public void HttpGetPopulateOverviewTableData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateOverviewTableData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
@@ -438,12 +426,11 @@ namespace Phabrico.Plugin
         /// It's also executed when the search filter is changed
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/gitanos/repository/unpushed", ServerCache = false)]
-        public void HttpGetPopulateRepositoryUnpushedCommitsTableData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateRepositoryUnpushedCommitsTableData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
@@ -493,11 +480,10 @@ namespace Phabrico.Plugin
         /// This method is fired when the user clicks on the Clone button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/gitanos/repositories/clone", IntegratedWindowsSecurity = true)]
-        public JsonMessage HttpPostCloneRemoteRepository(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostCloneRemoteRepository(Http.Server httpServer, string[] parameters)
         {
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
@@ -507,8 +493,6 @@ namespace Phabrico.Plugin
 
                     Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
                     Storage.GitanosPhabricatorRepository storageGitanosPhabricatorRepository = new Storage.GitanosPhabricatorRepository();
-
-                    SessionManager.Token token = SessionManager.GetToken(browser);
 
                     string firstRootDirectory = storageGitanosConfigurationRootPath.Get(database, Language.NotApplicable).FirstOrDefault().Directory.TrimEnd('\\');
                     string workingDirectory = firstRootDirectory + "\\" + browser.Session.FormVariables[browser.Request.RawUrl]["txtCloneDestination"];
@@ -565,11 +549,10 @@ namespace Phabrico.Plugin
         /// The commit-dialog is shown when user selects 1 or more files and clicks on the commit button.
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/gitanos/repository/commit", IntegratedWindowsSecurity = true)]
-        public JsonMessage HttpPostCommitModifications(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostCommitModifications(Http.Server httpServer, string[] parameters)
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
@@ -588,16 +571,15 @@ namespace Phabrico.Plugin
                         LibGit2Sharp.Signature gitAuthor = GetGitAuthor(repo, out password);
 
                         // add to index
-                        foreach (GitanosModificationsJsonRecordData modification in GetRepositoryModifications(currentRepository.Directory))
+                        foreach (GitanosModificationsJsonRecordData modification in GetRepositoryModifications(currentRepository.Directory)
+                                                                                        .Where(modif => modificationsForNewCommit.Contains(modif.ID))
+                                )
                         {
-                            if (modificationsForNewCommit.Contains(modification.ID))
-                            {
-                                string filePath = modification.File
-                                                              .Substring(currentRepository.Directory.Length)
-                                                              .TrimStart('\\')
-                                                              .Replace('\\', '/');
-                                LibGit2Sharp.Commands.Stage(repo, filePath);
-                            }
+                            string filePath = modification.File
+                                                          .Substring(currentRepository.Directory.Length)
+                                                          .TrimStart('\\')
+                                                          .Replace('\\', '/');
+                            LibGit2Sharp.Commands.Stage(repo, filePath);
                         }
 
                         // commit
@@ -646,7 +628,7 @@ namespace Phabrico.Plugin
 
             if (data.Length >= 3)
             {
-                if (data[0] == 0xEF & data[1] == 0xBB && data[2] == 0xBF)
+                if (data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF)
                 {
                     return System.Text.Encoding.UTF8;
                 }
@@ -734,11 +716,10 @@ namespace Phabrico.Plugin
         /// It will read the associated file and return its content
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/gitanos/repository/editfile", IntegratedWindowsSecurity = true)]
-        public PlainTextMessage HttpPostGetFileContent(Http.Server httpServer, Browser browser, string[] parameters)
+        public PlainTextMessage HttpPostGetFileContent(Http.Server httpServer, string[] parameters)
         {
             string fileName = browser.Session.FormVariables[browser.Request.RawUrl]["filepath"];
             try
@@ -768,11 +749,10 @@ namespace Phabrico.Plugin
         /// This method is fired when the user clicks on the Push button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/gitanos/repository/push", IntegratedWindowsSecurity = true)]
-        public JsonMessage HttpPostPush(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostPush(Http.Server httpServer, string[] parameters)
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
@@ -822,11 +802,10 @@ namespace Phabrico.Plugin
         /// This method is fired when the user clicks on the Save button in the "Edit-File" screen (in Diff screen)
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/gitanos/repository/savefile", IntegratedWindowsSecurity = true)]
-        public JsonMessage HttpPostSaveFileContent(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostSaveFileContent(Http.Server httpServer, string[] parameters)
         {
             string fileName = browser.Session.FormVariables[browser.Request.RawUrl]["filepath"];
             string content = browser.Session.FormVariables[browser.Request.RawUrl]["content"];
@@ -891,87 +870,85 @@ namespace Phabrico.Plugin
         private LibGit2Sharp.Signature GetGitAuthor(string urlGitRemote, out string password, LibGit2Sharp.Repository repo = null)
         {
             LibGit2Sharp.Signature signature = null;
-            CredentialManagement.Credential credential = new CredentialManagement.Credential { Target = "git:" + urlGitRemote };
-
-            bool credentialsLoaded = credential.Load();
-            if (credentialsLoaded)
+            using (CredentialManagement.Credential credential = new CredentialManagement.Credential { Target = "git:" + urlGitRemote })
             {
-                string emailAddress;
-                int startHostName = urlGitRemote.IndexOf('@');
-                if (startHostName > 0)
+                bool credentialsLoaded = credential.Load();
+                if (credentialsLoaded)
                 {
-                    emailAddress = string.Format("{0}@{1}", credential.Username, urlGitRemote.Substring(startHostName + 1));
+                    string emailAddress;
+                    int startHostName = urlGitRemote.IndexOf('@');
+                    if (startHostName > 0)
+                    {
+                        emailAddress = string.Format("{0}@{1}", credential.Username, urlGitRemote.Substring(startHostName + 1));
+                    }
+                    else
+                    {
+                        emailAddress = string.Format("{0}@{1}", credential.Username, urlGitRemote.Substring("http:/".Length).TrimStart('/'));
+                    }
+
+                    signature = new LibGit2Sharp.Signature(credential.Username, emailAddress, DateTimeOffset.Now);
+
+                    password = credential.Password;
+
+                    return signature;
                 }
-                else
-                {
-                    emailAddress = string.Format("{0}@{1}", credential.Username, urlGitRemote.Substring("http:/".Length).TrimStart('/'));
-                }
 
-                signature = new LibGit2Sharp.Signature(credential.Username, emailAddress, DateTimeOffset.Now);
+                password = null;
 
-                password = credential.Password;
+                if (repo != null) signature = repo.Config.BuildSignature(DateTimeOffset.Now);
+                if (signature != null) return signature;
 
-                return signature;
-            }
-
-            password = null;
-
-            if (repo != null) signature = repo.Config.BuildSignature(DateTimeOffset.Now);
-            if (signature != null) return signature;
-
-            // load git-configuration:
-            //   repo.Config might point to the git configuration of the Phabrico service account
-            //   -> retrieve the user profile path of the impersonated user (this is were the .gitconfig file is located)
-            RegistryKey registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            registryKey = registryKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + browser.WindowsIdentity.User.Value);
-            string userProfilePath = registryKey.GetValue("ProfileImagePath", null, RegistryValueOptions.None) as string;
-            if (userProfilePath == null)
-            {
-                registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                // load git-configuration:
+                //   repo.Config might point to the git configuration of the Phabrico service account
+                //   -> retrieve the user profile path of the impersonated user (this is were the .gitconfig file is located)
+                RegistryKey registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
                 registryKey = registryKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + browser.WindowsIdentity.User.Value);
-                userProfilePath = registryKey.GetValue("ProfileImagePath", null, RegistryValueOptions.None) as string;
-            }
-
-            LibGit2Sharp.Configuration gitConfig = null;
-            if (userProfilePath != null)
-            {
-                try
+                string userProfilePath = registryKey.GetValue("ProfileImagePath", null, RegistryValueOptions.None) as string;
+                if (userProfilePath == null)
                 {
-                    gitConfig = LibGit2Sharp.Configuration.BuildFrom(userProfilePath + "\\.gitconfig");
+                    registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                    registryKey = registryKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + browser.WindowsIdentity.User.Value);
+                    userProfilePath = registryKey.GetValue("ProfileImagePath", null, RegistryValueOptions.None) as string;
                 }
-                catch
+
+                LibGit2Sharp.Configuration gitConfig = null;
+                if (userProfilePath != null)
                 {
-
+                    try
+                    {
+                        gitConfig = LibGit2Sharp.Configuration.BuildFrom(userProfilePath + "\\.gitconfig");
+                    }
+                    catch (System.Exception exception)
+                    {
+                        Logging.WriteError("Gitanos", "GetGitAuthor: " + exception.Message);
+                    }
                 }
-            }
 
-            if (gitConfig == null && repo != null)
-            {
-                // unable to load .gitconfig file of impersonated user -> proceed with the one of service account
-                gitConfig = repo.Config;
-            }
+                if (gitConfig == null && repo != null)
+                {
+                    // unable to load .gitconfig file of impersonated user -> proceed with the one of service account
+                    gitConfig = repo.Config;
+                }
 
-            if (gitConfig == null)
-            {
-                // unable to load .gitconfig -> stop
-                throw new InvalidOperationException(string.Format(Locale.TranslateText("Unable to access .gitconfig for {0}", browser.Session.Locale), browser.WindowsIdentity.Name));
-            }
+                if (gitConfig == null)
+                {
+                    // unable to load .gitconfig -> stop
+                    throw new InvalidOperationException(string.Format(Locale.TranslateText("Unable to access .gitconfig for {0}", browser.Session.Locale), browser.WindowsIdentity.Name));
+                }
 
-            return gitConfig.BuildSignature(DateTimeOffset.Now);
+                return gitConfig.BuildSignature(DateTimeOffset.Now);
+            }
         }
 
         /// <summary>
         /// This method is fired when the repositories table is loaded by means of AJAX call
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/gitanos/repositories", IntegratedWindowsSecurity = true)]
-        public JsonMessage HttpPostPopulateRemoteRepositoriesTableData(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostPopulateRemoteRepositoriesTableData(Http.Server httpServer, string[] parameters)
         {
-            SessionManager.Token token = SessionManager.GetToken(browser);
-
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 Storage.GitanosPhabricatorRepository storageGitanosPhabricatorRepository = new Storage.GitanosPhabricatorRepository();
@@ -1097,16 +1074,14 @@ namespace Phabrico.Plugin
         /// It's also executed when the search filter is changed
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/gitanos/repository/modifications")]
-        public JsonMessage HttpPostPopulateRepositoryModificationsTableData(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostPopulateRepositoryModificationsTableData(Http.Server httpServer, string[] parameters)
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
-                IEnumerable<GitanosConfigurationRepositoryPath> repositories = DirectoryMonitor.Repositories;
                 IEnumerable<GitanosModificationsJsonRecordData> filteredModifications = new GitanosModificationsJsonRecordData[0];
 
                 if (parameters.Any())
@@ -1146,8 +1121,9 @@ namespace Phabrico.Plugin
                                 break;
                         }
                     }
-                    catch
+                    catch (System.Exception exception)
                     {
+                        Logging.WriteError("Gitanos", "HttpPostPopulateRepositoryModificationsTableData: " + exception.Message);
                     }
                 }
 
@@ -1160,11 +1136,10 @@ namespace Phabrico.Plugin
         /// This method is fired when the user clicks on the 'Undo modification' button in the repository-modifications screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/gitanos/repository/resetHEAD1", IntegratedWindowsSecurity = true)]
-        public JsonMessage HttpPostResetHEAD1(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostResetHEAD1(Http.Server httpServer, string[] parameters)
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
@@ -1202,11 +1177,10 @@ namespace Phabrico.Plugin
         /// This method is fired when the user clicks on the 'Undo modification' button in the Diff-screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/gitanos/repository/undo", IntegratedWindowsSecurity = true)]
-        public JsonMessage HttpPostUndoRepositoryModifications(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostUndoRepositoryModifications(Http.Server httpServer, string[] parameters)
         {
             lock (DirectoryMonitor.DatabaseAccess)
             {
@@ -1224,23 +1198,22 @@ namespace Phabrico.Plugin
                         LibGit2Sharp.Signature gitAuthor = GetGitAuthor(repo, out password);
 
                         // add to index
-                        foreach (GitanosModificationsJsonRecordData modification in GetRepositoryModifications(currentRepository.Directory))
+                        foreach (GitanosModificationsJsonRecordData modification in GetRepositoryModifications(currentRepository.Directory)
+                                                                                        .Where(modif => modificationID.Equals(modif.ID))
+                                )
                         {
-                            if (modificationID.Equals(modification.ID))
+                            string filePath = modification.File
+                                                          .Substring(currentRepository.Directory.Length)
+                                                          .TrimStart('\\')
+                                                          .Replace('\\', '/');
+                            LibGit2Sharp.Commands.Unstage(repo, filePath);
+
+                            LibGit2Sharp.CheckoutOptions checkoutOptions = new LibGit2Sharp.CheckoutOptions() { CheckoutModifiers = LibGit2Sharp.CheckoutModifiers.Force };
+                            repo.CheckoutPaths(repo.Head.FriendlyName, new string[] { filePath }, checkoutOptions);
+
+                            if (modification.ModificationType.Equals("Untracked"))
                             {
-                                string filePath = modification.File
-                                                              .Substring(currentRepository.Directory.Length)
-                                                              .TrimStart('\\')
-                                                              .Replace('\\', '/');
-                                LibGit2Sharp.Commands.Unstage(repo, filePath);
-
-                                LibGit2Sharp.CheckoutOptions checkoutOptions = new LibGit2Sharp.CheckoutOptions() { CheckoutModifiers = LibGit2Sharp.CheckoutModifiers.Force };
-                                repo.CheckoutPaths(repo.Head.FriendlyName, new string[] { filePath }, checkoutOptions);
-
-                                if (modification.ModificationType.Equals("Untracked"))
-                                {
-                                    System.IO.File.Delete(modification.File);
-                                }
+                                System.IO.File.Delete(modification.File);
                             }
                         }
 
@@ -1267,15 +1240,11 @@ namespace Phabrico.Plugin
         /// This method is fired when the user changes some parameters in the configuration screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/gitanos/configuration/save")]
-        public void HttpPostSaveConfiguration(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostSaveConfiguration(Http.Server httpServer, string[] parameters)
         {
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Storage.GitanosConfigurationRootPath gitanosConfigurationRootPathStorage = new Storage.GitanosConfigurationRootPath();
-
-            SessionManager.Token token = SessionManager.GetToken(browser);
 
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
@@ -1286,30 +1255,34 @@ namespace Phabrico.Plugin
                 List<GitanosConfigurationRootPath> rootPaths = new List<GitanosConfigurationRootPath>();
                 string jsonArrayRootDirectories = browser.Session.FormVariables[browser.Request.RawUrl]["rootDirectories"];
                 JArray rootDirectories = JsonConvert.DeserializeObject(jsonArrayRootDirectories) as JArray;
-                foreach (var rootDirectory in rootDirectories)
+                if (rootDirectories != null)
                 {
-                    GitanosConfigurationRootPath rootPath = new GitanosConfigurationRootPath();
-                    rootPath.Directory = rootDirectory.ToString();
-
-                    // check if directory exists
-                    if (Directory.Exists(rootPath.Directory) == false)
+                    foreach (var rootDirectory in rootDirectories)
                     {
-                        string errorMessage = Locale.TranslateText("Gitanos::Directory @@DIRECTORY@@ does not exist", browser.Session.Locale)
-                                                    .Replace("@@DIRECTORY@@", rootPath.Directory);
+                        GitanosConfigurationRootPath rootPath = new GitanosConfigurationRootPath();
+                        rootPath.Directory = rootDirectory.ToString();
 
-                        // send error state to browser
-                        result = JsonConvert.SerializeObject(new {
-                            status = "ERROR",
-                            message = errorMessage
-                        });
+                        // check if directory exists
+                        if (Directory.Exists(rootPath.Directory) == false)
+                        {
+                            string errorMessage = Locale.TranslateText("Gitanos::Directory @@DIRECTORY@@ does not exist", browser.Session.Locale)
+                                                        .Replace("@@DIRECTORY@@", rootPath.Directory);
 
-                        jsonMessage = new JsonMessage(result);
-                        jsonMessage.Send(browser);
-                        return;
+                            // send error state to browser
+                            result = JsonConvert.SerializeObject(new
+                            {
+                                status = "ERROR",
+                                message = errorMessage
+                            });
+
+                            jsonMessage = new JsonMessage(result);
+                            jsonMessage.Send(browser);
+                            return;
+                        }
+
+                        // directory exists -> put it on the list to process it later
+                        rootPaths.Add(rootPath);
                     }
-
-                    // directory exists -> put it on the list to process it later
-                    rootPaths.Add(rootPath);
                 }
 
                 // == notifications configuration ============================================================================================
@@ -1357,10 +1330,7 @@ namespace Phabrico.Plugin
         /// <param name="configurationTabContent"></param>
         public override void LoadConfigurationParameters(PluginBase plugin, HtmlPartialViewPage configurationTabContent)
         {
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Storage.GitanosConfigurationRootPath storageGitanosConfigurationRootPath = new Storage.GitanosConfigurationRootPath();
-
-            SessionManager.Token token = SessionManager.GetToken(browser);
 
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {

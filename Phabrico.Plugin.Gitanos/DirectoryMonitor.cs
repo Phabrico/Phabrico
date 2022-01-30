@@ -39,6 +39,11 @@ namespace Phabrico.Plugin
         public static object DatabaseAccess = new object();
 
         /// <summary>
+        /// Synchronization object for FileSystemWatcher_Changed event
+        /// </summary>
+        public static object FileSystemWatcherAccess = new object();
+
+        /// <summary>
         /// CancellationToken which allows to stop the FileSystemWatcher immediately
         /// </summary>
         private static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -56,7 +61,7 @@ namespace Phabrico.Plugin
         /// <summary>
         /// ManualResetEvent for detecting when the cancellation action has been finished
         /// </summary>
-        private static ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
+        private readonly static ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// Array of all available GitanosConfigurationRepositoryPath
@@ -67,7 +72,7 @@ namespace Phabrico.Plugin
         /// Collection which contains directories which don't have to be tracked.
         /// E.g. directories mentioned in .gitignore
         /// </summary>
-        private static HashSet<string> _invalidDirectories = new HashSet<string>();
+        private readonly static HashSet<string> _invalidDirectories = new HashSet<string>();
 
         /// <summary>
         /// UTC timestamp per directory when the tracked modifications should be processed.
@@ -75,7 +80,8 @@ namespace Phabrico.Plugin
         /// To limit the number of "processing-calls", each event is postponed with 2 seconds.
         /// If a second event is received in this 2 seconds, the event for the 1st event is thrown away.
         /// </summary>
-        private static Dictionary<string,DateTime> _directoryModificationTimes = new Dictionary<string, DateTime>();
+        private readonly static Dictionary<string,DateTime> _directoryModificationTimes = new Dictionary<string, DateTime>();
+        private static object _directoryModificationTimesSynchronization = new object();
 
         /// <summary>
         /// Collection of all available GitanosConfigurationRootPaths
@@ -119,14 +125,13 @@ namespace Phabrico.Plugin
                         }
 
                         // go through all directories of rootpath and search for ".git" directories
-                        foreach (string subdirectory in Directory.EnumerateDirectories(rootPath.Directory, "*.*", SearchOption.TopDirectoryOnly))
+                        foreach (string subdirectory in Directory.EnumerateDirectories(rootPath.Directory, "*.*", SearchOption.TopDirectoryOnly)
+                                                                 .Where(directory => Directory.Exists(directory + "\\.git"))
+                                )
                         {
-                            if (Directory.Exists(subdirectory + "\\.git"))
-                            {
-                                cancellationToken.ThrowIfCancellationRequested();
+                            cancellationToken.ThrowIfCancellationRequested();
 
-                                gitRepositories.Add(subdirectory);
-                            }
+                            gitRepositories.Add(subdirectory);
                         }
 
                         processedRootPathNames.Add(rootPath.Directory);
@@ -176,8 +181,9 @@ namespace Phabrico.Plugin
                         }
                     }
                 }
-                catch
+                catch (System.Exception exception)
                 {
+                    Logging.WriteError("Gitanos", "DirectoryMonitor: " + exception.Message);
                 }
                 finally
                 {
@@ -211,87 +217,94 @@ namespace Phabrico.Plugin
         /// <param name="e"></param>
         private static void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            Logging.WriteInfo("Gitanos", "FileSystemWatcher_Changed: " + e.FullPath);
-
-            if (_invalidDirectories.Contains(e.FullPath))
+            lock (FileSystemWatcherAccess)
             {
-                // was previously decided it was an invalid directory
-                return;
-            }
+                Logging.WriteInfo("Gitanos", "FileSystemWatcher_Changed: " + e.FullPath);
 
-            Model.GitanosConfigurationRepositoryPath repository = Repositories.FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
-                                                                                                   || e.FullPath.Equals(repo.Directory, StringComparison.OrdinalIgnoreCase)
-                                                                                             );
-            if (repository == null)
-            {
-                // not a git repo -> skip it
-                _invalidDirectories.Add(e.FullPath);
-                return;
-            }
-
-            if (e.FullPath.Contains("\\.git\\logs\\HEAD") == false &&               //  .git\logs\HEAD is changed when a commit is created/deleted
-                e.FullPath.Contains("\\.git\\refs\\remotes\\origin") == false &&    // .git\refs\remotes\origin is accessed by git-push command
-                repository.PathIsIgnored(e.FullPath)
-               )
-            {
-                // directory is excluded by means of .gitignore
-                _invalidDirectories.Add(e.FullPath);
-                return;
-            }
-
-            // postpone action to be executed
-            const int delay = 2000;
-            lock (_directoryModificationTimes)
-            {
-                _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(delay);
-            }
-
-            Task.Delay(delay)
-                .ContinueWith((task,obj) =>
+                if (_invalidDirectories.Contains(e.FullPath))
                 {
-                    lock (_directoryModificationTimes)
+                    // was previously decided it was an invalid directory
+                    return;
+                }
+
+                Model.GitanosConfigurationRepositoryPath repository = Repositories.FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
+                                                                                                       || e.FullPath.Equals(repo.Directory, StringComparison.OrdinalIgnoreCase)
+                                                                                                 );
+                if (repository == null)
+                {
+                    // not a git repo -> skip it
+                    _invalidDirectories.Add(e.FullPath);
+                    return;
+                }
+
+                if (e.FullPath.Contains("\\.git\\logs\\HEAD") == false &&               //  .git\logs\HEAD is changed when a commit is created/deleted
+                    e.FullPath.Contains("\\.git\\refs\\remotes\\origin") == false &&    // .git\refs\remotes\origin is accessed by git-push command
+                    repository.PathIsIgnored(e.FullPath)
+                   )
+                {
+                    // directory is excluded by means of .gitignore
+                    _invalidDirectories.Add(e.FullPath);
+                    return;
+                }
+
+                // postpone action to be executed
+                const int delay = 2000;
+                lock (_directoryModificationTimesSynchronization)
+                {
+                    _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(delay);
+                }
+
+                Task.Delay(delay)
+                    .ContinueWith((task, obj) =>
                     {
-                        // check if postpone duration is exceeded
                         FileSystemWatcherParameter parameter = obj as FileSystemWatcherParameter;
-                        FileSystemEventArgs fileSystemEventArgs = (FileSystemEventArgs)parameter.Event;
-                        if (_directoryModificationTimes.ContainsKey(parameter.Repository.Directory) == false ||
-                            _directoryModificationTimes[parameter.Repository.Directory] > DateTime.UtcNow
-                           )
+
+                        lock (_directoryModificationTimesSynchronization)
                         {
-                            return;
+                            // check if postpone duration is exceeded
+                            if (parameter == null) return;
+
+                            DateTime ealiestNewModificationTime;
+                            if (_directoryModificationTimes.TryGetValue(parameter.Repository.Directory, out ealiestNewModificationTime) == false) return;
+                            if (ealiestNewModificationTime > DateTime.UtcNow) return;
+                            _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(delay);
                         }
 
-                        _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(delay);
+                        Thread.Sleep(100);
 
-                        if (Directory.Exists(repository.Directory) == false)
+                        lock (_directoryModificationTimesSynchronization)
                         {
-                            // repository directory was deleted
-                            DirectoryMonitor.Stop();
-                            DirectoryMonitor.Start(_rootPaths);
-                        }
-                        else
-                        {
-                            // reload git information for current repo
-                            parameter.Repository.Refresh();
 
-                            // update all browsers
-                            Logging.WriteInfo("Gitanos-notify", parameter.Repository.Directory);
-                            if (Repositories.Any(repo => repo.HasUnpushedCommits))
+                            if (Directory.Exists(repository.Directory) == false)
                             {
-                                Http.Server.SendNotificationError("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                                // repository directory was deleted
+                                DirectoryMonitor.Stop();
+                                DirectoryMonitor.Start(_rootPaths);
                             }
                             else
                             {
-                                Http.Server.SendNotificationInformation("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                                // reload git information for current repo
+                                parameter.Repository.Refresh();
+
+                                // update all browsers
+                                Logging.WriteInfo("Gitanos-notify", parameter.Repository.Directory);
+                                if (Repositories.Any(repo => repo.HasUnpushedCommits))
+                                {
+                                    Http.Server.SendNotificationError("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                                }
+                                else
+                                {
+                                    Http.Server.SendNotificationInformation("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                                }
                             }
                         }
-                    }
-                }, 
-                new FileSystemWatcherParameter
-                {
-                    Event = e,
-                    Repository = repository
-                });
+                    },
+                    new FileSystemWatcherParameter
+                    {
+                        Event = e,
+                        Repository = repository
+                    });
+            }
         }
 
         /// <summary>

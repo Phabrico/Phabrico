@@ -9,7 +9,7 @@ namespace Phabrico
     class Program
     {
         private Http.Server httpServer;
-        private static AppConfigLoader appConfigLoader = new AppConfigLoader();
+        private static readonly AppConfigLoader appConfigLoader = new AppConfigLoader();
 
         /// <summary>
         /// Main method
@@ -42,7 +42,7 @@ namespace Phabrico
 
             // initialize HTTP server
             bool remoteAccessEnabled = (bool)AppConfigLoader.AppSettings["RemoteAccess"]?.Equals("Yes");
-            int tcpListenPort = Int32.Parse((string)AppConfigLoader.AppSettings["TcpListenPort"]);
+            int tcpListenPort = Int32.Parse(AppConfigLoader.AppSettings["TcpListenPort"]);
 
             try
             {

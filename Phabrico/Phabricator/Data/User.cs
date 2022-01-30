@@ -61,7 +61,21 @@ namespace Phabrico.Phabricator.Data
         public override int CompareTo(object obj)
         {
             User other = obj as User;
+            if (other == null) return -1;
+
             return RealName.CompareTo(other.RealName);
+        }
+
+        /// <summary>
+        /// Compares a User with another User
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public bool Equals(User otherUser)
+        {
+            if (otherUser == null) return false;
+
+            return base.Equals(otherUser);
         }
     }
 }

@@ -314,8 +314,8 @@ Hablando de algo completamente diferente...
 
 Las URIs se muestran automáticamente: http://phabricator.org/
 
-Si tienes una URI con caracteres problemáticos en ella, como
-"http://comma.org/,", puedes rodearlo con personajes más pequeños y más grandes:
+Si tienes una URI con caracteres problemáticos en ella, como `"http://comma.org/,"`, puedes rodearlo con personajes 
+más pequeños y más grandes:
 ```
 <http://comma.org/,>
 ```

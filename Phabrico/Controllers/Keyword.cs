@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
@@ -48,12 +49,11 @@ namespace Phabrico.Controllers
         /// A JSONified array of SearchResult items is returned to visualize the search results
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/search")]
-        public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetLoadParameters(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideSearch) throw new Phabrico.Exception.HttpNotFound("/search");
 
@@ -75,7 +75,7 @@ namespace Phabrico.Controllers
                     parameters = HttpUtility.UrlDecode(parameters.FirstOrDefault()).Split(' ').ToArray();
 
                     // loop through all tokens which can relate to the given filter values
-                    foreach (string token in keywordStorage.GetTokensByWords(database, parameters))
+                    foreach (string token in keywordStorage.GetTokensByWords(database, parameters, browser.Session.Locale))
                     {
                         SearchResult searchResult = null;
 
@@ -230,28 +230,34 @@ namespace Phabrico.Controllers
 
             if (httpServer.Customization.HidePhriction == false)
             {
-                Phabricator.Data.Phriction data = phrictionStorage.Get(database, token, Language.NotApplicable);
-                if (data != null)
+                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, token, browser.Session.Locale);
+                if (phrictionDocument != null)
                 {
-                    if (httpServer.ValidUserRoles(database, browser, data) == false)
+                    if (httpServer.ValidUserRoles(database, browser, phrictionDocument) == false)
                     {
                         return null;
                     }
 
+                    string urlCrumbs = Controllers.Phriction.GenerateCrumbs(database, phrictionDocument, browser.Session.Locale);
+                    JArray crumbs = JsonConvert.DeserializeObject(urlCrumbs) as JArray;
+                    urlCrumbs = string.Join("/", crumbs.Where(t => ((JValue)t["inexistant"]).Value.Equals(false))
+                                                       .Select(t => ((JValue)t["name"]).Value).ToArray()
+                                           );
+
                     searchResult = new SearchResult();
-                    searchResult.Description = data.Name;
-                    searchResult.Path = data.Path;
-                    searchResult.URL = "w/" + data.Path;
+                    searchResult.Description = phrictionDocument.Name;
+                    searchResult.Path = urlCrumbs;
+                    searchResult.URL = "w/" + phrictionDocument.Path;
                     searchResult.Priority = 0;
 
                     // if the word is in the document's title, increase the priority of the keyword
-                    if (parameters.All(word => data.Name.ToUpper().Split(' ').Contains(word.ToUpper())))
+                    if (parameters.All(word => phrictionDocument.Name.ToUpper().Split(' ').Contains(word.ToUpper())))
                     {
                         searchResult.Priority++;
                     }
 
                     // if the word is partial in the document's title increase the priority of the keyword
-                    if (parameters.All(word => data.Name.ToUpper().Split(' ').Any(partial => partial.StartsWith(word.ToUpper()))))
+                    if (parameters.All(word => phrictionDocument.Name.ToUpper().Split(' ').Any(partial => partial.StartsWith(word.ToUpper()))))
                     {
                         searchResult.Priority++;
                     }

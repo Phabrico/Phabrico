@@ -264,9 +264,10 @@
 		//paintTableBackground(this.state, c, x, y, w, h);
 		var collapsed = (this.state != null) ? this.state.view.graph.
 			isCellCollapsed(this.state.cell) : false;
+		var horizontal = this.isHorizontal();
 		var start = this.getTitleSize();
 		
-		if (start == 0)
+		if (start == 0 || this.outline)
 		{
 			PartialRectangleShape.prototype.paintVertexShape.apply(this, arguments);
 		}
@@ -276,7 +277,9 @@
 			c.translate(-x, -y);
 		}
 
-		if (!collapsed)
+		if (!collapsed && !this.outline &&
+			((horizontal && start < h) ||
+			(!horizontal && start < w)))
 		{
 			this.paintForeground(c, x, y, w, h);
 		}
@@ -3647,8 +3650,7 @@
 			var right = mxUtils.getValue(this.style, 'right', '1') == '1';
 			var bottom = mxUtils.getValue(this.style, 'bottom', '1') == '1';
 
-			if (this.drawHidden || filled || this.outline ||
-				top || right || bottom || left)
+			if (this.drawHidden || filled || this.outline || top || right || bottom || left)
 			{
 				c.rect(x, y, w, h);
 				c.fill();

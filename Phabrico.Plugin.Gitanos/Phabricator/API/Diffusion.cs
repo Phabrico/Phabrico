@@ -39,6 +39,7 @@ namespace Phabrico.Plugin.Phabricator.API
                                             firstItemId
                                            );
                 JObject diffusionRepositorySearchData = JsonConvert.DeserializeObject(json) as JObject;
+                if (diffusionRepositorySearchData == null) break;
 
                 List<JObject> diffusionRepositoryChanges = diffusionRepositorySearchData["result"]["data"].OfType<JObject>().ToList();
                 if (diffusionRepositoryChanges.Any() == false) break;

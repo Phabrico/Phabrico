@@ -107,11 +107,10 @@ namespace Phabrico.Data.References
         /// <summary>
         /// Returns the title of a given Phriction document
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="phrictionDocument"></param>
         /// <returns></returns>
-        private string GetDescription(Phabricator.Data.Phriction data)
+        private string GetDescription(Phabricator.Data.Phriction phrictionDocument)
         {
-            Phabricator.Data.Phriction phrictionDocument = data as Phabricator.Data.Phriction;
             if (phrictionDocument != null)
             {
                 return phrictionDocument.Name;
@@ -125,9 +124,8 @@ namespace Phabrico.Data.References
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        private string GetURL(Phabricator.Data.Phriction data)
+        private string GetURL(Phabricator.Data.Phriction phrictionDocument)
         {
-            Phabricator.Data.Phriction phrictionDocument = data as Phabricator.Data.Phriction;
             if (phrictionDocument != null)
             {
                 string encodedUrl = phrictionDocument.Path;
@@ -144,7 +142,7 @@ namespace Phabrico.Data.References
                                          .Replace("%2F", "/");  //
             }
 
-            return data.ToString();
+            return "";
         }
     }
 }

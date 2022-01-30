@@ -109,6 +109,7 @@
     <Compile Include="Controllers\Translation.cs" />
     <Compile Include="Controllers\UrlControllerAttribute.cs" />
     <Compile Include="Controllers\User.cs" />
+    <Compile Include="Exception\InvalidWhoAmIException.cs" />
     <Compile Include="Exception\InvalidCSRFException.cs" />
     <Compile Include="Exception\InvalidConfigurationException.cs" />
     <Compile Include="Exception\AccessDeniedException.cs" />
@@ -550,6 +551,26 @@
     <EmbeddedResource Include="Fonts\NotoSans-Bold-latin-ext.woff2" />
     <EmbeddedResource Include="Fonts\NotoSans-Bold-latin.woff2" />
     <EmbeddedResource Include="Fonts\NotoSans-Bold-vietnamese.woff2" />
+    <EmbeddedResource Include="Locale\phabrico_sv.po" />
+    <EmbeddedResource Include="Locale\RemarkupSyntax_sv.remarkup">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Locale\phabrico_da.po" />
+    <EmbeddedResource Include="Locale\phabrico_fi.po" />
+    <EmbeddedResource Include="Locale\RemarkupSyntax_da.remarkup">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Locale\RemarkupSyntax_fi.remarkup">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Locale\phabrico_ro.po" />
+    <EmbeddedResource Include="Locale\phabrico_ru.po" />
+    <EmbeddedResource Include="Locale\RemarkupSyntax_ru.remarkup">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Locale\RemarkupSyntax_ro.remarkup">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Phabrico.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

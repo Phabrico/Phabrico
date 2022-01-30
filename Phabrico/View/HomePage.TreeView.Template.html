@@ -257,6 +257,10 @@
                         document.body.className = link.dataset.screen;
                         contentWindow.innerHTML = xmlhttp.response;
                         finalizeAnchorSpans(contentWindow);
+
+                        document.querySelector('html').scrollTop = 0;
+
+                        htmlLoaded();
                     }
                 };
                 xmlhttp.send();

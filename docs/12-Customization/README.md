@@ -46,7 +46,7 @@ namespace My.Wiki
             httpServer.Customization.ApplicationLogo = new Bitmap(typeof(IISModule).Assembly.GetManifestResourceStream("Phabrico.Images.logo.png"));
 
             httpServer.Customization.Theme = ApplicationCustomization.ApplicationTheme.Dark;
-            httpServer.Customization.Language = "en";
+            httpServer.Customization.AvailableLanguages = new Phabrico.Miscellaneous.Language[] { "en", "de"};
 
             httpServer.Customization.HideConfig = true;
             httpServer.Customization.HideFiles = true;
@@ -82,6 +82,7 @@ namespace My.Wiki
 | Parameter                                   | Description                                                                                                                                                             | Default
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------
 | ApplicationCSS                              | Global cascading style sheets which are injected in each page                                                                                                           | 
+| ApplicationHeaderStyle                      | CSS styles for formatting the header on top (e.g. the background color of the header)                                                                                   |
 | ApplicationLogo                             | The logo that should be shown in the top left corner                                                                                                                    | Phabrico logo
 | ApplicationLogoStyle                        | CSS styles for formatting the ApplicationLogo                                                                                                                           | 
 | ApplicationName                             | The name of the application that should be shown in the top left corner                                                                                                 | Phabrico
@@ -101,7 +102,7 @@ namespace My.Wiki
 | HideUsers                                   | If true, Phabricator users will not be accessible                                                                                                                       | false
 | HideSearch                                  | If true, Search field will not be accessible                                                                                                                            | false
 | IsReadonly                                  | If true, no Phriction document or Maniphest task can be edited                                                                                                          | false
-| Language                                    | Language code for Phabrico application.  (Content of Phriction documents or Maniphest tasks will not be translated). If set, the language cannot be changed by the user | Language of browser or English
+| AvailableLanguages                          | Array of language codes for Phabrico application.  (Content of Phriction documents might be translated if translation exists). If not set, all languages are available  | Language of browser or English
 | MasterDataIsAccessible                      | If false, the master data on Phabricator is not accessible via Phabrico. If IsReadonly is true, MasterDataIsAccessible wil be false                                     | true
 | Theme                                       | Auto, Light or Dark; If Auto, the user can change the theme in the Config screen (if accessible)                                                                        | Auto
 
@@ -128,3 +129,9 @@ cd c:\inetpub\wwwroot
 mklink /D MyPhabrico "C:\Program Files\PhabricoIIS"
 ```
 
+## app.config
+You can set the following configuration parameters in the app.config file of the custom IIS HTTP module:
+
+| Parameter                                   | Description                                 | Default
+| ------------------------------------------- | ------------------------------------------- | -------------------------------------------------
+| configuration/appSettings/DatabaseDirectory | Location of the Phabrico database file      | Directory where IIS HTTP module is installed in

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Phabrico.Http
 {
@@ -13,7 +14,7 @@ namespace Phabrico.Http
         /// The dictionary key represents the alias itself.
         /// The dictionary value represents the URL to be redirected to.
         /// </summary>
-        private static Dictionary<string, string> globalUrlAliases = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> globalUrlAliases = new Dictionary<string, string>()
         {
             { "/user/info/",    "/maniphest/opentasks/peruser/" },
             { "/project/info/", "/maniphest/opentasks/perproject/" },
@@ -28,12 +29,10 @@ namespace Phabrico.Http
         /// <returns></returns>
         public static string GetInternalURL(string urlAlias)
         {
-            foreach (string globalUrlAlias in globalUrlAliases.Keys)
+            string globalUrlAlias = globalUrlAliases.Keys.FirstOrDefault(alias => urlAlias.StartsWith(alias));
+            if (globalUrlAlias != null)
             {
-                if (urlAlias.StartsWith(globalUrlAlias))
-                {
-                    return globalUrlAliases[globalUrlAlias] + urlAlias.Substring(globalUrlAlias.Length);
-                }
+                return globalUrlAliases[globalUrlAlias] + urlAlias.Substring(globalUrlAlias.Length);
             }
 
             return urlAlias;

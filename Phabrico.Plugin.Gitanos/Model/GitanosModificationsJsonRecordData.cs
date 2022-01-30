@@ -23,15 +23,17 @@ namespace Phabrico.Plugin.Model
             {
                 if (File != null)
                 {
-                    MD5 md5 = MD5.Create();
-                    byte[] hash = md5.ComputeHash(UTF8Encoding.UTF8.GetBytes(File));
-
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < hash.Length; i++)
+                    using (MD5 md5 = MD5.Create())
                     {
-                        sb.Append(hash[i].ToString("x2"));
+                        byte[] hash = md5.ComputeHash(UTF8Encoding.UTF8.GetBytes(File));
+
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < hash.Length; i++)
+                        {
+                            sb.Append(hash[i].ToString("x2"));
+                        }
+                        return "g" + sb;
                     }
-                    return "g" + sb.ToString();
                 }
                 else
                 {

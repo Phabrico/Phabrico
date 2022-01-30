@@ -97,7 +97,21 @@ namespace Phabrico.Phabricator.Data
         public override int CompareTo(object obj)
         {
             Project other = obj as Project;
+            if (other == null) return -1;
+
             return Name.CompareTo(other.Name);
+        }
+
+        /// <summary>
+        /// Compares a Project with another Project
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public bool Equals(Project otherProject)
+        {
+            if (otherProject == null) return false;
+
+            return base.Equals(otherProject);
         }
     }
 }

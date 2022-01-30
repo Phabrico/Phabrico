@@ -1,0 +1,179 @@
+# Finnish translations
+
+# General
+msgid "Gitanos"
+msgstr "Gitanos"
+
+msgid "Shows the status of all local git repositories"
+msgstr "Näyttää kaikkien paikallisten git-tietovarastojen tilan."
+
+# Configuration
+msgid "Enter the directories where all your Git repository directories are located in:"
+msgstr "Kirjoita hakemistot, joissa kaikki git-arkistosi hakemistot sijaitsevat:"
+
+msgid "Local root directories"
+msgstr "Paikalliset juurihakemistot"
+
+msgid "Add root directory"
+msgstr "Lisää juurihakemisto"
+
+msgid "Gitanos::Notification"
+msgstr "Ilmoitus"
+
+msgid "Summarize the following states for all repositories and show the result as a notification:"
+msgstr "Tee yhteenveto seuraavista tiloista kaikkien arkistojen osalta ja näytä tulos ilmoituksena:"
+
+# Overview
+msgid "Local git repositories"
+msgstr "Paikalliset git-arkistot"
+
+msgid "Type some text to filter the list of git repositories..."
+msgstr "Kirjoita tekstiä suodattaaksesi git-tietovarastojen luettelon..."
+
+msgid "Show clean repositories"
+msgstr "Näytä puhtaat arkistot"
+
+msgid "Hide clean repositories"
+msgstr "Piilota puhtaat arkistot"
+
+msgid "Show Phabricator repositories"
+msgstr "Näytä Phabricator-tietovarastot"
+
+msgid "Repository"
+msgstr "Arkisto"
+
+msgid "Branch"
+msgstr "Haara"
+
+msgid "Gitanos::Added"
+msgstr "Lisätty"
+
+msgid "Gitanos::Removed"
+msgstr "Poistettu"
+
+msgid "Gitanos::Modified"
+msgstr "Muutettu"
+
+msgid "Gitanos::ModifiedTooLarge"
+msgstr "Muutettu (liian suuri)"
+
+msgid "Gitanos::Renamed"
+msgstr "Nimetty uudelleen"
+
+msgid "Gitanos::Untracked"
+msgstr "Untracked"
+
+msgid "There are some local commits which haven't been pushed yet"
+msgstr "On joitakin paikallisia komituksia, joita ei ole vielä siirretty."
+
+# Repository modifications overview
+msgid "Git repository"
+msgstr "Git-arkisto"
+
+msgid "File"
+msgstr "Tiedosto"
+
+msgid "Modification Type"
+msgstr "Muutoksen tyyppi"
+
+msgid "Timestamp"
+msgstr "Aikaleima"
+
+msgid "Unpushed commit"
+msgstr "Unpushed commit"
+
+msgid "Type some text to filter the list of modifications..."
+msgstr "Kirjoita tekstiä suodattaaksesi muutosten luetteloa..."
+
+msgid "COMMIT"
+msgstr "COMMIT"
+
+msgid "PUSH"
+msgstr "PUSH"
+
+msgid "Actions"
+msgstr "Toiminnot"
+
+msgid "Select all files"
+msgstr "Valitse kaikki tiedostot"
+
+msgid "Unselect all files"
+msgstr "Poista kaikkien tiedostojen valinta"
+
+msgid "Commit selected files"
+msgstr "Valittujen tiedostojen sitominen"
+
+msgid "Are you sure you want to discard '@@MODIFICATION@@' ?"
+msgstr "Oletko varma, että haluat hylätä '@@MODIFICATION@@' ?"
+
+# DiffFile
+msgid "This is a binary file which has been modified."
+msgstr "Tämä on binääritiedosto, jota on muutettu."
+
+msgid "Are you sure you want to discard your local changes for @@FILENAME@@ ?"
+msgstr "Haluatko varmasti hylätä @@FILENAME@@ paikalliset muutokset?"
+
+msgid "Undo modification"
+msgstr "Peruuta muutos"
+
+msgid "File was successfully saved"
+msgstr "Tiedosto tallennettiin onnistuneesti"
+
+msgid "File could not be saved"
+msgstr "Tiedostoa ei voitu tallentaa"
+
+msgid "Diff"
+msgstr "Diff"
+
+msgid "Save"
+msgstr "Tallenna"
+
+msgid "Edit"
+msgstr "Muokkaa"
+
+msgid "Line number:"
+msgstr "Rivin numero:"
+
+msgid "This git repository is clean"
+msgstr "Tämä git-arkisto on puhdas"
+
+msgid "Repository successfully cloned"
+msgstr "Arkisto onnistuneesti kloonattu"
+
+# Error messages
+msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
+msgstr "Hakemistoa @@DIRECTORY@@ ei ole olemassa."
+
+msgid "Error git push"
+msgstr "Virhe git push"
+
+# Phabricator repositories
+msgid "Clone"
+msgstr "Kloonaus"
+
+msgid "Destination:"
+msgstr "Kohde:"
+
+msgid "Clone repository"
+msgstr "Clone repository"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Call sign"
+msgstr "Kutsutunnus"
+
+msgid "Short name"
+msgstr "Lyhyt nimi"
+
+msgid "Name"
+msgstr "Nimi"
+
+msgid "There were no repositories synchronized from Phabricator"
+msgstr "Phabricatorista ei synkronoitu arkistoja."
+
+msgid "Synchronized repository list from Phabricator"
+msgstr "Synkronoitu arkistoluettelo Phabricatorista"
+
+msgid "Type some text to filter the list of repositories..."
+msgstr "Kirjoita tekstiä suodattaaksesi arkistojen luetteloa..."

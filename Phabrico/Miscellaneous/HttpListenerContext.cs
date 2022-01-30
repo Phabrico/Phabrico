@@ -30,6 +30,14 @@ namespace Phabrico.Miscellaneous
             }
         }
 
+        public string[] Modules
+        {
+            get
+            {
+                return internalHttpContext?.ApplicationInstance?.Modules?.AllKeys;
+            }
+        }
+
         /// <summary>
         /// Gets the System.Net.HttpListenerRequest that represents a client's request for a resource.
         /// </summary>
@@ -114,7 +122,7 @@ namespace Phabrico.Miscellaneous
                     }
                     else
                     {
-                        windowsPrincipal = internalHttpListenerContext.User as System.Security.Principal.WindowsPrincipal;
+                        windowsPrincipal = internalHttpListenerContext?.User as System.Security.Principal.WindowsPrincipal;
                     }
 
                     if (windowsPrincipal == null) return null;
@@ -143,7 +151,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerContext.Request.IsWebSocketRequest;
+                    return internalHttpListenerContext?.Request?.IsWebSocketRequest ?? false;
                 }
             }
         }
@@ -233,10 +241,6 @@ namespace Phabrico.Miscellaneous
                         await
                             context.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close response received",
                                 CancellationToken.None);
-                    }
-                    else
-                    {
-                        var result = Encoding.UTF8.GetString(buffer);
                     }
                 }
             }

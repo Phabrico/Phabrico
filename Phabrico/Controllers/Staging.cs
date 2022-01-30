@@ -39,7 +39,14 @@ namespace Phabrico.Controllers
                 /// Phriction document has path with length of more than 114 characters
                 /// Red Disallowed icon
                 /// </summary>
-                SlugIsTooLong
+                SlugIsTooLong,
+
+                /// <summary>
+                /// Phriction document was translated into the current selected language.
+                /// This version of the Phriction document will never be uploaded
+                /// Blue translation (comments) icon
+                /// </summary>
+                Translation
             }
 
             /// <summary>
@@ -108,12 +115,11 @@ namespace Phabrico.Controllers
         /// This controller method is a fired when the user opens the Offline Changes screen.
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/offline/changes")]
-        public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetLoadParameters(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes");
 
@@ -126,30 +132,13 @@ namespace Phabrico.Controllers
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 Storage.Stage stage = new Storage.Stage();
-                HtmlPartialViewPage dataViewPage = null;
                 viewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "Staging", null);
 
-                foreach (Storage.Stage.Data stageData in stage.Get(database, browser.Session.Locale).OrderByDescending(modification => modification.DateModified))
+                if (stage.Get(database, browser.Session.Locale).Any())
                 {
-                    string unknownToken = stageData.Token;
-
-                    if (unknownToken.StartsWith("PHID-NEWTOKEN"))
-                    {
-                        JObject deserializedObject = JsonConvert.DeserializeObject(stageData.HeaderData) as JObject;
-                        if (deserializedObject != null)
-                        {
-                            unknownToken = (string)deserializedObject["TokenPrefix"];
-                        }
-                    }
-
-                    if (dataViewPage == null)
-                    {
-                        dataViewPage = viewPage.GetPartialView("DATA-VIEWPAGE");
-                    }
-                    break;
+                    viewPage.GetPartialView("DATA-VIEWPAGE");
                 }
-
-                if (dataViewPage == null)
+                else
                 {
                     viewPage.RemovePartialView("DATA-VIEWPAGE");
                 }
@@ -164,19 +153,18 @@ namespace Phabrico.Controllers
         /// This JSON array will be shown as a HTML table
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/offline/changes/data")]
-        public void HttpGetPopulateTableData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateTableData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/data");
 
             List<JsonRecordData> tableRows = new List<JsonRecordData>();
 
-            Storage.Stage stage = new Storage.Stage();
-            if (stage != null)
+            Storage.Stage stageStorage = new Storage.Stage();
+            if (stageStorage != null)
             {
                 SessionManager.Token token = SessionManager.GetToken(browser);
                 if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
@@ -191,9 +179,18 @@ namespace Phabrico.Controllers
 
                     Content content = new Content(database);
 
-                    foreach (Storage.Stage.Data stageData in stage.Get(database, Language.NotApplicable)
-                                                                  .OrderByDescending(modification => modification.DateModified.ToUnixTimeSeconds())  // do not order by milliseconds
-                                                                  .ThenBy(modification => modification.Operation))
+                    List<Storage.Stage.Data> stagedRecords = stageStorage.Get(database, Language.NotApplicable)
+                                                                         .ToList();
+                    stagedRecords.AddRange(stageStorage.Get(database, browser.Session.Locale)
+                                                       .Where(record => stagedRecords.Select(r => r.HeaderData)
+                                                                                     .Contains(record.HeaderData) == false
+                                                             )
+                                          );
+                    stagedRecords = stagedRecords.OrderByDescending(modification => modification.DateModified.ToUnixTimeSeconds())  // do not order by milliseconds
+                                                 .ThenBy(modification => modification.Operation)
+                                                 .ToList();
+
+                    foreach (Storage.Stage.Data stageData in stagedRecords)
                     {
                         JsonRecordData record = new JsonRecordData();
                         string unknownToken = stageData.Token;
@@ -204,6 +201,7 @@ namespace Phabrico.Controllers
                         record.TransactionModifier = "";
                         record.TransactionText = "";
                         record.Issue = JsonRecordData.IssueType.None;
+                        record.IsTranslation = content.GetTranslation(stageData.Token, browser.Session.Locale) != null;  // might be overwritten later
 
                         if (stageData.Token.StartsWith("PHID-NEWTOKEN-"))
                         {
@@ -269,6 +267,7 @@ namespace Phabrico.Controllers
                         if (unknownToken.StartsWith(Phabricator.Data.Phriction.Prefix))
                         {
                             Phabricator.Data.Phriction document = JsonConvert.DeserializeObject<Phabricator.Data.Phriction>(stageData.HeaderData);
+                            record.IsTranslation = document.Language.Equals(Language.NotApplicable) == false;
 
                             Storage.Phriction phrictionStorage = new Storage.Phriction();
                             string[] crumbs = document.Path.TrimEnd('/').Split('/');
@@ -281,7 +280,7 @@ namespace Phabrico.Controllers
                                 if (parentDocument == null)
                                 {
                                     string inexistantDocumentName = currentPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-                                    inexistantDocumentName = Char.ToUpper(inexistantDocumentName[0]).ToString() + inexistantDocumentName.Substring(1);
+                                    inexistantDocumentName = Char.ToUpper(inexistantDocumentName[0]) + inexistantDocumentName.Substring(1);
                                     crumbDescriptions += " > " + inexistantDocumentName;
                                 }
                                 else
@@ -307,6 +306,11 @@ namespace Phabrico.Controllers
                             {
                                 record.Issue = JsonRecordData.IssueType.SlugIsLong;
                             }
+                            else
+                            if (document.Language.Equals(Language.NotApplicable) == false)
+                            {
+                                record.Issue = JsonRecordData.IssueType.Translation;
+                            }
 
                             record.Title = crumbDescriptions;
                             record.URL = "w/" + document.Path;
@@ -315,14 +319,19 @@ namespace Phabrico.Controllers
                         if (unknownToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
                         {
                             Phabricator.Data.Maniphest task = JsonConvert.DeserializeObject<Phabricator.Data.Maniphest>(stageData.HeaderData);
-                            record.Title = "T" + task.ID.ToString() + ": " + task.Name;
-                            record.URL = "maniphest/T" + task.ID.ToString() + "/";
+                            record.Title = "T" + task.ID + ": " + task.Name;
+                            record.URL = "maniphest/T" + task.ID + "/";
                             record.Type = "fa-anchor";
                         }
                         if (unknownToken.StartsWith(Phabricator.Data.File.Prefix))
                         {
                             Phabricator.Data.File file = JsonConvert.DeserializeObject<Phabricator.Data.File>(stageData.HeaderData);
-                            
+                            record.IsTranslation = file.Language.Equals(Language.NotApplicable) == false;
+                            if (record.IsTranslation)
+                            {
+                                record.Issue = JsonRecordData.IssueType.Translation;
+                            }
+
                             record.Title = file.FileName;
                             record.Type = file.FontAwesomeIcon;
 
@@ -340,7 +349,6 @@ namespace Phabrico.Controllers
                         record.Frozen = stageData.Frozen;
                         record.Token = stageData.Token;
                         record.Timestamp = FormatDateTimeOffset(stageData.DateModified, browser.Session.Locale);
-                        record.IsTranslation = content.GetTranslation(stageData.Token, browser.Session.Locale) != null;
 
                         tableRows.Add(record);
                     }
@@ -374,12 +382,11 @@ namespace Phabrico.Controllers
         /// It is used to visualize the notification of the 'Offline changes' menuitem
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/offline/changes/count")]
-        public void HttpGetCountUncommittedObjects(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetCountUncommittedObjects(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             JsonRecordData.IssueType issueType = JsonRecordData.IssueType.None;
             int numberUncommittedObjects = 0;
@@ -390,12 +397,22 @@ namespace Phabrico.Controllers
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
                 Storage.Stage stageStorage = new Storage.Stage();
-                Phabricator.Data.PhabricatorObject[] uncommittedObjects = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, Language.NotApplicable, false).ToArray();
+                List<Storage.Stage.Data> uncommittedObjects = stageStorage.Get(database, Language.NotApplicable)
+                                                              .ToList();
+                uncommittedObjects.AddRange(stageStorage.Get(database, browser.Session.Locale)
+                                            .Where(record => uncommittedObjects.Select(r => r.HeaderData)
+                                                                          .Contains(record.HeaderData) == false
+                                                  )
+                                      );
+                uncommittedObjects = uncommittedObjects.OrderByDescending(modification => modification.DateModified.ToUnixTimeSeconds())  // do not order by milliseconds
+                                             .ThenBy(modification => modification.Operation)
+                                             .ToList();
+
                 Phabricator.Data.Phriction[] uncommittedPhrictionDocuments = stageStorage.Get<Phabricator.Data.Phriction>(database, Language.NotApplicable, false)
                                                                                          .Where(uncommittedObject => uncommittedObject != null)
                                                                                          .ToArray();
 
-                numberUncommittedObjects = uncommittedObjects.Length;
+                numberUncommittedObjects = uncommittedObjects.Count;
                 if (numberUncommittedObjects > 0)
                 {
                     if (uncommittedPhrictionDocuments.Any(document => document.Path.Length >= Phabricator.Data.Phriction.MaximumLengthSlug))
@@ -430,10 +447,9 @@ namespace Phabrico.Controllers
         /// This controller method is fired when the user clicks on the 'Freeze' button of an item in the Offline Changes overview
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/offline/changes/freeze")]
-        public void HttpPostFreeze(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostFreeze(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/freeze");
 
@@ -539,10 +555,9 @@ namespace Phabrico.Controllers
         /// This controller method is fired when the user clicks on the 'Unfreeze' button of an item in the Offline Changes overview
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/offline/changes/unfreeze")]
-        public void HttpPostUnfreeze(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostUnfreeze(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/unfreeze");
 
@@ -654,11 +669,10 @@ namespace Phabrico.Controllers
         /// This method will be executed when the user confirms the renewal action.
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/offline/changes/rename/slug")]
-        public JsonMessage HttpPostRenamePhrictionSlug(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostRenamePhrictionSlug(Http.Server httpServer, string[] parameters)
         {
             string jsonData;
             if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/undo");
@@ -720,10 +734,9 @@ namespace Phabrico.Controllers
         /// This controller method is fired when the user clicks on the 'Undo' button of an item in the Offline Changes overview
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/offline/changes/undo")]
-        public void HttpPostUndo(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostUndo(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/undo");
 
@@ -760,6 +773,7 @@ namespace Phabrico.Controllers
                     List<int> unreferencedStagedFileIDs = new List<int>();
                     Phabricator.Data.Maniphest maniphestTask = phabricatorObject as Phabricator.Data.Maniphest;
                     Phabricator.Data.Phriction phrictionDocument = phabricatorObject as Phabricator.Data.Phriction;
+                    Phabricator.Data.File fileObject = phabricatorObject as Phabricator.Data.File;
 
                     if (maniphestTask != null && maniphestTask.Description != null)
                     {
@@ -777,36 +791,200 @@ namespace Phabrico.Controllers
                                                           );
                     }
 
-                    foreach (Phabricator.Data.PhabricatorObject stagedObject in stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, browser.Session.Locale))
+                    if (maniphestTask != null || phrictionDocument != null)
                     {
-                        maniphestTask = stagedObject as Phabricator.Data.Maniphest;
-                        phrictionDocument = stagedObject as Phabricator.Data.Phriction;
-
-                        if (maniphestTask != null)
+                        foreach (Phabricator.Data.PhabricatorObject stagedObject in stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, browser.Session.Locale))
                         {
-                            unreferencedStagedFileIDs.RemoveAll(referencedFileID => matchFileAttachments.Matches(maniphestTask.Description)
-                                                                                                        .OfType<Match>()
-                                                                                                        .Select(match => Int32.Parse(match.Groups[1].Value))
-                                                                                                        .Contains(referencedFileID)
-                                                               );
+                            maniphestTask = stagedObject as Phabricator.Data.Maniphest;
+                            phrictionDocument = stagedObject as Phabricator.Data.Phriction;
+
+                            if (maniphestTask != null)
+                            {
+                                unreferencedStagedFileIDs.RemoveAll(referencedFileID => matchFileAttachments.Matches(maniphestTask.Description)
+                                                                                                            .OfType<Match>()
+                                                                                                            .Select(match => Int32.Parse(match.Groups[1].Value))
+                                                                                                            .Contains(referencedFileID)
+                                                                   );
+                            }
+
+                            if (phrictionDocument != null)
+                            {
+                                unreferencedStagedFileIDs.RemoveAll(referencedFileID => matchFileAttachments.Matches(phrictionDocument.Content)
+                                                                                                            .OfType<Match>()
+                                                                                                            .Select(match => Int32.Parse(match.Groups[1].Value))
+                                                                                                            .Contains(referencedFileID)
+                                                                   );
+                            }
                         }
 
-                        if (phrictionDocument != null)
+                        foreach (int unreferencedStagedFileID in unreferencedStagedFileIDs)
                         {
-                            unreferencedStagedFileIDs.RemoveAll(referencedFileID => matchFileAttachments.Matches(phrictionDocument.Content)
-                                                                                                        .OfType<Match>()
-                                                                                                        .Select(match => Int32.Parse(match.Groups[1].Value))
-                                                                                                        .Contains(referencedFileID)
-                                                               );
+                            Phabricator.Data.File unreferencedStageFile = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, unreferencedStagedFileID, false);
+                            if (unreferencedStageFile != null)
+                            {
+                                stageStorage.Remove(database, browser, unreferencedStageFile, language);
+                            }
                         }
                     }
 
-                    foreach (int unreferencedStagedFileID in unreferencedStagedFileIDs)
+                    if (fileObject != null)
                     {
-                        Phabricator.Data.File unreferencedStageFile = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, unreferencedStagedFileID, false);
-                        if (unreferencedStageFile != null)
+                        Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+                        Storage.Phriction phrictionStorage = new Storage.Phriction();
+                        Storage.Stage stagStorage = new Storage.Stage();
+                        Content content = new Content(database);
+                        Phabricator.Data.File originalFile = null;
+                        if (fileObject.OriginalID > 0)
                         {
-                            stageStorage.Remove(database, browser, unreferencedStageFile, language);
+                            Storage.File fileStorage = new Storage.File();
+                            originalFile = fileStorage.GetByID(database, fileObject.OriginalID, true);
+                        }
+                        else
+                        if (fileObject.OriginalID < 0)
+                        {
+                            originalFile = stageStorage.Get<Phabricator.Data.File>(database, Language.NotApplicable, Phabricator.Data.File.Prefix, fileObject.OriginalID, false);
+                        }
+
+                        if (originalFile != null)
+                        {
+                            foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(originalFile.Token, browser.Session.Locale).ToArray())
+                            {
+                                maniphestTask = dependentObject as Phabricator.Data.Maniphest;
+                                phrictionDocument = dependentObject as Phabricator.Data.Phriction;
+
+                                if (maniphestTask != null)
+                                {
+                                    foreach (Match match in matchFileAttachments.Matches(maniphestTask.Description)
+                                                                                .OfType<Match>()
+                                                                                .Where(m => m.Groups[1].Value.Equals(fileObject.ID.ToString()))
+                                                                                .OrderByDescending(m => m.Index)
+                                                                                .ToArray()
+                                            )
+                                    {
+                                        maniphestTask.Description = maniphestTask.Description.Substring(0, match.Groups[1].Index)
+                                                                  + originalFile.ID
+                                                                  + maniphestTask.Description.Substring(match.Groups[1].Index + match.Groups[1].Length);
+
+                                        if (maniphestTask.Token.StartsWith("PHID-NEWTOKEN-"))
+                                        {
+                                            stageStorage.Modify(database, maniphestTask, browser);
+                                        }
+                                        else
+                                        {
+                                            maniphestStorage.Add(database, maniphestTask);
+                                        }
+
+                                        httpServer.InvalidateNonStaticCache("/maniphest/T" + maniphestTask.ID);
+                                    }
+
+                                    continue;
+                                }
+
+                                if (phrictionDocument != null)
+                                {
+                                    foreach (Match match in matchFileAttachments.Matches(phrictionDocument.Content)
+                                                                                .OfType<Match>()
+                                                                                .Where(m => m.Groups[1].Value.Equals(fileObject.ID.ToString()))
+                                                                                .OrderByDescending(m => m.Index)
+                                                                                .ToArray()
+                                            )
+                                    {
+                                        phrictionDocument.Content = phrictionDocument.Content.Substring(0, match.Groups[1].Index)
+                                                                  + originalFile.ID
+                                                                  + phrictionDocument.Content.Substring(match.Groups[1].Index + match.Groups[1].Length);
+
+                                        if (phrictionDocument.Token.StartsWith("PHID-NEWTOKEN-"))
+                                        {
+                                            stageStorage.Modify(database, phrictionDocument, browser);
+                                        }
+                                        else
+                                        if (phabricatorObject.Language.Equals(Language.NotApplicable))
+                                        {
+                                            phrictionStorage.Add(database, phrictionDocument);
+                                        }
+                                        else
+                                        {
+                                            content.AddTranslation(phrictionDocument.Token, phabricatorObject.Language, phrictionDocument.Name, phrictionDocument.Content);
+                                            stageStorage.Remove(database, browser, phabricatorObject, phabricatorObject.Language);
+                                        }
+
+                                        httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                                    }
+
+                                    continue;
+                                }
+                            }
+                        }
+                        else
+                        if (fileObject.OriginalID == 0)
+                        {
+                            foreach (Phabricator.Data.PhabricatorObject dependentObject in database.GetDependentObjects(fileObject.Token, browser.Session.Locale).ToArray())
+                            {
+                                maniphestTask = dependentObject as Phabricator.Data.Maniphest;
+                                phrictionDocument = dependentObject as Phabricator.Data.Phriction;
+
+                                if (maniphestTask != null)
+                                {
+                                    foreach (Match match in matchFileAttachments.Matches(maniphestTask.Description)
+                                                                                .OfType<Match>()
+                                                                                .Where(m => m.Groups[1].Value.Equals(fileObject.ID.ToString()))
+                                                                                .OrderByDescending(m => m.Index)
+                                                                                .ToArray()
+                                            )
+                                    {
+                                        // remove file reference
+                                        maniphestTask.Description = maniphestTask.Description.Substring(0, match.Index)
+                                                                  + maniphestTask.Description.Substring(match.Index + match.Length);
+
+                                        if (maniphestTask.Token.StartsWith("PHID-NEWTOKEN-"))
+                                        {
+                                            stageStorage.Modify(database, maniphestTask, browser);
+                                        }
+                                        else
+                                        {
+                                            maniphestStorage.Add(database, maniphestTask);
+                                        }
+
+                                        httpServer.InvalidateNonStaticCache("/maniphest/T" + maniphestTask.ID);
+                                    }
+
+                                    continue;
+                                }
+
+                                if (phrictionDocument != null)
+                                {
+                                    foreach (Match match in matchFileAttachments.Matches(phrictionDocument.Content)
+                                                                                .OfType<Match>()
+                                                                                .Where(m => m.Groups[1].Value.Equals(fileObject.ID.ToString()))
+                                                                                .OrderByDescending(m => m.Index)
+                                                                                .ToArray()
+                                            )
+                                    {
+                                        // remove file reference
+                                        phrictionDocument.Content = phrictionDocument.Content.Substring(0, match.Index)
+                                                                  + phrictionDocument.Content.Substring(match.Index + match.Length);
+
+                                        if (phrictionDocument.Token.StartsWith("PHID-NEWTOKEN-"))
+                                        {
+                                            stageStorage.Modify(database, phrictionDocument, browser);
+                                        }
+                                        else
+                                        if (phabricatorObject.Language.Equals(Language.NotApplicable))
+                                        {
+                                            phrictionStorage.Add(database, phrictionDocument);
+                                        }
+                                        else
+                                        {
+                                            content.AddTranslation(phrictionDocument.Token, phabricatorObject.Language, phrictionDocument.Name, phrictionDocument.Content);
+                                            stageStorage.Remove(database, browser, phabricatorObject, phabricatorObject.Language);
+                                        }
+
+                                        httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                                    }
+
+                                    continue;
+                                }
+                            }
                         }
                     }
                 }
@@ -817,10 +995,9 @@ namespace Phabrico.Controllers
         /// This controller method is fired when the user clicks on the 'Save local version' button in the StagingDiff view (Offline changes screen)
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/offline/changes/view", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
-        public void HttpPostSaveChanges(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostSaveChanges(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideOfflineChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/view");
 
@@ -876,12 +1053,11 @@ namespace Phabrico.Controllers
         /// This view is opened when the user clicks on the 'View Changes' button in the Offline Changes screeen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/offline/changes/view", HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
-        public void HttpGetViewChanges(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetViewChanges(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideOfflineChanges && httpServer.Customization.HidePhrictionChanges) throw new Phabrico.Exception.HttpNotFound("/offline/changes/view");
             if (parameters.Any() == false) throw new Phabrico.Exception.AccessDeniedException("/offline/changes/view", "invalid url");
@@ -938,7 +1114,7 @@ namespace Phabrico.Controllers
                     originalText = originalManiphestTask.Description;
                     modifiedText = modifiedManiphestTask.Description;
                     title = modifiedManiphestTask.Name;
-                    url = "maniphest/T" + modifiedManiphestTask.ID.ToString() + "/";
+                    url = "maniphest/T" + modifiedManiphestTask.ID + "/";
                 }
             }
 

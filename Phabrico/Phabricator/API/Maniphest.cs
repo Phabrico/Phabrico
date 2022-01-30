@@ -39,7 +39,7 @@ namespace Phabrico.Phabricator.API
                                                                                                            .ToDictionary(key => key.Value, value => value);
 
             List<Constraint> internalConstraints = constraints.ToList();
-            if (minimumDateTime == 0) minimumDateTime = 1; // minimum Phabricator timestamp can not be 0
+            if (minimumDateTime < 0.9) minimumDateTime = 1.0; // minimum Phabricator timestamp can not be 0
             internalConstraints.Add(new Constraint("modifiedStart", (Int64)minimumDateTime));
 
             string firstItemId = "";
@@ -56,9 +56,10 @@ namespace Phabrico.Phabricator.API
                                             "updated",
                                             firstItemId
                                            );
-                JObject maniphestDataData = JsonConvert.DeserializeObject(json) as JObject;
+                JObject maniphestData = JsonConvert.DeserializeObject(json) as JObject;
+                if (maniphestData == null) break;
 
-                List<JObject> maniphestTaskChanges = maniphestDataData["result"]["data"].OfType<JObject>().ToList();
+                List<JObject> maniphestTaskChanges = maniphestData["result"]["data"].OfType<JObject>().ToList();
                 if (maniphestTaskChanges.Any() == false) break;
 
                 List<string> processedManiphestTaskIDs = new List<string>();

@@ -1,0 +1,618 @@
+# Danish translations
+
+# General
+msgid "Diagram"
+msgstr "Diagram"
+
+msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
+msgstr "Editor til flowdiagrammer, procesdiagrammer, organisationsdiagrammer, UML-, ER- og netværksdiagrammer."
+
+# Help shortcuts
+msgid "Styles"
+msgstr "Stilarter"
+
+msgid "Document"
+msgstr "Dokument"
+
+msgid "Sidebar / Connect"
+msgstr "Sidebar / Forbind"
+
+msgid "View"
+msgstr "Vis"
+
+msgid "Canvas"
+msgstr "Lærred"
+
+msgid "Cursor / Page keys"
+msgstr "Cursor / sidetaster"
+
+msgid "Tools"
+msgstr "Værktøjer"
+
+msgid "Selection"
+msgstr "Valg"
+
+msgid "Labels"
+msgstr "Etiketter"
+
+msgid "(Shift+)Tab"
+msgstr "(Shift+)Tab"
+
+msgid "Alt+(Shift / Ctrl)+Click on a sidebar item"
+msgstr "Alt+(Shift / Ctrl)+Klik på et element i sidebaren"
+
+msgid "Alt+(Shift+)Drag from sidebar"
+msgstr "Alt+(Shift+)Træk fra sidebar"
+
+msgid "Alt+(Shift+)Tab"
+msgstr "Alt+(Shift+)Tab"
+
+msgid "Alt+Click"
+msgstr "Alt+Klik"
+
+msgid "Alt+Connect"
+msgstr "Alt+Forbind"
+
+msgid "Alt+Cursor"
+msgstr "Alt+Cursor"
+
+msgid "Alt+Mouse wheel"
+msgstr "Alt+Musehjul"
+
+msgid "Alt+Shift+A"
+msgstr "Alt+Shift+A"
+
+msgid "Alt+Shift+C/T"
+msgstr "Alt+Shift+C/T"
+
+msgid "Alt+Shift+Cursor"
+msgstr "Alt+Shift+Cursor"
+
+msgid "Alt+Drag"
+msgstr "Alt+Stræk"
+
+msgid "Alt+Shift+P"
+msgstr "Alt+Shift+P"
+
+msgid "Alt+Shift+V"
+msgstr "Alt+Shift+V"
+
+msgid "Alt+Shift+X"
+msgstr "Alt+Shift+X"
+
+msgid "Backspace or Delete"
+msgstr "Tilbagetræk eller Slet"
+
+msgid "Click on a sidebar item"
+msgstr "Klik på et element i sidebaren"
+
+msgid "Ctrl - (Numpad)"
+msgstr "Ctrl - (Numpad)"
+
+msgid "Ctrl / Meta+Resize"
+msgstr "Ctrl / Meta+Restørrelse"
+
+msgid "Ctrl / Shift+Click"
+msgstr "Ctrl / Shift+Klik"
+
+msgid "Ctrl / Shift+Delete"
+msgstr "Ctrl / Shift+Slet"
+
+msgid "Ctrl / Shift+Drag"
+msgstr "Ctrl / Shift+Strøm"
+
+msgid "Ctrl + (Numpad)"
+msgstr "Ctrl + (Numpad)"
+
+msgid "Ctrl+(Shift+)A"
+msgstr "Ctrl+(Shift+)A"
+
+msgid "Ctrl+. / ,"
+msgstr "Ctrl+. / ,"
+
+msgid "Ctrl+0"
+msgstr "Ctrl+0"
+
+msgid "Ctrl+B / I"
+msgstr "Ctrl+B / I"
+
+msgid "Ctrl+C"
+msgstr "Ctrl+C"
+
+msgid "Ctrl+Click"
+msgstr "Ctrl+Klik"
+
+msgid "Ctrl+Cursor"
+msgstr "Ctrl+Cursor"
+
+msgid "Ctrl+E"
+msgstr "Ctrl+E"
+
+msgid "Ctrl+End"
+msgstr "Ctrl+End"
+
+msgid "Ctrl+Enter / D"
+msgstr "Ctrl+Enter / D"
+
+msgid "Ctrl+G"
+msgstr "Ctrl+G"
+
+msgid "Ctrl+Home"
+msgstr "Ctrl+Hjem"
+
+msgid "Ctrl+J"
+msgstr "Ctrl+J"
+
+msgid "Ctrl+K"
+msgstr "Ctrl+K"
+
+msgid "Ctrl+L / Alt+Shift+L"
+msgstr "Ctrl+L / Alt+Shift+L"
+
+msgid "Ctrl+M"
+msgstr "Ctrl+M"
+
+msgid "Ctrl+P"
+msgstr "Ctrl+P"
+
+msgid "Ctrl+R"
+msgstr "Ctrl+R"
+
+msgid "Ctrl+S"
+msgstr "Ctrl+S"
+
+msgid "Ctrl+Shift+B"
+msgstr "Ctrl+Shift+B"
+
+msgid "Ctrl+Shift+C"
+msgstr "Ctrl+Shift+C"
+
+msgid "Ctrl+Shift+Connect"
+msgstr "Ctrl+Shift+Forbindelse"
+
+msgid "Ctrl+Shift+Cursor"
+msgstr "Ctrl+Shift+Cursor"
+
+msgid "Ctrl+Shift+D"
+msgstr "Ctrl+Shift+D"
+
+msgid "Alt+Ctrl+Shift+Drag"
+msgstr "Alt+Ctrl+Strg+Shift+Stræk"
+
+msgid "Ctrl+Shift+End"
+msgstr "Ctrl+Shift+End"
+
+msgid "Ctrl+Shift+F"
+msgstr "Ctrl+Shift+F"
+
+msgid "Ctrl+Shift+G"
+msgstr "Ctrl+Shift+G"
+
+msgid "Ctrl+Shift+H"
+msgstr "Ctrl+Shift+H"
+
+msgid "Ctrl+Shift+Home"
+msgstr "Ctrl+Shift+Hjem"
+
+msgid "Ctrl+Shift+I / E"
+msgstr "Ctrl+Shift+I / E"
+
+msgid "Ctrl+Shift+J"
+msgstr "Ctrl+Shift+J"
+
+msgid "Ctrl+Shift+K"
+msgstr "Ctrl+Shift+K"
+
+msgid "Ctrl+Shift+L"
+msgstr "Ctrl+Shift+L"
+
+msgid "Ctrl+Shift+M"
+msgstr "Ctrl+Shift+M"
+
+msgid "Ctrl+Shift+Mouse wheel"
+msgstr "Ctrl+Shift+Musehjul"
+
+msgid "Ctrl+Shift+O"
+msgstr "Ctrl+Shift+O"
+
+msgid "Ctrl+Shift+P"
+msgstr "Ctrl+Shift+P"
+
+msgid "Ctrl+Shift+Pg Down"
+msgstr "Ctrl+Shift+Pg ned"
+
+msgid "Ctrl+Shift+Pg Up"
+msgstr "Ctrl+Shift+Pg op"
+
+msgid "Ctrl+Shift+R"
+msgstr "Ctrl+Shift+R"
+
+msgid "Ctrl+Shift+S"
+msgstr "Ctrl+Shift+S"
+
+msgid "Ctrl+Shift+U"
+msgstr "Ctrl+Shift+U"
+
+msgid "Ctrl+Shift+V"
+msgstr "Ctrl+Shift+V"
+
+msgid "Ctrl+Shift+X"
+msgstr "Ctrl+Shift+X"
+
+msgid "Ctrl+Shift+Y"
+msgstr "Ctrl+Shift+Y"
+
+msgid "Ctrl+U"
+msgstr "Ctrl+U"
+
+msgid "Ctrl+V"
+msgstr "Ctrl+V"
+
+msgid "Ctrl+X"
+msgstr "Ctrl+X"
+
+msgid "Ctrl+Y"
+msgstr "Ctrl+Y"
+
+msgid "Ctrl+Z"
+msgstr "Ctrl+Z"
+
+msgid "Cursor"
+msgstr "Markør"
+
+msgid "Double click"
+msgstr "Dobbeltklik"
+
+msgid "End"
+msgstr "Afslut"
+
+msgid "Enter"
+msgstr "Indtast"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "F1"
+msgstr "F1"
+
+msgid "F2 / Enter"
+msgstr "F2 / Enter"
+
+msgid "F2 / Tab / Esc"
+msgstr "F2 / Tab / Esc"
+
+msgid "Hold Alt"
+msgstr "Hold Alt"
+
+msgid "Mouse wheel"
+msgstr "Mushjul"
+
+msgid "Rightclick"
+msgstr "Højreklik"
+
+msgid "Shift+Click on a sidebar item"
+msgstr "Shift+Klik på et element i sidebaren"
+
+msgid "Shift+Connect"
+msgstr "Shift+Forbind"
+
+msgid "Shift+Cursor"
+msgstr "Shift+Cursor"
+
+msgid "Shift+Drag"
+msgstr "Shift+Stræk"
+
+msgid "Shift+Enter"
+msgstr "Skift+indtastning"
+
+msgid "Shift+Home"
+msgstr "Skift+Hjem"
+
+msgid "Shift+Mouse wheel"
+msgstr "Skift+Musehjul"
+
+msgid "Shift+Resize"
+msgstr "Skift+Restørrelse"
+
+msgid "Space / Right mouse Drag"
+msgstr "Mellemrum / højre musetræk"
+
+msgid "About"
+msgstr "Om"
+
+msgid "Toggle to Selection"
+msgstr "Skift til valg"
+
+msgid "Autosize"
+msgstr "Autosize"
+
+msgid "Bring to Front"
+msgstr "Bring til forsiden"
+
+msgid "Cancel Action"
+msgstr "Annuller handling"
+
+msgid "Canvas Horizontal Scroll"
+msgstr "Vandret rulning på lærred"
+
+msgid "Canvas Vertical Scroll"
+msgstr "Lodret rulning på lærred"
+
+msgid "Canvas Zoom In/Out"
+msgstr "Canvas Zoom ind/ud"
+
+msgid "Centered / Group Resize"
+msgstr "Centreret/grupperesize ændres"
+
+msgid "Clear Default Style"
+msgstr "Ryd standard stil"
+
+msgid "Clear Waypoints / Edit Tooltip"
+msgstr "Ryd Waypoints / Rediger værktøjstip"
+
+msgid "Click to connect and clone (ctrl+click to clone,shift+click to connect). Drag to connect(ctrl+drag to clone)."
+msgstr "Klik for at forbinde og klone (ctrl+klik for at klone, shift+klik for at forbinde). Træk for at forbinde (ctrl+træk for at klone)."
+
+msgid "Click to rotate 90° clockwise. Drag to rotate."
+msgstr "Klik for at rotere 90° med uret. Træk for at rotere."
+
+msgid "Clone and connect"
+msgstr "Kloning og forbindelse"
+
+msgid "Clone cell/Disconnect edge"
+msgstr "Klonér celle/afbryd kant"
+
+msgid "Collapse Container"
+msgstr "Luk beholderen sammen"
+
+msgid "Connect to a Fixed Point"
+msgstr "Forbind til et fast punkt"
+
+msgid "Connect to shape outline (ignore connection points)"
+msgstr "Forbind til formomrids (ignorer forbindelsespunkter)"
+
+msgid "Connection Arrows"
+msgstr "Forbindelsespile"
+
+msgid "Connection Points"
+msgstr "Forbindelsespunkter"
+
+msgid "Connects unconnected side of selected edge"
+msgstr "Forbinder ikke-forbundne sider af den valgte kant"
+
+msgid "Context Menu"
+msgstr "Kontekstmenu"
+
+msgid "Copy"
+msgstr "Kopier"
+
+msgid "Copy Size"
+msgstr "Kopier størrelse"
+
+msgid "Copy Style"
+msgstr "Kopier stil"
+
+msgid "Create / Remove Space"
+msgstr "Opret/fjern plads"
+
+msgid "Ctrl / Shift+Enter: New Line"
+msgstr "Ctrl / Shift+Enter: Ny linje"
+
+msgid "Ctrl / Shift+Esc: Cancel Editing"
+msgstr "Ctrl / Shift+Esc: Annuller redigering"
+
+msgid "Ctrl: Show Dialog, Alt: Origin, Shift: Ignore XML"
+msgstr "Ctrl: Vis dialog, Alt: Oprindelse, Shift: Ignorer XML"
+
+msgid "Ctrl+Resize for non-recursive group resize"
+msgstr "Ctrl+Restørrelse for ikke-rekursiv gruppestørrelsesændring"
+
+msgid "Ctrl+Meta+Resize for centered group resize"
+msgstr "Ctrl+Meta+Resize for centreret gruppeforandring"
+
+msgid "Custom Zoom"
+msgstr "Brugerdefineret zoom"
+
+msgid "Cut"
+msgstr "Klip"
+
+msgid "Delete Selected Cells"
+msgstr "Slet markerede celler"
+
+msgid "Delete Selected Cells with Connections / Labels"
+msgstr "Slet markerede celler med forbindelser/etiketter"
+
+msgid "Disable Connections"
+msgstr "Deaktivere forbindelser"
+
+msgid "Disable replace, connect on drop (drop targets), Shift ignores current style"
+msgstr "Deaktiver udskiftning, forbindelse ved drop (dropmål), Shift ignorerer den aktuelle stil"
+
+msgid "Duplicate"
+msgstr "Dupliker"
+
+msgid "Edit Metadata"
+msgstr "Rediger metadata"
+
+msgid "Edit Style"
+msgstr "Rediger stil"
+
+msgid "Edit Vertex Geometry"
+msgstr "Rediger Vertex-geometri"
+
+msgid "Enter Group"
+msgstr "Indtast gruppe"
+
+msgid "Exit Group"
+msgstr "Afslut gruppe"
+
+msgid "Expand Container"
+msgstr "Udvid container"
+
+msgid "Fit Page"
+msgstr "Tilpas side"
+
+msgid "Fit Two Pages"
+msgstr "Tilpasning af to sider"
+
+msgid "Fit Window"
+msgstr "Tilpas vindue"
+
+msgid "Group"
+msgstr "Gruppe"
+
+msgid "Home"
+msgstr "Hjem"
+
+msgid "Ignores handles under the mouse"
+msgstr "Ignorerer håndtag under musen"
+
+msgid "Insert Ellipse"
+msgstr "Indsæt ellipse"
+
+msgid "Insert Rectangle"
+msgstr "Indsæt rektangel"
+
+msgid "Insert Text"
+msgstr "Indsæt tekst"
+
+msgid "Insert text or add an edge label"
+msgstr "Indsæt tekst eller tilføj et kantmærke"
+
+msgid "Inserts and connects the selected item (Shift ignores current style)"
+msgstr "Indsætter og forbinder det valgte element (Shift ignorerer den aktuelle stil)"
+
+msgid "Lock/Unlock / Edit Link"
+msgstr "Lås/oplås/rediger link"
+
+msgid "Maintain Proportions"
+msgstr "Bevar proportioner"
+
+msgid "Move cell (grid) or page"
+msgstr "Flyt celle (gitter) eller side"
+
+msgid "New Line in Formatted Labels"
+msgstr "Ny linje i formaterede etiketter"
+
+msgid "New Paragraph in Formatted Labels"
+msgstr "Nyt afsnit i formaterede etiketter"
+
+msgid "Next Page"
+msgstr "Næste side"
+
+msgid "Pan Canvas"
+msgstr "Panorere lærredet"
+
+msgid "Paste"
+msgstr "Indsæt"
+
+msgid "Paste Size"
+msgstr "Indsæt størrelse"
+
+msgid "Paste Style"
+msgstr "Indsæt stil"
+
+msgid "Previous Page"
+msgstr "Forrige side"
+
+msgid "Print"
+msgstr "Udskriv"
+
+msgid "Redo"
+msgstr "Genopretter"
+
+msgid "Refresh"
+msgstr "Opdater"
+
+msgid "Select intersection"
+msgstr "Vælg krydsningspunkt"
+
+msgid "Replaces the selected item with the clicked one"
+msgstr "Udskifter det valgte element med det element, der er klikket på"
+
+msgid "Reset View"
+msgstr "Nulstil visning"
+
+msgid "Resize cell (grid size)"
+msgstr "Ændrer størrelse på celle (gitterstørrelse)"
+
+msgid "Resize cell (pt) or select page"
+msgstr "Ændrer størrelsen på celle (pt) eller vælger side"
+
+msgid "Save"
+msgstr "Gem"
+
+msgid "Save as"
+msgstr "Gem som"
+
+msgid "Scroll / Move cell (pt)"
+msgstr "Rul/flyt celle (pt)"
+
+msgid "Scroll Page"
+msgstr "Rul side"
+
+msgid "Select All / None"
+msgstr "Vælg alle / ingen"
+
+msgid "Select Cell Below"
+msgstr "Vælg celle under"
+
+msgid "Select Child / Parent"
+msgstr "Vælg barn / forælder"
+
+msgid "Select Next / Previous"
+msgstr "Vælg Næste / Forrige"
+
+msgid "Select Vertices / Edges"
+msgstr "Vælg Vertices / Edges"
+
+msgid "Send to Back"
+msgstr "Send til tilbage"
+
+msgid "Set as Default Style"
+msgstr "Indstil som standardstil"
+
+msgid "Start Editing Label of Selected Cell"
+msgstr "Start redigering af etiketten på den valgte celle"
+
+msgid "Stop Editing and Apply Value"
+msgstr "Stop redigering og anvend værdi"
+
+msgid "Superscript/Subscript on Selected Text"
+msgstr "Superscript/Subscript på markeret tekst"
+
+msgid "Toggle Bold/Italic on Selected Text"
+msgstr "Skift mellem fed/talisk på den valgte tekst"
+
+msgid "Toggle Format Panel"
+msgstr "Skift mellem formatpanel"
+
+msgid "Toggle grid"
+msgstr "Skift mellem gitter"
+
+msgid "Toggle Layers Window"
+msgstr "Skift mellem lagvinduer"
+
+msgid "Toggle Outline Window"
+msgstr "Skift mellem konturvinduet"
+
+msgid "Toggle Selection State"
+msgstr "Skift mellem valgstatus"
+
+msgid "Toggle Underline on Selected Text"
+msgstr "Skift understregning på markeret tekst"
+
+msgid "Turn / Rotate 90° Clockwise"
+msgstr "Drej/rotere 90° med uret"
+
+msgid "Undo"
+msgstr "Fortryd"
+
+msgid "Ungroup"
+msgstr "Fjern gruppering"
+
+msgid "Zoom In"
+msgstr "Zoom ind"
+
+msgid "Zoom Out"
+msgstr "Zoom ud"

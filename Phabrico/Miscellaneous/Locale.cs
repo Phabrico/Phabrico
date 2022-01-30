@@ -16,13 +16,14 @@ namespace Phabrico.Miscellaneous
         /// key = locale
         /// value = translation dictionaries (key = english text;  value = translation)
         /// </summary>
-        private static Dictionary<Language,DictionarySafe<string,string>> dictionariesInUse = new Dictionary<Language, DictionarySafe<string, string>>();
+        private static readonly Dictionary<Language,DictionarySafe<string,string>> dictionariesInUse = new Dictionary<Language, DictionarySafe<string, string>>();
+        private static readonly object synchronizationDirectoriesInUse = new object();
 
         /// <summary>
         /// Locale.css stylesheet is a special CSS stylesheet: it will be merged into the HTML page for speed improvement during the loading of the webpage
         /// It's a static variable, so it will only be loaded once
         /// </summary>
-        private static Http.Response.StyleSheet localeCss = new Http.Response.StyleSheet(null, null, "locale.css");
+        private static readonly Http.Response.StyleSheet localeCss = new Http.Response.StyleSheet(null, null, "locale.css");
 
         /// <summary>
         /// Merges the locale css from the Stylesheets/locale.css into the HTML.
@@ -58,60 +59,65 @@ namespace Phabrico.Miscellaneous
                 return new DictionarySafe<string, string>();
             }
 
-            if (dictionariesInUse.ContainsKey(locale) == false)
+            DictionarySafe<string,string> dictionary;
+            lock (synchronizationDirectoriesInUse)
             {
-                dictionariesInUse[locale] = new DictionarySafe<string, string>();
-
-                // collect all assemblies (Phabrico + plugin dll's)
-                List<Assembly> assemblies = new List<Assembly>();
-                assemblies.Add(Assembly.GetExecutingAssembly());  // phabrico executable
-                assemblies.AddRange(Http.Server.Plugins.Select(plugin => plugin.Assembly));
-
-                // loop through all assemblies
-                foreach (Assembly assembly in assemblies)
+                if (dictionariesInUse.TryGetValue(locale, out dictionary) == false)
                 {
-                    string[] dictionaryNames = assembly.GetManifestResourceNames()
-                                                       .Where(resourceName => resourceName.StartsWith("Phabrico.Locale.") 
-                                                                           || resourceName.StartsWith("Phabrico.Plugin.Locale.")
-                                                             )
-                                                       .ToArray();
+                    dictionary = new DictionarySafe<string, string>();
+                    dictionariesInUse[locale] = dictionary;
 
-                    string dictionaryName = dictionaryNames.FirstOrDefault(resourceName => resourceName.EndsWith(locale + ".po", System.StringComparison.InvariantCultureIgnoreCase));
-                    if (dictionaryName == null)
-                    {
-                        dictionaryName = dictionaryNames.FirstOrDefault(resourceName => resourceName.EndsWith("en.po", System.StringComparison.InvariantCultureIgnoreCase));
-                    }
+                    // collect all assemblies (Phabrico + plugin dll's)
+                    List<Assembly> assemblies = new List<Assembly>();
+                    assemblies.Add(Assembly.GetExecutingAssembly());  // phabrico executable
+                    assemblies.AddRange(Http.Server.Plugins.Select(plugin => plugin.Assembly));
 
-                    if (dictionaryName == null)
+                    // loop through all assemblies
+                    foreach (Assembly assembly in assemblies)
                     {
-                        continue;
-                    }
+                        string[] dictionaryNames = assembly.GetManifestResourceNames()
+                                                           .Where(resourceName => resourceName.StartsWith("Phabrico.Locale.")
+                                                                               || resourceName.StartsWith("Phabrico.Plugin.Locale.")
+                                                                 )
+                                                           .ToArray();
 
-                    using (Stream stream = assembly.GetManifestResourceStream(dictionaryName))
-                    {
-                        using (StreamReader reader = new StreamReader(stream))
+                        string dictionaryName = dictionaryNames.FirstOrDefault(resourceName => resourceName.EndsWith(locale + ".po", System.StringComparison.InvariantCultureIgnoreCase));
+                        if (dictionaryName == null)
                         {
-                            string content = reader.ReadToEnd();
+                            dictionaryName = dictionaryNames.FirstOrDefault(resourceName => resourceName.EndsWith("en.po", System.StringComparison.InvariantCultureIgnoreCase));
+                        }
 
-                            DictionarySafe<string, string> currentDictionary = RegexSafe.Matches(content, "^msgid +\"([^\"]*)\"\r?\nmsgstr +\"([^\"]*)", 
-                                                                                                          RegexOptions.Multiline)
-                                                                                        .OfType<Match>()
-                                                                                        .GroupBy(g => g.Groups[1].Value)
-                                                                                        .Select(g => g.FirstOrDefault())
-                                                                                        .ToDictionary( key => key.Groups[1].Value, 
-                                                                                                       value => value.Groups[2].Value
-                                                                                                     );
+                        if (dictionaryName == null)
+                        {
+                            continue;
+                        }
 
-                            foreach (KeyValuePair<string, string> translation in currentDictionary)
+                        using (Stream stream = assembly.GetManifestResourceStream(dictionaryName))
+                        {
+                            using (StreamReader reader = new StreamReader(stream))
                             {
-                                dictionariesInUse[locale][translation.Key] = translation.Value;
+                                string content = reader.ReadToEnd();
+
+                                DictionarySafe<string, string> currentDictionary = RegexSafe.Matches(content, "^msgid +\"([^\"]*)\"\r?\nmsgstr +\"([^\"]*)",
+                                                                                                              RegexOptions.Multiline)
+                                                                                            .OfType<Match>()
+                                                                                            .GroupBy(g => g.Groups[1].Value)
+                                                                                            .Select(g => g.FirstOrDefault())
+                                                                                            .ToDictionary(key => key.Groups[1].Value,
+                                                                                                           value => value.Groups[2].Value
+                                                                                                         );
+
+                                foreach (KeyValuePair<string, string> translation in currentDictionary)
+                                {
+                                    dictionariesInUse[locale][translation.Key] = translation.Value;
+                                }
                             }
                         }
                     }
                 }
             }
 
-            return dictionariesInUse[locale];
+            return dictionary;
         }
 
         /// <summary>
@@ -233,7 +239,7 @@ namespace Phabrico.Miscellaneous
                 string translation = TranslateText(inputTag.Groups[1].Value, locale, out noTranslationFound);
 
                 htmlContent = htmlContent.Substring(0, inputTag.Groups[1].Index)
-                            + TranslateText(inputTag.Groups[1].Value, locale)
+                            + translation
                             + htmlContent.Substring(inputTag.Groups[1].Index + inputTag.Groups[1].Length);
 
                 if (noTranslationFound)
@@ -252,7 +258,7 @@ namespace Phabrico.Miscellaneous
                 string translation = TranslateText(tooltip.Groups[2].Value, locale, out noTranslationFound);
 
                 htmlContent = htmlContent.Substring(0, tooltip.Groups[2].Index)
-                            + TranslateText(tooltip.Groups[2].Value, locale)
+                            + translation
                             + htmlContent.Substring(tooltip.Index + tooltip.Length);
 
                 if (noTranslationFound)

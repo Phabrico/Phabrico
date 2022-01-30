@@ -35,6 +35,11 @@ namespace Phabrico.Controllers
         }
 
         /// <summary>
+        /// Location of root Phriction document (=homepage of Phriction)
+        /// </summary>
+        private static string rootDocumentPath = null;
+
+        /// <summary>
         /// Creates a path for a new Phriction document
         /// </summary>
         /// <param name="parentPath"></param>
@@ -52,7 +57,7 @@ namespace Phabrico.Controllers
         /// <param name="phrictionDocument"></param>
         /// <param name="language"></param>
         /// <returns></returns>
-        private string GenerateCrumbs(Database database, Phabricator.Data.Phriction phrictionDocument, Language language)
+        public static string GenerateCrumbs(Database database, Phabricator.Data.Phriction phrictionDocument, Language language)
         {
             string completeCrumb = "";
             List<JObject> crumbs = new List<JObject>();
@@ -63,10 +68,23 @@ namespace Phabrico.Controllers
             Content content = new Content(database);
             Content.Translation translation;
 
+            if (rootDocumentPath == null)
+            {
+                rootDocumentPath = phrictionStorage.Get(database, language)
+                                                   .OrderBy(document => document.Path.Length)
+                                                   .FirstOrDefault()
+                                                   ?.Path
+                                                   ?.TrimEnd('/');
+            }
+
             foreach (string slug in url.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
             {
+                bool hiddenCrumb;
                 bool documentIsStaged = true;
+
                 completeCrumb += slug + "/";
+                hiddenCrumb = rootDocumentPath != null
+                            && completeCrumb.StartsWith(rootDocumentPath) == false;
 
                 Phabricator.Data.Phriction crumbPhrictionReference = stageStorage.Get<Phabricator.Data.Phriction>(database, language)
                                                                                  .FirstOrDefault(document => document.Path.Equals(completeCrumb));
@@ -76,7 +94,7 @@ namespace Phabrico.Controllers
                     crumbPhrictionReference = phrictionStorage.Get(database, completeCrumb, language);
                 }
 
-                if (documentIsStaged && crumbPhrictionReference.Language.Equals(browser.Session.Locale))
+                if (documentIsStaged && crumbPhrictionReference.Language.Equals(language))
                 {
                     // we have a staged translation: keep staged data (=modified translation) instead of (original) translation
                     translation = null;
@@ -101,7 +119,8 @@ namespace Phabrico.Controllers
                                           ?? crumbPhrictionReference?.Name
                                           ?? ConvertPhabricatorUrlPartToDescription(slug)
                                  ),
-                    new JProperty("inexistant", crumbPhrictionReference == null)
+                    new JProperty("inexistant", crumbPhrictionReference == null),
+                    new JProperty("hidden", hiddenCrumb)
                 });
             }
 
@@ -126,12 +145,11 @@ namespace Phabrico.Controllers
         /// This URL is fired when browsing through Phriction documents
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="viewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/phriction", Alias = "/w", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
-        public void HttpGetLoadParameters(Http.Server httpServer, Browser browser, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        public void HttpGetLoadParameters(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction");
 
@@ -221,7 +239,7 @@ namespace Phabrico.Controllers
                             {
                                 phrictionDocument = new Phabricator.Data.Phriction();
                                 phrictionDocument.Path = url;
-                                if (parameterActions.StartsWith("title="))
+                                if (parameterActions != null && parameterActions.StartsWith("title="))
                                 {
                                     phrictionDocument.Path += "?" + parameterActions;
                                 }
@@ -431,7 +449,7 @@ namespace Phabrico.Controllers
                     viewPage.SetText("IS-COVERPAGE", "yes");
                     viewPage.SetText("SHOW-SIDE-WINDOW", "no");
                     viewPage.SetText("HIDE-NEW-DOCUMENT-ACTION", "yes");
-                    viewPage.SetText("ONLY-PHRICTION", "True");
+                    viewPage.SetText("HIDE-PHRICTION-IN-CRUMBS", "True");
                 }
                 else
                 {
@@ -454,21 +472,26 @@ namespace Phabrico.Controllers
                     }
 
                     // verify if only Phriction should be visible
-                    if (httpServer.Customization.HideConfig &&
-                        httpServer.Customization.HideFiles &&
-                        httpServer.Customization.HideManiphest &&
-                        httpServer.Customization.HideOfflineChanges &&
-                        httpServer.Customization.HideProjects &&
-                        httpServer.Customization.HideUsers &&
-                        httpServer.Customization.HidePhriction == false &&
-                        Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false)
+                    if ((httpServer.Customization.HideConfig &&
+                         httpServer.Customization.HideFiles &&
+                         httpServer.Customization.HideManiphest &&
+                         httpServer.Customization.HideOfflineChanges &&
+                         httpServer.Customization.HideProjects &&
+                         httpServer.Customization.HideUsers &&
+                         httpServer.Customization.HidePhriction == false &&
+                         Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false)
+                        )
+                        || 
+                        (rootDocumentPath != null &&
+                         rootDocumentPath.Equals("/") == false
+                        )
                        )
                     {
-                        viewPage.SetText("ONLY-PHRICTION", "True", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        viewPage.SetText("HIDE-PHRICTION-IN-CRUMBS", "True", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     }
                     else
                     {
-                        viewPage.SetText("ONLY-PHRICTION", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        viewPage.SetText("HIDE-PHRICTION-IN-CRUMBS", "False", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     }
 
 
@@ -612,24 +635,23 @@ namespace Phabrico.Controllers
                         phrictionPluginData.SetText("PHRICTION-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
                     }
 
-                    foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions)
+                    foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
+                                                                                            .Where(ext => ext.IsVisibleInApplication(database, browser, phrictionDocument.Token))
+                            )
                     {
-                        if (pluginExtension.IsVisibleInApplication(database, browser, phrictionDocument.Token))
+                        if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
                         {
-                            if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
-                            {
-                                pluginExtension.Database = new Storage.Database(database.EncryptionKey);
-                                pluginExtension.Initialize();
-                                pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
-                            }
+                            pluginExtension.Database = new Storage.Database(database.EncryptionKey);
+                            pluginExtension.Initialize();
+                            pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                        }
 
-                            HtmlPartialViewPage htmlPluginNavigatorMenuItem = viewPage.GetPartialView("PHRICTION-PLUGINS");
-                            if (htmlPluginNavigatorMenuItem != null)
-                            {
-                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            }
+                        HtmlPartialViewPage htmlPluginNavigatorMenuItem = viewPage.GetPartialView("PHRICTION-PLUGINS");
+                        if (htmlPluginNavigatorMenuItem != null)
+                        {
+                            htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         }
                     }
                 }
@@ -728,11 +750,10 @@ namespace Phabrico.Controllers
         /// This method is fired when the user adds a Phriction document to his/her favorites
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/phriction/addToFavorites")]
-        public Http.Response.HttpMessage HttpPostAddToFavorites(Http.Server httpServer, Browser browser, string[] parameters)
+        public Http.Response.HttpMessage HttpPostAddToFavorites(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/addToFavorites");
 
@@ -773,11 +794,10 @@ namespace Phabrico.Controllers
         /// This method is fired when the user changes the sequence order of the favorite items in the hompage screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/phriction/changeOrderFavorites")]
-        public Http.Response.HttpMessage HttpPostChangeOrderFavorites(Http.Server httpServer, Browser browser, string[] parameters)
+        public Http.Response.HttpMessage HttpPostChangeOrderFavorites(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/changeOrderFavorites");
 
@@ -822,11 +842,10 @@ namespace Phabrico.Controllers
         /// This method is fired when the user adds a Phriction document to his/her favorites
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/phriction/removeFromFavorites")]
-        public Http.Response.HttpMessage HttpPostRemoveFromFavorites(Http.Server httpServer, Browser browser, string[] parameters)
+        public Http.Response.HttpMessage HttpPostRemoveFromFavorites(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/removeFromFavorites");
 
@@ -860,11 +879,10 @@ namespace Phabrico.Controllers
         /// This method is fired when the user modifies a Phriction document
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/phriction", Alias = "/w")]
-        public Http.Response.HttpMessage HttpPostSaveParameters(Http.Server httpServer, Browser browser, string[] parameters)
+        public Http.Response.HttpMessage HttpPostSaveParameters(Http.Server httpServer, string[] parameters)
         {
             if (browser.InvalidCSRF(browser.Request.RawUrl)) throw new Phabrico.Exception.InvalidCSRFException();
             if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction");
@@ -1019,7 +1037,10 @@ namespace Phabrico.Controllers
                                 {
                                     newParentPhrictionDocument.Token = newStage.Create(database, browser, newParentPhrictionDocument);
 
-                                    database.DescendTokenFrom(parentPhrictionDocument.Token, newParentPhrictionDocument.Token);
+                                    if (parentPhrictionDocument != null)
+                                    {
+                                        database.DescendTokenFrom(parentPhrictionDocument.Token, newParentPhrictionDocument.Token);
+                                    }
 
                                     parentPhrictionDocument = newParentPhrictionDocument;
                                 }
@@ -1027,7 +1048,10 @@ namespace Phabrico.Controllers
                                 // create document
                                 newPhrictionDocument.Token = newStage.Create(database, browser, newPhrictionDocument);
 
-                                database.DescendTokenFrom(parentPhrictionDocument.Token, newPhrictionDocument.Token);
+                                if (parentPhrictionDocument != null)
+                                {
+                                    database.DescendTokenFrom(parentPhrictionDocument.Token, newPhrictionDocument.Token);
+                                }
                             }
 
                             Storage.Keyword keywordStorage = new Storage.Keyword();
@@ -1064,6 +1088,14 @@ namespace Phabrico.Controllers
                             modifiedPhrictionDocument.Subscribers = browser.Session.FormVariables[browser.Request.RawUrl]["subscribers"]?.Trim();
                             modifiedPhrictionDocument.DateModified = DateTimeOffset.UtcNow;
 
+                            Language language = browser.Session.Locale;
+                            if (isTranslation == false)
+                            {
+                                language = Language.NotApplicable;
+                            }
+
+                            modifiedPhrictionDocument.Language = language;
+
                             Stage stageStorage = new Stage();
                             stageStorage.Modify(database, modifiedPhrictionDocument, browser);
 
@@ -1076,12 +1108,6 @@ namespace Phabrico.Controllers
                             Storage.Keyword keywordStorage = new Storage.Keyword();
                             keywordStorage.DeletePhabricatorObject(database, parentPhrictionDocument);
                             keywordStorage.AddPhabricatorObject(this, database, modifiedPhrictionDocument);
-
-                            Language language = browser.Session.Locale;
-                            if (isTranslation == false)
-                            {
-                                language = Language.NotApplicable;
-                            }
 
                             // (re)assign dependent Phabricator objects
                             List<Phabricator.Data.PhabricatorObject> referencedObjects = database.GetReferencedObjects(modifiedPhrictionDocument.Token, browser.Session.Locale).ToList();

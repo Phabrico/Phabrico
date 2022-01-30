@@ -1,0 +1,20 @@
+# Finnish translations
+
+# General
+msgid "PluginName.PhrictionValidator"
+msgstr "Validoi asiakirja"
+
+msgid "There is 1 underlying document. Would you like to validate this as well ?"
+msgstr "Taustalla on 1 asiakirja. Haluaisitko validoida myös tämän?"
+
+msgid "There are @@NBR-CHILD-DOCUMENTS@@ underlying documents. Would you like to validate these as well ?"
+msgstr "Taustalla on @@NBR-CHILD-DOCUMENTS@@ asiakirjoja. Haluaisitko validoida myös nämä ?"
+
+msgid "No errors were found"
+msgstr "Virheitä ei löytynyt"
+
+msgid "Invalid file reference @@FILE-REFERENCE-ID@@"
+msgstr "Virheellinen tiedostoviite @@FILE-REFERENCE-ID@@."
+
+msgid "Invalid hyperlink @@URL@@"
+msgstr "Virheellinen hyperlinkki @@URL@@"

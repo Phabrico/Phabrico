@@ -134,7 +134,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 wait.Until(condition => condition.FindElement(By.Id("dlgSynchronizing")).Displayed);
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(30));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
-                wait.Until(condition => condition.FindElements(By.Id("dlgSynchronizing")).Any(dlg => dlg.Displayed) == false);
+                wait.Until(condition => condition.FindElements(By.Id("dlgSynchronizing")).Any(dlg => dlg != null && dlg.Displayed) == false);
 
                 // verify if we don't have any local offline changes anymore
                 Thread.Sleep(500);  // wait some milliseconds to make sure the page has been reloaded

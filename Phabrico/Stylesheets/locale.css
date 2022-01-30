@@ -1,4 +1,33 @@
-﻿[data-locale="de"] * {
+﻿[data-locale="da"] * {
+    --app-side-window-width: 250px;
+    --navigator-width: 200px;
+    --maniphest-navigator-width: 120px;
+    --maniphest-editor-label-width: 90px;
+    --remarkup-editor-tooltip-bold-width: 35px;
+    --remarkup-editor-tooltip-bold-margin-left: -32px;
+    --remarkup-editor-tooltip-italic-width: 41px;
+    --remarkup-editor-tooltip-italic-margin-left: -33px;
+    --remarkup-editor-tooltip-monospaced-width: 82px;
+    --remarkup-editor-tooltip-monospaced-margin-left: -55px;
+    --remarkup-editor-tooltip-bulleted-list-width: 164px;
+    --remarkup-editor-tooltip-bulleted-list-margin-left: -98px;
+    --remarkup-editor-tooltip-numbered-list-width: 117px;
+    --remarkup-editor-tooltip-numbered-list-margin-left: -75px;
+    --remarkup-editor-tooltip-codeblock-width: 61px;
+    --remarkup-editor-tooltip-codeblock-margin-left: -48px;
+    --remarkup-editor-tooltip-quote-width: 30px;
+    --remarkup-editor-tooltip-quote-margin-left: -31px;
+    --remarkup-editor-tooltip-table-width: 35px;
+    --remarkup-editor-tooltip-table-margin-left: -34px;
+    --remarkup-editor-tooltip-sitemap-width: 58px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -46px;
+    --remarkup-editor-tooltip-lock-width: 278px;
+    --remarkup-editor-tooltip-lock-margin-left: -154px;
+    --remarkup-editor-tooltip-help-width: 35px;
+    --remarkup-editor-tooltip-help-margin-left: -34px;
+}
+
+[data-locale="de"] * {
     --app-side-window-width: 290px;
     --navigator-width: 205px;
     --maniphest-navigator-width: 162px;
@@ -21,10 +50,10 @@
     --remarkup-editor-tooltip-table-margin-left: -39px;
     --remarkup-editor-tooltip-sitemap-width: 69px;
     --remarkup-editor-tooltip-sitemap-margin-left: -52px;
-    --remarkup-editor-tooltip-help-width: 35px;
-    --remarkup-editor-tooltip-help-margin-left: -32px;
     --remarkup-editor-tooltip-lock-width: -133px;
     --remarkup-editor-tooltip-lock-margin-left: 250px;
+    --remarkup-editor-tooltip-help-width: 35px;
+    --remarkup-editor-tooltip-help-margin-left: -32px;
 }
 
 [data-locale="es"] * {
@@ -50,10 +79,39 @@
     --remarkup-editor-tooltip-table-margin-left: -32px;
     --remarkup-editor-tooltip-sitemap-width: 65px;
     --remarkup-editor-tooltip-sitemap-margin-left: -50px;
-    --remarkup-editor-tooltip-help-width: 40px;
-    --remarkup-editor-tooltip-help-margin-left: -32px;
     --remarkup-editor-tooltip-lock-width: 186px;
     --remarkup-editor-tooltip-lock-margin-left: -107px;
+    --remarkup-editor-tooltip-help-width: 40px;
+    --remarkup-editor-tooltip-help-margin-left: -32px;
+}
+
+[data-locale="fi"] * {
+    --app-side-window-width: 300px;
+    --navigator-width: 200px;
+    --maniphest-navigator-width: 180px;
+    --maniphest-editor-label-width: 90px;
+    --remarkup-editor-tooltip-bold-width: 62px;
+    --remarkup-editor-tooltip-bold-margin-left: -45px;
+    --remarkup-editor-tooltip-italic-width: 69px;
+    --remarkup-editor-tooltip-italic-margin-left: -47px;
+    --remarkup-editor-tooltip-monospaced-width: 82px;
+    --remarkup-editor-tooltip-monospaced-margin-left: -55px;
+    --remarkup-editor-tooltip-bulleted-list-width: 53px;
+    --remarkup-editor-tooltip-bulleted-list-margin-left: -44px;
+    --remarkup-editor-tooltip-numbered-list-width: 125px;
+    --remarkup-editor-tooltip-numbered-list-margin-left: -79px;
+    --remarkup-editor-tooltip-codeblock-width: 73px;
+    --remarkup-editor-tooltip-codeblock-margin-left: -54px;
+    --remarkup-editor-tooltip-quote-width: 54px;
+    --remarkup-editor-tooltip-quote-margin-left: -42px;
+    --remarkup-editor-tooltip-table-width: 60px;
+    --remarkup-editor-tooltip-table-margin-left: -46px;
+    --remarkup-editor-tooltip-sitemap-width: 43px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -39px;
+    --remarkup-editor-tooltip-lock-width: 358px;
+    --remarkup-editor-tooltip-lock-margin-left: -193px;
+    --remarkup-editor-tooltip-help-width: 32px;
+    --remarkup-editor-tooltip-help-margin-left: -32px;
 }
 
 [data-locale="nl"] * {
@@ -79,10 +137,107 @@
     --remarkup-editor-tooltip-table-margin-left: -32px;
     --remarkup-editor-tooltip-sitemap-width: 56px;
     --remarkup-editor-tooltip-sitemap-margin-left: -45px;
-    --remarkup-editor-tooltip-help-width: 35px;
-    --remarkup-editor-tooltip-help-margin-left: -32px;
     --remarkup-editor-tooltip-lock-width: 242px;
     --remarkup-editor-tooltip-lock-margin-left: -135px;
+    --remarkup-editor-tooltip-help-width: 35px;
+    --remarkup-editor-tooltip-help-margin-left: -32px;
+}
+
+[data-locale="ro"] * {
+    --app-side-window-width: 295px;
+    --navigator-width: 190px;
+    --maniphest-navigator-width: 140px;
+    --maniphest-editor-label-width: 90px;
+    --remarkup-editor-tooltip-bold-width: 35px;
+    --remarkup-editor-tooltip-bold-margin-left: -32px;
+    --remarkup-editor-tooltip-italic-width: 30px;
+    --remarkup-editor-tooltip-italic-margin-left: -26px;
+    --remarkup-editor-tooltip-monospaced-width: 82px;
+    --remarkup-editor-tooltip-monospaced-margin-left: -55px;
+    --remarkup-editor-tooltip-bulleted-list-width: 95px;
+    --remarkup-editor-tooltip-bulleted-list-margin-left: -63px;
+    --remarkup-editor-tooltip-numbered-list-width: 111px;
+    --remarkup-editor-tooltip-numbered-list-margin-left: -71px;
+    --remarkup-editor-tooltip-codeblock-width: 97px;
+    --remarkup-editor-tooltip-codeblock-margin-left: -66px;
+    --remarkup-editor-tooltip-quote-width: 40px;
+    --remarkup-editor-tooltip-quote-margin-left: -35px;
+    --remarkup-editor-tooltip-table-width: 35px;
+    --remarkup-editor-tooltip-table-margin-left: -32px;
+    --remarkup-editor-tooltip-sitemap-width: 68px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -51px;
+    --remarkup-editor-tooltip-lock-width: 286px;
+    --remarkup-editor-tooltip-lock-margin-left: -157px;
+    --remarkup-editor-tooltip-help-width: 42px;
+    --remarkup-editor-tooltip-help-margin-left: -37px;
+}
+
+[data-locale="ru"] * {
+    --app-side-window-width: 297px;
+    --navigator-width: 245px;
+    --maniphest-navigator-width: 175px;
+    --maniphest-editor-label-width: 105px;
+    --remarkup-editor-tooltip-bold-width: 91px;
+    --remarkup-editor-tooltip-bold-margin-left: -32px;
+    --remarkup-editor-tooltip-italic-width: 50px;
+    --remarkup-editor-tooltip-italic-margin-left: -38px;
+    --remarkup-editor-tooltip-monospaced-width: 120px;
+    --remarkup-editor-tooltip-monospaced-margin-left: -75px;
+    --remarkup-editor-tooltip-bulleted-list-width: 158px;
+    --remarkup-editor-tooltip-bulleted-list-margin-left: -96px;
+    --remarkup-editor-tooltip-numbered-list-width: 155px;
+    --remarkup-editor-tooltip-numbered-list-margin-left: -93px;
+    --remarkup-editor-tooltip-codeblock-width: 101px;
+    --remarkup-editor-tooltip-codeblock-margin-left: -68px;
+    --remarkup-editor-tooltip-quote-width: 49px;
+    --remarkup-editor-tooltip-quote-margin-left: -41px;
+    --remarkup-editor-tooltip-table-width: 64px;
+    --remarkup-editor-tooltip-table-margin-left: -47px;
+    --remarkup-editor-tooltip-sitemap-width: 81px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -58px;
+    --remarkup-editor-tooltip-lock-width: 350px;
+    --remarkup-editor-tooltip-lock-margin-left: -189px;
+    --remarkup-editor-tooltip-help-width: 57px;
+    --remarkup-editor-tooltip-help-margin-left: -54px;
+}
+
+[data-locale="ru"]
+.tooltip-top.fa-bold .tooltiptext::after {
+    right: calc(50% - 5px + 29px);
+}
+
+[data-locale="ru"]
+.tooltip-top.fa-book .tooltiptext::after {
+    right: calc(50% - 5px - 9px);
+}
+
+[data-locale="sv"] * {
+    --app-side-window-width: 250px;
+    --navigator-width: 265px;
+    --maniphest-navigator-width: 160px;
+    --maniphest-editor-label-width: 115px;
+    --remarkup-editor-tooltip-bold-width: 42px;
+    --remarkup-editor-tooltip-bold-margin-left: -36px;
+    --remarkup-editor-tooltip-italic-width: 65px;
+    --remarkup-editor-tooltip-italic-margin-left: -45px;
+    --remarkup-editor-tooltip-monospaced-width: 82px;
+    --remarkup-editor-tooltip-monospaced-margin-left: -56px;
+    --remarkup-editor-tooltip-bulleted-list-width: 121px;
+    --remarkup-editor-tooltip-bulleted-list-margin-left: -77px;
+    --remarkup-editor-tooltip-numbered-list-width: 96px;
+    --remarkup-editor-tooltip-numbered-list-margin-left: -64px;
+    --remarkup-editor-tooltip-codeblock-width: 73px;
+    --remarkup-editor-tooltip-codeblock-margin-left: -53px;
+    --remarkup-editor-tooltip-quote-width: 40px;
+    --remarkup-editor-tooltip-quote-margin-left: -35px;
+    --remarkup-editor-tooltip-table-width: 41px;
+    --remarkup-editor-tooltip-table-margin-left: -37px;
+    --remarkup-editor-tooltip-sitemap-width: 58px;
+    --remarkup-editor-tooltip-sitemap-margin-left: -46px;
+    --remarkup-editor-tooltip-lock-width: 272px;
+    --remarkup-editor-tooltip-lock-margin-left: -150px;
+    --remarkup-editor-tooltip-help-width: 35px;
+    --remarkup-editor-tooltip-help-margin-left: -32px;
 }
 
 [data-locale="zh"] * {
@@ -108,10 +263,10 @@
     --remarkup-editor-tooltip-table-margin-left: -32px;
     --remarkup-editor-tooltip-sitemap-width: 28px;
     --remarkup-editor-tooltip-sitemap-margin-left: -31px;
-    --remarkup-editor-tooltip-help-width: 35px;
-    --remarkup-editor-tooltip-help-margin-left: -32px;
     --remarkup-editor-tooltip-lock-width: 100px;
     --remarkup-editor-tooltip-lock-margin-left: -64px;
+    --remarkup-editor-tooltip-help-width: 35px;
+    --remarkup-editor-tooltip-help-margin-left: -32px;
 }
 
 * {
@@ -137,8 +292,8 @@
     --remarkup-editor-tooltip-table-margin-left: -32px;
     --remarkup-editor-tooltip-sitemap-width: 58px;
     --remarkup-editor-tooltip-sitemap-margin-left: -46px;
-    --remarkup-editor-tooltip-help-width: 35px;
-    --remarkup-editor-tooltip-help-margin-left: -32px;
     --remarkup-editor-tooltip-lock-width: 197px;
     --remarkup-editor-tooltip-lock-margin-left: -108px;
+    --remarkup-editor-tooltip-help-width: 35px;
+    --remarkup-editor-tooltip-help-margin-left: -32px;
 }

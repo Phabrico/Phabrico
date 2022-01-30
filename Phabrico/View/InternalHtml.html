@@ -141,3 +141,32 @@
         }
     }
 </script>
+
+<script>
+    function imageLoaded(img) {
+        // prepare images which can be zoomed in full screen
+	    var fixedWidth = img.closest('.image-locator').style.width;
+        var remarkupContent = document.querySelector('.remarkupContent');
+        var containerWidth = parseInt(getComputedStyle(remarkupContent).width) - 30;
+	    if (fixedWidth != null  &&  parseInt(fixedWidth) > containerWidth) {
+            img.closest('.image-locator').classList.add('allow-full-screen');
+            img.closest('.image-container').onclick = toggleFullScreenImage;
+        } else {
+            img.closest('.image-locator').classList.remove('allow-full-screen');
+        }
+
+        var containerWidth = parseInt(getComputedStyle(remarkupContent).width);
+        containerWidth = containerWidth > window.innerWidth ? window.innerWidth : containerWidth;
+        var containerHeight = parseInt(getComputedStyle(remarkupContent).height);
+        containerHeight = containerHeight > window.innerHeight ? window.innerHeight : containerHeight;
+
+        if (parseInt(img.naturalWidth) < window.innerWidth) {
+            img.classList.add('center');
+            img.classList.add('horizontal');
+        }
+	    if (parseInt(img.naturalHeight) < window.innerHeight) {
+            img.classList.add('center');
+            img.classList.add('vertical');
+        }
+    }
+</script>

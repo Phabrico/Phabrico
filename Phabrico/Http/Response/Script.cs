@@ -32,31 +32,38 @@ namespace Phabrico.Http.Response
                                             .FirstOrDefault()
                                             .Trim('/');
                 Stream stream = assembly.GetManifestResourceStream(resourceName);
-
-                if (stream == null)
+                try
                 {
-                    resourceName = string.Format("Phabrico.Plugin.Scripts.{0}", url)
-                                            .Split('?')
-                                            .FirstOrDefault()
-                                            .Trim('/');
-
-                    foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
+                    if (stream == null)
                     {
-                        stream = plugin.Assembly.GetManifestResourceStream(resourceName);
-                        if (stream != null) break;
+                        resourceName = string.Format("Phabrico.Plugin.Scripts.{0}", url)
+                                                .Split('?')
+                                                .FirstOrDefault()
+                                                .Trim('/');
+
+                        foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
+                        {
+                            stream = plugin.Assembly.GetManifestResourceStream(resourceName);
+                            if (stream != null) break;
+                        }
+                    }
+
+                    if (stream != null)
+                    {
+                        using (StreamReader reader = new StreamReader(stream))
+                        {
+                            Content = reader.ReadToEnd();
+
+                            Content = Miscellaneous.Locale.TranslateJavascript(Content, Browser.Session.Locale);
+                        }
                     }
                 }
-
-                if (stream != null)
+                finally
                 {
-                    using (StreamReader reader = new StreamReader(stream))
+                    if (stream != null)
                     {
-                        Content = reader.ReadToEnd();
-
-                        Content = Miscellaneous.Locale.TranslateJavascript(Content, Browser.Session.Locale);
+                        stream.Dispose();
                     }
-
-                    stream.Dispose();
                 }
             }
         }

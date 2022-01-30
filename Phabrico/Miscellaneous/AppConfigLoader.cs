@@ -26,6 +26,11 @@ namespace Phabrico.Miscellaneous
         private static string configFileName = null;
 
         /// <summary>
+        /// Assembly of IIS HTTP Module (only used when running as a IIS HTTP Module)
+        /// </summary>
+        private static Assembly iisModuleAssembly = null;
+
+        /// <summary>
         /// Full path to app.config file
         /// </summary>
         public static string ConfigFileName
@@ -54,6 +59,25 @@ namespace Phabrico.Miscellaneous
                 }
 
                 return appSettings;
+            }
+        }
+
+        /// <summary>
+        /// Array of IIS HTTP Modules names (only used when running as a IIS HTTP Module)
+        /// </summary>
+        public static Assembly IISModuleAssembly
+        {
+            get
+            {
+                return iisModuleAssembly;
+            }
+
+            set
+            {
+                if (iisModuleAssembly == null)
+                {
+                    iisModuleAssembly = value;
+                }
             }
         }
 
@@ -122,11 +146,16 @@ namespace Phabrico.Miscellaneous
                     return;
                 }
 
-                string phabricoConfigFilePath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath + ".config";
+                // check for config file of custom IISHttpModule dll
+                string phabricoConfigFilePath = new Uri(IISModuleAssembly.CodeBase).LocalPath + ".config";
                 if (System.IO.File.Exists(phabricoConfigFilePath) == false)
                 {
-                    // phabrico.exe.config file not found -> use the config file we found initially
-                    return;
+                    phabricoConfigFilePath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath + ".config";
+                    if (System.IO.File.Exists(phabricoConfigFilePath) == false)
+                    {
+                        // phabrico.dll.config file not found -> use the config file we found initially
+                        return;
+                    }
                 }
 
                 // load appSettings from phabrico.exe.config file
@@ -135,6 +164,12 @@ namespace Phabrico.Miscellaneous
                 foreach (KeyValueConfigurationElement keyValueConfigurationElement in ConfigurationManager.OpenMappedExeConfiguration(exeConfigurationFileMap, ConfigurationUserLevel.None).AppSettings.Settings)
                 {
                     appSettings.Add(keyValueConfigurationElement.Key, keyValueConfigurationElement.Value);
+                }
+
+                // in case DatabaseDirectory parameter still not found, add default parameter ONLY if running as IIS HTTP Module
+                if (IISModuleAssembly != null  &&  appSettings.Keys.Cast<string>().Contains("DatabaseDirectory") == false)
+                {
+                    appSettings.Add("DatabaseDirectory", ".");
                 }
 
                 // verify path of DatabaseDirectory
@@ -162,6 +197,12 @@ namespace Phabrico.Miscellaneous
                             Environment.SetEnvironmentVariable("PATH", appDirectory + ";" + path, EnvironmentVariableTarget.Process);
                         }
                     }
+                }
+                else
+                {
+                    // DatabaseDirectory not found -> reset all internal parameters
+                    appSettings = null;
+                    configFileName = null;
                 }
             }
         }

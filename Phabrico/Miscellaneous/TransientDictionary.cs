@@ -22,9 +22,9 @@ namespace Phabrico.Miscellaneous
     /// <typeparam name="TValue">The type of the values in the dictionary</typeparam>
     public class TransientDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey,TransientDictionaryElement<TValue>>>
     {
-        private TimeSpan expiration;
-        private Dictionary<TKey, TransientDictionaryElement<TValue>> internalDictionary;
-        private bool isTouchy;
+        private readonly TimeSpan expiration;
+        private readonly Dictionary<TKey, TransientDictionaryElement<TValue>> internalDictionary;
+        private readonly bool isTouchy;
 
         /// <summary>
         /// Returns the number of dictionary elements

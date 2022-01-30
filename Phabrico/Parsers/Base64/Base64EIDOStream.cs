@@ -14,7 +14,7 @@ namespace Phabrico.Parsers.Base64
         /// <summary>
         /// Base64 translation table for decoding
         /// </summary>
-        private Dictionary<char, byte> translateFromBase64 = new Dictionary<char, byte>() {
+        private readonly Dictionary<char, byte> translateFromBase64 = new Dictionary<char, byte>() {
                 { 'A', 0  }, { 'B', 1  }, { 'C', 2  }, { 'D', 3  },
                 { 'E', 4  }, { 'F', 5  }, { 'G', 6  }, { 'H', 7  },
                 { 'I', 8  }, { 'J', 9  }, { 'K', 10 }, { 'L', 11 },
@@ -36,7 +36,7 @@ namespace Phabrico.Parsers.Base64
         /// <summary>
         /// Base64 translation table for encoding
         /// </summary>
-        private Dictionary<byte, byte> translateToBase64 = new Dictionary<byte, byte>() {
+        private readonly Dictionary<byte, byte> translateToBase64 = new Dictionary<byte, byte>() {
                 {  0, (byte)'A' }, {  1, (byte)'B' }, {  2, (byte)'C' }, {  3, (byte)'D'  },
                 {  4, (byte)'E' }, {  5, (byte)'F' }, {  6, (byte)'G' }, {  7, (byte)'H'  },
                 {  8, (byte)'I' }, {  9, (byte)'J' }, { 10, (byte)'K' }, { 11, (byte)'L' },
@@ -58,12 +58,12 @@ namespace Phabrico.Parsers.Base64
         /// <summary>
         /// Internal memory stream which contains the decoded data
         /// </summary>
-        private MemoryStream memoryStreamDecodedData = new MemoryStream();
+        private readonly MemoryStream memoryStreamDecodedData = new MemoryStream();
 
         /// <summary>
         /// Internal memory stream which contains the encoded data
         /// </summary>
-        private MemoryStream memoryStreamEncodedData = new MemoryStream();
+        private readonly MemoryStream memoryStreamEncodedData = new MemoryStream();
 
         /// <summary>
         /// Current Seek position for Read actions
@@ -80,7 +80,7 @@ namespace Phabrico.Parsers.Base64
         /// The internal MemoryStream has only 1 seek position for both read and write actions.
         /// This lock object will make sure that the seek position will not be overwritten when the read/write action changes
         /// </summary>
-        private object synchronizationReadWriteLock = new object();
+        private readonly object synchronizationReadWriteLock = new object();
 
         /// <summary>
         /// Gets a value indicating whether the current stream supports reading.
@@ -379,7 +379,7 @@ namespace Phabrico.Parsers.Base64
                         // base64-padding detected
                         nbrPaddingCharacters++;
 
-                        lastThreeDecodedBytes = (UInt32)(lastThreeDecodedBytes << 6);
+                        lastThreeDecodedBytes = lastThreeDecodedBytes << 6;
 
                         if ((base64Indexer % 4) == 0)
                         {
@@ -404,7 +404,7 @@ namespace Phabrico.Parsers.Base64
                     else
                     {
                         byte partialDecodedByte = translateFromBase64[encodedChar];
-                        lastThreeDecodedBytes = (UInt32)(lastThreeDecodedBytes << 6) + (UInt32)(partialDecodedByte & 0x3F);
+                        lastThreeDecodedBytes = (lastThreeDecodedBytes << 6) + (UInt32)(partialDecodedByte & 0x3F);
 
                         nbrPaddingCharacters = 0;
 
@@ -432,7 +432,7 @@ namespace Phabrico.Parsers.Base64
                 while ((base64Indexer % 4) != 0)
                 {
                     base64Indexer++;
-                    lastThreeDecodedBytes = (UInt32)(lastThreeDecodedBytes << 6);
+                    lastThreeDecodedBytes = lastThreeDecodedBytes << 6;
 
                     if ((base64Indexer % 4) == 0)
                     {

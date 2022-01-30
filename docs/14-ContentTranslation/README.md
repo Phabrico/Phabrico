@@ -109,5 +109,9 @@ The 'big blue world icon' will also disappear:
 
 ## Some remarks
 * Not all content is automatically translated. Codeblocks, usernames and project names, for example, will not be translated.
-* The titles of Notification blocks are only translated if configured under *UI Controls*: ![ContentTranslation-08](ContentTranslation-08.png) <br />
-* Diagrams are not automatically translated, but a copy is made for each of them so that you can translate them manually. These diagram copies are also marked as 'unreviewed' and can also be approved in the *Diagrams* screen by means of the green button: ![ContentTranslation-20](ContentTranslation-20.png) <br />
+* The titles of Notification blocks are only translated if configured under *UI Controls*: 
+ ![ContentTranslation-08](ContentTranslation-08.png) <br />
+* Diagrams are not automatically translated, but a copy is made for each of them so that you can translate them manually. These diagram copies are also marked as 'unreviewed' and can also be approved in the *Diagrams* screen by means of the green button: ![ContentTranslation-20](ContentTranslation-20.png) <br /> 
+The copies of these translated diagrams can be undone via the *Offline Changes* screen.
+If you *undo* a diagram, the translated document will link back to the original diagram.
+This way you can create diagrams which are the same for all languages.

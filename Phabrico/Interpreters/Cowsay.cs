@@ -63,7 +63,7 @@ namespace Phabrico.Interpreters
             Stream stream = assembly.GetManifestResourceStream(resourceName);
             if (stream == null)
             {
-                resourceName = string.Format("Phabrico.Interpreters.Cows.default.cow", cow.ToLower());
+                resourceName = "Phabrico.Interpreters.Cows.default.cow";
                 stream = assembly.GetManifestResourceStream(resourceName);
             }
 

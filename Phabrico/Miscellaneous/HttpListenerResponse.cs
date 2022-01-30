@@ -38,7 +38,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerResponse.ContentType;
+                    return internalHttpListenerResponse?.ContentType ?? "";
                 }
             }
 
@@ -127,7 +127,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerResponse.ContentLength64;
+                    return internalHttpListenerResponse?.ContentLength64 ?? 0;
                 }
             }
 
@@ -167,7 +167,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerResponse.StatusCode;
+                    return internalHttpListenerResponse?.StatusCode ?? 0;
                 }
             }
 
@@ -203,11 +203,11 @@ namespace Phabrico.Miscellaneous
                 else
                 if (internalHttpResponse != null)
                 {
-                    return internalHttpListenerResponse.StatusDescription;
+                    return internalHttpListenerResponse?.StatusDescription ?? "";
                 }
                 else
                 {
-                    return internalHttpResponse.StatusDescription;
+                    return internalHttpResponse?.StatusDescription ?? "";
                 }
             }
 
@@ -247,7 +247,7 @@ namespace Phabrico.Miscellaneous
                 }
                 else
                 {
-                    return internalHttpListenerResponse.RedirectLocation;
+                    return internalHttpListenerResponse?.RedirectLocation;
                 }
             }
 
@@ -263,6 +263,7 @@ namespace Phabrico.Miscellaneous
                     internalHttpResponse.RedirectLocation = value;
                 }
                 else
+                if (internalHttpListenerResponse != null)
                 {
                     internalHttpListenerResponse.RedirectLocation = value;
                 }
@@ -342,7 +343,7 @@ namespace Phabrico.Miscellaneous
             }
             else
             {
-                internalHttpListenerResponse.AddHeader(name, value);
+                internalHttpListenerResponse?.AddHeader(name, value);
             }
         }
 
@@ -364,7 +365,7 @@ namespace Phabrico.Miscellaneous
             }
             else
             {
-                internalHttpListenerResponse.AppendHeader(name, value);
+                internalHttpListenerResponse?.AppendHeader(name, value);
             }
         }
     }

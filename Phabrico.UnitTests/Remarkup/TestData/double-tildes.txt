@@ -1,0 +1,23 @@
+  some code
+some text ~~
+
+<table>
+<tr><th>ABC</th></tr>
+<tr><td>abc~~def</td></tr>
+</table>
+~~~~~~~~~~
+<div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>some code</code></pre></div>
+some text ~~<br>
+<table class='remarkup-table'>
+<thead>
+  <tr>
+    <th>ABC</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>abc~~def</td>
+  </tr>
+</tbody>
+</table>
+~~~~~~~~~~

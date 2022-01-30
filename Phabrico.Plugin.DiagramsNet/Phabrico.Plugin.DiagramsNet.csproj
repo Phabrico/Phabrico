@@ -63,26 +63,6 @@
     <Compile Include="DiagramsNetController.cs" />
     <Compile Include="DiagramsNet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\atlas_client_id" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\atlas_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\cloud_convert_api_key" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\dropbox_client_id" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\dropbox_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\github_auth_url" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\github_client_id" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\github_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\gitlab_auth_url" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\gitlab_client_id" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\gitlab_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\google_client_id" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\google_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\iconfinder_client_id" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\iconfinder_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\msgraph_client_id" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\msgraph_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\old_github_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\old_github_dev_client_secret" />
-    <EmbeddedResource Include="webapp\WEB-INF\secrets\pusher.properties" />
     <EmbeddedResource Include="webapp\workbox-dfbb910f.js.map" />
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +75,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\workbox-12cca165.js" />
     <EmbeddedResource Include="webapp\electron-preload.js" />
     <EmbeddedResource Include="webapp\workbox-dfbb910f.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\commons-codec-1.11.jar" />
@@ -1956,8 +1937,6 @@
     <EmbeddedResource Include="webapp\index.html" />
     <EmbeddedResource Include="webapp\js\app.min.js" />
     <EmbeddedResource Include="webapp\js\clear.js" />
-    <EmbeddedResource Include="webapp\js\croppie\croppie.min.css" />
-    <EmbeddedResource Include="webapp\js\croppie\croppie.min.js" />
     <EmbeddedResource Include="webapp\js\cryptojs\aes.min.js" />
     <EmbeddedResource Include="webapp\js\deflate\base64.js" />
     <EmbeddedResource Include="webapp\js\deflate\pako.min.js" />
@@ -3476,6 +3455,11 @@
       <Link>LICENSE</Link>
     </None>
     <EmbeddedResource Include="webapp\images\manifest.json" />
+    <EmbeddedResource Include="Locale\phabrico_sv.po" />
+    <EmbeddedResource Include="Locale\phabrico_da.po" />
+    <EmbeddedResource Include="Locale\phabrico_fi.po" />
+    <EmbeddedResource Include="Locale\phabrico_ro.po" />
+    <EmbeddedResource Include="Locale\phabrico_ru.po" />
     <None Include="packages.config" />
     <None Include="Phabrico.Plugin.DiagramsNet.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -3557,6 +3541,7 @@
     <EmbeddedResource Include="webapp\yarn.lock" />
     <EmbeddedResource Include="webapp\WEB-INF\github_client_secret" />
     <EmbeddedResource Include="webapp\workbox-bed83ea8.js.map" />
+    <EmbeddedResource Include="webapp\workbox-12cca165.js.map" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

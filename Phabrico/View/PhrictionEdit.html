@@ -113,7 +113,7 @@
         function init() {
             phabrico.autoLogOff.disable();
             phabrico.crumbsHeader = new CrumbsHeader(crumbsContainer, 'Phriction', @@DOCUMENT-CRUMBS@@);
-            @{IF @@ONLY-PHRICTION@@=True@
+            @{IF @@HIDE-PHRICTION-IN-CRUMBS@@=True@
                 if (crumbsContainer.children.length <= 2) {
                     crumbsContainer.style.display = 'none';
                 } else {

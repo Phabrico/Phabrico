@@ -223,8 +223,6 @@ namespace Phabrico.Plugin.Model
             formattedText = formattedText.Replace("{TITLE}", HttpUtility.HtmlEncode(PhrictionDocument.Name));
             formattedText = formattedText.Replace("{LAST-MODIFIED}", PhrictionDocument.DateModified.ToLocalTime().ToString("g"));
 
-            string[] questions = RegexSafe.Matches(formattedText, "{ASK ([^}]+)}").OfType<Match>().Select(match => match.Groups[1].Value).ToArray();
-
             return formattedText;
         }
 

@@ -47,18 +47,17 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string encryptionKey = token?.EncryptionKey;
                 if (string.IsNullOrEmpty(encryptionKey) == false)
                 {
-                    Storage.Account accountStorage = new Storage.Account();
-                        string taskID = Int32.Parse(taskIdentifier).ToString();
+                    string taskID = Int32.Parse(taskIdentifier).ToString();
 
-                        Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale)
-                                                                               .FirstOrDefault(stagedTask => stagedTask.ID.Equals(taskID));
-                        if (maniphestTask == null)
-                        {
-                            maniphestTask = maniphestStorage.Get(database, taskID, browser.Session.Locale);
-                            if (maniphestTask == null) return false;
-                        }
+                    Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale)
+                                                                           .FirstOrDefault(stagedTask => stagedTask.ID.Equals(taskID));
+                    if (maniphestTask == null)
+                    {
+                        maniphestTask = maniphestStorage.Get(database, taskID, browser.Session.Locale);
+                        if (maniphestTask == null) return false;
+                    }
 
-                        LinkedPhabricatorObjects.Add(maniphestTask);
+                    LinkedPhabricatorObjects.Add(maniphestTask);
 
                     if (useBeginCurlyBracket)
                     {

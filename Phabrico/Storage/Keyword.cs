@@ -1,4 +1,6 @@
-﻿using Phabrico.Controllers;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Phabrico.Controllers;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
 using System;
@@ -70,19 +72,21 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database"></param>
         /// <param name="keyword"></param>
+        /// <param name="language"></param>
         public override void Add(Database database, Phabricator.Data.Keyword keyword)
         {
             using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
             {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                           INSERT OR REPLACE INTO keywordInfo(name, token, description, nbrocc) 
-                           VALUES (@name, @token, @description, @numberOccurrences);
+                           INSERT OR REPLACE INTO keywordInfo(name, token, language, description, nbrocc) 
+                           VALUES (@name, @token, @language, @description, @numberOccurrences);
                        ", database.Connection, transaction))
                 {
 
                     string encodedKeyword = database.PolyCharacterCipherEncrypt(keyword.Name.ToUpper());
                     database.AddParameter(dbCommand, "name", encodedKeyword, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "token", keyword.Token);
+                    database.AddParameter(dbCommand, "language", keyword.Language, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "description", keyword.Description);
                     database.AddParameter(dbCommand, "numberOccurrences", keyword.NumberOccurrences.ToString());
                     dbCommand.ExecuteNonQuery();
@@ -103,121 +107,139 @@ namespace Phabrico.Storage
             string blobContent = "";
 
             Storage.Keyword keywordStorage = new Storage.Keyword();
-
-            Phabricator.Data.Keyword keyword = new Phabricator.Data.Keyword();
-            keyword.Token = phabricatorObject.Token;
-
-            Phabricator.Data.Phriction phrictionDocument = phabricatorObject as Phabricator.Data.Phriction;
-            Phabricator.Data.Maniphest maniphestTask = phabricatorObject as Phabricator.Data.Maniphest;
-            Phabricator.Data.PhamePost blogPost = phabricatorObject as Phabricator.Data.PhamePost;
-
-            if (phrictionDocument != null)
+            Content content = new Content(database);
+            foreach (Language language in Content.GetAvailableLanguages(database, phabricatorObject))
             {
-                RemarkupParserOutput remarkupParserOutput;
-                controller.ConvertRemarkupToHTML(database, "", phrictionDocument.Content, out remarkupParserOutput, false);
+                Phabricator.Data.Keyword keyword = new Phabricator.Data.Keyword();
+                keyword.Token = phabricatorObject.Token;
+                keyword.Language = language;
 
-                blobContent = phrictionDocument.Name + " ";                                                     // phriction document title
-                blobContent += phrictionDocument.Path.Replace("/", " ").Replace("_", " ").Replace("  ", " ");   // phriction document url
-                blobContent += remarkupParserOutput.Text;                                                       // phriction document content
-                keyword.Description = phrictionDocument.Name;
-            }
+                Content.Translation translation = content.GetTranslation(phabricatorObject.Token, language);
 
-            if (maniphestTask != null)
-            {
-                RemarkupParserOutput remarkupParserOutput;
-                controller.ConvertRemarkupToHTML(database, "", maniphestTask.Description, out remarkupParserOutput, false);
+                Phabricator.Data.Phriction phrictionDocument = phabricatorObject as Phabricator.Data.Phriction;
+                Phabricator.Data.Maniphest maniphestTask = phabricatorObject as Phabricator.Data.Maniphest;
+                Phabricator.Data.PhamePost blogPost = phabricatorObject as Phabricator.Data.PhamePost;
 
-                blobContent = maniphestTask.Name + " ";                     // maniphest task title
-                blobContent += remarkupParserOutput.Text + " ";             // maniphest task description
-                blobContent += string.Format("T{0}", maniphestTask.ID);     // maniphest task T-identifier
-                keyword.Description = maniphestTask.Name;
-            }
-
-            if (blogPost != null)
-            {
-                RemarkupParserOutput remarkupParserOutput;
-                controller.ConvertRemarkupToHTML(database, "", blogPost.Content, out remarkupParserOutput, false);
-
-                blobContent = blogPost.Title + " ";                         // blog post title
-                blobContent += remarkupParserOutput.Text + " ";             // blog post content
-                blobContent += string.Format("J{0}", blogPost.ID);          // blog post J-identifier
-                keyword.Description = blogPost.Title;
-            }
-
-            if (string.IsNullOrEmpty(blobContent) == false)
-            {
-                Regex regManiphestTaskOrBlogPost = new Regex(@"\b[JT]-?[0-9]+\b", RegexOptions.IgnoreCase);
-                IEnumerable<string> taskOrBlogPostReferences = regManiphestTaskOrBlogPost.Matches(blobContent)
-                                                                                         .OfType<Match>()
-                                                                                         .Select(match => match.Value);
-
-                List<Match> assemblyLikeWords = RegexSafe.Matches(blobContent, "[A-Za-z0-9_]{1,255}([.][A-Za-z0-9_]{1,255})+", RegexOptions.Singleline)    // store also all assembly-like or url-like words (i.e. words with a dot in)
-                                                         .OfType<Match>()                                                                                  //   for example:  System.Net,  www.phacility.com
-                                                         .ToList();                                                                                        //
-
-                List<string> emailAddresses = RegexSafe.Matches(blobContent, @"((?=.{0,64}@.{0,255})(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*""))@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])", RegexOptions.Singleline)
-                                                       .OfType<Match>()
-                                                       .Select(m => m.Value)
-                                                       .ToList();
-                        
-
-                string nonCJKBlobContent = RegexSafe.Replace(blobContent, @"[\p{P}\p{IsCJKUnifiedIdeographs}\p{IsThai}$^+=<>`|~]", " ", RegexOptions.Singleline);
-                List<string> words = nonCJKBlobContent.Split(new char[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
-                                                      .Where(word => word.Length >= 2)                                                              // only store words which are at least 2 characters and ...
-                                                      .Where(word => word.Length <= 50)                                                             // ... at maximum 50 characters long
-                                                      .Where(word => word.All(ch => ch == '-' || ch == '_' || ch == '*' || ch == '#') == false)     // do not store words which do only contain some specific symbols
-                                                      .Concat(assemblyLikeWords.Select(m => m.Value))                                               // store also all assembly-like or url-like words (i.e. words with a dot in)
-                                                      .Concat(assemblyLikeWords.Select(m => m.Groups.OfType<Group>().Last().Value.Substring(1)))    // store the last word of an assembly-like word (e.g.  databaseName.dbo.tableName -> tableName)
-                                                      .Concat(taskOrBlogPostReferences)
-                                                      .Concat(emailAddresses)
-                                                      .Select(word => word.ToLower())
-                                                      .ToList();
-
-                // add division-like formulas (e.g. U/I)
-                words.AddRange(RegexSafe.Matches(blobContent, "[A-Za-z]+[A-Za-z0-9]*/[A-Za-z0-9]+")
-                                        .OfType<Match>()
-                                        .Select(m => m.Value)
-                              );
-
-                // store everything in lowercase
-                foreach (var wordCount in words.GroupBy(key => key))
+                if (phrictionDocument != null)
                 {
-                    keyword.Name = wordCount.Key;
-                    keyword.NumberOccurrences = wordCount.Count();
-                    keywordStorage.Add(database, keyword);
-                }
-
-                // check if content contains characters from a language without word segmentation (e.g. Chinese, Japanese, Korean, Thai)
-                MatchCollection matchesLanguagesWithoutWordSegmentation = regLanguagesWithoutWordSegmentation.Matches(blobContent);
-                if (matchesLanguagesWithoutWordSegmentation.Count > 0)
-                {
-                    // we'll store for each character sequence all possible "words" that can be generated from this sequence
-                    Dictionary<string,int> wordCount = new Dictionary<string, int>();
-
-                    foreach (Match matchLanguagesWithoutWordSegmentation in matchesLanguagesWithoutWordSegmentation)
+                    if (translation != null)
                     {
-                        for (int wordLengthLanguagesWithoutWordSegmentation = 1; wordLengthLanguagesWithoutWordSegmentation <= matchLanguagesWithoutWordSegmentation.Length; wordLengthLanguagesWithoutWordSegmentation++)
-                        {
-                            for (int startPositionLanguageWithoutWordSegmentation = 0; startPositionLanguageWithoutWordSegmentation <= matchLanguagesWithoutWordSegmentation.Length - wordLengthLanguagesWithoutWordSegmentation; startPositionLanguageWithoutWordSegmentation++)
-                            {
-                                int count;
-                                string wordLanguageWithoutWordSegmentation = matchLanguagesWithoutWordSegmentation.Value.Substring(startPositionLanguageWithoutWordSegmentation, wordLengthLanguagesWithoutWordSegmentation);
-
-                                if (wordCount.TryGetValue(wordLanguageWithoutWordSegmentation, out count) == false)
-                                {
-                                    count = 0;
-                                }
-
-                                wordCount[wordLanguageWithoutWordSegmentation] = count + 1;
-                            }
-                        }
+                        phrictionDocument.Name = translation.TranslatedTitle;
+                        phrictionDocument.Content = translation.TranslatedRemarkup;
                     }
 
-                    foreach (var word in wordCount)
+                    string urlCrumbs = Controllers.Phriction.GenerateCrumbs(database, phrictionDocument, language);
+                    JArray crumbs = JsonConvert.DeserializeObject(urlCrumbs) as JArray;
+                    urlCrumbs = string.Join(" ", crumbs.Where(t => ((JValue)t["inexistant"]).Value.Equals(false))
+                                                       .Select(t => ((JValue)t["name"]).Value).ToArray()
+                                           );
+                    
+                    RemarkupParserOutput remarkupParserOutput;
+                    controller.ConvertRemarkupToHTML(database, "", phrictionDocument.Content, out remarkupParserOutput, false);
+
+                    blobContent = phrictionDocument.Name + " ";         // phriction document title
+                    blobContent += urlCrumbs;                           // crumbs from phriction document url
+                    blobContent += remarkupParserOutput.Text;           // phriction document content
+                    keyword.Description = phrictionDocument.Name;
+                }
+
+                if (maniphestTask != null)
+                {
+                    RemarkupParserOutput remarkupParserOutput;
+                    controller.ConvertRemarkupToHTML(database, "", maniphestTask.Description, out remarkupParserOutput, false);
+
+                    blobContent = maniphestTask.Name + " ";                     // maniphest task title
+                    blobContent += remarkupParserOutput.Text + " ";             // maniphest task description
+                    blobContent += string.Format("T{0}", maniphestTask.ID);     // maniphest task T-identifier
+                    keyword.Description = maniphestTask.Name;
+                }
+
+                if (blogPost != null)
+                {
+                    RemarkupParserOutput remarkupParserOutput;
+                    controller.ConvertRemarkupToHTML(database, "", blogPost.Content, out remarkupParserOutput, false);
+
+                    blobContent = blogPost.Title + " ";                         // blog post title
+                    blobContent += remarkupParserOutput.Text + " ";             // blog post content
+                    blobContent += string.Format("J{0}", blogPost.ID);          // blog post J-identifier
+                    keyword.Description = blogPost.Title;
+                }
+
+                if (string.IsNullOrEmpty(blobContent) == false)
+                {
+                    Regex regManiphestTaskOrBlogPost = new Regex(@"\b[JT]-?[0-9]+\b", RegexOptions.IgnoreCase);
+                    IEnumerable<string> taskOrBlogPostReferences = regManiphestTaskOrBlogPost.Matches(blobContent)
+                                                                                             .OfType<Match>()
+                                                                                             .Select(match => match.Value);
+
+                    List<Match> assemblyLikeWords = RegexSafe.Matches(blobContent, "[A-Za-z0-9_]{1,255}([.][A-Za-z0-9_]{1,255})+", RegexOptions.Singleline)    // store also all assembly-like or url-like words (i.e. words with a dot in)
+                                                             .OfType<Match>()                                                                                  //   for example:  System.Net,  www.phacility.com
+                                                             .ToList();                                                                                        //
+
+                    List<string> emailAddresses = RegexSafe.Matches(blobContent, @"((?=.{0,64}@.{0,255})(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*""))@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])", RegexOptions.Singleline)
+                                                           .OfType<Match>()
+                                                           .Select(m => m.Value)
+                                                           .ToList();
+
+
+                    string nonCJKBlobContent = RegexSafe.Replace(blobContent, @"[\p{P}\p{IsCJKUnifiedIdeographs}\p{IsThai}$^+=<>`|~]", " ", RegexOptions.Singleline);
+                    List<string> words = nonCJKBlobContent.Split(new char[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
+                                                          .Where(word => word.Length >= 2)                                                              // only store words which are at least 2 characters and ...
+                                                          .Where(word => word.Length <= 50)                                                             // ... at maximum 50 characters long
+                                                          .Where(word => word.All(ch => ch == '-' || ch == '_' || ch == '*' || ch == '#') == false)     // do not store words which do only contain some specific symbols
+                                                          .Concat(assemblyLikeWords.Select(m => m.Value))                                               // store also all assembly-like or url-like words (i.e. words with a dot in)
+                                                          .Concat(assemblyLikeWords.Select(m => m.Groups.OfType<Group>().Last().Value.Substring(1)))    // store the last word of an assembly-like word (e.g.  databaseName.dbo.tableName -> tableName)
+                                                          .Concat(taskOrBlogPostReferences)
+                                                          .Concat(emailAddresses)
+                                                          .Select(word => word.ToLower())
+                                                          .ToList();
+
+                    // add division-like formulas (e.g. U/I)
+                    words.AddRange(RegexSafe.Matches(blobContent, "[A-Za-z]+[A-Za-z0-9]*/[A-Za-z0-9]+")
+                                            .OfType<Match>()
+                                            .Select(m => m.Value)
+                                  );
+
+                    // store everything in lowercase
+                    foreach (var wordCount in words.GroupBy(key => key))
                     {
-                        keyword.Name = word.Key;
-                        keyword.NumberOccurrences = word.Value;
+                        keyword.Name = wordCount.Key;
+                        keyword.NumberOccurrences = wordCount.Count();
                         keywordStorage.Add(database, keyword);
+                    }
+
+                    // check if content contains characters from a language without word segmentation (e.g. Chinese, Japanese, Korean, Thai)
+                    MatchCollection matchesLanguagesWithoutWordSegmentation = regLanguagesWithoutWordSegmentation.Matches(blobContent);
+                    if (matchesLanguagesWithoutWordSegmentation.Count > 0)
+                    {
+                        // we'll store for each character sequence all possible "words" that can be generated from this sequence
+                        Dictionary<string, int> wordCount = new Dictionary<string, int>();
+
+                        foreach (Match matchLanguagesWithoutWordSegmentation in matchesLanguagesWithoutWordSegmentation)
+                        {
+                            for (int wordLengthLanguagesWithoutWordSegmentation = 1; wordLengthLanguagesWithoutWordSegmentation <= matchLanguagesWithoutWordSegmentation.Length; wordLengthLanguagesWithoutWordSegmentation++)
+                            {
+                                for (int startPositionLanguageWithoutWordSegmentation = 0; startPositionLanguageWithoutWordSegmentation <= matchLanguagesWithoutWordSegmentation.Length - wordLengthLanguagesWithoutWordSegmentation; startPositionLanguageWithoutWordSegmentation++)
+                                {
+                                    int count;
+                                    string wordLanguageWithoutWordSegmentation = matchLanguagesWithoutWordSegmentation.Value.Substring(startPositionLanguageWithoutWordSegmentation, wordLengthLanguagesWithoutWordSegmentation);
+
+                                    if (wordCount.TryGetValue(wordLanguageWithoutWordSegmentation, out count) == false)
+                                    {
+                                        count = 0;
+                                    }
+
+                                    wordCount[wordLanguageWithoutWordSegmentation] = count + 1;
+                                }
+                            }
+                        }
+
+                        foreach (var word in wordCount)
+                        {
+                            keyword.Name = word.Key;
+                            keyword.NumberOccurrences = word.Value;
+                            keywordStorage.Add(database, keyword);
+                        }
                     }
                 }
             }
@@ -262,9 +284,11 @@ namespace Phabrico.Storage
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT name, token, description, nbrocc
-                       FROM keywordInfo;
+                       FROM keywordInfo
+                       WHERE language = @language;
                    ", database.Connection))
             {
+                database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     while (reader.Read())
@@ -286,16 +310,19 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database"></param>
         /// <param name="word"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public IEnumerable<string> GetTokensByExactWord(Database database, string word)
+        public IEnumerable<string> GetTokensByExactWord(Database database, string word, Language language)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        SELECT name, token, description, nbrocc
                        FROM keywordInfo
-                       WHERE name = @name;
+                       WHERE name = @name
+                         AND language = @language;
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "name", database.PolyCharacterCipherEncrypt(word.ToUpper()));
+                database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
                 using (var reader = dbCommand.ExecuteReader())
                 {
                     while (reader.Read())
@@ -311,14 +338,14 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database">SQLite database</param>
         /// <param name="words">keywords that exist in the document or task</param>
+        /// <param name="language">language of the keywords</param>
         /// <returns></returns>
-        public IEnumerable<string> GetTokensByWords(Database database, string[] words)
+        public IEnumerable<string> GetTokensByWords(Database database, string[] words, Language language)
         {
             string sqlStatement;
             SQLiteCommand dbCommand;
             Dictionary<string, WordsArraySearchResult> wordsArraySearchResults = new Dictionary<string, WordsArraySearchResult>();
             List<string> invalidTokens = new List<string>();
-            Regex regManiphestTask = new Regex("^T[0-9]*$", RegexOptions.IgnoreCase);
 
             // collect all words in a double dictionary
             for (int wordIndex = 0; wordIndex < words.Length && wordIndex < 63; wordIndex++)
@@ -341,13 +368,39 @@ namespace Phabrico.Storage
                 string encryptedWord = database.PolyCharacterCipherEncrypt(word.ToUpper());
 
                 sqlStatement = string.Format(@"
-                    SELECT name, token, nbrocc, description
+                    SELECT keywordInfo.name,
+                           keywordInfo.token,
+                           keywordInfo.nbrocc,
+                           keywordInfo.description,
+                           keywordInfo.language
                     FROM keywordInfo
-                    WHERE name LIKE '{0}%'
+                    INNER JOIN (
+                        SELECT MIN(level) level, token
+                        FROM (
+                            SELECT 1 level, token
+                            FROM keywordInfo
+                            WHERE name LIKE '{0}%'
+                              AND language = @language
+
+                            UNION
+
+                            SELECT 2 level, token
+                            FROM keywordInfo
+                            WHERE name LIKE '{0}%'
+                              AND language = @notApplicable
+                        ) drv
+                        GROUP BY token
+                    ) selection
+                    ON keywordInfo.token = selection.token
+                    AND ((selection.level = 1 AND keywordInfo.language = @language)         -- translation available
+                      OR (selection.level = 2 AND keywordInfo.language = @notApplicable)    -- no translation available
+                        ) 
                 ", encryptedWord);
 
                 using (dbCommand = new SQLiteCommand(sqlStatement, database.Connection))
                 {
+                    database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
+                    database.AddParameter(dbCommand, "notApplicable", Language.NotApplicable, Database.EncryptionMode.None);
                     using (var reader = dbCommand.ExecuteReader())
                     {
                         while (reader.Read())
@@ -369,7 +422,7 @@ namespace Phabrico.Storage
                             if (negation)
                             {
                                 string decryptedWord = database.PolyCharacterCipherDecrypt(word);
-                                invalidTokens.AddRange( GetTokensByExactWord(database, decryptedWord) );
+                                invalidTokens.AddRange( GetTokensByExactWord(database, decryptedWord, language) );
                             }
                             else
                             {

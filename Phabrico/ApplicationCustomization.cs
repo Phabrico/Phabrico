@@ -66,6 +66,11 @@ namespace Phabrico
         public string ApplicationCSS { get; set; }
 
         /// <summary>
+        /// CSS styles for formatting the top header of Phabrico
+        /// </summary>
+        public Dictionary<string, string> ApplicationHeaderStyle { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
         /// The logo that should be shown in the top left corner
         /// </summary>
         public Image ApplicationLogo
@@ -82,39 +87,45 @@ namespace Phabrico
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     Image image = new Bitmap(customApplicationLogo);
-                    int newWidth = image.Width;
-                    int newHeight = image.Height;
-
-                    // resize image if height too large (height should be 2 x height header on top)
-                    if (newHeight > 2*36)
+                    try
                     {
-                        newWidth = (newWidth * 2*36) / newHeight;
-                        newHeight = 2*36;
+                        int newWidth = image.Width;
+                        int newHeight = image.Height;
 
-                        var destRect = new Rectangle(0, 0, newWidth, newHeight);
-                        var newImage = new Bitmap(newWidth, newHeight);
-
-                        newImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-                        using (Graphics graphics = Graphics.FromImage(newImage))
+                        // resize image if height too large (height should be 2 x height header on top)
+                        if (newHeight > 2 * 36)
                         {
-                            graphics.CompositingMode = CompositingMode.SourceCopy;
-                            graphics.CompositingQuality = CompositingQuality.HighQuality;
-                            graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-                            graphics.SmoothingMode = SmoothingMode.HighQuality;
-                            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                            newWidth = (newWidth * 2 * 36) / newHeight;
+                            newHeight = 2 * 36;
 
-                            graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+                            var destRect = new Rectangle(0, 0, newWidth, newHeight);
+                            var newImage = new Bitmap(newWidth, newHeight);
 
-                            image.Dispose();
-                            image = new Bitmap(newImage);
+                            newImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+                            using (Graphics graphics = Graphics.FromImage(newImage))
+                            {
+                                graphics.CompositingMode = CompositingMode.SourceCopy;
+                                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                                graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+                                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                                graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+
+                                image.Dispose();
+                                image = new Bitmap(newImage);
+                            }
                         }
-                    }
 
-                    // convert image to base64
-                    image.Save(memoryStream, ImageFormat.Png);
-                    byte[] imageData = memoryStream.ToArray();
-                    CustomApplicationLogoBase64 = "data:image/png;base64," + Convert.ToBase64String(imageData);
-                    image.Dispose();
+                        // convert image to base64
+                        image.Save(memoryStream, ImageFormat.Png);
+                        byte[] imageData = memoryStream.ToArray();
+                        CustomApplicationLogoBase64 = "data:image/png;base64," + Convert.ToBase64String(imageData);
+                    }
+                    finally
+                    {
+                        image.Dispose();
+                    }
                 }
             }
         }
@@ -157,42 +168,55 @@ namespace Phabrico
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     Image image = new Bitmap(customFavIcon);
-                    int newWidth = image.Width;
-                    int newHeight = image.Height;
 
-                    // resize image if height too large (height should be 2 x height header on top)
-                    if (newHeight > 2*36)
+                    try
                     {
-                        newWidth = (newWidth * 2*36) / newHeight;
-                        newHeight = 2*36;
+                        int newWidth = image.Width;
+                        int newHeight = image.Height;
 
-                        var destRect = new Rectangle(0, 0, newWidth, newHeight);
-                        var newImage = new Bitmap(newWidth, newHeight);
-
-                        newImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-                        using (Graphics graphics = Graphics.FromImage(newImage))
+                        // resize image if height too large (height should be 2 x height header on top)
+                        if (newHeight > 2 * 36)
                         {
-                            graphics.CompositingMode = CompositingMode.SourceCopy;
-                            graphics.CompositingQuality = CompositingQuality.HighQuality;
-                            graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
-                            graphics.SmoothingMode = SmoothingMode.HighQuality;
-                            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                            newWidth = (newWidth * 2 * 36) / newHeight;
+                            newHeight = 2 * 36;
 
-                            graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+                            var destRect = new Rectangle(0, 0, newWidth, newHeight);
+                            var newImage = new Bitmap(newWidth, newHeight);
 
-                            image.Dispose();
-                            image = new Bitmap(newImage);
+                            newImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+                            using (Graphics graphics = Graphics.FromImage(newImage))
+                            {
+                                graphics.CompositingMode = CompositingMode.SourceCopy;
+                                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                                graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+                                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                                graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+
+                                image.Dispose();
+                                image = new Bitmap(newImage);
+                            }
                         }
-                    }
 
-                    // convert image to base64
-                    image.Save(memoryStream, ImageFormat.Png);
-                    byte[] imageData = memoryStream.ToArray();
-                    CustomFavIconBase64 = "data:image/png;base64," + Convert.ToBase64String(imageData);
-                    image.Dispose();
+                        // convert image to base64
+                        image.Save(memoryStream, ImageFormat.Png);
+                        byte[] imageData = memoryStream.ToArray();
+                        CustomFavIconBase64 = "data:image/png;base64," + Convert.ToBase64String(imageData);
+                    }
+                    finally
+                    {
+                        image.Dispose();
+                    }
                 }
             }
         }
+
+        /// <summary>
+        /// Available languages in which Phabrico can be shown
+        /// By default, all languages are available
+        /// </summary>
+        public IEnumerable<Language> AvailableLanguages { get; set; } = null;
 
         /// <summary>
         /// If true, Config screen will not be accessible
@@ -263,12 +287,6 @@ namespace Phabrico
         /// If true, no Phriction document or Maniphest task can be edited
         /// </summary>
         public bool IsReadonly { get; set; } = false;
-
-        /// <summary>
-        /// Language code for Phabrico application.
-        /// (Content of Phriction documents or Maniphest tasks will not be translated)
-        /// </summary>
-        public Language Language { get; set; } = null;
 
         /// <summary>
         /// If false, the master data on Phabricator is not accessible via Phabrico.

@@ -24,9 +24,6 @@ namespace Phabrico.Phabricator.API
         {
             double minimumDateTime = modifiedSince.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;
 
-            Storage.Project projectStorage = new Storage.Project();
-            Data.Project[] activatedProjects = projectStorage.Get(database, Language.NotApplicable).Where(project => project.Selected == Data.Project.Selection.Selected).ToArray();
-
             string firstItemId = "";
             bool searchForModifications = true;
             while (searchForModifications)
@@ -38,6 +35,7 @@ namespace Phabrico.Phabricator.API
                                             firstItemId
                                            );
                 JObject projectData = JsonConvert.DeserializeObject(json) as JObject;
+                if (projectData == null) break;
 
                 List<JObject> userModifications = projectData["result"]["data"].OfType<JObject>().ToList();
                 if (userModifications.Any() == false) break;
@@ -84,7 +82,8 @@ namespace Phabrico.Phabricator.API
         {
             string json = conduit.Query("user.whoami");
             JToken userData = JsonConvert.DeserializeObject(json) as JToken;
-            
+            if (userData == null) return null;
+
             Data.User user = new Data.User();
             user.RealName = userData["result"]["realName"].ToString();
             user.Token = userData["result"]["phid"].ToString();

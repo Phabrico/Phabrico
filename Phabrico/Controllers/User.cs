@@ -42,13 +42,12 @@ namespace Phabrico.Controllers
         /// This method is fired when opening the Users screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="htmlViewPage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         /// <returns></returns>
         [UrlController(URL = "/user")]
-        public Http.Response.HttpMessage HttpPostLoadUsersScreen(Http.Server httpServer, Browser browser, string[] parameters)
+        public Http.Response.HttpMessage HttpPostLoadUsersScreen(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user");
 
@@ -63,7 +62,6 @@ namespace Phabrico.Controllers
                 string firstParameter = parameters.FirstOrDefault() ?? "";
                 bool doSelectAll = firstParameter.Equals("selectAll");
                 bool doUnselectAll = firstParameter.Equals("unselectAll");
-                bool doShowSelected = firstParameter.Equals("showSelected");
 
                 string[] filtersUser = browser.Session.FormVariables[browser.Request.RawUrl]["filterUser"]
                                                             .Split(' ');
@@ -97,12 +95,11 @@ namespace Phabrico.Controllers
         /// This method is fired when opening the Users screen and when changing its search filter
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/user/query")]
-        public JsonMessage HttpPostPopulateTableData(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostPopulateTableData(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/query");
 
@@ -172,10 +169,9 @@ namespace Phabrico.Controllers
         /// This method is fired when the user clicks on a 'select' button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/user/select")]
-        public void HttpPostSelectUser(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostSelectUser(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/select");
 
@@ -195,10 +191,9 @@ namespace Phabrico.Controllers
         /// This method is fired when the user clicks on a 'unselect' button
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         [UrlController(URL = "/user/unselect")]
-        public void HttpPostUnselectUser(Http.Server httpServer, Browser browser, string[] parameters)
+        public void HttpPostUnselectUser(Http.Server httpServer, string[] parameters)
         {
             if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/unselect");
 

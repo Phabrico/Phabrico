@@ -172,9 +172,17 @@ namespace Phabrico.Miscellaneous
             byte[] invalidEncryptionKey = ASCIIEncoding.ASCII.GetBytes(invalidEncryptionKeyString);
             byte[] invalidEncryptionKeyReversed = ASCIIEncoding.ASCII.GetBytes(invalidEncryptionKeyString);
             Array.Reverse(invalidEncryptionKeyReversed);
-            
-            byte[] firstPart = MD5.Create().ComputeHash(invalidEncryptionKey);
-            byte[] lastPart = MD5.Create().ComputeHash(invalidEncryptionKeyReversed);
+
+            byte[] firstPart, lastPart;
+            using (MD5 firstMD5 = MD5.Create())
+            {
+                firstPart = firstMD5.ComputeHash(invalidEncryptionKey);
+            }
+
+            using (MD5 lastMD5 = MD5.Create())
+            {
+                lastPart = lastMD5.ComputeHash(invalidEncryptionKeyReversed);
+            }
 
             return ASCIIEncoding.ASCII.GetString(firstPart.Concat(lastPart).ToArray());
         }
@@ -187,36 +195,38 @@ namespace Phabrico.Miscellaneous
         /// <returns></returns>
         public static string GenerateEncryptionKey(string accountDataUserName, string accountDataPassword)
         {
-            SHA256 sha256 = new SHA256Managed();
-            string accountDataUserNameLowerCase = accountDataUserName.ToLower();  // to make sure that the username is case insensitive
-
-            // generate some string based on username and password
-            string accountData = string.Format("{0}:{1}", accountDataPassword, accountDataUserNameLowerCase);
-            for (int index = 0; index < 26 - accountDataUserNameLowerCase.Length; index++)
+            using (SHA256 sha256 = new SHA256Managed())
             {
-                accountData = (char)('A' + index) + accountData;
+                string accountDataUserNameLowerCase = accountDataUserName.ToLower();  // to make sure that the username is case insensitive
+
+                // generate some string based on username and password
+                string accountData = string.Format("{0}:{1}", accountDataPassword, accountDataUserNameLowerCase);
+                for (int index = 0; index < 26 - accountDataUserNameLowerCase.Length; index++)
+                {
+                    accountData = (char)('A' + index) + accountData;
+                }
+                for (int index = 0; index < 26 - accountDataPassword.Length; index++)
+                {
+                    accountData = accountData + (char)('a' + index);
+                }
+
+                // encrypt string
+                byte[] data = ASCIIEncoding.ASCII.GetBytes(accountData);
+                data = sha256.ComputeHash(data);
+
+                // make sure string contains only printable characters
+                for (int index = 0; index < data.Length; index++)
+                {
+                    data[index] &= 127;
+                    data[index] |= 32;
+
+                    if (data[index] == 127) data[index] = 126;
+                }
+
+                return ASCIIEncoding.ASCII.GetString(data);
             }
-            for (int index = 0; index < 26 - accountDataPassword.Length; index++)
-            {
-                accountData = accountData + (char)('a' + index);
-            }
-
-            // encrypt string
-            byte[] data = ASCIIEncoding.ASCII.GetBytes(accountData);
-            data = sha256.ComputeHash(data);
-
-            // make sure string contains only printable characters
-            for (int index = 0; index < data.Length; index++)
-            {
-                data[index] &= 127;
-                data[index] |= 32;
-
-                if (data[index] == 127) data[index] = 126;
-            }
-
-            return ASCIIEncoding.ASCII.GetString(data);
         }
-        
+
         /// <summary>
         /// Generates a password that will be used for encrypting the data in the SQLite database which needs to be encrypted in EncryptionMode.Private
         /// </summary>
@@ -225,34 +235,36 @@ namespace Phabrico.Miscellaneous
         /// <returns></returns>
         public static string GeneratePrivateEncryptionKey(string accountDataUserName, string accountDataPassword)
         {
-            SHA256 sha256 = new SHA256Managed();
-            string accountDataUserNameUpperCase = accountDataUserName.ToUpper();  // to make sure that the username is case insensitive
-
-            // generate some string based on username and password
-            string accountData = string.Format("{0}:{1}", accountDataUserNameUpperCase, accountDataPassword);
-            for (int index = 0; index < 26 - accountDataUserNameUpperCase.Length; index++)
+            using (SHA256 sha256 = new SHA256Managed())
             {
-                accountData = (char)('z' - index) + accountData;
+                string accountDataUserNameUpperCase = accountDataUserName.ToUpper();  // to make sure that the username is case insensitive
+
+                // generate some string based on username and password
+                string accountData = string.Format("{0}:{1}", accountDataUserNameUpperCase, accountDataPassword);
+                for (int index = 0; index < 26 - accountDataUserNameUpperCase.Length; index++)
+                {
+                    accountData = (char)('z' - index) + accountData;
+                }
+                for (int index = 0; index < 26 - accountDataPassword.Length; index++)
+                {
+                    accountData = accountData + (char)('Z' - index);
+                }
+
+                // encrypt string
+                byte[] data = ASCIIEncoding.ASCII.GetBytes(accountData);
+                data = sha256.ComputeHash(data);
+
+                // make sure string contains only printable characters
+                for (int index = 0; index < data.Length; index++)
+                {
+                    data[index] &= 127;
+                    data[index] |= 32;
+
+                    if (data[index] == 127) data[index] = 126;
+                }
+
+                return ASCIIEncoding.ASCII.GetString(data);
             }
-            for (int index = 0; index < 26 - accountDataPassword.Length; index++)
-            {
-                accountData = accountData + (char)('Z' - index);
-            }
-
-            // encrypt string
-            byte[] data = ASCIIEncoding.ASCII.GetBytes(accountData);
-            data = sha256.ComputeHash(data);
-
-            // make sure string contains only printable characters
-            for (int index = 0; index < data.Length; index++)
-            {
-                data[index] &= 127;
-                data[index] |= 32;
-
-                if (data[index] == 127) data[index] = 126;
-            }
-
-            return ASCIIEncoding.ASCII.GetString(data);
         }
 
         /// <summary>
@@ -263,41 +275,44 @@ namespace Phabrico.Miscellaneous
         /// <returns></returns>
         public static string GenerateTokenKey(string accountDataUserName, string accountDataPassword)
         {
-            SHA256 sha256 = new SHA256Managed();
-            string accountDataUserNameLowerCase = accountDataUserName.ToLower();  // to make sure that the username is case insensitive
-
-            // generate some string based on username and password
-            string accountData = string.Format("{0}:{1}", accountDataUserNameLowerCase, accountDataPassword);
-            for (int index = 0; index < 26 - accountDataPassword.Length; index++)
+            using (SHA256 sha256 = new SHA256Managed())
             {
-                accountData = (char)('a' + index) + accountData;
+                string accountDataUserNameLowerCase = accountDataUserName.ToLower();  // to make sure that the username is case insensitive
+
+                // generate some string based on username and password
+                string accountData = string.Format("{0}:{1}", accountDataUserNameLowerCase, accountDataPassword);
+                for (int index = 0; index < 26 - accountDataPassword.Length; index++)
+                {
+                    accountData = (char)('a' + index) + accountData;
+                }
+                for (int index = 0; index < 26 - accountDataPassword.Length; index++)
+                {
+                    accountData = accountData + (char)('A' + index);
+                }
+
+                // encrypt string
+                byte[] data = ASCIIEncoding.ASCII.GetBytes(accountData);
+                data = sha256.ComputeHash(data);
+
+                // make sure string contains only printable characters
+                for (int index = 0; index < data.Length; index++)
+                {
+                    data[index] &= 127;
+                    data[index] |= 32;
+
+                    if (data[index] == 127) data[index] = 126;
+                }
+
+                return ASCIIEncoding.ASCII.GetString(data);
             }
-            for (int index = 0; index < 26 - accountDataPassword.Length; index++)
-            {
-                accountData = accountData + (char)('A' + index);
-            }
-
-            // encrypt string
-            byte[] data = ASCIIEncoding.ASCII.GetBytes(accountData);
-            data = sha256.ComputeHash(data);
-
-            // make sure string contains only printable characters
-            for (int index = 0; index < data.Length; index++)
-            {
-                data[index] &= 127;
-                data[index] |= 32;
-
-                if (data[index] == 127) data[index] = 126;
-            }
-
-            return ASCIIEncoding.ASCII.GetString(data);
         }
 
         /// <summary>
-        /// Generates a DPAPI encrypted string based on the current computer name and user name
+        /// Decrypts a DPAPI encrypted byte array
         /// </summary>
-        /// <returns>DPAPI encrypted string which can be used as encryption/decyption key</returns>
-        public static string GetDPAPIKey()
+        /// <param name="encryptedData">Encrypted byte array</param>
+        /// <returns>Decrypted byte array</returns>
+        public static byte[] DecryptDPAPI(byte[] encryptedData)
         {
             System.Security.Principal.WindowsImpersonationContext windowsImpersonationContext = null;
 
@@ -307,37 +322,51 @@ namespace Phabrico.Miscellaneous
                 IntPtr currentUserToken = ImpersonationHelper.GetCurrentUserToken();
                 if (currentUserToken != IntPtr.Zero)
                 {
-                    WindowsIdentity currentUser = new WindowsIdentity(currentUserToken);
-                    windowsImpersonationContext = currentUser.Impersonate();
+                    using (WindowsIdentity currentUser = new WindowsIdentity(currentUserToken))
+                    {
+                        windowsImpersonationContext = currentUser.Impersonate();
+                    }
                 }
 
-                // calculate DPAPI key
-                string dpapiEncryptionKey = Environment.MachineName + "|" + Environment.UserName.ToUpperInvariant() + "abcdefghijklmnopqrstuvwxyz789012";
-                dpapiEncryptionKey = dpapiEncryptionKey.Substring(0, 32 * (dpapiEncryptionKey.Length / 32));  // length of DPAPI encryption key should be 32
-                byte[] data = UTF8Encoding.UTF8.GetBytes(dpapiEncryptionKey);
-                byte[] encryptedData = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser)
-                                                    .Concat(ASCIIEncoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz789012"))
-                                                    .ToArray();
-
-                // strip down DPAPI key to 32 bytes
-                for (uint c = 0; c < 32; c++)
+                // decrypt...
+                return ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
+            }
+            finally
+            {
+                // un-impersonate if needed
+                if (windowsImpersonationContext != null)
                 {
-                    byte encryptedByte = encryptedData[c + (encryptedData.Length / 32) + 4];
-                    if (encryptedByte == 0) encryptedByte += (byte)((c+5)*3);
-                    encryptedData[c] = encryptedByte;
-                }
-                encryptedData = encryptedData.Take(32).ToArray();
+                    // Undo impersonation
+                    windowsImpersonationContext.Undo();
 
-                // make sure string contains only printable characters
-                for (int index = 0; index < encryptedData.Length; index++)
+                    windowsImpersonationContext.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Generates a DPAPI encrypted byte array
+        /// </summary>
+        /// <param name="unencryptedData">Unencrypted byte array</param>
+        /// <returns>Encrypted byte array</returns>
+        public static byte[] EncryptDPAPI(byte[] unencryptedData)
+        {
+            System.Security.Principal.WindowsImpersonationContext windowsImpersonationContext = null;
+
+            try
+            {
+                // impersonate if needed
+                IntPtr currentUserToken = ImpersonationHelper.GetCurrentUserToken();
+                if (currentUserToken != IntPtr.Zero)
                 {
-                    encryptedData[index] &= 127;
-                    encryptedData[index] |= 32;
-
-                    if (encryptedData[index] == 127) encryptedData[index] = 126;
+                    using (WindowsIdentity currentUser = new WindowsIdentity(currentUserToken))
+                    {
+                        windowsImpersonationContext = currentUser.Impersonate();
+                    }
                 }
 
-                return UTF8Encoding.UTF8.GetString(encryptedData);
+                // encrypt...
+                return ProtectedData.Protect(unencryptedData, null, DataProtectionScope.CurrentUser);
             }
             finally
             {
@@ -401,7 +430,7 @@ namespace Phabrico.Miscellaneous
             string encodedString = "";
             UInt64 xorIndex = 0x01;
 
-            for (int c = 0; c < decodedString.Length; c++)
+            for (int c = 0; c < decodedString.Length && c < xorValue.Length * 8; c++)
             {
                 char decodedChar = decodedString[c];
                 encodedString += (char)(decodedChar ^ ((xorValue[c / 8] / xorIndex) & 0xFF));

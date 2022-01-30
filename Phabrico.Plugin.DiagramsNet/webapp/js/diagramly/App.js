@@ -635,7 +635,8 @@ App.main = function(callback, createUi)
 	if (window.mxscript != null)
 	{
 		// Checks for script content changes to avoid CSP errors in production
-		if (urlParams['dev'] == '1' && CryptoJS != null && App.mode != App.MODE_DROPBOX && App.mode != App.MODE_TRELLO)
+		if (urlParams['dev'] == '1' && !mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
+			CryptoJS != null && App.mode != App.MODE_DROPBOX && App.mode != App.MODE_TRELLO)
 		{
 			var scripts = document.getElementsByTagName('script');
 			
@@ -644,7 +645,7 @@ App.main = function(callback, createUi)
 			{
 				var content = mxUtils.getTextContent(scripts[0]);
 				
-				if (CryptoJS.MD5(content).toString() != '0fed8c83fc7187e0b39310c4aa3e6d63')
+				if (CryptoJS.MD5(content).toString() != '1f536e2400baaa30261b8c3976d6fe06')
 				{
 					console.log('Change bootstrap script MD5 in the previous line:', CryptoJS.MD5(content).toString());
 					alert('[Dev] Bootstrap script change requires update of CSP');
@@ -3297,7 +3298,7 @@ App.prototype.start = function()
 							{
 								this.loadFile();
 							}
-							else
+							else if (!EditorUi.isElectronApp)
 							{
 								this.createFile(this.defaultFilename, this.getFileData(), null, null, null, null, null, true);
 							}
@@ -3372,7 +3373,7 @@ App.prototype.start = function()
 						}), null, null, null, null, urlParams['browser'] == '1',
 							null, null, true, rowLimit, null, null, null,
 							this.editor.fileExtensions);
-						this.showDialog(dlg.container, 420, (serviceCount > rowLimit) ? 390 : 270,
+						this.showDialog(dlg.container, 420, (serviceCount > rowLimit) ? 390 : 280,
 							true, false, mxUtils.bind(this, function(cancel)
 						{
 							if (cancel && this.getCurrentFile() == null)
@@ -4561,7 +4562,7 @@ App.prototype.saveFile = function(forceDialog, success)
 				this.hideDialog();
 			}), mxResources.get('saveAs'), mxResources.get('download'), null, null, allowTab,
 				null, true, rowLimit, null, null, null, this.editor.fileExtensions, false);
-			this.showDialog(dlg.container, 420, (serviceCount > rowLimit) ? 390 : 270, true, true);
+			this.showDialog(dlg.container, 420, (serviceCount > rowLimit) ? 390 : 280, true, true);
 			dlg.init();
 		}
 	}
@@ -4617,17 +4618,24 @@ App.prototype.loadTemplate = function(url, onload, onerror, templateFilename, as
 					onload(xml);
 				}, onerror, filterFn);
 			}
-			else if (!this.isOffline() && new XMLHttpRequest().upload && this.isRemoteFileFormat(data, filterFn))
+			else if (new XMLHttpRequest().upload && this.isRemoteFileFormat(data, filterFn))
 			{
-				// Asynchronous parsing via server
-				this.parseFileData(data, mxUtils.bind(this, function(xhr)
+				if (this.isExternalDataComms())
 				{
-					if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <= 299 &&
-						xhr.responseText.substring(0, 13) == '<mxGraphModel')
+					// Asynchronous parsing via server
+					this.parseFileData(data, mxUtils.bind(this, function(xhr)
 					{
-						onload(xhr.responseText);
-					}
-				}), url);
+						if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <= 299 &&
+							xhr.responseText.substring(0, 13) == '<mxGraphModel')
+						{
+							onload(xhr.responseText);
+						}
+					}), url);
+				}
+				else
+				{
+					this.showError(mxResources.get('error'), mxResources.get('notInOffline'), null, onerror);
+				}
 			}
 			else if (this.isLucidChartData(data))
 			{
@@ -6920,6 +6928,9 @@ App.prototype.updateHeader = function()
 		
 		mxEvent.addListener(this.toggleFormatElement, 'click', mxUtils.bind(this, function(evt)
 		{
+			EditorUi.logEvent({category: 'TOOLBAR-ACTION-',
+				action: 'formatPanel'});
+		
 			this.actions.get('formatPanel').funct();
 			mxEvent.consume(evt);
 		}));
@@ -6979,6 +6990,9 @@ App.prototype.updateHeader = function()
 		mxEvent.addListener(this.fullscreenElement, 'click', mxUtils.bind(this, function(evt)
 		{
 			var visible = this.fullscreenMode;
+
+			EditorUi.logEvent({category: 'TOOLBAR-ACTION-',
+				action: 'fullscreen' , currentstate: visible});
 			
 			if (uiTheme != 'atlas' && urlParams['embed'] != '1')
 			{
@@ -7034,6 +7048,8 @@ App.prototype.updateHeader = function()
 			// Toggles compact mode
 			mxEvent.addListener(this.toggleElement, 'click', mxUtils.bind(this, function(evt)
 			{
+				EditorUi.logEvent({category: 'TOOLBAR-ACTION-',
+					action: 'toggleUI'});
 				this.toggleCompactMode();
 				mxEvent.consume(evt);
 			}));

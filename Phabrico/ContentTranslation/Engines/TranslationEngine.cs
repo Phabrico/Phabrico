@@ -12,7 +12,7 @@ namespace Phabrico.ContentTranslation.Engines
     {
         protected string APIKey { get; private set;}
 
-        private List<string> untranslatableTextParts = new List<string>();
+        private readonly List<string> untranslatableTextParts = new List<string>();
 
         /// <summary>
         /// True if a connection is established over the internet.
@@ -95,46 +95,48 @@ namespace Phabrico.ContentTranslation.Engines
                         if (tokens[c].GetType() == typeof(BrokenXmlClosingTag))
                         {
                             BrokenXmlClosingTag brokenXmlClosingTag = tokens[c] as BrokenXmlClosingTag;
-
-                            depth--;
-                            if (depth == 0)
+                            if (brokenXmlClosingTag != null)
                             {
-                                if (XmlTagTranslatable(brokenXmlOpeningTag))
+                                depth--;
+                                if (depth == 0)
                                 {
-                                    translatableContent += brokenXmlOpeningTag.Value
-                                                         + PrepareTranslatableContent(innerContent)
-                                                         + brokenXmlClosingTag.Value;
-
-                                    t = c;
-                                }
-                                else
-                                {
-                                    string untranslatable = brokenXmlOpeningTag.Value
-                                                          + innerContent
-                                                          + brokenXmlClosingTag.Value;
-
-                                    untranslatableTextParts.Add(untranslatable);
-
-                                    brokenXmlOpeningTag.Name = "UT";  // untranslatable text
-                                    brokenXmlClosingTag.Name = brokenXmlOpeningTag.Name;
-                                    brokenXmlOpeningTag.Attributes.Clear();
-                                    brokenXmlOpeningTag.Attributes.Add(new BrokenXmlAttribute()
+                                    if (XmlTagTranslatable(brokenXmlOpeningTag))
                                     {
-                                        Name = "i",
-                                        Value = untranslatableTextParts.Count.ToString()
-                                    });
+                                        translatableContent += brokenXmlOpeningTag.Value
+                                                             + PrepareTranslatableContent(innerContent)
+                                                             + brokenXmlClosingTag.Value;
 
-                                    while (t + 1 != c)
+                                        t = c;
+                                    }
+                                    else
                                     {
-                                        tokens.RemoveAt(t+1);
-                                        c--;
+                                        string untranslatable = brokenXmlOpeningTag.Value
+                                                              + innerContent
+                                                              + brokenXmlClosingTag.Value;
+
+                                        untranslatableTextParts.Add(untranslatable);
+
+                                        brokenXmlOpeningTag.Name = "UT";  // untranslatable text
+                                        brokenXmlClosingTag.Name = brokenXmlOpeningTag.Name;
+                                        brokenXmlOpeningTag.Attributes.Clear();
+                                        brokenXmlOpeningTag.Attributes.Add(new BrokenXmlAttribute()
+                                        {
+                                            Name = "i",
+                                            Value = untranslatableTextParts.Count.ToString()
+                                        });
+
+                                        while (t + 1 != c)
+                                        {
+                                            tokens.RemoveAt(t + 1);
+                                            c--;
+                                        }
+
+                                        translatableContent += brokenXmlOpeningTag.ToString()
+                                                             + brokenXmlClosingTag.ToString();
                                     }
 
-                                    translatableContent += brokenXmlOpeningTag.ToString()
-                                                         + brokenXmlClosingTag.ToString();
+                                    break;
                                 }
-
-                                break;
                             }
                         }
                         else

@@ -39,12 +39,11 @@ namespace Phabrico.Controllers
         /// This method is executed in Phriction and Maniphest screens to visualize the subscribers (=users and projects)
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/subscriber/get")]
-        public void HttpGetInputTagSubscriberData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetInputTagSubscriberData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             string tokensString;
             List<JsonRecordData> records = new List<JsonRecordData>();
@@ -92,12 +91,11 @@ namespace Phabrico.Controllers
         /// A JSONified array of these filtered users and projects is returned
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/subscriber/search")]
-        public void HttpGetPopulateInputTagSubscriberData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateInputTagSubscriberData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             Dictionary<string, string> parameterValues = parameterActions.Split('&').ToDictionary(key => key.Split('=')[0], value => value.Split('=')[1]);
             Storage.Project projectStorage = new Storage.Project();
@@ -157,12 +155,11 @@ namespace Phabrico.Controllers
         /// This method is executed in Phriction and Maniphest screens to visualize the projects
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/tag/get")]
-        public void HttpGetInputTagTagData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetInputTagTagData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/tag/get");
 
@@ -198,12 +195,11 @@ namespace Phabrico.Controllers
         /// A JSONified array of these filtered projects is returned
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/tag/search")]
-        public void HttpGetPopulateInputTagTagData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateInputTagTagData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideProjects) throw new Phabrico.Exception.HttpNotFound("/tag/search");
 
@@ -243,12 +239,11 @@ namespace Phabrico.Controllers
         /// This method is executed in Phriction and Maniphest screens to visualize the users
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/user/get")]
-        public void HttpGetInputTagUserData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetInputTagUserData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/get");
 
@@ -287,12 +282,11 @@ namespace Phabrico.Controllers
         /// A JSONified array of these filtered users is returned
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="jsonMessage"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/user/search")]
-        public void HttpGetPopulateInputTagUserData(Http.Server httpServer, Browser browser, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        public void HttpGetPopulateInputTagUserData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
         {
             if (httpServer.Customization.HideUsers) throw new Phabrico.Exception.HttpNotFound("/user/search");
 

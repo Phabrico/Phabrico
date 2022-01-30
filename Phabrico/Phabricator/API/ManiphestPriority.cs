@@ -23,6 +23,7 @@ namespace Phabrico.Phabricator.API
             // get list of maniphest priorities
             string json = conduit.Query("maniphest.priority.search");
             JObject maniphestDataData = JsonConvert.DeserializeObject(json) as JObject;
+            if (maniphestDataData == null) yield break;
 
             foreach (JObject maniphestTask in maniphestDataData["result"]["data"].OfType<JObject>())
             {

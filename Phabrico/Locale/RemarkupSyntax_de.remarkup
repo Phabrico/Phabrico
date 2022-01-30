@@ -314,7 +314,7 @@ Wo wir gerade von etwas ganz anderem sprechen...
 
 URIs werden automatisch angezeigt: http://phabricator.org/
 
-Wenn Sie einen URI mit problematischen Zeichen darin haben, wie z. B. "http://comma.org/,`"
+Wenn Sie einen URI mit problematischen Zeichen darin haben, wie z. B. `"http://comma.org/,"`
 können Sie mit kleineren als und größeren als Zeichen umgeben:
 ```
 <http://comma.org/,>

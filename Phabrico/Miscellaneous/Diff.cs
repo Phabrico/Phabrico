@@ -631,18 +631,12 @@ namespace Phabrico.Miscellaneous
                 // start playing patience
                 foreach (int card in sequence.Skip(1))
                 {
-                    bool pileFound = false;
-                    foreach (List<int> pile in piles)
+                    List<int> pile = piles.FirstOrDefault(p => p.LastOrDefault() > card);
+                    if (pile != null)
                     {
-                        if (pile.LastOrDefault() > card)
-                        {
-                            pile.Add(card);
-                            pileFound = true;
-                            break;
-                        }
+                        pile.Add(card);
                     }
-
-                    if (pileFound == false)
+                    else
                     {
                         piles.Add(new List<int>());
                         piles.Last().Add(card);

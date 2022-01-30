@@ -68,7 +68,7 @@ namespace Phabrico.Parsers.Remarkup
                         int nbrNewlines = rule.Text.Count(ch => ch == '\n');
                         for (int copy = 0; copy < nbrNewlines; copy++)
                         {
-                            result += "<N>[" + (this.IndexOf(rule) + copy).ToString() + "]</N>\n";
+                            result += "<N>[" + (this.IndexOf(rule) + copy) + "]</N>\n";
                         }
                     }
                 }
@@ -308,6 +308,8 @@ namespace Phabrico.Parsers.Remarkup
                     }
 
                     Rules.RemarkupRule rule = ruleType.GetConstructor(Type.EmptyTypes).Invoke(null) as Rules.RemarkupRule;
+                    if (rule == null) continue;
+
                     rule.Database = database;
                     rule.Browser = browser;
                     rule.DocumentURL = url;
@@ -345,8 +347,11 @@ namespace Phabrico.Parsers.Remarkup
                         result += "\n";
                     }
                     else
+                    if (closingTag != null)
                     {
-                        string innerText = xml.Substring(openingTag.Index + openingTag.Length, closingTag.Index - openingTag.Index - openingTag.Length);
+                        string innerText = xml.Substring(openingTag.Index + openingTag.Length, 
+                                                         closingTag.Index - openingTag.Index - openingTag.Length
+                                                        );
                         innerText = FromXML(database, browser, url, innerText, false);
 
                         result += rule.ConvertXmlToRemarkup(database, browser, innerText, openingTag.Attributes.ToDictionary(key => key.Name, value => value.Value));

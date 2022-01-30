@@ -48,6 +48,8 @@ namespace Phabrico.Phabricator.Data
         public virtual int CompareTo(object obj)
         {
             PhabricatorObject other = obj as PhabricatorObject;
+            if (other == null) return -1;
+
             return Token.CompareTo(other.Token);
         }
 
@@ -57,7 +59,7 @@ namespace Phabrico.Phabricator.Data
         public virtual void Dispose()
         {
         }
-
+        
         /// <summary>
         /// Compares a PhabricatorObject with a token
         /// </summary>
@@ -75,9 +77,8 @@ namespace Phabrico.Phabricator.Data
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public bool Equals(PhabricatorObject otherPhabricatorObject)
         {
-            PhabricatorObject otherPhabricatorObject = obj as PhabricatorObject;
             if (otherPhabricatorObject == null) return false;
 
             return Token.Equals(otherPhabricatorObject.Token);

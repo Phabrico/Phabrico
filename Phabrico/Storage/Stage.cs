@@ -100,7 +100,7 @@ namespace Phabrico.Storage
             }
         }
 
-        private Controllers.Staging privateStagingController = new Controllers.Staging();
+        private readonly Controllers.Staging privateStagingController = new Controllers.Staging();
 
         /// <summary>
         /// Returns the number of frozen staged objects (i.e. the number of objects that will not be uploaded during the next synchronization process)
@@ -339,10 +339,11 @@ namespace Phabrico.Storage
                          AND ((
                                  CAST(language AS TEXT) = @notApplicable
                                  AND NOT EXISTS ( SELECT 1
-                                                 FROM stageInfo
-                                                 WHERE objectID = @objectID
-                                                 AND CAST(language AS TEXT) = @language
-                                             )
+                                                  FROM stageInfo
+                                                  WHERE objectID = @objectID
+                                                  AND CAST(language AS TEXT) = @language
+                                                  AND @language <> @notApplicable
+                                                )
                              )
                          OR 
                              CAST(language AS TEXT) = @language
@@ -492,6 +493,8 @@ namespace Phabrico.Storage
                         record.HeaderData = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["headerData"]);
 
                         Phabricator.Data.PhabricatorObject phabricatorObject = JsonConvert.DeserializeObject(record.HeaderData, typeof(T)) as T;
+                        if (phabricatorObject == null) continue;
+
                         phabricatorObject.Token = record.Token;
                         phabricatorObject.Language = (Language)(string)reader["language"];
 
@@ -623,6 +626,11 @@ namespace Phabrico.Storage
                                     if (unknownToken.StartsWith(Phabricator.Data.Maniphest.Prefix))
                                     {
                                         result = JsonConvert.DeserializeObject<Phabricator.Data.Maniphest>(record.HeaderData) as T;
+                                    }
+                                    else
+                                    if (unknownToken.StartsWith(Phabricator.Data.File.Prefix))
+                                    {
+                                        result = JsonConvert.DeserializeObject<Phabricator.Data.File>(record.HeaderData) as T;
                                     }
                                 }
                                 catch
@@ -763,44 +771,47 @@ namespace Phabrico.Storage
                 {
                     // maniphest task is modified: check if number of comments to users has been changed (i.e. "@" remarkup-code)
                     Phabricator.Data.Maniphest modifiedManiphestTask = modifiedPhabricatorObject as Phabricator.Data.Maniphest;
-                    Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                    Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, modifiedPhabricatorObject.Token, browser.Session.Locale);
-                    if (originalManiphestTask != null)
+                    if (modifiedManiphestTask != null)
                     {
-                        string originalCommentsToUsers = string.Join(",", RegexSafe.Matches(originalManiphestTask.Description, "@[a-z0-9._-]*[a-z0-9_-]")
-                                                                                   .OfType<Match>()
-                                                                                   .Select(match => match.Value)
-                                                                                   .OrderBy(user => user));
-                        string newCommentsToUsers = string.Join(",", RegexSafe.Matches(modifiedManiphestTask.Description, "@[a-z0-9._-]*[a-z0-9_-]")
-                                                                              .OfType<Match>()
-                                                                              .Select(match => match.Value)
-                                                                              .OrderBy(user => user));
-                        if (originalCommentsToUsers.Equals(newCommentsToUsers) == false)
+                        Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+                        Phabricator.Data.Maniphest originalManiphestTask = maniphestStorage.Get(database, modifiedPhabricatorObject.Token, browser.Session.Locale);
+                        if (originalManiphestTask != null)
                         {
-                            string newSubscriberList = "";
-                            Storage.User userStorage = new Storage.User();
-                            foreach (string userId in newCommentsToUsers.Split(',').Where(comment => comment.StartsWith("@"))
-                                                                                   .Select(comment => comment.Substring("@".Length))
-                                    )
+                            string originalCommentsToUsers = string.Join(",", RegexSafe.Matches(originalManiphestTask.Description, "@[a-z0-9._-]*[a-z0-9_-]")
+                                                                                       .OfType<Match>()
+                                                                                       .Select(match => match.Value)
+                                                                                       .OrderBy(user => user));
+                            string newCommentsToUsers = string.Join(",", RegexSafe.Matches(modifiedManiphestTask.Description, "@[a-z0-9._-]*[a-z0-9_-]")
+                                                                                  .OfType<Match>()
+                                                                                  .Select(match => match.Value)
+                                                                                  .OrderBy(user => user));
+                            if (originalCommentsToUsers.Equals(newCommentsToUsers) == false)
                             {
-                                Phabricator.Data.User user = userStorage.Get(database, userId, browser.Session.Locale);
-                                if (user != null)
+                                string newSubscriberList = "";
+                                Storage.User userStorage = new Storage.User();
+                                foreach (string userId in newCommentsToUsers.Split(',').Where(comment => comment.StartsWith("@"))
+                                                                                       .Select(comment => comment.Substring("@".Length))
+                                        )
                                 {
-                                    if (modifiedManiphestTask.Subscribers.Contains(user.Token) == false)
+                                    Phabricator.Data.User user = userStorage.Get(database, userId, browser.Session.Locale);
+                                    if (user != null)
                                     {
-                                        newSubscriberList += "," + user.Token;
+                                        if (modifiedManiphestTask.Subscribers.Contains(user.Token) == false)
+                                        {
+                                            newSubscriberList += "," + user.Token;
+                                        }
                                     }
                                 }
-                            }
 
-                            if (newSubscriberList.Any())
-                            {
-                                if (modifiedManiphestTask.Subscribers.Any() == false)
+                                if (newSubscriberList.Any())
                                 {
-                                    newSubscriberList = newSubscriberList.Substring(1);  // skip first comma, if any
-                                }
+                                    if (modifiedManiphestTask.Subscribers.Any() == false)
+                                    {
+                                        newSubscriberList = newSubscriberList.Substring(1);  // skip first comma, if any
+                                    }
 
-                                modifiedManiphestTask.Subscribers += newSubscriberList;
+                                    modifiedManiphestTask.Subscribers += newSubscriberList;
+                                }
                             }
                         }
                     }
@@ -921,7 +932,7 @@ namespace Phabrico.Storage
                         indexStagedTransactionName++;
 
                         // try loading the next newer transaction item
-                        string newerStagedTransactionName = prefixStagedTransactionName + indexStagedTransactionName.ToString();
+                        string newerStagedTransactionName = prefixStagedTransactionName + indexStagedTransactionName;
                         Phabricator.Data.Transaction newerStagedTransaction = Get<Phabricator.Data.Transaction>(database, stagedTransaction.Token, newerStagedTransactionName);
                         if (newerStagedTransaction == null) break;
 
@@ -939,7 +950,7 @@ namespace Phabrico.Storage
 
                         // change the name of this transaction item and save it again
                         indexStagedTransactionName--;
-                        newerStagedTransaction.Type = prefixStagedTransactionName + indexStagedTransactionName.ToString();
+                        newerStagedTransaction.Type = prefixStagedTransactionName + indexStagedTransactionName;
                         Modify(database, newerStagedTransaction, browser);
                     }
                 }
@@ -1138,13 +1149,19 @@ namespace Phabrico.Storage
                 }
             }
 
+            Content content = new Content(database);
+            foreach (Content.Translation translation in content.GetAllTranslations().Where(t => string.IsNullOrEmpty(t.TranslatedRemarkup) == false))
+            {
+                referencedFileIDs.AddRange(matchFileAttachments.Matches(translation.TranslatedRemarkup)
+                                                                .OfType<Match>()
+                                                                .Select(match => Int32.Parse(match.Groups[1].Value))
+                                          );
+            }
+
             foreach (Phabricator.Data.File stagedFile in stagedFiles.Where(file => referencedFileIDs.Contains(file.ID) == false))
             {
                 stageStorage.Remove(database, browser, stagedFile);
             }
-
-            // shrinks the database
-            database.Shrink();
         }
     }
 }

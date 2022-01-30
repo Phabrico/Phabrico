@@ -19,6 +19,8 @@ namespace Phabrico.Plugin
     /// </summary>
     public class PhrictionToPDFController : PluginController
     {
+        private readonly static object _synchronizationObject = new object();
+
         /// <summary>
         /// internal counter for creating a unique cache key (see cachedFileData)
         /// </summary>
@@ -30,30 +32,32 @@ namespace Phabrico.Plugin
         /// Because all data in the Phabrico database is encrypted, all linked images need to be temporary decoded and cached into this dictionary.
         /// When the NReco library creates a HTTP request to an image, the image data will be retrieved from this dictionary (see HttpGetCachedDecodedFile)
         /// </summary>
-        static Dictionary<string,Http.Response.File> cachedFileData = new Dictionary<string, Http.Response.File>();
+        static readonly Dictionary<string,Http.Response.File> cachedFileData = new Dictionary<string, Http.Response.File>();
 
         /// <summary>
         /// Retrieves the decoded data of a referenced image in the Phriction document to be exported to PDF
         /// See also cachedFileData
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="fileObject"></param>
         /// <param name="parameters"></param>
         /// <param name="parameterActions"></param>
         [UrlController(URL = "/PhrictionToPDF/file/data", Unsecure = true)]
-        public void HttpGetCachedDecodedFile(Http.Server httpServer, Browser browser, ref Http.Response.File fileObject, string[] parameters, string parameterActions)
+        public void HttpGetCachedDecodedFile(Http.Server httpServer, ref Http.Response.File fileObject, string[] parameters, string parameterActions)
         {
             string cacheKey = parameters.LastOrDefault();
 
             Http.Response.File result;
-            if (cachedFileData.TryGetValue(cacheKey, out result))
+            lock (_synchronizationObject)
             {
-                fileObject = result;
-            }
-            else
-            {
-                fileObject = null;
+                if (cachedFileData.TryGetValue(cacheKey, out result))
+                {
+                    fileObject = result;
+                }
+                else
+                {
+                    fileObject = null;
+                }
             }
         }
 
@@ -71,17 +75,15 @@ namespace Phabrico.Plugin
         /// After this HttpPostExportToPDFConfirmation reponse is handled in the browser, this method is executed again
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/PhrictionToPDF")]
-        public JsonMessage HttpPostExportToPDF(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostExportToPDF(Http.Server httpServer, string[] parameters)
         {
             string title = PhrictionData.Crumbs.Split('>').LastOrDefault().Trim();
 
             cacheCounter++;
 
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
 
             List<string> underlyingPhrictionTokens = new List<string>();
@@ -162,32 +164,37 @@ namespace Phabrico.Plugin
 
                     // overwrite content again because we need to know the linked objects
                     Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
-                    PhrictionData.Content = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+                    PhrictionData.Content = ConvertRemarkupToHTML(database, phrictionDocument?.Path, phrictionDocument?.Content, out remarkupPerserOutput, false);
 
                     // move headers 1 level lower
                     PhrictionData.Content = LowerHeaderLevels(PhrictionData.Content);
 
-                    // add title
-                    PhrictionData.Content = "<h1>" + HttpUtility.HtmlEncode(phrictionDocument.Name) + "</h1>" + PhrictionData.Content;
+                    if (phrictionDocument != null)
+                    {
+                        // add title
+                        PhrictionData.Content = "<h1>" + HttpUtility.HtmlEncode(phrictionDocument.Name) + "</h1>" + PhrictionData.Content;
+                    }
 
                     // read content of all linked files and store them temporary in cache dictionary
                     Phabrico.Storage.File fileStorage = new Phabrico.Storage.File();
-                    Phabrico.Storage.Stage stageStorage = new Phabrico.Storage.Stage();
-                    foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
+                    lock (_synchronizationObject)
                     {
-                        string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
-                        if (cachedFileData.ContainsKey(cacheKey)) continue;
-                        
-                        Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token, browser.Session.Locale);
-                        if (linkedFileWithContent == null)
+                        foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
                         {
-                            // file not found in database ?!?
-                            continue;
-                        }
+                            string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
+                            if (cachedFileData.ContainsKey(cacheKey)) continue;
 
-                        cachedFileData[cacheKey] = new Http.Response.File(linkedFileWithContent.DataStream, linkedFileWithContent.ContentType, linkedFileWithContent.FileName, true);
-                        PhrictionData.Content = PhrictionData.Content.Replace("file/data/" + linkedFileWithContent.ID.ToString() + "/", 
-                                                  httpServer.Address + "PhrictionToPDF/file/data/" + cacheKey.ToString() + "/");
+                            Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token, browser.Session.Locale);
+                            if (linkedFileWithContent == null)
+                            {
+                                // file not found in database ?!?
+                                continue;
+                            }
+
+                            cachedFileData[cacheKey] = new Http.Response.File(linkedFileWithContent.DataStream, linkedFileWithContent.ContentType, linkedFileWithContent.FileName, true);
+                            PhrictionData.Content = PhrictionData.Content.Replace("file/data/" + linkedFileWithContent.ID + "/",
+                                                      httpServer.Address + "PhrictionToPDF/file/data/" + cacheKey + "/");
+                        }
                     }
 
                     // do we also need to export the underlying documents ?
@@ -201,21 +208,24 @@ namespace Phabrico.Plugin
                                 if (string.IsNullOrWhiteSpace(underlyingPhrictionDocument.Content)) continue;
 
                                 string html = ConvertRemarkupToHTML(database, underlyingPhrictionDocument.Path, underlyingPhrictionDocument.Content, out remarkupPerserOutput, false);
-                                foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
+                                lock (_synchronizationObject)
                                 {
-                                    string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
-                                    if (cachedFileData.ContainsKey(cacheKey)) continue;
-
-                                    Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token, browser.Session.Locale);
-                                    if (linkedFileWithContent == null)
+                                    foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
                                     {
-                                        // file not found in database ?!?
-                                        continue;
-                                    }
+                                        string cacheKey = string.Format("{0}-{1}", cacheCounter, linkedFile.ID);
+                                        if (cachedFileData.ContainsKey(cacheKey)) continue;
 
-                                    cachedFileData[cacheKey] = new Http.Response.File(linkedFileWithContent.DataStream, linkedFileWithContent.ContentType, linkedFileWithContent.FileName, true);
-                                    html = html.Replace("file/data/" + linkedFileWithContent.ID.ToString() + "/",
-                                                        httpServer.Address + "PhrictionToPDF/file/data/" + cacheKey.ToString() + "/");
+                                        Phabricator.Data.File linkedFileWithContent = fileStorage.Get(database, linkedFile.Token, browser.Session.Locale);
+                                        if (linkedFileWithContent == null)
+                                        {
+                                            // file not found in database ?!?
+                                            continue;
+                                        }
+
+                                        cachedFileData[cacheKey] = new Http.Response.File(linkedFileWithContent.DataStream, linkedFileWithContent.ContentType, linkedFileWithContent.FileName, true);
+                                        html = html.Replace("file/data/" + linkedFileWithContent.ID + "/",
+                                                            httpServer.Address + "PhrictionToPDF/file/data/" + cacheKey + "/");
+                                    }
                                 }
 
                                 // move headers 1 level lower
@@ -276,11 +286,16 @@ namespace Phabrico.Plugin
                     string pdfBase64 = Convert.ToBase64String(pdfBytes);
 
                     // clear cache
-                    string cacheKeyPrefix = string.Format("{0}-", cacheCounter);
-                    foreach (string cacheKey in cachedFileData.Keys.ToArray())
+                    lock (_synchronizationObject)
                     {
-                        if (cacheKey.StartsWith(cacheKeyPrefix) == false) continue;
-                        cachedFileData.Remove(cacheKey);
+                        string cacheKeyPrefix = string.Format("{0}-", cacheCounter);
+                        foreach (string cacheKey in cachedFileData.Keys
+                                                                  .Where(key => key.StartsWith(cacheKeyPrefix))
+                                                                  .ToArray()
+                                )
+                        {
+                            cachedFileData.Remove(cacheKey);
+                        }
                     }
 
                     // return result
@@ -302,21 +317,17 @@ namespace Phabrico.Plugin
         /// See also HttpPostExportToPDF
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/PhrictionToPDF/confirm")]
-        public JsonMessage HttpPostExportToPDFConfirmation(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostExportToPDFConfirmation(Http.Server httpServer, string[] parameters)
         {
             string formVariablesUrl = browser.Request.RawUrl.Substring(0, browser.Request.RawUrl.Length - "/confirm".Length);
             DictionarySafe<string, string> formVariables = browser.Session.FormVariables[formVariablesUrl];
 
             string content = formVariables["content"];
-            string toc = formVariables["toc"];
-            string crumbs = formVariables["crumbs"];
             string path = formVariables["path"];
 
-            Phabrico.Storage.Account accountStorage = new Phabrico.Storage.Account();
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
 
             List<string> underlyingPhrictionTokens = new List<string>();
@@ -336,7 +347,7 @@ namespace Phabrico.Plugin
                 {
                     Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
                     phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken, browser.Session.Locale);
-                    string html = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+                    ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
                 }
             }
 
@@ -364,11 +375,10 @@ namespace Phabrico.Plugin
         /// This method is fired when a PhrictionToPDF parameter is changed in the configuration screen
         /// </summary>
         /// <param name="httpServer"></param>
-        /// <param name="browser"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
         [UrlController(URL = "/PhrictionToPDF/configuration/save")]
-        public JsonMessage HttpPostSaveConfiguration(Http.Server httpServer, Browser browser, string[] parameters)
+        public JsonMessage HttpPostSaveConfiguration(Http.Server httpServer, string[] parameters)
         {
             string headerLayout = browser.Session.FormVariables["/PhrictionToPDF/configuration/save/"]["headerLayout"];
             string footerLayout = browser.Session.FormVariables["/PhrictionToPDF/configuration/save/"]["footerLayout"];
@@ -401,7 +411,7 @@ namespace Phabrico.Plugin
                 Model.PhrictionToPDFConfiguration phrictionToPDFConfiguration = Storage.PhrictionToPDFConfiguration.Load(database, null);
 
                 configurationTabContent.SetText("HEADER-FONT-NAME", phrictionToPDFConfiguration.HeaderData.Font);
-                configurationTabContent.SetText("HEADER-FONT-SIZE", phrictionToPDFConfiguration.HeaderData.FontSize.ToString() + "px");
+                configurationTabContent.SetText("HEADER-FONT-SIZE", phrictionToPDFConfiguration.HeaderData.FontSize + "px");
                 configurationTabContent.SetText("HEADER-SIZE1", phrictionToPDFConfiguration.HeaderData.Size1, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 configurationTabContent.SetText("HEADER-TEXT1", phrictionToPDFConfiguration.HeaderData.Text1, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 configurationTabContent.SetText("HEADER-ALIGN1", phrictionToPDFConfiguration.HeaderData.Align1, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -412,7 +422,7 @@ namespace Phabrico.Plugin
                 configurationTabContent.SetText("HEADER-ALIGN3", phrictionToPDFConfiguration.HeaderData.Align3, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
 
                 configurationTabContent.SetText("FOOTER-FONT-NAME", phrictionToPDFConfiguration.FooterData.Font);
-                configurationTabContent.SetText("FOOTER-FONT-SIZE", phrictionToPDFConfiguration.FooterData.FontSize.ToString() + "px");
+                configurationTabContent.SetText("FOOTER-FONT-SIZE", phrictionToPDFConfiguration.FooterData.FontSize + "px");
                 configurationTabContent.SetText("FOOTER-SIZE1", phrictionToPDFConfiguration.FooterData.Size1, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 configurationTabContent.SetText("FOOTER-TEXT1", phrictionToPDFConfiguration.FooterData.Text1, HtmlViewPage.ArgumentOptions.NoHtmlEncoding | HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                 configurationTabContent.SetText("FOOTER-ALIGN1", phrictionToPDFConfiguration.FooterData.Align1, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -434,12 +444,15 @@ namespace Phabrico.Plugin
         {
             string result = originalHTML;
 
-            Match[] headerTags = RegexSafe.Matches(originalHTML, "</?h([1-6])").OfType<Match>().ToArray();
+            Match[] headerTags = RegexSafe.Matches(originalHTML, "</?h([1-6])")
+                                          .OfType<Match>()
+                                          .OrderByDescending(match => match.Index)
+                                          .ToArray();
             foreach (Match headerTag in headerTags)
             {
                 int headerLevel = Int32.Parse(headerTag.Groups[1].Value);
                 result = result.Substring(0, headerTag.Groups[1].Index)
-                       + (headerLevel + 1).ToString()
+                       + (headerLevel + 1)
                        + result.Substring(headerTag.Groups[1].Index + 1);
             }
 

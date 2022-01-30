@@ -1,4 +1,5 @@
 ﻿using Phabrico.Miscellaneous;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -65,13 +66,18 @@ namespace Phabrico.Http.Response
                 regexedDeclaration += "[" + c + "]";
             }
 
-            Match matchCssDeclaration = RegexSafe.Match(Content,  "^" + regexedDeclaration + "\\W[^{]*[{][^}]*[}]", RegexOptions.Multiline);
-            if (matchCssDeclaration.Success == false)
+            List<string> localizedBlocks = RegexSafe.Split(Content, "^\\w*" + regexedDeclaration, RegexOptions.Multiline)
+                                                    .Skip(1)
+                                                    .Select(block => block.Trim(' ', '\t', '\r', '\n'))
+                                                    .ToList();
+            if (localizedBlocks.Any())
             {
-                return "";
+                localizedBlocks[localizedBlocks.Count - 1] = localizedBlocks[localizedBlocks.Count - 1].Substring(0, 1 + localizedBlocks[localizedBlocks.Count - 1].IndexOf('}'));
             }
 
-            return matchCssDeclaration.Value;
+            string result = declaration + " " + string.Join("\n\n" + declaration + " ", localizedBlocks) + "\n";
+
+            return result;
         }
 
         /// <summary>

@@ -145,7 +145,6 @@ namespace Phabrico.Http.Response
                         string htmlFavoriteObjects = "";
                         long previousFavoriteIndex = 0;
                         Storage.Phriction phrictionStorage = new Storage.Phriction();
-                        Storage.FavoriteObject favoriteObjectStorage = new Storage.FavoriteObject();
                         List<Phabricator.Data.Phriction> favoritePhrictionDocuments = new List<Phabricator.Data.Phriction>();
                         if (HttpServer.Customization.HidePhrictionFavorites == false)
                         {
@@ -212,8 +211,6 @@ namespace Phabrico.Http.Response
                             {
                                 favoritePhrictionDocument.Path = "";
                             }
-
-                            Phabricator.Data.FavoriteObject favoriteObject = favoriteObjectStorage.Get(database, accountData.UserName, favoritePhrictionDocument.Token);
 
                             htmlFavoriteObjects += string.Format(@"
                                                             <div class='favorite-item{0}' data-token='{1}'>
@@ -287,25 +284,24 @@ namespace Phabrico.Http.Response
                                 }
                             }
 
-                            foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions)
+                            foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
+                                                                                                    .Where(ext => ext.IsVisibleInNavigator(browser))
+                                    )
                             {
-                                if (pluginExtension.IsVisibleInNavigator(browser))
+                                if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
                                 {
-                                    if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
-                                    {
-                                        pluginExtension.Database = new Storage.Database(database.EncryptionKey);
-                                        pluginExtension.Initialize();
-                                        pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
-                                    }
+                                    pluginExtension.Database = new Storage.Database(database.EncryptionKey);
+                                    pluginExtension.Initialize();
+                                    pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                                }
 
-                                    HtmlPartialViewPage htmlPluginNavigatorMenuItem = htmlViewPage.GetPartialView("PLUGINS");
-                                    if (htmlPluginNavigatorMenuItem != null)
-                                    {
-                                        htmlPluginNavigatorMenuItem.SetText("PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                        htmlPluginNavigatorMenuItem.SetText("PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                        htmlPluginNavigatorMenuItem.SetText("PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                        htmlPluginNavigatorMenuItem.SetText("PLUGIN-DESCRIPTION", pluginExtension.GetDescription(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                                    }
+                                HtmlPartialViewPage htmlPluginNavigatorMenuItem = htmlViewPage.GetPartialView("PLUGINS");
+                                if (htmlPluginNavigatorMenuItem != null)
+                                {
+                                    htmlPluginNavigatorMenuItem.SetText("PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                    htmlPluginNavigatorMenuItem.SetText("PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                    htmlPluginNavigatorMenuItem.SetText("PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                    htmlPluginNavigatorMenuItem.SetText("PLUGIN-DESCRIPTION", pluginExtension.GetDescription(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                 }
                             }
                         }
@@ -391,6 +387,7 @@ namespace Phabrico.Http.Response
 
                 case HomePageStatus.EmptyDatabase:
                     Controllers.Configuration configurationController = new Controllers.Configuration();
+                    configurationController.browser = browser;
                     configurationController.TokenId = browser.GetCookie("token");
                     userName = browser.Session.FormVariables["/auth/login"]["username"];
                     string password = browser.Session.FormVariables["/auth/login"]["password"];
@@ -415,7 +412,7 @@ namespace Phabrico.Http.Response
                         accountStorage.UpdateToken(database, newAccount.Token, newAccount.Token, newAccount.PublicXorCipher, newAccount.PrivateXorCipher);
 
                         configurationViewPage = new HtmlViewPage(HttpServer, browser, true, "configure", null);
-                        configurationController.HttpGetLoadParameters(HttpServer, browser, ref configurationViewPage, null, null);
+                        configurationController.HttpGetLoadParameters(HttpServer, ref configurationViewPage, null, null);
                     }
 
                     htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.TreeView.Template"));

@@ -159,6 +159,17 @@ function populateTable()
                 anchorSolveIssue.title = Locale.Translate("The path to this document is longer than 100 characters. This document can still be uploaded to Phabricator, but newly created underlying documents may not.");
                 cell.appendChild(anchorSolveIssue);
             }
+            else if (record.Issue == "Translation") {
+                anchorSolveIssue.classList.add("button-blue");
+                anchorSolveIssue.style.padding = "0px 8px 0px 8px";
+                anchorSolveIssue.style.cursor = "default";
+                anchorSolveIssue.addEventListener("click", doNothing, false);
+                fontAwesome.classList.add('fa-comments');
+                fontAwesome.style.fontWeight = "bold";
+                fontAwesome.style.fontSize = "1.5em";
+                anchorSolveIssue.title = Locale.Translate("This document is an unrevised translation. This version of the document will not be uploaded to Phabricator.");
+                cell.appendChild(anchorSolveIssue);
+            }
 
             // add merge-conflict/frozen/unfrozen icon
             var cell = row.insertCell();
@@ -294,6 +305,9 @@ function populateTable()
                 } else {
                     var anchorViewChanges = document.createElement('a');
                     anchorViewChanges.href = "offline/changes/view/" + record.Token + "/";
+                    if (record.IsTranslation == true) {
+                        anchorViewChanges.href = anchorViewChanges.href + document.body.dataset.locale + "/";
+                    }
                     anchorViewChanges.classList.add("button");
                     anchorViewChanges.classList.add("button-gray");
                     anchorViewChanges.classList.add("small");
@@ -387,6 +401,10 @@ function freeze(ev)
 {
     ev.preventDefault();
     submitItem(ev.target, "offline/changes/freeze");
+}
+
+function doNothing(ev) {
+    ev.preventDefault();
 }
 
 function renameSlug(ev) {

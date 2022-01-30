@@ -11,67 +11,67 @@ namespace Phabrico.Http
         /// <summary>
         /// Combines DELETE, READ_CONTROL, WRITE_DAC, and WRITE_OWNER access
         /// </summary>
-        private static uint STANDARD_RIGHTS_REQUIRED = 0x000F0000;
+        private static readonly uint STANDARD_RIGHTS_REQUIRED = 0x000F0000;
 
         /// <summary>
         /// Currently defined to equal READ_CONTROL
         /// </summary>
-        private static uint STANDARD_RIGHTS_READ = 0x00020000;
+        private static readonly uint STANDARD_RIGHTS_READ = 0x00020000;
 
         /// <summary>
         /// Required to attach a primary token to a process. The SE_ASSIGNPRIMARYTOKEN_NAME privilege is also required to accomplish this task.
         /// </summary>
-        private static uint TOKEN_ASSIGN_PRIMARY = 0x0001;
+        private static readonly uint TOKEN_ASSIGN_PRIMARY = 0x0001;
 
         /// <summary>
         /// Required to duplicate an access token.
         /// </summary>
-        private static uint TOKEN_DUPLICATE = 0x0002;
+        private static readonly uint TOKEN_DUPLICATE = 0x0002;
 
         /// <summary>
         /// Required to attach an impersonation access token to a process.
         /// </summary>
-        private static uint TOKEN_IMPERSONATE = 0x0004;
+        private static readonly uint TOKEN_IMPERSONATE = 0x0004;
 
         /// <summary>
         /// Required to query an access token.
         /// </summary>
-        private static uint TOKEN_QUERY = 0x0008;
+        private static readonly uint TOKEN_QUERY = 0x0008;
 
         /// <summary>
         /// Required to query the source of an access token.
         /// </summary>
-        private static uint TOKEN_QUERY_SOURCE = 0x0010;
+        private static readonly uint TOKEN_QUERY_SOURCE = 0x0010;
 
         /// <summary>
         /// Required to enable or disable the privileges in an access token.
         /// </summary>
-        private static uint TOKEN_ADJUST_PRIVILEGES = 0x0020;
+        private static readonly uint TOKEN_ADJUST_PRIVILEGES = 0x0020;
 
         /// <summary>
         /// Required to adjust the attributes of the groups in an access token.
         /// </summary>
-        private static uint TOKEN_ADJUST_GROUPS = 0x0040;
+        private static readonly uint TOKEN_ADJUST_GROUPS = 0x0040;
 
         /// <summary>
         /// Required to change the default owner, primary group, or DACL of an access token.
         /// </summary>
-        private static uint TOKEN_ADJUST_DEFAULT = 0x0080;
+        private static readonly uint TOKEN_ADJUST_DEFAULT = 0x0080;
 
         /// <summary>
         /// Required to adjust the session ID of an access token. The SE_TCB_NAME privilege is required.
         /// </summary>
-        private static uint TOKEN_ADJUST_SESSIONID = 0x0100;
+        private static readonly uint TOKEN_ADJUST_SESSIONID = 0x0100;
 
         /// <summary>
         /// Combines STANDARD_RIGHTS_READ and TOKEN_QUERY.
         /// </summary>
-        private static uint TOKEN_READ = (STANDARD_RIGHTS_READ | TOKEN_QUERY);
+        private static readonly uint TOKEN_READ = (STANDARD_RIGHTS_READ | TOKEN_QUERY);
 
         /// <summary>
         /// Combines all possible access rights for a token.
         /// </summary>
-        private static uint TOKEN_ALL_ACCESS = (STANDARD_RIGHTS_REQUIRED | TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE | TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_QUERY_SOURCE | TOKEN_ADJUST_PRIVILEGES | TOKEN_ADJUST_GROUPS | TOKEN_ADJUST_DEFAULT | TOKEN_ADJUST_SESSIONID);
+        private static readonly uint TOKEN_ALL_ACCESS = (STANDARD_RIGHTS_REQUIRED | TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE | TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_QUERY_SOURCE | TOKEN_ADJUST_PRIVILEGES | TOKEN_ADJUST_GROUPS | TOKEN_ADJUST_DEFAULT | TOKEN_ADJUST_SESSIONID);
 
         /// <summary>
         /// contains values that specify security impersonation levels.
@@ -255,8 +255,6 @@ namespace Phabrico.Http
             IntPtr WTS_CURRENT_SERVER_HANDLE = IntPtr.Zero;
 
             int dwSessionId = 0;
-            IntPtr hUserToken = IntPtr.Zero;
-            IntPtr hTokenDup = IntPtr.Zero;
 
             IntPtr pSessionInfo = IntPtr.Zero;
             int dwCount = 0;

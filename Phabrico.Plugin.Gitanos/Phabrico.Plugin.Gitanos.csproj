@@ -103,6 +103,11 @@
     <EmbeddedResource Include="Locale\phabrico_zh.po" />
     <EmbeddedResource Include="Locale\phabrico_nl.po" />
     <EmbeddedResource Include="Locale\phabrico_es.po" />
+    <EmbeddedResource Include="Locale\phabrico_sv.po" />
+    <EmbeddedResource Include="Locale\phabrico_da.po" />
+    <EmbeddedResource Include="Locale\phabrico_fi.po" />
+    <EmbeddedResource Include="Locale\phabrico_ro.po" />
+    <EmbeddedResource Include="Locale\phabrico_ru.po" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -82,5 +82,17 @@ namespace Phabrico.Phabricator.Data
             NewValue = original.NewValue;
             Type = original.Type;
         }
+
+        /// <summary>
+        /// Compares a Transaction with another Transaction
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public bool Equals(Transaction otherTransaction)
+        {
+            if (otherTransaction == null) return false;
+
+            return base.Equals(otherTransaction);
+        }
     }
 }
