@@ -163,7 +163,7 @@ msgid "Disabled"
 msgstr "Inaktiverad"
 
 msgid "Number of Phriction documents:"
-msgstr "Antal språkliga dokument:"
+msgstr "Antal Phriction-dokument:"
 
 msgid "Number of Maniphest tasks:"
 msgstr "Antal maniphestuppdrag: Antal"

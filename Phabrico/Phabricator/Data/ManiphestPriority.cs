@@ -1,7 +1,7 @@
 ﻿namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an ManiphestPriorityInfo record from the SQLite Phabrico database
+    /// Represents a ManiphestPriorityInfo record from the SQLite Phabrico database
     /// </summary>
     public class ManiphestPriority : PhabricatorObject
     {

@@ -1,7 +1,7 @@
 ﻿namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an ManiphestStatusInfo record from the SQLite Phabrico database
+    /// Represents a ManiphestStatusInfo record from the SQLite Phabrico database
     /// </summary>
     public class ManiphestStatus : PhabricatorObject
     {

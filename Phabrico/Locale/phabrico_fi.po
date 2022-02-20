@@ -163,7 +163,7 @@ msgid "Disabled"
 msgstr "Ei käytössä"
 
 msgid "Number of Phriction documents:"
-msgstr "Lauseasiakirjojen määrä:"
+msgstr "Phriction-asiakirjojen määrä:"
 
 msgid "Number of Maniphest tasks:"
 msgstr "Maniphest-tehtävien määrä:"
@@ -297,13 +297,13 @@ msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "Tiedosto-objektien lataaminen..."
 
 msgid "Synchronization.Status.UploadingManiphestData"
-msgstr "Maniphest-tehtävien lataaminen..."
+msgstr "Maniphest-tehtävien lähettäminen..."
 
 msgid "Synchronization.Status.UploadingPhrictionData"
-msgstr "Lauseasiakirjojen lataaminen..."
+msgstr "Phriction-asiakirjojen lähettäminen..."
 
 msgid "Synchronization.Status.UploadingCommentsAndTransactions"
-msgstr "Kommenttien ja tapahtumien lataaminen..."
+msgstr "Kommenttien ja tapahtumien lähettäminen..."
 
 msgid "Synchronization.Status.CleaningUp"
 msgstr "Vanhojen tietojen siivoaminen..."

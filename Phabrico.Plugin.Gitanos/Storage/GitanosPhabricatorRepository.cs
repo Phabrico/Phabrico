@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
-using System.Globalization;
 using Phabrico.Miscellaneous;
 using Phabrico.Plugin.Phabricator.Data;
 using Phabrico.Storage;
@@ -45,8 +44,22 @@ namespace Phabrico.Plugin.Storage
                         record.CallSign = (string)reader["callsign"];
                         record.ShortName = (string)reader["shortname"];
                         record.Description = (string)reader["description"];
-                        record.DateModified = DateTimeOffset.FromUnixTimeSeconds((Int64)reader["datemodified"]);
-
+                        object datemodified = reader["datemodified"];
+                        try
+                        {
+                            if (datemodified is Int64)
+                            {
+                                record.DateModified = DateTimeOffset.FromUnixTimeSeconds((Int64)reader["datemodified"]);
+                            }
+                            else
+                            {
+                                record.DateModified = DateTimeOffset.Parse((string)reader["datemodified"]);
+                            }
+                        }
+                        catch
+                        {
+                            record.DateModified = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
+                        }
                         yield return record;
                     }
                 }

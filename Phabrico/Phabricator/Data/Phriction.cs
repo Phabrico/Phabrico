@@ -3,7 +3,7 @@
 namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an PhrictionInfo record from the SQLite Phabrico database
+    /// Represents a PhrictionInfo record from the SQLite Phabrico database
     /// </summary>
     public class Phriction : PhabricatorObject
     {
@@ -57,7 +57,7 @@ namespace Phabrico.Phabricator.Data
         public DateTimeOffset DateModified { get; set; }
 
         /// <summary>
-        /// If true, the document is visible in the list of Favorites
+        /// The position of the document in the list of favorites
         /// </summary>
         public Int64 DisplayOrderInFavorites { get; set; } = 0;
 

@@ -88,6 +88,8 @@ namespace Phabrico.Plugin
         /// </summary>
         private static List<Model.GitanosConfigurationRootPath> _rootPaths = new List<Model.GitanosConfigurationRootPath>();
 
+        const int executionDelay = 2000;
+
         /// <summary>
         /// Starts monitorring all available GitanosConfigurationRepositoryPaths
         /// </summary>
@@ -217,19 +219,20 @@ namespace Phabrico.Plugin
         /// <param name="e"></param>
         private static void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
+            Model.GitanosConfigurationRepositoryPath repository;
+            DateTime nextExecutiontimeStamp;
+
             lock (FileSystemWatcherAccess)
             {
-                Logging.WriteInfo("Gitanos", "FileSystemWatcher_Changed: " + e.FullPath);
-
                 if (_invalidDirectories.Contains(e.FullPath))
                 {
                     // was previously decided it was an invalid directory
                     return;
                 }
 
-                Model.GitanosConfigurationRepositoryPath repository = Repositories.FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
-                                                                                                       || e.FullPath.Equals(repo.Directory, StringComparison.OrdinalIgnoreCase)
-                                                                                                 );
+                repository = Repositories.FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
+                                                              || e.FullPath.Equals(repo.Directory, StringComparison.OrdinalIgnoreCase)
+                                                        );
                 if (repository == null)
                 {
                     // not a git repo -> skip it
@@ -248,13 +251,23 @@ namespace Phabrico.Plugin
                 }
 
                 // postpone action to be executed
-                const int delay = 2000;
                 lock (_directoryModificationTimesSynchronization)
                 {
-                    _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(delay);
+                    nextExecutiontimeStamp = DateTime.UtcNow.AddMilliseconds(executionDelay);
+                    _directoryModificationTimes[repository.Directory] = nextExecutiontimeStamp;
+                }
+            }
+
+            Thread.Sleep(500);
+
+            lock (FileSystemWatcherAccess)
+            {
+                if (nextExecutiontimeStamp != _directoryModificationTimes[repository.Directory])
+                {
+                    return;
                 }
 
-                Task.Delay(delay)
+                Task.Delay(executionDelay)
                     .ContinueWith((task, obj) =>
                     {
                         FileSystemWatcherParameter parameter = obj as FileSystemWatcherParameter;
@@ -267,7 +280,7 @@ namespace Phabrico.Plugin
                             DateTime ealiestNewModificationTime;
                             if (_directoryModificationTimes.TryGetValue(parameter.Repository.Directory, out ealiestNewModificationTime) == false) return;
                             if (ealiestNewModificationTime > DateTime.UtcNow) return;
-                            _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(delay);
+                            _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(executionDelay);
                         }
 
                         Thread.Sleep(100);
@@ -314,10 +327,59 @@ namespace Phabrico.Plugin
         /// <param name="e"></param>
         private static void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            if (System.IO.Directory.Exists(e.FullPath))
+            DateTime nextExecutiontimeStamp;
+            Model.GitanosConfigurationRepositoryPath repository;
+
+            if (System.IO.Directory.Exists(e.FullPath) == false)
             {
-                DirectoryMonitor.Stop();
-                DirectoryMonitor.Start(_rootPaths);
+                return;
+            }
+
+            lock (FileSystemWatcherAccess)
+            {
+                repository = Repositories.FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
+                                                      || e.FullPath.Equals(repo.Directory, StringComparison.OrdinalIgnoreCase)
+                                                );
+                if (repository == null)
+                {
+                    // not a git repo -> skip it
+                    _invalidDirectories.Add(e.FullPath);
+                    return;
+                }
+
+                if (e.FullPath.Contains("\\.git\\logs\\HEAD") == false &&               //  .git\logs\HEAD is changed when a commit is created/deleted
+                    e.FullPath.Contains("\\.git\\refs\\remotes\\origin") == false &&    // .git\refs\remotes\origin is accessed by git-push command
+                    repository.PathIsIgnored(e.FullPath)
+                   )
+                {
+                    // directory is excluded by means of .gitignore
+                    _invalidDirectories.Add(e.FullPath);
+                    return;
+                }
+            }
+
+            // postpone action to be executed
+            lock (_directoryModificationTimesSynchronization)
+            {
+                nextExecutiontimeStamp = DateTime.UtcNow.AddMilliseconds(executionDelay);
+                _directoryModificationTimes[repository.Directory] = nextExecutiontimeStamp;
+            }
+
+            Thread.Sleep(500);
+
+            lock (FileSystemWatcherAccess)
+            {
+                if (nextExecutiontimeStamp != _directoryModificationTimes[repository.Directory])
+                {
+                    return;
+                }
+
+                Task.Delay(executionDelay)
+                    .ContinueWith((task) =>
+                    {
+                        DirectoryMonitor.Stop();
+                        DirectoryMonitor.Start(_rootPaths);
+                    });
             }
         }
 
@@ -328,10 +390,59 @@ namespace Phabrico.Plugin
         /// <param name="e"></param>
         private static void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
         {
-            if (Repositories.Any(repo => repo.Directory.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase)))
+            DateTime nextExecutiontimeStamp;
+            Model.GitanosConfigurationRepositoryPath repository;
+
+            if (Repositories.Any(repo => repo.Directory.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase)) == false)
             {
-                DirectoryMonitor.Stop();
-                DirectoryMonitor.Start(_rootPaths);
+                return;
+            }
+
+            lock (FileSystemWatcherAccess)
+            {
+                repository = Repositories.FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
+                                                      || e.FullPath.Equals(repo.Directory, StringComparison.OrdinalIgnoreCase)
+                                                );
+                if (repository == null)
+                {
+                    // not a git repo -> skip it
+                    _invalidDirectories.Add(e.FullPath);
+                    return;
+                }
+
+                if (e.FullPath.Contains("\\.git\\logs\\HEAD") == false &&               //  .git\logs\HEAD is changed when a commit is created/deleted
+                    e.FullPath.Contains("\\.git\\refs\\remotes\\origin") == false &&    // .git\refs\remotes\origin is accessed by git-push command
+                    repository.PathIsIgnored(e.FullPath)
+                   )
+                {
+                    // directory is excluded by means of .gitignore
+                    _invalidDirectories.Add(e.FullPath);
+                    return;
+                }
+            }
+
+            // postpone action to be executed
+            lock (_directoryModificationTimesSynchronization)
+            {
+                nextExecutiontimeStamp = DateTime.UtcNow.AddMilliseconds(executionDelay);
+                _directoryModificationTimes[repository.Directory] = nextExecutiontimeStamp;
+            }
+
+            Thread.Sleep(500);
+
+            lock (FileSystemWatcherAccess)
+            {
+                if (nextExecutiontimeStamp != _directoryModificationTimes[repository.Directory])
+                {
+                    return;
+                }
+
+                Task.Delay(executionDelay)
+                    .ContinueWith((task) =>
+                    {
+                        DirectoryMonitor.Stop();
+                        DirectoryMonitor.Start(_rootPaths);
+                    });
             }
         }
 

@@ -284,6 +284,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                         if (malformedUrl == false)
                         {
+                            if (IsPhabricatorApplicationURL(urlHyperlink))
+                            {
+                                SessionManager.Token token = SessionManager.GetToken(browser);
+                                string encryptionKey = token?.EncryptionKey;
+                                if (string.IsNullOrEmpty(encryptionKey) == false)
+                                {
+                                    Storage.Account accountStorage = new Storage.Account();
+                                    Phabricator.Data.Account accountData = accountStorage.Get(database, token);
+                                    urlHyperlink = accountData.PhabricatorUrl.TrimEnd('/') + "/" + urlHyperlink;  // convert to absolute path
+                                }
+                            }
+
                             if (urlHyperlink.StartsWith("."))
                             {
                                 string absoluteUrl = url.Replace("//", "/");
@@ -327,6 +339,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                     urlHyperlink = urlHyperlink.Substring("/".Length);
                                 }
                             }
+
 
                             if (urlHyperlink.StartsWith("http://") == false && urlHyperlink.StartsWith("https://") == false)
                             {
@@ -668,6 +681,40 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 && localHyperlink.StartsWith("tel:") == false
                 && localHyperlink.StartsWith("ftp://") == false;
             return InvalidHyperlink;
+        }
+
+        /// <summary>
+        /// Returns true if a URL points to a Phabricator application
+        /// </summary>
+        /// <param name="urlHyperlink">URL to validate</param>
+        /// <returns>True if URL points to a Phabricator application</returns>
+        private bool IsPhabricatorApplicationURL(string urlHyperlink)
+        {
+            string[] availableApplicationURLs = new string[]
+            {
+                "/almanac",
+                "/applications",
+                "/badges",
+                "/countdown",
+                "/dashboard",
+                "/differential",
+                "/diffusion",
+                "/diviner",
+                "/drydock",
+                "/fact",
+                "/feed",
+                "/file",
+                "/flag",
+                "/guides",
+                "/harbormaster",
+                // "/maniphest",    // has Phabrico alternative
+                // "/phame",        // has Phabrico alternative
+                "/pholio",
+                // "/project",      // has Phabrico alternative
+                // "/w"             // has Phabrico alternative
+            };
+
+            return availableApplicationURLs.Any(url => (urlHyperlink + "/").StartsWith(url + "/"));
         }
     }
 }

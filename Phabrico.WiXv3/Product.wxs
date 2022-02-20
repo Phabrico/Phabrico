@@ -22,7 +22,7 @@
                  InstallScope="perMachine"
                  Manufacturer="G. Jacobs"
                  Description="Phabrico $(var.ProductVersion)"
-                 Comments="(c) 2021 G. Jacobs" />
+                 Comments="(c) 2022 G. Jacobs" />
 
         <!-- Make sure the installing user has administrative rights -->
         <Condition Message="You need local administrator rights to install Phabrico">Privileged</Condition>
@@ -129,7 +129,7 @@
 
                 <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
                 <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next" >
-                    <Publish Event="AddLocal" Value="ALL">1</Publish>
+                    <Publish Event="SetInstallLevel" Value="1">1</Publish>
                 </Control>
                 <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&amp;Back" />
                 <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="&amp;Cancel">
@@ -218,8 +218,8 @@
         <Feature Id="PhabricoApplication" Title="Phabrico" Level="1" ConfigurableDirectory="INSTALLDIR" Absent="disallow" Display="expand" Description="Offline Reader and Editor for Phabricator tasks and documents">
             <ComponentGroupRef Id="PhabricoApplicationComponents" />
 
-            <Feature Id="Plugins" Title="Plugins" Level="1000" ConfigurableDirectory="INSTALLDIR" Description="Plugins to extend Phabrico">
-                <Feature Id="PluginGitanos" Title="Gitanos" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Overview of local git repositories">
+            <Feature Id="Plugins" Title="Plugins" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Plugins to extend Phabrico">
+                <Feature Id="PluginGitanos" Title="Gitanos" Level="32767" ConfigurableDirectory="INSTALLDIR" Description="Overview of local git repositories">
                     <ComponentGroupRef Id="PluginGitanosComponents" />
                 </Feature>
                 <Feature Id="PluginPhrictionToPDF" Title="PDF Export" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Exports Phriction documents to PDF">

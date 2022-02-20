@@ -392,6 +392,7 @@ namespace Phabrico.Storage
                         GROUP BY token
                     ) selection
                     ON keywordInfo.token = selection.token
+                    AND keywordInfo.name LIKE '{0}%'
                     AND ((selection.level = 1 AND keywordInfo.language = @language)         -- translation available
                       OR (selection.level = 2 AND keywordInfo.language = @notApplicable)    -- no translation available
                         ) 

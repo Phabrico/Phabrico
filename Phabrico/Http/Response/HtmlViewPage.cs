@@ -43,7 +43,13 @@ namespace Phabrico.Http.Response
             /// Parameter value should be formatted in Javascript, i.e. includes AllowEmptyParameterValue and
             /// NoHtmlEncoding and special characters like a backslash and double quotes are escaped
             /// </summary>
-            JavascriptEncoding = 7
+            JavascriptEncoding = 7,
+
+            /// <summary>
+            /// Parameter value should be formatted in JSON, i.e. includes AllowEmptyParameterValue and
+            /// NoHtmlEncoding and special characters like a backslash are escaped
+            /// </summary>
+            JsonEncoding = 11
         }
 
         /// <summary>
@@ -892,6 +898,25 @@ namespace Phabrico.Http.Response
             {
                 parameterValue = parameterValue.Replace("\\", "\\\\")   // escape backslash
                                                .Replace("\"", "\\\"");  // escape double-quote
+            }
+
+
+            if (argumentOptions.HasFlag(ArgumentOptions.JsonEncoding))
+            {
+                Match[] stringParts = RegexSafe.Matches(parameterValue, "\"[^\"]*\"")
+                                               .OfType<Match>()
+                                               .OrderByDescending(match => match.Index)
+                                               .ToArray();
+                foreach (Match stringPart in stringParts)
+                {
+                    parameterValue = parameterValue.Substring(0, stringPart.Index)
+                                   + "\"" 
+                                   + stringPart.Value.Substring(1, stringPart.Length - 2)
+                                                     .Replace("\\", "\\\\")   // escape backslash
+                                                     .Replace("\"", "\\\"")   // escape double-quote
+                                   + "\""
+                                   + parameterValue.Substring(stringPart.Index + stringPart.Length);
+                }
             }
 
             Content = Content.Replace(internalParameterName, parameterValue);

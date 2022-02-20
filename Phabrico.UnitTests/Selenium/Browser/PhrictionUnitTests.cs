@@ -218,6 +218,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // click on logo to go back to the homepage
             IWebElement logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
             logo.Click();
+            Thread.Sleep(500);
 
             // verify that 'Story of my life' is shown as a favorite on the homepage
             IWebElement favorite = WebBrowser.FindElements(By.ClassName("app-main-window"))
@@ -1205,27 +1206,25 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // verify that 'Story of my dad's life' is shown as a favorite on the homepage
             IWebElement dadsStory = WebBrowser.FindElements(By.ClassName("app-main-window"))
                                               .SelectMany(elem => elem.FindElements(By.PartialLinkText("Story of my dad's life")))
-                                              .FirstOrDefault()
-                                              .FindElement(By.XPath("./../.."));
+                                              .FirstOrDefault();
             Assert.IsNotNull(dadsStory);
 
             // verify that 'Story of my dad's life > Today is the greatest day I've ever known' is shown as a favorite on the homepage
             IWebElement todayIsGreat = WebBrowser.FindElements(By.ClassName("app-main-window"))
                                                  .SelectMany(elem => elem.FindElements(By.PartialLinkText("Story of my dad's life > Today is the greatest day I've ever known")))
-                                                 .FirstOrDefault()
-                                                 .FindElement(By.XPath("./../.."));
+                                                 .FirstOrDefault();
             Assert.IsNotNull(todayIsGreat);
 
             // verify that 'Story of my dad's life > Today is the greatest day I've ever known > After five years in the institution...' is shown as a favorite on the homepage
             IWebElement institution = WebBrowser.FindElements(By.ClassName("app-main-window"))
                                                 .SelectMany(elem => elem.FindElements(By.PartialLinkText("Story of my dad's life > Today is the greatest day I've ever known > After five years in the institution...")))
-                                                .FirstOrDefault()
-                                                .FindElement(By.XPath("./../.."));
+                                                .FirstOrDefault();
             Assert.IsNotNull(institution);
 
             // verify we have only 3 favorite items
-            IWebElement[] favoritesList = dadsStory.FindElement(By.XPath("./.."))
+            IWebElement[] favoritesList = dadsStory.FindElement(By.XPath("../.."))
                                                    .FindElements(By.ClassName("favorite-item"))
+                                                   .Select(div => div.FindElement(By.TagName("a")))
                                                    .ToArray();
             Assert.AreEqual(favoritesList.Length, 3);
 
@@ -1234,8 +1233,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             Assert.AreEqual(favoritesList[1], todayIsGreat);
             Assert.AreEqual(favoritesList[2], institution);
 /* disabled: for some reason the test code for the favorites drag/drop doesn't work anymore
-            Actions mouseActions = new Actions(WebBrowser);
-            mouseActions.ClickAndHold(institution)   // move 'institution' to the top
+            OpenQA.Selenium.Interactions.Actions mouseActions = new OpenQA.Selenium.Interactions.Actions(WebBrowser);
+            mouseActions.ClickAndHold(institution)   // move 'institution' to the tophttp://c2667:13468/w/daddy/today_is_the_greatest_day_i_ve_ever_known/after_five_years_in_the_institution.../
                         .MoveToElement(dadsStory)
                         .Release()
                         .Perform();

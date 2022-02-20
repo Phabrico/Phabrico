@@ -5,7 +5,7 @@ using System;
 namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an ProjectInfo record from the SQLite Phabrico database
+    /// Represents a ProjectInfo record from the SQLite Phabrico database
     /// </summary>
     public class Project : PhabricatorObject
     {

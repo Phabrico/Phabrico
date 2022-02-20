@@ -3174,7 +3174,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		elt.style.position = 'relative';
 		elt.style.height = w + 'px';
 		elt.style.width = h + 'px';
-		var xmlData = null;
+		var xmlData = null, realUrl = url;
 	
 		if (Editor.isDarkMode())
 		{
@@ -3194,7 +3194,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		{
 			if (xmlData == null)
 			{
-				var realUrl = url;
+				realUrl = url;
 		
 				if (/^https?:\/\//.test(realUrl) && !editorUi.editor.isCorsEnabledForUrl(realUrl))
 				{
@@ -3210,17 +3210,17 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 					if (req.getStatus() >= 200 && req.getStatus() <= 299)
 					{
 						xmlData = req.getText();
-						callback(xmlData);
+						callback(xmlData, realUrl);
 					}
 					else
 					{
-						callback(xmlData);	
+						callback(xmlData, realUrl);	
 					}				
 				}));
 			}
 			else
 			{
-				callback(xmlData);
+				callback(xmlData, realUrl);
 			}
 		}
 		
@@ -3375,7 +3375,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 				elt.style.border = '1px solid transparent';
 				spinner.spin(div);
 				
-				loadXmlData(url, function(xml)
+				loadXmlData(url, function(xml, realUrl)
 				{
 					spinner.stop();
 					
@@ -12500,7 +12500,7 @@ AspectDialog.prototype.createLayerItem = function(layer, pageId, graph, pageNode
 			$listItem.className = 'geAspectDlgListItem';
 			delete this.selectedLayers[layer.id];
 			
-			if (Object.keys(this.selectedLayers).length == 0)
+			if (mxUtils.isEmptyObject(this.selectedLayers))
 			{
 				this.okBtn.setAttribute('disabled', 'disabled');
 			}

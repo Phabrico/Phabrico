@@ -397,6 +397,11 @@
 	 * Restores app defaults for UI
 	 */
 	EditorUi.prototype.embedExportBackground = null;
+	
+	/**
+	 * Restores app defaults for UI
+	 */
+	EditorUi.prototype.shareCursorPosition = false;
 
 	/**
 	 * Capability check for canvas export
@@ -506,6 +511,18 @@
 	{
 		localStorage.removeItem(key)
 		fn();
+	};
+
+	EditorUi.prototype.setShareCursorPosition = function(value)
+	{
+		this.shareCursorPosition = value;
+
+		this.fireEvent(new mxEventObject('shareCursorPositionChanged'));
+	};
+
+	EditorUi.prototype.isShareCursorPosition = function()
+	{
+		return this.shareCursorPosition;
 	};
 
 	EditorUi.prototype.setMathEnabled = function(value)
@@ -1362,13 +1379,13 @@
 										cellDiffs[cellId].style.length + ']';
 								}
 								
-								if (Object.keys(cellDiffs[cellId]).length == 0)
+								if (mxUtils.isEmptyObject(cellDiffs[cellId]))
 								{
 									delete cellDiffs[cellId];
 								}
 							}
 							
-							if (Object.keys(cellDiffs).length == 0)
+							if (mxUtils.isEmptyObject(cellDiffs))
 							{
 								delete diff.cells[key];
 							}
@@ -1378,19 +1395,19 @@
 					anonymizeCellDiffs(EditorUi.DIFF_INSERT);
 					anonymizeCellDiffs(EditorUi.DIFF_UPDATE);
 					
-					if (Object.keys(diff.cells).length == 0)
+					if (mxUtils.isEmptyObject(diff.cells))
 					{
 						delete diff.cells;
 					}
 				}
 	
-				if (Object.keys(diff).length == 0)
+				if (mxUtils.isEmptyObject(diff))
 				{
 					delete patch[EditorUi.DIFF_UPDATE][pageId];
 				}
 			}
 			
-			if (Object.keys(patch[EditorUi.DIFF_UPDATE]).length == 0)
+			if (mxUtils.isEmptyObject(patch[EditorUi.DIFF_UPDATE]))
 			{
 				delete patch[EditorUi.DIFF_UPDATE];
 			}
@@ -1539,6 +1556,7 @@
 					graph.getDefaultStylesheet() :
 					graph.getStylesheet());
 				graph.setBackgroundImage = this.editor.graph.setBackgroundImage;
+				graph.background = this.editor.graph.background;
 				var page = this.pages[0];
 
 				if (this.currentPage == page)
@@ -2572,7 +2590,8 @@
 			this.setBackgroundImage(null);
 					
 			// Avoids empty hash with no value
-			if (!noDialogs && window.location.hash != null && window.location.hash.length > 0)
+			if (!noDialogs && window.location.hash != null &&
+				window.location.hash.length > 0)
 			{
 				window.location.hash = '';
 			}
@@ -5101,10 +5120,10 @@
 				
 				// Sets or disables alternate text for foreignObjects. Disabling is needed
 				// because PhantomJS seems to ignore switch statements and paint all text.
-				var svgRoot = this.editor.graph.getSvg(bg, scale, border, noCrop,
-					null, ignoreSelection, null, null, (linkTarget == 'blank') ? '_blank' :
-					((linkTarget == 'self') ? '_top' : null), null, true, keepTheme,
-					exportType);
+				var svgRoot = this.editor.graph.getSvg(bg, scale, border, noCrop, null,
+					ignoreSelection, null, null, (linkTarget == 'blank') ? '_blank' :
+					((linkTarget == 'self') ? '_top' : null), null, !embedFonts,
+					keepTheme, exportType);
 				
 				if (addShadow)
 				{
@@ -7048,9 +7067,7 @@
 								mapping[diagrams[0].getAttribute('id')] = this.currentPage.getId();
 								
 								// Renames page if diagram has one blank page with default name
-								if (this.pages != null && this.pages.length == 1 &&
-									this.isDiagramEmpty() && this.currentPage.getName() ==
-									mxResources.get('pageWithNumber', [1]))
+								if (this.isBlankFile())
 								{
 									var name = diagrams[0].getAttribute('name');
 									
@@ -8337,10 +8354,9 @@
 			
 			if (typeof JSZip  !== 'undefined')
 			{
-				JSZip.loadAsync(file)                                   
-		        .then(function(zip) 
+				JSZip.loadAsync(file).then(function(zip) 
 		        {
-		        	if (Object.keys(zip.files).length == 0)
+		        	if (mxUtils.isEmptyObject(zip.files))
 		        	{
 		        		onerror();
 		        	}
@@ -8606,7 +8622,9 @@
 			
 			for (var i = 0; i < files.length; i++)
 			{
-				if (files[i].type.substring(0, 6) == 'image/' && files[i].size > thresh)
+				if (files[i].type.substring(0, 9) !== 'image/svg' &&
+					files[i].type.substring(0, 6) === 'image/' &&
+					files[i].size > thresh)
 				{
 					largeImages = true;
 					
@@ -8752,8 +8770,6 @@
 								    				{
 							    						try
 							    						{
-									    					var prefix = data.substring(0, comma + 1);
-									    					
 									    					// Parses SVG and find width and height
 									    					if (root != null)
 									    					{
@@ -8807,7 +8823,7 @@
 										    						var s = Math.min(1, Math.min(maxSize / Math.max(1, w)), maxSize / Math.max(1, h));
 										    						var cells = fn(data, file.type, x + index * gs, y + index * gs, Math.max(
 										    							1, Math.round(w * s)), Math.max(1, Math.round(h * s)), file.name);
-										    						
+																	
 										    						// Hack to fix width and height asynchronously
 										    						if (isNaN(w) || isNaN(h))
 										    						{
@@ -8911,9 +8927,12 @@
 										    					// Refuses to insert images above a certain size as they kill the app
 										    					if (data2 != null && data2.length < maxBytes)
 										    					{
-											    					var s = (!resizeImages || !this.isResampleImageSize(file.size, resampleThreshold)) ? 1 : Math.min(1, Math.min(maxSize / w2, maxSize / h2));
+											    					var s = (!resizeImages || !this.isResampleImageSize(
+																		file.size, resampleThreshold)) ? 1 :
+																		Math.min(1, Math.min(maxSize / w2, maxSize / h2));
 												    				
-											    					return fn(data2, file.type, x + index * gs, y + index * gs, Math.round(w2 * s), Math.round(h2 * s), file.name);
+											    					return fn(data2, file.type, x + index * gs, y + index * gs,
+																		Math.round(w2 * s), Math.round(h2 * s), file.name);
 										    					}
 										    					else
 										    					{
@@ -8993,6 +9012,16 @@
 		{
 			doImportFiles();
 		}
+	};
+
+	/**
+	 * Returns true if the current file is a blank diagram.
+	 */
+	EditorUi.prototype.isBlankFile = function()
+	{
+		return this.pages != null && this.pages.length == 1 &&
+			this.isDiagramEmpty() && this.currentPage.getName() ==
+			mxResources.get('pageWithNumber', [1]);
 	};
 
 	/**
@@ -10003,11 +10032,21 @@
 					
 				    if (evt.dataTransfer.files.length > 0)
 				    {
-				    	if (mxEvent.isShiftDown(evt))
-				    	{
-				    		this.openFiles(evt.dataTransfer.files, true);
-				    	}
-				    	else
+						// Closes current file if blank and no undoable changes
+						var noImport = evt.dataTransfer.files.length == 1 &&
+							this.isBlankFile() && !this.canUndo();
+						
+						if (urlParams['embed'] != '1' && (mxEvent.isShiftDown(evt) || noImport))
+						{
+							if (!mxEvent.isShiftDown(evt) && noImport &&
+								this.getCurrentFile() != null)
+							{
+								this.fileLoaded(null);
+							}
+
+							this.openFiles(evt.dataTransfer.files, true);
+						}
+						else
 				    	{
 							if (mxEvent.isAltDown(evt))
 							{

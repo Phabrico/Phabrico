@@ -822,7 +822,7 @@ msgid "Mark new/modified Phriction documents as"
 msgstr "Marque los documentos de Phriction nuevos/modificados como"
 
 msgid "Add information about the Phriction document in the action menu on the right"
-msgstr "Mostrar información sobre el documento de Fricción en el menú de acción de la derecha"
+msgstr "Mostrar información sobre el documento de Phriction en el menú de acción de la derecha"
 
 msgid "Show Phriction metadata"
 msgstr "Mostrar metadatos de Phriction"

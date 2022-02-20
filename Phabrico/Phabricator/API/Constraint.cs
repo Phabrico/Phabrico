@@ -5,7 +5,7 @@ using System.Linq;
 namespace Phabrico.Phabricator.API
 {
     /// <summary>
-    /// Represents an Constraint filter used in the Phabricator Conduit API
+    /// Represents a Constraint filter used in the Phabricator Conduit API
     /// </summary>
     public class Constraint
     {

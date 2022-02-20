@@ -8,7 +8,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Offline editor for Phabricator documents and tasks</description>
     <releaseNotes></releaseNotes>
-    <copyright>Copyright 2021</copyright>
+    <copyright>Copyright 2022</copyright>
     <projectUrl>https://github.com/Phabrico/Phabrico</projectUrl>
     <license type="expression">Apache-2.0</license>
     <tags></tags>

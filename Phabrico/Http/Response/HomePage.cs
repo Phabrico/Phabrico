@@ -1,4 +1,8 @@
-﻿using Phabrico.Miscellaneous;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Phabrico.Miscellaneous;
+using Phabrico.Phabricator.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -107,6 +111,28 @@ namespace Phabrico.Http.Response
         }
 
         /// <summary>
+        /// Returns the crumb path of a given Phriction document
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="phrictionDocument"></param>
+        /// <param name="language"></param>
+        /// <returns></returns>
+        private object GetCrumbPath(Storage.Database database, Phabricator.Data.Phriction phrictionDocument, Language language)
+        {
+            string urlCrumbs = Controllers.Phriction.GenerateCrumbs(database, phrictionDocument, language);
+            JArray crumbs = JsonConvert.DeserializeObject(urlCrumbs) as JArray;
+            string result = string.Join(" > ", crumbs.Where(t => ((JValue)t["inexistant"]).Value.Equals(false))
+                                                     .Select(t => ((JValue)t["name"]).Value).ToArray()
+                                       );
+            if (string.IsNullOrEmpty(result))
+            {
+                result = phrictionDocument.Name;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Retrieves the HTML content of the homepage
         /// This depends on the HomePageStatus
         /// </summary>
@@ -142,8 +168,6 @@ namespace Phabrico.Http.Response
                         accountData = accountStorage.WhoAmI(database, browser);
 
                         // get favorites
-                        string htmlFavoriteObjects = "";
-                        long previousFavoriteIndex = 0;
                         Storage.Phriction phrictionStorage = new Storage.Phriction();
                         List<Phabricator.Data.Phriction> favoritePhrictionDocuments = new List<Phabricator.Data.Phriction>();
                         if (HttpServer.Customization.HidePhrictionFavorites == false)
@@ -151,85 +175,16 @@ namespace Phabrico.Http.Response
                             favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, browser, accountData.UserName).ToList();
                         }
 
-                        foreach (Phabricator.Data.Phriction favoritePhrictionDocument in favoritePhrictionDocuments)
+                        var favorites = favoritePhrictionDocuments.Select(favorite => new
                         {
-                            // check if we have a splitter
-                            bool previousItemIsSplitter = false;
-                            if (previousFavoriteIndex + 1 < favoritePhrictionDocument.DisplayOrderInFavorites)
-                            {
-                                previousFavoriteIndex = favoritePhrictionDocument.DisplayOrderInFavorites;
-
-                                // insert splitter
-                                htmlFavoriteObjects += @"<div class='favorite-item splitter'>
-                                                            <span class='combine-favorite-items fa fa-arrows-v'></span>
-                                                            <hr />
-                                                         </div>";
-
-                                previousItemIsSplitter = true;
-                            }
-
-                            string[] crumbs = favoritePhrictionDocument.Path.TrimEnd('/').Split('/');
-                            string crumbDescriptions = "";
-                            string currentPath = "";
-                            foreach (string crumb in crumbs.Take(crumbs.Length - 1))
-                            {
-                                currentPath += crumb + "/";
-                                Phabricator.Data.Phriction parentDocument = phrictionStorage.Get(database, currentPath, browser.Session.Locale);
-                                if (parentDocument == null)
-                                {
-                                    string[] camelCasedCrumbs = crumb.Split(' ', '_')
-                                                                     .Select(word => word.Length > 1
-                                                                                   ? char.ToUpper(word[0]) + word.Substring(1)
-                                                                                   : word.ToUpper()
-                                                                            )
-                                                                     .Select(word => word.Replace('_', ' '))
-                                                                     .ToArray();
-
-                                    crumbDescriptions += " > " + string.Join(" ", camelCasedCrumbs);
-                                }
-                                else
-                                {
-                                    crumbDescriptions += " > " + parentDocument.Name;
-                                }
-                            }
-
-                            if (string.IsNullOrEmpty(crumbDescriptions) == false)
-                            {
-                                crumbDescriptions = crumbDescriptions.Substring(" > ".Length);
-                            }
-
-                            // insert favorite-item
-                            string favoriteItemDescription = crumbDescriptions;
-                            if (string.IsNullOrEmpty(favoriteItemDescription) == false)
-                            {
-                                favoriteItemDescription += " > ";
-                            }
-                            favoriteItemDescription += favoritePhrictionDocument.Name;
-
-                            // if Phriction root is set as favorite, don't add a 2nd slash character to a-href tag
-                            if (favoritePhrictionDocument.Path.Equals("/"))
-                            {
-                                favoritePhrictionDocument.Path = "";
-                            }
-
-                            htmlFavoriteObjects += string.Format(@"
-                                                            <div class='favorite-item{0}' data-token='{1}'>
-                                                                <span class='favorite-items-cutter'>
-                                                                    <span class='no-cut-favorite-item fa fa-circle'></span>
-                                                                    <span class='cut-favorite-item fa fa-cut'></span>
-                                                                </span>
-                                                                <span class='link'>
-                                                                    <a href=""w/{2}"">{3}</a>
-                                                                </span>
-                                                            </div>",
-                                                        previousItemIsSplitter ? " first-of-fav-group" : "",
-                                                        favoritePhrictionDocument.Token,
-                                                        favoritePhrictionDocument.Path,
-                                                        favoriteItemDescription
-                                                    );
-
-                            previousFavoriteIndex = favoritePhrictionDocument.DisplayOrderInFavorites;
-                        }
+                            token = favorite.Token,
+                            url = favorite.Path == "/"
+                                        ? "w/"
+                                        : "w/" + favorite.Path,
+                            title = GetCrumbPath(database, favorite, browser.Language),
+                            order = favorite.DisplayOrderInFavorites
+                        })
+                        .ToArray();
 
                         htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.Authenticated"));
                         htmlPartialViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
@@ -249,8 +204,8 @@ namespace Phabrico.Http.Response
                         htmlPartialViewPage.SetText("PHABRICO-NUMBER-UNCOMMITTED-OBJECTS", Storage.Stage.CountUncommitted(database).ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("PHABRICO-NUMBER-FROZEN-OBJECTS", Storage.Stage.CountFrozen(database).ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                        htmlPartialViewPage.SetText("HAS-FAVORITES", htmlFavoriteObjects.Any() ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                        htmlPartialViewPage.SetText("FAVORITES", htmlFavoriteObjects, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("HAS-FAVORITES", favorites.Any() ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("FAVORITES", JsonConvert.SerializeObject(favorites), HtmlViewPage.ArgumentOptions.JsonEncoding);
                         htmlPartialViewPage.Customize(browser);
                         htmlPartialViewPage.Merge();
 

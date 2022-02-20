@@ -3,7 +3,7 @@
 namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an PhamePostInfo record (=Blog post) from the SQLite Phabrico database
+    /// Represents a PhamePostInfo record (=Blog post) from the SQLite Phabrico database
     /// </summary>
     public class PhamePost : PhabricatorObject
     {

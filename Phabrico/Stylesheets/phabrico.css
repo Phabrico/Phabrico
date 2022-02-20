@@ -874,84 +874,77 @@ div.favorites-list {
     flex-direction: column;
 }
 
-div.favorite-item span.favorite-items-cutter .no-cut-favorite-item {
-    width: 8px;
-    margin-left: 5px;
-    color: var(--a-color);
-    font-size: 6px;
-    vertical-align: middle;
-}
-
-div.favorite-item span.favorite-items-cutter {
-    color: var(--a-color);
-    cursor: pointer;
-}
-
-div.favorite-item.first-of-fav-group span.favorite-items-cutter {
-    cursor: default;
-}
-
-div.favorite-item span.favorite-items-cutter:hover .no-cut-favorite-item,
-div.favorite-item span.favorite-items-cutter .cut-favorite-item {
-    display: none;
-}
-
-div.favorite-item span.favorite-items-cutter:hover .cut-favorite-item {
-    display: inline;
-}
-
-div.favorite-item.first-of-fav-group span.favorite-items-cutter:hover .cut-favorite-item {
-    display: none;
-}
-
-div.favorite-item.first-of-fav-group span.favorite-items-cutter .no-cut-favorite-item {
-    pointer-events: none;
-    display: inline-block;
-}
-
-div.favorite-item:first-child span.favorite-items-cutter:hover .no-cut-favorite-item {
-    display: inline;
-    margin-right: 3px;
-    cursor: default;
-}
-
-div.favorite-item:first-child span.favorite-items-cutter:hover .cut-favorite-item {
-    display: none;
-}
-
 div.favorite-item {
     padding: 2px 2px 4px 4px;
     user-select: none;
     display: flex;
 }
 
-div.favorite-item.splitter {
+div.favorite-item .bullet {
     display: inline;
+    color: var(--a-color);
+    font-size: 16px;
+    margin-top: 2px;
+}
+
+div.favorite-item .bullet:before {
+    content: '\2022';
+    position: absolute;
+    margin-left: 8px;
+}
+
+div.favorite-item:first-child  .bullet:hover:before,
+div.favorite-item.splitter + div.favorite-item  .bullet:hover:before {
+    content: '\2022';
+    margin-top: 0px;
+    margin-left: 8px;
+    cursor: default;
+}
+            
+div.favorite-item  .bullet:hover:before {
+    content: '\2702';
+    margin-left: 0px;
+    margin-top: 1px;
+    pointer-events: default;
+    cursor: pointer;
+}
+
+div.favorite-item  a {
+    margin-left: 20px;
 }
 
 div.favorite-item.splitter {
+    display: inline;
     height: 15px;
     padding-left: 20px;
+    padding-top: 3px;
+    padding-bottom: 10px;
     -webkit-box-shadow: none;
+    border: unset;
+}
+
+div.favorite-item.splitter:hover span:before {
+    content: '\2B0D';
+    background: var(--aphront-dialog-view-background-color);
+    font-size: 24px;
+    position: absolute;
+    padding-left: 3px;
+    margin-left: -15px;
+    margin-top: 1px;
+    width: 16px;
+    cursor: pointer;
+    line-height: 16px;
+}
+
+div.favorite-item.splitter  .bullet:before {
+    content: unset;
+    position: unset;
+    margin-left: unset;
 }
 
 div.favorite-item.splitter hr {
-    margin-top: -14px;
+    margin-top: 10px;
     border: 1px dashed var(--favorite-item-splitter);
-}
-
-div.favorite-item.splitter span.combine-favorite-items {
-    opacity: 0;
-    margin-left: -16px;
-    margin-top: -2px;
-    padding: 5px;
-    cursor: pointer;
-    position: relative;
-    top: -2px;
-}
-
-div.favorite-item.splitter:hover span.combine-favorite-items {
-    opacity: 1;
 }
 
 div.favorite-item.dragging {
@@ -2496,7 +2489,7 @@ kbd {
     border-top-right-radius: 3px;
     overflow: hidden;
     margin-top: 10px !important;
-    margin-bottom: -10px;
+    margin-bottom: -16px;
  }
 
 .remarkup-nav-sequence {

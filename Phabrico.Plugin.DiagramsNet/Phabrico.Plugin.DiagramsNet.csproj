@@ -64,6 +64,8 @@
     <Compile Include="DiagramsNet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="webapp\workbox-dfbb910f.js.map" />
+    <EmbeddedResource Include="webapp\workbox-d4d5b410.js.map" />
+    <EmbeddedResource Include="webapp\styles\fonts\ArchitectsDaughter-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -75,6 +77,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\workbox-d4d5b410.js" />
+    <EmbeddedResource Include="webapp\templates\business\swimlane.png" />
+    <EmbeddedResource Include="webapp\js\integrate.min.js" />
     <EmbeddedResource Include="webapp\workbox-12cca165.js" />
     <EmbeddedResource Include="webapp\electron-preload.js" />
     <EmbeddedResource Include="webapp\workbox-dfbb910f.js" />
@@ -222,8 +227,7 @@
     <EmbeddedResource Include="webapp\js\diagramly\P2PCollab.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\gae-stub-1.0.8.jar" />
     <EmbeddedResource Include="webapp\js\shapes-14-6-5.min.js" />
-    <EmbeddedResource Include="webapp\js\socket.io\simplepeer9.10.0.min.js" />
-    <EmbeddedResource Include="webapp\js\socket.io\socket.io.min.js" />
+    <EmbeddedResource Include="webapp\js\simplepeer\simplepeer9.10.0.min.js" />
     <EmbeddedResource Include="webapp\workbox-9fe249eb.js" />
     <EmbeddedResource Include="webapp\workbox-f163abaa.js" />
     <EmbeddedResource Include="View\HelpQuickStartDiagramsNet.html" />

@@ -3,7 +3,7 @@
 namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an FavoriteObject record from the SQLite Phabrico database
+    /// Represents a FavoriteObject record from the SQLite Phabrico database
     /// </summary>
     public class FavoriteObject : PhabricatorObject
     {

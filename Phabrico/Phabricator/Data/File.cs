@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an FileInfo record from the SQLite Phabrico database
+    /// Represents a FileInfo record from the SQLite Phabrico database
     /// </summary>
     public class File : PhabricatorObject
     {

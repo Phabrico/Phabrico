@@ -3,7 +3,7 @@
 namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an TransactionInfo record from the SQLite Phabrico database
+    /// Represents a TransactionInfo record from the SQLite Phabrico database
     /// This class is part of Phabrico.Phabricator.Data.Maniphest and represents its metadata, which is shown
     /// at the bottom of a Maniphest task (e.g. comments, state changes, ...)
     /// </summary>

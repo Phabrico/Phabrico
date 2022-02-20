@@ -8176,20 +8176,21 @@ if (typeof mxVertexHandler !== 'undefined')
 		};
 
 		/**
-		 * Swaps UML Lifelines.
+		 * Swaps the given shapes.
 		 */
-		Graph.prototype.swapUmlLifelines = function(cells, target)
+		Graph.prototype.swapShapes = function(cells, dx, dy, clone, target, evt, mapping)
 		{
 			var result = false;
 
-			if (target != null && cells.length == 1)
+			if (!clone && target != null && cells.length == 1)
 			{
 				var targetState = this.view.getState(target);
 				var sourceState = this.view.getState(cells[0]);
 
 				if (targetState != null && sourceState != null &&
-					targetState.style['shape'] == 'umlLifeline' &&
-					sourceState.style['shape'] == 'umlLifeline')
+					((evt != null && mxEvent.isShiftDown(evt)) ||
+					(targetState.style['shape'] == 'umlLifeline' &&
+					sourceState.style['shape'] == 'umlLifeline')))
 				{
 					var g1 = this.getCellGeometry(target);
 					var g2 = this.getCellGeometry(cells[0]);
@@ -8228,7 +8229,7 @@ if (typeof mxVertexHandler !== 'undefined')
 		var graphMoveCells = Graph.prototype.moveCells;
 		Graph.prototype.moveCells = function(cells, dx, dy, clone, target, evt, mapping)
 		{
-			if (!clone && this.swapUmlLifelines(cells, target))
+			if (this.swapShapes(cells, dx, dy, clone, target, evt, mapping))
 			{
 				return cells;
 			}
@@ -8621,11 +8622,13 @@ if (typeof mxVertexHandler !== 'undefined')
 				rows = rows && this.isTableRow(cells[i]);
 			}
 			
-			return ((mxUtils.getValue(style, 'part', '0') != '1' || this.isContainer(cell)) &&
+			return ((cells.length == 1 && evt != null && mxEvent.isShiftDown(evt) &&
+				!mxEvent.isControlDown(evt) && !mxEvent.isAltDown(evt)) ||
+				((mxUtils.getValue(style, 'part', '0') != '1' || this.isContainer(cell)) &&
 				mxUtils.getValue(style, 'dropTarget', '1') != '0' &&
 				(mxGraph.prototype.isValidDropTarget.apply(this, arguments) ||
 				this.isContainer(cell)) && !this.isTableRow(cell) &&
-				(!this.isTable(cell) || rows || tables)) && !this.isCellLocked(cell);
+				(!this.isTable(cell) || rows || tables))) && !this.isCellLocked(cell);
 		};
 	
 		/**
@@ -12307,7 +12310,7 @@ if (typeof mxVertexHandler !== 'undefined')
 		mxVertexHandler.prototype.isRecursiveResize = function(state, me)
 		{
 			return this.graph.isRecursiveVertexResize(state) &&
-				!mxEvent.isControlDown(me.getEvent());
+				!mxEvent.isAltDown(me.getEvent());
 		};
 		
 		/**
@@ -12315,11 +12318,7 @@ if (typeof mxVertexHandler !== 'undefined')
 		 */
 		mxVertexHandler.prototype.isCenteredEvent = function(state, me)
 		{
-			return (!(!this.graph.isSwimlane(state.cell) && this.graph.model.getChildCount(state.cell) > 0 &&
-					!this.graph.isCellCollapsed(state.cell) &&
-					mxUtils.getValue(state.style, 'recursiveResize', '1') == '1' &&
-					mxUtils.getValue(state.style, 'childLayout', null) == null) &&
-					mxEvent.isControlDown(me.getEvent())) ||
+			return mxEvent.isControlDown(me.getEvent()) ||
 				mxEvent.isMetaDown(me.getEvent());
 		};
 
@@ -13147,8 +13146,8 @@ if (typeof mxVertexHandler !== 'undefined')
 		mxRubberband.prototype.isSpaceEvent = function(me)
 		{
 			return this.graph.isEnabled() && !this.graph.isCellLocked(this.graph.getDefaultParent()) &&
-				mxEvent.isControlDown(me.getEvent()) && mxEvent.isShiftDown(me.getEvent()) &&
-				mxEvent.isAltDown(me.getEvent());
+				(mxEvent.isControlDown(me.getEvent()) || mxEvent.isMetaDown(me.getEvent())) &&
+				mxEvent.isShiftDown(me.getEvent()) && mxEvent.isAltDown(me.getEvent());
 		};
 
 		// Cancelled state

@@ -163,7 +163,7 @@ msgid "Disabled"
 msgstr "Deaktiviert"
 
 msgid "Number of Phriction documents:"
-msgstr "Anzahl der Phriktionsdokumente:"
+msgstr "Anzahl der Phriction dokumente:"
 
 msgid "Number of Maniphest tasks:"
 msgstr "Anzahl der Maniphest-Aufgaben:"
@@ -795,7 +795,7 @@ msgid "Show only those tasks assigned to me that have one of the following state
 msgstr "Nur die mir zugewiesenen Aufgaben anzeigen, die einen der folgenden Status haben:"
 
 msgid "Choose the synchronization method for Phriction documents:"
-msgstr "Wählen Sie die Synchronisationsmethode für Phriktionsdokumente:"
+msgstr "Wählen Sie die Synchronisationsmethode für Phriction dokumente:"
 
 msgid "Synchronize Phriction documents for"
 msgstr "Sync Phriction Dokumente für:"
@@ -816,10 +816,10 @@ msgid "Selected projects combined including document tree"
 msgstr "Ausgewählte Projekte kombiniert inklusive zugrundeliegender Dokumente"
 
 msgid "Choose the default state for new or modified Phriction documents:"
-msgstr "Wählen Sie den Standardstatus für neue oder geänderte Phriktionsdokumente:"
+msgstr "Wählen Sie den Standardstatus für neue oder geänderte Phriction dokumente:"
 
 msgid "Mark new/modified Phriction documents as"
-msgstr "Neue/geänderte Phriktionsdokumente markieren als"
+msgstr "Neue/geänderte Phriction dokumente markieren als"
 
 msgid "Add information about the Phriction document in the action menu on the right"
 msgstr "Informationen über das Phriction-Dokument im Aktionsmenü rechts anzeigen"

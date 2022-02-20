@@ -8,7 +8,7 @@ using System.Linq;
 namespace Phabrico.Phabricator.Data
 {
     /// <summary>
-    /// Represents an ManiphestInfo record from the SQLite Phabrico database
+    /// Represents a ManiphestInfo record from the SQLite Phabrico database
     /// </summary>
     public class Maniphest : PhabricatorObject
     {

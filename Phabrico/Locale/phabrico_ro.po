@@ -163,7 +163,7 @@ msgid "Disabled"
 msgstr "Dezactivat"
 
 msgid "Number of Phriction documents:"
-msgstr "Numărul de documente de frazare:"
+msgstr "Numărul de documente Phriction:"
 
 msgid "Number of Maniphest tasks:"
 msgstr "Număr de sarcini de manipulare:"

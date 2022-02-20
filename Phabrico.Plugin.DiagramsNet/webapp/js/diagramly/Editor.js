@@ -3059,7 +3059,7 @@
     {
         var parts = fontCss.split('url(');
         var waiting = 0;
-        
+		
         if (this.cachedFonts == null) 
         {
         	this.cachedFonts = {};
@@ -3212,10 +3212,11 @@
     Editor.prototype.embedExtFonts = function(callback)
     {
     	var extFonts = this.graph.getCustomFonts();
-    	
+		
 		if (extFonts.length > 0)
 		{
-			var styleCnt = '', waiting = 0;
+			var content = [];
+			var waiting = 0;
 			
 			if (this.cachedGoogleFonts == null)
 			{
@@ -3226,7 +3227,7 @@
 			{
 				if (waiting == 0)
 	            {
-					this.embedCssFonts(styleCnt, callback);
+					this.embedCssFonts(content.join(''), callback);
 	            }
 			});
 			
@@ -3243,27 +3244,27 @@
 							this.loadUrl(fontUrl, mxUtils.bind(this, function(css)
 		                    {
 								this.cachedGoogleFonts[fontUrl] = css;
-								styleCnt += css;
+								content.push(css + '\n');
 		                        waiting--;
 		                        googleCssDone();
 		                    }), mxUtils.bind(this, function(err)
 		                    {
 		                        // LATER: handle error
 		                        waiting--;
-		                        styleCnt += '@import url(' + fontUrl + ');';
+								content.push('@import url(' + fontUrl + ');\n');
 		                        googleCssDone();
 		                    }));
 						}
 						else
 						{
-							styleCnt += this.cachedGoogleFonts[fontUrl];
+							content.push(this.cachedGoogleFonts[fontUrl] + '\n');
 						}
 					}
 					else
 					{
-						styleCnt += '@font-face {' +
-				            'font-family: "' + fontName + '";' + 
-				            'src: url("' + fontUrl + '")}';
+						content.push('@font-face {' +
+							'font-family: "' + fontName + '";' + 
+							'src: url("' + fontUrl + '")}\n');
 					}
 				}))(extFonts[i].name, extFonts[i].url);
 			}
@@ -5276,7 +5277,7 @@
 										style = mxUtils.setStyle(style, mxConstants.STYLE_GRADIENTCOLOR, colorset['gradient'] ||
 											mxUtils.getValue(defaults, mxConstants.STYLE_GRADIENTCOLOR, null));
 									
-										if (!mxEvent.isControlDown(evt) && (!mxClient.IS_MAC || !mxEvent.isMetaDown(evt)) &&
+										if (!mxEvent.isControlDown(evt) && (!mxClient.IS_MAC || !mxEvent.isMetaDown(evt)) &&
 											graph.getModel().isVertex(cells[i]))
 										{
 											style = mxUtils.setStyle(style, mxConstants.STYLE_FONTCOLOR, colorset['font'] ||
@@ -7568,16 +7569,19 @@
 	/**
 	 * Highlights the given cell.
 	 */
-	Graph.prototype.highlightCell = function(cell, color, duration, opacity)
+	Graph.prototype.highlightCell = function(cell, color, duration, opacity, strokeWidth)
 	{
 		color = (color != null) ? color : mxConstants.DEFAULT_VALID_COLOR;
 		duration = (duration != null) ? duration : 1000;
 		var state = this.view.getState(cell);
+		var hl = null;
 		
 		if (state != null)
 		{
-			var sw = Math.max(5, mxUtils.getValue(state.style, mxConstants.STYLE_STROKEWIDTH, 1) + 4);
-			var hl = new mxCellHighlight(this, color, sw, false);
+			strokeWidth = (strokeWidth != null) ? strokeWidth : 4;
+			var sw = Math.max(strokeWidth + 1, mxUtils.getValue(state.style,
+				mxConstants.STYLE_STROKEWIDTH, 1) + strokeWidth);
+			hl = new mxCellHighlight(this, color, sw, false);
 			
 			if (opacity != null)
 			{
@@ -7591,7 +7595,8 @@
 			{
 				if (hl.shape != null)
 				{
-				 	mxUtils.setPrefixedStyle(hl.shape.node.style, 'transition', 'all 1200ms ease-in-out');
+				 	mxUtils.setPrefixedStyle(hl.shape.node.style,
+						'transition', 'all 1200ms ease-in-out');
 					hl.shape.node.style.opacity = 0;
 				}
 				
@@ -7602,6 +7607,8 @@
 				}, 1200);
 			}, duration);
 		}
+
+		return hl;
 	};
 
 	/**
@@ -7799,6 +7806,7 @@
 	mxStencilRegistry.libraries['electrical/logic_gates'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/logic_gates.xml'];
 	mxStencilRegistry.libraries['electrical/miscellaneous'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/miscellaneous.xml'];
 	mxStencilRegistry.libraries['electrical/signal_sources'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/signal_sources.xml'];
+	mxStencilRegistry.libraries['electrical/electro-mechanical'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/electro-mechanical.xml'];
 	mxStencilRegistry.libraries['electrical/transmission'] = [SHAPES_PATH + '/mxElectrical.js', STENCIL_PATH + '/electrical/transmission.xml'];
 	mxStencilRegistry.libraries['infographic'] = [SHAPES_PATH + '/mxInfographic.js'];
 	mxStencilRegistry.libraries['mockup/buttons'] = [SHAPES_PATH + '/mockup/mxMockupButtons.js'];
