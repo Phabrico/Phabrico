@@ -21,7 +21,7 @@ namespace Phabrico.Http
             /// CSRF codes which are currently in use in the current session
             /// Key=CSRF code, Value=UTC Timestamp when CSRF was created
             /// </summary>
-            public TransientDictionary<string, DateTime> ActiveCSRF { get; internal set; } = new TransientDictionary<string, DateTime>(TimeSpan.FromHours(1), true);
+            public TransientDictionary<string, DateTime> ActiveCSRF { get; internal set; } = new TransientDictionary<string, DateTime>(TimeSpan.FromMinutes(3), true);
 
             /// <summary>
             /// Locale (language) for the current session
@@ -177,7 +177,7 @@ namespace Phabrico.Http
         /// <summary>
         /// Active client sessions per token-id
         /// </summary>
-        public Dictionary<string, ClientSession> ClientSessions = new Dictionary<string, ClientSession>();
+        public Dictionary<string, ClientSession> ClientSessions { get; } = new Dictionary<string, ClientSession>();
 
         /// <summary>
         /// This token will be  created during startup and is temporary used during the authentication.

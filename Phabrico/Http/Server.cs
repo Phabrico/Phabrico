@@ -1241,13 +1241,10 @@ namespace Phabrico.Http
                                 plugin.State = Plugin.PluginBase.PluginState.Initialized;
                             }
 
-                            if (plugin.IsVisibleInNavigator(browser))
+                            viewPage = plugin.GetViewPage(browser, urlPath);
+                            if (viewPage != null)
                             {
-                                viewPage = plugin.GetViewPage(browser, urlPath);
-                                if (viewPage != null)
-                                {
-                                    break;
-                                }
+                                break;
                             }
                         }
                     }
@@ -1302,12 +1299,15 @@ namespace Phabrico.Http
 
                             // impersonate if needed
                             System.Security.Principal.WindowsImpersonationContext windowsImpersonationContext = null;
+                            string originalUserProfileString = null, originalUserNameString = null;
                             if (authenticationScheme == AuthenticationSchemes.IntegratedWindowsAuthentication)
                             {
                                 IntPtr currentUserToken = ImpersonationHelper.GetCurrentUserToken();
                                 using (WindowsIdentity currentUser = new WindowsIdentity(currentUserToken))
                                 {
                                     windowsImpersonationContext = currentUser.Impersonate();
+                                    ImpersonationHelper.CopyEnvironmentVariableToImpersonatedSession(currentUserToken, "USERPROFILE", out originalUserProfileString);
+                                    ImpersonationHelper.CopyEnvironmentVariableToImpersonatedSession(currentUserToken, "USERNAME", out originalUserNameString);
                                 }
                             }
 
@@ -1360,11 +1360,26 @@ namespace Phabrico.Http
                                     windowsImpersonationContext.Undo();
 
                                     windowsImpersonationContext.Dispose();
+
+                                    if (originalUserNameString != null)
+                                    {
+                                        Environment.SetEnvironmentVariable("USERNAME", originalUserNameString);
+                                    }
+
+                                    if (originalUserProfileString != null)
+                                    {
+                                        Environment.SetEnvironmentVariable("USERPROFILE", originalUserProfileString);
+                                    }
                                 }
                             }
 
                             Logging.WriteInfo(tokenToLog, "Finished {0}.{1}", controller.GetType().Name, controllerMethod.Name);
                             Http.Response.HttpRedirect redirect = httpResponse as Http.Response.HttpRedirect;
+                            if (redirect == null)
+                            {
+                                redirect = methodArguments[1] as Http.Response.HttpRedirect;
+                            }
+
                             if (redirect != null)
                             {
                                 redirect.Send(browser);
@@ -1722,6 +1737,19 @@ namespace Phabrico.Http
             // process POST request
             Logging.WriteInfo(browser.Token?.ID, "POST {0}", cmdPostUrl);
 
+            if (cmdPostUrl.StartsWith("/prod"))
+            {
+                string csrf = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
+                if (browser.Session.ActiveCSRF.ContainsKey(csrf))
+                {
+                    browser.Session.ActiveCSRF[csrf] = DateTime.UtcNow;
+                }
+
+                Http.Response.HttpMessage httpResponse = new Http.Response.HttpFound(this, browser, browser.Request.RawUrl);
+                httpResponse.Send(browser);
+                return;
+            }
+
             // search for controller method
             string controllerUrl;
             string controllerUrlAlias;
@@ -1729,6 +1757,7 @@ namespace Phabrico.Http
             string[] controllerParameters;
             bool requestsProcessed = false;
             cmdPostUrl = RouteManager.GetInternalURL(cmdPostUrl);
+            string originalUserProfileString = null, originalUserNameString = null;
             object controller = GetControllerInfo(browser, ref cmdPostUrl, out controllerUrl, out controllerUrlAlias, out controllerMethods, out controllerParameters);
             if (controller != null)
             {
@@ -1763,6 +1792,8 @@ namespace Phabrico.Http
                             using (WindowsIdentity currentUser = new WindowsIdentity(currentUserToken))
                             {
                                 windowsImpersonationContext = currentUser.Impersonate();
+                                ImpersonationHelper.CopyEnvironmentVariableToImpersonatedSession(currentUserToken, "USERPROFILE", out originalUserProfileString);
+                                ImpersonationHelper.CopyEnvironmentVariableToImpersonatedSession(currentUserToken, "USERNAME", out originalUserNameString);
                             }
                         }
                     }
@@ -1837,6 +1868,16 @@ namespace Phabrico.Http
                             windowsImpersonationContext.Undo();
 
                             windowsImpersonationContext.Dispose();
+
+                            if (originalUserNameString != null)
+                            {
+                                Environment.SetEnvironmentVariable("USERNAME", originalUserNameString);
+                            }
+
+                            if (originalUserProfileString != null)
+                            {
+                                Environment.SetEnvironmentVariable("USERPROFILE", originalUserProfileString);
+                            }
                         }
                     }
                     Logging.WriteInfo(browser.Token?.ID, "Finished {0}.{1}", controller.GetType().Name, controllerMethod.Name);

@@ -5,6 +5,7 @@
 
     <?define PluginDiagramsNetGUID = 6352675d-5d6c-4336-aea0-1555814598f2 ?>
     <?define PluginGitanosGUID = 5ea4dc71-b13a-4bb0-8a4c-bcdc7615da4c ?>
+    <?define PluginJSPaintImageEditorGUID = 1bc270e2-1e46-4ea3-ab7b-662240611aeb ?>
     <?define PluginPhrictionToPDFGUID = b1279c42-def1-456b-8db4-bbb77982d948 ?>
     <?define PluginPhrictionTranslatorGUID = 6c589dce-db83-4eae-b1e3-feb7f48d0c1f ?>
     <?define PluginPhrictionValidatorGUID = fee190d5-b60c-4f22-af48-c21283d3f550 ?>
@@ -228,6 +229,9 @@
                 <Feature Id="PluginDiagramsNet" Title="Diagrams" Level="1" ConfigurableDirectory="INSTALLDIR" Description="Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams. (Diagrams.Net)">
                     <ComponentGroupRef Id="PluginDiagramsNetComponents" />
                 </Feature>
+                <Feature Id="PluginJSPaintImageEditor" Title="JSPaint Image Editor" Level="32767" ConfigurableDirectory="INSTALLDIR" Description="Editor for images">
+                    <ComponentGroupRef Id="PluginJSPaintImageEditorComponents" />
+                </Feature>
                 <Feature Id="PluginPhrictionTranslator" Title="Phriction Translator" Level="32767" ConfigurableDirectory="INSTALLDIR" Description="Creates translated contents of Phriction documents">
                     <ComponentGroupRef Id="PluginPhrictionTranslatorComponents" />
                 </Feature>
@@ -285,6 +289,10 @@
         <?include "Plugin.DiagramsNet.wxi" ?>
     </Fragment>
 
+    <Fragment>
+        <?include "Plugin.JSPaintImageEditor.wxi" ?>
+    </Fragment>
+    
     <Fragment>
         <?include "Plugin.PhrictionTranslator.wxi" ?>
     </Fragment>

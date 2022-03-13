@@ -245,6 +245,12 @@ namespace Phabrico.Phabricator.Data
             /// Determines the access level of the account
             /// </summary>
             public AccountTypes AccountType { get; set; }
+
+            /// <summary>
+            /// If true, the app side window on the right will automatically close when the mouse pointer leaves the app side window.
+            /// If false, the user has to click manually on the arrow to close the app side window again
+            /// </summary>
+            public bool AutoClosePhrictionAppSideWindow { get; set; } = false;
             
             /// <summary>
             /// If no mouse movement or keyboard activity is detected in the active Phabrico screen for a given number of minutes, the Log In dialog will be shown.

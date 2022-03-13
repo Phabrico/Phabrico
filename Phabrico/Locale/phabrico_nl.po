@@ -833,6 +833,12 @@ msgstr "Download project tags en subcribers voor alle Phriction documenten"
 msgid "Force download all Phriction metadata"
 msgstr "Forceer downloaden van alle Phriction metadata"
 
+msgid "Automatic close action menu"
+msgstr "Automatisch afsluiten menu"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "Sluit automatisch het menu wanneer de muiswijzer weg gaat"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Bevroren: lokale wijzigingen worden niet geüpload tijdens de synchronisatie"
 

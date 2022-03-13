@@ -53,7 +53,7 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			'\'unsafe-hashes\'; '; // Required for hashes for style attribute
 		
 		var directives = 'connect-src %connect-src% \'self\' https://*.draw.io https://*.diagrams.net ' +
-			'https://*.googleapis.com wss://*.pusher.com https://*.pusher.com ' +
+			'https://*.googleapis.com wss://app.diagrams.net/rt wss://*.pusher.com https://*.pusher.com ' +
 			'https://api.github.com https://raw.githubusercontent.com https://gitlab.com ' +
 			'https://graph.microsoft.com https://*.sharepoint.com  https://*.1drv.com https://api.onedrive.com ' +
 			'https://dl.dropboxusercontent.com ' +
@@ -75,7 +75,7 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			// Adds script tags and loads shapes with eval
 			replace(/%script-src%/g, 'https://www.dropbox.com https://api.trello.com https://devhost.jgraph.com \'unsafe-eval\'').
 			// Adds Trello and Dropbox backend storage
-			replace(/%connect-src%/g, 'https://*.dropboxapi.com https://trello.com https://api.trello.com wss://p2p-collab-test.jgraph.workers.dev').
+			replace(/%connect-src%/g, 'https://*.dropboxapi.com https://trello.com https://api.trello.com').
 			// Loads common.css from mxgraph
 			replace(/%style-src%/g, 'https://devhost.jgraph.com').
 			replace(/%frame-src%/g, '').
@@ -158,6 +158,7 @@ mxscript(drawDevUrl + 'js/deflate/base64.js');
 mxscript(drawDevUrl + 'js/jscolor/jscolor.js');
 mxscript(drawDevUrl + 'js/sanitizer/sanitizer.min.js');
 mxscript(drawDevUrl + 'js/rough/rough.min.js');
+mxscript(drawDevUrl + 'js/freehand/perfect-freehand.js');
 
 // Uses grapheditor from devhost
 mxscript(geBasePath +'/Editor.js');
@@ -276,9 +277,6 @@ mxscript(drawDevUrl + 'js/diagramly/TrelloClient.js');
 mxscript(drawDevUrl + 'js/diagramly/GitLabFile.js');
 mxscript(drawDevUrl + 'js/diagramly/GitLabLibrary.js');
 mxscript(drawDevUrl + 'js/diagramly/GitLabClient.js');
-mxscript(drawDevUrl + 'js/diagramly/NotionFile.js');
-mxscript(drawDevUrl + 'js/diagramly/NotionLibrary.js');
-mxscript(drawDevUrl + 'js/diagramly/NotionClient.js');
 
 mxscript(drawDevUrl + 'js/diagramly/App.js');
 mxscript(drawDevUrl + 'js/diagramly/Menus.js');

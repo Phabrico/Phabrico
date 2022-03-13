@@ -1,8 +1,8 @@
-function P2PCollab(ui, sync)
+function P2PCollab(ui, sync, channelId)
 {
 	var graph = ui.editor.graph;
-	var socket = null;
 	var sessionCount = 0;
+	var socket = null;
 	var colors = [
 		//White font
 		'#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4', 
@@ -18,26 +18,39 @@ function P2PCollab(ui, sync)
 	var INACTIVE_TIMEOUT = 120000; //2 min
 	var SELECTION_OPACITY = 70; //The default opacity of 30 is not visible enough with all colors
 	var cursorDelay = 200;
+	// TODO: Avoid negation, move to Editor.ENABLE_P2P and use p2p=1 URL parameter
+	// add to Editor.configure
 	var NO_P2P = urlParams['no-p2p'] != '0';
-
-	function sendReply(action, msg)
+	var joinInProgress = false, joinId = 0;
+	var lastError = null;
+	
+	var sendReply = mxUtils.bind(this, function(action, msg)
   	{
 		if (destroyed) return;
 
 		try
 		{
-			if (!NO_P2P)
+			if (socket != null)
 			{
-				EditorUi.debug('P2PCollab: sending to socket server', action, msg);
-			}
+				socket.send(JSON.stringify({action: action, msg: msg}));
 
-			socket.send(JSON.stringify({action: action, msg: msg}));	
+				if (!NO_P2P)
+				{
+					EditorUi.debug('P2PCollab: sending to socket server', [action], [msg]);
+				}
+			}
+			else
+			{
+				this.joinFile(true);
+			}
 		}
 		catch (e)
 		{
+			lastError = e;
+			sync.file.fireEvent(new mxEventObject('realtimeStateChanged'));
 			EditorUi.debug('P2PCollab:', 'sendReply error', arguments, e);
 		}
-	}
+	});
 
 	function createCursorImage(color)
 	{
@@ -48,17 +61,20 @@ function P2PCollab(ui, sync)
 	{
 		if (destroyed) return;
 
-		var user = ui.getCurrentUser();
+		var user = sync.file.getCurrentUser();
 
 		if (!fileJoined || user == null || user.email == null) return;
 		
 		//Converting to a string such that webRTC works also
-		var msg = JSON.stringify({from: myClientId, id: messageId, type: type, sessionId: sync.clientId,
-								userId: user.id, username: user.displayName, data: data});
-
+		var msg = JSON.stringify({from: myClientId, id: messageId,
+			type: type, sessionId: sync.clientId, userId: user.id,
+			username: user.displayName, data: data,
+			protocol: DrawioFileSync.PROTOCOL,
+			editor: EditorUi.VERSION});
+		
 		if (NO_P2P && type != 'cursor')
 		{
-			EditorUi.debug('P2PCollab: sending to socket server', msg);
+			EditorUi.debug('P2PCollab: sending to socket server', [msg]);
 		}
 
 		messageId++;
@@ -87,7 +103,17 @@ function P2PCollab(ui, sync)
 			patch: diff
 		});
 	};
-	
+
+	this.getState = function()
+	{
+		return socket != null ? socket.readyState : 3 /* CLOSED */;
+	};
+
+	this.getLastError = function()
+	{
+		return lastError;
+	};
+
 	function debounce(func, wait) 
     {
         var timeout, lastInvocation = -1;
@@ -114,113 +140,124 @@ function P2PCollab(ui, sync)
         };
     };
 
-	if (urlParams['remote-cursors'] != '0')
+	function sendCursor(me)
 	{
-		function sendCursor(me)
+		if (ui.shareCursorPosition && !graph.isMouseDown)
 		{
-			if (ui.shareCursorPosition && !graph.isMouseDown)
-			{
-				var offset = mxUtils.getOffset(graph.container);
-				var tr = graph.view.translate;
-				var s = graph.view.scale;
-
-				var pageId = (ui.currentPage != null) ?
-					ui.currentPage.getId() : null;
-				sendMessage('cursor', {pageId: pageId,
-					x: (me.getX() - tr.x - offset.x +
-						graph.container.scrollLeft) / s,
-					y: (me.getY() - tr.y - offset.y +
-						graph.container.scrollTop) / s});
-			}
-		};
-
-		this.mouseListeners = {
-			startX: 0,
-			startY: 0,
-			scrollLeft: 0,
-			scrollTop: 0,
-			mouseDown: function(sender, me) {},
-			mouseMove: debounce(function(sender, me)
-			{
-				sendCursor(me);
-			}, cursorDelay), // 5 frame/sec approx TODO with 100 milli (10 fps), the cursor is smoother
-			mouseUp: function(sender, me)
-			{
-				sendCursor(me);
-			}
-		};
-
-		graph.addMouseListener(this.mouseListeners);
-
-		this.shareCursorPositionListener = function()
-		{
-			if (!ui.isShareCursorPosition())
-			{
-				sendMessage('cursor', {hide: true});
-			}
-		};
-
-		ui.addListener('shareCursorPositionChanged', this.shareCursorPositionListener);
-
-		this.selectionChangeListener = function(sender, evt)
-		{
-			var mapToIds = function(c)
-			{
-				return c.id;
-			};
+			var offset = mxUtils.getOffset(graph.container);
+			var tr = graph.view.translate;
+			var s = graph.view.scale;
 
 			var pageId = (ui.currentPage != null) ?
 				ui.currentPage.getId() : null;
-			var added = evt.getProperty('added'),
-				removed = evt.getProperty('removed');
+			sendMessage('cursor', {pageId: pageId,
+				x: Math.round((me.getX() - offset.x +
+					graph.container.scrollLeft) / s - tr.x),
+				y: Math.round((me.getY() - offset.y +
+					graph.container.scrollTop) / s - tr.y)});
+		}
+	};
 
-			//Added/removed looks like inverted
-			sendMessage('selectionChange', {pageId: pageId,
-				removed: added? added.map(mapToIds) : [],
-				added: removed? removed.map(mapToIds) : []
-			});
+	this.mouseListeners = {
+		startX: 0,
+		startY: 0,
+		scrollLeft: 0,
+		scrollTop: 0,
+		mouseDown: function(sender, me) {},
+		mouseMove: debounce(function(sender, me)
+		{
+			sendCursor(me);
+		}, cursorDelay), // 5 frame/sec approx TODO with 100 milli (10 fps), the cursor is smoother
+		mouseUp: function(sender, me)
+		{
+			sendCursor(me);
+		}
+	};
+
+	graph.addMouseListener(this.mouseListeners);
+
+	this.shareCursorPositionListener = function()
+	{
+		if (!ui.isShareCursorPosition())
+		{
+			sendMessage('cursor', {hide: true});
+		}
+	};
+
+	ui.addListener('shareCursorPositionChanged', this.shareCursorPositionListener);
+
+	this.selectionChangeListener = function(sender, evt)
+	{
+		var mapToIds = function(c)
+		{
+			return c.id;
 		};
 
-		graph.getSelectionModel().addListener(mxEvent.CHANGE, this.selectionChangeListener);
-	}
+		var pageId = (ui.currentPage != null) ?
+			ui.currentPage.getId() : null;
+		var added = evt.getProperty('added'),
+			removed = evt.getProperty('removed');
+
+		//Added/removed looks like inverted
+		sendMessage('selectionChange', {pageId: pageId,
+			removed: added? added.map(mapToIds) : [],
+			added: removed? removed.map(mapToIds) : []
+		});
+	};
+
+	graph.getSelectionModel().addListener(mxEvent.CHANGE, this.selectionChangeListener);
 
 	function updateCursor(entry, transition)
 	{
+		var pageId = (ui.currentPage != null) ?
+			ui.currentPage.getId() : null;
+		
 		if (entry != null && entry.cursor != null &&
-			entry.cursorPosition != null)
+			entry.lastCursor != null)
 		{
-			var tr = graph.view.translate;
-			var s = graph.view.scale;	
-			var x = ((tr.x + entry.cursorPosition.x) * s) + 8;
-			var y = ((tr.y + entry.cursorPosition.y) * s) - 12;
-
-			function setPosition()
+			if (entry.lastCursor.hide != null ||
+				(entry.lastCursor.pageId != null &&
+				entry.lastCursor.pageId != pageId))
 			{
-				x = Math.max(graph.container.scrollLeft, Math.min(graph.container.scrollLeft +
-					graph.container.clientWidth - entry.cursor.clientWidth, x));
-				y = Math.max(graph.container.scrollTop, Math.min(graph.container.scrollTop +
-					graph.container.clientHeight - entry.cursor.clientHeight, y));
-
-				entry.cursor.style.left = x + 'px';
-				entry.cursor.style.top = y + 'px';
-				entry.cursor.style.display = '';
-			};
-
-			if (transition)
-			{
-				mxUtils.setPrefixedStyle(entry.cursor.style, 'transition', 'all ' + (3 * cursorDelay) + 'ms ease-out');
-
-				window.setTimeout(setPosition, 0);
+				entry.cursor.style.display = 'none';
 			}
 			else
 			{
-				mxUtils.setPrefixedStyle(entry.cursor.style, 'transition', null);
-				setPosition();
+				var tr = graph.view.translate;
+				var s = graph.view.scale;	
+				var x = ((tr.x + entry.lastCursor.x) * s) + 8;
+				var y = ((tr.y + entry.lastCursor.y) * s) - 12;
+				var img = entry.cursor.getElementsByTagName('img')[0];
+
+				function setPosition()
+				{
+					var cx = Math.max(graph.container.scrollLeft, Math.min(graph.container.scrollLeft +
+						graph.container.clientWidth - entry.cursor.clientWidth, x));
+					var cy = Math.max(graph.container.scrollTop - 22, Math.min(graph.container.scrollTop +
+						graph.container.clientHeight - entry.cursor.clientHeight, y));
+					img.style.opacity = (cx != x || cy != y) ? 0 : 1;
+					entry.cursor.style.left = cx + 'px';
+					entry.cursor.style.top = cy + 'px';
+					entry.cursor.style.display = '';
+				};
+
+				if (transition)
+				{
+					mxUtils.setPrefixedStyle(entry.cursor.style, 'transition', 'all ' + (3 * cursorDelay) + 'ms ease-out');
+					mxUtils.setPrefixedStyle(img.style, 'transition', 'all ' + (3 * cursorDelay) + 'ms ease-out');
+					window.setTimeout(setPosition, 0);
+				}
+				else
+				{
+					mxUtils.setPrefixedStyle(entry.cursor.style, 'transition', null);
+					mxUtils.setPrefixedStyle(img.style, 'transition', null);
+					setPosition();
+				}
 			}
 		}
 	};
 
-	this.scrollHandler = mxUtils.bind(this, function()
+	this.cursorHandler = mxUtils.bind(this, function()
 	{
 		for (var key in connectedSessions)
 		{
@@ -228,10 +265,11 @@ function P2PCollab(ui, sync)
 		}
 	});
 
-	mxEvent.addListener(graph.container, 'scroll', this.scrollHandler);
-	graph.getView().addListener(mxEvent.SCALE, this.scrollHandler);
-	graph.getView().addListener(mxEvent.TRANSLATE, this.scrollHandler);
-	graph.getView().addListener(mxEvent.SCALE_AND_TRANSLATE, this.scrollHandler);
+	mxEvent.addListener(graph.container, 'scroll', this.cursorHandler);
+	graph.getView().addListener(mxEvent.SCALE, this.cursorHandler);
+	graph.getView().addListener(mxEvent.TRANSLATE, this.cursorHandler);
+	graph.getView().addListener(mxEvent.SCALE_AND_TRANSLATE, this.cursorHandler);
+	ui.editor.addListener('pageSelected', this.cursorHandler);
 
 	function processMsg(msg, fromCId)
 	{
@@ -241,7 +279,7 @@ function P2PCollab(ui, sync)
 		
 		if (NO_P2P && msg.type != 'cursor')
 		{
-			EditorUi.debug('P2PCollab: msg received', msg);
+			EditorUi.debug('P2PCollab: msg received', [msg]);
 		}
 
 		//Exclude P2P messages from duplicate messages test since p2p can arrive before socket and interrupt delivery
@@ -289,11 +327,15 @@ function P2PCollab(ui, sync)
 				cursor.style.pointerEvents = 'none';
 				cursor.style.position = 'absolute';
 				cursor.style.display = 'none';
-				cursor.style.opacity = '0.7';
+				cursor.style.opacity = '0.9';
 				cursor.style.zIndex = 5000;
 
-				cursor.innerHTML = '<img style="transform:rotate(-45deg)translateX(-14px);width:10px;" src="' + createCursorImage(clr) + '">';
-
+				var img = document.createElement('img');
+				mxUtils.setPrefixedStyle(img.style, 'transform', 'rotate(-45deg)translateX(-14px)');
+				img.setAttribute('src', createCursorImage(clr));
+				img.style.width = '10px';
+				cursor.appendChild(img);
+				
 				var name = document.createElement('div');
 				name.style.backgroundColor = clr;
 				name.style.color = lblClr;
@@ -307,7 +349,7 @@ function P2PCollab(ui, sync)
 				name.style.whiteSpace = 'nowrap';
 				
 				mxUtils.write(name, username);
-				cursor.append(name);
+				cursor.appendChild(name);
 
 				ui.diagramContainer.appendChild(cursor);
 				selection = connectedSessions[sessionId].selection;
@@ -333,30 +375,15 @@ function P2PCollab(ui, sync)
 		switch (msg.type)
 		{
 			case 'cursor':
-				if (urlParams['remote-cursors'] != '0')
-				{
-					var pageId = (ui.currentPage != null) ?
-						ui.currentPage.getId() : null;
-
-					if (msgData.hide != null ||
-						(msgData.pageId != null &&
-						msgData.pageId != pageId))
-					{
-						removeConnectedUserUi(sessionId);
-					}
-					else
-					{
-						createCursor();
-						connectedSessions[sessionId].cursorPosition = new mxPoint(msgData.x, msgData.y);
-						updateCursor(connectedSessions[sessionId], true);
-					}
-				}
+				createCursor();
+				connectedSessions[sessionId].lastCursor = msgData;
+				updateCursor(connectedSessions[sessionId], true);
 			break;
 			case 'diff':
 				try
 				{
 					var msg = sync.stringToObject(decodeURIComponent(msgData.patch));
-					sync.receiveRemoteChanges(msg.d.c);
+					sync.receiveRemoteChanges(msg.d);
 				}
 				catch (e)
 				{
@@ -364,11 +391,11 @@ function P2PCollab(ui, sync)
 				}
 			break;
 			case 'selectionChange':
-				if (urlParams['remote-cursors'] != '0')
+				if (urlParams['remote-selection'] != '0')
 				{
 					var pageId = (ui.currentPage != null) ?
 						ui.currentPage.getId() : null;
-
+					
 					if (pageId == null ||
 						(msgData.pageId != null &&
 						msgData.pageId == pageId))
@@ -391,15 +418,21 @@ function P2PCollab(ui, sync)
 						{
 							var id = msgData.added[i];
 							var cell = graph.model.getCell(id);
-							selection[id] = graph.highlightCell(cell,
-								connectedSessions[sessionId].color, 60000,
-								SELECTION_OPACITY, 3);
+
+							if (cell != null)
+							{	
+								selection[id] = graph.highlightCell(cell,
+									connectedSessions[sessionId].color, 60000,
+									SELECTION_OPACITY, 3);
+							}
 						}
 					}
 				}
 			break;
 		}
-	}
+
+		sync.file.fireEvent(new mxEventObject('realtimeMessage', 'message', msg));
+	};
 	
 	function createPeer(id, initiator)
 	{
@@ -408,6 +441,7 @@ function P2PCollab(ui, sync)
 			return;	
 		}
 		
+		// TODO: Move URL to Editor.STUN_SERVER_URL, add to Editor.configure
 		var p = new SimplePeer({
 	        initiator: initiator,
 			config: { iceServers: [{ urls: 'stun:54.89.235.160:3478' }] }
@@ -527,147 +561,144 @@ function P2PCollab(ui, sync)
 		}
 	};
 
-	var joinInProgress = false, joinId = 0;
-	
-	this.joinFile = function(channelId, callback, onError)
+	this.joinFile = function(check)
 	{
 		if (destroyed) return;
 
-		if (joinInProgress)
-		{
-			EditorUi.debug('P2PCollab: joinInProgress on', joinInProgress);
-			if (onError)
-			{
-				onError('busy');
-			}
-			return; //TODO what if the current join failed. We need a way to initiate join from the file sync	
-		}
-		
-		joinInProgress = ++joinId;
-		
 		try
 		{
-			if (socket != null)
+			if (joinInProgress)
 			{
-				EditorUi.debug('P2PCollab: force closing socket on', socket.joinId)
-				socket.close(1000);
-				socket = null;
+				EditorUi.debug('P2PCollab: joinInProgress on', joinInProgress);
+				lastError = 'busy';
 			}
+			
+			joinInProgress = ++joinId;
+			
+			try
+			{
+				if (socket != null)
+				{
+					EditorUi.debug('P2PCollab: force closing socket on', socket.joinId)
+					socket.close(1000);
+					socket = null;
+				}
+			}
+			catch(e) 
+			{
+				EditorUi.debug('P2PCollab: closing socket error', e);
+			} //Ignore
+			
+			var ws = new WebSocket(window.RT_WEBSOCKET_URL + '?id=' + channelId);
+			
+			ws.addEventListener('open', function(event)
+			{
+				socket = ws;
+				socket.joinId = joinInProgress;
+				joinInProgress = false;
+				sync.file.fireEvent(new mxEventObject('realtimeStateChanged'));
+				EditorUi.debug('P2PCollab: open socket', socket.joinId);
+
+				if (check)
+				{
+					sync.scheduleConsistencyCheck();
+				}
+			});
+		
+			ws.addEventListener('message', mxUtils.bind(this, function(event)
+			{
+				if (!NO_P2P)
+				{
+					EditorUi.debug('P2PCollab: msg received', [event]);
+				}
+
+				var data = JSON.parse(event.data);
+				
+				if (NO_P2P && data.action != 'message')
+				{
+					EditorUi.debug('P2PCollab: msg received', [event]);
+				}
+
+				switch (data.action)
+				{
+					case 'message':
+						processMsg(data.msg, data.from);
+					break;
+					case 'clientsList':
+						clientsList(data.msg);
+					break;
+					case 'signal':
+						signal(data.msg);
+					break;
+					case 'newClient':
+						newClient(data.msg);
+					break;
+					case 'clientLeft':
+						clientLeft(data.msg);
+					break;
+					case 'sendSignalFailed':
+						sendSignalFailed(data.msg);
+					break;
+				}
+			}));
+
+			var rejoinCalled = false;
+				
+			ws.addEventListener('close', mxUtils.bind(this, function(event)
+			{
+				EditorUi.debug('P2PCollab: WebSocket closed', ws.joinId, 'reconnecting', event.code, event.reason);
+				EditorUi.debug('P2PCollab: closing socket on', ws.joinId);
+
+				if (!destroyed && event.code != 1000 && joinId == ws.joinId) //Sometimes, a delayed even sometimes is received after another socket is established
+				{
+					if (joinInProgress == joinId)
+					{
+						EditorUi.debug('P2PCollab: joinInProgress in close on', ws.joinId);
+						joinInProgress = false;	
+					}
+					
+					if (!rejoinCalled)
+					{
+						EditorUi.debug('P2PCollab: calling rejoin on', ws.joinId);
+						rejoinCalled = true;
+						this.joinFile(true);
+					}
+				}
+
+				sync.file.fireEvent(new mxEventObject('realtimeStateChanged'));
+			}));
+
+			ws.addEventListener('error', mxUtils.bind(this, function(event)
+			{
+				EditorUi.debug('P2PCollab: WebSocket error, reconnecting', event);
+				EditorUi.debug('P2PCollab: error socket on', ws.joinId);
+
+				if (!destroyed && joinId == ws.joinId) //Sometimes, a delayed even sometimes is received after another socket is established
+				{
+					if (joinInProgress == joinId)
+					{
+						EditorUi.debug('P2PCollab: joinInProgress in error on', ws.joinId);
+						joinInProgress = false;	
+					}
+					
+					if (!rejoinCalled)
+					{
+						EditorUi.debug('P2PCollab: calling rejoin on', ws.joinId);
+						rejoinCalled = true;
+						this.joinFile(true);
+					}
+				}
+
+				sync.file.fireEvent(new mxEventObject('realtimeStateChanged'));
+			}));
+
+			sync.file.fireEvent(new mxEventObject('realtimeStateChanged'));
 		}
-		catch(e) 
+		catch (e)
 		{
-			EditorUi.debug('P2PCollab: closing socket error', e);
-		} //Ignore
-		
-		var ws = new WebSocket('wss://p2p-collab-test.jgraph.workers.dev/?id=' + channelId);
-		
-	  	ws.addEventListener("open", function(event)
-	  	{
-			socket = ws;
-			socket.joinId = joinInProgress;
-			joinInProgress = false;
-			EditorUi.debug('P2PCollab: open socket', socket.joinId);
-			
-			if (callback)
-			{
-				callback(); //TODO delay until join is done?
-			}
-	  	});
-	
-	  	ws.addEventListener("message", mxUtils.bind(this, function(event)
-	  	{
-			if (!NO_P2P)
-			{
-				EditorUi.debug('P2PCollab: msg received', event);
-			}
-
-		    var data = JSON.parse(event.data);
-			
-			if (NO_P2P && data.action != 'message')
-			{
-				EditorUi.debug('P2PCollab: msg received', event);
-			}
-
-			switch (data.action)
-			{
-				case 'message':
-					processMsg(data.msg, data.from);
-				break;
-				case 'clientsList':
-					clientsList(data.msg);
-				break;
-				case 'signal':
-					signal(data.msg);
-				break;
-				case 'newClient':
-					newClient(data.msg);
-				break;
-				case 'clientLeft':
-					clientLeft(data.msg);
-				break;
-				case 'sendSignalFailed':
-					sendSignalFailed(data.msg);
-				break;
-			}
-	  	}));
-
-		var rejoinCalled = false;
-				
-	  	ws.addEventListener("close", mxUtils.bind(this, function(event)
-		{
-			EditorUi.debug('P2PCollab: WebSocket closed', ws.joinId, 'reconnecting', event.code, event.reason);
-			EditorUi.debug('P2PCollab: closing socket on', ws.joinId);
-
-		    if (!destroyed && event.code != 1000 && joinId == ws.joinId) //Sometimes, a delayed even sometimes is received after another socket is established
-			{
-				if (joinInProgress == joinId)
-				{
-					EditorUi.debug('P2PCollab: joinInProgress in close on', ws.joinId);
-					joinInProgress = false;	
-				}
-				
-				if (!rejoinCalled)
-				{
-					EditorUi.debug('P2PCollab: calling rejoin on', ws.joinId);
-					rejoinCalled = true;
-
-					if (onError)
-					{
-						onError();
-					}
-
-					this.joinFile(channelId, callback, onError);	
-				}
-			}
-	  	}));
-
-	  	ws.addEventListener("error", mxUtils.bind(this, function(event)
-		{
-	    	EditorUi.debug('P2PCollab: WebSocket error, reconnecting', event);
-			EditorUi.debug('P2PCollab: error socket on', ws.joinId);
-
-			if (!destroyed && joinId == ws.joinId) //Sometimes, a delayed even sometimes is received after another socket is established
-			{
-				if (joinInProgress == joinId)
-				{
-					EditorUi.debug('P2PCollab: joinInProgress in error on', ws.joinId);
-					joinInProgress = false;	
-				}
-				
-				if (!rejoinCalled)
-				{
-					EditorUi.debug('P2PCollab: calling rejoin on', ws.joinId);
-					rejoinCalled = true;
-
-					if (onError)
-					{
-						onError();
-					}
-
-					this.joinFile(channelId, callback, onError);
-				}
-			}
-	  	}));
+			lastError = e;
+			sync.file.fireEvent(new mxEventObject('realtimeStateChanged'));
+		}
 	};
 
 	function removeConnectedUserUi(sessionId)
@@ -680,7 +711,10 @@ function P2PCollab(ui, sync)
 
 			for (var id in selection)
 			{
-				selection[id].destroy();
+				if (selection[id] != null)
+				{
+					selection[id].destroy();
+				}
 			}
 
 			if (user.cursor != null && user.cursor.parentNode != null)
@@ -721,12 +755,13 @@ function P2PCollab(ui, sync)
 			ui.removeListener(this.shareCursorPositionListener);
 		}
 
-		if (this.scrollHandler != null)
+		if (this.cursorHandler != null)
 		{
-			mxEvent.removeListener(graph.container, 'scroll', this.scrollHandler);
-			graph.getView().removeListener(mxEvent.SCALE, this.scrollHandler);
-			graph.getView().removeListener(mxEvent.TRANSLATE, this.scrollHandler);
-			graph.getView().removeListener(mxEvent.SCALE_AND_TRANSLATE, this.scrollHandler);
+			mxEvent.removeListener(graph.container, 'scroll', this.cursorHandler);
+			graph.getView().removeListener(mxEvent.SCALE, this.cursorHandler);
+			graph.getView().removeListener(mxEvent.TRANSLATE, this.cursorHandler);
+			graph.getView().removeListener(mxEvent.SCALE_AND_TRANSLATE, this.cursorHandler);
+			ui.editor.removeListener('pageSelected', this.cursorHandler);
 		}
 
 		//Close the socket
@@ -739,7 +774,12 @@ function P2PCollab(ui, sync)
 		//Close P2P sockets
 		for (var id in p2pClients)
 		{
-			p2pClients[id].destroy();
+			if (p2pClients[id] != null)
+			{
+				p2pClients[id].destroy();
+			}
 		}
+
+		sync.file.fireEvent(new mxEventObject('realtimeStateChanged'));
 	};
 };

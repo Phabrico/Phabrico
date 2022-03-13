@@ -675,6 +675,56 @@ EditorUi.initMinimalTheme = function()
         	if (elt.style.display != 'none')
         	{
         		elt.style.display = 'inline-block';
+
+				var file = this.getCurrentFile();
+	
+				if (file != null && file.isRealtimeEnabled() && file.isRealtimeSupported())
+				{
+					var icon = document.createElement('img');
+					icon.setAttribute('border', '0');
+					icon.style.position = 'absolute';
+					icon.style.left = '18px';
+					icon.style.top = '2px';
+					icon.style.width = '12px';
+					icon.style.height = '12px';
+					icon.style.cursor = 'default';
+
+					var err = file.getRealtimeError();
+					var state = file.getRealtimeState();
+					var status = mxResources.get('realtimeCollaboration');
+
+					if (state == 1)
+					{
+						icon.src = Editor.syncImage;
+						status += ' (' + mxResources.get('online') + ')';
+					}
+					else
+					{
+						icon.src = Editor.syncProblemImage;
+
+						if (err != null && err.message != null)
+						{
+							status += ' (' + err.message + ')';
+						}
+						else
+						{
+							status += ' (' + mxResources.get('disconnected') + ')';
+						}
+					}
+
+					mxEvent.addListener(icon, 'click', mxUtils.bind(this, function(evt)
+					{
+						this.showError(mxResources.get('realtimeCollaboration'),
+							mxUtils.htmlEntities(state == 1 ? mxResources.get('online') :
+								((err != null && err.message != null) ?
+								err.message : mxResources.get('disconnected'))));
+						mxEvent.consume(evt);
+					}));
+		
+					icon.setAttribute('title', status);
+					elt.style.paddingRight = '4px';
+					elt.appendChild(icon);
+				}
         	}
 		}
     };
@@ -1182,7 +1232,7 @@ EditorUi.initMinimalTheme = function()
 
 			if (file != null && file.constructor == DriveFile)
 			{
-				ui.menus.addMenuItems(menu, ['save', 'makeCopy', '-', 'rename', 'moveToFolder'], parent);
+				ui.menus.addMenuItems(menu, ['save', 'rename', 'makeCopy', 'moveToFolder'], parent);
 			}
 			else
 			{
@@ -1200,26 +1250,30 @@ EditorUi.initMinimalTheme = function()
 					ui.menus.addMenuItems(menu, ['makeCopy'], parent);
 				}
 			}
-			
-			ui.menus.addMenuItems(menu, ['-', 'autosave'], parent);
+
+			menu.addSeparator(parent);
 
 			if (file != null)
 			{
 				if (file.isRevisionHistorySupported())
 				{
-					ui.menus.addMenuItems(menu, ['-', 'revisionHistory'], parent);
+					ui.menus.addMenuItems(menu, ['revisionHistory'], parent);
 				}
-
-				menu.addSeparator(parent);
 
 				if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
 					file.constructor != LocalFile)
 				{
 					ui.menus.addMenuItems(menu, ['synchronize'], parent);
 				}
-				
+			}
+			ui.menus.addMenuItems(menu, ['autosave'], parent);
+
+			if (file != null)
+			{
+				menu.addSeparator(parent);
+
 				if (graph.isEnabled() && graph.isSelectionEmpty() &&
-					DrawioFile.ENABLE_FAST_SYNC && file.isFastSync())
+					file.isRealtimeEnabled() && file.isRealtimeSupported())
 				{
 					this.addMenuItems(menu, ['shareCursor'], parent);
 				}
@@ -1234,8 +1288,9 @@ EditorUi.initMinimalTheme = function()
 					var filename = (file.getTitle() != null) ?
 						file.getTitle() : ui.defaultFilename;
 					
-					if (!/(\.html)$/i.test(filename) &&
-						!/(\.svg)$/i.test(filename))
+					if ((file.constructor == DriveFile && file.sync != null &&
+						file.sync.isConnected()) || (!/(\.html)$/i.test(filename) &&
+						!/(\.svg)$/i.test(filename)))
 					{
 						this.addMenuItems(menu, ['-', 'properties'], parent);
 					}
@@ -1302,7 +1357,7 @@ EditorUi.initMinimalTheme = function()
 						}
 						
 						if (graph.isEnabled() && graph.isSelectionEmpty() &&
-							DrawioFile.ENABLE_FAST_SYNC && file.isFastSync())
+							file.isRealtimeEnabled() && file.isRealtimeSupported())
 						{
 							this.addMenuItems(menu, ['shareCursor'], parent);
 						}
@@ -2579,6 +2634,7 @@ EditorUi.initMinimalTheme = function()
 				pageMenu.style.padding = '6px';
 				pageMenu.style.textOverflow = 'ellipsis';
 				pageMenu.style.opacity = '0.8';
+				footer.appendChild(pageMenu);
 
 				function updatePageName()
 				{
@@ -2587,21 +2643,23 @@ EditorUi.initMinimalTheme = function()
 					if (ui.currentPage != null)
 					{
 						mxUtils.write(pageMenu, ui.currentPage.getName());
+						var n = (ui.pages != null) ? ui.pages.length : 1;
+						var idx = ui.getPageIndex(ui.currentPage);
+						idx = (idx != null) ? idx + 1 : 1;
+						var id = ui.currentPage.getId();
+						pageMenu.setAttribute('title', ui.currentPage.getName() +
+							' (' + idx + '/' + n + ')' + ((id != null) ?
+							' [' + id + ']' : ''));
 					}
 				};
 
+				ui.editor.addListener('pagesPatched', updatePageName);
 				ui.editor.addListener('pageSelected', updatePageName);
 				ui.editor.addListener('pageRenamed', updatePageName);
 				ui.editor.addListener('fileLoaded', updatePageName);
 				updatePageName();
-
-				if (ui.currentPage != null)
-				{
-					mxUtils.write(elt, ui.currentPage.getName());
-				}
-
-				footer.appendChild(pageMenu);
-
+				
+				// Page menu only visible for multiple pages
 				function pagesVisibleChanged()
 				{
 					pageMenu.style.display = ui.pages != null &&
@@ -2609,12 +2667,11 @@ EditorUi.initMinimalTheme = function()
 						Editor.pagesVisible) ? 'inline-block' : 'none';
 				};
 
-				// Page menu only visible for multiple pages
 				ui.addListener('fileDescriptorChanged', pagesVisibleChanged);
 				ui.addListener('pagesVisibleChanged', pagesVisibleChanged);
+				ui.editor.addListener('pagesPatched', pagesVisibleChanged);
 				pagesVisibleChanged();
 				
-	
 				var zoomOutElt = addMenuItem('', zoomOutAction.funct, true, mxResources.get('zoomOut') +
 					' (' + Editor.ctrlKey + ' -/Alt+Mousewheel)', zoomOutAction, Editor.zoomOutImage);
 				footer.appendChild(zoomOutElt);

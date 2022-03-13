@@ -2365,6 +2365,21 @@ function phrictionCorrectButtonLocations() {
             }
         });
     }
+
+    // make sure the image-locator is not larger than the image itself
+    var imageLocators = Array.prototype.slice.call(document.querySelectorAll('.image-locator'), 0)
+                             .map(function(imgLocator) { 
+                                return { 
+                                    locator: imgLocator,
+                                    image: imgLocator.querySelector('img')
+                                }
+                            });
+    var imageLocatorsToBeResized = imageLocators.filter(function(imgLocator) { 
+        return parseInt(imgLocator.locator.style.width) > imgLocator.image.width;
+    });
+    imageLocatorsToBeResized.forEach(function(imgLocator) {
+	     imgLocator.locator.style.width = imgLocator.image.width + "px";
+    })
 }
 
 function postForm(form, url)

@@ -833,6 +833,12 @@ msgstr "Descărcați etichetele de proiect și subabonații pentru toate documen
 msgid "Force download all Phriction metadata"
 msgstr "Forțați descărcarea tuturor metadatelor Phriction"
 
+msgid "Automatic close action menu"
+msgstr "Meniu de oprire automată"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "Închide automat meniul atunci când indicatorul mouse-ului se îndepărtează"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Blocat: modificările locale nu vor fi încărcate în timpul sincronizării"
 

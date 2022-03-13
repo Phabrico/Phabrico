@@ -833,6 +833,12 @@ msgstr "Hent projekttags og undertegnede for alle Phriction-dokumenter"
 msgid "Force download all Phriction metadata"
 msgstr "Tvinge download af alle Phriction-metadata"
 
+msgid "Automatic close action menu"
+msgstr "Automatisk nedlukningsmenu"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "Automatisk lukning af menuen, når musemarkøren svæver væk"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Frosset: lokale ændringer vil ikke blive uploadet under synkroniseringen"
 

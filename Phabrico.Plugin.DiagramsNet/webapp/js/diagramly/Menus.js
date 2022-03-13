@@ -213,7 +213,7 @@
 			var file = editorUi.getCurrentFile();
 
 			if (graph.isEnabled() && urlParams['embed'] != '1' && graph.isSelectionEmpty() &&
-				DrawioFile.ENABLE_FAST_SYNC && file != null && file.isFastSync())
+				file != null && file.isRealtimeEnabled() && file.isRealtimeSupported())
 			{
 				this.addMenuItems(menu, ['-', 'shareCursor'], null, evt);
 			}
@@ -321,7 +321,8 @@
 				{
 					if (this.freehandWindow == null)
 					{
-						this.freehandWindow = new FreehandWindow(editorUi, document.body.offsetWidth - 420, 102, 176, 84);
+						var withBrush = !mxClient.IS_IE && !mxClient.IS_IE11;
+						this.freehandWindow = new FreehandWindow(editorUi, document.body.offsetWidth - 420, 102, 176, withBrush? 120 : 84, withBrush);
 					}
 					
 					if (graph.freehand.isDrawing())
@@ -435,7 +436,7 @@
 				editorUi.showDialog(new PrintDialog(editorUi, mxResources.get('formatPdf')).container, 360,
 						(editorUi.pages != null && editorUi.pages.length > 1 && (editorUi.editor.editable ||
 						urlParams['hide-pages'] != '1')) ?
-						450 : 370, true, true);
+						470 : 390, true, true);
 			}
 			else
 			{
@@ -786,7 +787,7 @@
 				};
 	
 				var dlg = new BackgroundImageDialog(editorUi, apply);
-				editorUi.showDialog(dlg.container, 320, 170, true, true);
+				editorUi.showDialog(dlg.container, 400, 170, true, true);
 				dlg.init();
 			}
 		}));
@@ -1664,7 +1665,7 @@
 			mxResources.parse('createSidebarEntry=Create Sidebar Entry');
 			mxResources.parse('testCheckFile=Check File');
 			mxResources.parse('testDiff=Diff/Sync');
-			mxResources.parse('testInspectOwnPages=Check Own Pages');
+			mxResources.parse('testInspectPages=Check Pages');
 			mxResources.parse('testInspect=Inspect');
 			mxResources.parse('testShowConsole=Show Console');
 			mxResources.parse('testXmlImageExport=XML Image Export');
@@ -1871,7 +1872,8 @@
 					{
 						snapshot = editorUi.getPagesForNode(mxUtils.parseXml(
 							editorUi.getFileData(true)).documentElement);
-						dlg.textarea.value = 'Snapshot updated ' + new Date().toLocaleString();
+						dlg.textarea.value = 'Snapshot updated ' + new Date().toLocaleString() +
+							' Checksum ' + editorUi.getHashValueForPages(snapshot);
 					}], ['Diff', function(evt, input)
 					{
 						try
@@ -1909,7 +1911,8 @@
 					{
 						snapshot = editorUi.getPagesForNode(mxUtils.parseXml(
 							editorUi.getFileData(true)).documentElement);
-						dlg.textarea.value = 'Snapshot created ' + new Date().toLocaleString();
+						dlg.textarea.value = 'Snapshot created ' + new Date().toLocaleString() +
+							' Checksum ' + editorUi.getHashValueForPages(snapshot);
 					}
 					else
 					{
@@ -1926,7 +1929,7 @@
 				}
 			}));
 
-			editorUi.actions.addAction('testInspectOwnPages', mxUtils.bind(this, function()
+			editorUi.actions.addAction('testInspectPages', mxUtils.bind(this, function()
 			{
 				var file = editorUi.getCurrentFile();
 
@@ -1934,14 +1937,43 @@
 
 				if (file != null && file.ownPages != null)
 				{
+					console.log('Checksum ownPages: ' +
+						editorUi.getHashValueForPages(
+							file.ownPages));
+
 					if (file.shadowPages != null)
 					{
-						console.log('diff ownPages/shadowPages', editorUi.diffPages(file.ownPages, file.shadowPages));
+						console.log('Checksum shadowPages: ' +
+							editorUi.getHashValueForPages(
+								file.shadowPages));
+						console.log('diff ownPages/shadowPages',
+							editorUi.diffPages(file.ownPages,
+								file.shadowPages));
+					}
+
+					if (file.snapshot != null)
+					{
+						var pages = editorUi.getPagesForNode(file.snapshot);
+						console.log('Checksum snapshot: ' +
+							editorUi.getHashValueForPages(pages));
+						console.log('diff ownPages/snapshot',
+							editorUi.diffPages(file.ownPages, pages));
+
+						if (editorUi.pages != null)
+						{
+							console.log('diff snapshot/actualPages',
+								editorUi.diffPages(pages, editorUi.pages));
+						}
 					}
 
 					if (editorUi.pages != null)
 					{
-						console.log('diff ownPages/actualPages', editorUi.diffPages(file.ownPages, editorUi.pages));
+						console.log('Checksum actualPages: ' +
+							editorUi.getHashValueForPages(
+								editorUi.pages));
+						console.log('diff ownPages/actualPages',
+							editorUi.diffPages(file.ownPages,
+								editorUi.pages));
 					}
 				}
 			}));
@@ -2024,7 +2056,7 @@
 			this.put('testDevelop', new Menu(mxUtils.bind(this, function(menu, parent)
 			{
 				this.addMenuItems(menu, ['createSidebarEntry', 'showBoundingBox', '-',
-					'testInspectOwnPages', 'testCheckFile', 'testDiff', '-',
+					'testInspectPages', 'testCheckFile', 'testDiff', '-',
 					'testInspect', '-', 'testXmlImageExport', '-',
 					'testShowConsole'], parent);
 			})));
@@ -2690,15 +2722,6 @@
 				}, parent);
 			}
 
-			if (editorUi.notion != null)
-			{
-				menu.addSeparator(parent);
-				menu.addItem(mxResources.get('notion') + '...', null, function()
-				{
-					pickFileFromService(editorUi.notion);
-				}, parent);
-			}
-
 			if (editorUi.trello != null)
 			{
 				menu.addItem(mxResources.get('trello') + '...', null, function()
@@ -3320,15 +3343,6 @@
 				}, parent);
 			}
 
-			if (editorUi.notion != null)
-			{
-				menu.addSeparator(parent);
-				menu.addItem(mxResources.get('notion') + '...', null, function()
-				{
-					editorUi.pickFile(App.MODE_NOTION);
-				}, parent);
-			}
-
 			if (editorUi.trello != null)
 			{
 				menu.addItem(mxResources.get('trello') + '...', null, function()
@@ -3460,15 +3474,6 @@
 						editorUi.showLibraryDialog(null, null, null, null, App.MODE_GITLAB);
 					}, parent);
 				}
-				
-				if (editorUi.notion != null)
-				{
-					menu.addSeparator(parent);
-					menu.addItem(mxResources.get('notion') + '...', null, function()
-					{
-						editorUi.showLibraryDialog(null, null, null, null, App.MODE_NOTION);
-					}, parent);
-				}
 
 				if (editorUi.trello != null)
 				{
@@ -3570,15 +3575,6 @@
 					menu.addItem(mxResources.get('gitlab') + '...', null, function()
 					{
 						editorUi.pickLibrary(App.MODE_GITLAB);
-					}, parent);
-				}
-				
-				if (editorUi.notion != null)
-				{
-					menu.addSeparator(parent);
-					menu.addItem(mxResources.get('notion') + '...', null, function()
-					{
-						editorUi.pickLibrary(App.MODE_NOTION);
 					}, parent);
 				}
 
@@ -3831,17 +3827,12 @@
 
 			this.addMenuItems(menu, ['copyConnect', 'collapseExpand', '-'], parent);
 			
-			if (urlParams['embed'] != '1' && (isLocalStorage || mxClient.IS_CHROMEAPP))
-			{
-				this.addMenuItems(menu, ['showStartScreen'], parent);
-			}
-
 			if (urlParams['embed'] != '1')
 			{
 				var file = editorUi.getCurrentFile();
 
 				if (graph.isEnabled() && graph.isSelectionEmpty() && file != null &&
-					DrawioFile.ENABLE_FAST_SYNC && file.isFastSync())
+					file.isRealtimeEnabled() && file.isRealtimeSupported())
 				{
 					this.addMenuItems(menu, ['shareCursor'], parent);
 				}
@@ -3863,7 +3854,14 @@
 				this.addMenuItems(menu, ['diagramLanguage']);
 			}
 			
-			this.addMenuItems(menu, ['-', 'configuration'], parent);
+			menu.addSeparator(parent);
+
+			if (urlParams['embed'] != '1' && (isLocalStorage || mxClient.IS_CHROMEAPP))
+			{
+				this.addMenuItems(menu, ['showStartScreen'], parent);
+			}
+
+			this.addMenuItems(menu, ['configuration'], parent);
 			
 			// Adds trailing separator in case new plugin entries are added
 			menu.addSeparator(parent);
@@ -4074,8 +4072,9 @@
 					var filename = (file.getTitle() != null) ?
 						file.getTitle() : editorUi.defaultFilename;
 					
-					if (!/(\.html)$/i.test(filename) &&
-						!/(\.svg)$/i.test(filename))
+					if ((file.constructor == DriveFile && file.sync != null &&
+						file.sync.isConnected()) || (!/(\.html)$/i.test(filename) &&
+						!/(\.svg)$/i.test(filename)))
 					{
 						this.addMenuItems(menu, ['-', 'properties']);
 					}

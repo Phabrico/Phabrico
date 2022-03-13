@@ -8,7 +8,7 @@ When you click on the Save button(1) in the top right corner, the diagram will b
 This PNG file contains some metadata which allows you to edit diagram afterwards again.
 If you upload the file to Phabricator, Phabricator will still see the file as an ordinary PNG file.
 
-The name of the diagram can be found at the top left (1).
+The name of the diagram can be found at the top left (2).
 The name is formatted as "F" + a number (e.g.  F-3).
 If this number is a negative number, then the diagram was edited or created in Phabrico.
 If it is a positive number, then the diagram has not been edited yet in Phabrico.

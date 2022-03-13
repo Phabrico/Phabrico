@@ -602,6 +602,18 @@
     </script>
     <!--<![endif]-->
 
+    <script>
+        var goToDiagramsGithub = function () {
+            if (event.ctrlKey == false) {
+                window.content.postMessage({
+                    event: "goToDiagramsGithub"
+                }, "*");
+            }
+
+            event.preventDefault();
+            return false;
+        }
+    </script>
     <div class="geEditor">
         <div id="geInfo">
             <div class="geBlock" style="text-align:center;min-width:50%;">

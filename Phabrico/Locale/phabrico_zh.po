@@ -833,6 +833,12 @@ msgstr "下载所有维基文档的项目标签和订阅者"
 msgid "Force download all Phriction metadata"
 msgstr "强制下载所有维基元数据"
 
+msgid "Automatic close action menu"
+msgstr "自动关闭动作菜单"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "当鼠标指针悬停在远处时自动关闭菜单"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "冻结：在同步过程中，本地修改将不会被上传"
 

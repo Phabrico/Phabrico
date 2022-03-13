@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <ComponentGroup Id="PluginJSPaintImageEditorComponents" Directory="INSTALLDIR">
+        <Component Id="jspaintimageeditor_Phabrico_Plugin_JSPaintImageEditor_dll" Guid="$(var.PluginJSPaintImageEditorGUID)"
+                   Win64="yes">
+            <RemoveFile Id="removefile_jspaintimageeditor_Phabrico_Plugin_JSPaintImageEditor_dll"
+                        Name="Phabrico.Plugin.JSPaintImageEditor.dll"
+                        On="install" />
+
+            <File Id="file_jspaintimageeditor_Phabrico_Plugin_JSPaintImageEditor_dll"
+                  Source="$(var.Phabrico.Plugin.JSPaintImageEditor.TargetDir)Phabrico.Plugin.JSPaintImageEditor.dll"
+                  KeyPath="yes" />
+            <ServiceControl Id="StartServiceForJSPaintImageEditor"
+                            Name="Phabrico"
+                            Start="install"
+                            Stop="install"
+                            Wait="yes" />
+        </Component>
+        <Component Id="jspaintimageeditor_Phabrico_Plugin_JSPaintImageEditor_pdb" Guid="ce4b6696-d6e7-4c89-91b7-2a6d2ee34890"
+                   Win64="yes">
+            <RemoveFile Id="removefile_jspaintimageeditor_Phabrico_Plugin_JSPaintImageEditor_pdb"
+                        Name="Phabrico.Plugin.JSPaintImageEditor.pdb"
+                        On="install" />
+
+            <File Id="file_jspaintimageeditor_Phabrico_Plugin_JSPaintImageEditor_pdb"
+                  Source="$(var.Phabrico.Plugin.JSPaintImageEditor.TargetDir)Phabrico.Plugin.JSPaintImageEditor.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+    </ComponentGroup>
+</Include>

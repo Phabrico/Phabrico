@@ -146,10 +146,18 @@ namespace Phabrico.Controllers
                         {
                             fileObjectResponse = new Http.Response.File(file.DataStream, file.ContentType, file.FileName, file.FontAwesomeIcon != null);
 
-                            if (file.ContentType.Equals("image/drawio"))
+                            if (file.ContentType.StartsWith("image/"))
                             {
-                                fileObjectResponse.EnableBrowserCache = false;  // diagram drawing can be edited and should not be cached by browser
-                                keepFilename = true;
+                                if (file.ContentType.Equals("image/drawio"))
+                                {
+                                    fileObjectResponse.EnableBrowserCache = false;  // diagram drawing can be edited and should not be cached by browser
+                                    keepFilename = true;
+                                }
+                                else
+                                if (file.Token.StartsWith("PHID-NEWTOKEN-"))
+                                {
+                                    fileObjectResponse.EnableBrowserCache = false;  // image can be edited and should not be cached by browser
+                                }
                             }
 
                             if (keepFilename)

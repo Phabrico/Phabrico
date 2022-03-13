@@ -35,4 +35,4 @@ With the PUSH button in the top right corner you can push the local commit to yo
 Local commits and modifications can be undone by means of the *Undo* buttons. 
 
 
-[Index](../README.md) | [Previous Page](../10-Diagrams/README.md)
+[Index](../README.md) | [Previous Page](../10-Diagrams/README.md) |  [Next page](../12-JSPaint/README.md)

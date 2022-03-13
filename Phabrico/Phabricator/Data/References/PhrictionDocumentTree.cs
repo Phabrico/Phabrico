@@ -67,16 +67,48 @@ namespace Phabrico.Data.References
                         html += string.Format("<span><a href='{0}'>{1}</a></span>", url, description);
                         html += "<ul class='phui-document-hierarchy-item'>";
 
-                        foreach (PhrictionDocumentTree grandchildHierarchy in childHierarchy.OrderBy(grandchild => grandchild.Data))
+                        foreach (PhrictionDocumentTree grandchildHierarchy in childHierarchy.OrderBy(child => child.Data))
                         {
-                            url = GetURL(grandchildHierarchy.Data).ToString();
-                            description = GetDescription(grandchildHierarchy.Data).ToString();
-                            if (string.IsNullOrWhiteSpace(description))
+                            html += "<li>";
+
+                            if (grandchildHierarchy.Any())
                             {
-                                description = url;
+                                url = GetURL(grandchildHierarchy.Data).ToString();
+                                description = GetDescription(grandchildHierarchy.Data).ToString();
+                                if (string.IsNullOrWhiteSpace(description))
+                                {
+                                    description = url;
+                                }
+
+                                html += string.Format("<span><a href='{0}'>{1}</a></span>", url, description);
+                                html += "<ul class='phui-document-hierarchy-item'>";
+                                foreach (PhrictionDocumentTree greatgrandchildHierarchy in grandchildHierarchy.OrderBy(grandchild => grandchild.Data))
+                                {
+                                    url = GetURL(greatgrandchildHierarchy.Data).ToString();
+                                    description = GetDescription(greatgrandchildHierarchy.Data).ToString();
+                                    if (string.IsNullOrWhiteSpace(description))
+                                    {
+                                        description = url;
+                                    }
+
+                                    html += string.Format("<li><a href='{0}'>{1}</a></li>", url, description);
+                                }
+
+                                html += "</ul>";
+                            }
+                            else
+                            {
+                                url = GetURL(grandchildHierarchy.Data).ToString();
+                                description = GetDescription(grandchildHierarchy.Data).ToString();
+                                if (string.IsNullOrWhiteSpace(description))
+                                {
+                                    description = url;
+                                }
+
+                                html += string.Format("<a href='{0}'>{1}</a>", url, description);
                             }
 
-                            html += string.Format("<li><a href='{0}'>{1}</a></li>", url, description);
+                            html += "</li>";
                         }
 
                         html += "</ul>";

@@ -498,8 +498,9 @@ namespace Phabrico.Storage
         /// <param name="database"></param>
         /// <param name="browser"></param>
         /// <param name="key"></param>
+        /// <param name="depthLevel"></param>
         /// <returns></returns>
-        public PhrictionDocumentTree GetHierarchy(Database database, Http.Browser browser, string key)
+        public PhrictionDocumentTree GetHierarchy(Database database, Http.Browser browser, string key, int depthLevel = 2)
         {
             PhrictionDocumentTree result = new PhrictionDocumentTree();
 
@@ -520,21 +521,44 @@ namespace Phabrico.Storage
                 childTree.Data = childDocument;
                 result.Add(childTree);
 
-                foreach (string grandchildToken in database.GetUnderlyingTokens(childToken, "WIKI", browser))
+                if (depthLevel > 1)
                 {
-                    Phabricator.Data.Phriction grandchildDocument = Get(database, grandchildToken, browser.Session.Locale);
-                    if (string.IsNullOrEmpty(grandchildDocument.Content))
+                    foreach (string grandchildToken in database.GetUnderlyingTokens(childToken, "WIKI", browser))
                     {
-                        if (database.GetUnderlyingTokens(grandchildDocument.Token, "WIKI", browser).Any() == false)
+                        Phabricator.Data.Phriction grandchildDocument = Get(database, grandchildToken, browser.Session.Locale);
+                        if (string.IsNullOrEmpty(grandchildDocument.Content))
                         {
-                            continue;
+                            if (database.GetUnderlyingTokens(grandchildDocument.Token, "WIKI", browser).Any() == false)
+                            {
+                                continue;
+                            }
+                        }
+                        if (browser.HttpServer.ValidUserRoles(database, browser, grandchildDocument) == false) continue;
+
+                        PhrictionDocumentTree grandchildTree = new PhrictionDocumentTree();
+                        grandchildTree.Data = grandchildDocument;
+                        childTree.Add(grandchildTree);
+
+                        if (depthLevel > 2)
+                        {
+                            foreach (string greatgrandchildToken in database.GetUnderlyingTokens(grandchildToken, "WIKI", browser))
+                            {
+                                Phabricator.Data.Phriction greatgrandchildDocument = Get(database, greatgrandchildToken, browser.Session.Locale);
+                                if (string.IsNullOrEmpty(greatgrandchildDocument.Content))
+                                {
+                                    if (database.GetUnderlyingTokens(greatgrandchildDocument.Token, "WIKI", browser).Any() == false)
+                                    {
+                                        continue;
+                                    }
+                                }
+                                if (browser.HttpServer.ValidUserRoles(database, browser, greatgrandchildDocument) == false) continue;
+
+                                PhrictionDocumentTree greatgrandchildTree = new PhrictionDocumentTree();
+                                greatgrandchildTree.Data = greatgrandchildDocument;
+                                grandchildTree.Add(greatgrandchildTree);
+                            }
                         }
                     }
-                    if (browser.HttpServer.ValidUserRoles(database, browser, grandchildDocument) == false) continue;
-
-                    PhrictionDocumentTree grandchildTree = new PhrictionDocumentTree();
-                    grandchildTree.Data = grandchildDocument;
-                    childTree.Add(grandchildTree);
                 }
             }
 

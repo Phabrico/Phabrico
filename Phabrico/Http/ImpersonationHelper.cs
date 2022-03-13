@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Phabrico.Http
 {
@@ -217,6 +218,17 @@ namespace Phabrico.Http
         public extern static bool DuplicateTokenEx(IntPtr existingToken, uint desiredAccess, IntPtr tokenAttributes, SECURITY_IMPERSONATION_LEVEL impersonationLevel, TOKEN_TYPE tokenType, out IntPtr newToken);
 
         /// <summary>
+        /// Expands the source string by using the environment block established for the specified user.
+        /// </summary>
+        /// <param name="hToken">Token for the user, returned from the LogonUser, CreateRestrictedToken, DuplicateToken, OpenProcessToken, or OpenThreadToken function. The token must have TOKEN_IMPERSONATE and TOKEN_QUERY access</param>
+        /// <param name="lpSrc">Pointer to the null-terminated source string to be expanded</param>
+        /// <param name="lpDest">Pointer to a buffer that receives the expanded strings</param>
+        /// <param name="dwSize">Specifies the size of the lpDest buffer, in TCHARs.</param>
+        /// <returns></returns>
+        [DllImport("userenv.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern bool ExpandEnvironmentStringsForUser(IntPtr hToken, string lpSrc, IntPtr lpBuffer, uint nSize);
+
+        /// <summary>
         /// Retrieves a list of sessions on a Remote Desktop Session Host (RD Session Host) server.
         /// </summary>
         /// <param name="hServer">handle to the RD Session Host server</param>
@@ -243,6 +255,32 @@ namespace Phabrico.Http
         /// <returns>Non-zero if success</returns>
         [DllImport("wtsapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern bool WTSQueryUserToken(int sessionId, out IntPtr tokenHandle);
+
+        /// <summary>
+        /// When using impersonation, the environment variables block is not copied with it.
+        /// This procedure will copy a single environment value from the impersonated session to the 
+        /// </summary>
+        /// <param name="primaryToken">Pointer to impersonated session</param>
+        /// <param name="environmentVariableName">Name of environment variable to copy</param>
+        /// <param name="originalenvironmentVariableValue">Original environment variable value</param>
+        /// <returns></returns>
+        public static bool CopyEnvironmentVariableToImpersonatedSession(IntPtr primaryToken, string environmentVariableName, out string originalenvironmentVariableValue)
+        {
+            uint nSize = 1000;
+            IntPtr lpBuffer = Marshal.AllocHGlobal((int)nSize);
+            if (ExpandEnvironmentStringsForUser(primaryToken, "%" + environmentVariableName + "%", lpBuffer, nSize) == false)
+            {
+                originalenvironmentVariableValue = null;
+                return false;
+            }
+
+            originalenvironmentVariableValue = Environment.GetEnvironmentVariable(environmentVariableName);
+
+            string environmentVariableValue = Marshal.PtrToStringUni(lpBuffer);
+            Environment.SetEnvironmentVariable(environmentVariableName, environmentVariableValue);
+
+            return true;
+        }
 
         /// <summary>
         /// Returns the token of the user currently logged on on WinSta0
@@ -289,7 +327,7 @@ namespace Phabrico.Http
             {
                 return IntPtr.Zero;
             }
-
+            
             return primaryToken;
         }
     }

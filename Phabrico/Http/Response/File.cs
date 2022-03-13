@@ -34,7 +34,8 @@ namespace Phabrico.Http.Response
         /// <param name="httpServer"></param>
         /// <param name="browser"></param>
         /// <param name="url"></param>
-        public File(Server httpServer, Browser browser, string url) : base(httpServer, browser, url)
+        /// <param name="assembly"></param>
+        public File(Server httpServer, Browser browser, string url, Assembly assembly = null) : base(httpServer, browser, url)
         {
             // determine content-type
             ContentType = null;
@@ -65,18 +66,29 @@ namespace Phabrico.Http.Response
                                  .Split('?')
                                  .FirstOrDefault()
                                  .TrimEnd('.');
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string resourceName = string.Format("Phabrico.{0}", filePath);
-            resourceName = assembly.GetManifestResourceNames()
-                                   .FirstOrDefault(name => name.StartsWith(resourceName, System.StringComparison.OrdinalIgnoreCase)); // get case-sensitive correct name
-            if (resourceName == null)
+            Assembly[] assemblies = new Assembly[] {
+                assembly,
+                Assembly.GetExecutingAssembly(),
+                Assembly.GetCallingAssembly()
+            };
+
+            string resourceName = null;
+            foreach (Assembly assemblyToCheck in assemblies.Where(asm => asm != null))
             {
+                assembly = assemblyToCheck;
+
+                resourceName = string.Format("Phabrico.{0}", filePath);
+                resourceName = assembly.GetManifestResourceNames()
+                                       .FirstOrDefault(name => name.StartsWith(resourceName, System.StringComparison.OrdinalIgnoreCase)); // get case-sensitive correct name
+                if (resourceName != null) break;
+
                 // not found in Phabrico: search further in plugin code
-                assembly = Assembly.GetCallingAssembly();
                 resourceName = string.Format("Phabrico.Plugin.{0}", filePath);
 
                 resourceName = assembly.GetManifestResourceNames()
                                        .FirstOrDefault(name => name.StartsWith(resourceName, System.StringComparison.OrdinalIgnoreCase)); // get case-sensitive correct name
+
+                if (resourceName != null) break;
             }
 
             if (resourceName == null)

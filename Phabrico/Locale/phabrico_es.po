@@ -833,6 +833,12 @@ msgstr "Descargar las etiquetas del proyecto y los subcriptores de todos los doc
 msgid "Force download all Phriction metadata"
 msgstr "Forzar la descarga de todos los metadatos de Phriction"
 
+msgid "Automatic close action menu"
+msgstr "Menú de cierre automático"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "Cierra automáticamente el menú cuando el puntero del ratón se aleja"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Congelado: las modificaciones locales no se cargarán durante la sincronización"
 

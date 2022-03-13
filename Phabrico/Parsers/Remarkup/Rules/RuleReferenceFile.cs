@@ -545,7 +545,21 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     imgClass += " diagram";
                     btnEditImageHtml = string.Format("<a class='button' href='diagrams.net/F{0}{1}' onclick='javascript:sessionStorage[\"originURL\"] = document.location.href; return true;'>" +
                                                           "<span class='phui-font-fa fa-sitemap'></span>" +
-                                                     "</a>", 
+                                                     "</a>",
+                        isTranslatedImage ? "TRAN" : "",
+                        fileObject.ID);
+                }
+            }
+            else
+            if (fileObject.FileType == Phabricator.Data.File.FileStyle.Image)
+            {
+                if (Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.JSPaintImageEditor")))
+                {
+                    isEditable = true;
+                    imgClass += " editable-image";
+                    btnEditImageHtml = string.Format("<a class='button' href='JSPaintImageEditor/F{0}{1}' onclick='javascript:sessionStorage[\"originURL\"] = document.location.href; return true;'>" +
+                                                          "<span class='phui-font-fa fa-image'></span>" +
+                                                     "</a>",
                         isTranslatedImage ? "TRAN" : "",
                         fileObject.ID);
                 }

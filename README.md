@@ -33,6 +33,10 @@ It allows you to create and modify diagrams. The diagrams are saved as PNG image
 is a management system for local git repositories.
 It visualizes the state of all available local git repositories.
 
+## JSPaint Image Editor
+integrates the [JSPaint](https://jspaint.app/) functionality.
+It allows you to modify images.
+
 ## PhrictionToPDF
 allows you to convert a Phriction document (or including all the documents under this Phriction document) into a single PDF file.
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico", "Phabrico\Phabrico.csproj", "{76B94BE6-005E-44C7-911B-A155D007C982}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.PhrictionValidator", "Phabrico.Plugin.PhrictionValidator\Phabrico.Plugin.PhrictionValidator.csproj", "{FDB2C8E2-6241-460A-9F87-80A236E51AC4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.PhrictionTranslator", "Phabrico.Plugin.PhrictionTranslator\Phabrico.Plugin.PhrictionTranslator.csproj", "{B077D1D5-E109-4274-89A4-731FCD521DD9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.JSPaintImageEditor", "Phabrico.Plugin.JSPaintImageEditor\Phabrico.Plugin.JSPaintImageEditor.csproj", "{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -149,6 +151,18 @@ Global
 		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|x64.Build.0 = Release|Any CPU
 		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|x86.ActiveCfg = Release|Any CPU
 		{B077D1D5-E109-4274-89A4-731FCD521DD9}.Release|x86.Build.0 = Release|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Debug|x64.Build.0 = Debug|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Debug|x86.Build.0 = Debug|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|x64.ActiveCfg = Release|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|x64.Build.0 = Release|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|x86.ActiveCfg = Release|Any CPU
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -159,6 +173,7 @@ Global
 		{C9C64C86-1BF0-4991-AA99-12022761ABC3} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 		{FDB2C8E2-6241-460A-9F87-80A236E51AC4} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 		{B077D1D5-E109-4274-89A4-731FCD521DD9} = {E880A15A-096B-46D3-9188-5DB02C33696E}
+		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8CA4E2F5-1D04-44E3-8945-1ACEC09B246F}

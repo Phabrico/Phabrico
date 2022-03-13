@@ -1,0 +1,119 @@
+﻿<script>
+    var editor = document.baseURI + 'JSPaint/index.html?lang=' + document.body.dataset.locale;
+	var initial = null;
+	var name = null;
+
+	function edit(image)
+	{
+	    var iframe = document.createElement('iframe');
+	    iframe.setAttribute('title', 'JSPaint Image Editor');
+		iframe.setAttribute('frameborder', '0');
+		iframe.style.width = "100%";
+		iframe.style.height = "calc(100vh - 91px)";
+        iframe.style.marginTop = "50px";
+		iframe.style.marginBottom = "-16px";
+		iframe.addEventListener("load", function () {
+            iframe.contentWindow.postMessage({
+                event: "load",
+                data: "@@IMG-SRC-BASE64@@"
+            }, "*");
+        })
+
+		var receive = function(evt)
+		{
+			if (typeof evt.data != "undefined")
+			{
+				var msg = evt.data;
+
+				if (msg.event == 'save') {
+					saveImage(name, msg.data, iframe);
+				}
+				else if (msg.event == 'exit') {
+					var originURL = sessionStorage['originURL'];
+					if (originURL) {
+						sessionStorage.removeItem('originURL');
+						document.location.href = originURL;
+					}
+				}
+                else if (msg.event == 'goToJSPaintGithub') {
+					document.location = "https://github.com/1j01/jspaint";
+                }
+			}
+		};
+
+		window.addEventListener('message', receive);
+		iframe.setAttribute('src', editor);
+		document.querySelector('.phabrico-page-content').appendChild(iframe);
+		iframe.contentWindow.focus();
+	};
+
+	function saveImage(name, imageData, iframe)
+	{
+        var fileID = parseInt(
+                        document.location.pathname.split("/JSPaintImageEditor/")
+                                                  .reverse()[0]
+                                                  .substring("F".length)
+                     );
+	    var isStaged = fileID < 0;
+
+	    var data = new FormData();
+	    data.append('data', imageData);
+	    data.append('fileID', fileID);
+
+	    var xmlhttp = new XMLHttpRequest();
+	    xmlhttp.overrideMimeType("application/json");
+        xmlhttp.open('POST', "JSPaintImageEditor/save/", true);
+	    xmlhttp.onload = function () {
+	        if (xmlhttp.readyState == 4) {
+	            var errorMessage = null;
+	            try {
+	                var result = JSON.parse(xmlhttp.responseText);
+	                if (result.Status != "OK") {
+	                    errorMessage = result.Error;
+					} else {
+	                    iframe.contentWindow.postMessage(JSON.stringify({
+	                        action: 'status',
+	                        message: '', 
+	                        modified: false
+	                    }), '*');
+
+	                    if (isStaged == false) {
+                            document.location = document.baseURI + "JSPaintImageEditor/F" + result.FileToken;  // reload with new File-ID
+	                    }
+	                }
+	            } catch(exc) {
+	                errorMessage = exc.message;
+	            }
+	        }
+	    };
+	    xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+	    xmlhttp.send(data);
+	}
+
+	function start()
+	{
+		name = (window.location.hash.length > 1) ? window.location.hash.substring(1) : 'default';
+		var current = localStorage.getItem(name);
+
+		if (current != null)
+		{
+			var entry = JSON.parse(current);
+			document.getElementById('image').setAttribute('src', entry.data);
+		}
+		else
+		{
+			document.getElementById('image').setAttribute('src', initial);
+		}
+	};
+
+	window.addEventListener('hashchange', start);
+
+	document.addEventListener('DOMContentLoaded', function () {
+	    edit(document.querySelector('img'));
+	}, false);
+</script>
+
+<div class="crumbs" style="top: 28px; margin-left: -4px; color: var(--a-color); font-weight: bold;">
+	<span class="phui-font-fa fa-file-picture-o" style="padding-right: 5px;"></span>
+	<span>@@IMAGE-FILE-NAME@@</span>
+</div>

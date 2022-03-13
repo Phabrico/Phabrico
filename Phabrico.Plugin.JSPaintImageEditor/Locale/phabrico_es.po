@@ -1,0 +1,5 @@
+﻿# Spanish translations
+
+# General
+msgid "PluginName.JSPaintImageEditor"
+msgstr "PluginName.JSPaintImageEditor"

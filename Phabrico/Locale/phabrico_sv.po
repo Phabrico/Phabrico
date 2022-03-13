@@ -833,6 +833,12 @@ msgstr "Ladda ner projekttaggar och underskrivare för alla Phriction-dokument."
 msgid "Force download all Phriction metadata"
 msgstr "Forcera nedladdning av alla metadata om Phriction-dokumenten."
 
+msgid "Automatic close action menu"
+msgstr "Meny för automatisk avstängning"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "Automatisk stängning av menyn när muspekaren svävar bort"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Fryst: lokala ändringar kommer inte att laddas upp under synkroniseringen."
 

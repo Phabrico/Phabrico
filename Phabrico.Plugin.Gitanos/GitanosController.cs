@@ -869,85 +869,63 @@ namespace Phabrico.Plugin
         /// <returns></returns>
         private LibGit2Sharp.Signature GetGitAuthor(string urlGitRemote, out string password, LibGit2Sharp.Repository repo = null)
         {
+            // try to load credentials from Windows credential vault
             LibGit2Sharp.Signature signature = null;
-            using (CredentialManagement.Credential credential = new CredentialManagement.Credential { Target = "git:" + urlGitRemote })
+            CredentialManagement.Credential credential = new CredentialManagement.Credential();
+            credential.Target = "git:" + urlGitRemote;
+            bool credentialsLoaded = credential.Load();
+            if (credentialsLoaded)
             {
-                bool credentialsLoaded = credential.Load();
-                if (credentialsLoaded)
-                {
-                    string emailAddress;
-                    int startHostName = urlGitRemote.IndexOf('@');
-                    if (startHostName > 0)
-                    {
-                        emailAddress = string.Format("{0}@{1}", credential.Username, urlGitRemote.Substring(startHostName + 1));
-                    }
-                    else
-                    {
-                        emailAddress = string.Format("{0}@{1}", credential.Username, urlGitRemote.Substring("http:/".Length).TrimStart('/'));
-                    }
-
-                    signature = new LibGit2Sharp.Signature(credential.Username, emailAddress, DateTimeOffset.Now);
-
-                    password = credential.Password;
-
-                    return signature;
-                }
-
-                password = null;
-
-                if (repo != null) signature = repo.Config.BuildSignature(DateTimeOffset.Now);
-                if (signature != null) return signature;
-
-                if (browser.WindowsIdentity != null)
-                {
-                    // load git-configuration:
-                    //   repo.Config might point to the git configuration of the Phabrico service account
-                    //   -> retrieve the user profile path of the impersonated user (this is were the .gitconfig file is located)
-                    RegistryKey registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-                    registryKey = registryKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + browser.WindowsIdentity.User.Value);
-                    string userProfilePath = registryKey.GetValue("ProfileImagePath", null, RegistryValueOptions.None) as string;
-                    if (userProfilePath == null)
-                    {
-                        registryKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-                        registryKey = registryKey.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + browser.WindowsIdentity.User.Value);
-                        userProfilePath = registryKey.GetValue("ProfileImagePath", null, RegistryValueOptions.None) as string;
-                    }
-
-                    LibGit2Sharp.Configuration gitConfig = null;
-                    if (userProfilePath != null)
-                    {
-                        try
-                        {
-                            gitConfig = LibGit2Sharp.Configuration.BuildFrom(userProfilePath + "\\.gitconfig");
-                        }
-                        catch (System.Exception exception)
-                        {
-                            Logging.WriteError("Gitanos", "GetGitAuthor: " + exception.Message);
-                        }
-                    }
-
-                    if (gitConfig == null && repo != null)
-                    {
-                        // unable to load .gitconfig file of impersonated user -> proceed with the one of service account
-                        gitConfig = repo.Config;
-                    }
-
-                    if (gitConfig == null)
-                    {
-                        // unable to load .gitconfig -> stop
-                        throw new InvalidOperationException(string.Format(Locale.TranslateText("Unable to access .gitconfig for {0}", browser.Session.Locale), browser.WindowsIdentity.Name));
-                    }
-
-                    signature = gitConfig.BuildSignature(DateTimeOffset.Now);
-                }
-
-                if (signature == null)
-                {
-                    signature = new Signature(Environment.UserName, Environment.UserName + "@" + Environment.UserDomainName, DateTimeOffset.Now);
-                }
-
-                return signature;
+                password = credential.Password;
             }
+            else
+            {
+                // credentials not found in Windows credentials vault -> use default ones (i.e. .gitconfig files)
+                password = null;
+            }
+
+            if (repo != null) signature = repo.Config.BuildSignature(DateTimeOffset.Now);
+            if (signature != null) return signature;
+
+            if (browser.WindowsIdentity != null)
+            {
+                // load git-configuration:
+                //   repo.Config might point to the git configuration of the Phabrico service account
+                //   -> retrieve the user profile path of the impersonated user (this is were the .gitconfig file is located)
+                string userProfilePath = Environment.GetEnvironmentVariable("USERPROFILE");
+
+                LibGit2Sharp.Configuration gitConfig = null;
+                try
+                {
+                    gitConfig = LibGit2Sharp.Configuration.BuildFrom(userProfilePath + "\\.gitconfig");
+                }
+                catch (System.Exception exception)
+                {
+                    Logging.WriteError("Gitanos", "GetGitAuthor: " + exception.Message);
+                }
+
+                if (gitConfig == null && repo != null)
+                {
+                    // unable to load .gitconfig file of impersonated user -> proceed with the one of service account
+                    gitConfig = repo.Config;
+                }
+
+                if (gitConfig == null)
+                {
+                    // unable to load .gitconfig -> stop
+                    throw new InvalidOperationException(string.Format(Locale.TranslateText("Unable to access .gitconfig for {0}", browser.Session.Locale), browser.WindowsIdentity.Name));
+                }
+
+                signature = gitConfig.BuildSignature(DateTimeOffset.Now);
+            }
+
+            if (signature == null)
+            {
+                // nothing found yet: generate own username and email address
+                signature = new Signature(Environment.UserName, Environment.UserName + "@" + Environment.UserDomainName, DateTimeOffset.Now);
+            }
+
+            return signature;
         }
 
         /// <summary>

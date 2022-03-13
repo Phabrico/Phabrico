@@ -304,21 +304,23 @@ EditorUi.prototype.getSelectedPageIndex = function()
  };
  
 /**
- * Returns true if the given string contains an mxfile.
+ * Returns the page with the given ID from the optional array of pages.
  */
-EditorUi.prototype.getPageById = function(id)
+EditorUi.prototype.getPageById = function(id, pages)
 {
-	if (this.pages != null)
+	pages = (pages != null) ? pages : this.pages;
+
+	if (pages != null)
 	{
-		for (var i = 0; i < this.pages.length; i++)
+		for (var i = 0; i < pages.length; i++)
 		{
-			if (this.pages[i].getId() == id)
+			if (pages[i].getId() == id)
 			{
-				return this.pages[i];
+				return pages[i];
 			}
 		}
 	}
-	
+
 	return null;
 };
 
@@ -1526,8 +1528,8 @@ EditorUi.prototype.createPageMenuTab = function(hoverEnabled, invert)
 
 						var id = this.pages[index].getId();
 						item.setAttribute('title', this.pages[index].getName() +
-							((id != null) ? ' (' + id + ')' : '') +
-							' [' + (index + 1)+ ']');
+							' (' + (index + 1) + '/' + this.pages.length + ')' +
+							((id != null) ? ' [' + id + ']' : ''));
 						
 						// Adds checkmark to current page
 						if (this.pages[index] == this.currentPage)
@@ -1576,7 +1578,10 @@ EditorUi.prototype.createPageMenuTab = function(hoverEnabled, invert)
 						this.renamePage(page, page.getName());
 					}), parent);
 
-					menu.addSeparator(parent);
+					if (!invert)
+					{
+						menu.addSeparator(parent);
+					}
 					
 					menu.addItem(mxResources.get('duplicateIt', [pageName]), null, mxUtils.bind(this, function()
 					{

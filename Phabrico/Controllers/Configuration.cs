@@ -84,6 +84,7 @@ namespace Phabrico.Controllers
                             { "defaultStateModifiedPhriction", existingAccount.Parameters.DefaultStateModifiedPhriction.ToString() },
                             { "showPhrictionMetadata", existingAccount.Parameters.ShowPhrictionMetadata.ToString() },
                             { "forceDownloadAllPhrictionMetadata", existingAccount.Parameters.ForceDownloadAllPhrictionMetadata.ToString() },
+                            { "autoCloseAppSideWindow", existingAccount.Parameters.AutoClosePhrictionAppSideWindow.ToString() },
                             { "phabricatorUrl", existingAccount.PhabricatorUrl },
                             { "removalPeriodClosedManiphests", existingAccount.Parameters.RemovalPeriodClosedManiphests.ToString() },
                             { "syncMethodManiphest", syncMethodManiphestValue.ToString() },
@@ -351,6 +352,12 @@ namespace Phabrico.Controllers
 
                         existingAccount.Parameters.ShowPhrictionMetadata = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["showPhrictionMetadata"]);
                         existingAccount.Parameters.ForceDownloadAllPhrictionMetadata = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["forceDownloadAllPhrictionMetadata"]);
+                        bool autoClosePhrictionAppSideWindow = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["autoCloseAppSideWindow"]);
+                        if (existingAccount.Parameters.AutoClosePhrictionAppSideWindow != autoClosePhrictionAppSideWindow)
+                        {
+                            existingAccount.Parameters.AutoClosePhrictionAppSideWindow = autoClosePhrictionAppSideWindow;
+                            Server.InvalidateNonStaticCache(database, DateTime.Now);
+                        }
 
                         existingAccount.Theme = browser.Session.FormVariables[browser.Request.RawUrl]["theme"];
 
@@ -635,6 +642,11 @@ namespace Phabrico.Controllers
                 if (bool.TryParse(formVariables["forceDownloadAllPhrictionMetadata"], out boolValue) == false)
                 {
                     throw new System.Exception("forceDownloadAllPhrictionMetadata");
+                }
+
+                if (bool.TryParse(formVariables["autoCloseAppSideWindow"], out boolValue) == false)
+                {
+                    throw new System.Exception("autoCloseAppSideWindow");
                 }
 
                 if (bool.TryParse(formVariables["clipboardCopyForCodeBlock"], out boolValue) == false)

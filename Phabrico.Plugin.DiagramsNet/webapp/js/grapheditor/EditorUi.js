@@ -15,15 +15,15 @@ EditorUi = function(editor, container, lightbox)
 	var graph = this.editor.graph;
 	graph.lightbox = lightbox;
 
-	// Overrides graph bounds to include background pages
+	// Overrides graph bounds to include background images
 	var graphGetGraphBounds = graph.getGraphBounds;
 
-	graph.getGraphBounds = function(img)
+	graph.getGraphBounds = function()
 	{
 		var bounds = graphGetGraphBounds.apply(this, arguments);
 		var img = this.backgroundImage;
-
-		if (img != null)
+		
+		if (img != null && img.width != null && img.height != null)
 		{
 			var t = this.view.translate;
 			var s = this.view.scale;
@@ -1500,8 +1500,7 @@ EditorUi.prototype.installShapePicker = function()
 	graph.view.addListener(mxEvent.SCALE, hidePicker);
 	graph.view.addListener(mxEvent.SCALE_AND_TRANSLATE, hidePicker);
 	graph.getSelectionModel().addListener(mxEvent.CHANGE, hidePicker);
-	graph.getModel().addListener(mxEvent.CHANGE, hidePicker);
-
+	
 	// Counts as popup menu
 	var popupMenuHandlerIsMenuShowing = graph.popupMenuHandler.isMenuShowing;
 	 
@@ -1917,9 +1916,20 @@ EditorUi.prototype.onKeyDown = function(evt)
 			{
 				try
 				{
-					if (graph.cellEditor.isContentEditing() && graph.cellEditor.isTextSelected())
+					var nesting = graph.cellEditor.isContentEditing() && graph.cellEditor.isTextSelected();
+
+					if (window.getSelection && graph.cellEditor.isContentEditing() &&
+						!nesting && !mxClient.IS_IE && !mxClient.IS_IE11)
 					{
-						// (Shift+)tab indents/outdents with text selection
+						var selection = window.getSelection();
+						var container = (selection.rangeCount > 0) ? selection.getRangeAt(0).commonAncestorContainer : null;
+						nesting = container != null && (container.nodeName == 'LI' || (container.parentNode != null &&
+							container.parentNode.nodeName == 'LI'));
+					}
+
+					if (nesting)
+					{
+						// (Shift+)tab indents/outdents with text selection or inside list elements
 						document.execCommand(mxEvent.isShiftDown(evt) ? 'outdent' : 'indent', false, null);
 					}
 					// Shift+tab applies value with cursor

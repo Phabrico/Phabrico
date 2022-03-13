@@ -414,7 +414,8 @@ namespace Phabrico.Controllers
                     action.Equals("translate") == false
                    )
                 {
-                    PhrictionDocumentTree documentHierarchy = phrictionStorage.GetHierarchy(database, browser, phrictionDocument.Token);
+                    int depthLevel = string.IsNullOrWhiteSpace(phrictionDocument.Content) ? 3 : 2;
+                    PhrictionDocumentTree documentHierarchy = phrictionStorage.GetHierarchy(database, browser, phrictionDocument.Token, depthLevel);
                     if (documentHierarchy.Any())
                     {
                         Http.Response.HtmlViewPage documentHierarchyViewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionHierarchy", parameters);
@@ -511,6 +512,15 @@ namespace Phabrico.Controllers
                     else
                     {
                         viewPage.SetText("HAS-REFERENCES", "no");
+                    }
+
+                    if (currentAccount.Parameters.AutoClosePhrictionAppSideWindow)
+                    {
+                        viewPage.SetText("AUTO-CLOSE-PHRICTION-APPSIDE-WINDOW", "yes");
+                    }
+                    else
+                    {
+                        viewPage.SetText("AUTO-CLOSE-PHRICTION-APPSIDE-WINDOW", "no");
                     }
 
                     if (currentAccount.Parameters.ShowPhrictionMetadata)

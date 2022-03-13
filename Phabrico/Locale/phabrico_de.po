@@ -833,6 +833,12 @@ msgstr "Projekt-Tags und Zuschauer für alle Phriction-Dokumente herunterladen"
 msgid "Force download all Phriction metadata"
 msgstr "Download aller Phriction-Metadaten erzwingen"
 
+msgid "Automatic close action menu"
+msgstr "Automatisches Schließen des Menüs"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "Schließt das Menü automatisch, wenn der Mauszeiger wegfährt"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Eingefroren: lokale Änderungen werden während der Synchronisierung nicht hochgeladen"
 

@@ -833,6 +833,12 @@ msgstr "Загрузить теги проекта и подтеги для вс
 msgid "Force download all Phriction metadata"
 msgstr "Принудительно загрузить все метаданные вики"
 
+msgid "Automatic close action menu"
+msgstr "Автоматическое закрытие меню"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "Автоматическое закрытие меню при наведении указателя мыши"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Заморозить: локальные модификации не будут загружены во время синхронизации"
 

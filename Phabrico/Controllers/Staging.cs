@@ -297,12 +297,13 @@ namespace Phabrico.Controllers
 
                             crumbDescriptions += document.Name;
 
-                            if (document.Path.Length > Phabricator.Data.Phriction.MaximumLengthSlug)
+                            bool isNewDocument = document.Token.StartsWith("PHID-NEWTOKEN-");
+                            if (isNewDocument && document.Path.Length > Phabricator.Data.Phriction.MaximumLengthSlug)
                             {
                                 record.Issue = JsonRecordData.IssueType.SlugIsTooLong;
                             }
                             else
-                            if (document.Path.Length >= Phabricator.Data.Phriction.MaximumPreferredLengthSlug)
+                            if (isNewDocument && document.Path.Length >= Phabricator.Data.Phriction.MaximumPreferredLengthSlug)
                             {
                                 record.Issue = JsonRecordData.IssueType.SlugIsLong;
                             }
@@ -338,6 +339,11 @@ namespace Phabrico.Controllers
                             if (file.ContentType.Equals("image/drawio") && Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.DiagramsNet")))
                             {
                                 record.URL = "diagrams.net/F" + file.ID + "/";
+                            }
+                            else
+                            if (file.FileType == Phabricator.Data.File.FileStyle.Image && Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.JSPaintImageEditor")))
+                            {
+                                record.URL = "JSPaintImageEditor/F" + file.ID + "/";
                             }
                             else
                             {

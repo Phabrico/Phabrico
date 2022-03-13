@@ -133,6 +133,9 @@
 				    }), '*');
 				}
 			}
+			else if (evt.data.event == "goToDiagramsGithub") {
+                document.location = "https://github.com/jgraph/drawio";
+			}
 		};
 
 		window.addEventListener('message', receive);

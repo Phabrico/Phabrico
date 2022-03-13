@@ -1,3 +1,12 @@
+<script>
+@{IF @@AUTO-CLOSE-PHRICTION-APPSIDE-WINDOW@@=yes@
+    localStorage["phabrico-page-content-collapsed"] = "1";
+    if (typeof (phabrico) != 'undefined' && typeof (phabrico.appSideWindow) != 'undefined') {
+        phabrico.appSideWindow.Collapse();
+    }
+}@
+</script>
+
 <div id="crumbsContainer" class="crumbs">
     <a href="w/" tabindex="-1">
         <span class="phui-font-fa fa-book" style="padding-right: 5px;">&#x200B;</span>
@@ -71,7 +80,7 @@
         <span onclick="phabrico.appSideWindow.Expand();" class="phui-font-fa fa-chevron-left">&nbsp;</span>
     </div>
 
-    <div class="app-side-window phriction">
+    <div class="app-side-window phriction" onmouseleave="autoCloseAppSideWindow();">
         <div class="app-window-body" tabindex="-1">
             <ul class="list-view">
                 @{IF @@ACCESS-READONLY@@=False@
@@ -373,6 +382,12 @@ dateModified won't change when a subscription is added or removed
                                         );
         }
 
+        function autoCloseAppSideWindow() {
+            @{IF @@AUTO-CLOSE-PHRICTION-APPSIDE-WINDOW@@=yes@
+                phabrico.appSideWindow.Collapse();
+            }@
+        }
+        
         function initializePhrictionPluginFormData() {
             var data = new FormData();
 

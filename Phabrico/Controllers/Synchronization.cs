@@ -560,7 +560,7 @@ namespace Phabrico.Controllers
                     }
                 }
 
-                throw new InvalidProgramException("Unknown token in SynchronizationLogging");
+                resultHttpMessage = new Http.Response.HttpRedirect(httpServer, browser, "/synchronization");
             }
         }
 

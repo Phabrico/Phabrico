@@ -202,6 +202,10 @@ div.codeblock button.codeblock.copy {
     top: 0;
 }
 
+.phame-blog-post div.image-container a.button {
+    display: none;
+}
+
 div.image-container:not(.non-overlappable) > a.button.overlapped,
 div.codeblock button.codeblock.copy.overlapped {
     margin-right: 260px;

@@ -833,6 +833,12 @@ msgstr "Lataa kaikkien Phriction-asiakirjojen projektitunnisteet ja alatunnistee
 msgid "Force download all Phriction metadata"
 msgstr "Pakota lataamaan kaikki Phriction-metatiedot"
 
+msgid "Automatic close action menu"
+msgstr "Automaattinen sammutusvalikko"
+
+msgid "Closes the menu automatically when hovering the mouse pointer away"
+msgstr "Sulkee valikon automaattisesti, kun hiiren osoitin siirtyy pois"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Jäädytetty: paikallisia muutoksia ei ladata synkronoinnin aikana"
 

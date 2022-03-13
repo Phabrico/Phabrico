@@ -1,5 +1,8 @@
 ﻿using Phabrico.Controllers;
 using Phabrico.Http.Response;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace Phabrico.Plugin
 {
@@ -67,6 +70,65 @@ namespace Phabrico.Plugin
         /// <param name="configurationTabContent"></param>
         public virtual void LoadConfigurationParameters(PluginBase plugin, HtmlPartialViewPage configurationTabContent)
         {
+        }
+
+        /// <summary>
+        /// Reads embedded resource files from plugins
+        /// </summary>
+        /// <param name="assembly"></param>
+        /// <param name="httpServer"></param>
+        /// <param name="rootPath"></param>
+        /// <param name="originalURL"></param>
+        /// <param name="resourceName"></param>
+        /// <returns></returns>
+        protected HttpFound ReadResourceContent(Assembly assembly, Http.Server httpServer, string rootPath, string originalURL, string resourceName)
+        {
+            string fileExtenstion = resourceName.Split('.')
+                                                .LastOrDefault()
+                                                .ToLower();
+
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    string content = reader.ReadToEnd();
+
+                    if (fileExtenstion.StartsWith("htm"))
+                    {
+                        HtmlViewPage htmlViewPage = new HtmlViewPage(httpServer, browser, false, originalURL);
+                        htmlViewPage.Content = content;
+
+                        return htmlViewPage;
+                    }
+
+                    if (fileExtenstion.StartsWith("css"))
+                    {
+                        StyleSheet styleSheet = new StyleSheet(httpServer, browser);
+                        styleSheet.Content = content;
+                        return styleSheet;
+                    }
+
+                    if (fileExtenstion.StartsWith("js"))
+                    {
+                        Script javaScript = new Script(httpServer, browser);
+                        javaScript.Content = content;
+                        return javaScript;
+                    }
+
+                    if (fileExtenstion.StartsWith("txt"))
+                    {
+                        Http.Response.PlainTextMessage plainTextMessage = new PlainTextMessage(content);
+                        return plainTextMessage;
+                    }
+
+                    return new Http.Response.File(
+                        httpServer, 
+                        browser, 
+                        rootPath.TrimEnd('/') + "/" + originalURL.Split('?').FirstOrDefault(),
+                        assembly
+                    );
+                }
+            }
         }
     }
 }
