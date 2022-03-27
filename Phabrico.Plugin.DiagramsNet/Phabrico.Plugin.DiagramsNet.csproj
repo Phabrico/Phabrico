@@ -77,6 +77,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\connect\common\js\mxReader.js" />
     <EmbeddedResource Include="webapp\js\freehand\perfect-freehand.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\commons-codec-1.15.jar" />
     <EmbeddedResource Include="webapp\workbox-d4d5b410.js" />

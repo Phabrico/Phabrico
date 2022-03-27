@@ -15,7 +15,7 @@ mxUtils.extend(OneDriveFile, DrawioFile);
 /**
  * Shorter autosave delay for optimistic sync.
  */
-OneDriveFile.prototype.autosaveDelay = 300;
+OneDriveFile.prototype.autosaveDelay = 500;
 
 /**
  * Hook for subclassers.
@@ -117,7 +117,7 @@ OneDriveFile.prototype.getIdOf = function(itemObj, parent)
 {
 	//TODO driveId is most probably always there. No need to check if it exists. Also, after some time, the code that check the old id format won't be needed 
 	return ((itemObj.parentReference != null && itemObj.parentReference.driveId != null) ? itemObj.parentReference.driveId + '/' : '') +
-		((parent != null) ? itemObj.parentReference.id : itemObj.id);
+		((parent != null) ? itemObj.parentReference.id : (itemObj.id + (itemObj.folder && itemObj.folder.isRoot? '/root' : '')));
 };
 
 /**
@@ -404,7 +404,11 @@ OneDriveFile.prototype.saveFile = function(title, revision, success, error, unlo
 						(DrawioFile.SYNC == 'manual' || DrawioFile.SYNC == 'auto')) ?
 						this.getCurrentEtag() : null;
 					var lastDesc = this.meta;
-					this.fileSaving();
+
+					if (this.sync != null)
+					{
+						this.sync.fileSaving();
+					}
 
 					this.ui.oneDrive.saveFile(this, mxUtils.bind(this, function(meta, savedData)
 					{

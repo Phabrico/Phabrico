@@ -140,6 +140,9 @@ msgstr "Dieses Git-Repository ist unverändert"
 msgid "Repository successfully cloned"
 msgstr "Repository erfolgreich geklont"
 
+msgid "Commit is too large to display"
+msgstr "Commit ist zu groß zum Anzeigen"
+
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
 msgstr "Verzeichnis @@DIRECTORY@@ existiert nicht"

@@ -1,4 +1,5 @@
 ﻿using Phabrico.Miscellaneous;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Phabrico.Plugin.Model
@@ -21,7 +22,14 @@ namespace Phabrico.Plugin.Model
         {
             if (directory != null)
             {
-                Directory = directory;
+                try
+                {
+                    Directory = directory;
+                }
+                catch (LibGit2Sharp.RepositoryNotFoundException)
+                {
+                    _directory = null;
+                }
             }
         }
 
@@ -34,6 +42,11 @@ namespace Phabrico.Plugin.Model
         /// Current git branch
         /// </summary>
         public string Branch { get; private set; }
+
+        /// <summary>
+        /// List of git submodules
+        /// </summary>
+        public List<GitanosConfigurationRepositoryPath> SubModules { get; private set; } = new List<GitanosConfigurationRepositoryPath>();
 
         /// <summary>
         /// Full path of the local git repository
@@ -72,7 +85,38 @@ namespace Phabrico.Plugin.Model
                                              + (UseRemoved ? NumberOfRemovedFiles : 0)
                                              + (UseRenamed ? NumberOfRenamedFiles : 0)
                                              + (UseUntracked ? NumberOfUntrackedFiles : 0);
+
+                        LibGit2Sharp.Submodule[] submodules = repo.Submodules.ToArray();
+                        foreach (LibGit2Sharp.Submodule submodule in submodules)
+                        {
+                            if (SubModules.Any(subrepo => submodule.Path.Equals(subrepo.Directory)))
+                            {
+                                continue;
+                            }
+                         
+                            // add new submodule to current repo
+                            GitanosConfigurationRepositoryPath newRepo = new GitanosConfigurationRepositoryPath(_directory + "\\" + submodule.Path);
+                            if (newRepo.Directory != null)
+                            {
+                                SubModules.Add(newRepo);
+                            }
+                        }
+
+                        foreach (GitanosConfigurationRepositoryPath submodule in SubModules.ToArray())
+                        {
+                            if (submodules.Any(subrepo => submodule.Directory.Equals(_directory + "\\" + subrepo.Path)))
+                            {
+                                continue;
+                            }
+
+                            // remove old submodule from current repo
+                            SubModules.Remove(submodule);
+                        }
                     }
+                }
+                catch (LibGit2Sharp.RepositoryNotFoundException)
+                {
+                    throw;
                 }
                 catch (System.Exception ex)
                 {
@@ -93,6 +137,12 @@ namespace Phabrico.Plugin.Model
         /// True if any branch has commits which haven't been pushed yet
         /// </summary>
         public bool HasUnpushedCommits { get; private set; }
+
+        /// <summary>
+        /// Represents the name of the git directory.
+        /// In case the repository is a submodule, the the name of the parent git directory is also included (e.g. parent\submodule1\submodule2)
+        /// </summary>
+        public string Name { get; set; }
 
         /// <summary>
         /// Number of unstaged modifications

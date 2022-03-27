@@ -132,15 +132,26 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // verify new content of Gitanos screen
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
-                wait.Until(condition => condition.FindElements(By.XPath("//a[contains(text(), 'GitanosRemote')]")).Any(elem => elem.Displayed));
+                wait.Until(condition => condition.FindElements(By.TagName("a"))
+                                                 .Any(a => a.Displayed 
+                                                        && a.Text.Contains("GitanosRemote")
+                                                     )
+                          );
 
                 AssertNoJavascriptErrors();
 
                 // click on GitanosRemote
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
-                wait.Until(condition => condition.FindElements(By.XPath("//a[contains(text(), 'GitanosRemote')]")).Any(elem => elem.Displayed));
-                IWebElement gitanosRemote = WebBrowser.FindElement(By.XPath("//a[contains(text(), 'GitanosRemote')]"));
+                wait.Until(condition => condition.FindElements(By.TagName("a"))
+                                                 .Any(a => a.Displayed 
+                                                        && a.Text.Contains("GitanosRemote")
+                                                     )
+                          );
+                IWebElement gitanosRemote = WebBrowser.FindElements(By.TagName("a"))
+                                                      .FirstOrDefault(a => a.Displayed 
+                                                                        && a.Text.Contains("GitanosRemote")  
+                                                                     );
                 gitanosRemote.Click();
 
                 // verify that we have a clean repository
@@ -161,8 +172,15 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // click on 'dummy.txt'
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
-                wait.Until(condition => condition.FindElements(By.XPath("//a[contains(text(), 'GitanosRemote')]")).Any(elem => elem.Displayed));
-                IWebElement gitRepository = WebBrowser.FindElement(By.XPath("//a[contains(text(), 'GitanosRemote')]"));
+                wait.Until(condition => condition.FindElements(By.TagName("a"))
+                                                 .Any(a => a.Displayed 
+                                                        && a.Text.Contains("GitanosRemote")
+                                                     )
+                          );
+                IWebElement gitRepository = WebBrowser.FindElements(By.TagName("a"))
+                                                      .FirstOrDefault(a => a.Displayed
+                                                                        && a.Text.Contains("GitanosRemote")
+                                                                     );
                 gitRepository.Click();
 
                 AssertNoJavascriptErrors();

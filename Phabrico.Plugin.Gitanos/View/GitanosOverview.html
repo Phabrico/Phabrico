@@ -32,6 +32,14 @@
     [data-theme="light"] #tblGitanosRepositories .fa-exclamation-triangle {
         color: red;
     }
+
+    [data-theme="dark"] a .submodule-delimiter {
+        color: #fff;
+    }
+
+    [data-theme="light"] a .submodule-delimiter {
+        color: #048;
+    }
 </style>
 
 <div class="app-window">
@@ -176,8 +184,19 @@ function populateTable(firstCharacters)
                 }
                 anchorRepository.appendChild(fontAwesome);
 
-                var text = document.createTextNode(record.Repository);
-                anchorRepository.appendChild(text);
+                var latestSubModuleDelimiter = null;
+                record.Repository.split('\t')
+                    .forEach(token => {
+                        var span = document.createElement('span');
+                        span.innerText = token;
+                        anchorRepository.appendChild(span);
+
+                        latestSubModuleDelimiter = document.createElement('span');
+                        latestSubModuleDelimiter.innerHTML = "&nbsp;&#x2BC8&nbsp;";
+                        latestSubModuleDelimiter.className = "submodule-delimiter";
+                        anchorRepository.appendChild(latestSubModuleDelimiter);
+                    });
+                anchorRepository.removeChild(latestSubModuleDelimiter);
 
                 cell.appendChild(anchorRepository);
 

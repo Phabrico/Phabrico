@@ -140,6 +140,9 @@ msgstr "This git repository is clean"
 msgid "Repository successfully cloned"
 msgstr "Repository successfully cloned"
 
+msgid "Commit is too large to display"
+msgstr "Commit is too large to display"
+
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
 msgstr "Directory @@DIRECTORY@@ does not exist"

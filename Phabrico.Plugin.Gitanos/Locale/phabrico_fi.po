@@ -140,6 +140,9 @@ msgstr "Tämä git-arkisto on puhdas"
 msgid "Repository successfully cloned"
 msgstr "Arkisto onnistuneesti kloonattu"
 
+msgid "Commit is too large to display"
+msgstr "Commit on liian suuri näytettäväksi"
+
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
 msgstr "Hakemistoa @@DIRECTORY@@ ei ole olemassa."

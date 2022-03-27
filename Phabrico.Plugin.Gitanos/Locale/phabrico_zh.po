@@ -140,6 +140,9 @@ msgstr "这个git仓库没有变化"
 msgid "Repository successfully cloned"
 msgstr "成功克隆了"
 
+msgid "Commit is too large to display"
+msgstr "提交太大，无法显示"
+
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
 msgstr "@@DIRECTORY@@目录不存在"

@@ -1,0 +1,115 @@
+<style>
+    .gitanos-unpushed-commit {
+        max-height: calc(100vh - 85px);
+    }
+
+    .title {
+        display: flex;
+        padding: 8px 0px;
+        font-weight: bold;
+        border-bottom: solid 1px #8888;
+    }
+
+        .title .full-path {
+            width: auto;
+            padding-right: 5px;
+        }
+
+    #statusMessage {
+        margin-left: auto;
+        margin-right: 20px;
+        margin-top: 5px;
+        opacity: 0;
+    }
+
+    .scrollableTable {
+        height: calc(100vh - 133px);
+        width: 100%;
+    }
+
+        .scrollableTable table {
+            min-height: 12px;
+            width: inherit;
+            padding-left: 30px;
+        }
+
+    .diff {
+        font-family: "Courier New";
+        white-space: pre-wrap;
+    }
+
+    .diff.added, .diff.removed {
+        margin-bottom: -2px;
+    }
+
+    [data-theme="dark"] .diff.added {
+        background: #050;
+        color: #0f0;
+    }
+
+    [data-theme="dark"] .diff.removed {
+        background: #200;
+        color: #f88;
+    }
+
+    [data-theme="light"] .diff.added {
+        background: #dfd;
+        color: #080;
+    }
+
+    [data-theme="light"] .diff.removed {
+        background: #fee;
+        color: #f00;
+    }
+
+    .diff.path {
+        text-decoration: underline;
+        font-weight: bold;
+        margin-top: 20px;
+        margin-left: -25px;
+    }
+
+    .msgCommitTooLarge {
+        display: none;
+        width: 100%;
+        text-align: center;
+        padding-top: calc(50vh - 130px);
+        padding-bottom: calc(50vh - 80px);
+        font-style: italic;
+    }
+
+    .large-commit .msgCommitTooLarge {
+        display: block;
+    }
+
+    .large-commit .scrollableTable {
+        display: none;
+    }
+</style>
+
+<div class="gitanos-unpushed-commit app-window @@COMMIT-TOO-LARGE@@">
+    <div class="title">
+        <div>
+            <p class="full-path">
+                <a href="@@REPO-URL@@">@@REPO-PATH@@</a>
+            </p>
+            <pre>@@COMMIT-MESSAGE@@</pre>
+        </div>
+    </div>
+    <div class="msgCommitTooLarge">Commit is too large to display</div>
+    <div class="scrollableTable">
+        <table id="tblDiffFile">
+            <tbody>
+                @{DIFF-LINES
+                <tr>
+                    <td class="@@DIFF-LINE-STATE@@">@@DIFF-LINE-CONTENT@@@@DIFF-LINE-SPACE-ENDINGS@@</td>
+                </tr>
+                }@
+            </tbody>
+        </table>
+
+        @{IF @@BINARY-MODIFICATION@@=True@
+        <i style="width: 100%; top: calc(40% - 40px); text-align: center; display: inline-block; vertical-align: text-bottom; position: relative;">This is a binary file which has been modified.</i>
+        }@
+    </div>
+</div>

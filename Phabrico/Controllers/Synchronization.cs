@@ -2368,7 +2368,9 @@ namespace Phabrico.Controllers
             List<Phabricator.Data.Phriction> processedPhrictionDocuments = new List<Phabricator.Data.Phriction>();
             foreach (var modifiedPhrictionDocument in phrictionDocumentsLocallyModified.Where(doc => phrictionDocumentsRemotelyModified.Any(modification => modification.Token.Equals(doc.Token)) == false)
                                                                                        .OrderBy(doc => doc.Path.Length)
-                                                                                       .Where(doc => doc.Path.Length < 115)  // Phabricator will not accept slugs longer than 115 characters
+                                                                                       .Where(doc => doc.Path.Length < 115   // Phabricator will not accept slugs longer than 115 characters
+                                                                                                  || doc.Token.StartsWith("PHID-NEWTOKEN-") == false   // document was already stored in Phabricator
+                                                                                             )
                     )
             {
                 SharedResource.Instance.ProgressDescription = string.Format("{0} [{1}/{2}]", messageUploadingPhrictionData, index++, count);

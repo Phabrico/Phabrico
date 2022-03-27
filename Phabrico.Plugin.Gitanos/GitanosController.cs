@@ -101,6 +101,8 @@ namespace Phabrico.Plugin
                     {
                         modification = new GitanosModificationsJsonRecordData();
                         modification.File = repositoryDirectory + "\\" + untracked.FilePath.Replace("/", "\\");
+                        if (System.IO.Directory.Exists(modification.File)) continue;  // if untracked represents a directory, skip it
+
                         modification.ModificationType = "Untracked";
                         modification.ModificationTypeText = Locale.TranslateText("Gitanos::Untracked", browser.Session.Locale);
                         modification.Timestamp = Controller.FormatDateTimeOffset(System.IO.File.GetLastWriteTime(modification.File), browser.Session.Locale);
@@ -134,7 +136,9 @@ namespace Phabrico.Plugin
                 string filePath = string.Join("\\", parameters);
                 filePath = System.Web.HttpUtility.UrlDecode(filePath);
                 filePath = string.Format("{0}:{1}", filePath[0], filePath.Substring(1));
-                GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories.FirstOrDefault(repo => filePath.StartsWith(repo.Directory));
+                GitanosConfigurationRepositoryPath currentRepository = DirectoryMonitor.Repositories
+                                                                                       .OrderByDescending(repo => repo.Directory.Length)
+                                                                                       .FirstOrDefault(repo => filePath.StartsWith(repo.Directory));
 
                 if (currentRepository == null)
                 {
@@ -408,7 +412,7 @@ namespace Phabrico.Plugin
                     record.Modified = repository.NumberModified;
                     record.Removed = repository.NumberOfRemovedFiles;
                     record.Renamed = repository.NumberOfRenamedFiles;
-                    record.Repository = Path.GetFileName(repository.Directory);
+                    record.Repository = repository.Name;
                     record.Untracked = repository.NumberOfUntrackedFiles;
 
                     record.HasUnpushedCommits = repository.HasUnpushedCommits ? 1 : 0;
@@ -501,9 +505,10 @@ namespace Phabrico.Plugin
                     Phabricator.Data.Diffusion repository = storageGitanosPhabricatorRepository.Get(database, Language.NotApplicable).FirstOrDefault(record => record.Name.Equals(repositoryName));
 
                     // get authentication
+                    string username;
                     string password;
                     string urlGitRemote = string.Join("/", repository.URI.Split('/').Take(3));
-                    LibGit2Sharp.Signature gitAuthor = GetGitAuthor(urlGitRemote, out password);
+                    LibGit2Sharp.Signature gitAuthor = GetGitAuthor(urlGitRemote, out username, out password);
 
                     // create local work directory
                     Directory.CreateDirectory(workingDirectory);
@@ -513,7 +518,7 @@ namespace Phabrico.Plugin
                     {
                         CredentialsProvider = (url, usernameFromUrl, types) => new LibGit2Sharp.UsernamePasswordCredentials
                         {
-                            Username = gitAuthor.Name,
+                            Username = username,
                             Password = password
                         }
                     });
@@ -567,8 +572,9 @@ namespace Phabrico.Plugin
                     using (var repo = new LibGit2Sharp.Repository(currentRepository.Directory))
                     {
                         // start committing
+                        string username;
                         string password;
-                        LibGit2Sharp.Signature gitAuthor = GetGitAuthor(repo, out password);
+                        LibGit2Sharp.Signature gitAuthor = GetGitAuthor(repo, out username, out password);
 
                         // add to index
                         foreach (GitanosModificationsJsonRecordData modification in GetRepositoryModifications(currentRepository.Directory)
@@ -600,6 +606,110 @@ namespace Phabrico.Plugin
                         Description = e.Message
                     });
                     return new JsonMessage(jsonData);
+                }
+            }
+        }
+
+        /// <summary>
+        /// This method is fired when the user clicks on an unpushed commit
+        /// It shows a diff this commit
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="viewPage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/gitanos/show", ServerCache = false)]
+        public void HttpGetUnpushedCommitScreen(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
+        {
+            int repositoryIndex;
+            string commitHash;
+            GitanosConfigurationRepositoryPath currentRepository;
+
+            try
+            {
+                repositoryIndex = Int32.Parse(parameters[0]);
+                commitHash = parameters[1];
+                currentRepository = DirectoryMonitor.Repositories[repositoryIndex];
+            }
+            catch
+            {
+                // invalid parameters
+                return;
+            }
+
+            using (var repo = new LibGit2Sharp.Repository(currentRepository.Directory))
+            {
+                Commit currentCommit = repo.Lookup<Commit>(commitHash);
+                Commit previousCommit = currentCommit.Parents.FirstOrDefault();
+                Patch diff = repo.Diff.Compare<Patch>(previousCommit.Tree, currentCommit.Tree);
+                if (diff.LinesAdded == 0 && diff.LinesDeleted == 0)
+                {
+                    PatchEntryChanges binaryModification = diff.FirstOrDefault(modification => modification.IsBinaryComparison);
+                    if (binaryModification == null || binaryModification.Status != LibGit2Sharp.ChangeKind.Modified)
+                    {
+                        // all modifications have been unedited for current file -> go back to modifications overview of current repository
+                        return;
+                    }
+                }
+
+                viewPage = new HtmlViewPage(httpServer, browser, true, "GitanosUnpushedCommit", parameters);
+                string repositoryUrl = Http.Server.RootPath + "gitanos/data/" + currentRepository.Directory.Replace("\\", "/").Replace(":", "") + "/";
+                viewPage.SetText("REPOSITORY-INDEX", repositoryIndex.ToString(), HtmlViewPage.ArgumentOptions.JavascriptEncoding);
+                viewPage.SetText("REPO-URL", repositoryUrl, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                viewPage.SetText("REPO-PATH", currentRepository.Directory, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                viewPage.SetText("COMMIT-MESSAGE", currentCommit.Message, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+
+                string[] diffLines = diff.Content
+                                            .Split('\n')
+                                            .SkipWhile(line => line.StartsWith("+++") == false)
+                                            .Select(line => line.Trim('\r'))
+                                            .ToArray();
+
+                if (diffLines.Length > 1500)
+                {
+                    viewPage.SetText("COMMIT-TOO-LARGE", "large-commit", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                }
+                else
+                {
+                    viewPage.SetText("COMMIT-TOO-LARGE", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+
+                    foreach (string diffLine in diffLines)
+                    {
+                        string line = diffLine;
+                        string lineState = "diff";
+                        if (line.Any())
+                        {
+                            if (line.StartsWith("+++"))
+                            {
+                                line = line.Substring(line.IndexOf('/') + 1);
+                                lineState += " path";
+                            }
+                            else
+                            if (line[0] == '+')
+                            {
+                                lineState += " added";
+                            }
+                            else
+                            if (line[0] == '-')
+                            {
+                                lineState += " removed";
+                            }
+                        }
+
+                        string code = line.TrimEnd(' ', '\t');
+                        HtmlViewPage viewLine = viewPage.GetPartialView("DIFF-LINES");
+                        viewLine.SetText("DIFF-LINE-STATE", lineState, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        viewLine.SetText("DIFF-LINE-CONTENT", code, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        if (line.Length > 1 && line.Length != code.Length && line.StartsWith("@@") == false)
+                        {
+                            string redSpan = string.Format("<span style='background:red'>{0}</span>", line.Substring(code.Length));
+                            viewLine.SetText("DIFF-LINE-SPACE-ENDINGS", redSpan, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        }
+                        else
+                        {
+                            viewLine.SetText("DIFF-LINE-SPACE-ENDINGS", "", HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        }
+                    }
                 }
             }
         }
@@ -765,15 +875,16 @@ namespace Phabrico.Plugin
                     using (var repo = new LibGit2Sharp.Repository(currentRepository.Directory))
                     {
                         // start committing
+                        string username;
                         string password;
-                        LibGit2Sharp.Signature gitAuthor = GetGitAuthor(repo, out password);
+                        LibGit2Sharp.Signature gitAuthor = GetGitAuthor(repo, out username, out password);
 
                         // push
                         LibGit2Sharp.PushOptions options = new LibGit2Sharp.PushOptions()
                         {
                             CredentialsProvider = (url, usernameFromUrl, types) => new LibGit2Sharp.UsernamePasswordCredentials
                             {
-                                Username = gitAuthor.Name,
+                                Username = username,
                                 Password = password
                             }
                         };
@@ -853,21 +964,22 @@ namespace Phabrico.Plugin
         /// <param name="repo"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        private LibGit2Sharp.Signature GetGitAuthor(LibGit2Sharp.Repository repo, out string password)
+        private LibGit2Sharp.Signature GetGitAuthor(LibGit2Sharp.Repository repo, out string username, out string password)
         {
             string pushUrl = repo.Network.Remotes.FirstOrDefault().PushUrl;
             pushUrl = string.Join("/", pushUrl.Split('/').Take(3));
 
-            return GetGitAuthor(pushUrl, out password, repo);
+            return GetGitAuthor(pushUrl, out username, out password, repo);
         }
 
         /// <summary>
         /// Returns the git credentials for a given git repository
         /// </summary>
         /// <param name="urlGitRemote">url pointing to the remote git repository</param>
-        /// <param name="password"></param>
+        /// <param name="repo">git repo login account</param>
+        /// <param name="password">git repo password</param>
         /// <returns></returns>
-        private LibGit2Sharp.Signature GetGitAuthor(string urlGitRemote, out string password, LibGit2Sharp.Repository repo = null)
+        private LibGit2Sharp.Signature GetGitAuthor(string urlGitRemote, out string username, out string password, LibGit2Sharp.Repository repo = null)
         {
             // try to load credentials from Windows credential vault
             LibGit2Sharp.Signature signature = null;
@@ -876,15 +988,18 @@ namespace Phabrico.Plugin
             bool credentialsLoaded = credential.Load();
             if (credentialsLoaded)
             {
+                username = credential.Username;
                 password = credential.Password;
             }
             else
             {
                 // credentials not found in Windows credentials vault -> use default ones (i.e. .gitconfig files)
+                username = null;
                 password = null;
             }
 
             if (repo != null) signature = repo.Config.BuildSignature(DateTimeOffset.Now);
+            if (username == null) username = signature?.Name;
             if (signature != null) return signature;
 
             if (browser.WindowsIdentity != null)
@@ -924,6 +1039,8 @@ namespace Phabrico.Plugin
                 // nothing found yet: generate own username and email address
                 signature = new Signature(Environment.UserName, Environment.UserName + "@" + Environment.UserDomainName, DateTimeOffset.Now);
             }
+
+            if (username == null) username = signature?.Name;
 
             return signature;
         }
@@ -1182,8 +1299,9 @@ namespace Phabrico.Plugin
                     using (var repo = new LibGit2Sharp.Repository(currentRepository.Directory))
                     {
                         // start restoring
+                        string username;
                         string password;
-                        LibGit2Sharp.Signature gitAuthor = GetGitAuthor(repo, out password);
+                        LibGit2Sharp.Signature gitAuthor = GetGitAuthor(repo, out username, out password);
 
                         // add to index
                         foreach (GitanosModificationsJsonRecordData modification in GetRepositoryModifications(currentRepository.Directory)

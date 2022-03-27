@@ -255,6 +255,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                                                         .Select(cellData => tableRowData.IndexOf(cellData))
                                                                         .ToArray());
                         }
+                        else
+                        if (tableRowData.Count == 2 && concealedHeaders.Contains(tableRowData[0].Groups[4].Value.Trim().ToLower()))
+                        {
+                            // simple table with 2 columns and first column contains confidential header => second column contains confidential value
+                            concealedHeaderIndices.AddRange(new int[] { 1 });
+                        }
                     }
 
                     tableContent += "  <tr>\n";

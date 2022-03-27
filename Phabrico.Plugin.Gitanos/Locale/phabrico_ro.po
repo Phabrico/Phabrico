@@ -140,6 +140,9 @@ msgstr "Acest depozit git este curat"
 msgid "Repository successfully cloned"
 msgstr "Depozitul a fost clonat cu succes"
 
+msgid "Commit is too large to display"
+msgstr "Commit este prea mare pentru a fi afișat"
+
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
 msgstr "Directorul @@DIRECTORY@@ nu există"

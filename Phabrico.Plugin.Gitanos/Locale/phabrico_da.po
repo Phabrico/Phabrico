@@ -140,6 +140,9 @@ msgstr "Dette git-repository er rent"
 msgid "Repository successfully cloned"
 msgstr "Arkivet er klonet med succes"
 
+msgid "Commit is too large to display"
+msgstr "Commit er for stor til at blive vist"
+
 # Error messages
 msgid "Gitanos::Directory @@DIRECTORY@@ does not exist"
 msgstr "Katalog @@DIRECTORY@@ eksisterer ikke"

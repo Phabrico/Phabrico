@@ -58,11 +58,11 @@
 	/**
 	 * Specifies the URL for the diffsync cache.
 	 */
-	EditorUi.cacheUrl = (urlParams['dev'] == '1') ? '/cache' : window.REALTIME_URL;
+	EditorUi.cacheUrl = (urlParams['dev'] == '1') ? 'https://app.diagrams.net/cache' : window.REALTIME_URL;
 
 	if (EditorUi.cacheUrl == null && typeof DrawioFile !== 'undefined')
 	{
-		DrawioFile.SYNC = 'none'; //Disable real-time sync
+		DrawioFile.SYNC = 'none'; // Disables real-time sync
 	}
 	
 	/**
@@ -2014,7 +2014,8 @@
 					{
 						var prev = this.editor.graph.pageVisible;
 						
-						if (pageVisible != null)
+						//Only override if page is actually visible
+						if (pageVisible == false)
 						{
 							this.editor.graph.pageVisible = pageVisible;
 						}

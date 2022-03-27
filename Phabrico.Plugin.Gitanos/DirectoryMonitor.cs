@@ -150,7 +150,25 @@ namespace Phabrico.Plugin
                     List<Model.GitanosConfigurationRepositoryPath> gitanosConfigurationRepositoryPaths = new List<Model.GitanosConfigurationRepositoryPath>();
                     foreach (string gitRepository in gitRepositories)
                     {
-                        gitanosConfigurationRepositoryPaths.Add(new Model.GitanosConfigurationRepositoryPath(gitRepository));
+                        Model.GitanosConfigurationRepositoryPath gitanosRepo = new Model.GitanosConfigurationRepositoryPath(gitRepository);
+                        gitanosRepo.Name = System.IO.Path.GetFileName(gitanosRepo.Directory);
+                        gitanosConfigurationRepositoryPaths.Add(gitanosRepo);
+
+                        foreach (Model.GitanosConfigurationRepositoryPath childRepo in gitanosRepo.SubModules)
+                        {
+                            childRepo.Name = gitanosRepo.Name + "\t" + System.IO.Path.GetFileName(childRepo.Directory);
+                            gitanosConfigurationRepositoryPaths.Add(childRepo);
+                            foreach (Model.GitanosConfigurationRepositoryPath grandchildRepo in childRepo.SubModules)
+                            {
+                                grandchildRepo.Name = childRepo.Name + "\t" + System.IO.Path.GetFileName(grandchildRepo.Directory);
+                                gitanosConfigurationRepositoryPaths.Add(grandchildRepo);
+                                foreach (Model.GitanosConfigurationRepositoryPath greatgrandchildRepo in grandchildRepo.SubModules)
+                                {
+                                    greatgrandchildRepo.Name = grandchildRepo.Name + "\t" + System.IO.Path.GetFileName(greatgrandchildRepo.Directory);
+                                    gitanosConfigurationRepositoryPaths.Add(greatgrandchildRepo);
+                                }
+                            }
+                        }
                     }
 
                     lock (DirectoryMonitor.DatabaseAccess)
@@ -230,7 +248,8 @@ namespace Phabrico.Plugin
                     return;
                 }
 
-                repository = Repositories.FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
+                repository = Repositories.OrderByDescending(repo => repo.Directory.Length)
+                                         .FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
                                                               || e.FullPath.Equals(repo.Directory, StringComparison.OrdinalIgnoreCase)
                                                         );
                 if (repository == null)

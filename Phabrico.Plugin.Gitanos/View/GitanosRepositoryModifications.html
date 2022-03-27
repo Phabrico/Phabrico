@@ -679,8 +679,12 @@
 
                     var cell = row.insertCell();
                     cell.classList.add('commit-hash');
+                    var anchorCommitHash = document.createElement('a');
+                    anchorCommitHash.href = document.baseURI + "gitanos/show/@@REPOSITORY-INDEX@@/" + record.CommitHash + "/";
+                    anchorCommitHash.style.minWidth = "70px";
                     var text = document.createTextNode(record.CommitHash);
-                    cell.appendChild(text);
+                    anchorCommitHash.appendChild(text);
+                    cell.appendChild(anchorCommitHash);
 
                     var cell = row.insertCell();
                     cell.classList.add('timestamp');
