@@ -225,7 +225,7 @@ namespace Phabrico.Controllers
             newManiphestTask.IsOpen = true;
             newManiphestTask.DateModified = DateTimeOffset.UtcNow;
             newManiphestTask.Status = "open";
-            newManiphestTask.Language = browser.Session.Locale;
+            newManiphestTask.Language = Language.NotApplicable;
 
             Stage newStage = new Stage();
             newManiphestTask.Token = newStage.Create(database, browser, newManiphestTask);

@@ -66,6 +66,7 @@
     <EmbeddedResource Include="webapp\workbox-dfbb910f.js.map" />
     <EmbeddedResource Include="webapp\workbox-d4d5b410.js.map" />
     <EmbeddedResource Include="webapp\styles\fonts\ArchitectsDaughter-Regular.ttf" />
+    <EmbeddedResource Include="webapp\workbox-5490a1bd.js.map" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -77,6 +78,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\workbox-5490a1bd.js" />
+    <EmbeddedResource Include="webapp\js\diagramly\miro\MiroImporter.js" />
     <EmbeddedResource Include="webapp\connect\common\js\mxReader.js" />
     <EmbeddedResource Include="webapp\js\freehand\perfect-freehand.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\commons-codec-1.15.jar" />
@@ -2887,8 +2890,6 @@
     <EmbeddedResource Include="webapp\open.html" />
     <EmbeddedResource Include="webapp\plugins\animation.js" />
     <EmbeddedResource Include="webapp\plugins\anonymize.js" />
-    <EmbeddedResource Include="webapp\plugins\cConf-1-4-8.js" />
-    <EmbeddedResource Include="webapp\plugins\cConf-comments.js" />
     <EmbeddedResource Include="webapp\plugins\edgeConnection.js" />
     <EmbeddedResource Include="webapp\plugins\explore.js" />
     <EmbeddedResource Include="webapp\plugins\flow.js" />

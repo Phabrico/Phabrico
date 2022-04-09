@@ -2126,9 +2126,16 @@ namespace Phabrico.UnitTests.Selenium.Browser
             WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.ClassName("user-menu")).Any());
 
-            // open user menu
-            IWebElement userMenu = WebBrowser.FindElement(By.ClassName("user-menu"));
-            userMenu.Click();
+            IWebElement userMenu = null;
+            for (int tryOut = 0; tryOut < 5; tryOut++)
+            {
+                // open user menu
+                userMenu = WebBrowser.FindElement(By.ClassName("user-menu"));
+                userMenu.Click();
+
+                if (WebBrowser.FindElements(By.PartialLinkText("Change language")).Any(elem => elem.Displayed)) break;
+                Thread.Sleep(250);  // in Firefox-Selenium, the Click-action happens sometimes twice -> try again
+            }
 
             // click 'Change language'
             IWebElement mnuChangeLanguage = userMenu.FindElement(By.PartialLinkText("Change language"))

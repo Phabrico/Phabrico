@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Phabrico.UnitTests.Synchronization;
 using System;
@@ -628,6 +629,143 @@ namespace Phabrico.UnitTests.Selenium.Browser
             Assert.IsTrue(lastTransactionItem.Text.StartsWith("Johnny Birddog assigned the task to (none)"),
                           "verification if last transaction item"
                          );
+        }
+
+
+        /// <summary>
+        /// Creates a new Maniphest task and deletes it again via the Offline Changes screen
+        /// </summary>
+        /// <param name="browser"></param>
+        /// <param name="httpRootPath"></param>
+        [TestMethod]
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
+        public void CreateNewManiphestTask(Type browser, string httpRootPath)
+        {
+            Initialize(browser, httpRootPath);
+
+            Logon();
+
+            // click on 'Maniphest' in the menu navigator
+            IWebElement navigatorManiphest = WebBrowser.FindElement(By.PartialLinkText("Maniphest"));
+            navigatorManiphest.Click();
+
+            // wait a while
+            WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("maniphest-list-head")).Any());
+
+            // validate if Maniphest was opened
+            IWebElement maniphestTasksOverview = WebBrowser.FindElement(By.ClassName("maniphest-list-head"));
+            string maniphestTasksOverviewTitle = maniphestTasksOverview.Text;
+            Assert.IsTrue(maniphestTasksOverviewTitle.Equals("High"), "Unable to open Maniphest");
+
+            IWebElement btnCreateTask = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Create Task')]"));
+            btnCreateTask.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'Save Changes')]")).Any());
+
+            // Enter new task details
+            Actions builder = new Actions(WebBrowser);
+            builder.SendKeys("My new task");
+            builder.SendKeys(Keys.Tab);
+            builder.SendKeys("John");
+            builder.Perform();
+            Thread.Sleep(500); // wait for javascript
+            builder = new Actions(WebBrowser);
+            builder.SendKeys(Keys.Enter);
+            builder.Perform();
+            builder = new Actions(WebBrowser);
+            builder.SendKeys(Keys.Tab);
+            builder.SendKeys(Keys.Tab);
+            builder.SendKeys("Clas");
+            builder.Perform();
+            Thread.Sleep(500); // wait for javascript
+            builder = new Actions(WebBrowser);
+            builder.SendKeys(Keys.Enter);
+            builder.Perform();
+            builder = new Actions(WebBrowser);
+            builder.SendKeys(Keys.Tab);
+            builder.SendKeys("Mus");
+            builder.Perform();
+            Thread.Sleep(500); // wait for javascript
+            builder = new Actions(WebBrowser);
+            builder.SendKeys(Keys.Enter);
+            builder.Perform();
+            builder = new Actions(WebBrowser);
+            builder.SendKeys(Keys.Tab);
+            builder.SendKeys("This is a very difficult task");
+            
+            // save data
+            builder.SendKeys(Keys.Tab);
+            builder.SendKeys(Keys.Enter);
+            builder.Perform();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("maniphest-list-item-title")).Any(taskTitle => taskTitle.Text.Equals("T-1 My new task")));
+
+            // open task again
+            IWebElement newTask = WebBrowser.FindElements(By.ClassName("maniphest-list-item-title")).FirstOrDefault(taskTitle => taskTitle.Text.Equals("T-1 My new task"));
+            newTask.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("maniphest-task-header")).Any());
+
+            // validate task data
+            Assert.AreEqual("My new task\nOpen, High", WebBrowser.FindElement(By.ClassName("maniphest-task-header")).Text.Replace("\r", ""), "Invalid title");
+            Assert.AreEqual("This is a very difficult task", WebBrowser.FindElement(By.Id("remarkupContent")).Text, "Invalid task content");
+ 
+            // click on logo to go back to the homepage
+            IWebElement logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
+            logo.Click();
+
+            // wait a while
+            Thread.Sleep(1000);
+
+            // Open 'Offline changes' screen
+            IWebElement navigatorOfflineChanges = WebBrowser.FindElement(By.PartialLinkText("Offline changes"));
+            navigatorOfflineChanges.Click();
+
+            // wait a while
+            Thread.Sleep(1000);
+
+            // verify content of Offline Changes screen
+            Assert.IsTrue(WebBrowser.FindElements(By.XPath("//a[contains(text(), 'T-1: My new task')]")).Count(elem => elem.Displayed) == 1);
+            Assert.IsTrue(WebBrowser.FindElement(By.Id("tblOfflineChanges")).FindElements(By.TagName("TR")).Count == 2);
+
+            // click on undo button
+            IWebElement btnUndo = WebBrowser.FindElements(By.XPath("//a[contains(text(), 'Undo')]")).FirstOrDefault(elem => elem.Displayed);
+            btnUndo.Click();
+
+            // confirm Undo
+            IWebElement btnYes = WebBrowser.FindElement(By.Id("dlgConfirmUndo"))
+                               .FindElements(By.XPath("//button[text()=\"Yes\"]"))
+                               .FirstOrDefault(button => button.Displayed);
+            btnYes.Click();
+
+            // wait until javascript is finished
+            Thread.Sleep(1000);
+
+            // verify content of Offline Changes screen
+            Assert.IsTrue(WebBrowser.FindElements(By.XPath("//a[contains(text(), 'T-1: My new task')]")).Any(elem => elem.Displayed) == false);
+            Assert.IsTrue(WebBrowser.FindElement(By.Id("tblOfflineChanges")).FindElements(By.TagName("TR")).Count == 1);
+
+            // click on 'Maniphest' in the menu navigator
+            navigatorManiphest = WebBrowser.FindElement(By.PartialLinkText("Maniphest"));
+            navigatorManiphest.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("maniphest-list-head")).Any());
+
+            Assert.IsNull(WebBrowser.FindElements(By.ClassName("maniphest-list-item-title")).FirstOrDefault(taskTitle => taskTitle.Text.Equals("T-1 My new task")));
         }
     }
 }

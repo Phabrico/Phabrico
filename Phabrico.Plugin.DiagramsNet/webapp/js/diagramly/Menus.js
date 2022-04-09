@@ -1931,41 +1931,39 @@
 			editorUi.actions.addAction('testInspectPages', mxUtils.bind(this, function()
 			{
 				var file = editorUi.getCurrentFile();
-
-				console.log('editorUi', editorUi);
+				console.log('editorUi', editorUi, 'file', file);
 
 				if (file != null && file.isRealtime())
 				{
-					console.log('Checksum ownPages: ' +
+					console.log('Checksum ownPages',
 						editorUi.getHashValueForPages(
 							file.ownPages));
-					console.log('Checksum theirPages: ' +
+					console.log('Checksum theirPages',
 						editorUi.getHashValueForPages(
 							file.theirPages));
 					console.log('diff ownPages/theirPages',
 						editorUi.diffPages(file.ownPages,
 							file.theirPages));
 
-					if (file.shadowPages != null)
+					var shadow = file.getShadowPages();
+					
+					if (shadow != null)
 					{
-						console.log('Checksum shadowPages: ' +
-							editorUi.getHashValueForPages(
-								file.shadowPages));
+						console.log('Checksum shadowPages',
+							editorUi.getHashValueForPages(shadow));
 						console.log('diff shadowPages/ownPages',
-							editorUi.diffPages(file.shadowPages,
-								file.ownPages));
+							editorUi.diffPages(shadow, file.ownPages));
 						console.log('diff ownPages/shadowPages',
-							editorUi.diffPages(file.ownPages,
-								file.shadowPages));
+							editorUi.diffPages(file.ownPages, shadow));
 						console.log('diff theirPages/shadowPages',
-							editorUi.diffPages(file.theirPages,
-								file.shadowPages));
+							editorUi.diffPages(file.theirPages, shadow));
 					}
 
 					if (file.sync != null && file.sync.snapshot != null)
 					{
-						console.log('Checksum snapshot: ' +
-							editorUi.getHashValueForPages(file.sync.snapshot));
+						console.log('Checksum snapshot',
+							editorUi.getHashValueForPages(
+								file.sync.snapshot));
 						console.log('diff ownPages/snapshot',
 							editorUi.diffPages(file.ownPages,
 								file.sync.snapshot));
@@ -1983,9 +1981,6 @@
 
 					if (editorUi.pages != null)
 					{
-						console.log('Checksum actualPages: ' +
-							editorUi.getHashValueForPages(
-								editorUi.pages));
 						console.log('diff ownPages/actualPages',
 							editorUi.diffPages(file.ownPages,
 								editorUi.pages));
@@ -1994,13 +1989,26 @@
 								editorUi.pages));
 					}
 				}
+
+				if (file != null)
+				{
+					console.log('Shadow pages',
+						[editorUi.getXmlForPages(
+							file.getShadowPages())]);
+				}
+
+				if (editorUi.pages != null)
+				{
+					console.log('Checksum actualPages',
+						editorUi.getHashValueForPages(
+							editorUi.pages));
+				}
 			}));
 			
 			editorUi.actions.addAction('testFixPages', mxUtils.bind(this, function()
 			{
-				var file = editorUi.getCurrentFile();
-
 				console.log('editorUi', editorUi);
+				var file = editorUi.getCurrentFile();
 
 				if (file != null && file.isRealtime() &&
 					file.shadowPages != null)
@@ -2096,10 +2104,8 @@
 			this.put('testDevelop', new Menu(mxUtils.bind(this, function(menu, parent)
 			{
 				this.addMenuItems(menu, ['createSidebarEntry', 'showBoundingBox', '-',
-					'testInspectPages', 'testFixPages', '-',
-					'testCheckFile', 'testDiff', '-',
-					'testInspect', '-', 'testXmlImageExport', '-',
-					'testShowConsole'], parent);
+					'testInspectPages', 'testFixPages', '-', 'testCheckFile', 'testDiff', '-',
+					'testInspect', '-', 'testXmlImageExport', '-', 'testShowConsole'], parent);
 			})));
 		}
 
