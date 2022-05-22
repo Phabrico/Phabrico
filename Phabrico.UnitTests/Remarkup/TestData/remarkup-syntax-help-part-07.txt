@@ -106,7 +106,8 @@ This produces a block like this:<br>
    global $$variable_variable;
 }</code></pre></div>
 You can use <tt class='remarkup-monospaced'>lines=N</tt> to limit the vertical size of a chunk of code, and<br>
-<tt class='remarkup-monospaced'>name=some_name.ext</tt> to give it a name. For example, this:<br>
+<tt class='remarkup-monospaced'>name=some_name.ext</tt> to give it a name.<br>
+For example, this:<br>
 lang=text<br>
 lang=html, name=example.html, lines=12, counterexample<br>
 ...<p class='paragraph'></p>
@@ -162,7 +163,8 @@ color of the callout:<br>
 <br>
 In addition, you can use <tt class='remarkup-monospaced'>(NOTE)</tt>, <tt class='remarkup-monospaced'>(WARNING)</tt>, or <tt class='remarkup-monospaced'>(IMPORTANT)</tt> to get the<br>
 same effect but without <tt class='remarkup-monospaced'>(NOTE)</tt>, <tt class='remarkup-monospaced'>(WARNING)</tt>, or <tt class='remarkup-monospaced'>(IMPORTANT)</tt> appearing in<br>
-the rendered result. For example, this callout uses <tt class='remarkup-monospaced'>(NOTE)</tt>:<br>
+the rendered result.<br>
+For example, this callout uses <tt class='remarkup-monospaced'>(NOTE)</tt>:<br>
 <div class='remarkup-notification note'>Do not attend too few meetings.</div>
 ~~~~~~~~~~
 This will highlight the block using a highlighter for that language, if one is<N>[29]</N>

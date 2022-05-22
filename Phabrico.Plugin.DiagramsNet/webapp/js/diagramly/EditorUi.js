@@ -406,7 +406,12 @@
 	/**
 	 * Restores app defaults for UI
 	 */
-	EditorUi.prototype.shareCursorPosition = false;
+	EditorUi.prototype.shareCursorPosition = true;
+
+	/**
+	 * Restores app defaults for UI
+	 */
+	EditorUi.prototype.showRemoteCursors = true;
 
 	/**
 	 * Capability check for canvas export
@@ -536,6 +541,24 @@
 		return this.shareCursorPosition;
 	};
 
+	 /**
+	  * Returns true if offline app, which isn't a defined thing
+	  */
+	EditorUi.prototype.setShowRemoteCursors = function(value)
+	{
+		this.showRemoteCursors = value;
+
+		this.fireEvent(new mxEventObject('showRemoteCursorsChanged'));
+	};
+ 
+	/**
+	 * Returns true if offline app, which isn't a defined thing
+	 */
+	EditorUi.prototype.isShowRemoteCursors = function()
+	{
+		return this.showRemoteCursors;
+	};
+ 
 	/**
 	 * Returns true if offline app, which isn't a defined thing
 	 */
@@ -1763,6 +1786,9 @@
 		
 		if (cause)
 		{
+			EditorUi.debug('EditorUi.setFileData ParserError', [this],
+				'data', [data], 'node', [node], 'cause', [cause]);
+
 			throw new Error(mxResources.get('notADiagramFile') + ' (' + cause + ')');
 		}
 		else
@@ -3921,7 +3947,7 @@
 		var e = (resp != null && resp.error != null) ? resp.error : resp;
 
 		// Logs errors and writes stack to console
-		if (resp != null && resp.stack != null && resp.message != null)
+		if (resp != null && (urlParams['test'] == '1' || resp.stack != null) && resp.message != null)
 		{
 			try
 			{
@@ -6241,11 +6267,11 @@
 		var lblToSvgOption = document.createElement('option');
 		lblToSvgOption.setAttribute('value', 'lblToSvg');
 		mxUtils.write(lblToSvgOption, mxResources.get('lblToSvg'));
-		txtSettingsSelect.appendChild(lblToSvgOption);
+		
 
-		if (this.isOffline())
+		if (!this.isOffline() && !EditorUi.isElectronApp)
 		{
-			lblToSvgOption.setAttribute('disabled', 'disabled');
+			txtSettingsSelect.appendChild(lblToSvgOption);
 		}
 
 		mxEvent.addListener(txtSettingsSelect, 'change', mxUtils.bind(this, function()
@@ -11073,12 +11099,19 @@
 				
 				if (plain != null && plain.length > 0 && plain.substring(0, 18) == '%3CmxGraphModel%3E')
 				{
-					var tmp = decodeURIComponent(plain);
-							
-					if (this.isCompatibleString(tmp))
+					try
 					{
-						override = true;
-						plain = tmp;
+						var tmp = decodeURIComponent(plain);
+						
+						if (this.isCompatibleString(tmp))
+						{
+							override = true;
+							plain = tmp;
+						}
+					}
+					catch (e)
+					{
+						// ignore
 					}
 				}
 			
@@ -11130,6 +11163,14 @@
 					mxEvent.consume(evt);
 				}
 			}
+			//Miro is using unkown encoding instead of BASE64 as before
+			/*else if (spans != null && spans.length > 0 && spans[0].hasAttribute('data-meta')
+				&& spans[0].getAttribute('data-meta').substring(0, 14) == '<--(miro-data)')
+			{
+				var miroData = spans[0].getAttribute('data-meta');
+				miroData = miroData.substring(14, miroData.length - 15);
+				console.log(miroData);
+			}*/
 			else
 			{
 				// KNOWN: Paste from IE11 to other browsers on Windows
@@ -11162,7 +11203,8 @@
 						mxUtils.trim(decodeURIComponent(spans[0].textContent)) :
 						decodeURIComponent(xml);
 							
-					if (this.isCompatibleString(tmp))
+					if (tmp && (this.isCompatibleString(tmp) || 
+						tmp.substring(0, 20).replace(/\s/g, '').indexOf('{"isProtected":') == 0))
 					{
 						compat = true;
 						xml = tmp;
@@ -11177,6 +11219,22 @@
 				{
 					if (xml != null && xml.length > 0)
 					{
+						if (xml.substring(0, 20).replace(/\s/g, '').indexOf('{"isProtected":') == 0)
+						{
+							try
+							{
+								if (typeof MiroImporter !== 'undefined')
+								{
+									var miro = new MiroImporter();
+									xml = miro.importMiroJson(JSON.parse(xml));
+								}
+							}
+							catch(e)
+							{
+								console.log('Miro import error:', e);
+							}
+						}
+
 						this.pasteXml(xml, pasteAsLabel, compat, evt);
 
 						try
@@ -13278,7 +13336,7 @@
         		
         		while (index < lines.length && lines[index].charAt(0) == '#')
         		{
-        			var text = lines[index];
+        			var text = lines[index].replace(/\r$/,''); // Remove trailing \r if the file uses \r\n line breaks
         			index++;
         			
         			while (index < lines.length && text.charAt(text.length - 1) == '\\' &&
@@ -13404,7 +13462,7 @@
         		}
         		
     			// Converts identity and parent to index and validates XML attribute names
-    			var keys = this.editor.csvToArray(lines[index]);
+    			var keys = this.editor.csvToArray(lines[index].replace(/\r$/,''));
         		var identityIndex = null;
     			var parentIndex = null;
     			var attribs = [];
@@ -13446,7 +13504,7 @@
     			
     			for (var i = index + 1; i < lines.length; i++)
 	    		{
-	    			var values = this.editor.csvToArray(lines[i]);
+	    			var values = this.editor.csvToArray(lines[i].replace(/\r$/,''));
 	    			
 	    			if (values == null)
 	    			{
@@ -13479,34 +13537,36 @@
 		    				0, 0), style || 'whiteSpace=wrap;html=1;');
     					newCell.vertex = true;
     					newCell.id = id;
+
+						var targetCell = (cell != null) ? cell : newCell;
 						
 						for (var j = 0; j < values.length; j++)
 				    	{
-							graph.setAttributeForCell(newCell, attribs[j], values[j]);
+							graph.setAttributeForCell(targetCell, attribs[j], values[j]);
 				    	}
 						
 						if (labelname != null && labels != null)
 						{
-							var tempLabel = labels[newCell.getAttribute(labelname)];
+							var tempLabel = labels[targetCell.getAttribute(labelname)];
 							
 							if (tempLabel != null)
 							{
-								graph.labelChanged(newCell, tempLabel);
+								graph.labelChanged(targetCell, tempLabel);
 							}
 						}
 
 						if (stylename != null && styles != null)
 						{
-							var tempStyle = styles[newCell.getAttribute(stylename)];
+							var tempStyle = styles[targetCell.getAttribute(stylename)];
 							
 							if (tempStyle != null)
 							{
-								newCell.style = tempStyle;
+								targetCell.style = tempStyle;
 							}
 						}
 
-						graph.setAttributeForCell(newCell, 'placeholders', '1');
-						newCell.style = graph.replacePlaceholders(newCell, newCell.style, vars);
+						graph.setAttributeForCell(targetCell, 'placeholders', '1');
+						targetCell.style = graph.replacePlaceholders(targetCell, targetCell.style, vars);
 
 						if (exists)
 						{

@@ -1026,6 +1026,9 @@ msgstr "(Verantwoordelijke gewijzigd)"
 msgid "(Status modified)"
 msgstr "(Status gewijzigd)"
 
+msgid "(Comment modified)"
+msgstr "(Commentaar gewijzigd)"
+
 msgid "Project @@PROJECT@@ tagged"
 msgstr "Project @@PROJECT@@ gelabeld"
 

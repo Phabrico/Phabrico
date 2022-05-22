@@ -31,7 +31,8 @@ You can highlight specific lines with the `highlight` option:
 You can embed a Pholio mock by using braces to refer to it:<p class='paragraph'></p>
 {M123}<p class='paragraph'></p>
 By default the first four images from the mock set are displayed. This behavior<br>
-can be overridden with the <strong>image</strong> option. With the <strong>image</strong> option you can<br>
+can be overridden with the <strong>image</strong> option.<br>
+With the <strong>image</strong> option you can<br>
 provide one or more image IDs to display.<p class='paragraph'></p>
 You can set the image (or images) to display like this:<p class='paragraph'></p>
 {M123, image=12345}<br>

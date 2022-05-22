@@ -90,6 +90,17 @@
             var textAreaProjectContextMenu = new TextAreaContextMenu(textarea, "#", "project", "/project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
             var textAreaEmojiContextMenu = new TextAreaContextMenu(textarea, ":", "emoji", "/remarkup/emoji/", "Code", "Name");
             remarkup = new Remarkup(() => { });
+
+            // send csrf's periodically back so server does not expire them automatically
+            setInterval(function (evt) {
+                var data = new FormData();
+                data.append('token', '@@CSRF@@');
+
+                var xmlRequest = new XMLHttpRequest();
+                xmlRequest.open('POST', 'prod', true);
+                xmlRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+                xmlRequest.send(data);
+            }, 60000)
         }
 
         function inputChanged(value, right) {

@@ -1,18 +1,6 @@
 /**
  * Copyright (c) 2006-2012, JGraph Ltd
  */
-// Workaround for allowing target="_blank" in HTML sanitizer
-// see https://code.google.com/p/google-caja/issues/detail?can=2&q=&colspec=ID%20Type%20Status%20Priority%20Owner%20Summary&groupby=&sort=&id=1296
-if (typeof html4 !== 'undefined')
-{
-	html4.ATTRIBS['a::target'] = 0;
-	html4.ATTRIBS['source::src'] = 0;
-	html4.ATTRIBS['video::src'] = 0;
-	// Would be nice for tooltips but probably a security risk...
-	//html4.ATTRIBS['video::autoplay'] = 0;
-	//html4.ATTRIBS['video::autobuffer'] = 0;
-}
-
 // Workaround for handling named HTML entities in mxUtils.parseXml
 // LATER: How to configure DOMParser to just ignore all entities?
 (function()
@@ -951,9 +939,16 @@ Graph = function(container, model, renderHint, stylesheet, themes, standalone)
 	    
 	    this.connectionHandler.isOutlineConnectEvent = function(me)
 	    {
+			if (mxEvent.isShiftDown(me.getEvent()) && mxEvent.isAltDown(me.getEvent()))
+			{
+				return false;
+			}
+			else
+			{
 		    	return (this.currentState != null && me.getState() == this.currentState && timeOnTarget > 2000) ||
 		    		((this.currentState == null || mxUtils.getValue(this.currentState.style, 'outlineConnect', '1') != '0') &&
 		    		connectionHandleIsOutlineConnectEvent.apply(this, arguments));
+			}
 	    };
 	    
 	    // Adds shift+click to toggle selection state
@@ -1386,6 +1381,70 @@ Graph.createSvgImage = function(w, h, data, coordWidth, coordHeight)
 
     return new mxImage('data:image/svg+xml;base64,' + ((window.btoa) ? btoa(tmp) : Base64.encode(tmp, true)), w, h)
 };
+ 
+/**
+ * Helper function for creating an SVG node.
+ */
+Graph.createSvgNode = function(x, y, w, h, background)
+{
+	var svgDoc = mxUtils.createXmlDocument();
+	var root = (svgDoc.createElementNS != null) ?
+		svgDoc.createElementNS(mxConstants.NS_SVG, 'svg') :
+		svgDoc.createElement('svg');
+	
+	if (background != null)
+	{
+		if (root.style != null)
+		{
+			root.style.backgroundColor = background;
+		}
+		else
+		{
+			root.setAttribute('style', 'background-color:' + background);
+		}
+	}
+	
+	if (svgDoc.createElementNS == null)
+	{
+		root.setAttribute('xmlns', mxConstants.NS_SVG);
+		root.setAttribute('xmlns:xlink', mxConstants.NS_XLINK);
+	}
+	else
+	{
+		// KNOWN: Ignored in IE9-11, adds namespace for each image element instead. No workaround.
+		root.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:xlink', mxConstants.NS_XLINK);
+	}
+
+	root.setAttribute('version', '1.1');
+	root.setAttribute('width', w + 'px');
+	root.setAttribute('height', h + 'px');
+	root.setAttribute('viewBox', x + ' ' + y + ' ' + w + ' ' + h);
+	svgDoc.appendChild(root);
+
+	return root;
+};
+ 
+/**
+ * Helper function for creating an SVG node.
+ */
+Graph.htmlToPng = function(html, w, h, fn)
+{
+	var canvas = document.createElement('canvas');
+	canvas.width = w;
+	canvas.height = h;
+
+	var img = document.createElement('img');
+	img.onload = mxUtils.bind(this, function()
+	{
+		var ctx = canvas.getContext('2d');
+		ctx.drawImage(img, 0, 0)
+
+		fn(canvas.toDataURL());
+	});
+
+	img.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">' +
+		'<foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>em{color:red;}</style><em>I</em> lick <span>cheese</span></div></foreignObject></svg>');
+};
 
 /**
  * Removes all illegal control characters with ASCII code <32 except TAB, LF
@@ -1663,62 +1722,51 @@ Graph.removePasteFormatting = function(elt)
 };
 
 /**
- * Sanitizes the given HTML markup.
+ * Sanitizes the given HTML markup, allowing target attributes and
+ * data: protocol links to pages and custom actions.
  */
 Graph.sanitizeHtml = function(value, editing)
 {
-	// Uses https://code.google.com/p/google-caja/wiki/JsHtmlSanitizer
-	// NOTE: Original minimized sanitizer was modified to support
-	// data URIs for images, mailto and special data:-links.
-	// LATER: Add MathML to whitelisted tags
-	function urlX(link)
-	{
-		if (link != null && link.toString().toLowerCase().substring(0, 11) !== 'javascript:')
-		{
-			return link;
-		}
-		
-		return null;
-	};
-    function idX(id) { return id };
-	
-	return html_sanitize(value, urlX, idX);
+	return Graph.domPurify(value, false);
 };
 
 /**
- * Removes all script tags and attributes starting with on.
+ * Returns the size of the page format scaled with the page size.
  */
-Graph.sanitizeSvg = function(div)
+Graph.sanitizeLink = function(href)
 {
-	// Removes all attributes starting with on
-	var all = div.getElementsByTagName('*');
+	var a = document.createElement('a');
+	a.setAttribute('href', href);
+	Graph.sanitizeNode(a);
 	
-	for (var i = 0; i < all.length; i++)
-	{
-		for (var j = 0; j < all[i].attributes.length; j++)
-		{
-			var attr = all[i].attributes[j];
-			
-			if (attr.name.length > 2 && attr.name.toLowerCase().substring(0, 2) == 'on')
-			{
-				all[i].removeAttribute(attr.name);
-			}
-	    }
-	}
-	
-	function removeAllTags(tagName)
-	{
-		var nodes = div.getElementsByTagName(tagName);
-	
-		while (nodes.length > 0)
-		{
-			nodes[0].parentNode.removeChild(nodes[0]);
-		}
-	};
+	return a.getAttribute('href');
+};
 
-	removeAllTags('meta');
-	removeAllTags('script');
-	removeAllTags('metadata');
+/**
+ * Sanitizes the given DOM node in-place.
+ */
+Graph.sanitizeNode = function(value)
+{
+	return Graph.domPurify(value, true);
+};
+
+// Allows use tag in SVG with local references only
+DOMPurify.addHook('afterSanitizeAttributes', function(node)
+{
+	if (node.hasAttribute('xlink:href') && !node.getAttribute('xlink:href').match(/^#/))
+	{
+		node.remove();
+	} 
+});
+
+/**
+ * Sanitizes the given value.
+ */
+Graph.domPurify = function(value, inPlace)
+{
+	window.DOM_PURIFY_CONFIG.IN_PLACE = inPlace;
+	
+	return DOMPurify.sanitize(value, window.DOM_PURIFY_CONFIG);
 };
 
 /**
@@ -1746,9 +1794,9 @@ Graph.clipSvgDataUri = function(dataUri, ignorePreserveAspect)
 			{
 				// Strips leading XML declaration and doctypes
 				div.innerHTML = data.substring(idx);
-				
+
 				// Removes all attributes starting with on
-				Graph.sanitizeSvg(div);
+				Graph.sanitizeNode(div);
 				
 				// Gets the size and removes from DOM
 				var svgs = div.getElementsByTagName('svg');
@@ -2570,7 +2618,7 @@ Graph.prototype.init = function(container)
 		
 		return result;
 	};
-		
+	
 	/**
 	 * Returns the first parent that is not a part.
 	 */
@@ -2578,6 +2626,38 @@ Graph.prototype.init = function(container)
 	{
 		return mxUtils.getValue(this.getCurrentCellStyle(cell), 'part', '0') == '1' ||
 			this.isTableCell(cell) || this.isTableRow(cell);
+	};
+	
+	/**
+	 * Returns the first parent that is not a part.
+	 */
+	Graph.prototype.getCompositeParents = function(cells)
+	{
+		var lookup = new mxDictionary();
+		var newCells = [];
+	
+		for (var i = 0; i < cells.length; i++)
+		{
+			var cell = this.getCompositeParent(cells[i]);
+
+			if (this.isTableCell(cell))
+			{
+				cell = this.graph.model.getParent(cell);
+			}
+
+			if (this.isTableRow(cell))
+			{
+				cell = this.graph.model.getParent(cell);
+			}
+
+			if (cell != null && !lookup.get(cell))
+			{
+				lookup.put(cell, true);
+				newCells.push(cell);
+			}
+		}
+
+		return newCells;
 	};
 	
 	/**
@@ -2903,35 +2983,40 @@ Graph.prototype.openLink = function(href, target, allowOpener)
 	
 	try
 	{
-		// Workaround for blocking in same iframe
-		if (target == '_self' && window != window.top)
+		href = Graph.sanitizeLink(href);
+
+		if (href != null)
 		{
-			window.location.href = href;
-		}
-		else
-		{
-			// Avoids page reload for anchors (workaround for IE but used everywhere)
-			if (href.substring(0, this.baseUrl.length) == this.baseUrl &&
-				href.charAt(this.baseUrl.length) == '#' &&
-				target == '_top' && window == window.top)
+			// Workaround for blocking in same iframe
+			if (target == '_self' && window != window.top)
 			{
-				var hash = href.split('#')[1];
-	
-				// Forces navigation if on same hash
-				if (window.location.hash == '#' + hash)
-				{
-					window.location.hash = '';
-				}
-				
-				window.location.hash = hash;
+				window.location.href = href;
 			}
 			else
 			{
-				result = window.open(href, (target != null) ? target : '_blank');
-	
-				if (result != null && !allowOpener)
+				// Avoids page reload for anchors (workaround for IE but used everywhere)
+				if (href.substring(0, this.baseUrl.length) == this.baseUrl &&
+					href.charAt(this.baseUrl.length) == '#' &&
+					target == '_top' && window == window.top)
 				{
-					result.opener = null;
+					var hash = href.split('#')[1];
+		
+					// Forces navigation if on same hash
+					if (window.location.hash == '#' + hash)
+					{
+						window.location.hash = '';
+					}
+					
+					window.location.hash = hash;
+				}
+				else
+				{
+					result = window.open(href, (target != null) ? target : '_blank');
+		
+					if (result != null && !allowOpener)
+					{
+						result.opener = null;
+					}
 				}
 			}
 		}
@@ -10070,45 +10155,15 @@ if (typeof mxVertexHandler !== 'undefined')
 				}
 	
 				// Prepares SVG document that holds the output
-				var svgDoc = mxUtils.createXmlDocument();
-				var root = (svgDoc.createElementNS != null) ?
-			    	svgDoc.createElementNS(mxConstants.NS_SVG, 'svg') : svgDoc.createElement('svg');
-			    
-				if (background != null)
-				{
-					if (root.style != null)
-					{
-						root.style.backgroundColor = background;
-					}
-					else
-					{
-						root.setAttribute('style', 'background-color:' + background);
-					}
-				}
-			    
-				if (svgDoc.createElementNS == null)
-				{
-			    	root.setAttribute('xmlns', mxConstants.NS_SVG);
-			    	root.setAttribute('xmlns:xlink', mxConstants.NS_XLINK);
-				}
-				else
-				{
-					// KNOWN: Ignored in IE9-11, adds namespace for each image element instead. No workaround.
-					root.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:xlink', mxConstants.NS_XLINK);
-				}
-
 				var s = scale / vs;
 				var w = Math.max(1, Math.ceil(bounds.width * s) + 2 * border) +
 					((hasShadow && border == 0) ? 5 : 0);
 				var h = Math.max(1, Math.ceil(bounds.height * s) + 2 * border) +
 					((hasShadow && border == 0) ? 5 : 0);
-				
-				root.setAttribute('version', '1.1');
-				root.setAttribute('width', w + 'px');
-				root.setAttribute('height', h + 'px');
-				root.setAttribute('viewBox', ((crisp) ? '-0.5 -0.5' : '0 0') + ' ' + w + ' ' + h);
-				svgDoc.appendChild(root);
-			
+				var tmp = (crisp) ? -0.5 : 0;
+				var root = Graph.createSvgNode(tmp, tmp, w, h, background);
+				var svgDoc = root.ownerDocument;
+
 			    // Renders graph. Offset will be multiplied with state's scale when painting state.
 				// TextOffset only seems to affect FF output but used everywhere for consistency.
 				var group = (svgDoc.createElementNS != null) ?
@@ -13396,9 +13451,16 @@ if (typeof mxVertexHandler !== 'undefined')
 		
 		mxEdgeHandler.prototype.isOutlineConnectEvent = function(me)
 		{
-			return (this.currentTerminalState != null && me.getState() == this.currentTerminalState && timeOnTarget > 2000) ||
-				((this.currentTerminalState == null || mxUtils.getValue(this.currentTerminalState.style, 'outlineConnect', '1') != '0') &&
-				mxEdgeHandlerIsOutlineConnectEvent.apply(this, arguments));
+			if (mxEvent.isShiftDown(me.getEvent()) && mxEvent.isAltDown(me.getEvent()))
+			{
+				return false;
+			}
+			else
+			{
+				return (this.currentTerminalState != null && me.getState() == this.currentTerminalState && timeOnTarget > 2000) ||
+					((this.currentTerminalState == null || mxUtils.getValue(this.currentTerminalState.style, 'outlineConnect', '1') != '0') &&
+					mxEdgeHandlerIsOutlineConnectEvent.apply(this, arguments));
+			}
 		};
 		
 		// Shows secondary handle for fixed connection points
@@ -13720,12 +13782,12 @@ if (typeof mxVertexHandler !== 'undefined')
 								mxEvent.consume(evt);
 							}));
 							
-							this.linkHint.appendChildGraph.createRemoveIcon(mxResources.get('removeIt',
+							this.linkHint.appendChild(Graph.createRemoveIcon(mxResources.get('removeIt',
 								[mxResources.get('link')]), mxUtils.bind(this, function(evt)
 							{
 								this.graph.setLinkForCell(this.state.cell, null);
 								mxEvent.consume(evt);
-							}));
+							})));
 						}
 					}
 	
@@ -13742,6 +13804,11 @@ if (typeof mxVertexHandler !== 'undefined')
 							this.linkHint.appendChild(div);
 						}
 					}
+				}
+
+				if (this.linkHint != null)
+				{
+					Graph.sanitizeNode(this.linkHint);
 				}
 			}
 			catch (e)

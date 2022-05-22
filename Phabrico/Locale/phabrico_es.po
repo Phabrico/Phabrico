@@ -1026,6 +1026,9 @@ msgstr "(Responsable cambiado)"
 msgid "(Status modified)"
 msgstr "(Estado cambiado)"
 
+msgid "(Comment modified)"
+msgstr "(Comentario modificado)"
+
 msgid "Project @@PROJECT@@ tagged"
 msgstr "Proyecto  @@PROJECT@@ etiquetado"
 

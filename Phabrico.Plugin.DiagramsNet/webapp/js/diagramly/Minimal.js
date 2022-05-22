@@ -686,7 +686,7 @@ EditorUi.initMinimalTheme = function()
 					icon.style.top = '2px';
 					icon.style.width = '12px';
 					icon.style.height = '12px';
-					icon.style.cursor = 'default';
+					// icon.style.cursor = 'default';
 
 					var err = file.getRealtimeError();
 					var state = file.getRealtimeState();
@@ -710,16 +710,7 @@ EditorUi.initMinimalTheme = function()
 							status += ' (' + mxResources.get('disconnected') + ')';
 						}
 					}
-
-					mxEvent.addListener(icon, 'click', mxUtils.bind(this, function(evt)
-					{
-						this.showError(mxResources.get('realtimeCollaboration'),
-							mxUtils.htmlEntities(state == 1 ? mxResources.get('online') :
-								((err != null && err.message != null) ?
-								err.message : mxResources.get('disconnected'))));
-						mxEvent.consume(evt);
-					}));
-		
+					
 					icon.setAttribute('title', status);
 					elt.style.paddingRight = '4px';
 					elt.appendChild(icon);
@@ -1265,17 +1256,12 @@ EditorUi.initMinimalTheme = function()
 					ui.menus.addMenuItems(menu, ['synchronize'], parent);
 				}
 			}
+
 			ui.menus.addMenuItems(menu, ['autosave'], parent);
 
 			if (file != null)
 			{
 				menu.addSeparator(parent);
-
-				if (graph.isEnabled() && graph.isSelectionEmpty() &&
-					file.isRealtimeEnabled() && file.isRealtimeSupported())
-				{
-					this.addMenuItems(menu, ['shareCursor'], parent);
-				}
 
 				if (file.constructor == DriveFile)
 				{
@@ -1349,16 +1335,10 @@ EditorUi.initMinimalTheme = function()
 					menu.addSeparator(parent);
 
 					if (file != null)
-					{					
+					{		
 						if (file.constructor == DriveFile)
 						{
 							ui.menus.addMenuItems(menu, ['share'], parent);
-						}
-						
-						if (graph.isEnabled() && graph.isSelectionEmpty() &&
-							file.isRealtimeEnabled() && file.isRealtimeSupported())
-						{
-							this.addMenuItems(menu, ['shareCursor'], parent);
 						}
 						
 						if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
@@ -1559,13 +1539,21 @@ EditorUi.initMinimalTheme = function()
 				{
 					ui.menus.addMenuItem(menu, 'plugins', parent);
 				}
-	
-				menu.addSeparator(parent);
-				
-				if (ui.mode != App.MODE_ATLAS) 
-				{
-					this.addMenuItems(menu, ['fullscreen'], parent);
-				}	
+			}
+
+			var file = ui.getCurrentFile();
+			
+			if (file != null && file.isRealtimeEnabled() && file.isRealtimeSupported())
+			{
+				this.addMenuItems(menu, ['-', 'showRemoteCursors',
+					'shareCursor', '-'], parent);
+			}
+			
+			menu.addSeparator(parent);
+
+			if (urlParams['sketch'] != '1' && ui.mode != App.MODE_ATLAS) 
+			{
+				this.addMenuItems(menu, ['fullscreen'], parent);
 			}
 
 			if (urlParams['embedInline'] != '1' && Editor.isDarkMode() ||
@@ -2322,41 +2310,54 @@ EditorUi.initMinimalTheme = function()
 
 				if (urlParams['embed'] != '1')
 				{
-					if (ui.statusContainer.children.length == 0 ||
-						(ui.statusContainer.children.length == 1 &&
-						typeof ui.statusContainer.firstChild.getAttribute === 'function' &&
-						ui.statusContainer.firstChild.getAttribute('class') == null))
+					ui.statusContainer.style.display = 'inline-block';
+					statusVisible = true;
+
+					if (ui.statusContainer.children.length == 1 &&
+						ui.editor.getStatus() == '')
 					{
-						var title = (ui.statusContainer.firstChild != null &&
-							typeof ui.statusContainer.firstChild.getAttribute === 'function') ?
-							ui.statusContainer.firstChild.getAttribute('title') :
-							ui.editor.getStatus();
-						setNotificationTitle(title);
-						var file = ui.getCurrentFile();
-						var key = (file != null) ? file.savingStatusKey : DrawioFile.prototype.savingStatusKey;
-						
-						if (title == mxResources.get(key) + '...')
-						{
-							ui.statusContainer.innerHTML = '<img title="' + mxUtils.htmlEntities(
-								mxResources.get(key)) + '...' + '"src="' + Editor.tailSpin + '">';
-							ui.statusContainer.style.display = 'inline-block';
-							statusVisible = true;
-						}
-						else if (ui.buttonContainer.clientWidth > 6)
-						{	
-							ui.statusContainer.style.display = 'none';
-							statusVisible = false;
-						}
+						menubar.style.visibility = 'hidden';
 					}
 					else
 					{
-						ui.statusContainer.style.display = 'inline-block';
-						setNotificationTitle(null);
-						statusVisible = true;
+						if (ui.statusContainer.children.length == 0 ||
+							(ui.statusContainer.children.length == 1 &&
+							typeof ui.statusContainer.firstChild.getAttribute === 'function' &&
+							ui.statusContainer.firstChild.getAttribute('class') == null))
+						{
+							var title = (ui.statusContainer.firstChild != null &&
+								typeof ui.statusContainer.firstChild.getAttribute === 'function') ?
+								ui.statusContainer.firstChild.getAttribute('title') :
+								ui.editor.getStatus();
+							setNotificationTitle(title);
+							var file = ui.getCurrentFile();
+							var key = (file != null) ? file.savingStatusKey :
+								DrawioFile.prototype.savingStatusKey;
+							
+							if (title == mxResources.get(key) + '...')
+							{
+								ui.statusContainer.innerHTML = '<img title="' + mxUtils.htmlEntities(
+									mxResources.get(key)) + '...' + '"src="' + Editor.tailSpin + '">';
+								ui.statusContainer.style.display = 'inline-block';
+								statusVisible = true;
+							}
+							else if (ui.buttonContainer.clientWidth > 6)
+							{
+								ui.statusContainer.style.display = 'none';
+								statusVisible = false;
+							}
+						}
+						else
+						{
+							ui.statusContainer.style.display = 'inline-block';
+							setNotificationTitle(null);
+							statusVisible = true;
+						}
+
+						menubar.style.visibility = (menubar.clientWidth < 20 &&
+							!statusVisible) ? 'hidden' : '';
 					}
 				}
-
-				menubar.style.visibility = (menubar.clientWidth < 20 && !statusVisible) ? 'hidden' : '';
 			}));
 			
 			elt = addMenu('diagram', null, Editor.menuImage);

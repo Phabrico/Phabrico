@@ -1026,6 +1026,9 @@ msgstr "(Владелец изменен)"
 msgid "(Status modified)"
 msgstr "(Статус изменен)"
 
+msgid "(Comment modified)"
+msgstr "(Комментарий изменен)"
+
 msgid "Project @@PROJECT@@ tagged"
 msgstr "Проект @@PROJECT@@ помечен"
 

@@ -968,6 +968,7 @@ class Remarkup {
     }
 
     Save(button) {
+        button.disabled = true;
         var form = button.parentElement;
         while (form != null && form.tagName !== 'FORM') form = form.parentElement;
 

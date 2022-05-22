@@ -58,8 +58,7 @@ exit **Fullscreen** mode by clicking the button again or by pressing escape.
 You can use <tt class='remarkup-monospaced'>{nav ...}</tt> to render a stylized navigation sequence when helping<br>
 someone to locate something. This can be useful when writing documentation.<br>
 For example, you could give someone directions to purchase lemons:<br>
-<div class='remarkup-nav-sequence'><span class='remarkup-nav-sequence-item '><span class='phui-icon-view phui-font-fa fa-home'></span>Home</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '>Grocery Store</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '>Produce Section</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '><span class='phui-icon-view phui-font-fa fa-lemon-o'></span>Lemons</span></div>
-<br>
+<span class='remarkup-nav-sequence'><span class='remarkup-nav-sequence-item '><span class='phui-icon-view phui-font-fa fa-home'></span>Home</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '>Grocery Store</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '>Produce Section</span><span class='remarkup-nav-sequence-arrow'>&#x2B62;</span><span class='remarkup-nav-sequence-item '><span class='phui-icon-view phui-font-fa fa-lemon-o'></span>Lemons</span></span><br>
 To render this example, use this markup:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>{nav icon=home, name=Home &gt;
 Grocery Store &gt;

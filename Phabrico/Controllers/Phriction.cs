@@ -1091,9 +1091,17 @@ namespace Phabrico.Controllers
                         else
                         if (parentPhrictionDocument != null)
                         {
+                            // verify if content has been changed
+                            string modifiedContent = browser.Session.FormVariables[browser.Request.RawUrl]["textarea"];
+                            if (originalPhrictionDocument != null &&  modifiedContent.Replace("\r", "").Equals(originalPhrictionDocument.Content.Replace("\r", "")))
+                            {
+                                // content has not been changed -> stop processing
+                                return null;
+                            }
+
                             Phabricator.Data.Phriction modifiedPhrictionDocument = new Phabricator.Data.Phriction(parentPhrictionDocument);
                             modifiedPhrictionDocument.Name = browser.Session.FormVariables[browser.Request.RawUrl]["title"];
-                            modifiedPhrictionDocument.Content = browser.Session.FormVariables[browser.Request.RawUrl]["textarea"];
+                            modifiedPhrictionDocument.Content = modifiedContent;
                             modifiedPhrictionDocument.Projects = browser.Session.FormVariables[browser.Request.RawUrl]["tags"]?.Trim();
                             modifiedPhrictionDocument.Subscribers = browser.Session.FormVariables[browser.Request.RawUrl]["subscribers"]?.Trim();
                             modifiedPhrictionDocument.DateModified = DateTimeOffset.UtcNow;

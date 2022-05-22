@@ -53,11 +53,14 @@
 
                         @{TASKDETAIL
                         <div class="maniphest-list-item @@PROJECT-TOKENS@@">
-                            <table class="maniphest-list-item-table">
+                            <table class="maniphest-list-item-table @@TASK-STAGED@@">
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <span class="maniphest-list-icon phui-font-fa fa-exclamation-circle @@PRIORITY-COLOR@@" title="@@PRIORITY-HEADER@@"></span>
+                                            <div class="task-property">
+                                                <span class="maniphest-task-syncstate unfrozen" title="This modified task hasn't been uploaded yet to the Phabricator server" style="padding-left: 6px;"></span>
+                                                <span class="maniphest-list-icon phui-font-fa fa-exclamation-circle @@PRIORITY-COLOR@@" title="@@PRIORITY-HEADER@@"></span>
+                                            </div>
                                         </td>
                                         <td style="width: 100%;">
                                             <span class="maniphest-list-item-title">T@@TASK-ID@@

@@ -237,8 +237,8 @@ namespace Phabrico.Plugin
         /// <param name="e"></param>
         private static void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            Model.GitanosConfigurationRepositoryPath repository;
-            DateTime nextExecutiontimeStamp;
+            Model.GitanosConfigurationRepositoryPath[] affectedRepositories;
+            DateTime nextExecutiontimeStamp = DateTime.UtcNow.AddMilliseconds(executionDelay);
 
             lock (FileSystemWatcherAccess)
             {
@@ -248,32 +248,40 @@ namespace Phabrico.Plugin
                     return;
                 }
 
-                repository = Repositories.OrderByDescending(repo => repo.Directory.Length)
-                                         .FirstOrDefault(repo => e.FullPath.StartsWith(repo.Directory + "\\", StringComparison.OrdinalIgnoreCase)
-                                                              || e.FullPath.Equals(repo.Directory, StringComparison.OrdinalIgnoreCase)
-                                                        );
-                if (repository == null)
+                affectedRepositories = Repositories.OrderByDescending(repo => repo.Directory.Length)
+                                                   .Where(repo => e.FullPath.StartsWith(repo.Directory + "\\", 
+                                                                                        StringComparison.OrdinalIgnoreCase
+                                                                                       )
+                                                               || e.FullPath.Equals(repo.Directory, 
+                                                                                    StringComparison.OrdinalIgnoreCase
+                                                                                   )
+                                                         )
+                                                   .ToArray();
+
+                if (affectedRepositories.Any() == false)
                 {
                     // not a git repo -> skip it
                     _invalidDirectories.Add(e.FullPath);
                     return;
                 }
 
-                if (e.FullPath.Contains("\\.git\\logs\\HEAD") == false &&               //  .git\logs\HEAD is changed when a commit is created/deleted
-                    e.FullPath.Contains("\\.git\\refs\\remotes\\origin") == false &&    // .git\refs\remotes\origin is accessed by git-push command
-                    repository.PathIsIgnored(e.FullPath)
-                   )
+                foreach (Model.GitanosConfigurationRepositoryPath repository in affectedRepositories)
                 {
-                    // directory is excluded by means of .gitignore
-                    _invalidDirectories.Add(e.FullPath);
-                    return;
-                }
+                    if (e.FullPath.Contains("\\.git\\logs\\HEAD") == false &&               //  .git\logs\HEAD is changed when a commit is created/deleted
+                        RegexSafe.IsMatch(e.FullPath, @"\\.git\\(modules\\[^\\]+\\)*(logs\\)?refs\\remotes\\origin", System.Text.RegularExpressions.RegexOptions.None) == false &&    // .git\refs\remotes\origin is accessed by git-push command
+                        repository.PathIsIgnored(e.FullPath)
+                       )
+                    {
+                        // directory is excluded by means of .gitignore
+                        _invalidDirectories.Add(e.FullPath);
+                        return;
+                    }
 
-                // postpone action to be executed
-                lock (_directoryModificationTimesSynchronization)
-                {
-                    nextExecutiontimeStamp = DateTime.UtcNow.AddMilliseconds(executionDelay);
-                    _directoryModificationTimes[repository.Directory] = nextExecutiontimeStamp;
+                    // postpone action to be executed
+                    lock (_directoryModificationTimesSynchronization)
+                    {
+                        _directoryModificationTimes[repository.Directory] = nextExecutiontimeStamp;
+                    }
                 }
             }
 
@@ -281,61 +289,65 @@ namespace Phabrico.Plugin
 
             lock (FileSystemWatcherAccess)
             {
-                if (nextExecutiontimeStamp != _directoryModificationTimes[repository.Directory])
+
+                foreach (Model.GitanosConfigurationRepositoryPath repository in affectedRepositories)
                 {
-                    return;
-                }
-
-                Task.Delay(executionDelay)
-                    .ContinueWith((task, obj) =>
+                    if (nextExecutiontimeStamp != _directoryModificationTimes[repository.Directory])
                     {
-                        FileSystemWatcherParameter parameter = obj as FileSystemWatcherParameter;
+                        continue;
+                    }
 
-                        lock (_directoryModificationTimesSynchronization)
+                    Task.Delay(executionDelay)
+                        .ContinueWith((task, obj) =>
                         {
+                            FileSystemWatcherParameter parameter = obj as FileSystemWatcherParameter;
+
+                            lock (_directoryModificationTimesSynchronization)
+                            {
                             // check if postpone duration is exceeded
                             if (parameter == null) return;
 
-                            DateTime ealiestNewModificationTime;
-                            if (_directoryModificationTimes.TryGetValue(parameter.Repository.Directory, out ealiestNewModificationTime) == false) return;
-                            if (ealiestNewModificationTime > DateTime.UtcNow) return;
-                            _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(executionDelay);
-                        }
-
-                        Thread.Sleep(100);
-
-                        lock (_directoryModificationTimesSynchronization)
-                        {
-
-                            if (Directory.Exists(repository.Directory) == false)
-                            {
-                                // repository directory was deleted
-                                DirectoryMonitor.Stop();
-                                DirectoryMonitor.Start(_rootPaths);
+                                DateTime ealiestNewModificationTime;
+                                if (_directoryModificationTimes.TryGetValue(parameter.Repository.Directory, out ealiestNewModificationTime) == false) return;
+                                if (ealiestNewModificationTime > DateTime.UtcNow) return;
+                                _directoryModificationTimes[repository.Directory] = DateTime.UtcNow.AddMilliseconds(executionDelay);
                             }
-                            else
-                            {
-                                // reload git information for current repo
-                                parameter.Repository.Refresh();
 
-                                // update all browsers
-                                Logging.WriteInfo("Gitanos-notify", parameter.Repository.Directory);
-                                if (Repositories.Any(repo => repo.HasUnpushedCommits))
+                            Thread.Sleep(100);
+
+                            lock (_directoryModificationTimesSynchronization)
+                            {
+
+                                if (Directory.Exists(repository.Directory) == false)
                                 {
-                                    Http.Server.SendNotificationError("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                                    // repository directory was deleted
+                                    DirectoryMonitor.Stop();
+                                    DirectoryMonitor.Start(_rootPaths);
                                 }
                                 else
                                 {
-                                    Http.Server.SendNotificationInformation("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                                    // reload git information for current repo
+                                    parameter.Repository.Refresh();
+
+                                    // update all browsers
+                                    Logging.WriteInfo("Gitanos-notify", parameter.Repository.Directory);
+                                    if (Repositories.Any(repo => repo.HasUnpushedCommits))
+                                    {
+                                        Http.Server.SendNotificationError("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                                    }
+                                    else
+                                    {
+                                        Http.Server.SendNotificationInformation("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                                    }
                                 }
                             }
-                        }
-                    },
-                    new FileSystemWatcherParameter
-                    {
-                        Event = e,
-                        Repository = repository
-                    });
+                        },
+                        new FileSystemWatcherParameter
+                        {
+                            Event = e,
+                            Repository = repository
+                        });
+                }
             }
         }
 

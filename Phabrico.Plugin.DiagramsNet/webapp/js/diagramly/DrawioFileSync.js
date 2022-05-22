@@ -452,12 +452,22 @@ DrawioFileSync.prototype.updateOnlineState = function()
 			if (this.file.isRealtimeEnabled() && this.file.isRealtimeSupported())
 			{
 				var state = this.file.getRealtimeState();
-				var err = this.file.getRealtimeError();
+				var status = mxResources.get('disconnected');
 
-				this.ui.showError(mxResources.get('realtimeCollaboration'),
-				mxUtils.htmlEntities(state == 1 ? mxResources.get('online') :
-					((err != null && err.message != null) ?
-					err.message : mxResources.get('disconnected'))));
+				if (this.file.invalidChecksum)
+				{
+					status = mxResources.get('error') + ': ' + mxResources.get('checksum');
+				}
+				else if (this.ui.isOffline(true) || !this.isConnected())
+				{
+					status = mxResources.get('offline');
+				}
+				else if (state == 1)
+				{
+					status = mxResources.get('online');
+				}
+
+				this.ui.showError(mxResources.get('realtimeCollaboration'), mxUtils.htmlEntities(status));
 			}
 			else
 			{
@@ -500,7 +510,7 @@ DrawioFileSync.prototype.updateOnlineState = function()
 		{
 			elt.style.filter = 'invert(100%)';
 		}
-		
+
 		// Prevents focus
 		mxEvent.addListener(elt, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown',
 			mxUtils.bind(this, function(evt)
@@ -515,9 +525,10 @@ DrawioFileSync.prototype.updateOnlineState = function()
 	
 	if (this.collaboratorsElement != null)
 	{
-		var status = '';
+		this.collaboratorsElement.style.display = 'inline-block';
 		var src = Editor.cloudImage;
-		
+		var status = '';
+
 		if (!this.enabled)
 		{
 			status = mxResources.get('disconnected');
@@ -545,6 +556,7 @@ DrawioFileSync.prototype.updateOnlineState = function()
 		
 				if (state == 1)
 				{
+					this.collaboratorsElement.style.display = 'none';
 					src = Editor.syncImage;
 				}
 				else
@@ -1551,7 +1563,7 @@ DrawioFileSync.prototype.catchup = function(desc, success, error, abort)
 											[this], 'req', [req], 'status', req.getStatus(),
 											'cacheReadyRetryCount', cacheReadyRetryCount,
 											'maxCacheReadyRetries', this.maxCacheReadyRetries);
-								
+										
 										if (req.getStatus() >= 200 && req.getStatus() <= 299 &&
 											req.getText().length > 0)
 										{
@@ -1610,7 +1622,8 @@ DrawioFileSync.prototype.catchup = function(desc, success, error, abort)
 											}
 											// Retries if cache entry was not yet there
 											else if (cacheReadyRetryCount <= this.maxCacheReadyRetries - 1 &&
-												!failed && req.getStatus() != 401 && req.getStatus() != 503)
+												!failed && req.getStatus() != 401 && req.getStatus() != 503 &&
+												req.getStatus() != 410)
 											{
 												cacheReadyRetryCount++;
 												this.file.stats.cacheMiss++;
@@ -1805,7 +1818,7 @@ DrawioFileSync.prototype.fileSaved = function(pages, lastDesc, success, error, t
 			var source = this.file.getDescriptorRevisionId(lastDesc);
 			var target = this.file.getCurrentRevisionId();
 			
-			if (secret == null || urlParams['lockdown'] == '1')
+			if (secret == null || token == null || urlParams['lockdown'] == '1')
 			{
 				this.file.stats.msgSent++;
 				
@@ -1842,7 +1855,7 @@ DrawioFileSync.prototype.fileSaved = function(pages, lastDesc, success, error, t
 					acceptResponse = false;
 					error({code: App.ERROR_TIMEOUT, message: mxResources.get('timeout')});
 				}), this.ui.timeout);
-				
+
 				mxUtils.post(EditorUi.cacheUrl, this.getIdParameters() +
 					'&from=' + encodeURIComponent(source) + '&to=' + encodeURIComponent(target) +
 					'&msg=' + encodeURIComponent(msg) + ((secret != null) ? '&secret=' + encodeURIComponent(secret) : '') +

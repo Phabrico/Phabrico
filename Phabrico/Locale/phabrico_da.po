@@ -1026,6 +1026,9 @@ msgstr "(Ejer ændret)"
 msgid "(Status modified)"
 msgstr "(Status ændret)"
 
+msgid "(Comment modified)"
+msgstr "(Kommentarer ændret)"
+
 msgid "Project @@PROJECT@@ tagged"
 msgstr "Projekt @@PROJECT@@ tagget"
 

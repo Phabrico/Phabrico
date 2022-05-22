@@ -67,6 +67,8 @@
     <EmbeddedResource Include="webapp\workbox-d4d5b410.js.map" />
     <EmbeddedResource Include="webapp\styles\fonts\ArchitectsDaughter-Regular.ttf" />
     <EmbeddedResource Include="webapp\workbox-5490a1bd.js.map" />
+    <EmbeddedResource Include="webapp\workbox-50a29d49.js.map" />
+    <EmbeddedResource Include="webapp\workbox-fa8c4ce5.js.map" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -78,6 +80,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\workbox-50a29d49.js" />
+    <EmbeddedResource Include="webapp\workbox-fa8c4ce5.js" />
+    <EmbeddedResource Include="webapp\js\sanitizer\purify.min.js" />
     <EmbeddedResource Include="webapp\workbox-5490a1bd.js" />
     <EmbeddedResource Include="webapp\js\diagramly\miro\MiroImporter.js" />
     <EmbeddedResource Include="webapp\connect\common\js\mxReader.js" />
@@ -2095,7 +2100,6 @@
     <EmbeddedResource Include="webapp\js\PostConfig.js" />
     <EmbeddedResource Include="webapp\js\PreConfig.js" />
     <EmbeddedResource Include="webapp\js\rough\rough.min.js" />
-    <EmbeddedResource Include="webapp\js\sanitizer\sanitizer.min.js" />
     <EmbeddedResource Include="webapp\js\shapes.min.js" />
     <EmbeddedResource Include="webapp\js\spin\spin.min.js" />
     <EmbeddedResource Include="webapp\js\stencils.min.js" />

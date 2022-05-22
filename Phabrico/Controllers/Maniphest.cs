@@ -707,6 +707,13 @@ namespace Phabrico.Controllers
                     viewPage.SetText("TASKS-AVAILABLE", "no");
                 }
 
+                // get all staged task data
+                Stage.Data[] stagedData = stageStorage.Get(database, Language.NotApplicable)
+                                                      .Where(data => data.TokenPrefix.Equals("PHID-TASK-")
+                                                                  || data.TokenPrefix.Equals("PHID-TRAN-")
+                                                            )
+                                                      .ToArray();
+
                 // load maniphest overview
                 foreach (Phabricator.Data.PhabricatorObject taskGroup in taskGroups.OrderBy(group => group))
                 {
@@ -796,8 +803,8 @@ namespace Phabrico.Controllers
 
                             // if task was modified, draw a flame and take the task info from the staging area
                             string taskState;
-                            Phabricator.Data.Maniphest stagedManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTask.Token, browser.Session.Locale);
-                            if (stagedManiphestTask != null)
+                            bool isStaged = false;
+                            if (stagedData.Any(data => data.Token.Equals(maniphestTask.Token)))
                             {
                                 if (stageStorage.IsFrozen(database, browser, maniphestTask.Token))
                                 {
@@ -808,7 +815,13 @@ namespace Phabrico.Controllers
                                     taskState = "unfrozen";
                                 }
 
-                                maniphestTask = stagedManiphestTask;
+                                isStaged = true;
+
+                                Phabricator.Data.Maniphest stagedManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTask.Token, browser.Session.Locale);
+                                if (stagedManiphestTask != null)
+                                {
+                                    maniphestTask = stagedManiphestTask;
+                                }
                             }
                             else
                             {
@@ -825,6 +838,7 @@ namespace Phabrico.Controllers
                             task.SetText("TASK-UNSYNCED", taskState, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                             task.SetText("PRIORITY-HEADER", _maniphestPriorities[priorityTasks.Priority].Name);
                             task.SetText("TASK-STATUS", _maniphestStatuses[maniphestTask.Status].Name);
+                            task.SetText("TASK-STAGED", isStaged ? "staged" : "");
 
                             if (string.IsNullOrEmpty(maniphestTask.Projects))
                             {
@@ -1045,6 +1059,8 @@ namespace Phabrico.Controllers
 
                         case "comment":
                             CreateNewManiphestTaskMetadata(database, token);
+                            string maniphestRootPath = Http.Server.RootPath + url.Substring(0, url.Length - parameters[0].Length).Trim('/');
+                            httpServer.InvalidateNonStaticCache(maniphestRootPath);  // clear also cache of maniphest home page to refresh the staged icon of this task
                             return new Http.Response.HttpRedirect(httpServer, browser, "maniphest/" + parameters[0] + "/");
 
                         case "edit":
@@ -1197,8 +1213,10 @@ namespace Phabrico.Controllers
                         // if task was modified, draw a flame and take the task info from the staging area
                         string taskState;
                         Storage.Stage stageStorage = new Storage.Stage();
-                        Phabricator.Data.Maniphest stagedManiphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, maniphestTask.Token, browser.Session.Locale);
-                        if (stagedManiphestTask != null)
+                        bool isStaged = stageStorage.Get(database, Language.NotApplicable)
+                                                    .Any(data => data.Token.Equals(maniphestTask.Token));
+
+                        if (isStaged)
                         {
                             if (stageStorage.IsFrozen(database, browser, maniphestTask.Token))
                             {

@@ -106,17 +106,20 @@ Links to pages which do not exist are shown in red. Links to pages which exist<b
 but which the viewer does not have permission to see are shown with a lock<br>
 icon, and the link will not disclose the page title.<p class='paragraph'></p>
 If you begin a link path with <tt class='remarkup-monospaced'>./</tt> or <tt class='remarkup-monospaced'>../</tt>, the remainder of the path will be<br>
-evaluated relative to the current wiki page. For example, if you are writing<br>
+evaluated relative to the current wiki page.<br>
+For example, if you are writing<br>
 content for the document <tt class='remarkup-monospaced'>fruit/</tt> a link to <tt class='remarkup-monospaced'>[[./guava]]</tt> is the same as a link<br>
 to <tt class='remarkup-monospaced'>[[fruit/guava]]</tt> from elsewhere.<p class='paragraph'></p>
-Relative links may use <tt class='remarkup-monospaced'>../</tt> to transverse up the document tree. From the<br>
+Relative links may use <tt class='remarkup-monospaced'>../</tt> to transverse up the document tree.<br>
+From the<br>
 <tt class='remarkup-monospaced'>produce/vegetables/</tt> page, you can use <tt class='remarkup-monospaced'>[[../fruit/guava]]</tt> to link to the<br>
 <tt class='remarkup-monospaced'>produce/fruit/guava</tt> page.<p class='paragraph'></p>
 Relative links do not work when used outside of wiki pages. For example,<br>
 you can&#39;t use a relative link in a comment on a task, because there is no<br>
 reasonable place for the link to start resolving from.<p class='paragraph'></p>
 When documents are moved, relative links are not automatically updated: they<br>
-are preserved as currently written. After moving a document, you may need to<br>
+are preserved as currently written.<br>
+After moving a document, you may need to<br>
 review and adjust any relative links it contains.<br>
 <h1 class='remarkup-header'><a name='literal-blocks' style='padding-top: 80px;'></a>Literal Blocks </h1>
 To place text in a literal block use <tt class='remarkup-monospaced'>%%%</tt>:<p class='paragraph'></p>

@@ -1026,6 +1026,9 @@ msgstr "(proprietar modificat)"
 msgid "(Status modified)"
 msgstr "(Stare modificată)"
 
+msgid "(Comment modified)"
+msgstr "(Comentariu modificat)"
+
 msgid "Project @@PROJECT@@ tagged"
 msgstr "Proiect @@PROJECT@@ etichetat"
 

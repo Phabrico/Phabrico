@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Phabrico.Plugin
 {
@@ -238,6 +239,9 @@ namespace Phabrico.Plugin
                 {
                     // add colon character
                     repositoryDirectory = string.Format("{0}:{1}", repositoryDirectory[0], repositoryDirectory.Substring(1));
+
+                    // convert URL-formatted characters
+                    repositoryDirectory = HttpUtility.UrlDecode(repositoryDirectory);
                 }
 
                 if (string.IsNullOrWhiteSpace(repositoryDirectory) || Directory.Exists(repositoryDirectory) == false)  // if invalid directory -> show overview screen

@@ -1,9 +1,11 @@
 ﻿using Phabrico.Http;
+using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup.Rules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Phabrico.Parsers.Remarkup
@@ -139,7 +141,8 @@ namespace Phabrico.Parsers.Remarkup
                                              (remarkupRule is RuleFormattingItalic) == false &&
                                              (remarkupRule is RuleFormattingMonospace) == false &&
                                              (remarkupRule is RuleFormattingStrikeThrough) == false &&
-                                             (remarkupRule is RuleFormattingUnderline) == false;
+                                             (remarkupRule is RuleFormattingUnderline) == false &&
+                                             (remarkupRule is RuleNavigation) == false;
 
                                 ruleStartsAfterWhiteSpace = remarkupRule.Text.EndsWith(" ");
 
@@ -172,14 +175,75 @@ namespace Phabrico.Parsers.Remarkup
                     }
                     else
                     {
+                        bool addNewLineAfterFullStop = false;
                         if (unprocessedRemarkupText.Length > 0)
                         {
                             byte[] utf16 = System.Text.UnicodeEncoding.Unicode.GetBytes( unprocessedRemarkupText );
 
                             if (unprocessedRemarkupText.Length == 1 || utf16[1] == 0x00)
                             {
-                                html += HttpUtility.HtmlEncode(unprocessedRemarkupText[0]);
-                                ruleStartsAfterWhiteSpace = unprocessedRemarkupText[0] == ' ';
+                                char character = unprocessedRemarkupText[0];
+                                html += HttpUtility.HtmlEncode(character);
+                                ruleStartsAfterWhiteSpace = character == ' ';
+                                
+                                if (character == '.' && unprocessedRemarkupText.Length > 1)
+                                {
+                                    char nextCharacter = unprocessedRemarkupText[1];
+                                    if (nextCharacter == ' ' || nextCharacter == '\t')
+                                    {
+                                        var latestCharacters = remarkupParserOutput.TokenList
+                                                                                    .OfType<RemarkupRule>()
+                                                                                    .Reverse<RemarkupRule>()
+                                                                                    .TakeWhile(rule => rule is RuleUnknownToken
+                                                                                                    || rule is RuleNewline
+                                                                                                    || rule is RuleRegular
+                                                                                                    || rule is RuleFormatting
+                                                                                                    || rule is RuleNavigation
+                                                                                              )
+                                                                                    .Reverse<RemarkupRule>()
+                                                                                    .Select(rule => rule is RuleNewline 
+                                                                                                         ? "\n" 
+                                                                                                         : rule.Html ?? rule.Text
+                                                                                           );
+                                        string latestText = string.Join("", latestCharacters).Trim('\n');
+                                        latestText = HttpUtility.HtmlDecode(RegexSafe.Replace(latestText, "<[^>]+>", ""));  // remove HTML tags
+                                        latestText = RegexSafe.Replace(latestText, "[.][.]+", ".");  // replace subsequent dots (...) by single dot (.)
+                                        latestText = RegexSafe.Replace(latestText, "[.] *([})\\]])", "$1");  // remove dots in case they are at the end of in-brackets
+                                        int positionLatestNewline = latestText.LastIndexOf('\n');
+
+                                        List<Match> fullStops = RegexSafe.Matches(latestText.Substring(positionLatestNewline + 1) + ".", 
+                                                                                  "[.]")
+                                                                         .OfType<Match>()
+                                                                         .ToList();
+                                        for (int f=0; f<fullStops.Count-1; f++)
+                                        {
+                                            if (fullStops[f].Index + 10 >= fullStops[f + 1].Index)
+                                            {
+                                                fullStops.RemoveAt(f);
+                                                f--;
+                                            }
+                                        }
+
+                                        if (fullStops.Count >= 2)
+                                        {
+                                            addNewLineAfterFullStop = true;
+                                        }
+                                        else
+                                        {
+                                            int positionNextFullStop = RegexSafe.Match(unprocessedRemarkupText.Substring(1), "[.\n]", RegexOptions.Singleline).Index;
+                                            if (latestText.Length > 60 && 
+                                                latestText.Length + positionNextFullStop > 200 &&
+                                                positionNextFullStop > 15
+                                               )
+                                            {
+                                                addNewLineAfterFullStop = true;
+                                            }
+                                        }
+
+                                        int currentPositionInRemarkup = remarkupText.IndexOf(unprocessedRemarkupText);
+                                        string processedRemarkupText = remarkupText.Substring(0, currentPositionInRemarkup);
+                                    }
+                                }
                             }
                             else
                             {
@@ -194,6 +258,14 @@ namespace Phabrico.Parsers.Remarkup
                             
                             remarkupParserOutput.TokenList.Add(new Rules.RuleUnknownToken(unprocessedRemarkupText[0].ToString()));
                             unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
+
+                            if (addNewLineAfterFullStop)
+                            {
+                                html += "<br>\n";
+                                while (unprocessedRemarkupText.StartsWith(" ")) unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
+
+                                remarkupParserOutput.TokenList.Add(new Rules.RuleUnknownToken(" "));
+                            }
                         }
 
                         ruleStartsOnNewLine = false;

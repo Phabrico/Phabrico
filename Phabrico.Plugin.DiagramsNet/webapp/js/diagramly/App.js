@@ -1117,6 +1117,13 @@ App.main = function(callback, createUi)
 						mxEvent.removeListener(window, 'message', configHandler);
 						Editor.configure(data.config, true);
 						mxSettings.load();
+
+						//To enable transparent iframe in dark mode (e.g, in gitlab)
+						if (data.colorSchemeMeta)
+						{
+							mxmeta('color-scheme', 'dark light');
+						}
+
 						doMain();
 					}
 				}
@@ -3488,6 +3495,9 @@ App.prototype.filterDrafts = function(filePath, guid, callback)
 	{
 		this.getDatabaseItems(mxUtils.bind(this, function(items)
 		{
+			EditorUi.debug('App.filterDrafts',
+				[this], 'items', items);
+
 			// Collects orphaned drafts
 			for (var i = 0; i < items.length; i++)
 			{
@@ -7585,7 +7595,7 @@ App.prototype.updateUserElement = function()
 					div.style.background = Editor.isDarkMode() ? '' : 'whiteSmoke';
 					div.style.borderTop = '1px solid #e0e0e0';
 					div.style.whiteSpace = 'nowrap';
-										
+					
 					if (urlParams['sketch'] == '1')
 					{
 						var btn = mxUtils.button(mxResources.get('share'), mxUtils.bind(this, function()
@@ -7594,7 +7604,6 @@ App.prototype.updateUserElement = function()
 						}));
 						btn.className = 'geBtn';
 						div.appendChild(btn);
-						this.userPanel.appendChild(div);
 				
 						if (this.commentsSupported())
 						{
@@ -7606,6 +7615,8 @@ App.prototype.updateUserElement = function()
 							div.appendChild(btn);
 							this.userPanel.appendChild(div);
 						}
+
+						this.userPanel.appendChild(div);
 					}
 					else
 					{
@@ -7616,9 +7627,29 @@ App.prototype.updateUserElement = function()
 								this.userPanel.parentNode.removeChild(this.userPanel);
 							}
 						}));
+
 						btn.className = 'geBtn';
 						div.appendChild(btn);
 						this.userPanel.appendChild(div);
+					}
+
+					if (uiTheme == 'min')
+					{
+						var file = this.getCurrentFile();
+			
+						if (file != null && file.isRealtimeEnabled() && file.isRealtimeSupported())
+						{
+							div = div.cloneNode(false);
+							div.style.fontSize = '9pt';
+							var err = file.getRealtimeError();
+							var state = file.getRealtimeState();
+
+							mxUtils.write(div, mxResources.get('realtimeCollaboration') + ': ' +
+								(state == 1 ? mxResources.get('online') :
+									((err != null && err.message != null) ?
+									err.message : mxResources.get('disconnected'))));
+							this.userPanel.appendChild(div);
+						}
 					}
 
 					document.body.appendChild(this.userPanel);

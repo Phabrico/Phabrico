@@ -1433,6 +1433,18 @@ width: 30px;
     flex-wrap: wrap;
 }
 
+    .maniphest-list-overview .maniphest-list-item-table div.task-property {
+        display: flex;
+    }
+        .maniphest-list-overview .maniphest-list-item-table div.task-property .maniphest-task-syncstate.unfrozen {
+            display: none;
+        }
+
+    .maniphest-list-overview .maniphest-list-item-table.staged div.task-property .maniphest-task-syncstate.unfrozen {
+        display: unset;
+        padding-left: 6px;
+    }
+
 .maniphest-list.no-toc .toc {
     display: none;
 }

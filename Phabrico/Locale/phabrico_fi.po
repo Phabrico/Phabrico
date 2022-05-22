@@ -1026,6 +1026,9 @@ msgstr "(Omistaja muutettu)"
 msgid "(Status modified)"
 msgstr "(Tila muutettu)"
 
+msgid "(Comment modified)"
+msgstr "(Kommentti muutettu)"
+
 msgid "Project @@PROJECT@@ tagged"
 msgstr "Hanke @@PROJECT@@ merkitty"
 

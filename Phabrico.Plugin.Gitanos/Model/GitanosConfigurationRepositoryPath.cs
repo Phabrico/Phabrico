@@ -93,12 +93,20 @@ namespace Phabrico.Plugin.Model
                             {
                                 continue;
                             }
-                         
-                            // add new submodule to current repo
-                            GitanosConfigurationRepositoryPath newRepo = new GitanosConfigurationRepositoryPath(_directory + "\\" + submodule.Path);
-                            if (newRepo.Directory != null)
+
+                            GitanosConfigurationRepositoryPath subRepo = SubModules.FirstOrDefault(r => r.Directory.Equals(_directory + "\\" + submodule.Path));
+                            if (subRepo != null)
                             {
-                                SubModules.Add(newRepo);
+                                subRepo.Refresh();
+                            }
+                            else
+                            {
+                                // add new submodule to current repo
+                                GitanosConfigurationRepositoryPath newRepo = new GitanosConfigurationRepositoryPath(_directory + "\\" + submodule.Path);
+                                if (newRepo.Directory != null && SubModules.Any(module => module.Directory.Equals(newRepo.Directory)) == false)
+                                {
+                                    SubModules.Add(newRepo);
+                                }
                             }
                         }
 

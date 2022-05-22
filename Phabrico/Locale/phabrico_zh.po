@@ -1026,6 +1026,9 @@ msgstr "(责任人已变更)"
 msgid "(Status modified)"
 msgstr "(状态已经改变)"
 
+msgid "(Comment modified)"
+msgstr "(如何修改)"
+
 msgid "Project @@PROJECT@@ tagged"
 msgstr "增加了@@PROJECT@@项目"
 

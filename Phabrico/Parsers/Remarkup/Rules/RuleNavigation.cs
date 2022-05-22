@@ -88,7 +88,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             }
 
             remarkup = remarkup.Substring(match.Length);
-            html = "<div class='remarkup-nav-sequence'>" + html.Substring(htmlNavigationArrowRight.Length) + "</div>";
+            html = "<span class='remarkup-nav-sequence'>" + html.Substring(htmlNavigationArrowRight.Length) + "</span>";
 
             Length = match.Length;
 

@@ -185,20 +185,20 @@ function P2PCollab(ui, sync, channelId)
 	};
 
 	ui.addListener('shareCursorPositionChanged', this.shareCursorPositionListener);
-
+	
 	this.selectionChangeListener = function(sender, evt)
 	{
 		var mapToIds = function(c)
 		{
-			return c.id;
+			return (c != null) ? c.id : null;
 		};
 
 		var pageId = (ui.currentPage != null) ?
 			ui.currentPage.getId() : null;
-		var added = evt.getProperty('added'),
-			removed = evt.getProperty('removed');
+		var added = evt.getProperty('added');
+		var removed = evt.getProperty('removed');
 
-		//Added/removed looks like inverted
+		// Added/removed are inverted
 		sendMessage('selectionChange', {pageId: pageId,
 			removed: added? added.map(mapToIds) : [],
 			added: removed? removed.map(mapToIds) : []
@@ -216,6 +216,7 @@ function P2PCollab(ui, sync, channelId)
 			entry.lastCursor != null)
 		{
 			if (entry.lastCursor.hide != null ||
+				!ui.isShowRemoteCursors() ||
 				(entry.lastCursor.pageId != null &&
 				entry.lastCursor.pageId != pageId))
 			{
@@ -269,6 +270,7 @@ function P2PCollab(ui, sync, channelId)
 	graph.getView().addListener(mxEvent.SCALE, this.cursorHandler);
 	graph.getView().addListener(mxEvent.TRANSLATE, this.cursorHandler);
 	graph.getView().addListener(mxEvent.SCALE_AND_TRANSLATE, this.cursorHandler);
+	ui.addListener('showRemoteCursorsChanged', this.cursorHandler);
 	ui.editor.addListener('pageSelected', this.cursorHandler);
 
 	function processMsg(msg, fromCId)
@@ -405,25 +407,33 @@ function P2PCollab(ui, sync, channelId)
 						for (var i = 0; i < msgData.removed.length; i++)
 						{
 							var id = msgData.removed[i];
-							var handler = selection[id];
-							delete selection[id];
-							
-							if (handler != null)
+
+							if (id != null)
 							{
-								handler.destroy();
+								var handler = selection[id];
+								delete selection[id];
+								
+								if (handler != null)
+								{
+									handler.destroy();
+								}
 							}
 						}
 						
 						for (var i = 0; i < msgData.added.length; i++)
 						{
 							var id = msgData.added[i];
-							var cell = graph.model.getCell(id);
 
-							if (cell != null)
-							{	
-								selection[id] = graph.highlightCell(cell,
-									connectedSessions[sessionId].color, 60000,
-									SELECTION_OPACITY, 3);
+							if (id != null)
+							{
+								var cell = graph.model.getCell(id);
+
+								if (cell != null)
+								{	
+									selection[id] = graph.highlightCell(cell,
+										connectedSessions[sessionId].color, 60000,
+										SELECTION_OPACITY, 3);
+								}
 							}
 						}
 					}
@@ -762,6 +772,7 @@ function P2PCollab(ui, sync, channelId)
 			graph.getView().removeListener(mxEvent.TRANSLATE, this.cursorHandler);
 			graph.getView().removeListener(mxEvent.SCALE_AND_TRANSLATE, this.cursorHandler);
 			ui.editor.removeListener('pageSelected', this.cursorHandler);
+			ui.removeListener(this.cursorHandler);
 		}
 
 		//Close the socket
