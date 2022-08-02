@@ -2470,15 +2470,6 @@ function tabChanged(tabButton) {
     }
 }
 
-function toggleFullScreenImage(e) {
-    var imageLocator = e.target.closest('div.image-locator');
-    if (imageLocator.classList.toggle("full-screen")) {
-        document.body.classList.add('full-screen-image');
-    } else {
-        document.body.classList.remove('full-screen-image');
-    }
-}
-
 function toHTML(text) {
    var div = document.createElement('div');
    div.innerText = text;

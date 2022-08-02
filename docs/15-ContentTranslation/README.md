@@ -4,8 +4,12 @@ By default, Phabrico contains some basic multilingual functionality.
 By installing the PhrictionTranslator plugin, you can also have translated copies of your Phriction documents.
 These translated copies are local copies and will not be uploaded to Phabricator.
 
-The translations themselves are performed by [DeepL](https://www.deepl.com) and are stored in a separate database file (i.e. phabico.translation).
+The translations themselves are performed by an translation engine and are stored in a separate database file (i.e. phabico.translation).
 The translations can still be manually edited afterwards.
+
+There are 2 translation engines:
+- [DeepL](https://www.deepl.com)
+- MS Excel Importer/Exporter
 
 ## Quick guide
 Select the document you want to translate and click on *Translate* in the Actions menu:
@@ -18,8 +22,8 @@ A dialog will popup in which you enter the translation parameters:
 
 | Parameter | Description
 | --- | ---
-| Translation engine | The name of the translation service. Currently only DeepL (Free) is implemented.
-| API Key            | The API key for authenticating to the translation service
+| Translation engine | The name of the translation engine
+| API Key            | Only for DeepL translation engine. The API key for authenticating to the translation engine
 | Source language    | The language in which the document is currently written (and how it appears in Phabricator)
 | Target language    | The language in which the document should be translated to
 
@@ -106,6 +110,36 @@ The 'big blue world icon' will also disappear:
 
 
 > ⚠️ Once you have approved a translation, you cannot undo it afterwards
+
+## Excel Import/Export
+When using the Excel translation engine, the content is translated in 2 steps.
+
+![ContentTranslation-21](ContentTranslation-21.png) <br />
+
+First you export the document by clicking on the *Export File* button.
+An Excel file will be generated, which contains 3 columns:
+
+| Excel column name | Description
+| --- | ---
+| Key           | contains generated code to uniquely identify the text to be translated. The translator should not touch this data.
+| Original text | contains all the texts to be translated in the original language.
+| Translation   | should be filled in by the translator in the requested language.
+
+![ContentTranslation-22](ContentTranslation-22.png) <br />
+
+When the translator has finished the translation, the Excel file can be imported again by clicking on the *Import File* button:
+![ContentTranslation-21](ContentTranslation-21.png) <br />
+
+> ⚠️ The Excel translator has some known shortcomings<br/>
+> It uses for example some kind of a word-per-word translation in case the sentence contains special tags, like<br />
+> for example hyperlinks. This might generate some confused translations<br/>
+> Suppose you have the following english text "More details can be found here" where "here" is a hyperlink to another document.<br/>
+> The Ecel translator will generate 2 rows: "More details can be found" and "here".<br/>
+> If this text needs to be translated to Dutch, then the Excel translator will generate the following translation:<br/>
+> "Verdere details kunnen worden gevonden hier" which is incorrect, as the "here" word (hier) should placed somewhere in the middle of<br/>
+> the sentence: "Verdere details kunnen hier worden gevonden"<br/>
+> Textformatting like bold and italic do not have this issue, as the exported translations will contain the remarkup formatting<br/>
+> E.g. \*\*bold\*\*
 
 ## Some remarks
 * Not all content is automatically translated. Codeblocks, usernames and project names, for example, will not be translated.

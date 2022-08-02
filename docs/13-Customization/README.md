@@ -114,6 +114,9 @@ namespace My.Wiki
 * 2 extra lines should be added to the C:\inetpub\wwwroot\web.config:
   * `probing/privatePath` points to the subdirectory in the C:\inetpub\wwwroot directory where the Phabrico IIS module is installed.
   * `modules/add` should contain a reference to your Phabrico IIS module
+     * The `name` is custom and has no special meaning
+     * The first part of the `type` (My.Wiki.IISModule) points to the full class name (i.e. Namespace + class name) of the IIS Http Module
+     * Th last part of the `type` (PhabricoIISModuleDLL) points to the DLL containing the IIS Http Module. In this example this would be PhabricoIISModuleDLL.dll.
 * a 3rd line is optional:
   * if `httpErrors/existingResponse` is set to `PassThrough`, you will see Phabrico-styled error pages instead of the IIS ones
 

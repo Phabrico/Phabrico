@@ -605,6 +605,14 @@ dateModified won't change when a subscription is added or removed
             } else {
                 document.location.reload();
             }
+
+            if (typeof jsonResponse.URL !== 'undefined' && jsonResponse.URL != null) {
+                var tempURL = document.createElement('a');
+                tempURL.href = 'translation/file/' + jsonResponse.URL;
+                document.body.appendChild(tempURL);
+                tempURL.click();
+                document.body.removeChild(tempURL);
+            }
         }
 
         function executePhrictionPluginPrepared(pluginName, pluginURL, data) {
@@ -681,6 +689,9 @@ dateModified won't change when a subscription is added or removed
                                                   return v == false;
                                            }).length > 0;
             btnOK.disabled = requiredParameterMissing;
+            if (typeof btnImportFile != 'undefined') {
+                btnImportFile.disabled = requiredParameterMissing;
+            }
         }
 
         function showHideParametersDialog(show, data, dialogTitle, pluginName, pluginURL, jsonResponse)
@@ -710,7 +721,25 @@ dateModified won't change when a subscription is added or removed
                     showHideParametersDialog(false);
                 });
                 var btnOK = document.createElement("button");
-                btnOK.innerText = Locale.Translate("OK");
+                btnOK.id = "btnOK";
+                if (typeof jsonResponse.Buttons != 'undefined' && typeof jsonResponse.Buttons.OK != 'undefined') {
+                    if (typeof jsonResponse.Buttons.OK.Text != 'undefined') {
+                        btnOK.innerText = jsonResponse.Buttons.OK.Text;
+                    } else {
+                        btnOK.innerText = Locale.Translate("OK");
+                    }
+
+                    btnOK.dataset.Text = btnOK.innerText;
+
+                    if (typeof jsonResponse.Buttons.OK.ExportFileText != 'undefined') {
+                        btnOK.dataset.ExportFileText = jsonResponse.Buttons.OK.ExportFileText;
+                    } else {
+                        btnOK.dataset.ExportFileText = btnOK.innerText;
+                    }
+                }
+                else {
+                    btnOK.innerText = Locale.Translate("OK");
+                }
                 btnOK.type = "button";
                 btnOK.addEventListener("click", function(e) {
                     data.set('isPrepared', 'true');
@@ -744,6 +773,97 @@ dateModified won't change when a subscription is added or removed
                     executePhrictionPluginPrepared(pluginName, pluginURL, data);
                 });
 
+                var btnImportFile = null;
+                if (typeof jsonResponse.Buttons != 'undefined' && typeof jsonResponse.Buttons.ImportFile != 'undefined' && typeof jsonResponse.Buttons.ImportFile.URL != 'undefined') {
+                    btnImportFile = document.createElement("button");
+                    btnImportFile.id = "btnImportFile";
+
+                    var inputImportFile = document.body.querySelector("#inputImportFile");
+                    if (inputImportFile == null) {
+                        inputImportFile = document.createElement("input");
+                        inputImportFile.id = "inputImportFile";
+                        inputImportFile.type = "file";
+                        inputImportFile.style.positiion = "absolute";
+                        inputImportFile.style.top = "-100%";
+                        inputImportFile.onchange = function (e) {
+                            const reader = new FileReader();
+                            reader.readAsDataURL(inputImportFile.files[0]);
+
+                            reader.onload = function (e) {
+                                var data = new FormData();
+                                data.append('file-data', reader.result);
+                                data.append('document-token', '@@DOCUMENT-TOKEN@@')
+
+                                Array.prototype.slice.call(document.querySelectorAll('tr'), 0)
+                                    .filter(function (e) {
+                                        return e.id.startsWith('param');
+                                    }).map(function (tr) {
+                                        return {
+                                            name: tr.querySelector('input,select').name,
+                                            value: tr.querySelector('input,select').value
+                                        }
+                                    }).forEach(function (param) {
+                                        data.append(param.name, param.value)
+                                    });
+
+                                var xmlRequest = new XMLHttpRequest();
+                                xmlRequest.onreadystatechange = function () {
+                                    if (xmlRequest.readyState == 4 && xmlRequest.status == 200) {
+                                        var jsonResponse = JSON.parse(xmlRequest.responseText);
+
+                                        document.querySelector('div.wait').style.display = 'none';
+
+                                        if (jsonResponse.Status == 'Finished') {
+                                            if (typeof jsonResponse.MessageBox !== 'undefined') {
+                                                var title = "";
+                                                if (typeof jsonResponse.MessageBox.Title !== 'undefined') {
+                                                    title = jsonResponse.MessageBox.Title;
+                                                }
+                                                if (typeof jsonResponse.MessageBox.Message !== 'undefined') {
+                                                    message = jsonResponse.MessageBox.Message;
+
+                                                    dlgOK.querySelector('.title').innerText = title;
+                                                    dlgOK.querySelector('.message').innerText = message;
+                                                    dlgOK.style.display = 'block';
+
+                                                    var btnOK = dlgOK.querySelector('a.ok');
+                                                    btnOK.onclick = function () {
+                                                        dlgOK.style.display = 'none';
+                                                        document.location.reload();
+                                                        return false;
+                                                    }
+                                                    btnOK.focus();
+                                                }
+                                            }
+                                        }
+                                    }
+                                };
+
+                                xmlRequest.open('POST', jsonResponse.Buttons.ImportFile.URL, true);
+                                xmlRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+                                xmlRequest.send(data);
+
+                                showHideParametersDialog(false);
+                                document.querySelector('div.wait').style.display = 'block';
+                            }
+                        }
+                        document.body.appendChild(inputImportFile);
+                    }
+
+                    if (typeof jsonResponse.Buttons.ImportFile.Text != 'undefined') {
+                        btnImportFile.innerText = jsonResponse.Buttons.ImportFile.Text;
+                    } else {
+                        btnImportFile.innerText = "...";
+                    }
+
+                    btnImportFile.onclick = function (e) {
+                        inputImportFile.click();;
+
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
                 form.appendChild(overlay);
                 form.appendChild(dialogHeader);
                 form.appendChild(dialogBody);
@@ -751,6 +871,9 @@ dateModified won't change when a subscription is added or removed
                 dialogHeader.appendChild(dialogHeaderText);
                 dialogButtons.appendChild(btnCancel);
                 dialogButtons.appendChild(btnOK);
+                if (btnImportFile != null) {
+                    dialogButtons.appendChild(btnImportFile);
+                }
 
                 if (typeof jsonResponse.Javascript != 'undefined') {
                     var scriptTag = document.createElement('script');

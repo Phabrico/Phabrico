@@ -677,7 +677,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // click OK button
             IWebElement btnOK = WebBrowser.FindElement(By.ClassName("preparationParameters"))
-                                          .FindElements(By.XPath("//button[text()=\"OK\"]"))
+                                          .FindElements(By.XPath("//button[text()=\"Translate\"]"))
                                           .FirstOrDefault(button => button.Displayed);
             btnOK.Click();
 
@@ -1016,7 +1016,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // click OK button
             btnOK = WebBrowser.FindElement(By.ClassName("preparationParameters"))
-                              .FindElements(By.XPath("//button[text()=\"OK\"]"))
+                              .FindElements(By.XPath("//button[text()=\"Translate\"]"))
                               .FirstOrDefault(button => button.Displayed);
             btnOK.Click();
 
@@ -1347,7 +1347,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // click OK button
             IWebElement btnOK = WebBrowser.FindElement(By.ClassName("preparationParameters"))
-                                          .FindElements(By.XPath("//button[text()=\"OK\"]"))
+                                          .FindElements(By.XPath("//button[text()=\"Translate\"]"))
                                           .FirstOrDefault(button => button.Displayed);
             btnOK.Click();
 
@@ -1568,7 +1568,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // click OK button
             IWebElement btnOK = WebBrowser.FindElement(By.ClassName("preparationParameters"))
-                                          .FindElements(By.XPath("//button[text()=\"OK\"]"))
+                                          .FindElements(By.XPath("//button[text()=\"Translate\"]"))
                                           .FirstOrDefault(button => button.Displayed);
             btnOK.Click();
 
@@ -1902,7 +1902,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
                 // click OK button
                 IWebElement btnOK = WebBrowser.FindElement(By.ClassName("preparationParameters"))
-                                              .FindElements(By.XPath("//button[text()=\"OK\"]"))
+                                              .FindElements(By.XPath("//button[text()=\"Translate\"]"))
                                               .FirstOrDefault(button => button.Displayed);
                 btnOK.Click();
 

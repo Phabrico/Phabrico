@@ -883,8 +883,18 @@
 				
 					}
 	    		}
-	    		
-	    		return keyHandlerGetFunction.apply(this, arguments);
+
+				// Ignores normal keystrokes as shortcuts if cells are selected (eg. A/S/D/F)
+				if (evt.keyCode >= 65 && evt.keyCode <= 90 && !graph.isSelectionEmpty() &&
+					!mxEvent.isAltDown(evt) && !mxEvent.isShiftDown(evt) &&
+					!mxEvent.isControlDown(evt) && !(mxClient.IS_MAC && mxEvent.isMetaDown(evt)))
+				{
+					return null;
+				}
+	    		else
+				{
+	    			return keyHandlerGetFunction.apply(this, arguments);
+				}
 	    	};
 		}
     	
@@ -2285,9 +2295,17 @@
 		
 		if (desc.url != null && desc.url.length > 0)
 		{
-			// Cannot use proxy here as it will block unknown text content
+			var url = desc.url;
+
+			// Bypass proxy if no CSP is used as it blocks unknown text content
+			if ((/test\.draw\.io$/.test(window.location.hostname)) ||
+				(/app\.diagrams\.net$/.test(window.location.hostname)))
+			{
+				url = this.editor.getProxiedUrl(url);
+			}
+			
             // LATER: Remove cache-control header
-            this.editor.loadUrl(desc.url, mxUtils.bind(this, function(data)
+            this.editor.loadUrl(url, mxUtils.bind(this, function(data)
             {
             	loadData(data);
             }), mxUtils.bind(this, function(err)
@@ -2643,7 +2661,7 @@
 			if (this.fname != null)
 			{
 				this.fnameWrapper.style.display = 'none';
-				this.fname.innerHTML = '';
+				this.fname.innerText = '';
 				this.fname.setAttribute('title', mxResources.get('rename'));
 			}
 
@@ -3258,6 +3276,7 @@
 	    
 	    var btnWidth = 18;
 		var btn = document.createElement('img');
+		btn.className = 'geAdaptiveAsset';
 		btn.setAttribute('src', Editor.crossImage);
 		btn.setAttribute('title', mxResources.get('close'));
 		btn.setAttribute('valign', 'absmiddle');
@@ -3267,11 +3286,6 @@
 		btn.style.width = '14px';
 		btn.style.cursor = 'pointer';
 		btn.style.margin = '0 3px';
-		
-		if (Editor.isDarkMode())
-		{
-			btn.style.filter = 'invert(100%)';
-		}
 
 		var saveBtn = null;
 		
@@ -4048,7 +4062,7 @@
 							//TODO This code is similar to Dialogs.js change user part in SplashDialog
 							function fillUsersSelect()
 							{
-								usersSelect.innerHTML = '';
+								usersSelect.innerText = '';
 								
 								for (var i = 0; i < driveUsers.length; i++)
 								{
@@ -4723,13 +4737,12 @@
 		{
 			if (mimeType == 'image/svg+xml' && !mxClient.IS_SVG)
 			{
-				// KNOWN: Output is scaled in Chrome on macOS
 				win.document.write('<html><pre>' + mxUtils.htmlEntities(data, false) + '</pre></html>');
 				win.document.close();
 			}
 			else
 			{
-				if (mimeType == 'image/svg+xml')
+				if (mimeType == 'image/svg+xml' && !base64Encoded)
 				{
 					win.document.write('<html>'+ data + '</html>');
 				}
@@ -5200,11 +5213,12 @@
 		    		}
 		    		else
 		    		{
-		    			this.handleError({message: mxResources.get('drawingTooLarge')}, mxResources.get('error'), mxUtils.bind(this, function()
-		    			{
-		    				mxUtils.popup(svg);
-		    			}));
-		    		}
+		    			this.handleError({message: mxResources.get('drawingTooLarge')},
+							mxResources.get('error'), mxUtils.bind(this, function()
+						{
+							mxUtils.popup(svg);
+						}));
+				}
 				});
 	
 				var doSave = mxUtils.bind(this, function(svgRoot)
@@ -5469,7 +5483,7 @@
 				div.style.backgroundImage = 'url(\'' + Dialog.prototype.closeImage + '\')';
 			}
 
-			linkButton.innerHTML = '';
+			linkButton.innerText = '';
 			linkButton.appendChild(div);
 		};
 		
@@ -9331,11 +9345,6 @@
 		var ui = this;
 		var graph = this.editor.graph;
 		
-		if (Editor.isDarkMode())
-		{
-			graph.view.defaultGridColor = mxGraphView.prototype.defaultDarkGridColor;
-		}
-		
 		// Stops panning while freehand is active
 		if (Graph.touchStyle)
 		{
@@ -9348,8 +9357,8 @@
 			 		(mxEvent.isPopupTrigger(evt) && (me.getState() == null ||
 			 		mxEvent.isControlDown(evt) || mxEvent.isShiftDown(evt)));
 			};
-		}		
-
+		}
+		
 		// Starts editing PlantUML data
 		graph.cellEditor.editPlantUmlData = function(cell, trigger, data)
 		{
@@ -9847,8 +9856,13 @@
 			this.keyHandler.bindAction(86, true, 'pasteStyle', true); // Ctrl+Shift+V
 			this.keyHandler.bindAction(77, true, 'editGeometry', true); // Ctrl+Shift+M
 			this.keyHandler.bindAction(88, true, 'insertText', true); // Ctrl+Shift+X
-			this.keyHandler.bindAction(75, true, 'insertRectangle'); // Ctrl+K
-			this.keyHandler.bindAction(75, true, 'insertEllipse', true); // Ctrl+Shift+K
+			this.keyHandler.bindAction(75, true, 'tags'); // Ctrl+K
+			this.keyHandler.bindAction(65, false, 'insertText'); // A
+			this.keyHandler.bindAction(83, false, 'insertNote'); // S
+			this.keyHandler.bindAction(68, false, 'insertRectangle'); // D
+			this.keyHandler.bindAction(70, false, 'insertEllipse'); // F
+			this.keyHandler.bindAction(67, false, 'insertEdge'); // C
+			this.keyHandler.bindAction(88, false, 'insertFreehand'); // X
 			this.altShiftActions[83] = 'synchronize'; // Alt+Shift+S
 
 		    this.installImagePasteHandler();
@@ -10261,7 +10275,31 @@
 		{
 			this.initializeEmbedMode();
 		}
-		
+
+		var themeChangeListener = mxUtils.bind(this, function()
+		{
+			graph.refresh();
+			graph.view.validateBackground();
+			this.updateTabContainer();
+		});
+
+		this.addListener('darkModeChanged', themeChangeListener);
+		this.addListener('sketchModeChanged', themeChangeListener);
+
+		if (uiTheme == 'dark')
+		{
+			this.doSetDarkMode(true);
+			this.fireEvent(new mxEventObject('darkModeChanged'));
+		}
+		else if (uiTheme == 'min' && urlParams['embedInline'] != '1')
+		{
+			this.doSetDarkMode((urlParams['dark'] != null) ?
+				urlParams['dark'] == 1 && !mxClient.IS_IE &&
+				!mxClient.IS_IE11 : ((mxSettings.settings.darkMode != null) ?
+				mxSettings.settings.darkMode : (window.matchMedia &&
+					window.matchMedia('(prefers-color-scheme: dark)').matches)));
+		}
+
 		this.installSettings();
 	};
 	
@@ -10528,6 +10566,33 @@
 	};
 
 	/**
+	 * Sets the current UI theme. Possible values are null, "kennedy" and "sketch".
+	 */
+	EditorUi.prototype.setCurrentTheme = function(value, noRestart)
+	{
+		mxSettings.setUi(value);
+		this.doSetCurrentTheme(value);
+		this.fireEvent(new mxEventObject('currentThemeChanged'));
+		
+		if (!noRestart)
+		{
+			this.alert(mxResources.get('restartForChangeRequired'));
+		}
+	};
+
+	/**
+	 * Changes the current UI theme.
+	 */
+	EditorUi.prototype.doSetCurrentTheme = function(value)
+	{
+		if (Editor.currentTheme != value)
+		{
+			Editor.currentTheme = value;
+			// TODO: Change theme at runtime
+		}
+	};
+
+	/**
 	 * Overrides image dialog to add image search and Google+.
 	 */
 	EditorUi.prototype.setSketchMode = function(value)
@@ -10548,6 +10613,219 @@
 					 
 				this.fireEvent(new mxEventObject('sketchModeChanged'));
 			}), 0);
+		}
+	};
+
+	/**
+	 * Dynamic change of dark mode.
+	 */
+	Editor.createMinimalCss = function()
+	{
+		return '* { -webkit-font-smoothing: antialiased; }' +
+			'html body td.mxWindowTitle > div > img { padding: 8px 4px; }' +
+			// Dark mode styles
+			(Editor.isDarkMode() ?
+			'html body td.mxWindowTitle > div > img { margin: -4px; }' +
+			'html body .geToolbarContainer .geMenuItem, html body .geToolbarContainer .geToolbarButton, ' +
+			'html body .geMenubarContainer .geMenuItem .geMenuItem, html body .geMenubarContainer a.geMenuItem,' +
+			'html body .geMenubarContainer .geToolbarButton { filter: invert(1); }' +
+			'html body div.geToolbarContainer a.geInverted { filter: none; }' +
+			'html body .geMenubarContainer .geMenuItem .geMenuItem, html body .geMenubarContainer a.geMenuItem { color: #353535; }' +
+			'html > body > div > .geToolbarContainer { border: 1px solid #c0c0c0 !important; box-shadow: none !important; }' +
+			'html > body.geEditor > div > a.geItem { background-color: #2a2a2a; color: #cccccc; border-color: #505759; }' +
+			'html body .geTabContainer, html body .geTabContainer div, html body .geMenubarContainer { border-color: #505759 !important; }' +
+			'html body .mxCellEditor { color: #f0f0f0; }'
+			:
+			// Non-dark mode styles
+			'html body div.geToolbarContainer a.geInverted { filter: invert(1); }' +
+			'html body.geEditor .geTabContainer div { border-color: #e5e5e5 !important; }'
+			) +
+			// End of custom styles
+			'html > body > div > a.geItem { background-color: #ffffff; color: #707070; border-top: 1px solid lightgray; border-left: 1px solid lightgray; }' +
+			'html body .geMenubarContainer { border-bottom:1px solid lightgray;background-color:#ffffff; }' +
+			'html body .mxWindow button.geBtn { font-size:12px !important; margin-left: 0; }' +
+			'html body .geSidebarContainer *:not(svg *) { font-size:9pt; }' +
+			'html body table.mxWindow td.mxWindowPane div.mxWindowPane *:not(svg *) { font-size:9pt; }' +
+			'table.mxWindow * :not(svg *) { font-size:13px; }' +
+			'html body .mxWindow { z-index: 3; }' +
+			'html body div.diagramContainer button, html body button.geBtn { font-size:14px; font-weight:700; border-radius: 5px; }' +
+			'html body button.geBtn:active { opacity: 0.6; }' +
+			'html body a.geMenuItem { opacity: 0.75; cursor: pointer; user-select: none; }' +
+			'html body a.geMenuItem[disabled] { opacity: 0.2; }' +
+			'html body a.geMenuItem[disabled]:active { opacity: 0.2; }' +
+			'html body div.geActivePage { opacity: 0.7; }' +
+			'html body a.geMenuItem:active { opacity: 0.2; }' +
+			'html body .geToolbarButton { opacity: 0.3; }' +
+			'html body .geToolbarButton:active { opacity: 0.15; }' +
+			'html body .geStatus:active { opacity: 0.5; }' +
+			'.geStatus > div { box-sizing: border-box; max-width: 100%; text-overflow: ellipsis; }' +
+			'html body .geMenubarContainer .geStatus { margin-top: 0px !important; }' +
+			'html table.mxPopupMenu tr.mxPopupMenuItemHover:active { opacity: 0.7; }' +
+			'html body .geDialog input, html body .geToolbarContainer input, html body .mxWindow input {padding: 2px; display: inline-block; }' +
+			'html body .mxWindow input[type="checkbox"] {padding: 0px; }' +
+			'div.geDialog { border-radius: 5px; }' +
+			'html body div.geDialog button.geBigButton { color: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + ' !important; border: none !important; }' +
+			'html body .geToolbarContainer a div { color: ' + (Editor.isDarkMode() ? '#707070' : Editor.darkColor) + ' }' +
+			'.mxWindow button, .geDialog select, .mxWindow select { display:inline-block; }' +
+			'html body .mxWindow .geColorBtn, html body .geDialog .geColorBtn { background: none; }' +
+			'html body div.diagramContainer button, html body .mxWindow button, html body .geDialog button { min-width: 0px; border-radius: 5px; color: ' + (Editor.isDarkMode() ? '#cccccc' : '#353535') + ' !important; border-style: solid; border-width: 1px; border-color: rgb(216, 216, 216); }' +
+			'html body div.diagramContainer button:hover, html body .mxWindow button:hover, html body .geDialog button:hover { border-color: rgb(177, 177, 177); }' +
+			'html body div.diagramContainer button:active, html body .mxWindow button:active, html body .geDialog button:active { opacity: 0.6; }' +
+			'div.diagramContainer button.geBtn, .mxWindow button.geBtn, .geDialog button.geBtn { min-width:72px; font-weight: 600; background: none; }' +
+			'div.diagramContainer button.gePrimaryBtn, .mxWindow button.gePrimaryBtn, .geDialog button.gePrimaryBtn, html body .gePrimaryBtn { background: #29b6f2; color: #fff !important; border: none; box-shadow: none; }' +
+			'html body .gePrimaryBtn:hover { background: #29b6f2; border: none; box-shadow: inherit; }' +
+			'html body button.gePrimaryBtn:hover { background: #29b6f2; border: none; }' +
+			'.geBtn button { min-width:72px !important; }' +
+			'div.geToolbarContainer a.geButton { margin:0px; padding: 0 2px 4px 2px; } ' +
+			'html body div.geToolbarContainer a.geColorBtn { margin: 2px; } ' +
+			'html body .mxWindow td.mxWindowPane input, html body .mxWindow td.mxWindowPane select, html body .mxWindow td.mxWindowPane textarea, html body .mxWindow td.mxWindowPane radio { padding: 0px; box-sizing: border-box; }' +
+			'.geDialog, .mxWindow td.mxWindowPane *, div.geSprite, td.mxWindowTitle, .geDiagramContainer { box-sizing:content-box; }' +
+			'.mxWindow div button.geStyleButton { box-sizing: border-box; }' +
+			'table.mxWindow td.mxWindowPane button.geColorBtn { padding:0px; box-sizing: border-box; }' +
+			'td.mxWindowPane .geSidebarContainer button { padding:2px; box-sizing: border-box; }' +
+			'html body .geMenuItem { font-size:14px; text-decoration: none; font-weight: normal; padding: 6px 10px 6px 10px; border: none; border-radius: 5px; color: #353535; box-shadow: inset 0 0 0 1px rgba(0,0,0,.11), inset 0 -1px 0 0 rgba(0,0,0,.08), 0 1px 2px 0 rgba(0,0,0,.04); ' + (EditorUi.isElectronApp? 'app-region: no-drag; ' : '') + '}' +
+			// Styling for Minimal
+			'.geTabContainer { border-bottom:1px solid lightgray; border-top:1px solid lightgray; background: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + ' !important; }' +
+			'.geToolbarContainer { background: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + '; }' +
+			'div.geSidebarContainer { background-color: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + '; }' +
+			'div.geSidebarContainer .geTitle { background-color: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fdfdfd') + '; }' +
+			'div.mxWindow td.mxWindowPane button { background-image: none; float: none; }' +
+			'td.mxWindowTitle { height: 22px !important; background: none !important; font-size: 13px !important; text-align:center !important; border-bottom:1px solid lightgray; }' +
+			'div.mxWindow, div.mxWindowTitle { background-image: none !important; background-color:' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + ' !important; }' +
+			'div.mxWindow { border-radius:5px; box-shadow: 0px 0px 2px #C0C0C0 !important;}' +
+			'div.mxWindow *:not(svg *) { font-family: inherit !important; }' +
+			// Minimal Style UI
+			'html div.geVerticalHandle { position:absolute;bottom:0px;left:50%;cursor:row-resize;width:11px;height:11px;background:white;margin-bottom:-6px; margin-left:-6px; border: none; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.11), inset 0 -1px 0 0 rgba(0,0,0,.08), 0 1px 2px 0 rgba(0,0,0,.04); }' +
+			'html div.geInactivePage { background: ' + (Editor.isDarkMode() ? Editor.darkColor : 'rgb(249, 249, 249)') + ' !important; color: #A0A0A0 !important; } ' +
+			'html div.geActivePage { background:  ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + ' !important;  ' + (Editor.isDarkMode() ? '' : 'color: #353535 !important; } ') +
+			'html div.mxRubberband { border:1px solid; border-color: #29b6f2 !important; background:rgba(41,182,242,0.4) !important; } ' +
+			'html body div.mxPopupMenu { border-radius:5px; border:1px solid #c0c0c0; padding:5px 0 5px 0; box-shadow: 0px 4px 17px -4px rgba(96,96,96,1); } ' +
+			'html table.mxPopupMenu td.mxPopupMenuItem { color: ' + (Editor.isDarkMode() ? '#cccccc' : '#353535') + '; font-size: 14px; padding-top: 4px; padding-bottom: 4px; }' +
+			'html table.mxPopupMenu tr.mxPopupMenuItemHover { background-color: ' + (Editor.isDarkMode() ? '#000000' : '#29b6f2') + '; }' +
+			'html tr.mxPopupMenuItemHover td.mxPopupMenuItem, html tr.mxPopupMenuItemHover td.mxPopupMenuItem span { color: ' + (Editor.isDarkMode() ? '#cccccc' : '#ffffff') + ' !important; }' +
+			'html tr.mxPopupMenuItem, html td.mxPopupMenuItem { transition-property: none !important; }' +
+			'html table.mxPopupMenu hr { height: 2px; background-color: rgba(0,0,0,.07); margin: 5px 0; }' +
+			'html body td.mxWindowTitle { padding-right: 14px; }' +
+			'html td.mxWindowTitle div { top: 0px !important; }' +
+			// Fixes checkbox and radio size on iOS
+			((mxClient.IS_IOS) ? 'html input[type=checkbox], html input[type=radio] { height:12px; }' : '') +
+			((urlParams['sketch'] == '1') ? 'a.geStatus > div { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }' : '');
+	};
+
+	/**
+	 * Dynamic change of dark mode.
+	 */
+	EditorUi.prototype.setDarkMode = function(value)
+	{
+		this.doSetDarkMode(value);
+		
+		// Persist setting
+		if (urlParams['dark'] == null)
+		{
+			mxSettings.settings.darkMode = value;
+			mxSettings.save();
+		}
+
+		this.fireEvent(new mxEventObject('darkModeChanged'));
+	};
+	
+	/**
+	 * Links to dark.css
+	 */
+	var darkStyle = document.createElement('link');
+	darkStyle.setAttribute('rel', 'stylesheet');
+	darkStyle.setAttribute('href', STYLE_PATH + '/dark.css');
+	darkStyle.setAttribute('charset', 'UTF-8');
+	darkStyle.setAttribute('type', 'text/css');
+
+	/**
+	 * Dynamic change of dark mode.
+	 */
+	EditorUi.prototype.doSetDarkMode = function(value)
+	{
+		if (Editor.darkMode != value)
+		{
+			var graph = this.editor.graph;
+			Editor.darkMode = value;
+
+			// Sets instance vars and graph stylesheet
+			this.spinner.opts.color = Editor.isDarkMode() ? '#c0c0c0' : '#000';
+			graph.view.defaultGridColor = Editor.isDarkMode() ?
+				mxGraphView.prototype.defaultDarkGridColor : mxGraphView.prototype.defaultGridColor;
+			graph.view.gridColor = graph.view.defaultGridColor;
+			graph.defaultPageBackgroundColor = (urlParams['embedInline'] == '1') ? 'transparent' :
+				Editor.isDarkMode() ? Editor.darkColor : '#ffffff';
+			graph.defaultPageBorderColor = Editor.isDarkMode() ? '#505759' : '#ffffff';
+			graph.shapeBackgroundColor = Editor.isDarkMode() ? Editor.darkColor : '#ffffff';
+			graph.shapeForegroundColor = Editor.isDarkMode() ? Editor.lightColor : '#000000';
+			graph.defaultThemeName = Editor.isDarkMode() ? 'darkTheme' : 'default-style2';
+			graph.graphHandler.previewColor = Editor.isDarkMode() ? '#cccccc' : 'black';
+			document.body.style.backgroundColor = (urlParams['embedInline'] == '1') ? 'transparent' :
+				(Editor.isDarkMode() ? Editor.darkColor : '#ffffff');
+			graph.loadStylesheet();
+			
+			// Destroys windows with code for dark mode
+		    if (this.actions.layersWindow != null)
+		    {
+				var wasVisible = this.actions.layersWindow.window.isVisible();
+			
+		    	this.actions.layersWindow.window.setVisible(false);
+		    	this.actions.layersWindow.destroy();
+		    	this.actions.layersWindow = null;
+
+				if (wasVisible)
+				{
+					window.setTimeout(this.actions.get('layers').funct, 0);
+				}
+		    }
+
+			if (this.menus.commentsWindow != null)
+			{
+		    	this.menus.commentsWindow.window.setVisible(false);
+				this.menus.commentsWindow.destroy();
+				this.menus.commentsWindow = null;
+			}
+			
+			if (this.ruler != null)
+			{
+				this.ruler.updateStyle();
+			}
+
+			// Sets global vars
+			Graph.prototype.defaultPageBackgroundColor = graph.defaultPageBackgroundColor;
+			Graph.prototype.defaultPageBorderColor = graph.defaultPageBorderColor;
+			Graph.prototype.shapeBackgroundColor = graph.shapeBackgroundColor;
+			Graph.prototype.shapeForegroundColor = graph.shapeForegroundColor;
+			Graph.prototype.defaultThemeName = graph.defaultThemeName;
+			StyleFormatPanel.prototype.defaultStrokeColor = Editor.isDarkMode() ? '#cccccc' : 'black';
+			BaseFormatPanel.prototype.buttonBackgroundColor = Editor.isDarkMode() ? Editor.darkColor : 'white';
+			Format.inactiveTabBackgroundColor = Editor.isDarkMode() ? 'black' : '#f0f0f0';
+			Dialog.backdropColor = Editor.isDarkMode() ? Editor.darkColor : 'white';
+			mxConstants.DROP_TARGET_COLOR = Editor.isDarkMode() ? '#00ff00' : '#0000FF';
+			Editor.helpImage = (Editor.isDarkMode() && mxClient.IS_SVG) ?
+				Editor.darkHelpImage : Editor.lightHelpImage;
+			Editor.checkmarkImage = (Editor.isDarkMode() && mxClient.IS_SVG) ?
+				Editor.darkCheckmarkImage : Editor.lightCheckmarkImage;
+			
+			// Updates CSS
+			if (Editor.styleElt != null)
+			{
+				Editor.styleElt.innerHTML = Editor.createMinimalCss();
+			}
+			
+			// Adds or removes link to CSS
+			if (Editor.isDarkMode())
+			{
+				if (darkStyle.parentNode == null)
+				{
+					var head = document.getElementsByTagName('head')[0];
+					head.appendChild(darkStyle);
+				}
+			}
+			else if (darkStyle.parentNode != null)
+			{
+				darkStyle.parentNode.removeChild(darkStyle);
+			}
 		}
 	};
 
@@ -10967,7 +11245,7 @@
 		else
 		{
 			// Disables copy on focused element
-			elt.innerHTML = '';
+			elt.innerText = '';
 		}
 	};
 
@@ -11221,21 +11499,33 @@
 					{
 						if (xml.substring(0, 20).replace(/\s/g, '').indexOf('{"isProtected":') == 0)
 						{
-							try
+							var delayed = mxUtils.bind(this, function ()
 							{
-								if (typeof MiroImporter !== 'undefined')
+								try
 								{
 									var miro = new MiroImporter();
 									xml = miro.importMiroJson(JSON.parse(xml));
+									this.pasteXml(xml, pasteAsLabel, compat, evt);
 								}
-							}
-							catch(e)
+								catch(e)
+								{
+									console.log('Miro import error:', e);
+								}
+							});
+
+							if (typeof MiroImporter === 'undefined')
 							{
-								console.log('Miro import error:', e);
+								mxscript('js/diagramly/miro/MiroImporter.js', delayed);
+							}
+							else
+							{
+								delayed();
 							}
 						}
-
-						this.pasteXml(xml, pasteAsLabel, compat, evt);
+						else
+						{
+							this.pasteXml(xml, pasteAsLabel, compat, evt);
+						}
 
 						try
 						{
@@ -12118,7 +12408,10 @@
 			this.setBackgroundImage(null);
 			this.editor.modified = false;
 
-			this.fireEvent(new mxEventObject('editInlineStop'));
+			if (urlParams['embed'] != '1')
+			{
+				this.fireEvent(new mxEventObject('editInlineStop'));
+			}
 		}
 	};
 	
@@ -12237,7 +12530,7 @@
 					}
 					else if (data.action == 'layout')
 					{
-						this.executeLayoutList(data.layouts)
+						this.executeLayouts(this.editor.graph.createLayouts(data.layouts));
 
 						return;
 					}
@@ -12609,23 +12902,9 @@
 										ignoreChange = true;
 										this.setFileData(xml);
 										ignoreChange = false;
+									}
 
-										if (this.editor.graph.mathEnabled)
-										{
-											window.setTimeout(function()
-											{
-												window.MathJax.Hub.Queue(graphReady);
-											}, 0);
-										}
-										else
-										{
-											graphReady();
-										}
-									}
-									else
-									{
-										graphReady();
-									}
+									graphReady();
 								}
 								else
 								{
@@ -12758,18 +13037,23 @@
 							// SVG is generated from graph so parse optional XML
 							if (data.xml != null && data.xml.length > 0)
 							{
+								if (this.editor.graph.mathEnabled)
+								{
+									// Waits for MathJax autoloading and rendering
+									var editorOnMathJaxDone = Editor.onMathJaxDone;
+
+									Editor.onMathJaxDone = function()
+									{
+										editorOnMathJaxDone.apply(this, arguments);
+										graphReady();
+									};
+								}
+
 								ignoreChange = true;
 								this.setFileData(data.xml);
 								ignoreChange = false;
 
-								if (this.editor.graph.mathEnabled)
-								{
-									window.setTimeout(function()
-									{
-										window.MathJax.Hub.Queue(graphReady);
-									}, 0);
-								}
-								else
+								if (!this.editor.graph.mathEnabled)
 								{
 									graphReady();
 								}
@@ -13125,7 +13409,7 @@
 			var div = document.createElement('div');
 			div.style.display = 'inline-block';
 			div.style.position = 'absolute';
-			div.style.paddingTop = (uiTheme == 'atlas' || urlParams['atlas'] == '1') ? '2px' : '0px';
+			div.style.paddingTop = '2px';
 			div.style.paddingLeft = '8px';
 			div.style.paddingBottom = '2px';
 
@@ -13201,7 +13485,7 @@
 			
 			this.toolbar.container.appendChild(div);
 			this.toolbar.staticElements.push(div);
-			div.style.right = (uiTheme == 'atlas' || urlParams['atlas'] == '1') ? '42px' : '52px';
+			div.style.right = (uiTheme == 'atlas' || urlParams['atlas'] == '1') ? '62px' : '72px';
 		}
 	};
 
@@ -13223,33 +13507,47 @@
 		this.showDialog(this.importCsvDialog.container, 640, 520, true, true, null, null, null, null, true);
 		this.importCsvDialog.init();
 	};
-
-
+	
 	/**
-	 * Runs the layout from the given JavaScript array which is of the form [{layout: name, config: obj}, ...]
-	 * where name is the layout constructor name and config contains the properties of the layout instance.
+	 * Loads orgchart layouts and executes the given function.
 	 */
-	EditorUi.prototype.executeLayoutList = function(layoutList, done)
+	EditorUi.prototype.loadOrgChartLayouts = function(fn)
 	{
-		var graph = this.editor.graph;
-		var cells = graph.getSelectionCells();
-
-		for (var i = 0; i < layoutList.length; i++)
+		var onload = mxUtils.bind(this, function()
 		{
-			var layout = new window[layoutList[i].layout](graph);
-			
-			if (layoutList[i].config != null)
+			this.loadingOrgChart = false;
+			this.spinner.stop();
+			fn();
+		});
+
+		if (typeof mxOrgChartLayout === 'undefined' && !this.loadingOrgChart && !this.isOffline(true))
+		{
+			if (this.spinner.spin(document.body, mxResources.get('loading')))
 			{
-				for (var key in layoutList[i].config)
+				this.loadingOrgChart = true;
+				
+				if (urlParams['dev'] == '1')
 				{
-					layout[key] = layoutList[i].config[key];
+					mxscript('js/orgchart/bridge.min.js', function()
+					{
+						mxscript('js/orgchart/bridge.collections.min.js', function()
+						{
+							mxscript('js/orgchart/OrgChart.Layout.min.js', function()
+							{
+								mxscript('js/orgchart/mxOrgChartLayout.js', onload);											
+							});		
+						});	
+					});
+				}
+				else
+				{
+					mxscript(DRAWIO_BASE_URL + '/js/orgchart.min.js', onload);
 				}
 			}
-			
-			this.executeLayout(function()
-			{
-				layout.execute(graph.getDefaultParent(), cells.length == 0 ? null : cells);
-			}, i == layoutList.length - 1, done);
+		}
+		else
+		{
+			onload();
 		}
 	};
 	
@@ -13257,6 +13555,17 @@
 	 *
 	 */
 	EditorUi.prototype.importCsv = function(text, done)
+	{
+		this.loadOrgChartLayouts(mxUtils.bind(this, function()
+		{
+			this.doImportCsv(text, done);
+		}));
+	};
+
+	/**
+	 *
+	 */
+	EditorUi.prototype.doImportCsv = function(text, done)
 	{
 		try
 		{
@@ -13286,6 +13595,7 @@
         		var namespace = '';
         		var width = 'auto';
         		var height = 'auto';
+				var collapsed = false;
         		var left = null;
         		var top = null;
         		var edgespacing = 40;
@@ -13412,6 +13722,10 @@
 		    				{
 		    					height = value;
 		    				}
+							else if (key == 'collapsed' && value != '-')
+		    				{
+		    					collapsed = value == 'true';
+		    				}
 		    				else if (key == 'left' && value.length > 0)
 		    				{
 		    					left = value;
@@ -13526,50 +13840,70 @@
     	    			var values = arrays[i];
     					var cell = null;
     					var id = (identityIndex != null) ? namespace + values[identityIndex] : null;
+						var ignoreCell = false;
     					
     					if (id != null)
     					{
     						cell = graph.model.getCell(id);
+
+							// Bypasses update of cells inserted during this run
+							ignoreCell = cell == null || mxUtils.indexOf(
+								allCells, cell) >= 0;
     					}
-    					
-    					var exists = cell != null;
+						
     					var newCell = new mxCell(label, new mxGeometry(x0, y,
 		    				0, 0), style || 'whiteSpace=wrap;html=1;');
-    					newCell.vertex = true;
+						newCell.collapsed = collapsed;
+						newCell.vertex = true;
     					newCell.id = id;
-
-						var targetCell = (cell != null) ? cell : newCell;
+						
+						if (cell != null && !ignoreCell)
+						{
+							graph.model.setCollapsed(cell, collapsed);
+						}
 						
 						for (var j = 0; j < values.length; j++)
 				    	{
-							graph.setAttributeForCell(targetCell, attribs[j], values[j]);
+							graph.setAttributeForCell(newCell, attribs[j], values[j]);
+
+							if (cell != null && !ignoreCell)
+							{
+								graph.setAttributeForCell(cell, attribs[j], values[j]);
+							}
 				    	}
 						
 						if (labelname != null && labels != null)
 						{
-							var tempLabel = labels[targetCell.getAttribute(labelname)];
+							var tempLabel = labels[newCell.getAttribute(labelname)];
 							
 							if (tempLabel != null)
 							{
-								graph.labelChanged(targetCell, tempLabel);
+								graph.labelChanged(newCell, tempLabel);
+
+								if (cell != null && !ignoreCell)
+								{
+									graph.cellLabelChanged(cell, tempLabel);
+								}
 							}
 						}
 
 						if (stylename != null && styles != null)
 						{
-							var tempStyle = styles[targetCell.getAttribute(stylename)];
+							var tempStyle = styles[newCell.getAttribute(stylename)];
 							
 							if (tempStyle != null)
 							{
-								targetCell.style = tempStyle;
+								newCell.style = tempStyle;
 							}
 						}
 
-						graph.setAttributeForCell(targetCell, 'placeholders', '1');
-						targetCell.style = graph.replacePlaceholders(targetCell, targetCell.style, vars);
+						graph.setAttributeForCell(newCell, 'placeholders', '1');
+						newCell.style = graph.replacePlaceholders(newCell, newCell.style, vars);
 
-						if (exists)
+						if (cell != null && !ignoreCell)
 						{
+							graph.model.setStyle(cell, newCell.style);
+
 							if (mxUtils.indexOf(cells, cell) < 0)
 							{
 								cells.push(cell);
@@ -13582,6 +13916,7 @@
 							graph.fireEvent(new mxEventObject('cellsInserted', 'cells', [newCell]));
 						}
 
+    					var exists = cell != null;
 						cell = newCell;
     					
 						if (!exists)
@@ -13862,11 +14197,13 @@
 			    			// Required for layouts to work with new cells
 							var temp = afterInsert;
 			    			graph.view.validate();
-							this.executeLayoutList(JSON.parse(layout), function()
+
+							this.executeLayouts(graph.createLayouts(JSON.parse(layout)), function()
 							{
 								postProcess();
 								temp();
 							});
+
 							afterInsert = null;
 						}
 						else if (layout == 'circle')
@@ -13935,6 +14272,31 @@
 				    			
 			    			afterInsert = null;
 			    		}
+						else if (layout == 'orgchart')
+						{
+			    			// Required for layouts to work with new cells
+			    			graph.view.validate();
+							
+							var orgChartLayout = new mxOrgChartLayout(graph,
+								2, levelspacing, nodespacing);
+		
+		    				var orgChartLayoutIsVertexIgnored = orgChartLayout.isVertexIgnored;
+		
+			    			// Ignore other cells
+		    				orgChartLayout.isVertexIgnored = function(vertex)
+		    				{
+		    					return orgChartLayoutIsVertexIgnored.apply(this, arguments) ||
+		    						mxUtils.indexOf(cells, vertex) < 0;
+		    				};
+		
+		    	    		this.executeLayout(function()
+		    	    		{
+		    	    			orgChartLayout.execute(graph.getDefaultParent());
+				    			postProcess();
+		    	    		}, true, afterInsert);
+		    	    		
+		    	    		afterInsert = null;
+						}
 		    			else if (layout == 'organic' || (layout == 'auto' &&
 		    					select.length > cells.length))
 		    			{
@@ -13948,7 +14310,7 @@
 		
 		    				var organicLayoutIsVertexIgnored = organicLayout.isVertexIgnored;
 		
-			    				// Ignore other cells
+			    			// Ignore other cells
 		    				organicLayout.isVertexIgnored = function(vertex)
 		    				{
 		    					return organicLayoutIsVertexIgnored.apply(this, arguments) ||
@@ -14221,7 +14583,28 @@
 		return (file != null && file.isEditable()) || 
 			(urlParams['embed'] == '1' && this.editor.graph.isEnabled());
 	};
-	
+
+	/**
+	 * Extends sidebar construction to add listeners for theme changes.
+	 */
+	var editorUiCreateSidebar = EditorUi.prototype.createSidebar;
+	EditorUi.prototype.createSidebar = function(container)
+	{
+		var result = editorUiCreateSidebar.apply(this, arguments);
+
+		this.addListener('darkModeChanged', mxUtils.bind(this, function()
+		{
+			result.refresh();
+		}));
+
+		this.addListener('sketchModeChanged', mxUtils.bind(this, function()
+		{
+			result.refresh();
+		}));
+		
+		return result;
+	};
+
 	/**
 	 * Updates action states depending on the selection.
 	 */
@@ -14436,7 +14819,7 @@
 
 		this.remoteInvoke('getCustomLibraries', null, null, function(libsList)
 		{
-			libsSection.innerHTML = '';
+			libsSection.innerText = '';
 			
 			if (libsList.length == 0)
 			{
@@ -14474,7 +14857,7 @@
 			}
 		}, mxUtils.bind(this, function(e)
 		{
-			libsSection.innerHTML = '';
+			libsSection.innerText = '';
 			var status = document.createElement('div');
 			status.style.padding = '8px';
 			status.style.textAlign = 'center';
@@ -15505,7 +15888,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 		
 		var saveBtn = mxUtils.button(mxResources.get('save'), function()
 		{
-			commentTxt.innerHTML = '';
+			commentTxt.innerText = '';
 			comment.content = textArea.value;
 			mxUtils.write(commentTxt, comment.content);
 			reset();
@@ -15545,7 +15928,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 	
 	function writeCommentDate(comment, dateDiv)
 	{
-		dateDiv.innerHTML = '';
+		dateDiv.innerText = '';
 		var ts = new Date(comment.modifiedDate);
 		var str = editorUi.timeSince(ts);
 		
@@ -15782,7 +16165,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 						if (markedOnly === true)
 						{
 							var commentTxt = cdiv.querySelector('.geCommentTxt');
-							commentTxt.innerHTML = '';
+							commentTxt.innerText = '';
 							mxUtils.write(commentTxt, mxResources.get('msgDeleted'));
 							
 							var actions = cdiv.querySelectorAll('.geCommentAction');
@@ -15832,7 +16215,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 				function doToggle()
 				{
 					var resolveActionLnk = evt.target;
-					resolveActionLnk.innerHTML = '';
+					resolveActionLnk.innerText = '';
 
 					comment.isResolved = !comment.isResolved;
 					mxUtils.write(resolveActionLnk, comment.isResolved? mxResources.get('reopen') : mxResources.get('resolve'));
@@ -15955,12 +16338,8 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 	var resolvedLink = link.cloneNode();
 	resolvedLink.innerHTML = '<img src="' + IMAGE_PATH + '/check.png" style="width: 16px; padding: 2px;">';
 	resolvedLink.setAttribute('title', mxResources.get('showResolved'));
+	resolvedLink.className = 'geAdaptiveAsset';
 	var resolvedChecked = false;
-	
-	if (Editor.isDarkMode())
-	{
-		resolvedLink.style.filter = 'invert(100%)';
-	}
 	
 	mxEvent.addListener(resolvedLink, 'click', function(evt)
 	{
@@ -15980,11 +16359,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 		var refreshLink = link.cloneNode();
 		refreshLink.innerHTML = '<img src="' + IMAGE_PATH + '/update16.png" style="width: 16px; padding: 2px;">';
 		refreshLink.setAttribute('title', mxResources.get('refresh'));
-	
-		if (Editor.isDarkMode())
-		{
-			refreshLink.style.filter = 'invert(100%)';
-		}
+		refreshLink.className = 'geAdaptiveAsset';
 		
 		mxEvent.addListener(refreshLink, 'click', function(evt)
 		{
@@ -16002,11 +16377,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 		var saveLink = link.cloneNode();
 		saveLink.innerHTML = '<img src="' + IMAGE_PATH + '/save.png" style="width: 20px; padding: 2px;">';
 		saveLink.setAttribute('title', mxResources.get('save'));
-	
-		if (Editor.isDarkMode())
-		{
-			saveLink.style.filter = 'invert(100%)';
-		}
+		saveLink.className = 'geAdaptiveAsset';
 		
 		mxEvent.addListener(saveLink, 'click', function(evt)
 		{
@@ -16077,7 +16448,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 					return new Date(c1.modifiedDate) - new Date(c2.modifiedDate);
 				});
 
-				listDiv.innerHTML = '';
+				listDiv.innerText = '';
 				listDiv.appendChild(noComments);
 				noComments.style.display = 'block';
 				comments = list;
@@ -16163,35 +16534,7 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 		this.window.fit();
 	}));
 	
-	this.window.setLocation = function(x, y)
-	{
-		var iw = window.innerWidth || document.body.clientWidth || document.documentElement.clientWidth;
-		var ih = window.innerHeight || document.body.clientHeight || document.documentElement.clientHeight;
-		
-		x = Math.max(0, Math.min(x, iw - this.table.clientWidth));
-		y = Math.max(0, Math.min(y, ih - this.table.clientHeight - 48));
-
-		if (this.getX() != x || this.getY() != y)
-		{
-			mxWindow.prototype.setLocation.apply(this, arguments);
-		}
-	};
-	
-	var resizeListener = mxUtils.bind(this, function()
-	{
-		var x = this.window.getX();
-		var y = this.window.getY();
-		
-		this.window.setLocation(x, y);
-	});
-	
-	mxEvent.addListener(window, 'resize', resizeListener);
-
-	this.destroy = function()
-	{
-		mxEvent.removeListener(window, 'resize', resizeListener);
-		this.window.destroy();
-	}
+	editorUi.installResizeHandler(this, true);
 };
 
 /**

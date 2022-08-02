@@ -261,6 +261,10 @@
         padding-bottom: 4px;
     }
 
+    html body[data-theme="dark"] table.mxPopupMenu td.mxPopupMenuItem {
+        color: #ccc;
+    }
+
     html table.mxPopupMenu tr.mxPopupMenuItemHover {
         background-color: #29b6f2;
     }
@@ -279,10 +283,31 @@
         margin: 5px 0;
     }
 
+    html body[data-theme="dark"] div.mxPopupMenu {
+        border: 3px solid #505759;
+        background: #2a2a2a;
+        box-shadow: none;
+    }
+
+    html body[data-theme="dark"] div.mxPopupMenu hr {
+        background-color: #505759;
+    }
+
+    html body[data-theme="dark"] .geHsplit, html body[data-theme="dark"] .geVsplit, html body[data-theme="dark"] table.mxPopupMenu hr {
+        border-color: #505759;
+        background-color: #2a2a2a;
+    }
+
     body[data-theme="dark"][data-themestyle="moderate"] > .mxWindow .mxWindowTitle {
         /* window title */
         background-color: #999 !important;
         color: #fff !important;
+    }
+
+    body[data-theme="dark"] .geBtn {
+        background: #2a2a2a !important;
+        border-color: #505759 !important;
+        color: #cccccc !important;
     }
 
     body[data-theme="dark"][data-themestyle="moderate"] > .mxWindow .geSidebarContainer,

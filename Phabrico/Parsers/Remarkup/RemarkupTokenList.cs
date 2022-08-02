@@ -162,11 +162,35 @@ namespace Phabrico.Parsers.Remarkup
                                                  .Split('\n')
                                                  .Select(row => row.TrimEnd('\r'))
                                                  .ToArray();
-                        foreach (string row in rows)
+                        for (int r=0; r<rows.Length; r++)
                         {
+                            string row = rows[r];
+
                             result += "  <tr>";
-                            foreach (string cell in row.Split('|').Skip(1))
+
+                            // verify if cells contain sub-rules which contain '|' characters (e.g. hyperlinks)
+                            Match[] hyperlinksInCells = RegexSafe.Matches(row, @"\[\[[^]]*\]\]", RegexOptions.Singleline).OfType<Match>().ToArray();
+
+                            // replace content of sub-rules temporary by something else
+                            Dictionary<int, string> originalContent = new Dictionary<int, string>();
+                            int replaceIndex = 1;
+                            foreach (Match subRuleMatch in hyperlinksInCells.OrderByDescending(m => m.Index))
                             {
+                                originalContent[replaceIndex] = subRuleMatch.Value;
+
+                                row = row.Substring(0, subRuleMatch.Index)
+                                    + "\x04" + replaceIndex.ToString() + "\x04"
+                                    + row.Substring(subRuleMatch.Index + subRuleMatch.Length);
+
+                                replaceIndex++;
+                            }
+
+                            List<string> cells = row.Split('|').Skip(1).ToList();
+
+                            // loop through cells of row
+                            for (int c = 0; c < cells.Count; c++)
+                            {
+                                string cell = cells[c];
                                 string cellRemarkupContent;
                                 if (RegexSafe.IsMatch(cell, "^\\W*--+\\W$*", RegexOptions.None))
                                 {
@@ -175,6 +199,14 @@ namespace Phabrico.Parsers.Remarkup
                                 }
                                 else
                                 {
+                                    Match[] subRuleReplacements = RegexSafe.Matches(cell, "\x04([0-9]+)\x04", RegexOptions.Singleline).OfType<Match>().ToArray();
+                                    foreach (Match subRuleReplacement in subRuleReplacements.OrderByDescending(m => m.Index))
+                                    {
+                                        cell = cell.Substring(0, subRuleReplacement.Index)
+                                             + originalContent[Int32.Parse(subRuleReplacement.Groups[1].Value)]
+                                             + cell.Substring(subRuleReplacement.Index + subRuleReplacement.Length);
+                                    }
+
                                     cellRemarkupContent = RemarkupToXML(database, browser, url, cell);
                                 }
                                 result += "<td>" + cellRemarkupContent + "</td>";

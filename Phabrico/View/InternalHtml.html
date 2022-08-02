@@ -143,6 +143,15 @@
 </script>
 
 <script>
+    function toggleFullScreenImage(e) {
+        var imageLocator = e.target.closest('div.image-locator');
+        if (imageLocator.classList.toggle("full-screen")) {
+            document.body.classList.add('full-screen-image');
+        } else {
+            document.body.classList.remove('full-screen-image');
+        }
+    }
+
     function imageLoaded(img) {
         // prepare images which can be zoomed in full screen
 	    var fixedWidth = img.closest('.image-locator').style.width;

@@ -407,6 +407,17 @@
     taskInputTagValues["projectPHIDs"] = @@TASK-TAGS-JSON@@;
     taskInputTagValues["subscriberPHIDs"] = @@TASK-SUBSCRIBERS-JSON@@;
 
+    // send csrf's periodically back so server does not expire them automatically
+    setInterval(function (evt) {
+        var data = new FormData();
+        data.append('token', '@@CSRF@@');
+
+        var xmlRequest = new XMLHttpRequest();
+        xmlRequest.open('POST', 'prod', true);
+        xmlRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlRequest.send(data);
+    }, 60000)
+
     @{IF @@ACCESS-MASTER-DATA@@=True@
         actionViewPhabricatorTask.href = "@@PHABRICATOR-URL@@" + document.location.href.substring(document.baseURI.length + "maniphest/".length)
                                                                                        .match(/^T-?[0-9]+/)[0]

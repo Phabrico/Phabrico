@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
 using Phabrico.ContentTranslation.Engines;
 using Phabrico.Controllers;
-using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
@@ -17,6 +16,9 @@ namespace Phabrico.Plugin
     /// </summary>
     public class PhrictionTranslatorController : PluginController
     {
+        private static TransientDictionary<string, Http.Response.File> transientTranslationFiles = new TransientDictionary<string, Http.Response.File>(System.TimeSpan.FromSeconds(60), false);
+        private static object transientTranslationFilesLocker = new object();
+
         public class TranslationEngineRecord
         {
             public string Name { get; set; }
@@ -24,6 +26,16 @@ namespace Phabrico.Plugin
             public bool Selected { get; set; }
 
             public bool APIKeyVisible { get; set; }
+            public bool FileBasedTranslator { get; set; }
+            public string FileContentType { get; set; }
+        }
+
+        public class TranslateDocumentResult
+        {
+            public string ErrorMessage { get; set; }
+            public Parsers.Base64.Base64EIDOStream Base64EIDOStream { get; set; }
+            public string ContentType { get; set; }
+            public string FileName { get; set; }
         }
 
         /// <summary>
@@ -82,6 +94,18 @@ namespace Phabrico.Plugin
                                 } else {
                                     paramAPIKey.style.display = 'none';
                                 }
+
+                                if (typeof btnImportFile != 'undefined') {
+                                    var isFileBased = translationEngine.querySelector('option[value=""' + eng +'""]').classList.contains('file1');
+                                    if (isFileBased) {
+                                        btnImportFile.style.display = 'block';
+                                        btnOK.innerText = btnOK.dataset.ExportFileText;
+                                        inputImportFile.accept = translationEngine.options[translationEngine.selectedIndex].dataset.contenttype;
+                                    } else {
+                                        btnImportFile.style.display = 'none';
+                                        btnOK.innerText = btnOK.dataset.Text;
+                                    }
+                                }
                             }
 
                             refreshTranslationEngine(translationEngine.value);
@@ -107,8 +131,32 @@ namespace Phabrico.Plugin
 
                             refreshTargetLanguages(sourceLanguage.value);
 
+                            // set default translation engine
+                            translationEngine.value = localStorage['phabrico-translation-engine'];
+                            if (translationEngine.value == '') translationEngine.value = 'deepl';
+                            refreshTranslationEngine(translationEngine.value);
+
                             // set default source language via javascript because Firefox sets the wrong default selection when using Phabrico for example in Russian
-                            paramSourceLanguage.querySelector('select').value = 'en';
+                            sourceLanguage.value = localStorage['phabrico-translation-source-language'];
+                            if (sourceLanguage.value == '') sourceLanguage.value = 'en';
+                            
+                            // add extra click-event-code for Export button (to store the current translation engine and source language in the localStorage)
+                            btnOK.addEventListener('mousedown', function(e) { 
+                                localStorage['phabrico-translation-engine'] = translationEngine.value;
+                                localStorage['phabrico-translation-source-language'] = sourceLanguage.value;
+                            });
+
+                            // correct keyboard tab order
+                            document.querySelectorAll('form.preparationParameters input:not([type=""hidden""]),'
+                                                    + 'form.preparationParameters select,'
+                                                    + 'form.preparationParameters button'
+                                                      )
+                                    .forEach(function(elem) { 
+                                        elem.tabIndex = 1; 
+                                    });
+                            btnImportFile.tabIndex = 2;
+                            btnOK.tabIndex = 3;
+                            document.querySelector('form.preparationParameters button.button-gray').tabIndex = 4
                     ";
 
                     string TranslationEngineName = Locale.TranslateText("Translation engine", browser.Session.Locale);
@@ -140,20 +188,45 @@ namespace Phabrico.Plugin
                     string LanguageSpanish = Locale.TranslateText("Spanish", browser.Session.Locale);
                     string LanguageSwedish = Locale.TranslateText("Swedish", browser.Session.Locale);
 
+
                     TranslationEngineRecord[] translationEngines = new TranslationEngineRecord[] {
-                        new TranslationEngineRecord { Name = "deepl", Description = "DeepL", Selected = true  , APIKeyVisible = true},
-                        new TranslationEngineRecord { Name = "dummy", Description = "Dummy", Selected = false , APIKeyVisible = false }
+                        new TranslationEngineRecord {
+                            Name = "deepl",
+                            Description = "DeepL",
+                            Selected = true,
+                            APIKeyVisible = true,
+                            FileBasedTranslator = false,
+                            FileContentType = null
+                        },
+                        new TranslationEngineRecord { 
+                            Name = "dummy",
+                            Description = "Dummy",
+                            Selected = false,
+                            APIKeyVisible = false,
+                            FileBasedTranslator = false,
+                            FileContentType = null 
+                        },
+                        new TranslationEngineRecord {
+                            Name = "excel",
+                            Description = "Excel",
+                            Selected = false,
+                            APIKeyVisible = false,
+                            FileBasedTranslator = true,
+                            FileContentType = TranslationEngine.GetTranslationEngine("excel", "")?.GetContentType()
+                        }
                     };
 
                     string translationEngineOptions = string.Join("",
                                                                   translationEngines.Where(engine => engine.Name.Equals("dummy") == false
                                                                                                   || Http.Server.UnitTesting == true
                                                                                           )
-                                                                        .Select(engine => string.Format("<option value='{0}' class='apiKey{3}' {2}>{1}</option>",
+                                                                        .Select(engine => string.Format("<option value='{0}' class='apiKey{3} file{4}' data-contenttype='{5}' {2}>{1}</option>",
                                                                                                            engine.Name,
                                                                                                            engine.Description,
                                                                                                            engine.Selected ? "selected" : "",
-                                                                                                           engine.APIKeyVisible ? 1 : 0
+                                                                                                           engine.APIKeyVisible ? 1 : 0,
+                                                                                                           engine.FileBasedTranslator ? 1 : 0,
+                                                                                                           engine.FileContentType
                                                                                                        )
                                                                                )
                                                                  );
@@ -246,7 +319,20 @@ namespace Phabrico.Plugin
                         Status = "Prepare",
                         DialogTitle = Locale.TranslateText("Translation parameters", browser.Session.Locale),
                         DialogHTML = dlgChooseLanguage,
-                        Javascript = javascript
+                        Javascript = javascript,
+                        Buttons = new
+                        {
+                            OK = new
+                            {
+                                Text = "Translate",
+                                ExportFileText = "Export File"
+                            },
+                            ImportFile = new
+                            {
+                                Text = "Import File",
+                                URL = "translation/upload"
+                            }
+                        }
                     });
 
                     return new JsonMessage(jsonData);
@@ -314,7 +400,9 @@ namespace Phabrico.Plugin
 
                         string sourceLanguage = formVariables["sourceLanguage"];
                         string targetLanguage = formVariables["targetLanguage"];
-                        string errorMessage = TranslateDocument(database, phrictionDocument?.Token, translationEngine, apiKey, sourceLanguage, targetLanguage);
+                        
+                        TranslateDocumentResult translationResult = TranslateDocument(database, phrictionDocument?.Token, translator, sourceLanguage, targetLanguage);
+                        string errorMessage = translationResult?.ErrorMessage;
                         if (errorMessage != null)
                         {
                             errorMessages.Add(errorMessage);
@@ -332,7 +420,8 @@ namespace Phabrico.Plugin
                             {
                                 foreach (string underlyingPhrictionToken in underlyingPhrictionTokens)
                                 {
-                                    errorMessage = TranslateDocument(database, underlyingPhrictionToken, translationEngine, apiKey, sourceLanguage, targetLanguage);
+                                    translationResult = TranslateDocument(database, underlyingPhrictionToken, translator, sourceLanguage, targetLanguage);
+                                    errorMessage = translationResult?.ErrorMessage;
                                     if (errorMessage != null)
                                     {
                                         errorMessages.Add(errorMessage);
@@ -362,9 +451,27 @@ namespace Phabrico.Plugin
                         }
                         else
                         {
+                            string url = null;
+
+                            if (translator.IsFileBasedTranslationService)
+                            {
+                                Parsers.Base64.Base64EIDOStream base64EIDOStream = translator.GetBase64EIDOStream();
+                                translationResult.Base64EIDOStream = base64EIDOStream;
+                            };
+
+                            if (translationResult.Base64EIDOStream != null)
+                            {
+                                url = System.Guid.NewGuid().ToString().Replace("-", "");
+                                lock (transientTranslationFilesLocker)
+                                {
+                                    transientTranslationFiles[url] = new Http.Response.File(translationResult.Base64EIDOStream, translationResult.ContentType, translationResult.FileName, true);
+                                }
+                            }
+
                             jsonData = JsonConvert.SerializeObject(new
                             {
                                 Status = "Finished",
+                                URL = url,
                                 MessageBox = new
                                 {
                                     Title = Locale.TranslateText("PluginName.PhrictionTranslator", browser.Session.Locale),
@@ -380,6 +487,101 @@ namespace Phabrico.Plugin
                     }
                 }
             }
+        }
+
+        [UrlController(URL = "/translation/upload")]
+        public JsonMessage HttpPostUploadTranslation(Http.Server httpServer, string[] parameters)
+        {
+            Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
+            using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
+            {
+                DictionarySafe<string, string> formVariables = browser.Session.FormVariables[browser.Request.RawUrl];
+                string phrictionToken = formVariables["document-token"];
+                string translationEngineName = formVariables["translationEngine"];
+                string sourceLanguage = formVariables["sourceLanguage"];
+                string targetLanguage = formVariables["targetLanguage"];
+                string base64FileData = formVariables["file-data"];
+                base64FileData = RegexSafe.Replace(base64FileData, "^.*?;base64,", "");
+
+                Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken, Language.Default);
+
+                TranslationEngine translationEngine = TranslationEngine.GetTranslationEngine(translationEngineName, "");
+                if (translationEngine == null) throw new System.InvalidProgramException("Translation engine not found");
+
+                translationEngine.ImportFile(base64FileData, sourceLanguage, targetLanguage);
+
+                string translatedTitle, translatedContent;
+                bool moreTranslationsNeeded = translationEngine.ImportTranslationDictionary(targetLanguage, database, browser, phrictionDocument, out translatedTitle, out translatedContent);
+
+                Content content = new Content(database);
+                content.AddTranslation(phrictionDocument.Token, targetLanguage, translatedTitle, translatedContent);
+
+                // uncache document
+                httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+
+                int nbrUnderlyingPhrictionTokens = 0;
+                if (moreTranslationsNeeded)
+                {
+                    List<string> underlyingPhrictionTokens = new List<string>();
+                    RetrieveUnderlyingPhrictionDocuments(database, phrictionDocument.Token, ref underlyingPhrictionTokens);
+
+                    foreach (string underlyingPhrictionToken in underlyingPhrictionTokens)
+                    {
+                        nbrUnderlyingPhrictionTokens++;
+                        phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken, Language.Default);
+
+                        moreTranslationsNeeded = translationEngine.ImportTranslationDictionary(targetLanguage, database, browser, phrictionDocument, out translatedTitle, out translatedContent);
+                        content.AddTranslation(phrictionDocument.Token, targetLanguage, translatedTitle, translatedContent);
+
+                        // uncache document
+                        httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+
+                        if (moreTranslationsNeeded == false)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                string jsonData = JsonConvert.SerializeObject(new
+                {
+                    Status = "Finished",
+                    URL = "url",
+                    MessageBox = new
+                    {
+                        Title = Locale.TranslateText("PluginName.PhrictionTranslator", browser.Session.Locale),
+                        Message = (nbrUnderlyingPhrictionTokens == 0)
+                                                ? Locale.TranslateText("Document is translated", browser.Session.Locale)
+                                                : Locale.TranslateText("@@NBR-DOCUMENTS@@ documents have been translated", browser.Session.Locale)
+                                                        .Replace("@@NBR-DOCUMENTS@@", (1 + nbrUnderlyingPhrictionTokens).ToString())
+                    }
+                });
+                return new JsonMessage(jsonData);
+            }
+        }
+
+        /// <summary>
+        /// This method is fired when the user translates one or more Phriction documents by means of a file-based translator
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="fileObjectResponse"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/translation/file")]
+        public void HttpGetTranslationFileContent(Http.Server httpServer, ref Http.Response.File fileObjectResponse, string[] parameters, string parameterActions)
+        {
+            string fileKey = parameters.FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(fileKey)) return;
+
+            Http.Response.File result;
+            lock (transientTranslationFilesLocker)
+            {
+                if (transientTranslationFiles.TryGetValue(fileKey, out result) == false) return;
+
+                transientTranslationFiles.Remove(fileKey);
+            }
+
+            fileObjectResponse = result;
         }
 
         /// <summary>
@@ -435,16 +637,12 @@ namespace Phabrico.Plugin
         /// </summary>
         /// <param name="database">Phabrico database</param>
         /// <param name="phrictionToken">Token of Phriction document that needs to be translated</param>
-        /// <param name="translationEngine">Name of the translation engine</param>
-        /// <param name="apiKey">Authntication key for translation engine</param>
+        /// <param name="translationEngine">Translation engine</param>
         /// <param name="sourceLanguage">Language in which the document is currently written</param>
         /// <param name="targetLanguage">Language in which the document should be translated to</param>
         /// <returns></returns>
-        private string TranslateDocument(Database database, string phrictionToken, string translationEngine, string apiKey, string sourceLanguage, string targetLanguage)
+        private TranslateDocumentResult TranslateDocument(Database database, string phrictionToken, TranslationEngine translator, string sourceLanguage, string targetLanguage)
         {
-            TranslationEngine translator = TranslationEngine.GetTranslationEngine(translationEngine, apiKey);
-            if (translator == null) return "Invalid translation engine";
-
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.Stage stageStorage = new Storage.Stage();
             RemarkupEngine remarkup = new RemarkupEngine();
@@ -457,48 +655,68 @@ namespace Phabrico.Plugin
             try
             {
                 string translatedContent = "";
-                string translatedTitle = translator.TranslateText(sourceLanguage, targetLanguage, phrictionDocument.Name);
+                string translatedTitle = translator.TranslateText(sourceLanguage, targetLanguage, phrictionDocument.Name, phrictionDocument.Token);
                 if (string.IsNullOrWhiteSpace(phrictionDocument.Content) == false)
                 {
-                    remarkup.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+                    remarkup.ToHTML(null, database, browser, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
 
                     string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
 
-                    string translatedXmlContent = translator.TranslateXML(sourceLanguage, targetLanguage, xmlData);
+                    string translatedXmlContent = translator.TranslateXML(sourceLanguage, targetLanguage, xmlData, phrictionDocument.Token);
                     string correctedTranslatedXmlContent = CorrectTranslatedXmlContent(translatedXmlContent);
                     browser.Language = targetLanguage;
                     translatedContent = remarkupParserOutput.TokenList.FromXML(database, browser, "/", correctedTranslatedXmlContent, true);
                     browser.Language = sourceLanguage;
                 }
 
-                Storage.Content content = new Content(database);
-                content.AddTranslation(phrictionDocument.Token, (Language)targetLanguage, translatedTitle, translatedContent);
-
-                if (string.IsNullOrWhiteSpace(translatedContent) == false)
+                if (translator.IsFileBasedTranslationService)
                 {
-                    // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
-                    remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
-                    database.ClearAssignedTokens(phrictionToken, targetLanguage);
-                    foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                    try
                     {
-                        database.AssignToken(phrictionDocument.Token, linkedPhabricatorObject.Token, targetLanguage);
+                        return new TranslateDocumentResult
+                        {
+                            Base64EIDOStream = null,
+                            ContentType = translator.GetContentType(),
+                            FileName = translator.GetFileName()
+                        };
+                    }
+                    catch (System.Exception exception)
+                    {
+                        return new TranslateDocumentResult { ErrorMessage = exception.Message };
                     }
                 }
-
-                // clean up old translations
-                content.DeleteUnreferencedTranslatedObjects();
-
-                // remove staged translation (if any)
-                Phabricator.Data.Phriction stagedPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phrictionToken, (Language)targetLanguage);
-                if (stagedPhrictionDocument != null && stagedPhrictionDocument.Language.Equals(targetLanguage))
+                else
                 {
-                    stageStorage.Remove(database, browser, stagedPhrictionDocument, (Language)targetLanguage);
+                    Storage.Content content = new Content(database);
+                    content.AddTranslation(phrictionDocument.Token, (Language)targetLanguage, translatedTitle, translatedContent);
+
+                    if (string.IsNullOrWhiteSpace(translatedContent) == false)
+                    {
+                        // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
+                        remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
+                        database.ClearAssignedTokens(phrictionToken, targetLanguage);
+                        foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                        {
+                            database.AssignToken(phrictionDocument.Token, linkedPhabricatorObject.Token, targetLanguage);
+                        }
+                    }
+
+                    // clean up old translations
+                    content.DeleteUnreferencedTranslatedObjects();
+
+                    // remove staged translation (if any)
+                    Phabricator.Data.Phriction stagedPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phrictionToken, (Language)targetLanguage);
+                    if (stagedPhrictionDocument != null && stagedPhrictionDocument.Language.Equals(targetLanguage))
+                    {
+                        stageStorage.Remove(database, browser, stagedPhrictionDocument, (Language)targetLanguage);
+                    }
+
+                    return new TranslateDocumentResult();
                 }
-                return null;
             }
             catch (System.Exception e)
             {
-                return e.Message;
+                return new TranslateDocumentResult { ErrorMessage = e.Message };
             }
             finally
             {

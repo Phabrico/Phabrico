@@ -30,8 +30,9 @@ namespace Phabrico.ContentTranslation.Engines
         /// <param name="sourceLanguage">Language of content</param>
         /// <param name="destinationLanguage">Language of translated content</param>
         /// <param name="content">Content to be translated</param>
+        /// <param name="origin">Location where the content can be found (e.g. a token or a url)</param>
         /// <returns>Translated content</returns>
-        protected override string Translate(string sourceLanguage, string destinationLanguage, string content)
+        protected override string Translate(string sourceLanguage, string destinationLanguage, string content, string origin)
         {
             string url = "https://api-free.deepl.com/v2/translate";
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);

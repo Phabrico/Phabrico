@@ -1798,6 +1798,10 @@ namespace Phabrico.Http
                         }
                     }
 
+                    if (cmdPostUrl.StartsWith("/uncache"))
+                    {
+                    }
+                    else
                     if (cmdPostUrl.StartsWith("/auth/") == false)
                     {
                         // verify if session is still OK

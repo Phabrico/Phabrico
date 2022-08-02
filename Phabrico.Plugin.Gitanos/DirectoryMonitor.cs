@@ -267,7 +267,8 @@ namespace Phabrico.Plugin
 
                 foreach (Model.GitanosConfigurationRepositoryPath repository in affectedRepositories)
                 {
-                    if (e.FullPath.Contains("\\.git\\logs\\HEAD") == false &&               //  .git\logs\HEAD is changed when a commit is created/deleted
+                    if (e.FullPath.Contains("\\.git\\logs\\HEAD") == false &&                                               //  .git\logs\HEAD is changed when a commit is created/deleted
+                        (e.FullPath.Contains("\\.git\\modules\\") && e.FullPath.EndsWith("\\logs\\HEAD")) == false &&       //  .git\modules\xxx\logs\HEAD is changed when a commit is created/deleted in a submodule
                         RegexSafe.IsMatch(e.FullPath, @"\\.git\\(modules\\[^\\]+\\)*(logs\\)?refs\\remotes\\origin", System.Text.RegularExpressions.RegexOptions.None) == false &&    // .git\refs\remotes\origin is accessed by git-push command
                         repository.PathIsIgnored(e.FullPath)
                        )

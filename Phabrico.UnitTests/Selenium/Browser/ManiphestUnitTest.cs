@@ -546,6 +546,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             }
 
             // click on Edit
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.LinkText("Edit Task")).Any());
             IWebElement edit = WebBrowser.FindElement(By.LinkText("Edit Task"));
             edit.Click();

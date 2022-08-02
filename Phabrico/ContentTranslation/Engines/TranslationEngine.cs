@@ -1,4 +1,5 @@
 ﻿using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Base64;
 using Phabrico.Parsers.BrokenXML;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,43 @@ namespace Phabrico.ContentTranslation.Engines
 {
     public abstract class TranslationEngine
     {
+        public class Translation
+        {
+            public string OriginalText { get; private set; }
+            public string TranslatedText { get; set; }
+
+            public Translation(string original, string translation)
+            {
+                OriginalText = original;
+                TranslatedText = translation;
+            }
+        }
+
+        /// <summary>
+        /// API key for web-based translators
+        /// </summary>
         protected string APIKey { get; private set;}
 
+        /// <summary>
+        /// Dictionary used in file-based translators.
+        /// The key is a MD5-based key, which identifies the part to be translated
+        /// The value contains a Translation class, which contains the text to be translated and the translation.
+        /// If the translator is a non-file-based translator, this property should be null.
+        /// </summary>
+        protected virtual Dictionary<string, Translation> TranslationalDictionary { get; set; } = null;
+
         private readonly List<string> untranslatableTextParts = new List<string>();
+
+        /// <summary>
+        /// True if a file import/export functionality should be provided
+        /// </summary>
+        public bool IsFileBasedTranslationService
+        { 
+            get
+            {
+                return TranslationalDictionary != null;
+            }
+        }
 
         /// <summary>
         /// True if a connection is established over the internet.
@@ -36,8 +71,43 @@ namespace Phabrico.ContentTranslation.Engines
         /// <param name="sourceLanguage">Language of content</param>
         /// <param name="destinationLanguage">Language of translated content</param>
         /// <param name="content">Content to be translated</param>
+        /// <param name="origin">Location where the content can be found (i.e. a token)</param>
         /// <returns>Translated content</returns>
-        protected abstract string Translate(string sourceLanguage, string destinationLanguage, string content);
+        protected abstract string Translate(string sourceLanguage, string destinationLanguage, string content, string origin);
+
+        /// <summary>
+        /// If the translation enigne is a file-based translator, this method will return the file content in a base64 encoding
+        /// so it can be readily downloaded from a web browser
+        /// </summary>
+        /// <returns>Stream containing base64 encoded file data</returns>
+        public virtual Base64EIDOStream GetBase64EIDOStream()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// If the translation enigne is a file-based translator, this method will return the content-type of the file
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public virtual string GetContentType()
+        {
+            if (IsFileBasedTranslationService == false) return null;
+
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// If the translation enigne is a file-based translator, this method will return the name of the file
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public virtual string GetFileName()
+        {
+            if (IsFileBasedTranslationService == false) return null;
+
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Returns a translation engine which is specificied by name
@@ -63,6 +133,33 @@ namespace Phabrico.ContentTranslation.Engines
 
             ConstructorInfo translatorConstructor = translatorType.GetConstructor(new Type[] { typeof(string) });
             return translatorConstructor.Invoke(new object[] { apiKey }) as TranslationEngine;
+        }
+
+        /// <summary>
+        /// Imports a translation file
+        /// </summary>
+        /// <param name="base64FileData">Base64-encoded file content</param>
+        /// <param name="sourceLanguage">Current language</param>
+        /// <param name="targetLanguage">Language to translate to</param>
+        public virtual void ImportFile(string base64FileData, string sourceLanguage, string targetLanguage)
+        {
+        }
+
+        /// <summary>
+        /// Imports a translation dictionary, which was cretaed by the ImportFile method
+        /// </summary>
+        /// <param name="targetLanguage"></param>
+        /// <param name="database"></param>
+        /// <param name="browser"></param>
+        /// <param name="phrictionDocument"></param>
+        /// <param name="translatedTitle"></param>
+        /// <param name="translatedContent"></param>
+        /// <returns>True if more underlyings documents need to be translated</returns>
+        public virtual bool ImportTranslationDictionary(string targetLanguage, Storage.Database database, Http.Browser browser, Phabricator.Data.Phriction phrictionDocument, out string translatedTitle, out string translatedContent)
+        {
+            translatedTitle = "";
+            translatedContent = "";
+            return false;
         }
 
         /// <summary>
@@ -163,38 +260,19 @@ namespace Phabrico.ContentTranslation.Engines
         }
 
         /// <summary>
-        /// Verifies if the content of an XML tag should be translated
-        /// </summary>
-        /// <param name="brokenXmlOpeningTag"></param>
-        /// <returns></returns>
-        private bool XmlTagTranslatable(BrokenXmlOpeningTag brokenXmlOpeningTag)
-        {
-            if (brokenXmlOpeningTag.Name.Equals("BT") ||
-                brokenXmlOpeningTag.Name.Equals("IN") ||
-                brokenXmlOpeningTag.Name.Equals("LT") ||
-                brokenXmlOpeningTag.Name.Equals("P") ||
-                brokenXmlOpeningTag.Name.Equals("US") ||
-                brokenXmlOpeningTag.Name.Equals("WS"))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Translates a BrokenXML string from one language into another language
         /// </summary>
         /// <param name="sourceLanguage"></param>
         /// <param name="destinationLanguage"></param>
         /// <param name="brokenXml"></param>
+        /// <param name="origin"></param>
         /// <returns></returns>
-        public string TranslateXML(string sourceLanguage, string destinationLanguage, string brokenXml)
+        public string TranslateXML(string sourceLanguage, string destinationLanguage, string brokenXml, string origin)
         {
             untranslatableTextParts.Clear();
 
             string translatableContent = PrepareTranslatableContent(brokenXml);
-            string translatedContent = Translate(sourceLanguage, destinationLanguage, translatableContent);
+            string translatedContent = Translate(sourceLanguage, destinationLanguage, translatableContent, origin);
 
             Match[] untranslatedMatches = RegexSafe.Matches(translatedContent, "<UT i=\"([0-9]+)\"></UT>", RegexOptions.Singleline)
                                                    .OfType<Match>()
@@ -219,10 +297,31 @@ namespace Phabrico.ContentTranslation.Engines
         /// <param name="sourceLanguage"></param>
         /// <param name="targetLanguage"></param>
         /// <param name="text"></param>
+        /// <param name="origin"></param>
         /// <returns></returns>
-        public virtual string TranslateText(string sourceLanguage, string targetLanguage, string text)
+        public virtual string TranslateText(string sourceLanguage, string targetLanguage, string text, string origin)
         {
-            return TranslateXML(sourceLanguage, targetLanguage, text);
+            return TranslateXML(sourceLanguage, targetLanguage, text, origin);
+        }
+
+        /// <summary>
+        /// Verifies if the content of an XML tag should be translated
+        /// </summary>
+        /// <param name="brokenXmlOpeningTag"></param>
+        /// <returns></returns>
+        private bool XmlTagTranslatable(BrokenXmlOpeningTag brokenXmlOpeningTag)
+        {
+            if (brokenXmlOpeningTag.Name.Equals("BT") ||
+                brokenXmlOpeningTag.Name.Equals("IN") ||
+                brokenXmlOpeningTag.Name.Equals("LT") ||
+                brokenXmlOpeningTag.Name.Equals("P") ||
+                brokenXmlOpeningTag.Name.Equals("US") ||
+                brokenXmlOpeningTag.Name.Equals("WS"))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

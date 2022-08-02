@@ -13,9 +13,15 @@
     <license type="expression">Apache-2.0</license>
     <tags></tags>
     <dependencies>
-      <dependency id="Newtonsoft.Json" version="13.0.1"  />
-      <dependency id="System.Data.SQLite.Core" version="1.0.115.5"  />
+      <dependency id="ClosedXML" version="0.95.4" />
+      <dependency id="DocumentFormat.OpenXml" version="2.7.2" />
+      <dependency id="ExcelNumberFormat" version="1.0.10" />
+      <dependency id="Microsoft.CSharp" version="4.7.0" />
+      <dependency id="Newtonsoft.Json" version="13.0.1" />
       <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.5" />
+      <dependency id="System.Data.SQLite.Core" version="1.0.115.5" />
+      <dependency id="System.IO.FileSystem.Primitives" version="4.0.1" />
+      <dependency id="System.IO.Packaging" version="4.0.0" />
     </dependencies>
   </metadata>
   <files>
