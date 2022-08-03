@@ -28,5 +28,49 @@
                   KeyPath="yes"
                   ProcessorArchitecture="x64" />
         </Component>
+        <Component Id="phrictiontranslator_ClosedXML_dll" Guid="d964cd8d-a88d-4391-ac75-0b66a1122c96"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictiontranslator_ClosedXML_dll"
+                        Name="ClosedXML.dll"
+                        On="install" />
+
+            <File Id="file_phrictiontranslator_ClosedXML_dll"
+                  Source="$(var.Phabrico.Plugin.PhrictionTranslator.TargetDir)ClosedXML.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="phrictiontranslator_ClosedXML_pdb" Guid="e3d9a707-6559-443c-b61a-0299e1ef1554"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictiontranslator_ClosedXML_pdb"
+                        Name="ClosedXML.pdb"
+                        On="install" />
+
+            <File Id="file_phrictiontranslator_ClosedXML_pdb"
+                  Source="$(var.Phabrico.Plugin.PhrictionTranslator.TargetDir)ClosedXML.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="phrictiontranslator_DocumentFormat_OpenXml_dll" Guid="2cd730a9-416f-4121-aac7-c46e806c6e5e"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictiontranslator_DocumentFormat_OpenXml_dll"
+                        Name="DocumentFormat.OpenXml.dll"
+                        On="install" />
+
+            <File Id="file_phrictiontranslator_DocumentFormat_OpenXml_dll"
+                  Source="$(var.Phabrico.Plugin.PhrictionTranslator.TargetDir)DocumentFormat.OpenXml.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="phrictiontranslator_ExcelNumberFormat_dll" Guid="88f2f41a-4742-45db-8f0e-7b174a49c040"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictiontranslator_ExcelNumberFormat_dll"
+                        Name="ExcelNumberFormat.dll"
+                        On="install" />
+
+            <File Id="file_phrictiontranslator_ExcelNumberFormat_dll"
+                  Source="$(var.Phabrico.Plugin.PhrictionTranslator.TargetDir)ExcelNumberFormat.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
     </ComponentGroup>
 </Include>

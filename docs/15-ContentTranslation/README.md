@@ -134,7 +134,7 @@ When the translator has finished the translation, the Excel file can be imported
 > It uses for example some kind of a word-per-word translation in case the sentence contains special tags, like<br />
 > for example hyperlinks. This might generate some confused translations<br/>
 > Suppose you have the following english text "More details can be found here" where "here" is a hyperlink to another document.<br/>
-> The Ecel translator will generate 2 rows: "More details can be found" and "here".<br/>
+> The Excel translator will generate 2 rows: "More details can be found" and "here".<br/>
 > If this text needs to be translated to Dutch, then the Excel translator will generate the following translation:<br/>
 > "Verdere details kunnen worden gevonden hier" which is incorrect, as the "here" word (hier) should placed somewhere in the middle of<br/>
 > the sentence: "Verdere details kunnen hier worden gevonden"<br/>

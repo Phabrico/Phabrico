@@ -33,6 +33,10 @@ namespace Phabrico.ContentTranslation.Engines
         {
         }
 
+        /// <summary>
+        /// In case a word or sentence appears multiple times, this word or sentence should only appear once in the generated Excel file.
+        /// The corresponding key will be appended with the new key. The keys are separated with a '|' character
+        /// </summary>
         private void CorrectDuplicatedKeys()
         {
             var duplicatedTranslations = TranslationalDictionary.ToLookup(x => x.Value.OriginalText, x => x.Key)
@@ -54,6 +58,11 @@ namespace Phabrico.ContentTranslation.Engines
             }
         }
 
+        /// <summary>
+        /// Returns the excel filedata in bytes
+        /// </summary>
+        /// <param name="worksheetName"></param>
+        /// <returns></returns>
         private byte[] GenerateExcelData(string worksheetName)
         {
             CorrectDuplicatedKeys();
@@ -375,6 +384,11 @@ namespace Phabrico.ContentTranslation.Engines
             return moreTranslationsNeeded;
         }
 
+        /// <summary>
+        /// Converts some BrokenXml formatting into Rmarkup formatting
+        /// </summary>
+        /// <param name="brokenXml"></param>
+        /// <returns></returns>
         private string DecodeBrokenXmlFormatting(string brokenXml)
         {
             string result = brokenXml;
