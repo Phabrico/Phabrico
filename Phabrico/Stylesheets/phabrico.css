@@ -176,11 +176,12 @@ div.codeblock {
     overflow:auto;
     clear:both;
     position: relative;
-}
-
-div.codeblock {
     width:calc(100vw - 430px);
     margin-bottom:8px;
+}
+
+.phriction-edit div.codeblock {
+    width: calc(50vw - 30px);
 }
 
 :not(div.remarkup-code-header.counterexample) + div.codeblock {
@@ -1224,7 +1225,7 @@ width: 30px;
 }
 
 .app-window-body.edit {
-    height: calc(100% - 345px);
+    height: calc(100vh - 80px);
     margin: -10px;
     overflow-x: unset;
     overflow-y: unset;
@@ -1953,24 +1954,27 @@ span.remarkup-highlight {
 }
 
 .phriction-edit-container  .app-window-body.edit > textarea {
-    height: calc(100vh - 203px);
+    height: 100%;
 }
 
-.phriction-edit-container.error  .app-window-body.edit > textarea {
-    height: calc(100vh - 203px - 28px);
+.phriction-edit-container .edit-left form {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 34px);
 }
 
-.phriction-edit-container.phriction-with-metadata .app-window-body.edit > textarea {
-    height: calc(100vh - 291px);
-}
 
-.phriction-edit-container.phriction-with-metadata.translation .app-window-body.edit > textarea {
-    height: calc(100vh - 206px);
-}
+    .phriction-edit-container .edit-left form .filters {
+        display: flex;
+        flex-direction: column;
+    }
 
-.phriction-edit-container.error.phriction-with-metadata  .app-window-body.edit > textarea {
-    height: calc(100vh - 291px - 28px);
-}
+    .phriction-edit-container .edit-left form #edit {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
 
 .app-window-body.homepage .enabled {
     display: none;
@@ -3273,7 +3277,8 @@ div.color-selector .btnSetColorForAll {
 }
 
 .image-locator.full-size:not(.full-screen) img {
-    width: 100%;
+    max-width: 100%;
+    height: auto;
 }
 
 .edit-right .image-locator.allow-full-screen .image-container {

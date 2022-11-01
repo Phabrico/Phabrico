@@ -337,15 +337,6 @@
                   Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.FileSystem.DriveInfo.dll"
                   KeyPath="yes" />
         </Component>
-        <Component Id="gitanos_system_io_filesystem_primitives_dll" Guid="4fd6c894-20a1-4e67-a6e2-04b7ac29c86d"
-                   Win64="yes">
-            <RemoveFile Id="removefile_gitanos_system_io_filesystem_primitives_dll"
-                        Name="System.IO.FileSystem.Primitives.dll"
-                        On="install" />
-            <File Id="file_gitanos_system_io_filesystem_primitives_dll"
-                  Source="$(var.Phabrico.Plugin.Gitanos.TargetDir)System.IO.FileSystem.Primitives.dll"
-                  KeyPath="yes" />
-        </Component>
         <Component Id="gitanos_system_io_filesystem_watcher_dll" Guid="e794ab1a-1592-4c5b-b5c0-e48863af0cd0"
                    Win64="yes">
             <RemoveFile Id="removefile_gitanos_system_io_filesystem_watcher_dll"

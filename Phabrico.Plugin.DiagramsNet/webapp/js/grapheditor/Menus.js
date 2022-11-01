@@ -41,6 +41,11 @@ Menus.prototype.defaultFonts = ['Helvetica', 'Verdana', 'Times New Roman', 'Gara
 /**
  * Adds the label menu items to the given menu and parent.
  */
+Menus.prototype.autoPopup = true;
+
+/**
+ * Adds the label menu items to the given menu and parent.
+ */
 Menus.prototype.init = function()
 {
 	var ui = this.editorUi;
@@ -49,7 +54,7 @@ Menus.prototype.init = function()
 
 	this.customFonts = [];
 	this.customFontSizes = [];
-
+	
 	this.put('fontFamily', new Menu(mxUtils.bind(this, function(menu, parent)
 	{
 		var addItem = mxUtils.bind(this, function(fontFamily)
@@ -273,6 +278,18 @@ Menus.prototype.init = function()
 	{
 		menu.addItem(mxResources.get('horizontal'), null, function() { graph.distributeCells(true); }, parent);
 		menu.addItem(mxResources.get('vertical'), null, function() { graph.distributeCells(false); }, parent);
+	})));
+	this.put('distribute', new Menu(mxUtils.bind(this, function(menu, parent)
+	{
+		menu.addItem(mxResources.get('horizontal'), null, function() { graph.distributeCells(true); }, parent);
+		menu.addItem(mxResources.get('vertical'), null, function() { graph.distributeCells(false); }, parent);
+		menu.addSeparator(parent);
+		this.addSubmenu('distributeSpacing', menu, parent, mxResources.get('spacing'));
+	})));
+	this.put('distributeSpacing', new Menu(mxUtils.bind(this, function(menu, parent)
+	{
+		menu.addItem(mxResources.get('horizontal'), null, function() { graph.distributeCells(true, null, true); }, parent);
+		menu.addItem(mxResources.get('vertical'), null, function() { graph.distributeCells(false, null, true); }, parent);
 	})));
 	this.put('line', new Menu(mxUtils.bind(this, function(menu, parent)
 	{
@@ -505,7 +522,7 @@ Menus.prototype.init = function()
 	})));
 	this.put('view', new Menu(mxUtils.bind(this, function(menu, parent)
 	{
-		this.addMenuItems(menu, ((this.editorUi.format != null) ? ['formatPanel'] : []).
+		this.addMenuItems(menu, ((this.editorUi.format != null) ? ['format'] : []).
 			concat(['outline', 'layers', '-', 'pageView', 'pageScale', '-', 'scrollbars', 'tooltips', '-',
 			        'grid', 'guides', '-', 'connectionArrows', 'connectionPoints', '-',
 			        'resetView', 'zoomIn', 'zoomOut'], parent));
@@ -515,14 +532,14 @@ Menus.prototype.init = function()
 	{
 		if (this.editorUi.format != null)
 		{
-			this.addMenuItems(menu, ['formatPanel'], parent);
+			this.addMenuItems(menu, ['format'], parent);
 		}
 		
 		this.addMenuItems(menu, ['outline', 'layers'], parent);
 	})));
 	this.put('viewZoom', new Menu(mxUtils.bind(this, function(menu, parent)
 	{
-		this.addMenuItems(menu, ['resetView', '-'], parent);
+		this.addMenuItems(menu, ['smartFit', '-'], parent);
 		var scales = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 		
 		for (var i = 0; i < scales.length; i++)
@@ -604,7 +621,7 @@ Menus.prototype.addMenu = function(name, popupMenu, parent)
 	
 	if (menu != null && (popupMenu.showDisabled || menu.isEnabled()))
 	{
-		this.get(name).execute(popupMenu, parent);
+		menu.execute(popupMenu, parent);
 	}
 };
 
@@ -1710,12 +1727,12 @@ Menubar.prototype.hideMenu = function()
 /**
  * Adds a submenu to this menubar.
  */
-Menubar.prototype.addMenu = function(label, funct, before)
+Menubar.prototype.addMenu = function(label, funct, before, clickFn)
 {
 	var elt = document.createElement('a');
 	elt.className = 'geItem';
 	mxUtils.write(elt, label);
-	this.addMenuHandler(elt, funct);
+	this.addMenuHandler(elt, funct, clickFn);
 	
     if (before != null)
     {
@@ -1732,7 +1749,7 @@ Menubar.prototype.addMenu = function(label, funct, before)
 /**
  * Adds a handler for showing a menu in the given element.
  */
-Menubar.prototype.addMenuHandler = function(elt, funct)
+Menubar.prototype.addMenuHandler = function(elt, funct, clickFn)
 {
 	if (funct != null)
 	{
@@ -1740,7 +1757,13 @@ Menubar.prototype.addMenuHandler = function(elt, funct)
 		
 		var clickHandler = mxUtils.bind(this, function(evt)
 		{
-			if (show && (elt.enabled == null || elt.enabled))
+			if (clickFn != null)
+			{
+				clickFn(evt);
+			}
+
+			if (!mxEvent.isConsumed(evt) && show &&
+				(elt.enabled == null || elt.enabled))
 			{
 				this.editorUi.editor.graph.popupMenuHandler.hideMenu();
 				var menu = new mxPopupMenu(funct);
@@ -1768,7 +1791,8 @@ Menubar.prototype.addMenuHandler = function(elt, funct)
 		// Shows menu automatically while in expanded state
 		mxEvent.addListener(elt, 'mousemove', mxUtils.bind(this, function(evt)
 		{
-			if (this.editorUi.currentMenu != null && this.editorUi.currentMenuElt != elt)
+			if (this.editorUi.menus.autoPopup && this.editorUi.currentMenu != null &&
+				this.editorUi.currentMenuElt != elt)
 			{
 				this.editorUi.hideCurrentMenu();
 				clickHandler(evt);
@@ -1779,6 +1803,12 @@ Menubar.prototype.addMenuHandler = function(elt, funct)
         mxEvent.addListener(elt, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown',
         	mxUtils.bind(this, function(evt)
 		{
+			if (!this.editorUi.menus.autoPopup && this.editorUi.currentMenu != null &&
+				this.editorUi.currentMenuElt != elt && mxEvent.isMouseEvent(evt))
+			{
+				this.editorUi.hideCurrentMenu();
+			}
+
 			show = this.editorUi.currentMenu == null;
 			evt.preventDefault();
 		}));

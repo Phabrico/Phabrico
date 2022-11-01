@@ -1,0 +1,11 @@
+﻿# Chinese translations
+
+# General
+msgid "PluginName.PhrictionSearch"
+msgstr "搜索文本"
+
+msgid "Enter search text"
+msgstr "输入搜索文本"
+
+msgid "No documents were found"
+msgstr "没有发现任何文件"

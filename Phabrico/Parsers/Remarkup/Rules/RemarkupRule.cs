@@ -1,8 +1,11 @@
 ﻿using Phabrico.Http;
+using Phabrico.Miscellaneous;
 using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Phabrico.Parsers.Remarkup.Rules
 {
@@ -230,6 +233,87 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <param name="html">Translated HTML</param>
         /// <returns>True if the content could successfully be converted</returns>
         public abstract bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html);
+
+        /// <summary>
+        /// Decodes a url into a Phabricator-like format
+        /// </summary>
+        /// <param name="url">Decoded URL</param>
+        /// <returns>Encoded URL</returns>
+        public static string UrlEncode(string url)
+        {
+            string stringResult;
+
+            // if external URL -> do not encode
+            if (url.StartsWith("http://")) return url;
+            if (url.StartsWith("https://")) return url;
+            if (url.StartsWith("mailto://")) return url;
+            if (url.StartsWith("tel://")) return url;
+            if (url.StartsWith("ftp://")) return url;
+
+            // check if URL is valid -> if so, do not encode
+            if (RegexSafe.IsMatch(url, "[\r\n\\\\]", RegexOptions.Singleline)) return url;
+
+            // determine anchor in the URL (if existant)
+            string anchor = url.Split('#').Skip(1).FirstOrDefault() ?? "";
+
+            // if any stop characters are found in the URL, take only the part before the 1st stop character
+            url = url.Split('?', '#')[0];
+
+            // lowercase everything
+            url = url.ToLower();
+
+
+            byte[] bytes = UTF8Encoding.UTF8.GetBytes(url);
+
+            string allowedCharacters = "abcdefghijklmnopqrstuvwxyz0123456789-_./~()";
+            string charactersToBeUnderscored = " %&+={}\\<>\"'";
+            int disallowedCharacters = bytes.Count(ch => allowedCharacters.Contains((char)ch) == false);
+            if (disallowedCharacters > 0)
+            {
+                byte[] result = new byte[bytes.Length + disallowedCharacters * 2];
+                int index = 0;
+                foreach (byte ch in bytes)
+                {
+                    if (allowedCharacters.Contains((char)ch))
+                    {
+                        // copy character
+                        result[index++] = ch;
+                    }
+                    else
+                    if (charactersToBeUnderscored.Contains((char)ch))
+                    {
+                        // replace character by underscore
+                        result[index++] = (byte)'_';
+                    }
+                    else
+                    {
+                        // replace character by URL encoded character (i.e. %XX)
+                        result[index++] = (byte)'%';
+                        result[index++] = (byte)(((ch / 0x10) < 10) ? '0' + (ch / 0x10) : 'A' + ((ch / 0x10) - 10));
+                        result[index++] = (byte)(((ch % 0x10) < 10) ? '0' + (ch % 0x10) : 'A' + ((ch % 0x10) - 10));
+                    }
+                }
+
+                // convert result to trimmed string
+                stringResult = UTF8Encoding.UTF8
+                                           .GetString(result)
+                                           .TrimEnd('_', '\0');
+
+                // remove underscore duplicates
+                stringResult = RegexSafe.Replace(stringResult, "__+", "_");
+            }
+            else
+            {
+                stringResult = url;
+            }
+
+            if (string.IsNullOrWhiteSpace(anchor) == false)
+            {
+                anchor = "#" + anchor;
+            }
+
+            return stringResult + anchor;
+        }
 
         /// <summary>
         /// Returns a readable description

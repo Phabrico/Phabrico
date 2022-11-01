@@ -1,0 +1,11 @@
+# Danish translations
+
+# General
+msgid "PluginName.PhrictionSearch"
+msgstr "Søg tekst"
+
+msgid "Enter search text"
+msgstr "Indtast søgetekst"
+
+msgid "No documents were found"
+msgstr "Der blev ikke fundet nogen dokumenter"

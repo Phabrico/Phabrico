@@ -83,6 +83,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // save
                 IWebElement btnSetSailForAdventure = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Set Sail for Adventure')]"));
                 btnSetSailForAdventure.Click();
+                Thread.Sleep(500);  // wait some milliseconds to make sure the AJAX call for the projects-menu has been finished
 
                 // if action pane is collapsed -> expand it
                 bool actionPaneCollapsed = WebBrowser.FindElements(By.ClassName("phabrico-page-content"))
@@ -187,6 +188,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // open task
             IWebElement taskPlayIntroChildInTime = WebBrowser.FindElement(By.LinkText("Play the intro of Child In Time"));
             taskPlayIntroChildInTime.Click();
+            Thread.Sleep(500);
 
             // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -525,6 +527,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // open task
             IWebElement taskPlayIntroChildInTime = WebBrowser.FindElement(By.LinkText("Play the intro of Child In Time"));
             taskPlayIntroChildInTime.Click();
+            Thread.Sleep(500);
 
             // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));

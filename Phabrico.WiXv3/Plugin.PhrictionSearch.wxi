@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+    <ComponentGroup Id="PluginPhrictionSearchComponents" Directory="INSTALLDIR">
+        <Component Id="phrictionsearch_Phabrico_Plugin_PhrictionSearch_dll" Guid="$(var.PluginPhrictionSearchGUID)"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictionsearch_Phabrico_Plugin_PhrictionSearch_dll"
+                        Name="Phabrico.Plugin.PhrictionSearch.dll"
+                        On="install" />
+
+            <File Id="file_phrictionsearch_Phabrico_Plugin_PhrictionSearch_dll"
+                  Source="$(var.Phabrico.Plugin.PhrictionSearch.TargetDir)Phabrico.Plugin.PhrictionSearch.dll"
+                  KeyPath="yes" />
+            <ServiceControl Id="StartServiceForPhrictionSearch"
+                            Name="Phabrico"
+                            Start="install"
+                            Stop="install"
+                            Wait="yes" />
+        </Component>
+        <Component Id="phrictionsearch_Phabrico_Plugin_PhrictionSearch_pdb" Guid="6dfe539d-c7ac-45e9-96f4-b44a99ec4f4d"
+                   Win64="yes">
+            <RemoveFile Id="removefile_phrictionsearch_Phabrico_Plugin_PhrictionSearch_pdb"
+                        Name="Phabrico.Plugin.PhrictionSearch.pdb"
+                        On="install" />
+
+            <File Id="file_phrictionsearch_Phabrico_Plugin_PhrictionSearch_pdb"
+                  Source="$(var.Phabrico.Plugin.PhrictionSearch.TargetDir)Phabrico.Plugin.PhrictionSearch.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+    </ComponentGroup>
+</Include>

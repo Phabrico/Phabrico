@@ -2432,18 +2432,18 @@ function postForm(form, url)
 
 function resizeImage(direction, img, size) {
     if (direction == "width") {
-        if (img.style.maxWidth === "" || img.style.maxWidth === "100%") {
-            img.style.maxWidth = size + "px";
+        if (img.style.width === "" || img.style.width === "100%") {
+            img.style.width = size + "px";
         } else {
-            img.style.maxWidth = "100%";
+            img.style.width = "100%";
         }
     }
 
     if (direction == "height") {
-        if (img.style.maxHeight === "" || img.style.maxHeight === "100%") {
-            img.style.maxHeight = size + "px";
+        if (img.style.height === "" || img.style.height === "100%") {
+            img.style.height = size + "px";
         } else {
-            img.style.maxHeight = "100%";
+            img.style.height = "100%";
         }
     }
 }

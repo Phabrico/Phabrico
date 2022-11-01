@@ -86,14 +86,14 @@
                 @{IF @@ACCESS-READONLY@@=False@
                     <li class="list-item-view">
                         @{IF @@CONTENT-IS-TRANSLATION@@=no@
-                            <a href="?action=edit" class="list-item-href">
+                            <a href="?action=edit" class="list-item-href edit" data-keyboard-shortcut="CTRL+E">
                                 <span class="phui-font-fa fa-pencil phui-list-item-icon">
                                     <span class="phui-list-item-name">Edit Document</span>
                                 </span>
                             </a>
                         }@
                         @{ELSE
-                            <a href="?action=translate" class="list-item-href">
+                            <a href="?action=translate" class="list-item-href edit" data-keyboard-shortcut="CTRL+E">
                                 <span class="phui-font-fa fa-pencil phui-list-item-icon">
                                     <span class="phui-list-item-name">Edit translation</span>
                                 </span>
@@ -189,7 +189,7 @@
 @{PHRICTION-PLUGINS
                 <li class="plugin-action list-item-separator"></li>
                 <li class="plugin-action list-item-view" style="height:20px; margin: 2px 0.5px;">
-                    <a href="#" class="list-item-href" onclick='executePhrictionPlugin("@@PHRICTION-PLUGIN-NAME@@", "@@PHRICTION-PLUGIN-URL@@");'>
+                    <a href="#" class="list-item-href" data-keyboard-shortcut="@@PHRICTION-PLUGIN-KEYBOARD-SHORTCUT@@" onclick='executePhrictionPlugin("@@PHRICTION-PLUGIN-NAME@@", "@@PHRICTION-PLUGIN-URL@@");'>
                         <span class="phui-font-fa @@PHRICTION-PLUGIN-ICON@@ phui-list-item-icon">
                             <span class="phui-list-item-name" style="font-size: 1em;">@@PHRICTION-PLUGIN-NAME@@</span>
                         </span>
@@ -711,6 +711,15 @@ dateModified won't change when a subscription is added or removed
                 var dialogBody = document.createElement("div");
                 dialogBody.className = "aphront-dialog-body phabrico-remarkup";
                 dialogBody.innerHTML = jsonResponse.DialogHTML;
+                dialogBody.querySelectorAll('input[type="text"]').forEach(function (elem) {
+                    if (elem.onkeydown == null) {
+                        elem.onkeydown = function (e) {
+                            if (e.keyCode == 13) {
+                                document.querySelector('#btnOK').click();
+                            }
+                        }
+                    }
+                })
                 var dialogButtons = document.createElement("div");
                 dialogButtons.className = "aphront-dialog-tail grouped";
                 var btnCancel = document.createElement("button");
@@ -897,6 +906,13 @@ dateModified won't change when a subscription is added or removed
                         });
                     }
                 });
+
+                if (typeof jsonResponse.Javascript == 'undefined') {
+                    var firstInputElement = dialogBody.querySelector('select,input[type="text"]');
+                    if (firstInputElement != null) {
+                        firstInputElement.focus();
+                    }
+                }
 
                 // center dialog
                 var dialogWidth = form.getBoundingClientRect().width;
@@ -1168,4 +1184,27 @@ dateModified won't change when a subscription is added or removed
                     }
                 });
     }, false);
+
+    document.onkeydown = function (e) {
+        if (e.ctrlKey || e.altKey) {
+            var shortcut = "";
+            if (e.ctrlKey) shortcut += "CTRL+";
+            if (e.altKey) shortcut += "ALT+";
+            if (e.shiftKey) shortcut += "SHIFT+";
+            shortcut += String.fromCharCode(e.keyCode);
+
+            var actionMenuItem = document.querySelector('.list-item-href[data-keyboard-shortcut="' + shortcut + '"]');
+            if (actionMenuItem != null) {
+                e.preventDefault();
+
+                actionMenuItem.click();
+            }
+        }
+
+        if (e.ctrlKey && e.keyCode == 'A'.charCodeAt(0)) {
+            e.preventDefault();
+
+            document.querySelector('.phabrico-page-content').classList.toggle('right-collapsed');
+        }
+    }
 </script>

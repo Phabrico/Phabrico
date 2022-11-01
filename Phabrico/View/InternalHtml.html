@@ -153,6 +153,8 @@
     }
 
     function imageLoaded(img) {
+        if (img.closest('.image-locator') == null) return;
+
         // prepare images which can be zoomed in full screen
 	    var fixedWidth = img.closest('.image-locator').style.width;
         var remarkupContent = document.querySelector('.remarkupContent');

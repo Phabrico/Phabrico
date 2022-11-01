@@ -35,7 +35,7 @@
             <ul class="list-view">
                 @{IF @@ACCESS-READONLY@@=False@
                 <li class="list-item-view">
-                    <a href="maniphest/T@@TASK-ID@@/?action=edit" class="list-item-href">
+                    <a href="maniphest/T@@TASK-ID@@/?action=edit" class="list-item-href edit" data-keyboard-shortcut="CTRL+E">
                         <span class="phui-font-fa fa-pencil phui-list-item-icon">
                             <span class="phui-list-item-name">Edit Task</span>
                         </span>
@@ -71,7 +71,7 @@
                 @{MANIPHEST-TASK-PLUGINS
                 <li class="plugin-action list-item-separator"></li>
                 <li class="plugin-action list-item-view" style="height:20px; margin: 2px 0.5px;">
-                    <a href="#" class="list-item-href" onclick='executeManiphestTaskPlugin("@@MANIPHEST-TASK-PLUGIN-NAME@@", "@@MANIPHEST-TASK-PLUGIN-URL@@");'>
+                    <a href="#" class="list-item-href" data-keyboard-shortcut="@@MANIPHEST-TASK-PLUGIN-KEYBOARD-SHORTCUT@@" onclick='executeManiphestTaskPlugin("@@MANIPHEST-TASK-PLUGIN-NAME@@", "@@MANIPHEST-TASK-PLUGIN-URL@@");'>
                         <span class="phui-font-fa @@MANIPHEST-TASK-PLUGIN-ICON@@ phui-list-item-icon">
                             <span class="phui-list-item-name" style="font-size: 1em;">@@MANIPHEST-TASK-PLUGIN-NAME@@</span>
                         </span>
@@ -422,4 +422,27 @@
         actionViewPhabricatorTask.href = "@@PHABRICATOR-URL@@" + document.location.href.substring(document.baseURI.length + "maniphest/".length)
                                                                                        .match(/^T-?[0-9]+/)[0]
     }@
+
+    document.onkeydown = function (e) {
+        if (e.ctrlKey || e.altKey) {
+            var shortcut = "";
+            if (e.ctrlKey) shortcut += "CTRL+";
+            if (e.altKey) shortcut += "ALT+";
+            if (e.shiftKey) shortcut += "SHIFT+";
+            shortcut += String.fromCharCode(e.keyCode);
+
+            var actionMenuItem = document.querySelector('.list-item-href[data-keyboard-shortcut="' + shortcut + '"]');
+            if (actionMenuItem != null) {
+                e.preventDefault();
+
+                actionMenuItem.click();
+            }
+        }
+
+        if (e.ctrlKey && e.keyCode == 'A'.charCodeAt(0)) {
+            e.preventDefault();
+
+            document.querySelector('.phabrico-page-content').classList.toggle('right-collapsed');
+        }
+    }
 </script>

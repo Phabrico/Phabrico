@@ -20,6 +20,12 @@
     editor += '&lang=@@LANGUAGE@@';
     editor += '&ui=min';
 
+	if (document.body.getAttribute('data-theme') == 'dark') {
+		editor += '&dark=1';
+	} else {
+		editor += '&dark=0';
+    }
+
 	function edit(image)
 	{
 	    var iframe = document.createElement('iframe');

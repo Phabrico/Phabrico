@@ -1,0 +1,11 @@
+# Swedish translations
+
+# General
+msgid "PluginName.PhrictionSearch"
+msgstr "Sök text"
+
+msgid "Enter search text"
+msgstr "Ange söktext"
+
+msgid "No documents were found"
+msgstr "Inga dokument hittades"

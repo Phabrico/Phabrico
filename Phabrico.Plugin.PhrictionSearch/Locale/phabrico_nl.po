@@ -1,0 +1,11 @@
+﻿# Dutch translations
+
+# General
+msgid "PluginName.PhrictionSearch"
+msgstr "Tekst zoeken"
+
+msgid "Enter search text"
+msgstr "Zoektekst invoeren"
+
+msgid "No documents were found"
+msgstr "Er zijn geen documenten gevonden"

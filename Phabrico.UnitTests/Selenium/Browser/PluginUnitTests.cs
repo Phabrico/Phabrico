@@ -170,7 +170,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
 
                 // click on 'dummy.txt'
-                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(20));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
                 wait.Until(condition => condition.FindElements(By.TagName("a"))
                                                  .Any(a => a.Displayed 
@@ -309,6 +309,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // confirm error
                 IWebElement btnOK = dlgGitanosError.FindElement(By.XPath("//a[contains(text(), 'OK')]"));
                 btnOK.Click();
+                Thread.Sleep(500);
 
 
                 // undo push
@@ -2114,6 +2115,173 @@ namespace Phabrico.UnitTests.Selenium.Browser
                                                            .Text,
                                  "0"
                                );
+            }
+            finally
+            {
+                dummyPhabricatorWebServer.Stop();
+            }
+        }
+
+        [TestMethod]
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
+        public void PhrictionTranslatorExportToExcel(Type browser, string httpRootPath)
+        {
+            Initialize(browser, httpRootPath);
+
+            DummyPhabricatorWebServer dummyPhabricatorWebServer = new DummyPhabricatorWebServer();
+
+            // read translations.po and convert it to a dictionary (which we'll use in the dummy translator)
+            string translated = File.ReadAllText(@"ContentTranslation\translations.po");
+            Dictionary<string, string> translations = RegexSafe.Matches(translated, "^msgid +\"([^\"]*)\"\r?\nmsgstr +\"([^\"]*)", RegexOptions.Multiline)
+                                                              .OfType<Match>()
+                                                              .GroupBy(g => g.Groups[1].Value)
+                                                              .Select(g => g.FirstOrDefault())
+                                                              .ToDictionary(key => key.Groups[1].Value,
+                                                                              value => value.Groups[2].Value
+                                                                          );
+            DummyTranslationEngine.Translations = translations;
+
+            try
+            {
+                Logon();
+
+                // == Prepare tests ===================================================================================================================================
+                // click on 'Synchronize' in the menu navigator
+                IWebElement navigatorSynchronize = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Synchronize')]"));
+                navigatorSynchronize.Click();
+
+                // wait until confirmation dialog is shown
+                WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.Until(condition => condition.FindElements(By.ClassName("modal")).Any(message => message.Displayed));
+
+                // confirm synchronization
+                IWebElement dlgConfirmSynchronizing = WebBrowser.FindElements(By.ClassName("aphront-dialog-view"))
+                                                                .Where(dialog => dialog.Displayed
+                                                                              && dialog.GetAttribute("class").Split(' ').Contains("modal")
+                                                                      )
+                                                                .FirstOrDefault();
+                IWebElement btnYes = dlgConfirmSynchronizing.FindElement(By.XPath("//button[contains(text(), 'Yes')]"));
+                btnYes.Click();
+
+                // wait until synchronization process is finished
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
+                wait.Until(condition => condition.FindElement(By.Id("dlgSynchronizing")).Displayed);
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(30));
+                wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
+                wait.Until(condition => condition.FindElements(By.Id("dlgSynchronizing")).Any(dlg => dlg != null && dlg.Displayed) == false);
+
+                dummyPhabricatorWebServer.ReceivedRequests.Clear();
+
+                // == Start test 1: master=not staged and translation=not staged ======================================================================================
+                ChangeLanguageFromEnglishToDutch();
+
+                // click on 'Phriction' in the menu navigator
+                IWebElement navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+                navigatorPhriction.Click();
+
+                // wait a while
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+                // validate if Phriction was opened
+                IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+                string phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+                Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
+
+                // if action pane is collapsed -> expand it
+                bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                     .GetAttribute("class")
+                                                     .Contains("right-collapsed");
+
+                if (actionPaneCollapsed)
+                {
+                    IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                    expandActionPane.Click();
+                }
+
+                // click on Translate Document
+                IWebElement translateDocument = WebBrowser.FindElement(By.LinkText("Document vertalen"));
+                translateDocument.Click();
+
+                // wait a while
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.Until(condition => condition.FindElements(By.Name("translationEngine")).Any());
+
+                // select Dummy translation engine
+                IWebElement translationEngine = WebBrowser.FindElement(By.Name("translationEngine"));
+                translationEngine.Click();
+                translationEngine.FindElements(By.TagName("option"))
+                        .Single(option => option.Text == "Excel")
+                        .Click();
+                translationEngine.Click();
+
+                // select target language
+                IWebElement targetLanguage = WebBrowser.FindElement(By.Name("targetLanguage"));
+                targetLanguage.Click();
+                targetLanguage.FindElements(By.TagName("option"))
+                        .Single(option => option.Text == "Nederlands")
+                        .Click();
+                targetLanguage.Click();
+
+                // click OK button
+                IWebElement btnExportFile = WebBrowser.FindElement(By.ClassName("preparationParameters"))
+                                                      .FindElements(By.XPath("//button[text()=\"Export File\"]"))
+                                                      .FirstOrDefault(button => button.Displayed);
+                btnExportFile.Click();
+
+                // wait a while
+                Thread.Sleep(500);
+
+                // wait until "one moment please" is gone
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+                wait.Until(condition => condition.FindElements(By.ClassName("wait")).Any(message => message.Displayed == false));
+
+                // do not translate underlying documents: click No
+                IWebElement btnNo = WebBrowser.FindElement(By.Id("dlgYesNoCancel"))
+                                              .FindElements(By.XPath("//a[text()=\"Nee\"]"))
+                                              .FirstOrDefault(button => button.Displayed);
+                btnNo.Click();
+
+                // wait a while
+                Thread.Sleep(500);
+
+                // wait until "one moment please" is gone
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
+                wait.Until(condition => condition.FindElements(By.ClassName("wait")).Any(message => message.Displayed == false));
+
+                // Document is translated: click OK
+                IWebElement btnOK = WebBrowser.FindElement(By.Id("dlgOK"))
+                                              .FindElements(By.XPath("//a[text()=\"OK\"]"))
+                                              .FirstOrDefault(button => button.Displayed);
+                btnOK.Click();
+
+                AssertNoJavascriptErrors();
+
+                // validate if excel is generated
+                string expectedExcelFilePath = DownloadDirectory + "\\Translation.xlsx";
+                int checkIfExcelFileIsDownloaded = 100;  // wait max 10 seconds
+                for (; checkIfExcelFileIsDownloaded > 0; checkIfExcelFileIsDownloaded--)
+                {
+                    if (File.Exists(expectedExcelFilePath)) break;
+                    Thread.Sleep(100);
+                }
+
+                if (checkIfExcelFileIsDownloaded <= 0)
+                {
+                    Assert.Fail("Excel file was not generated");
+                }
+
+                FileInfo excelFileInfo = new FileInfo(expectedExcelFilePath);
+                if (excelFileInfo.Length == 0)
+                {
+                    Assert.Fail("Empty Excel file generated");
+                }
             }
             finally
             {

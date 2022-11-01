@@ -18,7 +18,7 @@ function P2PCollab(ui, sync, channelId)
 	var myClientId, newClients = {}, p2pClients = {}, useSocket = true, fileJoined = false, destroyed = false;
 	var INACTIVE_TIMEOUT = 120000; //2 min
 	var SELECTION_OPACITY = 70; //The default opacity of 30 is not visible enough with all colors
-	var cursorDelay = 200;
+	var cursorDelay = 300;
 	// TODO: Avoid negation, move to Editor.ENABLE_P2P and use p2p=1 URL parameter
 	// add to Editor.configure
 	var NO_P2P = urlParams['no-p2p'] != '0';
@@ -66,7 +66,7 @@ function P2PCollab(ui, sync, channelId)
 
 			var user = sync.file.getCurrentUser();
 
-			if (!fileJoined || user == null || user.email == null) return;
+			if (!fileJoined || user == null || user.displayName == null) return;
 			
 			//Converting to a string such that webRTC works also
 			var msg = {from: myClientId, id: messageId,

@@ -37,118 +37,124 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html)
         {
             html = "";
-            Match match = RegexSafe.Match(remarkup, @"^( ?\|([^\n]*\n))( *\|([^\n]*\n))*", RegexOptions.Singleline);
-            if (match.Success)
+
+            if (RuleStartOnNewLine)
             {
-                // content is pure Remarkup table
-                //    E.g.
-                //    | header 1 | header 2
-                //    | -------- | --------
-                //    | data 1   | data2
-                //
-                // Start converting it to a HTML table
-
-                string tableContent = "<table>";
-                string lastLine = null;
-                foreach (string line in match.Value
-                                             .Split('\n')
-                                             .Select(m => m.Trim('\r'))
-                                             .Where(m => string.IsNullOrEmpty(m) == false)
-                        )
+                Match match = RegexSafe.Match(remarkup, @"^( ?\|([^\n]*\n))( *\|([^\n]*\n))*", RegexOptions.Singleline);
+                if (match.Success)
                 {
-                    string lineContent = line;
-                    if (lineContent.EndsWith("|"))
-                    {
-                        // remove last '|' character because it's completely useless
-                        lineContent = lineContent.Substring(0, lineContent.Length - 1);
+                    // content is pure Remarkup table
+                    //    E.g.
+                    //    | header 1 | header 2
+                    //    | -------- | --------
+                    //    | data 1   | data2
+                    //
+                    // Start converting it to a HTML table
 
-                        // check if we still have some '|' characters
-                        if (lineContent.Contains('|') == false)
+                    string tableContent = "<table>";
+                    string lastLine = null;
+                    foreach (string line in match.Value
+                                                 .Split('\n')
+                                                 .Select(m => m.Trim('\r'))
+                                                 .Where(m => string.IsNullOrEmpty(m) == false)
+                            )
+                    {
+                        string lineContent = line;
+                        if (lineContent.EndsWith("|"))
                         {
-                            // no '|' characters found...
-                            return false;
-                        }
-                    }
+                            // remove last '|' character because it's completely useless
+                            lineContent = lineContent.Substring(0, lineContent.Length - 1);
 
-                    // search for hyperlinks in table cells and replace them temporarilly
-                    Dictionary<string, string> hyperlinks = new Dictionary<string, string>();
-                    foreach (Match hyperlink in RegexSafe.Matches(lineContent, @"\[\[(.+?(?=\]\]))\]\]", RegexOptions.Singleline).OfType<Match>().OrderByDescending(m => m.Index).ToList())
-                    {
-                        string key = string.Format("\x02_hyperlink_{0}_\x03", hyperlinks.Count);
-                        hyperlinks[key] = hyperlink.Value;
-
-                        lineContent = lineContent.Substring(0, hyperlink.Index) +
-                                      key +
-                                      lineContent.Substring(hyperlink.Index + hyperlink.Length);
-                    }
-
-                    if (string.IsNullOrEmpty(lineContent)) break;
-
-                    lineContent = lineContent.Replace("|", "</td><td>");
-                    lineContent = lineContent.Substring("</td>".Length);
-                    lineContent = lineContent + "</td>";
-                    lineContent = "<tr>" + lineContent + "</tr>\n";
-
-                    // restore hyperlinks in table cells again (if any)
-                    foreach (KeyValuePair<string, string> hyperlink in hyperlinks)
-                    {
-                        lineContent = lineContent.Replace(hyperlink.Key, hyperlink.Value);
-                    }
-
-                    // in case we have a cell of dashes, we need to convert the cell on the previous row to a header cell
-                    lineContent = RegexSafe.Replace(lineContent, "<td> *--+ *</td>", "<th>---</th>");
-                    if (lastLine != null && lineContent.Contains("<th>---</th>"))
-                    {
-                        string[] cellTypeInfo = Regex.Matches(lineContent, "(<t[dh]>)[^<]*</t[dh]>").OfType<Match>().Select(m => m.Groups[1].Value).ToArray();
-
-                        tableContent = tableContent.Substring(0, tableContent.Length - lastLine.Length);
-
-                        lineContent = "<tr>";
-                        Match[] cellInfo = Regex.Matches(lastLine, "(<td[^>]*>)([^<]*)</td>").OfType<Match>().ToArray();
-                        for (int c=0; c < cellInfo.Length; c++)
-                        {
-                            if (c < cellTypeInfo.Length && cellTypeInfo[c].Equals("<th>"))
+                            // check if we still have some '|' characters
+                            if (lineContent.Contains('|') == false)
                             {
-                                lineContent += cellInfo[c].Groups[1].Value.Replace("<td", "<th") + cellInfo[c].Groups[2].Value.Trim() + "</th>";
-                            }
-                            else
-                            {
-                                lineContent += cellInfo[c].Groups[1].Value + cellInfo[c].Groups[2].Value.Trim() + "</td>";
+                                // no '|' characters found...
+                                return false;
                             }
                         }
-                        lineContent += "</tr>\n";
+
+                        // search for hyperlinks in table cells and replace them temporarilly
+                        Dictionary<string, string> hyperlinks = new Dictionary<string, string>();
+                        foreach (Match hyperlink in RegexSafe.Matches(lineContent, @"\[\[(.+?(?=\]\]))\]\]", RegexOptions.Singleline).OfType<Match>().OrderByDescending(m => m.Index).ToList())
+                        {
+                            string key = string.Format("\x02_hyperlink_{0}_\x03", hyperlinks.Count);
+                            hyperlinks[key] = hyperlink.Value;
+
+                            lineContent = lineContent.Substring(0, hyperlink.Index) +
+                                          key +
+                                          lineContent.Substring(hyperlink.Index + hyperlink.Length);
+                        }
+
+                        if (string.IsNullOrEmpty(lineContent)) break;
+
+                        lineContent = lineContent.Replace("|", "</td><td>");
+                        lineContent = lineContent.Substring("</td>".Length);
+                        lineContent = lineContent + "</td>";
+                        lineContent = "<tr>" + lineContent + "</tr>\n";
+
+                        // restore hyperlinks in table cells again (if any)
+                        foreach (KeyValuePair<string, string> hyperlink in hyperlinks)
+                        {
+                            lineContent = lineContent.Replace(hyperlink.Key, hyperlink.Value);
+                        }
+
+                        // in case we have a cell of dashes, we need to convert the cell on the previous row to a header cell
+                        lineContent = RegexSafe.Replace(lineContent, "<td> *--+ *</td>", "<th>---</th>");
+                        if (lastLine != null && lineContent.Contains("<th>---</th>"))
+                        {
+                            string[] cellTypeInfo = Regex.Matches(lineContent, "(<t[dh]>)[^<]*</t[dh]>").OfType<Match>().Select(m => m.Groups[1].Value).ToArray();
+
+                            tableContent = tableContent.Substring(0, tableContent.Length - lastLine.Length);
+
+                            lineContent = "<tr>";
+                            Match[] cellInfo = Regex.Matches(lastLine, "(<td[^>]*>)([^<]*)</td>").OfType<Match>().ToArray();
+                            for (int c = 0; c < cellInfo.Length; c++)
+                            {
+                                if (c < cellTypeInfo.Length && cellTypeInfo[c].Equals("<th>"))
+                                {
+                                    lineContent += cellInfo[c].Groups[1].Value.Replace("<td", "<th") + cellInfo[c].Groups[2].Value.Trim() + "</th>";
+                                }
+                                else
+                                {
+                                    lineContent += cellInfo[c].Groups[1].Value + cellInfo[c].Groups[2].Value.Trim() + "</td>";
+                                }
+                            }
+                            lineContent += "</tr>\n";
+                        }
+
+                        tableContent += lineContent;
+
+                        lastLine = lineContent;
                     }
 
-                    tableContent += lineContent;
+                    tableContent += "</table>";
 
-                    lastLine = lineContent;
-                }
+                    if (tableContent.Equals("<table></table>"))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        remarkup = remarkup.Substring(match.Length);
 
-                tableContent += "</table>";
+                        // process HTML further
+                        if (ProcessHtmlTable(browser, database, url, ref tableContent, out html))
+                        {
+                            Length = match.Length;
+                            return true;
+                        }
 
-                if (tableContent.Equals("<table></table>"))
-                {
-                    return false;
+                        return false;
+                    }
                 }
                 else
                 {
-                    remarkup = remarkup.Substring(match.Length);
-
-                    // process HTML further
-                    if (ProcessHtmlTable(browser, database, url, ref tableContent, out html))
-                    {
-                        Length = match.Length;
-                        return true;
-                    }
-
-                    return false;
+                    // If content is a HTML table, process it further
+                    return ProcessHtmlTable(browser, database, url, ref remarkup, out html);
                 }
             }
-            else
-            {
-                // If content is a HTML table, process it further
-                return ProcessHtmlTable(browser, database, url, ref remarkup, out html);
-            }
+
+            return false;
         }
 
         /// <summary>

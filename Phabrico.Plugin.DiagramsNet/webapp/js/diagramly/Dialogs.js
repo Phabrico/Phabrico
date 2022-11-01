@@ -303,11 +303,11 @@ var SplashDialog = function(editorUi)
 	
 	if (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
 	{
-		var elt = editorUi.addLanguageMenu(div, true);
+		var elt = editorUi.addLanguageMenu(div, false, '28px');
 		
 		if (elt != null)
 		{
-			elt.style.bottom = '19px';
+			elt.style.bottom = '24px';
 		}
 	}
 	
@@ -1402,14 +1402,14 @@ var CreateGraphDialog = function(editorUi, title, type)
 		{
 			layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_WEST);
 		}
-		else if (type == 'organic')
-		{
-			layout = new mxFastOrganicLayout(graph, false);
-			layout.forceConstant = 80;
-		}
 		else if (type == 'circle')
 		{
 			layout = new mxCircleLayout(graph);
+		}
+		else
+		{
+			layout = new mxFastOrganicLayout(graph, false);
+			layout.forceConstant = 80;
 		}
 		
 		if (layout != null)
@@ -4036,7 +4036,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			{
 				if (fileUrl != null && fileUrl.length > 0)
 				{
-					editorUi.editor.loadUrl(fileUrl, function(data)
+					editorUi.editor.loadUrl(editorUi.editor.getProxiedUrl(fileUrl), function(data)
 					{
 						templateXml = data;
 						templateLibs = null;
@@ -5725,6 +5725,271 @@ var FeedbackDialog = function(editorUi, subject, emailOptional, diagramData)
 };
 
 /**
+ * 
+ */
+var PreferencesDialog = function(editorUi)
+{
+	var graph = editorUi.editor.graph;
+	var div = document.createElement('div');
+	
+	var list = document.createElement('div');
+	list.style.display = 'flex';
+	list.style.position = 'absolute';
+	list.style.justifyContent = 'center';
+	list.style.gap = '10px';
+	list.style.top = '10px';
+	list.style.left = '20px';
+	list.style.right = '20px';
+	list.style.padding = '10px';
+	div.appendChild(list);
+
+	var entry = document.createElement('div');
+	mxUtils.write(entry, mxResources.get('general'));
+	entry.style.backgroundImage = 'url(' + Editor.gearImage + ')';
+	entry.className = 'geAdaptiveAsset';
+	entry.style.color = '#0a0a0a';
+	entry.style.fontSize = '10px';
+	entry.style.display = 'inline-block';
+	entry.style.backgroundColor = '#c0c0c0';
+	entry.style.backgroundPosition = 'center 12px';
+	entry.style.backgroundRepeat = 'no-repeat';
+	entry.style.backgroundSize = '22px';
+	entry.style.cursor = 'pointer';
+	entry.style.padding = '40px 10px 10px 10px';
+	entry.style.borderRadius = '10px';
+	list.appendChild(entry);
+
+	// entry = entry.cloneNode(false);
+	// mxUtils.write(entry, mxResources.get('theme'));
+	// entry.style.backgroundImage = 'url(' + Editor.formatImage + ')';
+	// list.appendChild(entry);
+
+	entry = entry.cloneNode(false);
+	mxUtils.write(entry, 'Accounts');//mxResources.get('accounts'));
+	entry.style.backgroundImage = 'url(' + Editor.userImage + ')';
+	list.appendChild(entry);
+
+	entry = entry.cloneNode(false);
+	mxUtils.write(entry, mxResources.get('plugins'));
+	entry.style.backgroundImage = 'url(' + Editor.extensionImage + ')';
+	list.appendChild(entry);
+
+	var container = document.createElement('div');
+	container.style.position = 'absolute';
+	// container.style.border = '1px solid lightGray';
+	container.style.top = '90px';
+	container.style.left = '20px';
+	container.style.right = '20px';
+	container.style.bottom = '20px';
+	container.style.height = list.style.height;
+	container.style.overflow = 'hidden';
+	container.style.padding = '10px 20px';
+	container.style.boxSizing = 'border-box';
+	div.appendChild(container);
+
+	function createSection()
+	{
+		var section = document.createElement('div');
+		section.style.userSelect = 'none';
+		section.style.display = 'flex';
+		section.style.gap = '8px';
+		section.style.padding = '6px 10px 6px 0px';
+		section.style.alignItems = 'center';
+
+		return section;
+	}
+
+	function addSelect(label, options, selected, apply)
+	{
+		var restart = false;
+		var section = createSection();
+		mxUtils.write(section, label);
+
+		var select = document.createElement('select');
+		select.style.borderRadius = '4px';
+
+		for (var i = 0; i < options.length; i++)
+		{
+			var opt = document.createElement('option');
+
+			if (options[i] == null)
+			{
+				opt.setAttribute('disabled', 'disabled');
+				mxUtils.write(opt, '-');
+			}
+			else
+			{
+				if (typeof options[i] == 'string')
+				{
+					options[i] = [options[i], mxResources.get(options[i])];
+				}
+
+				if (options[i].length == 2)
+				{
+					opt.setAttribute('value', options[i][0]);
+					mxUtils.write(opt, options[i][1]);
+
+					if (options[i][0] == selected)
+					{
+						opt.setAttribute('selected', 'selected');
+					}
+				}
+			}
+
+			select.appendChild(opt);
+		}
+
+		mxEvent.addListener(select, 'change', function(evt)
+		{
+			if (apply(select.value) && !restart)
+			{
+				var elt = document.createElement('div');
+				elt.setAttribute('title', mxResources.get('restartForChangeRequired'));
+				elt.className = 'geToolbarButton';
+				elt.style.backgroundImage = 'url(' + Editor.helpImage + ')';
+				elt.style.backgroundPosition = 'center center';
+				elt.style.backgroundRepeat = 'no-repeat';
+				elt.style.backgroundSize = '100% 100%';
+				elt.style.height = '18px';
+				elt.style.width = '18px';
+				elt.style.display = 'inline-block';
+				elt.style.marginLeft = '2px';
+				elt.style.cursor = 'pointer';
+				section.appendChild(elt);
+				
+				restart = true;
+
+				mxEvent.addListener(elt, 'click', function(evt)
+				{
+					editorUi.alert(mxResources.get('restartForChangeRequired'));
+				});
+			}
+		});
+
+		section.appendChild(select);
+		container.appendChild(section);
+	};
+
+	addSelect(mxResources.get('theme'), ['automatic', 'default', 'sketch', 'minimal', 'atlas'], 'auto',
+		function(value)
+		{
+			// TODO
+		});
+	
+	addSelect('Appearance'/*mxResources.get('appearance')*/,
+		[['light', 'Light'/*mxResources.get('light')*/],
+		['dark', mxResources.get('dark')],
+		['auto', mxResources.get('automatic')]],
+		(editorUi.isAutoDarkMode()) ? 'auto' : ((Editor.isDarkMode()) ? 'dark' : 'light'),
+		function(value)
+		{
+			if (value == 'dark')
+			{
+				value = true;
+			}
+			else if (value == 'light')
+			{
+				value = false;
+			}
+	
+			editorUi.setAndPersistDarkMode(value);
+		});
+
+	var options = [['', mxResources.get('automatic')], null];
+	var selected = '';
+
+	for(var id in mxLanguageMap)
+	{
+		if (id != 'i18n')
+		{
+			options.push([id, mxLanguageMap[id]]);
+
+			if (id == mxLanguage)
+			{
+				selected = id;
+			}
+		}
+	}
+
+	addSelect(mxResources.get('language'), options, selected, function(value)
+	{
+		editorUi.setAndPersistLanguage(value);
+
+		return true;
+	});
+
+	addSelect(mxResources.get('units'), ['points', 'inches', 'millimeters', 'meters'], 'points',
+		function(value)
+		{
+			// TODO
+		});
+	
+	function addCheckbox(label, checked, apply)
+	{
+		var section = createSection();
+	
+		var checkbox = document.createElement('input');
+		checkbox.setAttribute('type', 'checkbox');
+		section.appendChild(checkbox);
+		container.appendChild(section);
+
+		checkbox.checked = checked;
+		checkbox.defaultChecked = checkbox.checked;
+
+		mxUtils.write(section, label);
+
+		mxEvent.addListener(checkbox, 'change', function(evt)
+		{
+			apply(checkbox.checked);
+		});
+
+		return checkbox;
+	};
+
+	addCheckbox(mxResources.get('copyConnect'), graph.connectionHandler.isCreateTarget(), function(checked)
+	{
+		
+	});
+
+	addCheckbox(mxResources.get('collapseExpand'), graph.foldingEnabled, function(checked)
+	{
+		
+	});
+
+	addCheckbox(mxResources.get('tooltips'), graph.tooltipHandler.isEnabled(), function(checked)
+	{
+		
+	});
+
+	if (editorUi.isSettingsEnabled())
+	{
+		addCheckbox(mxResources.get('showStartScreen'), mxSettings.getShowStartScreen(), function(checked)
+		{
+			mxSettings.setShowStartScreen(checked);
+			mxSettings.save();
+		});
+	}
+
+	// var buttons = document.createElement('div');
+	// buttons.style.position = 'absolute';
+	// buttons.style.top = '460px';
+	// buttons.style.right = '28px';
+	// buttons.style.left = '32px';
+	// buttons.style.textAlign = 'right';
+	
+	// var closeBtn = mxUtils.button(mxResources.get('close'), function()
+	// {
+	// 	editorUi.hideDialog();
+	// });
+	// closeBtn.className = 'geBtn';
+
+	// buttons.appendChild(closeBtn);
+	// div.appendChild(buttons);
+
+	this.container = div;
+};
+
+/**
  * Maximum size of attachments in bytes. Default is 1000000.
  */
 FeedbackDialog.maxAttachmentSize = 1000000;
@@ -5751,7 +6016,7 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 	var container = document.createElement('div');
 	container.style.position = 'absolute';
 	container.style.border = '1px solid lightGray';
-	container.style.left = '199px';
+	container.style.left = '200px';
 	container.style.width = '470px';
 	container.style.height = '376px';
 	container.style.overflow = 'hidden';
@@ -5854,78 +6119,50 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 	var currentRev = null;
 	var currentDoc = null;
 	var currentXml = null;
-	
-	var zoomInBtn = mxUtils.button('', function()
+
+	var zoomInBtn = editorUi.createToolbarButton(Editor.zoomInImage, mxResources.get('zoomIn'), function()
 	{
 		if (currentDoc != null)
 		{
 			graph.zoomIn();
 		}
-	});
-	zoomInBtn.className = 'geSprite geSprite-zoomin';
-	zoomInBtn.setAttribute('title', mxResources.get('zoomIn'));
-	zoomInBtn.style.outline = 'none';
-	zoomInBtn.style.border = 'none';
-	zoomInBtn.style.margin = '2px';
+	}, 20);
+
 	zoomInBtn.setAttribute('disabled', 'disabled');
-	mxUtils.setOpacity(zoomInBtn, 20);
-	
-	var zoomOutBtn = mxUtils.button('', function()
+
+	var zoomOutBtn = editorUi.createToolbarButton(Editor.zoomOutImage, mxResources.get('zoomOut'), function()
 	{
 		if (currentDoc != null)
 		{
 			graph.zoomOut();
 		}
-	});
-	zoomOutBtn.className = 'geSprite geSprite-zoomout';
-	zoomOutBtn.setAttribute('title', mxResources.get('zoomOut'));
-	zoomOutBtn.style.outline = 'none';
-	zoomOutBtn.style.border = 'none';
-	zoomOutBtn.style.margin = '2px';
-	zoomOutBtn.setAttribute('disabled', 'disabled');
-	mxUtils.setOpacity(zoomOutBtn, 20);
+	}, 20);
 
-	var zoomFitBtn = mxUtils.button('', function()
+	zoomOutBtn.setAttribute('disabled', 'disabled');
+
+	var zoomFitBtn = editorUi.createToolbarButton(Editor.zoomFitImage, mxResources.get('fit'), function()
 	{
 		if (currentDoc != null)
 		{
-			graph.maxFitScale = 8;
-			graph.fit(8);
+			if (graph.view.scale == 1)
+			{
+				graph.maxFitScale = 8;
+				graph.fit(8);
+			}
+			else
+			{
+				graph.zoomActual();
+			}
+
 			graph.center();
 		}
-	});
-	zoomFitBtn.className = 'geSprite geSprite-fit';
-	zoomFitBtn.setAttribute('title', mxResources.get('fit'));
-	zoomFitBtn.style.outline = 'none';
-	zoomFitBtn.style.border = 'none';
-	zoomFitBtn.style.margin = '2px';
+	}, 20);
+
 	zoomFitBtn.setAttribute('disabled', 'disabled');
-	mxUtils.setOpacity(zoomFitBtn, 20);
-	
-	var zoomActualBtn = mxUtils.button('', function()
-	{
-		if (currentDoc != null)
-		{
-			graph.zoomActual();
-			graph.center();
-		}
-	});
-	zoomActualBtn.className = 'geSprite geSprite-actualsize';
-	zoomActualBtn.setAttribute('title', mxResources.get('actualSize'));
-	zoomActualBtn.style.outline = 'none';
-	zoomActualBtn.style.border = 'none';
-	zoomActualBtn.style.margin = '2px';
-	zoomActualBtn.setAttribute('disabled', 'disabled');
-	mxUtils.setOpacity(zoomActualBtn, 20);
 
 	// Gesture listener added below to handle pressed state
-	var compareBtn = mxUtils.button('', function() { });
-	compareBtn.className = 'geSprite geSprite-middle';
-	compareBtn.setAttribute('title', mxResources.get('compare'));
-	compareBtn.style.outline = 'none';
-	compareBtn.style.border = 'none';
-	compareBtn.style.margin = '2px';
-	mxUtils.setOpacity(compareBtn, 60);
+	var compareBtn = editorUi.createToolbarButton(Editor.compareImage, mxResources.get('zoomOut'), null, 20);
+	compareBtn.setAttribute('disabled', 'disabled');
 	
 	var cmpContainer = container.cloneNode(false);
 	cmpContainer.style.pointerEvent = 'none';
@@ -5941,6 +6178,19 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 	cmpGraph.maxFitScale = null;
 	cmpGraph.centerZoom = true;
 
+	var fileInfo = document.createElement('div');
+	fileInfo.style.position = 'absolute';
+	fileInfo.style.textAlign = 'left';
+	fileInfo.style.color = 'gray';
+	fileInfo.style.marginTop = '8px';
+	fileInfo.style.backgroundColor = 'transparent';
+	fileInfo.style.top = '440px';
+	fileInfo.style.left = '32px';
+	fileInfo.style.maxWidth = '380px';
+	fileInfo.style.cursor = 'default';
+
+	var prevFileInfo = null;
+
 	mxEvent.addGestureListeners(compareBtn, function(e)
 	{
 		// Gets current state of page with given ID
@@ -5954,7 +6204,8 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 		}
 		else
 		{
-			fileInfo.style.display = 'none';
+			prevFileInfo = fileInfo.innerHTML;
+			fileInfo.innerHTML = mxResources.get('current');
 			container.style.display = 'none';
 			cmpContainer.style.display = '';
 			cmpContainer.style.backgroundColor = container.style.backgroundColor;
@@ -5972,22 +6223,11 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 
 		if (container.style.display == 'none')
 		{
-			fileInfo.style.display = '';
 			container.style.display = '';
+			fileInfo.innerHTML = prevFileInfo;
 			cmpContainer.style.display = 'none';
 		}
 	});
-
-	var fileInfo = document.createElement('div');
-	fileInfo.style.position = 'absolute';
-	fileInfo.style.textAlign = 'right';
-	fileInfo.style.color = 'gray';
-	fileInfo.style.marginTop = '10px';
-	fileInfo.style.backgroundColor = 'transparent';
-	fileInfo.style.top = '440px';
-	fileInfo.style.right = '32px';
-	fileInfo.style.maxWidth = '380px';
-	fileInfo.style.cursor = 'default';
 
 	var downloadBtn = mxUtils.button(mxResources.get('download'), function()
 	{
@@ -6088,11 +6328,12 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 	
 	var pageSelect = document.createElement('select');
 	pageSelect.setAttribute('disabled', 'disabled');
-	pageSelect.style.maxWidth = '80px';
+	pageSelect.style.userSelect = 'none';
+	pageSelect.style.maxWidth = '100px';
 	pageSelect.style.position = 'relative';
 	pageSelect.style.top = '-2px';
 	pageSelect.style.verticalAlign = 'bottom';
-	pageSelect.style.marginRight = '6px';
+	pageSelect.style.marginLeft = '10px';
 	pageSelect.style.display = 'none';
 	
 	var pageSelectFunction = null;
@@ -6146,7 +6387,8 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 	var buttons = document.createElement('div');
 	buttons.style.position = 'absolute';
 	buttons.style.top = '482px';
-	buttons.style.width = '640px';
+	buttons.style.right = '28px';
+	buttons.style.left = '32px';
 	buttons.style.textAlign = 'right';
 
 	var tb = document.createElement('div');
@@ -6154,8 +6396,8 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 	tb.style.backgroundColor = 'transparent';
 	tb.style.padding = '2px';
 	tb.style.border = 'none';
-	tb.style.left = '199px';
 	tb.style.top = '442px';
+	tb.style.right = '28px';
 	
 	var currentElt = null;
 
@@ -6343,7 +6585,6 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 							zoomInBtn.removeAttribute('disabled');
 							zoomOutBtn.removeAttribute('disabled');
 							zoomFitBtn.removeAttribute('disabled');
-							zoomActualBtn.removeAttribute('disabled');
 							compareBtn.removeAttribute('disabled');
 							
 							if (file == null || !file.isRestricted())
@@ -6361,7 +6602,6 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 							mxUtils.setOpacity(zoomInBtn, 60);
 							mxUtils.setOpacity(zoomOutBtn, 60);
 							mxUtils.setOpacity(zoomFitBtn, 60);
-							mxUtils.setOpacity(zoomActualBtn, 60);
 							mxUtils.setOpacity(compareBtn, 60);
 						}
 						else
@@ -6369,6 +6609,7 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 							pageSelect.style.display = 'none';
 							pageSelect.innerText = '';
 							fileInfo.innerText = '';
+							errorNode.innerText = '';
 							mxUtils.write(fileInfo, mxResources.get('errorLoadingFile'));
 							mxUtils.write(errorNode, mxResources.get('errorLoadingFile'));
 						}
@@ -6401,7 +6642,6 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 							downloadBtn.setAttribute('disabled', 'disabled');
 							zoomInBtn.setAttribute('disabled', 'disabled');
 							zoomOutBtn.setAttribute('disabled', 'disabled');
-							zoomActualBtn.setAttribute('disabled', 'disabled');
 							zoomFitBtn.setAttribute('disabled', 'disabled');
 							compareBtn.setAttribute('disabled', 'disabled');
 
@@ -6412,7 +6652,6 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 							mxUtils.setOpacity(zoomInBtn, 20);
 							mxUtils.setOpacity(zoomOutBtn, 20);
 							mxUtils.setOpacity(zoomFitBtn, 20);
-							mxUtils.setOpacity(zoomActualBtn, 20);
 							mxUtils.setOpacity(compareBtn, 20);
 
 							spinner.spin(container);
@@ -6505,12 +6744,11 @@ var RevisionDialog = function(editorUi, revs, restoreFn)
 	});
 	closeBtn.className = 'geBtn';
 
-	tb.appendChild(pageSelect);
-	tb.appendChild(zoomInBtn);
-	tb.appendChild(zoomOutBtn);
-	tb.appendChild(zoomActualBtn);
-	tb.appendChild(zoomFitBtn);
 	tb.appendChild(compareBtn);
+	tb.appendChild(zoomOutBtn);
+	tb.appendChild(zoomFitBtn);
+	tb.appendChild(zoomInBtn);
+	tb.appendChild(pageSelect);
 
 	if (editorUi.editor.cancelFirst)
 	{
@@ -7695,8 +7933,15 @@ var FreehandWindow = function(editorUi, x, y, w, h, withBrush)
 	{
 		startBtn.innerText = '';
 		mxUtils.write(startBtn, mxResources.get(graph.freehand.isDrawing() ? 'stopDrawing' : 'startDrawing'));
+
+		var shortcut = document.createElement('span');
+		shortcut.style.opacity = '0.7';
+		shortcut.style['float'] = 'right';
+		mxUtils.write(shortcut, 'X');
+		startBtn.appendChild(shortcut);
+
 		startBtn.setAttribute('title', mxResources.get(graph.freehand.isDrawing() ? 'stopDrawing' : 'startDrawing'));
-		startBtn.className = 'geBtn' + (!graph.freehand.isDrawing() ? ' gePrimaryBtn' : '');
+		startBtn.className = 'geBtn' + (graph.freehand.isDrawing() ? ' gePrimaryBtn' : '');
 	}));
 	
 	this.window.addListener('show', mxUtils.bind(this, function()
@@ -8002,7 +8247,7 @@ var MoreShapesDialog = function(editorUi, expanded, entries)
 									}
 									else if (entry.image != null)
 									{
-										preview.innerHTML += '<img border="0" src="' + entry.image + '"/>';
+										preview.innerHTML += '<img border="0" style="max-width:100%;" src="' + entry.image + '"/>';
 									}
 									else if (entry.desc == null)
 									{
@@ -8511,7 +8756,7 @@ var PluginsDialog = function(editorUi, addFn, delFn, closeOnly)
 				refresh();
 			}
 		}), null, null, null, customBtn);
-		editorUi.showDialog(dlg.container, 300, 100, true, true);
+		editorUi.showDialog(dlg.container, 360, 100, true, true);
 	});
 	
 	addBtn.className = 'geBtn';

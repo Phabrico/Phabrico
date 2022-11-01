@@ -412,7 +412,7 @@ namespace Phabrico.Plugin
                             if (phrictionDocument != null)
                             {
                                 // uncache document
-                                httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                                httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
                             }
 
                             // do we also need to validate the underlying documents ?
@@ -430,7 +430,7 @@ namespace Phabrico.Plugin
                                     {
                                         // uncache document
                                         Phabricator.Data.Phriction underlyingPhrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken, browser.Session.Locale);
-                                        httpServer.InvalidateNonStaticCache(underlyingPhrictionDocument.Path);
+                                        httpServer.InvalidateNonStaticCache(EncryptionKey, underlyingPhrictionDocument.Path);
                                     }
                                 }
                             }
@@ -517,7 +517,7 @@ namespace Phabrico.Plugin
                 content.AddTranslation(phrictionDocument.Token, targetLanguage, translatedTitle, translatedContent);
 
                 // uncache document
-                httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
 
                 int nbrUnderlyingPhrictionTokens = 0;
                 if (moreTranslationsNeeded)
@@ -534,7 +534,7 @@ namespace Phabrico.Plugin
                         content.AddTranslation(phrictionDocument.Token, targetLanguage, translatedTitle, translatedContent);
 
                         // uncache document
-                        httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                        httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
 
                         if (moreTranslationsNeeded == false)
                         {

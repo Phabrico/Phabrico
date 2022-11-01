@@ -753,8 +753,9 @@ namespace Phabrico.Http
         /// Removes all cached data which contains a given url
         /// This method is executed when some data is saved to the database
         /// </summary>
+        /// <param name="encryptionKey"></param>
         /// <param name="url"></param>
-        public void InvalidateNonStaticCache(string url)
+        public void InvalidateNonStaticCache(string encryptionKey, string url)
         {
             lock (synchronizationProcessHttpRequest)
             {
@@ -764,6 +765,15 @@ namespace Phabrico.Http
                         )
                 {
                     cachedHttpMessages.Remove(cachedHttpMessage.Key);
+                }
+
+                foreach (var cachedHttpMessage in cachedHttpMessages.ToArray())
+                {
+                    string htmlContent = Encryption.Decrypt(encryptionKey, cachedHttpMessage.Value.EncryptedData);
+                    if (htmlContent.Contains(url.Trim('/')))
+                    {
+                        cachedHttpMessages.Remove(cachedHttpMessage.Key);
+                    }
                 }
             }
         }
@@ -2182,13 +2192,15 @@ namespace Phabrico.Http
 
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            foreach (WebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
-                                                                                     && websocket.RequestUri
-                                                                                                 .LocalPath
-                                                                                                 .TrimEnd('/')
-                                                                                                 .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
-                                                                          )
-                                                                    .ToArray())
+            WebSocketContext[] webSocketContexts = WebSockets.Where(websocket => websocket != null
+                                                                              && websocket.RequestUri
+                                                                                          .LocalPath
+                                                                                          .TrimEnd('/')
+                                                                                          .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                                     )
+                                                             .ToArray();
+
+            foreach (WebSocketContext webSocketContext in webSocketContexts)
             {
                 Logging.WriteInfo("Notify-Info", webSocketContext.RequestUri.LocalPath);
                 byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);

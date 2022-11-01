@@ -989,7 +989,7 @@ namespace Phabrico.Controllers
 
                 // invalidate cache for current URL
                 string url = browser.Request.RawUrl.Split('?')[0].TrimEnd('/');
-                httpServer.InvalidateNonStaticCache(url);
+                httpServer.InvalidateNonStaticCache(EncryptionKey, url);
 
                 // start performing action
                 string action = parameters.FirstOrDefault(parameter => parameter.StartsWith("?action="));
@@ -1060,7 +1060,7 @@ namespace Phabrico.Controllers
                         case "comment":
                             CreateNewManiphestTaskMetadata(database, token);
                             string maniphestRootPath = Http.Server.RootPath + url.Substring(0, url.Length - parameters[0].Length).Trim('/');
-                            httpServer.InvalidateNonStaticCache(maniphestRootPath);  // clear also cache of maniphest home page to refresh the staged icon of this task
+                            httpServer.InvalidateNonStaticCache(EncryptionKey, maniphestRootPath);  // clear also cache of maniphest home page to refresh the staged icon of this task
                             return new Http.Response.HttpRedirect(httpServer, browser, "maniphest/" + parameters[0] + "/");
 
                         case "edit":
@@ -1381,6 +1381,7 @@ namespace Phabrico.Controllers
                                     maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-URL", plugin.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                     maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-ICON", plugin.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                     maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
+                                    maniphestTaskPluginData.SetText("MANIPHEST-TASK-PLUGIN-KEYBOARD-SHORTCUT", pluginType.KeyboardShortcut);
                                 }
 
                                 foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions

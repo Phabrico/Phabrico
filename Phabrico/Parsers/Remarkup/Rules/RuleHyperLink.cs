@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -243,6 +244,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         RemarkupFormatting = RemarkupFormattings.Link;
                     }
 
+
                     if (urlHyperlink.StartsWith("/w/"))
                     {
                         urlHyperlink = urlHyperlink.Substring("/w/".Length);
@@ -340,6 +342,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 }
                             }
 
+                                                        urlHyperlink = UrlEncode(urlHyperlink);
 
                             if (urlHyperlink.StartsWith("http://") == false && urlHyperlink.StartsWith("https://") == false)
                             {
@@ -396,13 +399,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                     // in case linked document has no title, correct generated title
                                     if (urlHyperlinkText == null)
                                     {
-                                        urlHyperlinkText = urlHyperlink;
+                                        urlHyperlinkText = urlHyperlinkParts.FirstOrDefault();
                                         while (urlHyperlinkText.EndsWith("/"))
                                         {
                                             urlHyperlinkText = urlHyperlinkText.Substring(0, urlHyperlinkText.Length - 1);
                                         }
 
                                         urlHyperlinkText = urlHyperlinkText.Split('/').LastOrDefault();
+                                        urlHyperlinkText = HttpUtility.UrlDecode(urlHyperlinkText);
                                     }
                                 }
                             }
@@ -588,7 +592,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     urlHyperlink.Trim('/')                 // remove leading '/'
                                 .Replace("\r", "")         // hide newlines in url
                                 .Replace("\n", ""),        // hide newlines in url
-                    HttpUtility.UrlPathEncode(urlHyperlinkText),
+                    HttpUtility.UrlPathEncode(urlHyperlinkText).Replace("?", "%3F"),
                     System.Web.HttpUtility.HtmlEncode(urlHyperlinkText));
             }
         }

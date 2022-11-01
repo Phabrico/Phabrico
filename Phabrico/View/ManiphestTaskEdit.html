@@ -206,5 +206,13 @@
         
         // disable btnSave in case there's no task title
         titleChanged();
+
+        document.onkeydown = function (e) {
+            if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0) && btnSave.disabled == false) {
+                e.preventDefault();
+
+                btnSave.click();
+            }
+        }
     </script>
 </div>

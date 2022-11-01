@@ -1,0 +1,4 @@
+'|' this should not be converted to a table
+~~~~~~~~~~
+&#39;|&#39; this should not be converted to a table
+~~~~~~~~~~

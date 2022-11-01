@@ -37,6 +37,9 @@ It visualizes the state of all available local git repositories.
 integrates the [JSPaint](https://jspaint.app/) functionality.
 It allows you to modify images.
 
+## PhrictionSearch
+allows you to search for a word in a Phriction document, including all the documents under this Phriction document.
+
 ## PhrictionToPDF
 allows you to convert a Phriction document (or including all the documents under this Phriction document) into a single PDF file.
 

@@ -64,10 +64,73 @@
                   Source="$(var.Phabrico.TargetDir)Phabrico.pdb"
                   KeyPath="yes" />
         </Component>
+        <Component Id="ClosedXML_dll" Guid="d964cd8d-a88d-4391-ac75-0b66a1122c96"
+                   Win64="yes">
+            <RemoveFile Id="removefile_ClosedXML_dll"
+                        Name="ClosedXML.dll"
+                        On="install" />
+            <File Id="file_ClosedXML_dll"
+                  Source="$(var.Phabrico.TargetDir)ClosedXML.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="ClosedXML_pdb" Guid="e3d9a707-6559-443c-b61a-0299e1ef1554"
+                   Win64="yes">
+            <RemoveFile Id="removefile_ClosedXML_pdb"
+                        Name="ClosedXML.pdb"
+                        On="install" />
+            <File Id="file_ClosedXML_pdb"
+                  Source="$(var.Phabrico.TargetDir)ClosedXML.pdb"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="DocumentFormat_OpenXml_dll" Guid="2cd730a9-416f-4121-aac7-c46e806c6e5e"
+                   Win64="yes">
+            <RemoveFile Id="removefile_DocumentFormat_OpenXml_dll"
+                        Name="DocumentFormat.OpenXml.dll"
+                        On="install" />
+            <File Id="file_DocumentFormat_OpenXml_dll"
+                  Source="$(var.Phabrico.TargetDir)DocumentFormat.OpenXml.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="ExcelNumberFormat_dll" Guid="88f2f41a-4742-45db-8f0e-7b174a49c040"
+                   Win64="yes">
+            <RemoveFile Id="removefile_ExcelNumberFormat_dll"
+                        Name="ExcelNumberFormat.dll"
+                        On="install" />
+            <File Id="file_ExcelNumberFormat_dll"
+                  Source="$(var.Phabrico.TargetDir)ExcelNumberFormat.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
         <Component Id="System_Data_SQLite_dll" Guid="cca41fc3-2951-4152-9c58-8cd00ab51005"
                    Win64="yes">
+            <RemoveFile Id="removefile_System_Data_SQLite_dll"
+                        Name="System.Data.SQLite.dll"
+                        On="install" />
             <File Id="file_System_Data_SQLite_dll"
                   Source="$(var.Phabrico.TargetDir)System.Data.SQLite.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="System_IO_FileSystem_Primitives_dll" Guid="4fd6c894-20a1-4e67-a6e2-04b7ac29c86d"
+                   Win64="yes">
+            <RemoveFile Id="removefile_System_IO_FileSystem_Primitives_dll"
+                        Name="System.IO.FileSystem.Primitives.dll"
+                        On="install" />
+            <File Id="file_System.IO_FileSystem_Primitives_dll"
+                  Source="$(var.Phabrico.TargetDir)System.IO.FileSystem.Primitives.dll"
+                  KeyPath="yes"
+                  ProcessorArchitecture="x64" />
+        </Component>
+        <Component Id="System_IO_Packaging_dll" Guid="a79704bd-ae26-4ac1-9560-53cc2bafd706"
+                   Win64="yes">
+            <RemoveFile Id="removefile_System_IO_Packaging_dll"
+                        Name="System.IO.Packaging.dll"
+                        On="install" />
+            <File Id="file_System_IO_Packaging_dll"
+                  Source="$(var.Phabrico.TargetDir)System.IO.Packaging.dll"
                   KeyPath="yes"
                   ProcessorArchitecture="x64" />
         </Component>

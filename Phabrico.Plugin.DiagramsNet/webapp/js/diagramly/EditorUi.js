@@ -12,7 +12,7 @@
 	/**
 	 * Overrides compact UI setting.
 	 */
-	EditorUi.compactUi = uiTheme != 'atlas';
+	EditorUi.compactUi = Editor.currentTheme != 'atlas';
 
 	/**
 	 * Overrides default grid color for dark mode
@@ -2295,14 +2295,7 @@
 		
 		if (desc.url != null && desc.url.length > 0)
 		{
-			var url = desc.url;
-
-			// Bypass proxy if no CSP is used as it blocks unknown text content
-			if ((/test\.draw\.io$/.test(window.location.hostname)) ||
-				(/app\.diagrams\.net$/.test(window.location.hostname)))
-			{
-				url = this.editor.getProxiedUrl(url);
-			}
+			var url = this.editor.getProxiedUrl(desc.url);
 			
             // LATER: Remove cache-control header
             this.editor.loadUrl(url, mxUtils.bind(this, function(data)
@@ -3780,7 +3773,7 @@
 	 */
     EditorUi.initTheme = function()
     {
-    	if (uiTheme == 'atlas')
+    	if (Editor.currentTheme == 'atlas')
     	{
     		mxClient.link('stylesheet', STYLE_PATH + '/atlas.css');
 
@@ -3794,50 +3787,16 @@
     		EditorUi.prototype.menubarHeight = 41;
     		EditorUi.prototype.toolbarHeight = 38;
     	}
-    	else if (Editor.isDarkMode())
-    	{
-    		mxClient.link('stylesheet', STYLE_PATH + '/dark.css');
-
-			Dialog.backdropColor = Editor.darkColor;
-			Format.inactiveTabBackgroundColor = 'black';
-	    	Graph.prototype.defaultThemeName = 'darkTheme';
-			Graph.prototype.shapeBackgroundColor = Editor.darkColor;
-			Graph.prototype.shapeForegroundColor = Editor.lightColor;
-			Graph.prototype.defaultPageBackgroundColor = Editor.darkColor;
-			Graph.prototype.defaultPageBorderColor = '#505759';
-			BaseFormatPanel.prototype.buttonBackgroundColor = Editor.darkColor;
-			mxGraphHandler.prototype.previewColor = '#cccccc';
-			StyleFormatPanel.prototype.defaultStrokeColor = '#cccccc';
-			mxConstants.DROP_TARGET_COLOR = '#00ff00';
-    	}
-
-		Editor.sketchFontFamily = 'Architects Daughter';
-		Editor.sketchFontSource = 'https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter';
-		Editor.sketchFonts = [{'fontFamily': Editor.sketchFontFamily, 'fontUrl': decodeURIComponent(Editor.sketchFontSource)}];
 
 		// Implements the sketch-min UI
-		if (urlParams['sketch'] == '1')
+		if (Editor.currentTheme == 'sketch')
 		{
-			if (typeof Menus !== 'undefined')
-			{
-				Menus.prototype.defaultFonts = Menus.prototype.defaultFonts.concat(Editor.sketchFonts);
-			}
-			
-			Graph.prototype.defaultVertexStyle = {'hachureGap': '4'};
-			Graph.prototype.defaultEdgeStyle = {'edgeStyle': 'none', 'rounded': '0', 'curved': '1',
-				'jettySize': 'auto', 'orthogonalLoop': '1', 'endArrow': 'open', 'startSize': '14', 'endSize': '14',
-				'sourcePerimeterSpacing': '8', 'targetPerimeterSpacing': '8'};
-
 			Editor.configurationKey = '.sketch-configuration';
 			Editor.settingsKey = '.sketch-config';
-			Graph.prototype.defaultGridEnabled = urlParams['grid'] == '1';
-			Graph.prototype.defaultPageVisible = urlParams['pv'] == '1';
-			Graph.prototype.defaultEdgeLength = 120;
-			Editor.fitWindowBorders = new mxRectangle(60, 30, 30, 30);
 		}
     };
     
-    EditorUi.initTheme();
+	EditorUi.initTheme();
 
 	/**
 	 * Overrides image dialog to add image search and Google+.
@@ -3913,40 +3872,47 @@
 	 */
 	EditorUi.prototype.createSidebarFooterContainer = function()
 	{
-		var div =  this.createDiv('geSidebarContainer geSidebarFooter');
-		div.style.position = 'absolute';
-		div.style.overflow = 'hidden';
-		
-		var elt2 = document.createElement('a');
-		elt2.className = 'geTitle';
-		elt2.style.color = '#DF6C0C';
-		elt2.style.fontWeight = 'bold';
-		elt2.style.height = '100%';
-		elt2.style.paddingTop = '9px';
-		elt2.innerHTML = '<span>+</span>';
-		
-		var span = elt2.getElementsByTagName('span')[0];
-		span.style.fontSize = '18px';
-		span.style.marginRight = '5px';
-
-		mxUtils.write(elt2, mxResources.get('moreShapes') + '...');
-
-		// Prevents focus
-		mxEvent.addListener(elt2, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown',
-			mxUtils.bind(this, function(evt)
+		if (urlParams['embedInline'] != '1')
 		{
-			evt.preventDefault();
-		}));
-		
-		mxEvent.addListener(elt2, 'click', mxUtils.bind(this, function(evt)
+			var div =  this.createDiv('geSidebarContainer geSidebarFooter');
+			div.style.position = 'absolute';
+			div.style.overflow = 'hidden';
+			
+			var elt2 = document.createElement('a');
+			elt2.className = 'geTitle';
+			elt2.style.color = '#DF6C0C';
+			elt2.style.fontWeight = 'bold';
+			elt2.style.height = '100%';
+			elt2.style.paddingTop = '9px';
+			elt2.innerHTML = '<span>+</span>';
+			
+			var span = elt2.getElementsByTagName('span')[0];
+			span.style.fontSize = '18px';
+			span.style.marginRight = '5px';
+
+			mxUtils.write(elt2, mxResources.get('moreShapes') + '...');
+
+			// Prevents focus
+			mxEvent.addListener(elt2, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown',
+				mxUtils.bind(this, function(evt)
+			{
+				evt.preventDefault();
+			}));
+			
+			mxEvent.addListener(elt2, 'click', mxUtils.bind(this, function(evt)
+			{
+				this.actions.get('shapes').funct();
+				mxEvent.consume(evt);
+			}));
+			
+			div.appendChild(elt2);
+			
+			return div;
+		}
+		else
 		{
-			this.actions.get('shapes').funct();
-			mxEvent.consume(evt);
-		}));
-		
-		div.appendChild(elt2);
-		
-		return div;
+			return null;
+		}
 	};
 	
 	/**
@@ -6264,13 +6230,11 @@
 		var txtSettingsSelect = document.createElement('select');
 		txtSettingsSelect.style.maxWidth = '260px';
 		txtSettingsSelect.style.marginLeft = '8px';
-		txtSettingsSelect.style.marginRight = '10px';
 		txtSettingsSelect.style.marginBottom = '16px';
-		txtSettingsSelect.className = 'geBtn';
 
 		var noneOption = document.createElement('option');
 		noneOption.setAttribute('value', 'none');
-		mxUtils.write(noneOption, mxResources.get('noChange'));
+		mxUtils.write(noneOption, mxResources.get('default'));
 		txtSettingsSelect.appendChild(noneOption);
 
 		var embedFontsOption = document.createElement('option');
@@ -6334,8 +6298,6 @@
 		var linkSelect = document.createElement('select');
 		linkSelect.style.maxWidth = '260px';
 		linkSelect.style.marginLeft = '8px';
-		linkSelect.style.marginRight = '10px';
-		linkSelect.className = 'geBtn';
 
 		var autoOption = document.createElement('option');
 		autoOption.setAttribute('value', 'auto');
@@ -8565,7 +8527,7 @@
 				done(importedCells);
 			}
 		});
-		
+
 		if (mimeType.substring(0, 5) == 'image')
 		{
 			var containsModel = false;
@@ -8641,6 +8603,8 @@
 						else if (done != null)
 						{
 							done(null);
+							this.showError(mxResources.get('error'), xhr.status == 413? mxResources.get('diagramTooLarge') :
+													mxResources.get('unknownError'));
 						}
 					}
 				});
@@ -8671,7 +8635,7 @@
 			cells = this.insertTextAt(this.validateFileData(data), dx, dy, true,
 				null, crop, null, (evt != null) ? mxEvent.isControlDown(evt) : null);
 		}
-		
+
 		if (!async && done != null)
 		{
 			done(cells);
@@ -8729,6 +8693,16 @@
 						this.loadLibrary(new LocalLibrary(this, data, filename));
 		    			
 		    			return null;
+					}
+					else if (this.getServiceName() != 'atlassian' && urlParams['embed'] != '1' && 
+						this.isCompatibleString(data) && files.length == 1 &&
+						this.isBlankFile() && !this.canUndo())
+					{
+						// Opens as diagram if current file is blank with no undoable changes
+						this.spinner.stop();
+						this.fileLoaded(new LocalFile(this, data, filename, true));
+
+						return null;
 					}
 					else
 					{
@@ -9324,7 +9298,7 @@
 	EditorUi.prototype.init = function()
 	{
 		mxStencilRegistry.allowEval = mxStencilRegistry.allowEval && !this.isOfflineApp();
-
+		
 		// Must be set before UI is created in superclass
 		if (this.isSettingsEnabled())
 		{
@@ -9344,7 +9318,7 @@
 		
 		var ui = this;
 		var graph = this.editor.graph;
-		
+
 		// Stops panning while freehand is active
 		if (Graph.touchStyle)
 		{
@@ -9687,7 +9661,7 @@
 						href = source.getAttribute('href');
 					}
 				}
-
+				
 				if (href != null && graph.isCustomLink(href) &&
 					(mxEvent.isTouchEvent(evt) ||
 					!mxEvent.isPopupTrigger(evt)) &&
@@ -9863,6 +9837,7 @@
 			this.keyHandler.bindAction(70, false, 'insertEllipse'); // F
 			this.keyHandler.bindAction(67, false, 'insertEdge'); // C
 			this.keyHandler.bindAction(88, false, 'insertFreehand'); // X
+			this.keyHandler.bindAction(75, true, 'toggleShapes', true); // Ctrl+Shift+K
 			this.altShiftActions[83] = 'synchronize'; // Alt+Shift+S
 
 		    this.installImagePasteHandler();
@@ -10122,16 +10097,10 @@
 					
 				    if (files.length > 0)
 				    {
-						// Closes current file if blank and no undoable changes
-						// LATER: Check if file contains diagram data
-						var noImport = files.length == 1 && this.isBlankFile() && !this.canUndo() &&
-							(files[0].type.substring(0, 9) === 'image/svg' ||
-							files[0].type.substring(0, 6) !== 'image/' ||
-							/(\.drawio.png)$/i.test(files[0].name));
-
-						if (urlParams['embed'] != '1' && (mxEvent.isShiftDown(evt) || noImport))
+						if (urlParams['embed'] != '1' && mxEvent.isShiftDown(evt))
 						{
-							if (!mxEvent.isShiftDown(evt) && noImport &&
+							// Closes current file if blank and no undoable changes
+							if (this.isBlankFile() && !this.canUndo() &&
 								this.getCurrentFile() != null)
 							{
 								this.fileLoaded(null);
@@ -10148,7 +10117,8 @@
 							}
 							
 							this.importFiles(files, x, y, this.maxImageSize, null, null, null,
-								null, mxEvent.isControlDown(evt), null, null, mxEvent.isShiftDown(evt), evt);
+								null, mxEvent.isControlDown(evt), null, null,
+								mxEvent.isShiftDown(evt), evt);
 				    	}
 		    		}
 				    else
@@ -10281,26 +10251,251 @@
 			graph.refresh();
 			graph.view.validateBackground();
 			this.updateTabContainer();
+			this.hideShapePicker();
 		});
 
 		this.addListener('darkModeChanged', themeChangeListener);
 		this.addListener('sketchModeChanged', themeChangeListener);
-
-		if (uiTheme == 'dark')
+		this.addListener('currentThemeChanged', mxUtils.bind(this, function()
 		{
-			this.doSetDarkMode(true);
-			this.fireEvent(new mxEventObject('darkModeChanged'));
-		}
-		else if (uiTheme == 'min' && urlParams['embedInline'] != '1')
+			this.updateButtonContainer();
+			this.refresh();
+		}));
+
+		graph.addListener('enabledChanged', mxUtils.bind(this, function()
 		{
-			this.doSetDarkMode((urlParams['dark'] != null) ?
-				urlParams['dark'] == 1 && !mxClient.IS_IE &&
-				!mxClient.IS_IE11 : ((mxSettings.settings.darkMode != null) ?
-				mxSettings.settings.darkMode : (window.matchMedia &&
-					window.matchMedia('(prefers-color-scheme: dark)').matches)));
+			if (!graph.isEnabled())
+			{
+				this.hideShapePicker();
+			}
+		}));
+
+		// Overrides mxWindow.fit to allow for embedViewport
+		var ui = this;
+
+		mxWindow.prototype.fit = function()
+		{
+			if (!Editor.inlineFullscreen && ui.embedViewport != null)
+			{
+				var left = parseInt(this.div.offsetLeft);
+				var width = parseInt(this.div.offsetWidth);
+				var right = ui.embedViewport.x + ui.embedViewport.width;
+				var top = parseInt(this.div.offsetTop);
+				var height = parseInt(this.div.offsetHeight);
+				var bottom = ui.embedViewport.y + ui.embedViewport.height;
+
+				this.div.style.left = Math.max(ui.embedViewport.x, Math.min(left, right - width)) + 'px';
+				this.div.style.top = Math.max(ui.embedViewport.y, Math.min(top, bottom - height)) + 'px';
+				this.div.style.height = Math.min(ui.embedViewport.height, parseInt(this.div.style.height)) + 'px';
+				this.div.style.width = Math.min(ui.embedViewport.width, parseInt(this.div.style.width)) + 'px';
+			}
+			else
+			{
+				mxUtils.fit(this.div);
+			}
+		};
+
+		// Activates scheme in UI
+		if (Editor.currentTheme == 'simple' ||
+			Editor.currentTheme == 'sketch')
+		{
+			var theme = Editor.currentTheme;
+			Editor.currentTheme = '';
+			this.doSetCurrentTheme(theme, 0, mxUtils.bind(this, function()
+			{
+				if (urlParams['embedInline'] == '1')
+				{
+					// Inline embed mode must be initialized after setting current theme
+					this.initializeInlineEmbedMode();
+				}
+			}));
+		}
+		
+		if (!mxClient.IS_IE && !mxClient.IS_IE11 && urlParams['dark'] != '0' &&
+			Editor.currentTheme != 'atlas' && (urlParams['embed'] != '1' ||
+			urlParams['dark'] == '1'))
+		{
+			var darkMode = false;
+
+			if (window.matchMedia && this.isAutoDarkMode())
+			{
+				darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			}
+			else if (this.isSettingsEnabled() && mxSettings.settings.darkMode === true)
+			{
+				darkMode = true;
+			}
+			
+			if (darkMode || uiTheme == 'dark' || urlParams['dark'] == '1')
+			{
+				this.setDarkMode(true);
+			}
 		}
 
+		if (window.matchMedia)
+		{
+			// Automatically updates theme when system setting changes
+			window.matchMedia('(prefers-color-scheme: dark)')
+				.addEventListener('change', mxUtils.bind(this, function (e)
+				{
+					if (this.isAutoDarkMode())
+					{
+						this.setDarkMode(e.matches);
+					}
+				}));
+		}
+		else if (this.isSettingsEnabled() && mxSettings.settings.darkMode === true)
+		{
+			darkMode = true;
+		}
+		
 		this.installSettings();
+
+		if (urlParams['prefetchFonts'] == '1')
+		{
+			ui.editor.loadFonts();
+		}
+	};
+
+	/**
+	 * Initializes embed inline mode.
+	 */
+	EditorUi.prototype.initializeInlineEmbedMode = function()
+	{
+		var footer = this.sketchFooterMenuElt;
+		var toolbar = this.sketchMainMenuElt;
+		var picker = this.sketchPickerMenuElt;
+		var graph = this.editor.graph;
+		picker.style.transform = '';
+
+		mxEvent.addGestureListeners(this.diagramContainer.parentNode, mxUtils.bind(this, function(evt)
+		{
+			if (mxEvent.getSource(evt) == this.diagramContainer.parentNode)
+			{
+				this.embedExitPoint = new mxPoint(
+					mxEvent.getClientX(evt),
+					mxEvent.getClientY(evt));
+				this.sendEmbeddedSvgExport();
+			}
+		}));
+
+		document.body.style.cursor = 'text';
+
+		var div = document.createElement('div');
+		div.style.position = 'absolute';
+		div.style.width = '10px';
+		div.style.height = '10px';
+		div.style.borderRadius = '5px';
+		div.style.border = '1px solid gray';
+		div.style.background = '#ffffff';
+		div.style.cursor = 'row-resize';
+
+		this.diagramContainer.parentNode.appendChild(div);
+		this.bottomResizer = div;
+
+		var x0 = null;
+		var y0 = null;
+		var w0 = null;
+		var h0 = null;
+
+		mxEvent.addGestureListeners(div, mxUtils.bind(this, function(evt)
+		{
+			h0 = parseInt(this.diagramContainer.style.height);
+			y0 = mxEvent.getClientY(evt);
+			graph.popupMenuHandler.hideMenu();
+			mxEvent.consume(evt);
+		}));
+
+		div = div.cloneNode(false);
+		div.style.cursor = 'col-resize';
+		this.diagramContainer.parentNode.appendChild(div);
+		this.rightResizer = div;
+
+		mxEvent.addGestureListeners(div, mxUtils.bind(this, function(evt)
+		{
+			w0 = parseInt(this.diagramContainer.style.width);
+			x0 = mxEvent.getClientX(evt);
+			graph.popupMenuHandler.hideMenu();
+			mxEvent.consume(evt);
+		}));
+
+		mxEvent.addGestureListeners(document.body, null, mxUtils.bind(this, function(evt)
+		{
+			var changed = false;
+
+			if (x0 != null)
+			{
+				this.diagramContainer.style.width = Math.max(20,
+					w0 + mxEvent.getClientX(evt) - x0) + 'px';
+				changed = true;
+			}
+
+			if (y0 != null)
+			{
+				this.diagramContainer.style.height = Math.max(20,
+					h0 + mxEvent.getClientY(evt) - y0) + 'px';
+				changed = true;
+			}
+
+			if (changed)
+			{
+				var parent = window.opener || window.parent;
+				parent.postMessage(JSON.stringify({
+					event: 'resize',
+					fullscreen: Editor.inlineFullscreen,
+					rect: this.diagramContainer.getBoundingClientRect()
+				}), '*');
+				this.inlineSizeChanged();
+				this.refresh();
+			}
+		}), function(evt)
+		{
+			if (x0 != null || y0 != null)
+			{
+				mxEvent.consume(evt);
+			}
+
+			x0 = null;
+			y0 = null;
+		});
+
+		document.body.style.backgroundColor = 'transparent';
+		this.diagramContainer.style.borderRadius = '4px';
+		this.bottomResizer.style.visibility = 'hidden';
+		this.rightResizer.style.visibility = 'hidden';
+		this.sketchMenubarElt.style.display = 'none';
+		toolbar.style.visibility = 'hidden';
+		footer.style.visibility = 'hidden';
+		picker.style.display = 'none';
+		
+		this.addListener('editInlineStart', mxUtils.bind(this, function(evt)
+		{
+			this.inlineSizeChanged();
+			this.fitWindows();
+		}));
+		this.addListener('darkModeChanged', mxUtils.bind(this, function(evt)
+		{
+			this.inlineSizeChanged();
+		}));
+		this.addListener('editInlineStop', mxUtils.bind(this, function(evt)
+		{
+			this.diagramContainer.style.width = '10px';
+			this.diagramContainer.style.height = '10px';
+			this.diagramContainer.style.border = '';
+			this.bottomResizer.style.visibility = 'hidden';
+			this.rightResizer.style.visibility = 'hidden';
+			toolbar.style.visibility = 'hidden';
+			footer.style.visibility = 'hidden';
+			picker.style.display = 'none';
+		}));
+
+		// Overridden to avoid reset of scrollbars
+		this.windowResized = mxUtils.bind(this, function()
+	   	{
+	   		// do nothing
+	   	});
+
+		this.inlineSizeChanged();
 	};
 	
 	/**
@@ -10444,12 +10639,18 @@
 						// Avoid autoscroll but allow handling of all pass-through ctrl shortcuts
 						textInput.style.left = (graph.container.scrollLeft + 10) + 'px';
 						textInput.style.top = (graph.container.scrollTop + 10) + 'px';
-						
+						var x0 = graph.container.scrollLeft;
+						var y0 = graph.container.scrollTop;
+
 						graph.container.appendChild(textInput);
 						restoreFocus = true;
 						
 						textInput.focus();
 						document.execCommand('selectAll', false, null);
+
+						// Workaround for Safari 16 scroll after CMD key press
+						graph.container.scrollLeft = x0;
+						graph.container.scrollTop = y0;
 					}
 				}
 			}
@@ -10544,8 +10745,15 @@
 
 				if (!mxEvent.isConsumed(evt))
 				{
+					var x0 = graph.container.scrollLeft;
+					var y0 = graph.container.scrollTop;
+
 					window.setTimeout(mxUtils.bind(this, function()
 					{
+						// Workaround for Safari 16 scroll after paste
+						graph.container.scrollLeft = x0;
+						graph.container.scrollTop = y0;
+
 						this.pasteCells(evt, textInput, false, true);
 					}), 0);
 				}
@@ -10571,9 +10779,8 @@
 	EditorUi.prototype.setCurrentTheme = function(value, noRestart)
 	{
 		mxSettings.setUi(value);
-		this.doSetCurrentTheme(value);
-		this.fireEvent(new mxEventObject('currentThemeChanged'));
-		
+		noRestart = this.doSetCurrentTheme(value) || noRestart;
+
 		if (!noRestart)
 		{
 			this.alert(mxResources.get('restartForChangeRequired'));
@@ -10583,12 +10790,1311 @@
 	/**
 	 * Changes the current UI theme.
 	 */
-	EditorUi.prototype.doSetCurrentTheme = function(value)
+	EditorUi.prototype.doSetCurrentTheme = function(value, delay, post)
 	{
-		if (Editor.currentTheme != value)
+		delay = (delay != null) ? delay : 100;
+
+		function isDefault(theme)
+		{
+			return theme == '' || theme == 'dark' ||
+				theme == 'kennedy' || theme == null;
+		};
+
+		function isSimple(theme)
+		{
+			return theme == 'simple' || (delay == 0 &&
+				theme == 'sketch');
+		};
+
+		var curr = Editor.currentTheme;
+		value = (isDefault(value)) ? 'default' : value;
+		curr = (isDefault(curr)) ? 'default' : curr;
+
+		var simpleValue = isSimple(value);
+		var simpleCurr = isSimple(curr);
+
+		// From kennedy to simple or sketch or vice versa
+		var transition = (simpleCurr && value == 'default') ||
+			(curr == 'default' && simpleValue);
+		var noRestart = transition && (value != 'sketch' && curr != 'sketch');
+
+		if (transition && !this.themeSwitching)
 		{
 			Editor.currentTheme = value;
-			// TODO: Change theme at runtime
+			this.themeSwitching = true;
+			var scrollState = this.saveScrollState();
+
+			mxUtils.setPrefixedStyle(this.container.style, 'transition', 'all ' + delay + 'ms');
+
+			if (delay == 0)
+			{
+				this.container.style.opacity = '0';
+			}
+
+			window.setTimeout(mxUtils.bind(this, function()
+			{
+				this.container.style.opacity = '0';
+
+				window.setTimeout(mxUtils.bind(this, function()
+				{
+					if (simpleCurr && value == 'default')
+					{
+						if (this.sidebarFooterContainer != null)
+						{
+							this.sidebarFooterContainer.style.display = 'block';
+						}
+						
+						this.menubarContainer.style.display = 'block';
+						this.toolbarContainer.style.display = 'block';
+						this.tabContainer.style.display = 'block';
+						this.hsplit.style.display = 'block';
+						this.hsplitPosition = EditorUi.prototype.hsplitPosition;
+						this.menubarHeight = App.prototype.menubarHeight;
+						this.formatWidth = EditorUi.prototype.formatWidth;
+					}
+					else if (curr == 'default' && simpleValue)
+					{
+						if (this.sidebarFooterContainer != null)
+						{
+							this.sidebarFooterContainer.style.display = 'none';
+						}
+						
+						this.menubarContainer.style.display = 'none';
+						this.toolbarContainer.style.display = 'none';
+						this.tabContainer.style.display = 'none';
+						this.hsplit.style.display = 'none';
+						this.hsplitPosition = 0;
+						this.menubarHeight = 0;
+						this.formatWidth = 0;
+					}
+
+					this.switchTheme(value);
+
+					window.setTimeout(mxUtils.bind(this, function()
+					{
+						this.fireEvent(new mxEventObject('currentThemeChanged'));
+						this.editor.fireEvent(new mxEventObject('statusChanged'));
+						this.editor.graph.refresh();
+						this.restoreScrollState(scrollState);
+						this.container.style.opacity = '';
+
+						window.setTimeout(mxUtils.bind(this, function()
+						{
+							mxUtils.setPrefixedStyle(this.container.style, 'transition', null);
+							delete this.themeSwitching;
+
+							if (post != null)
+							{
+								post();
+							}
+						}), delay);
+					}), delay);
+				}), delay);
+			}), 0);
+		}
+
+		return noRestart;
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.installStatusMinimizer = function(parent)
+	{
+		parent = (parent != null) ? parent : this.statusContainer.parentNode;
+		var visible = false;
+		
+		mxEvent.addListener(parent, 'mouseenter', mxUtils.bind(this, function()
+		{
+			if (Editor.currentTheme == 'sketch' && this.editor.getStatus() != '')
+			{
+				this.statusContainer.style.display = 'inline-block';
+			}
+		}));
+		
+		mxEvent.addListener(parent, 'mouseleave', mxUtils.bind(this, function()
+		{
+			if (Editor.currentTheme == 'sketch' && !visible)
+			{
+				this.statusContainer.style.display = 'none';
+			}
+		}));
+
+		var statusChanged = mxUtils.bind(this, function()
+		{
+			if (Editor.currentTheme == 'sketch')
+			{
+				var elt = (this.statusContainer.firstChild != null &&
+					typeof this.statusContainer.firstChild.getAttribute === 'function') ?
+					this.statusContainer.firstChild : null;
+				visible = elt != null && elt.getAttribute('class') != null;
+				
+				if (!visible && elt != null)
+				{
+					var title = elt.getAttribute('title');
+					var file = this.getCurrentFile();
+					var key = (file != null) ? file.savingStatusKey :
+						DrawioFile.prototype.savingStatusKey;
+					
+					// Shows animated spinner while saving
+					if (title == mxResources.get(key) + '...')
+					{
+						this.statusContainer.innerHTML = '<div><img title="' + mxUtils.htmlEntities(
+							mxResources.get(key)) + '...' + '"src="' + Editor.tailSpin + '"></div>';
+						visible = true;
+					}
+				}
+
+				// Checks size of container without status
+				this.statusContainer.style.display = 'none';
+				var empty = parent.clientWidth <= 32;
+
+				// Hides container if empty and no status
+				parent.style.visibility = (empty && this.editor.getStatus() == '') ?
+					'hidden' : '';
+
+				// Shows status if container empty or status relevant
+				if (empty || visible)
+				{
+					this.statusContainer.style.display = 'inline-block';
+					visible = true;
+				}
+			}
+			else if (Editor.currentTheme == 'simple')
+			{
+				// Required for flex layout gaps to be applied correctly
+				this.statusContainer.style.display = 'inline-block';
+				this.statusContainer.style.display = (this.statusContainer.clientWidth == 0)
+					? 'none' : 'inline-block';
+			}
+		});
+		
+		this.editor.addListener('statusChanged', statusChanged);
+		statusChanged();
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.switchTheme = function(value)
+	{
+		// Removes containers before destroying windows
+		if (value == 'default')
+		{
+			// Format window
+			if (this.formatContainer != null)
+			{
+				this.formatContainer.style.left = '';
+				this.formatContainer.style.zIndex = '1';
+				this.formatContainer.style.border = '';
+
+				if (this.footerContainer != null)
+				{
+					if (this.footerContainer.parentNode != this.formatContainer.parentNode)
+					{
+						this.footerContainer.parentNode.insertBefore(
+							this.formatContainer, this.footerContainer);
+					}
+				}
+
+				// Shapes window
+				if (this.sidebarContainer != null)
+				{
+					if (this.formatContainer.parentNode != this.sidebarContainer.parentNode)
+					{
+						this.formatContainer.parentNode.insertBefore(
+							this.sidebarContainer, this.formatContainer);
+					}
+				}
+			}
+
+			this.toggleCompactMode(true);
+		}
+
+		this.destroyWindows();
+		this.updateUserElement();
+		this.updateDefaultStyles();
+		this.switchThemeConstants(value);
+		this.switchCssForTheme(value);
+		this.createWrapperForTheme(value);
+		this.createPickerMenuForTheme(value);
+		this.createMainMenuForTheme(value);
+		this.createMenubarForTheme(value);
+		this.createFooterMenuForTheme(value);
+
+		// TODO: Check what hides sidebarContainer
+		this.sidebarContainer.style.display = '';
+
+		if (value == 'simple' || value == 'sketch')
+		{
+			// Format window
+			this.createFormatWindow();
+			this.formatContainer.style.left = '0px';
+			this.formatContainer.style.top = '0px';
+			this.formatContainer.style.width = '';
+			this.formatContainer.style.zIndex = '';
+			this.formatContainer.style.border = 'none';
+
+			// Shapes window
+			this.createShapesWindow();
+			this.sidebarContainer.style.left = '0px';
+			this.sidebarContainer.style.top = '0px';
+			this.sidebarContainer.style.bottom = '63px';
+			this.sidebarContainer.style.width = '100%';
+		}
+
+		// Format panel close button
+		if (this.format != null)
+		{
+			var closeButton = value == 'default' || value == 'atlas'; 
+
+			if (this.format.showCloseButton != closeButton)
+			{
+				this.format.showCloseButton = closeButton;
+				this.format.refresh();
+			}
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.fitWindows = function()
+	{
+        if (this.sidebarWindow != null)
+        {
+            this.sidebarWindow.window.fit();
+        }
+        
+        if (this.formatWindow != null)
+        {
+        	this.formatWindow.window.fit();
+        }
+
+		if (this.freehandWindow != null)
+		{
+        	this.freehandWindow.window.fit();
+        }
+
+        if (this.actions.outlineWindow != null)
+        {
+        	this.actions.outlineWindow.window.fit();
+        }
+
+        if (this.actions.layersWindow != null)
+        {
+        	this.actions.layersWindow.window.fit();
+        }
+
+        if (this.menus.tagsWindow != null)
+        {
+        	this.menus.tagsWindow.window.fit();
+        }
+
+        if (this.menus.findWindow != null)
+        {
+        	this.menus.findWindow.window.fit();
+        }
+
+        if (this.menus.findReplaceWindow != null)
+        {
+        	this.menus.findReplaceWindow.window.fit();
+        }
+
+		if (this.menus.commentsWindow != null)
+		{
+			this.menus.commentsWindow.window.fit();
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.destroyWindows = function()
+	{
+        if (this.sidebarWindow != null)
+        {
+            this.sidebarWindow.destroy();
+            this.sidebarWindow = null;
+        }
+        
+        if (this.formatWindow != null)
+        {
+        	this.formatWindow.destroy();
+        	this.formatWindow = null;
+        }
+
+		if (this.freehandWindow != null)
+		{
+        	this.freehandWindow.destroy();
+        	this.freehandWindow = null;
+        }
+
+        if (this.actions.outlineWindow != null)
+        {
+        	this.actions.outlineWindow.destroy();
+        	this.actions.outlineWindow = null;
+        }
+
+        if (this.actions.layersWindow != null)
+        {
+        	this.actions.layersWindow.destroy();
+        	this.actions.layersWindow = null;
+        }
+
+        if (this.menus.tagsWindow != null)
+        {
+        	this.menus.tagsWindow.destroy();
+        	this.menus.tagsWindow = null;
+        }
+
+        if (this.menus.findWindow != null)
+        {
+        	this.menus.findWindow.destroy();
+        	this.menus.findWindow = null;
+        }
+
+        if (this.menus.findReplaceWindow != null)
+        {
+        	this.menus.findReplaceWindow.destroy();
+        	this.menus.findReplaceWindow = null;
+        }
+
+		if (this.menus.commentsWindow != null)
+		{
+			this.menus.commentsWindow.destroy();
+			this.menus.commentsWindow = null;
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.switchThemeConstants = function(value)
+	{
+		var graph = this.editor.graph;
+		graph.defaultEdgeLength = Graph.prototype.defaultEdgeLength;
+		graph.defaultGridEnabled = Graph.prototype.defaultGridEnabled;
+		graph.defaultPageVisible = Graph.prototype.defaultPageVisible;
+
+		if (this.menus != null)
+		{
+			this.menus.autoPopup = value != 'simple' && value != 'sketch';
+		}
+
+		if (value == 'simple' || value == 'sketch')
+		{
+			mxWindow.prototype.closeImage = Graph.createSvgImage(18, 10,
+				'<path d="M 5 1 L 13 9 M 13 1 L 5 9" stroke="#C0C0C0" stroke-width="2"/>').src;
+			mxWindow.prototype.minimizeImage = Graph.createSvgImage(14, 10,
+				'<path d="M 3 7 L 7 3 L 11 7" stroke="#C0C0C0" stroke-width="2" fill="none"/>').src;
+			mxWindow.prototype.normalizeImage = Graph.createSvgImage(14, 10,
+				'<path d="M 3 3 L 7 7 L 11 3" stroke="#C0C0C0" stroke-width="2" fill="none"/>').src;
+			Editor.fitWindowBorders = new mxRectangle(60, 30, 30, 30);
+
+			graph.defaultEdgeLength = 120;
+
+			if (urlParams['grid'] == null)
+			{
+				graph.defaultGridEnabled = false;
+			}
+
+			if (urlParams['pv'] == null)
+			{
+				graph.defaultPageVisible = false;
+			}
+		}
+		else
+		{
+			mxWindow.prototype.closeImage = mxClient.imageBasePath + '/close.gif';
+			mxWindow.prototype.minimizeImage = mxClient.imageBasePath + '/minimize.gif';
+			mxWindow.prototype.normalizeImage = mxClient.imageBasePath + '/normalize.gif';
+			Editor.fitWindowBorders = null;
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.switchCssForTheme = function(value)
+	{
+		if (value == 'simple' || value == 'sketch')
+		{
+			if (this.sketchStyleElt == null)
+			{
+				this.sketchStyleElt = document.createElement('style');
+				this.sketchStyleElt.setAttribute('type', 'text/css');
+				this.sketchStyleElt.innerHTML = Editor.createMinimalCss();
+				document.getElementsByTagName('head')[0].appendChild(this.sketchStyleElt);
+			}
+		}
+		else
+		{
+			if (this.sketchStyleElt != null)
+			{
+				this.sketchStyleElt.parentNode.removeChild(this.sketchStyleElt);
+				this.sketchStyleElt = null;
+			}
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createWrapperForTheme = function(value)
+	{
+		if (value == 'simple' || value == 'sketch')
+		{
+			if (this.sketchWrapperElt == null)
+			{
+				this.sketchWrapperElt = document.createElement('div');
+				this.sketchWrapperElt.style.cssText = 'position:absolute;' +
+					'top:0px;left:0px;right:0px;bottom:0px;overflow:hidden;';
+			}
+
+			this.diagramContainer.parentNode.appendChild(this.sketchWrapperElt);
+			this.sketchWrapperElt.appendChild(this.diagramContainer);
+		}
+		else if (this.sketchWrapperElt != null && this.sketchWrapperElt.parentNode != null)
+		{
+			this.tabContainer.parentNode.insertBefore(this.diagramContainer, this.tabContainer);
+			this.sketchWrapperElt.parentNode.removeChild(this.sketchWrapperElt);
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createMainMenuForTheme = function(value)
+	{
+		if (value == 'simple' || value == 'sketch')
+		{
+			if (this.sketchMainMenuElt == null)
+			{
+				this.sketchMainMenuElt = document.createElement('div');
+				this.sketchMainMenuElt.className = 'geToolbarContainer';
+				this.sketchMainMenuElt.style.cssText = 'position:absolute;left:10px;top:10px;height:44px;' +
+					'border-radius:4px;padding:9px 12px;overflow:hidden;z-index:1;white-space:nowrap;' +
+					'text-align:right;user-select:none;box-sizing:border-box;border-bottom:1px solid lightgray;';
+
+				this.sketchMainMenuElt.appendChild(this.createMenu('diagram', Editor.menuImage));
+				this.sketchMainMenuElt.appendChild(this.createMenuItem('delete', Editor.trashImage));
+				this.sketchMainMenuElt.appendChild(this.createMenuItem('undo', Editor.undoImage));
+				this.sketchMainMenuElt.appendChild(this.createMenuItem('redo', Editor.redoImage));
+				this.sketchWrapperElt.appendChild(this.sketchMainMenuElt);
+			}
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createFooterMenuForTheme = function(value)
+	{
+		if (value == 'simple' || value == 'sketch')
+		{
+			if (this.sketchFooterMenuElt == null)
+			{
+				this.sketchFooterMenuElt = document.createElement('div');
+				this.sketchFooterMenuElt.className = 'geToolbarContainer';
+				this.sketchFooterMenuElt.style.cssText = 'position:absolute;right:12px;bottom:12px;height:44px;' +
+					'border-radius:4px;padding:9px 12px;overflow:hidden;z-index:1;white-space:nowrap;' +
+					'text-align:right;user-select:none;box-sizing:border-box;border-bottom:1px solid lightgray;';
+
+				var footer = this.sketchFooterMenuElt;
+
+				var pageMenu = this.createPageMenuTab(false, true);
+				pageMenu.className = 'geToolbarButton';
+				pageMenu.style.cssText = 'display:inline-block;cursor:pointer;overflow:hidden;padding:4px;' +
+					'white-space:nowrap;max-width:160px;text-overflow:ellipsis;filter:none;opacity:1;';
+				footer.appendChild(pageMenu);
+
+				var updatePageName = mxUtils.bind(this, function()
+				{
+					pageMenu.innerText = '';
+
+					if (this.currentPage != null)
+					{
+						mxUtils.write(pageMenu, this.currentPage.getName());
+						var n = (this.pages != null) ? this.pages.length : 1;
+						var idx = this.getPageIndex(this.currentPage);
+						idx = (idx != null) ? idx + 1 : 1;
+						var id = this.currentPage.getId();
+						pageMenu.setAttribute('title', this.currentPage.getName() +
+							' (' + idx + '/' + n + ')' + ((id != null) ?
+							' [' + id + ']' : ''));
+					}
+				});
+
+				this.editor.addListener('pagesPatched', updatePageName);
+				this.editor.addListener('pageSelected', updatePageName);
+				this.editor.addListener('pageRenamed', updatePageName);
+				this.editor.addListener('fileLoaded', updatePageName);
+				updatePageName();
+				
+				// Page menu only visible for multiple pages
+				var pagesVisibleChanged = mxUtils.bind(this, function()
+				{
+					pageMenu.style.display = this.pages != null &&
+						(urlParams['pages'] != '0' || this.pages.length > 1 ||
+						Editor.pagesVisible) ? 'inline-block' : 'none';
+				});
+
+				this.addListener('fileDescriptorChanged', pagesVisibleChanged);
+				this.addListener('pagesVisibleChanged', pagesVisibleChanged);
+				this.editor.addListener('pagesPatched', pagesVisibleChanged);
+				pagesVisibleChanged();
+
+				footer.appendChild(this.createMenuItem('zoomOut', Editor.minusImage));
+
+				var elt = this.createMenu('viewZoom');
+				elt.setAttribute('title', mxResources.get('zoom'));
+				elt.innerHTML = '100%';
+				elt.className = 'geToolbarButton';
+				elt.style.cssText = 'display:inline-block;position:relative;vertical-align:top;opacity:1;color:inherit;' +
+					'padding:4px;box-shadow:none;width:40px;text-align:center;margin-right:-6px;filter:none;';
+				footer.appendChild(elt);
+
+				// Updates the label if the scale changes
+				(mxUtils.bind(this, function(elt)
+				{
+					// Adds shift+/alt+click on zoom label
+					mxEvent.addListener(elt, 'click', mxUtils.bind(this, function(evt)
+					{
+						if (mxEvent.isAltDown(evt))
+						{
+							this.hideCurrentMenu();
+							this.actions.get('customZoom').funct();
+							mxEvent.consume(evt);
+						}
+						// geItem is a dropdown menu, geMenuItem is a button in the toolbar
+						else if (mxEvent.isShiftDown(evt))
+						{
+							this.hideCurrentMenu();
+							this.actions.get('smartFit').funct();
+							mxEvent.consume(evt);
+						}
+					}));
+
+					var updateZoom = mxUtils.bind(this, function()
+					{
+						elt.innerText = '';
+						mxUtils.write(elt, Math.round(this.editor.graph.view.scale * 100) + '%');
+					});
+
+					this.editor.graph.view.addListener(mxEvent.EVENT_SCALE, updateZoom);
+					this.editor.addListener('resetGraphView', updateZoom);
+					this.editor.addListener('pageSelected', updateZoom);
+				}))(elt);
+
+				footer.appendChild(this.createMenuItem('zoomIn', Editor.plusImage));
+
+				if (urlParams['embedInline'] == '1')
+				{
+					var fullscreenElt = this.createMenuItem('fullscreen', Editor.fullscreenImage);
+					footer.appendChild(fullscreenElt);
+		
+					var inlineFullscreenChanged = mxUtils.bind(this, function()
+					{
+						fullscreenElt.style.backgroundImage = 'url(' + ((!Editor.inlineFullscreen) ?
+							Editor.fullscreenImage : Editor.fullscreenExitImage) + ')';
+						this.diagramContainer.style.background = (Editor.inlineFullscreen) ?
+							(Editor.isDarkMode() ? Editor.darkColor : '#ffffff') : 'transparent';
+						this.inlineSizeChanged();
+					});
+		
+					this.addListener('inlineFullscreenChanged', inlineFullscreenChanged);
+					footer.appendChild(this.createMenuItem('exit', Editor.closeImage));
+				}
+				
+				this.sketchWrapperElt.appendChild(this.sketchFooterMenuElt);
+			}
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createPickerMenuForTheme = function(value)
+	{
+		if (value == 'simple' || value == 'sketch')
+		{
+			if (this.sketchPickerMenuElt == null)
+			{
+				var graph = this.editor.graph;
+				this.sketchPickerMenuElt = document.createElement('div');
+				this.sketchPickerMenuElt.className = 'geToolbarContainer';
+				this.sketchPickerMenuElt.style.cssText = 'position:absolute;left:10px;border-radius:4px;' +
+					'padding:0px 4px 4px;white-space:nowrap;max-height:100%;width:48px;z-index:1;' +
+					'box-sizing:border-box;transform:translate(0, -50%);top:50%;user-select:none;';
+
+				var picker = this.sketchPickerMenuElt;
+				mxUtils.setPrefixedStyle(picker.style, 'transition', 'transform .3s ease-out');
+				
+				var foldImg = document.createElement('a');
+				foldImg.style.padding = '0px';
+				foldImg.style.boxShadow = 'none';
+				foldImg.className = 'geMenuItem geAdaptiveAsset';
+				foldImg.style.display = 'block';
+				foldImg.style.width = '100%';
+				foldImg.style.height = '14px';
+				foldImg.style.margin = '6px 0 2px 0';
+				foldImg.style.backgroundImage = 'url(' + Editor.expandMoreImage + ')';
+				foldImg.style.backgroundPosition = 'center center';
+				foldImg.style.backgroundRepeat = 'no-repeat';
+				foldImg.style.backgroundSize = '22px';
+				mxUtils.setOpacity(foldImg, 40);
+				foldImg.setAttribute('title', mxResources.get('collapseExpand'));
+				
+				var freehandElt = this.createMenuItem('insertFreehand',
+					Editor.freehandImage, true);
+				freehandElt.style.paddingLeft = '12px';
+				freehandElt.style.backgroundSize = '';
+				freehandElt.style.width = '26px';
+				freehandElt.style.height = '30px';
+				freehandElt.style.opacity = '0.7';
+				
+				var insertElt = this.createMenu('insert', Editor.plusImage);
+				insertElt.style.backgroundSize = '';
+				insertElt.style.display = 'block';
+				insertElt.style.width = '30px';
+				insertElt.style.height = '30px';
+				insertElt.style.padding = '4px 4px 0px 3px';
+				insertElt.style.opacity = '0.7';
+				
+				var shapesElt = insertElt.cloneNode(true);
+				shapesElt.style.backgroundImage = 'url(' + Editor.shapesImage + ')';
+				mxEvent.addListener(shapesElt, 'click', mxUtils.bind(this, function(evt)
+				{
+					var off = mxUtils.getOffset(insertElt);
+					this.showShapePicker(this.diagramContainer.scrollLeft + off.x + insertElt.offsetWidth + 8,
+						this.diagramContainer.scrollTop + off.y + 10, null, null, null, null,
+						mxUtils.bind(this, function(cells)
+					{
+						return graph.getCenterInsertPoint(graph.getBoundingBoxFromGeometry(cells, true));
+					}));
+
+					mxEvent.consume(evt);
+				}));
+
+				insertElt.style.backgroundSize = '24px';
+				insertElt.style.marginBottom = '4px';
+
+				var collapsed = false;
+	
+				var initPicker = mxUtils.bind(this, function()
+				{
+					picker.innerText = '';
+					
+					if (!collapsed)
+					{
+						function addKey(elt, key)
+						{
+							elt.style.position = 'relative';
+							elt.style.overflow = 'visible';
+	
+							var div = document.createElement('div');
+							div.style.position = 'absolute';
+							div.style.fontSize = '8px';
+							div.style.left = '32px';
+							div.style.top = '28px';
+							mxUtils.write(div, key);
+							elt.appendChild(div);
+						};
+	
+						function addElt(elt, title, cursor, key)
+						{
+							if (title != null)
+							{
+								elt.setAttribute('title', title);
+							}
+							
+							elt.style.cursor = 'pointer';
+							elt.style.margin = '8px 0px';
+							elt.style.display = 'block';
+							picker.appendChild(elt);
+							
+							if (key != null)
+							{
+								addKey(elt, key);
+							}
+							
+							return elt;
+						};
+						
+						// Append sidebar elements
+						addElt(this.sidebar.createVertexTemplate('text;strokeColor=none;fillColor=none;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;', 
+							60, 30, 'Text', mxResources.get('text') + ' (A)', true, false, null, true),
+							mxResources.get('text') + ' (A)', null, 'A');
+						addElt(this.sidebar.createVertexTemplate('shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;' +
+							'fontColor=#000000;darkOpacity=0.05;fillColor=#FFF9B2;strokeColor=none;fillStyle=solid;' +
+							'direction=west;gradientDirection=north;gradientColor=#FFF2A1;shadow=1;size=20;pointerEvents=1;',
+							140, 160, '', mxResources.get('note') + ' (S)', true, false, null, true),
+							mxResources.get('note') + ' (S)', null, 'S');
+						addElt(this.sidebar.createVertexTemplate('rounded=0;whiteSpace=wrap;html=1;', 160, 80, '',
+							mxResources.get('rectangle') + ' (D)', true, false, null, true),
+							mxResources.get('rectangle') + ' (D)', null, 'D');
+						addElt(this.sidebar.createVertexTemplate('ellipse;whiteSpace=wrap;html=1;', 160, 100, '',
+							mxResources.get('ellipse') + ' (F)', true, false, null, true),
+							mxResources.get('ellipse') + ' (F)', null, 'F');
+						
+						var edgeStyle = 'edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;';
+						var cell = new mxCell('', new mxGeometry(0, 0, this.editor.graph.defaultEdgeLength + 20, 0), edgeStyle);
+						cell.geometry.setTerminalPoint(new mxPoint(0, 0), true);
+						cell.geometry.setTerminalPoint(new mxPoint(cell.geometry.width, 0), false);
+						cell.geometry.points = [];
+						cell.geometry.relative = true;
+						cell.edge = true;
+						
+						addElt(this.sidebar.createEdgeTemplateFromCells([cell],
+							cell.geometry.width, cell.geometry.height,
+							mxResources.get('line') + ' (C)', true, null, true, false),
+							mxResources.get('line') + ' (C)', null, 'C');
+							
+						cell = cell.clone();
+						cell.style = edgeStyle + 'shape=flexArrow;rounded=1;startSize=8;endSize=8;';
+						cell.geometry.width = this.editor.graph.defaultEdgeLength + 20;
+						cell.geometry.setTerminalPoint(new mxPoint(0, 20), true);
+						cell.geometry.setTerminalPoint(new mxPoint(cell.geometry.width, 20), false);
+		
+						addElt(this.sidebar.createEdgeTemplateFromCells([cell],
+							cell.geometry.width, 40, mxResources.get('arrow'),
+							true, null, true, false), mxResources.get('arrow'));
+					
+						addElt(freehandElt, mxResources.get('freehand') + ' (X)', null, 'X');
+
+						this.sketchPickerMenuElt.appendChild(shapesElt);
+						this.sketchPickerMenuElt.appendChild(insertElt);
+					}
+					
+					if (urlParams['embedInline'] != '1')
+					{
+						picker.appendChild(foldImg);
+					}
+				});
+				
+				mxEvent.addListener(foldImg, 'click', mxUtils.bind(this, function()
+				{
+					if (collapsed)
+					{
+						mxUtils.setPrefixedStyle(picker.style, 'transform', 'translate(0, -50%)');
+						picker.style.padding = '0px 4px 4px';
+						picker.style.width = '48px';
+						picker.style.top = '50%';
+						picker.style.bottom = '';
+						picker.style.height = '';
+						foldImg.style.backgroundImage = 'url(' + Editor.expandMoreImage + ')';
+						foldImg.style.width = '100%';
+						foldImg.style.height = '14px';
+						foldImg.style.margin = '6px 0 2px 0';
+						collapsed = false;
+						initPicker();
+					}
+					else
+					{				
+						picker.innerText = '';
+						picker.appendChild(foldImg);
+						mxUtils.setPrefixedStyle(picker.style, 'transform', 'translate(0, 0)');
+						picker.style.width = 'auto';
+						picker.style.bottom = '12px';
+						picker.style.padding = '0px';
+						picker.style.top = '';
+						foldImg.style.backgroundImage = 'url(' + Editor.expandLessImage + ')';
+						foldImg.style.width = '24px';
+						foldImg.style.height = '24px';
+						foldImg.style.margin = '0px';
+						collapsed = true;
+					}
+				}));
+				
+				this.addListener('darkModeChanged', initPicker);
+				this.addListener('sketchModeChanged', initPicker);
+				initPicker();
+
+				this.sketchWrapperElt.appendChild(this.sketchPickerMenuElt);
+			}
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createMenubarForTheme = function(value)
+	{
+		if (value == 'simple' || value == 'sketch')
+		{
+			if (this.sketchMenubarElt == null)
+			{
+				this.sketchMenubarElt = document.createElement('div');
+				this.sketchMenubarElt.className = 'geToolbarContainer';
+				this.sketchMenubarElt.style.cssText = 'display:flex;position:absolute;right:12px;top:10px;height:44px;' +
+					'border-radius:4px;padding:7px 12px;overflow:hidden;z-index:1;flex-wrap:nowrap;user-select:none;' +
+					'box-sizing:border-box;border-bottom:1px solid lightgray;max-width:calc(100% - 170px);' +
+					'justify-content:flex-end;align-items:center;gap:6px;';
+				this.sketchWrapperElt.appendChild(this.sketchMenubarElt);
+
+				if (urlParams['embedInline'] != '1')
+				{
+					// Moves menu away if picker overlaps
+					var refreshMenu = mxUtils.bind(this, function()
+					{
+						var overflow = (this.sketchPickerMenuElt.offsetTop -
+							this.sketchPickerMenuElt.offsetHeight / 2 < 58);
+						this.sketchMainMenuElt.style.left = (overflow) ? '70px' : '10px';
+						this.sketchMenubarElt.style.maxWidth = (overflow) ? 
+							'calc(100% - 230px)' : 'calc(100% - 170px)';
+						
+					});
+
+					refreshMenu();
+					mxEvent.addListener(window, 'resize', refreshMenu);
+				}
+
+				if (urlParams['embed'] != '1' && this.getServiceName() != 'atlassian')
+				{
+					this.installStatusMinimizer(this.sketchMenubarElt);
+				}
+			}
+
+			if (this.statusContainer != null)
+			{
+				this.statusContainer.style.flexShrink = '1';
+				this.sketchMenubarElt.appendChild(this.statusContainer);
+			}
+
+			if (this.userElement != null)
+			{
+				this.userElement.style.flexShrink = '0';
+				this.userElement.style.top = '';
+				this.sketchMenubarElt.appendChild(this.userElement);
+			}
+
+			var elt = this.menubar.langIcon;
+
+			if (elt != null)
+			{
+				elt.style.position = '';
+				elt.style.height = '21px';
+				elt.style.width = '21px';
+				elt.style.flexShrink = '0';
+
+				this.sketchMenubarElt.appendChild(elt);
+			}
+
+			if (this.buttonContainer != null)
+			{
+				this.buttonContainer.style.flexShrink = '0';
+				this.buttonContainer.style.padding = '0px';
+				this.buttonContainer.style.position = '';
+
+				this.sketchMenubarElt.appendChild(this.buttonContainer);
+			}
+		}
+		else
+		{
+			if (this.statusContainer != null)
+			{
+				this.menubar.container.appendChild(this.statusContainer);
+				this.statusContainer.style.flexShrink = '';
+				this.statusContainer.style.overflow = '';
+			}
+
+			if (this.userElement != null)
+			{
+				this.userElement.style.flexShrink = '';
+				this.userElement.style.top = '3px';
+				this.menubarContainer.appendChild(this.userElement);
+			}
+
+			var elt = this.menubar.langIcon;
+
+			if (elt != null)
+			{
+				elt.style.position = 'absolute';
+				elt.style.height = '18px';
+				elt.style.width = '18px';
+				elt.style.flexShrink = '';
+
+				this.menubarContainer.parentNode.insertBefore(elt,
+					this.menubarContainer);
+			}
+		}
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createMenu = function(key, img, className, clickFn)
+	{
+		className = (className != null) ? className : 'geToolbarButton';
+		var menu = this.menus.get(key);
+		var elt = this.menubar.addMenu(mxResources.get(key), menu.funct, null, clickFn);
+		
+		elt.className = className;
+		elt.style.display = 'inline-block';
+		elt.style.cursor = 'pointer';
+		elt.style.height = '24px';
+		elt.setAttribute('title', mxResources.get(key));
+		this.menus.menuCreated(menu, elt, className);
+		
+		if (img != null)
+		{
+			elt.style.backgroundImage = 'url(' + img + ')';
+			elt.style.backgroundPosition = 'center center';
+			elt.style.backgroundRepeat = 'no-repeat';
+			elt.style.backgroundSize = '100% 100%';
+			elt.style.width = '24px';
+			elt.innerText = '';
+		}
+
+		return elt;
+	};
+
+	/**
+	 * Create toolbar button.
+	 */
+	EditorUi.prototype.createToolbarButton = function(img, title, fn, size)
+	{
+		size = (size != null) ? size : 24;
+		var btn = document.createElement('a');
+		btn.className = 'geToolbarButton geAdaptiveAsset';
+		btn.setAttribute('title', title);
+		btn.style.backgroundImage = 'url(' + img + ')';
+		btn.style.backgroundPosition = 'center center';
+		btn.style.backgroundRepeat = 'no-repeat';
+		btn.style.backgroundSize = '100% 100%';
+		btn.style.display = 'inline-block';
+		btn.style.cursor = 'pointer';
+		btn.style.marginLeft = '6px';
+		btn.style.width = size + 'px';
+		btn.style.height = size + 'px';
+
+		if (fn != null)
+		{
+			// Prevents focus
+			mxEvent.addListener(btn, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown',
+				mxUtils.bind(this, function(evt)
+			{
+				evt.preventDefault();
+			}));
+	
+			mxEvent.addListener(btn, 'click', function(evt)
+			{
+				if (btn.getAttribute('disabled') != 'disabled')
+				{
+					fn(evt);
+				}
+				
+				mxEvent.consume(evt);
+			});
+		}
+
+		return btn;
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createMenuItem = function(key, img, ignoreState)
+	{
+		var action = this.actions.get(key);
+		var fn = (action != null) ? action.funct : null;
+		var btn = this.createToolbarButton(img, mxResources.get(key), fn);
+
+		if (action != null)
+		{
+			if (!ignoreState)
+			{
+				function updateState()
+				{
+					if (action.isEnabled())
+					{
+						btn.removeAttribute('disabled');
+						btn.style.cursor = 'pointer';
+					}
+					else
+					{
+						btn.setAttribute('disabled', 'disabled');
+						btn.style.cursor = 'default';
+					}
+
+					btn.style.opacity = (action.isEnabled()) ? '' : '0.2';
+				};
+				
+				this.editor.graph.addListener('enabledChanged', updateState);
+				action.addListener('stateChanged', updateState);
+				updateState();
+			}
+		}
+	   
+		return btn;
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createFormatWindow = function()
+	{
+		if (this.formatWindow == null)
+		{
+			var x = Math.max(10, this.diagramContainer.parentNode.clientWidth - 256);
+			var y = urlParams['winCtrls'] == '1' && urlParams['sketch'] == '1'? 80 : 60;
+			var h = (urlParams['embedInline'] == '1') ? 580 :
+				((urlParams['sketch'] == '1') ? 580 : Math.min(566,
+					this.editor.graph.container.clientHeight - 10));
+			
+			this.formatWindow = new WrapperWindow(this, mxResources.get('format'), x, y, 240, h,
+				mxUtils.bind(this, function(container)
+			{
+				container.appendChild(this.formatContainer);
+			}));
+
+			this.formatWindow.window.addListener(mxEvent.SHOW, mxUtils.bind(this, function()
+			{
+				this.formatWindow.window.fit();
+			}));
+
+			var toggleMinimized = this.formatWindow.window.toggleMinimized;
+			var w = 240;
+			
+			this.formatWindow.window.toggleMinimized = function()
+			{
+				toggleMinimized.apply(this, arguments);
+				
+				if (this.minimized)
+				{
+					w = parseInt(this.div.style.width);
+					this.div.style.width = '140px';
+					this.table.style.width = '140px';
+					this.div.style.left = (parseInt(this.div.style.left) + w - 140) + 'px';
+				}
+				else
+				{
+					this.div.style.width = w + 'px';
+					this.table.style.width = this.div.style.width;
+					this.div.style.left = (Math.max(0, parseInt(this.div.style.left) - w + 140)) + 'px';
+				}
+				
+				this.fit();
+			};
+
+			mxEvent.addListener(this.formatWindow.window.title, 'dblclick', mxUtils.bind(this, function(evt)
+			{
+				if (mxEvent.getSource(evt) == this.formatWindow.window.title)
+				{
+					this.formatWindow.window.toggleMinimized();
+				}
+			}));
+			
+			this.formatWindow.window.minimumSize = new mxRectangle(0, 0, 240, 80);
+
+			// Sets initial state for format window
+			if (Editor.currentTheme == 'sketch')
+			{
+				var iw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+				var ih = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+				
+				if (iw < 1200 || ih < 708)
+				{
+					this.formatWindow.window.toggleMinimized();
+				}
+			}
+			else
+			{
+				this.formatWindow.window.setVisible(false);
+			}
+		}
+	};
+
+	/**
+	 * 
+	 */
+	var editorUiToggleFormatPanel = EditorUi.prototype.toggleFormatPanel;
+
+	EditorUi.prototype.toggleFormatPanel = function(visible)
+	{
+		var wnd = this.formatWindow;
+		
+		if (wnd != null)
+		{
+			wnd.window.setVisible((visible != null) ? visible :
+				!this.isFormatPanelVisible());
+		}
+		else
+		{
+			editorUiToggleFormatPanel.apply(this, arguments);
+		}
+	};
+	
+	/**
+	 * 
+	 */
+	var editorUiIsFormatPanelVisible = EditorUi.prototype.isFormatPanelVisible;
+
+	EditorUi.prototype.isFormatPanelVisible = function()
+	{
+		var wnd = this.formatWindow;
+		
+		if (wnd != null)
+		{
+			return wnd.window.isVisible();
+		}
+		else
+		{
+			return editorUiIsFormatPanelVisible.apply(this, arguments);
+		}
+	};
+
+	var editorUiRefresh = EditorUi.prototype.refresh;
+
+	/**
+	 * Changes refresh to only update the diagram container in sketch mode.
+	 */
+	EditorUi.prototype.refresh = function(sizeDidChange)
+	{
+
+		if (this.sketchWrapperElt != null && this.sketchWrapperElt.parentNode != null)
+		{
+			sizeDidChange = (sizeDidChange != null) ? sizeDidChange : true;
+
+			if (urlParams['embedInline'] != '1')
+			{
+				var off = this.getDiagramContainerOffset();
+				
+				this.diagramContainer.style.left = off.x + 'px';
+				this.diagramContainer.style.top = off.y + 'px';
+				this.diagramContainer.style.right = '0';
+				this.diagramContainer.style.bottom = '0';
+			}
+
+			if (sizeDidChange)
+			{
+				this.editor.graph.sizeDidChange();
+			}
+		}
+		else
+		{
+			editorUiRefresh.apply(this, arguments);
+		}
+	};
+
+	/**
+	 * 
+	 */
+	EditorUi.prototype.createShapesPanel = function(container)
+	{
+		var div = document.createElement('div');
+		div.style.cssText = 'position:absolute;left:0;right:0;border-top:1px solid lightgray;' +
+			'height:24px;bottom:31px;text-align:center;cursor:pointer;padding:6px 0 0 0;';
+		div.className = 'geTitle';
+		var span = document.createElement('span');
+		span.style.fontSize = '18px';
+		span.style.marginRight = '5px';
+		span.innerHTML = '+';
+		div.appendChild(span);
+		mxUtils.write(div, mxResources.get('moreShapes'));
+		container.appendChild(div);
+		
+		mxEvent.addListener(div, 'click', mxUtils.bind(this, function()
+		{
+			this.actions.get('shapes').funct();
+		}));
+
+		var addMenu = mxUtils.bind(this, function(id, label)
+		{
+			var elt = this.createMenu(id, null, 'geTitle');
+
+			elt.style.cssText = 'position:absolute;border-top:1px solid lightgray;' +
+				'width:50%;height:24px;bottom:0px;text-align:center;cursor:pointer;' +
+				'padding:6px 0 0 0;cusor:pointer;';
+			container.appendChild(elt);
+
+			return elt;
+		});
+		
+		if (Editor.enableCustomLibraries && (urlParams['embed'] != '1' || urlParams['libraries'] == '1'))
+		{
+			// Defined in native apps together with openLibrary
+			if (this.actions.get('newLibrary') != null)
+			{
+				var div = document.createElement('div');
+				div.style.cssText = 'position:absolute;left:0px;width:50%;border-top:1px solid lightgray;' +
+					'height:30px;bottom:0px;text-align:center;cursor:pointer;padding:0px;';
+				div.className = 'geTitle';
+				var span = document.createElement('span');
+				span.style.cssText = 'position:relative;top:6px;';
+				mxUtils.write(span, mxResources.get('newLibrary'));
+				div.appendChild(span);
+				container.appendChild(div);
+				
+				mxEvent.addListener(div, 'click', this.actions.get('newLibrary').funct);
+				
+				var div = div.cloneNode(false);
+				div.style.left = '50%';
+				div.style.borderLeft = '1px solid lightgray';
+				var span = span.cloneNode(false);
+				mxUtils.write(span, mxResources.get('openLibrary'));
+				div.appendChild(span);
+				container.appendChild(div);
+				
+				mxEvent.addListener(div, 'click', this.actions.get('openLibrary').funct);
+			}
+			else
+			{
+				var elt = addMenu('newLibrary', mxResources.get('newLibrary'));
+				elt.style.boxSizing = 'border-box';
+				elt.style.paddingRight = '6px';
+				elt.style.paddingLeft = '6px';
+				elt.style.height = '32px';
+				elt.style.left = '0';
+				
+				var elt = addMenu('openLibraryFrom', mxResources.get('openLibraryFrom'));
+				elt.style.borderLeft = '1px solid lightgray';
+				elt.style.boxSizing = 'border-box';
+				elt.style.paddingRight = '6px';
+				elt.style.paddingLeft = '6px';
+				elt.style.height = '32px';
+				elt.style.left = '50%';
+			}
+		}
+		else
+		{
+			div.style.bottom = '0';
+		}
+
+		container.appendChild(this.sidebarContainer);
+		container.style.overflow = 'hidden';
+	};
+
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.createShapesWindow = function()
+	{
+		if (this.sidebarWindow == null)
+		{
+			var w = Math.min(this.diagramContainer.parentNode.clientWidth - 10, 218);
+			var h = (urlParams['embedInline'] == '1') ? 650 :
+				Math.min(this.diagramContainer.parentNode.clientHeight, 650);
+			var simpleTheme = Editor.currentTheme == 'simple' ||
+				Editor.currentTheme == 'sketch';
+			
+			this.sidebarWindow = new WrapperWindow(this, mxResources.get('shapes'),
+				(simpleTheme && urlParams['embedInline'] != '1') ? 66 : 10,
+				(simpleTheme && urlParams['embedInline'] != '1') ?
+					Math.max(30, (this.diagramContainer.parentNode.clientHeight - h) / 2) : 56,
+				w - 6, h - 6, mxUtils.bind(this, function(container)
+			{
+				this.createShapesPanel(container);
+			}));
+			
+			this.sidebarWindow.window.addListener(mxEvent.SHOW, mxUtils.bind(this, function()
+			{
+				this.sidebarWindow.window.fit();
+			}));
+
+			this.sidebarWindow.window.minimumSize = new mxRectangle(0, 0, 90, 90);
+			this.sidebarWindow.window.setVisible(false);
 		}
 	};
 
@@ -10603,14 +12109,14 @@
 			{
 				this.spinner.stop();
 				this.doSetSketchMode(value);
-				 
+				
 				// Persist setting
 				if (urlParams['rough'] == null)
 				{
 					mxSettings.settings.sketchMode = value;
 					mxSettings.save();
 				}
-					 
+				
 				this.fireEvent(new mxEventObject('sketchModeChanged'));
 			}), 0);
 		}
@@ -10637,10 +12143,12 @@
 			'html body .mxCellEditor { color: #f0f0f0; }'
 			:
 			// Non-dark mode styles
+			'html > body > div > .geToolbarContainer { box-shadow:0px 2px 10px #e0e0e0; }' +
 			'html body div.geToolbarContainer a.geInverted { filter: invert(1); }' +
 			'html body.geEditor .geTabContainer div { border-color: #e5e5e5 !important; }'
 			) +
 			// End of custom styles
+			'html body .geStatus > *:not([class]) { vertical-align:top; }' +
 			'html > body > div > a.geItem { background-color: #ffffff; color: #707070; border-top: 1px solid lightgray; border-left: 1px solid lightgray; }' +
 			'html body .geMenubarContainer { border-bottom:1px solid lightgray;background-color:#ffffff; }' +
 			'html body .mxWindow button.geBtn { font-size:12px !important; margin-left: 0; }' +
@@ -10655,11 +12163,9 @@
 			'html body a.geMenuItem[disabled]:active { opacity: 0.2; }' +
 			'html body div.geActivePage { opacity: 0.7; }' +
 			'html body a.geMenuItem:active { opacity: 0.2; }' +
-			'html body .geToolbarButton { opacity: 0.3; }' +
 			'html body .geToolbarButton:active { opacity: 0.15; }' +
 			'html body .geStatus:active { opacity: 0.5; }' +
 			'.geStatus > div { box-sizing: border-box; max-width: 100%; text-overflow: ellipsis; }' +
-			'html body .geMenubarContainer .geStatus { margin-top: 0px !important; }' +
 			'html table.mxPopupMenu tr.mxPopupMenuItemHover:active { opacity: 0.7; }' +
 			'html body .geDialog input, html body .geToolbarContainer input, html body .mxWindow input {padding: 2px; display: inline-block; }' +
 			'html body .mxWindow input[type="checkbox"] {padding: 0px; }' +
@@ -10681,12 +12187,13 @@
 			'html body .mxWindow td.mxWindowPane input, html body .mxWindow td.mxWindowPane select, html body .mxWindow td.mxWindowPane textarea, html body .mxWindow td.mxWindowPane radio { padding: 0px; box-sizing: border-box; }' +
 			'.geDialog, .mxWindow td.mxWindowPane *, div.geSprite, td.mxWindowTitle, .geDiagramContainer { box-sizing:content-box; }' +
 			'.mxWindow div button.geStyleButton { box-sizing: border-box; }' +
+			'.mxWindowPane > .geSidebarContainer { border: none !important; }' +
 			'table.mxWindow td.mxWindowPane button.geColorBtn { padding:0px; box-sizing: border-box; }' +
 			'td.mxWindowPane .geSidebarContainer button { padding:2px; box-sizing: border-box; }' +
 			'html body .geMenuItem { font-size:14px; text-decoration: none; font-weight: normal; padding: 6px 10px 6px 10px; border: none; border-radius: 5px; color: #353535; box-shadow: inset 0 0 0 1px rgba(0,0,0,.11), inset 0 -1px 0 0 rgba(0,0,0,.08), 0 1px 2px 0 rgba(0,0,0,.04); ' + (EditorUi.isElectronApp? 'app-region: no-drag; ' : '') + '}' +
 			// Styling for Minimal
 			'.geTabContainer { border-bottom:1px solid lightgray; border-top:1px solid lightgray; background: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + ' !important; }' +
-			'.geToolbarContainer { background: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + '; }' +
+			'html body .geToolbarContainer { background: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + '; }' +
 			'div.geSidebarContainer { background-color: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fff') + '; }' +
 			'div.geSidebarContainer .geTitle { background-color: ' + (Editor.isDarkMode() ? Editor.darkColor : '#fdfdfd') + '; }' +
 			'div.mxWindow td.mxWindowPane button { background-image: none; float: none; }' +
@@ -10711,6 +12218,54 @@
 			((mxClient.IS_IOS) ? 'html input[type=checkbox], html input[type=radio] { height:12px; }' : '') +
 			((urlParams['sketch'] == '1') ? 'a.geStatus > div { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }' : '');
 	};
+	
+	/**
+	 * Returns the current state of the dark mode.
+	 */
+	EditorUi.prototype.isAutoDarkMode = function()
+	{
+		return urlParams['dark'] == 'auto' || (this.isSettingsEnabled() &&
+			mxSettings.settings.darkMode == 'auto');
+	};
+	
+	/**
+	 * Sets dark mode and persists the setting.
+	 */
+	EditorUi.prototype.setAndPersistDarkMode = function(value)
+	{
+		var actual = value;
+
+		if (value == 'auto')
+		{
+			actual = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+		}
+
+		this.setDarkMode(actual);
+		mxSettings.settings.darkMode = value;
+		mxSettings.save();
+		
+		var theme = mxSettings.getUi();
+		
+		if (value != 'auto' && theme != 'atlas' && theme != 'min' &&
+			theme != 'sketch' && theme != 'simple')
+		{
+			this.setCurrentTheme((!Editor.isDarkMode()) ? 'kennedy' : 'dark', true);
+		}
+	};
+
+	/**
+	 * Sets dark mode and persists the setting.
+	 */
+	EditorUi.prototype.setAndPersistLanguage = function(value)
+	{
+		mxSettings.setLanguage(value);
+		mxSettings.save();
+		
+		// Shows dialog in new language
+		mxClient.language = value;
+		mxResources.loadDefaultBundle = false;
+		mxResources.add(RESOURCE_BASE);
+	};
 
 	/**
 	 * Dynamic change of dark mode.
@@ -10718,14 +12273,6 @@
 	EditorUi.prototype.setDarkMode = function(value)
 	{
 		this.doSetDarkMode(value);
-		
-		// Persist setting
-		if (urlParams['dark'] == null)
-		{
-			mxSettings.settings.darkMode = value;
-			mxSettings.save();
-		}
-
 		this.fireEvent(new mxEventObject('darkModeChanged'));
 	};
 	
@@ -10808,7 +12355,11 @@
 				Editor.darkCheckmarkImage : Editor.lightCheckmarkImage;
 			
 			// Updates CSS
-			if (Editor.styleElt != null)
+			if (this.sketchStyleElt != null)
+			{
+				this.sketchStyleElt.innerHTML = Editor.createMinimalCss();
+			}
+			else if (Editor.styleElt != null)
 			{
 				Editor.styleElt.innerHTML = Editor.createMinimalCss();
 			}
@@ -10868,28 +12419,163 @@
 	};
     
 	/**
+	 * Saves scroll position
+	 */
+	EditorUi.prototype.saveScrollState = function()
+	{
+		var t = this.editor.graph.view.translate;
+		var off = mxUtils.getOffset(this.diagramContainer);
+		var x = this.diagramContainer.scrollLeft - off.x;
+		var y = this.diagramContainer.scrollTop - off.y;
+
+		if (this.embedViewport != null)
+		{
+			if (!Editor.inlineFullscreen)
+			{
+				x += this.embedViewport.x;
+				y += this.embedViewport.y;
+			}
+			else
+			{
+				x -= this.embedViewport.x;
+				y -= this.embedViewport.y;
+			}
+		}
+
+		return {x: x, y: y, tx: t.x, ty: t.y};
+	};
+   
+	/**
+	 * Dynamic change of dark mode.
+	 */
+	EditorUi.prototype.restoreScrollState = function(state)
+	{
+		var s = this.editor.graph.view.scale;
+		var t = this.editor.graph.view.translate;
+		var off = mxUtils.getOffset(this.diagramContainer);
+		
+		this.diagramContainer.scrollLeft = state.x + off.x + (t.x - state.tx) * s;
+		this.diagramContainer.scrollTop = state.y + off.y + (t.y - state.ty) * s;
+	};
+
+	/**
 	 * Dynamic change of dark mode.
 	 */
 	EditorUi.prototype.setInlineFullscreen = function(value)
 	{
 		if (Editor.inlineFullscreen != value)
 		{
+			var scrollState = this.saveScrollState();
 			Editor.inlineFullscreen = value;
 			this.fireEvent(new mxEventObject('inlineFullscreenChanged'));
-
+			this.fitWindows();
+			this.editor.graph.refresh();
+			this.restoreScrollState(scrollState);
+			
 			var parent = window.opener || window.parent;
 			parent.postMessage(JSON.stringify({
 				event: 'resize',
 				fullscreen: Editor.inlineFullscreen,
 				rect: this.diagramContainer.getBoundingClientRect()
 			}), '*');
-
-			window.setTimeout(mxUtils.bind(this, function()
-			{
-				this.refresh();
-				this.actions.get('resetView').funct();
-			}), 10);
 		}
+	};
+
+	/**
+	 * Invokes to update the UI after a size change in inline embed mode.
+	 */
+	EditorUi.prototype.inlineSizeChanged = function()
+	{
+		var footer = this.sketchFooterMenuElt;
+		var toolbar = this.sketchMainMenuElt;
+		var picker = this.sketchPickerMenuElt;
+		var graph = this.editor.graph;
+		
+		if (Editor.inlineFullscreen)
+		{
+			toolbar.style.left = '10px';
+			toolbar.style.top = '10px';
+			
+			picker.style.left = '10px';
+			picker.style.top = '60px';
+
+			footer.style.top = '10px';
+			footer.style.right = '12px';
+			footer.style.left = '';
+
+			if (this.diagramContainer.getAttribute('data-bounds') == null)
+			{
+				this.diagramContainer.setAttribute('data-bounds', this.diagramContainer.style.top + ' ' +
+					this.diagramContainer.style.left + ' ' + this.diagramContainer.style.width + ' ' +
+					this.diagramContainer.style.height);
+
+				this.diagramContainer.style.top = '0px';
+				this.diagramContainer.style.left = '0px';
+				this.diagramContainer.style.bottom = '0px';
+				this.diagramContainer.style.right = '0px';
+				this.diagramContainer.style.width = '';
+				this.diagramContainer.style.height = '';
+			}
+		}
+		else
+		{
+			var bounds = this.diagramContainer.getAttribute('data-bounds');
+
+			if (bounds != null) 
+			{
+				this.diagramContainer.removeAttribute('data-bounds');
+				var gb = graph.getGraphBounds();
+				var tokens = bounds.split(' ');
+
+				this.diagramContainer.style.top = tokens[0];
+				this.diagramContainer.style.left = tokens[1];
+				this.diagramContainer.style.width = (gb.width + 50) + 'px';
+				this.diagramContainer.style.height = (gb.height + 46) + 'px';
+				this.diagramContainer.style.bottom = '';
+				this.diagramContainer.style.right = '';
+
+				var parent = window.opener || window.parent;
+				parent.postMessage(JSON.stringify({
+					event: 'resize',
+					rect: this.diagramContainer.getBoundingClientRect()
+				}), '*');
+			}
+			
+			toolbar.style.left = this.diagramContainer.offsetLeft + 'px';
+			toolbar.style.top = (this.diagramContainer.offsetTop -
+				toolbar.offsetHeight - 4) + 'px';
+			
+			picker.style.display = '';
+			picker.style.left = (this.diagramContainer.offsetLeft -
+				picker.offsetWidth - 4) + 'px';
+			picker.style.top = this.diagramContainer.offsetTop + 'px';
+
+			footer.style.left = (this.diagramContainer.offsetLeft +
+				this.diagramContainer.offsetWidth -
+				footer.offsetWidth) + 'px';
+			footer.style.top = toolbar.style.top;
+			footer.style.right = '';
+
+			this.bottomResizer.style.left = (this.diagramContainer.offsetLeft +
+				(this.diagramContainer.offsetWidth -
+				this.bottomResizer.offsetWidth) / 2) + 'px';
+			this.bottomResizer.style.top = (this.diagramContainer.offsetTop +
+				this.diagramContainer.offsetHeight -
+				this.bottomResizer.offsetHeight / 2 - 1) + 'px';
+
+			this.rightResizer.style.left = (this.diagramContainer.offsetLeft +
+				this.diagramContainer.offsetWidth -
+				this.rightResizer.offsetWidth / 2 - 1) + 'px';
+			this.rightResizer.style.top = (this.diagramContainer.offsetTop +
+				(this.diagramContainer.offsetHeight -
+				this.bottomResizer.offsetHeight) / 2) + 'px';
+			this.diagramContainer.style.background = 'transparent';
+		}
+
+		this.bottomResizer.style.visibility = (Editor.inlineFullscreen) ? 'hidden' : '';
+		this.rightResizer.style.visibility = this.bottomResizer.style.visibility;
+		toolbar.style.visibility = '';
+		footer.style.visibility = '';
 	};
 
 	/**
@@ -10899,51 +12585,87 @@
 	{
 		if (Editor.sketchMode != value)
 		{
-			var graph = this.editor.graph;
 			Editor.sketchMode = value;
+			this.updateDefaultStyles();
+		}
+	};
 
-			function setStyle(style, key, value)
-			{
-				if (style[key] == null)
-				{
-					style[key] = value;
-				}
-			};
+	/**
+	 * Overrides image dialog to add image search and Google+.
+	 */
+	EditorUi.prototype.updateDefaultStyles = function()
+	{
+		function setStyle(style, key, value)
+		{
+			style[key] = value;
+		};
+		
+		var graph = this.editor.graph;
+		graph.defaultVertexStyle = mxUtils.clone(Graph.prototype.defaultVertexStyle);
+		graph.defaultEdgeStyle = mxUtils.clone(Graph.prototype.defaultEdgeStyle);
 
-			this.menus.defaultFontSize = (value) ? 20 : 16;
-			graph.defaultVertexStyle = mxUtils.clone(Graph.prototype.defaultVertexStyle);
-			setStyle(graph.defaultVertexStyle, 'fontSize', this.menus.defaultFontSize);
+		if (Editor.sketchMode)
+		{
+			this.menus.defaultFontSize = 20;
+		}
+		else if (Editor.currentTheme == 'simple')
+		{
+			this.menus.defaultFontSize = 16;
+		}
+		else
+		{
+			this.menus.defaultFontSize = Menus.prototype.defaultFontSize;
+		}
 
-			graph.defaultEdgeStyle = mxUtils.clone(Graph.prototype.defaultEdgeStyle);
-			setStyle(graph.defaultEdgeStyle, 'fontSize', this.menus.defaultFontSize - 4);
+		if (this.menus.defaultFontSize == Menus.prototype.defaultFontSize)
+		{
+			setStyle(graph.defaultEdgeStyle, 'fontSize', null);
+			setStyle(graph.defaultVertexStyle, 'fontSize', null);
+		}
+		else
+		{
+			setStyle(graph.defaultVertexStyle, 'fontSize', this.menus.defaultFontSize);	
+			setStyle(graph.defaultEdgeStyle, 'fontSize', parseInt(this.menus.defaultFontSize) - 4);
+		}
+
+		if (Editor.currentTheme == 'simple' || Editor.currentTheme == 'sketch')
+		{
 			setStyle(graph.defaultEdgeStyle, 'edgeStyle', 'none');
-			setStyle(graph.defaultEdgeStyle, 'rounded', '0');
 			setStyle(graph.defaultEdgeStyle, 'curved', '1');
+			setStyle(graph.defaultEdgeStyle, 'rounded', '0');
 			setStyle(graph.defaultEdgeStyle, 'jettySize', 'auto');
 			setStyle(graph.defaultEdgeStyle, 'orthogonalLoop', '1');
 			setStyle(graph.defaultEdgeStyle, 'endArrow', 'open');
 			setStyle(graph.defaultEdgeStyle, 'endSize', '14');
 			setStyle(graph.defaultEdgeStyle, 'startSize', '14');
-			
-			if (value)
-			{
-				setStyle(graph.defaultVertexStyle, 'fontFamily', Editor.sketchFontFamily);
-				setStyle(graph.defaultVertexStyle, 'fontSource', Editor.sketchFontSource);
-				setStyle(graph.defaultVertexStyle, 'hachureGap', '4');
-				setStyle(graph.defaultVertexStyle, 'sketch', '1');
-
-				setStyle(graph.defaultEdgeStyle, 'fontFamily', Editor.sketchFontFamily);
-				setStyle(graph.defaultEdgeStyle, 'fontSource', Editor.sketchFontSource);
-				setStyle(graph.defaultEdgeStyle, 'sketch', '1');
-				setStyle(graph.defaultEdgeStyle, 'hachureGap', '4');
-				setStyle(graph.defaultEdgeStyle, 'sourcePerimeterSpacing', '8');
-				setStyle(graph.defaultEdgeStyle, 'targetPerimeterSpacing', '8');
-			}
-
-			graph.currentVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
-			graph.currentEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
-			this.clearDefaultStyle();
+			setStyle(graph.defaultEdgeStyle, 'sourcePerimeterSpacing', '8');
+			setStyle(graph.defaultEdgeStyle, 'targetPerimeterSpacing', '8');
 		}
+
+		if (Editor.sketchMode)
+		{
+			this.menus.defaultFonts = Menus.prototype.defaultFonts.concat(Editor.sketchFonts);
+			
+			setStyle(graph.defaultVertexStyle, 'fontFamily', Editor.sketchFontFamily);
+			setStyle(graph.defaultVertexStyle, 'fontSource', Editor.sketchFontSource);
+			setStyle(graph.defaultVertexStyle, 'hachureGap', '4');
+			setStyle(graph.defaultVertexStyle, 'sketch', '1');
+			setStyle(graph.defaultVertexStyle, 'jiggle', '2');
+
+			setStyle(graph.defaultEdgeStyle, 'fontFamily', Editor.sketchFontFamily);
+			setStyle(graph.defaultEdgeStyle, 'fontSource', Editor.sketchFontSource);
+			setStyle(graph.defaultEdgeStyle, 'sketch', '1');
+			setStyle(graph.defaultEdgeStyle, 'jiggle', '2');
+			setStyle(graph.defaultEdgeStyle, 'hachureGap', '4');
+		}
+		else
+		{
+			this.menus.defaultFonts = Menus.prototype.defaultFonts;
+		}
+
+		graph.currentVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
+		graph.currentEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
+		this.clearDefaultStyle();
 	};
 
 	/**
@@ -11693,6 +13415,11 @@
 													{
 														this.openLocalFile(req.getText(), null, true);
 													}
+													else
+													{
+														this.showError(mxResources.get('error'), req.getStatus() == 413? mxResources.get('diagramTooLarge') :
+																			mxResources.get('unknownError'));
+													}
 												}));
 											}
 										}
@@ -12168,20 +13895,26 @@
 	{
 		this.diagramContainer.style.visibility = (enabled) ? '' : 'hidden';
 		this.formatContainer.style.visibility = (enabled) ? '' : 'hidden';
-		this.sidebarFooterContainer.style.display = (enabled) ? '' : 'none';
 		this.sidebarContainer.style.display = (enabled) ? '' : 'none';
-		this.hsplit.style.display = (enabled) ? '' : 'none';
+		this.hsplit.style.display = (enabled && Editor.currentTheme != 'simple' &&
+			Editor.currentTheme != 'sketch' && Editor.currentTheme != 'min')
+			? '' : 'none';
 		this.editor.graph.setEnabled(enabled);
-		
-		if (this.ruler != null)
+
+		if (this.sidebarFooterContainer != null)
 		{
-			this.ruler.hRuler.container.style.visibility = (enabled) ? '' : 'hidden';
-			this.ruler.vRuler.container.style.visibility = (enabled) ? '' : 'hidden';
+			this.sidebarFooterContainer.style.display = (enabled) ? '' : 'none';
 		}
 		
 		if (this.tabContainer != null)
 		{
 			this.tabContainer.style.visibility = (enabled) ? '' : 'hidden';	
+		}
+		
+		if (this.ruler != null)
+		{
+			this.ruler.hRuler.container.style.visibility = (enabled) ? '' : 'hidden';
+			this.ruler.vRuler.container.style.visibility = (enabled) ? '' : 'hidden';
 		}
 		
 		if (!enabled)
@@ -13100,15 +14833,9 @@
 
 						if (data.dark != null)
 						{
-							var initial = Editor.darkMode; 
-							this.doSetDarkMode(data.dark);
-
-							if (initial != Editor.darkMode)
-							{
-								this.fireEvent(new mxEventObject('darkModeChanged'));
-							}
+							this.setDarkMode(data.dark);
 						}
-
+						
 						if (data.border != null)
 						{
 							this.embedExportBorder = data.border;
@@ -13137,7 +14864,7 @@
 							this.diagramContainer.style.width = data.rect.width + 'px';
 							this.diagramContainer.style.bottom = '';
 							this.diagramContainer.style.right = '';
-
+							
 							afterLoad = mxUtils.bind(this, function()
 							{
 								var graph = this.editor.graph;
@@ -13344,10 +15071,18 @@
 					// Asynchronous parsing via server
 					this.parseFileData(data, mxUtils.bind(this, function(xhr)
 					{
-						if (xhr.readyState == 4 && xhr.status >= 200 && xhr.status <= 299 &&
-							xhr.responseText.substring(0, 13) == '<mxGraphModel')
+						if (xhr.readyState == 4)
 						{
-							doLoad(xhr.responseText, evt);
+							if (xhr.status >= 200 && xhr.status <= 299 &&
+								xhr.responseText.substring(0, 13) == '<mxGraphModel')
+							{
+								doLoad(xhr.responseText, evt);
+							}
+							else
+							{
+								this.handleError({message: xhr.status == 413? mxResources.get('diagramTooLarge') : 
+										mxResources.get('unknownError')});
+							}
 						}
 					}), '');
 				}
@@ -13402,90 +15137,110 @@
 	/**
 	 * Adds the buttons for embedded mode.
 	 */
+	EditorUi.prototype.createEmbedButton = function(title, fn, shortcut, primary)
+	{
+		var modern = (Editor.currentTheme == 'simple' ||
+			Editor.currentTheme == 'min');
+		var btn = document.createElement((modern) ? 'a' : 'button');
+		btn.setAttribute('title', title + ((shortcut != null) ?
+			' (' + shortcut + ')' : ''));
+		btn.style.marginLeft = '6px';
+		mxUtils.write(btn, title);
+
+		if (modern)
+		{
+			btn.className = 'geMenuItem' + ((primary) ?
+				' gePrimaryBtn' : '');
+			btn.style.marginLeft = '8px';
+			btn.style.padding = '6px';
+		}
+		else
+		{
+			btn.className = 'geBigButton' + ((!primary) ?
+				' geBigStandardButton' : '');
+		}
+
+		mxEvent.addListener(btn, 'click', fn);
+
+		return btn;
+	};
+
+	/**
+	 * Adds the buttons for embedded mode.
+	 */
 	EditorUi.prototype.addEmbedButtons = function()
 	{
-		if (this.menubar != null && urlParams['embedInline'] != '1')
+		var div = document.createElement('div');
+		div.style.display = 'inline-block';
+
+		var button = document.createElement('button');
+		button.className = 'geBigButton';
+
+		if (urlParams['noSaveBtn'] == '1')
 		{
-			var div = document.createElement('div');
-			div.style.display = 'inline-block';
+			if (urlParams['saveAndExit'] != '0')
+			{
+				div.appendChild(this.createEmbedButton(urlParams['publishClose'] == '1' ?
+					mxResources.get('publish') : mxResources.get('saveAndExit'),
+					this.actions.get('saveAndExit').funct, null, true));
+			}
+		}
+		else
+		{
+			div.appendChild(this.createEmbedButton(mxResources.get('save'), mxUtils.bind(this, function()
+			{
+				this.actions.get('save').funct(false);
+			}), Editor.ctrlKey + '+S', true));
+			
+			if (urlParams['saveAndExit'] == '1')
+			{
+				div.appendChild(this.createEmbedButton(mxResources.get('saveAndExit'),
+					this.actions.get('saveAndExit').funct));
+			}
+		}
+
+		if (urlParams['noExitBtn'] != '1')
+		{
+			div.appendChild(this.createEmbedButton(urlParams['publishClose'] == '1' ?
+				mxResources.get('close') : mxResources.get('exit'),
+				this.actions.get('exit').funct));
+		}
+
+		if (Editor.currentTheme == 'simple' ||
+			Editor.currentTheme == 'sketch' ||
+			Editor.currentTheme == 'min')
+		{
+			if (this.buttonContainer != null)
+			{
+				div.style.position = 'relative';
+
+				if (Editor.currentTheme != 'simple')
+				{
+					div.style.marginRight = '4px';
+
+					if (urlParams['sketch'] != '1')
+					{
+						div.style.marginTop = '6px';
+						this.buttonContainer.style.top = '6px';
+					}
+					else
+					{
+						this.buttonContainer.style.top = '0px';
+					}
+				}
+	
+				this.buttonContainer.appendChild(div);
+				this.editor.fireEvent(new mxEventObject('statusChanged'));
+			}
+		}
+		else if (this.menubar != null)
+		{
 			div.style.position = 'absolute';
-			div.style.paddingTop = '2px';
-			div.style.paddingLeft = '8px';
-			div.style.paddingBottom = '2px';
+			div.style.padding = '2px';
+			div.style.right = '62px';
 
-			var button = document.createElement('button');
-			button.className = 'geBigButton';
-			var lastBtn = button;
-
-			if (urlParams['noSaveBtn'] == '1')
-			{
-				if (urlParams['saveAndExit'] != '0')
-				{
-					var saveAndExitTitle = urlParams['publishClose'] == '1' ? mxResources.get('publish') : mxResources.get('saveAndExit');
-					mxUtils.write(button, saveAndExitTitle);
-					button.setAttribute('title', saveAndExitTitle);
-					
-					mxEvent.addListener(button, 'click', mxUtils.bind(this, function()
-					{
-						this.actions.get('saveAndExit').funct();
-					}));
-					
-					div.appendChild(button);
-				}
-			}
-			else
-			{
-				mxUtils.write(button, mxResources.get('save'));
-				button.setAttribute('title', mxResources.get('save') + ' (' + Editor.ctrlKey + '+S)');
-				
-				mxEvent.addListener(button, 'click', mxUtils.bind(this, function()
-				{
-					this.actions.get('save').funct();
-				}));
-				
-				div.appendChild(button);
-				
-				if (urlParams['saveAndExit'] == '1')
-				{
-					button = document.createElement('a');
-					mxUtils.write(button, mxResources.get('saveAndExit'));
-					button.setAttribute('title', mxResources.get('saveAndExit'));
-					button.className = 'geBigButton geBigStandardButton';
-					button.style.marginLeft = '6px';
-					
-					mxEvent.addListener(button, 'click', mxUtils.bind(this, function()
-					{
-						this.actions.get('saveAndExit').funct();
-					}));
-					
-					div.appendChild(button);
-					lastBtn = button;
-				}
-			}
-
-			if (urlParams['noExitBtn'] != '1')
-			{
-				button = document.createElement('a');
-				var exitTitle = urlParams['publishClose'] == '1' ? mxResources.get('close') : mxResources.get('exit');
-				mxUtils.write(button, exitTitle);
-				button.setAttribute('title', exitTitle);
-				button.className = 'geBigButton geBigStandardButton';
-				button.style.marginLeft = '6px';
-				
-				mxEvent.addListener(button, 'click', mxUtils.bind(this, function()
-				{
-					this.actions.get('exit').funct();
-				}));
-				
-				div.appendChild(button);
-				lastBtn = button;
-			}
-			
-			lastBtn.style.marginRight = '20px';
-			
 			this.toolbar.container.appendChild(div);
 			this.toolbar.staticElements.push(div);
-			div.style.right = (uiTheme == 'atlas' || urlParams['atlas'] == '1') ? '62px' : '72px';
 		}
 	};
 
@@ -13604,7 +15359,7 @@
         		var padding = 0;
 
 				// Delayed after optional layout
-    			var afterInsert = function()
+    			var afterInsert = mxUtils.bind(this, function()
     			{
     				if (done != null)
     				{
@@ -13615,7 +15370,15 @@
     					graph.setSelectionCells(select);
     					graph.scrollCellToVisible(graph.getSelectionCell());
     				}
-    			};
+					
+					if (this.chromelessResize != null)
+					{
+						window.setTimeout(mxUtils.bind(this, function()
+						{
+							this.chromelessResize(true);
+						}), 0);
+					}
+    			});
     				
     			// Computes unscaled, untranslated graph bounds
     			var pt = graph.getFreeInsertPoint();
@@ -14512,7 +16275,9 @@
 		this.actions.get('image').setEnabled(active);
 		this.actions.get('zoomIn').setEnabled(active);
 		this.actions.get('zoomOut').setEnabled(active);
+		this.actions.get('smartFit').setEnabled(active);
 		this.actions.get('resetView').setEnabled(active);
+		this.actions.get('toggleDarkMode').setEnabled(Editor.currentTheme != 'atlas');
 		
 		// Updates undo history states
 		this.actions.get('undo').setEnabled(this.canUndo() && editable);
@@ -14644,7 +16409,7 @@
 		var findReplace = this.actions.get('findReplace');
 		findReplace.setEnabled(this.diagramContainer.style.visibility != 'hidden');
 		findReplace.label = mxResources.get('find') + ((graph.isEnabled()) ?
-			'/' + mxResources.get('replace') : '') + '...';
+			'/' + mxResources.get('replace') : '');
 		
 		var state = graph.view.getState(graph.getSelectionCell());
 		this.actions.get('editShape').setEnabled(active && state != null &&

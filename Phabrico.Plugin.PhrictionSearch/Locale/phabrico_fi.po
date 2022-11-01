@@ -1,0 +1,11 @@
+# Finnish translations
+
+# General
+msgid "PluginName.PhrictionSearch"
+msgstr "Hakuteksti"
+
+msgid "Enter search text"
+msgstr "Kirjoita hakuteksti"
+
+msgid "No documents were found"
+msgstr "Asiakirjoja ei löytynyt"

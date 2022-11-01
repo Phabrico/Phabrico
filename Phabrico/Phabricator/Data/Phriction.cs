@@ -70,6 +70,7 @@ namespace Phabrico.Phabricator.Data
         /// Title of the document
         /// </summary>
         public string Name { get; set; }
+
         /// <summary>
         /// URL path to the document
         /// </summary>

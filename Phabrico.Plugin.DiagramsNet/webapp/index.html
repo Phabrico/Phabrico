@@ -177,10 +177,6 @@
         box-shadow: inset 0 0 0 1px rgba(0,0,0,.11), inset 0 -1px 0 0 rgba(0,0,0,.08), 0 1px 2px 0 rgba(0,0,0,.04);
     }
 
-    .geToolbarContainer {
-        background: #fff !important;
-    }
-
     div.geSidebarContainer {
         background-color: #ffffff;
     }
@@ -200,11 +196,6 @@
         font-size: 13px !important;
         text-align: center !important;
         border-bottom: 1px solid lightgray;
-    }
-
-    div.mxWindow, div.mxWindowTitle {
-        background-image: none !important;
-        background-color: #fff !important;
     }
 
     div.mxWindow {
@@ -259,6 +250,11 @@
         font-size: 14px;
         padding-top: 4px;
         padding-bottom: 4px;
+    }
+
+    html body[data-theme="dark"] {
+        background: #2a2a2a !important;
+        background-color: #2a2a2a !important;
     }
 
     html body[data-theme="dark"] table.mxPopupMenu td.mxPopupMenuItem {
@@ -610,7 +606,6 @@
 			}
 		};
     </script>
-    <link rel="stylesheet" type="text/css" href="js/croppie/croppie.min.css">
     <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
     <link rel="manifest" href="images/manifest.json">
     <!-- Workaround for binary XHR in IE 9/10, see App.loadUrl -->

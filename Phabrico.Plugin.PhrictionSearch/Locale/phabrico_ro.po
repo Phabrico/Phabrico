@@ -1,0 +1,11 @@
+# Romanian translations
+
+# General
+msgid "PluginName.PhrictionSearch"
+msgstr "Text de c?utare"
+
+msgid "Enter search text"
+msgstr "Introduce?i textul de c?utare"
+
+msgid "No documents were found"
+msgstr "Nu au fost g?site documente"

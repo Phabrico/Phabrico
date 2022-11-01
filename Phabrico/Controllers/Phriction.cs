@@ -181,7 +181,7 @@ namespace Phabrico.Controllers
                 foreach (Phabricator.Data.Phriction stagedPhrictionDocument in stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale))
                 {
                     if (stagedPhrictionDocument.Path != null &&
-                        stagedPhrictionDocument.Path.Equals(HttpUtility.UrlDecode(url).Replace(" ", "_"), StringComparison.OrdinalIgnoreCase))
+                        stagedPhrictionDocument.Path.Equals(url, StringComparison.OrdinalIgnoreCase))
                     {
                         phrictionDocument = stagedPhrictionDocument;
                         documentIsStaged = true;
@@ -220,7 +220,11 @@ namespace Phabrico.Controllers
                                 {
                                     // document was created by means of a link: title is already known
                                     phrictionDocument.Name = parameters[parameters.Length - 2];
-                                    phrictionDocument.Path = string.Join("/", parameters.Take(parameters.Length - 2)) + "/";
+                                    phrictionDocument.Path = string.Join( "/",
+                                                                          parameters.Take(parameters.Length - 2)
+                                                                                    .Select(pathPart => HttpUtility.UrlDecode(pathPart))
+                                                                        )
+                                                           + "/";
                                 }
                             }
                             else
@@ -238,7 +242,7 @@ namespace Phabrico.Controllers
                             else
                             {
                                 phrictionDocument = new Phabricator.Data.Phriction();
-                                phrictionDocument.Path = url;
+                                phrictionDocument.Path = HttpUtility.UrlDecode(url);
                                 if (parameterActions != null && parameterActions.StartsWith("title="))
                                 {
                                     phrictionDocument.Path += "?" + parameterActions;
@@ -626,42 +630,45 @@ namespace Phabrico.Controllers
                     viewPage.SetText("PROJECTS-ASSIGNED", "no");
                 }
 
-
-                foreach (Plugin.PluginBase plugin in Server.Plugins)
+                if (phrictionDocument.Token != null)
                 {
-                    Plugin.PluginTypeAttribute pluginType = plugin.GetType()
-                                                                  .GetCustomAttributes(typeof(Plugin.PluginTypeAttribute), true)
-                                                                  .OfType<Plugin.PluginTypeAttribute>()
-                                                                  .FirstOrDefault(pluginTypeAttribute => pluginTypeAttribute.Usage == Plugin.PluginTypeAttribute.UsageType.PhrictionDocument);
-                    if (pluginType == null) continue;
-
-                    if (plugin.IsVisibleInApplication(database, browser, phrictionDocument.Token))
+                    foreach (Plugin.PluginBase plugin in Server.Plugins)
                     {
-                        HtmlPartialViewPage phrictionPluginData = viewPage.GetPartialView("PHRICTION-PLUGINS");
-                        if (phrictionPluginData == null) break;  // we're in edit-mode, no need for plugins
+                        Plugin.PluginTypeAttribute pluginType = plugin.GetType()
+                                                                      .GetCustomAttributes(typeof(Plugin.PluginTypeAttribute), true)
+                                                                      .OfType<Plugin.PluginTypeAttribute>()
+                                                                      .FirstOrDefault(pluginTypeAttribute => pluginTypeAttribute.Usage == Plugin.PluginTypeAttribute.UsageType.PhrictionDocument);
+                        if (pluginType == null) continue;
 
-                        phrictionPluginData.SetText("PHRICTION-PLUGIN-URL", plugin.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        phrictionPluginData.SetText("PHRICTION-PLUGIN-ICON", plugin.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                        phrictionPluginData.SetText("PHRICTION-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
-                    }
-
-                    foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
-                                                                                            .Where(ext => ext.IsVisibleInApplication(database, browser, phrictionDocument.Token))
-                            )
-                    {
-                        if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
+                        if (plugin.IsVisibleInApplication(database, browser, phrictionDocument.Token))
                         {
-                            pluginExtension.Database = new Storage.Database(database.EncryptionKey);
-                            pluginExtension.Initialize();
-                            pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                            HtmlPartialViewPage phrictionPluginData = viewPage.GetPartialView("PHRICTION-PLUGINS");
+                            if (phrictionPluginData == null) break;  // we're in edit-mode, no need for plugins
+
+                            phrictionPluginData.SetText("PHRICTION-PLUGIN-URL", plugin.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            phrictionPluginData.SetText("PHRICTION-PLUGIN-ICON", plugin.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            phrictionPluginData.SetText("PHRICTION-PLUGIN-NAME", plugin.GetName(browser.Session.Locale));
+                            phrictionPluginData.SetText("PHRICTION-PLUGIN-KEYBOARD-SHORTCUT", pluginType.KeyboardShortcut.ToUpper(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         }
 
-                        HtmlPartialViewPage htmlPluginNavigatorMenuItem = viewPage.GetPartialView("PHRICTION-PLUGINS");
-                        if (htmlPluginNavigatorMenuItem != null)
+                        foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
+                                                                                                .Where(ext => ext.IsVisibleInApplication(database, browser, phrictionDocument.Token))
+                                )
                         {
-                            htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
+                            {
+                                pluginExtension.Database = new Storage.Database(database.EncryptionKey);
+                                pluginExtension.Initialize();
+                                pluginExtension.State = Plugin.PluginBase.PluginState.Initialized;
+                            }
+
+                            HtmlPartialViewPage htmlPluginNavigatorMenuItem = viewPage.GetPartialView("PHRICTION-PLUGINS");
+                            if (htmlPluginNavigatorMenuItem != null)
+                            {
+                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-URL", pluginExtension.URL, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-ICON", pluginExtension.Icon, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                htmlPluginNavigatorMenuItem.SetText("PHRICTION-PLUGIN-NAME", pluginExtension.GetName(browser.Session.Locale), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                            }
                         }
                     }
                 }
@@ -1017,6 +1024,12 @@ namespace Phabrico.Controllers
                                     newPhrictionDocument.Path = FormatPhabricatorSlug(parentPhrictionDocument.Path, newPhrictionDocument.Path);
                                 }
 
+                                // remove Url encoding
+                                newPhrictionDocument.Path = HttpUtility.UrlDecode(newPhrictionDocument.Path);
+
+                                // re-encode Url again
+                                newPhrictionDocument.Path = Parsers.Remarkup.Rules.RemarkupRule.UrlEncode(newPhrictionDocument.Path);
+
                                 // verify parent document and build them if they are not existing
                                 // this can happen when a document is created by means of hyperlink
                                 List<Phabricator.Data.Phriction> inexistantParentDocuments = new List<Phabricator.Data.Phriction>();
@@ -1177,21 +1190,24 @@ namespace Phabrico.Controllers
             {
                 string urlAlias;
                 string url = browser.Request.RawUrl.Split('?')[0].TrimEnd('/');
+                
+                url = RegexSafe.Replace(url, "[ ?]", "_");
+                url = HttpUtility.UrlDecode(url);
 
                 if (url.StartsWith("/phriction/"))
                 {
                     urlAlias = "/w/" + url.Substring("/phriction/".Length);
 
-                    httpServer.InvalidateNonStaticCache(url);
-                    httpServer.InvalidateNonStaticCache(urlAlias);
+                    httpServer.InvalidateNonStaticCache(EncryptionKey, url);
+                    httpServer.InvalidateNonStaticCache(EncryptionKey, urlAlias);
                 }
                 else
                 if (url.StartsWith("/w/"))
                 {
                     urlAlias = "/phriction/" + url.Substring("/w/".Length);
 
-                    httpServer.InvalidateNonStaticCache(url);
-                    httpServer.InvalidateNonStaticCache(urlAlias);
+                    httpServer.InvalidateNonStaticCache(EncryptionKey, url);
+                    httpServer.InvalidateNonStaticCache(EncryptionKey, urlAlias);
                 }
             }
 
@@ -1212,7 +1228,7 @@ namespace Phabrico.Controllers
             if (phrictionDocument != null)
             {
                 string url = phrictionDocument.Path;
-                httpServer.InvalidateNonStaticCache(url);
+                httpServer.InvalidateNonStaticCache(EncryptionKey, url);
             }
         }
     }

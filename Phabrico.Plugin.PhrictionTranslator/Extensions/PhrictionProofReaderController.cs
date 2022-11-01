@@ -66,8 +66,8 @@ namespace Phabrico.Plugin.Extensions
                     content.AddTranslation(documentToken, browser.Session.Locale, translation.TranslatedTitle, remarkup);
 
                     string urlAlias = "/phriction/" + documentPath.Substring("/w/".Length);
-                    httpServer.InvalidateNonStaticCache(documentPath);
-                    httpServer.InvalidateNonStaticCache(urlAlias);
+                    httpServer.InvalidateNonStaticCache(EncryptionKey, documentPath);
+                    httpServer.InvalidateNonStaticCache(EncryptionKey, urlAlias);
                 }
 
                 jsonData = JsonConvert.SerializeObject(new

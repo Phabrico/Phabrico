@@ -8,6 +8,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.UnitTests", "Phabrico.UnitTests\Phabrico.UnitTests.csproj", "{117C8304-83E1-4F14-B39F-DE7684117E8A}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Phabrico.WiXv3", "Phabrico.WiXv3\Phabrico.WiXv3.wixproj", "{455BECEF-D2D1-4AC2-BE5E-BEFF9261E198}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809} = {D7FFD78A-6E70-4F42-9A83-14BB6D389809}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.Gitanos", "Phabrico.Plugin.Gitanos\Phabrico.Plugin.Gitanos.csproj", "{361073E0-5BC0-4F35-81C1-F45AE65F9C1B}"
 EndProject
@@ -26,6 +29,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.PhrictionTranslator", "Phabrico.Plugin.PhrictionTranslator\Phabrico.Plugin.PhrictionTranslator.csproj", "{B077D1D5-E109-4274-89A4-731FCD521DD9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.JSPaintImageEditor", "Phabrico.Plugin.JSPaintImageEditor\Phabrico.Plugin.JSPaintImageEditor.csproj", "{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phabrico.Plugin.PhrictionSearch", "Phabrico.Plugin.PhrictionSearch\Phabrico.Plugin.PhrictionSearch.csproj", "{D7FFD78A-6E70-4F42-9A83-14BB6D389809}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -163,6 +168,18 @@ Global
 		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|x64.Build.0 = Release|Any CPU
 		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|x86.ActiveCfg = Release|Any CPU
 		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D}.Release|x86.Build.0 = Release|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Debug|x64.Build.0 = Debug|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Debug|x86.Build.0 = Debug|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Release|x64.ActiveCfg = Release|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Release|x64.Build.0 = Release|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Release|x86.ActiveCfg = Release|Any CPU
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -174,6 +191,7 @@ Global
 		{FDB2C8E2-6241-460A-9F87-80A236E51AC4} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 		{B077D1D5-E109-4274-89A4-731FCD521DD9} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 		{F088AB3B-9C6C-40B3-BA06-FC6E8B3B717D} = {E880A15A-096B-46D3-9188-5DB02C33696E}
+		{D7FFD78A-6E70-4F42-9A83-14BB6D389809} = {E880A15A-096B-46D3-9188-5DB02C33696E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8CA4E2F5-1D04-44E3-8945-1ACEC09B246F}

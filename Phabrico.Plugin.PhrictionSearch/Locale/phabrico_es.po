@@ -1,0 +1,11 @@
+﻿# Spanish translations
+
+# General
+msgid "PluginName.PhrictionSearch"
+msgstr "Buscar texto"
+
+msgid "Enter search text"
+msgstr "Introduzca el texto de búsqueda"
+
+msgid "No documents were found"
+msgstr "No se ha encontrado ningún documento"

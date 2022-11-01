@@ -448,18 +448,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
             string imgStyles = "";
             string imgLocatorClasses = "";
-            string imgLocatorStyles;
+            string imgLocatorStyles = "";
             string alternativeText = "";
             string clickAction = "";
-
-            if (fileObjectOptions.Keys.Contains("float"))
-            {
-                imgLocatorStyles = "width: " + (fileObject.ImagePropertyPixelWidth + 10) + "px;";
-            }
-            else
-            {
-                imgLocatorStyles = "width: " + fileObject.ImagePropertyPixelWidth + "px;";
-            }
 
             if (fileObjectOptions.ContainsKey("size") == false &&
                 fileObjectOptions.ContainsKey("width") == false &&
@@ -506,12 +497,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         break;
 
                     case "width":
-                        imgStyles += string.Format("max-width: {0}px; cursor:pointer;", fileObjectOptions[style]);
+                        imgStyles += string.Format("max-width:{0}px; width:{1}px; cursor:pointer;", fileObject.ImagePropertyPixelWidth, fileObjectOptions[style]);
                         clickAction = string.Format("onclick=\"resizeImage('width', this, {0})\"", fileObjectOptions[style]);
                         break;
 
                     case "height":
-                        imgStyles += string.Format("max-height: {0}px; cursor:pointer;", fileObjectOptions[style]);
+                        imgStyles += string.Format("max-height:{0}px; height:{1}px; cursor:pointer;", fileObject.ImagePropertyPixelHeight, fileObjectOptions[style]);
                         clickAction = string.Format("onclick=\"resizeImage('height', this, {0})\"", fileObjectOptions[style]);
                         break;
 
@@ -562,6 +553,18 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                                      "</a>",
                         isTranslatedImage ? "TRAN" : "",
                         fileObject.ID);
+                }
+            }
+
+            if (fileObjectOptions.Keys.Contains("float"))
+            {
+                imgLocatorStyles += "width: " + (fileObject.ImagePropertyPixelWidth + 10) + "px;";
+            }
+            else
+            {
+                if (imgClass.Contains("editable-image") == false)
+                {
+                    imgLocatorStyles += "width: " + fileObject.ImagePropertyPixelWidth + "px;";
                 }
             }
 

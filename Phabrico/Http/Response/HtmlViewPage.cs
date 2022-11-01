@@ -501,6 +501,16 @@ namespace Phabrico.Http.Response
                     htmlViewPage.SetText("THEME-STYLE", themeStyle, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("LOCALE", Browser.Session.Locale, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     htmlViewPage.SetText("CONTENT", html, ArgumentOptions.NoHtmlEncoding);
+
+                    foreach (string cssUrl in CssUrls)
+                    {
+                        HtmlPartialViewPage htmlCssPreloads = htmlViewPage.GetPartialView("CSS-PRELOADS");
+                        if (htmlCssPreloads != null)
+                        {
+                            htmlCssPreloads.SetText("CSS-URL", cssUrl, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                        }
+                    }
+
                     htmlViewPage.Merge();
                     html = htmlViewPage.Content;
                 }

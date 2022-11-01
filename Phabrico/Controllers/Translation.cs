@@ -141,7 +141,7 @@ namespace Phabrico.Controllers
                 if (phrictionDocument != null)
                 {
                     content.ApproveTranslation(tokenToTranslate, browser.Session.Locale);
-                    httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                    httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
                 }
             }
 
@@ -296,7 +296,7 @@ namespace Phabrico.Controllers
                 Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, tokenToTranslate, Language.NotApplicable);
                 if (phrictionDocument != null)
                 {
-                    httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                    httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
                 }
             }
 

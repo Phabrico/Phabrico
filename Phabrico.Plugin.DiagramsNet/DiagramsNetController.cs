@@ -298,6 +298,11 @@ namespace Phabrico.Plugin
             if (resourceName != null)
             {
                 httpFound = ReadResourceContent(assembly, httpServer, "webapp", url, resourceName);
+                HtmlViewPage htmlViewPage = httpFound as HtmlViewPage;
+                if (htmlViewPage != null)
+                {
+                    htmlViewPage.CssUrls = new string[] { "styles/dark.css" };
+                }
             }
 
             return null;

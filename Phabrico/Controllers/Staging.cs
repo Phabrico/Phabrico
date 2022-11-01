@@ -880,7 +880,7 @@ namespace Phabrico.Controllers
                                             maniphestStorage.Add(database, maniphestTask);
                                         }
 
-                                        httpServer.InvalidateNonStaticCache("/maniphest/T" + maniphestTask.ID);
+                                        httpServer.InvalidateNonStaticCache(EncryptionKey, "/maniphest/T" + maniphestTask.ID);
                                     }
 
                                     continue;
@@ -914,7 +914,7 @@ namespace Phabrico.Controllers
                                             stageStorage.Remove(database, browser, phabricatorObject, phabricatorObject.Language);
                                         }
 
-                                        httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                                        httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
                                     }
 
                                     continue;
@@ -951,7 +951,7 @@ namespace Phabrico.Controllers
                                             maniphestStorage.Add(database, maniphestTask);
                                         }
 
-                                        httpServer.InvalidateNonStaticCache("/maniphest/T" + maniphestTask.ID);
+                                        httpServer.InvalidateNonStaticCache(EncryptionKey, "/maniphest/T" + maniphestTask.ID);
                                     }
 
                                     continue;
@@ -985,7 +985,7 @@ namespace Phabrico.Controllers
                                             stageStorage.Remove(database, browser, phabricatorObject, phabricatorObject.Language);
                                         }
 
-                                        httpServer.InvalidateNonStaticCache(phrictionDocument.Path);
+                                        httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
                                     }
 
                                     continue;

@@ -1402,6 +1402,132 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
 
         [TestMethod]
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
+        public void CreateNewSubdocumentByMeansOfNewLinkContainingSpecialCharacters(Type browser, string httpRootPath)
+        {
+            Initialize(browser, httpRootPath);
+            Logon();
+
+            // click on 'Phriction' in the menu navigator
+            IWebElement navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+            navigatorPhriction.Click();
+
+            // wait a while
+            WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // validate if Phriction was opened
+            IWebElement phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            string phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my life"), "Unable to open Phriction");
+
+             // navigate to "Story of my dad's life" document
+            IWebElement linkStoryDadsLife = WebBrowser.FindElement(By.XPath("//*[contains(text(), \"Story of my dad's life\")]"));
+            linkStoryDadsLife.Click();
+
+            // validate if correct document is shown
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Story of my dad's life"), "Unable to open dad's life story");
+
+            // if action pane is collapsed -> expand it
+            bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                 .GetAttribute("class")
+                                                 .Contains("right-collapsed");
+
+            if (actionPaneCollapsed)
+            {
+                IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                expandActionPane.Click();
+            }
+
+            // click on Edit
+            IWebElement edit = WebBrowser.FindElement(By.LinkText("Edit Document"));
+            edit.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+            // edit content
+            IWebElement textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.End);
+            textarea.SendKeys("\n\n[[ ./Should the $ be replaced by the ¥ ? ]]\n");
+
+            // click Save button
+            IWebElement btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // get newly created anchor link
+            IWebElement anchor = WebBrowser.FindElement(By.LinkText("Should the $ be replaced by the ¥ ?"));
+            Assert.IsTrue(anchor.GetAttribute("href").EndsWith(":" + HttpServer.TcpPortNr + Http.Server.RootPath + "w/daddy/should_the_%24_be_replaced_by_the_%C2%A5?title=Should%20the%20$%20be%20replaced%20by%20the%20%c2%a5%20%3F"));
+
+            // click on anchor
+            anchor.Click();
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // validate if Phriction was opened
+            phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+            phrictionDocumentTitle = phrictionDocument.Text.Split('\r', '\n')[0];
+            Assert.IsTrue(phrictionDocumentTitle.Equals("Page Not Found"), "Unable to open Phriction");
+
+            // click on Create this Document button
+            IWebElement btnCreateThisDocument = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Create this Document')]"));
+            btnCreateThisDocument.Click();
+            wait.Until(condition => condition.FindElements(By.Id("title")).Any());
+
+            // enter data for first Phriction document
+            IWebElement inputTitle = WebBrowser.FindElement(By.Id("title"));
+            Assert.IsTrue(inputTitle.GetAttribute("value").Equals("Should the $ be replaced by the ¥ ?"), "Title of new document not correctly set");
+
+            // Enter some text
+            textarea = WebBrowser.FindElement(By.Id("textarea"));
+            textarea.SendKeys("Can you please rephrase the question ?");
+
+            // click save button
+            btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+            btnSave.Click();
+            wait.Until(condition => condition.FindElements(By.ClassName("phriction")).Any());
+
+            // wait a while
+            wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+            wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+            // validate if modifications were stored
+            string documentTitle = WebBrowser.FindElement(By.ClassName("phui-document"))
+                                      .FindElement(By.TagName("H1"))
+                                      .Text;
+            Assert.AreEqual("Should the $ be replaced by the ¥ ?", documentTitle);
+
+            // validate document content
+            string documentContent = WebBrowser.FindElement(By.Id("remarkupContent"))
+                                               .Text
+                                               .Replace("\r", "");
+            Assert.AreEqual("Can you please rephrase the question ?", documentContent);
+
+            // validate crumbs
+            string navigationCrumbs = WebBrowser.FindElement(By.Id("crumbsContainer"))
+                                         .Text
+                                         .Split('\n')[0]
+                                         .Replace("\r", "");
+            Assert.AreEqual("Story of my dad's life > Should the $ be replaced by the ¥ ?", navigationCrumbs);
+        }
+
+
+        [TestMethod]
         // [DataRow(typeof(ChromeConfig), "")]          // CTRL-V image is not working in Chrome
         // [DataRow(typeof(ChromeConfig), "phabrico")]  // CTRL-V image is not working in Chrome
         // [DataRow(typeof(EdgeConfig), "")]            // CTRL-V image is not working in Edge

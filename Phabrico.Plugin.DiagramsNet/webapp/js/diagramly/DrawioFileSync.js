@@ -234,12 +234,7 @@ DrawioFileSync.prototype.syncChangeCounter = 0;
 /**
  * Specifies if notifications should be sent and received for changes.
  */
-DrawioFileSync.prototype.enabled = true;
-
-/**
- * True if a change event is fired for a remote change.
- */
-DrawioFileSync.prototype.updateStatusInterval = 10000;
+ DrawioFileSync.prototype.enabled = true;
 
 /**
  * Holds the channel ID for sending and receiving change notifications.
@@ -301,8 +296,24 @@ DrawioFileSync.prototype.start = function()
 		this.key = this.file.getChannelKey();
 	}
 	
-	if (this.pusher == null && this.channelId != null &&
+	var updateStatus = false;
+
+	if (DrawioFileSync.PULLING_MODE && this.puller == null &&
 		document.visibilityState != 'hidden') 
+	{
+		if (this.puller == null)
+		{
+			this.puller = new DrawioFilePuller(this.file, this);
+		}
+
+		this.puller.start(this.file.getPullingInterval());
+		EditorUi.debug('DrawioFileSync.start (Pulling)', [this,
+			'v' + DrawioFileSync.PROTOCOL],
+			'rev', this.file.getCurrentRevisionId());
+		updateStatus = true;
+	}
+	else if (!DrawioFileSync.PULLING_MODE && this.pusher == null &&
+		this.channelId != null && document.visibilityState != 'hidden') 
 	{
 		this.pusher = this.ui.getPusher();
 		
@@ -337,6 +348,11 @@ DrawioFileSync.prototype.start = function()
 			this.installListeners();
 		}
 
+		updateStatus = true;
+	}
+
+	if (updateStatus)
+	{
 		window.setTimeout(mxUtils.bind(this, function()
 		{
 			this.lastModified = this.file.getLastModifiedDate();
@@ -428,6 +444,10 @@ DrawioFileSync.prototype.isConnected = function()
 	{
 		return this.pusher.connection.state == 'connected';
 	}
+	else if (this.puller != null)
+	{
+		return this.puller.isConnected();
+	}
 	else
 	{
 		return false;
@@ -494,7 +514,8 @@ DrawioFileSync.prototype.updateOnlineState = function()
 		elt.style.verticalAlign = 'bottom';
 		elt.style.color = '#666';
 		elt.style.top = '6px';
-		elt.style.right = (uiTheme != 'atlas') ?  '90px' : '50px';
+		elt.style.right = (Editor.currentTheme != 'atlas') ? (this.ui.darkModeElement != null ?
+			'90px' : '70px') : '50px';
 		elt.style.padding = '2px';
 		elt.style.fontSize = '8pt';
 		elt.style.verticalAlign = 'middle';
@@ -601,9 +622,7 @@ DrawioFileSync.prototype.updateStatus = function()
 				str = mxResources.get('lessThanAMinute');
 			}
 			
-			var history = this.file.isRevisionHistorySupported();
-
-			// Consumed and displays last message
+			// Consumes and displays last message
 			var msg = this.lastMessage;
 			this.lastMessage = null;
 			
@@ -613,55 +632,12 @@ DrawioFileSync.prototype.updateStatus = function()
 			}
 
 			var label = mxResources.get('lastChange', [str]);
-			
-			this.ui.editor.setStatus('<div title="'+ mxUtils.htmlEntities(label) + '">' + mxUtils.htmlEntities(label) + '</div>' +
+			var rev = (this.file.isRevisionHistorySupported()) ? 'data-action="revisionHistory" ' : '';
+			this.ui.editor.setStatus('<div ' + rev + 'title="'+ mxUtils.htmlEntities(label) + '">' + mxUtils.htmlEntities(label) + '</div>' +
 				(this.file.isEditable() ? '' : '<div class="geStatusAlert">' + mxUtils.htmlEntities(mxResources.get('readOnly')) + '</div>') +
 				(this.isConnected() ? '' : '<div class="geStatusAlert">' + mxUtils.htmlEntities(mxResources.get('disconnected')) + '</div>') +
-				((msg != null) ? ' <span title="' + mxUtils.htmlEntities(msg) + '">(' + mxUtils.htmlEntities(msg) + ')</span>' : ''));
-			var links = this.ui.statusContainer.getElementsByTagName('div');
-			
-			if (links.length > 0 && history)
-			{
-				links[0].style.display = 'inline-block';
+				((msg != null) ? ' <div data-effect="fade" title="' + mxUtils.htmlEntities(msg) + '">(' + mxUtils.htmlEntities(msg) + ')</div>' : ''));
 
-				if (history)
-				{
-					links[0].style.cursor = 'pointer';
-					links[0].style.textDecoration = 'underline';
-					
-					mxEvent.addListener(links[0], 'click', mxUtils.bind(this, function()
-					{
-						this.ui.actions.get('revisionHistory').funct();
-					}));
-				}
-			}
-
-			// Fades in/out last message
-			var spans = this.ui.statusContainer.getElementsByTagName('span');
-			
-			if (spans.length > 0)
-			{
-				var temp = spans[0];
-				temp.style.opacity = '0';
-				mxUtils.setPrefixedStyle(temp.style, 'transition', 'all 0.2s ease');
-				
-				window.setTimeout(mxUtils.bind(this, function()
-				{
-					mxUtils.setOpacity(temp, 100);
-					mxUtils.setPrefixedStyle(temp.style, 'transition', 'all 1s ease');
-					
-					window.setTimeout(mxUtils.bind(this, function()
-					{
-						mxUtils.setOpacity(temp, 0);
-
-						window.setTimeout(mxUtils.bind(this, function()
-						{
-							this.updateStatus();
-						}), 1000);
-					}), this.updateStatusInterval / 2);
-				}), 0);
-			}
-			
 			this.resetUpdateStatusThread();
 		}
 		else
@@ -686,7 +662,7 @@ DrawioFileSync.prototype.resetUpdateStatusThread = function()
 		this.updateStatusThread = window.setInterval(mxUtils.bind(this, function()
 		{
 			this.updateStatus();
-		}), this.updateStatusInterval);
+		}), Editor.updateStatusInterval);
 	}
 };
 
@@ -2004,6 +1980,12 @@ DrawioFileSync.prototype.stop = function()
 			this.p2pCollab.destroy();
 			this.p2pCollab = null;
 		}
+	}
+	else if (this.puller != null)
+	{
+		EditorUi.debug('DrawioFileSync.stop (Pulling)', [this]);
+		this.puller.stop();
+		this.puller = null;
 	}
 	
 	this.updateOnlineState();

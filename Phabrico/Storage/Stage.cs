@@ -463,7 +463,12 @@ namespace Phabrico.Storage
 
                         record.HeaderData = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["headerData"]);
 
-                        T result = JsonConvert.DeserializeObject(record.HeaderData, typeof(T)) as T;
+                        Type resultingType = typeof(Phabricator.Data.PhabricatorObject);
+                        if (record.TokenPrefix.StartsWith(Phabricator.Data.Phriction.Prefix)) resultingType = typeof(Phabricator.Data.Phriction);
+                        if (record.TokenPrefix.StartsWith(Phabricator.Data.Maniphest.Prefix)) resultingType = typeof(Phabricator.Data.Maniphest);
+                        if (record.TokenPrefix.StartsWith(Phabricator.Data.Transaction.Prefix)) resultingType = typeof(Phabricator.Data.Transaction);
+                        if (record.TokenPrefix.StartsWith(Phabricator.Data.File.Prefix)) resultingType = typeof(Phabricator.Data.File);
+                        T result = JsonConvert.DeserializeObject(record.HeaderData, resultingType) as T;
                         result.Language = (Language)(string)reader["language"];
                         yield return result;
                     }
