@@ -1469,8 +1469,18 @@ Menus.prototype.createPopupMenu = function(menu, cell, evt)
 	
 	this.addPopupMenuHistoryItems(menu, cell, evt);
 	this.addPopupMenuEditItems(menu, cell, evt);
-	this.addPopupMenuStyleItems(menu, cell, evt);
-	this.addPopupMenuArrangeItems(menu, cell, evt);
+
+	
+	if (this.isShowStyleItems())
+	{
+		this.addPopupMenuStyleItems(menu, cell, evt);
+	}
+
+	if (this.isShowArrangeItems())
+	{
+		this.addPopupMenuArrangeItems(menu, cell, evt);
+	}
+
 	this.addPopupMenuCellItems(menu, cell, evt);
 	this.addPopupMenuSelectionItems(menu, cell, evt);
 };
@@ -1497,8 +1507,21 @@ Menus.prototype.addPopupMenuEditItems = function(menu, cell, evt)
 	}
 	else
 	{
-		this.addMenuItems(menu, ['delete', '-', 'cut', 'copy', '-', 'duplicate'], null, evt);
+		if (this.isShowCellEditItems())
+		{
+			this.addMenuItems(menu, ['delete', '-', ], null, evt);
+		}
+
+		this.addMenuItems(menu, ['cut', 'copy', 'duplicate', 'lockUnlock'], null, evt);
 	}
+};
+
+/**
+ * Creates the keyboard event handler for the current graph and history.
+ */
+Menus.prototype.isShowStyleItems = function()
+{
+	return true;
 };
 
 /**
@@ -1519,29 +1542,34 @@ Menus.prototype.addPopupMenuStyleItems = function(menu, cell, evt)
 /**
  * Creates the keyboard event handler for the current graph and history.
  */
+Menus.prototype.isShowArrangeItems = function()
+{
+	return true;
+};
+
+/**
+ * Creates the keyboard event handler for the current graph and history.
+ */
 Menus.prototype.addPopupMenuArrangeItems = function(menu, cell, evt)
 {
 	var graph = this.editorUi.editor.graph;
+	
+	// Shows group actions
+	if (graph.getSelectionCount() > 1 || (graph.getSelectionCount() > 0 &&
+		!graph.getModel().isEdge(cell) && !graph.isSwimlane(cell) &&
+		graph.getModel().getChildCount(cell) > 0 && graph.isCellEditable(cell)))
+	{
+		this.addMenuItems(menu, ['group', 'ungroup'], null, evt);
+	}
 	
 	if (graph.getEditableCells(graph.getSelectionCells()).length > 0)
 	{
 		this.addMenuItems(menu, ['-', 'toFront', 'toBack'], null, evt);
 		
-		if (graph.getSelectionCount() == 1)
+		if (this.isShowCellEditItems() && graph.getSelectionCount() == 1)
 		{
 			this.addMenuItems(menu, ['bringForward', 'sendBackward'], null, evt);
 		}
-	}	
-
-	if (graph.getSelectionCount() > 1)	
-	{
-		this.addMenuItems(menu, ['-', 'group'], null, evt);
-	}
-	else if (graph.getSelectionCount() == 1 && !graph.getModel().isEdge(cell) &&
-		!graph.isSwimlane(cell) && graph.getModel().getChildCount(cell) > 0 &&
-		graph.isCellEditable(cell))
-	{
-		this.addMenuItems(menu, ['-', 'ungroup'], null, evt);
 	}
 };
 
@@ -1558,7 +1586,8 @@ Menus.prototype.addPopupMenuCellItems = function(menu, cell, evt)
 	{
 		var hasWaypoints = false;
 		
-		if (graph.getSelectionCount() == 1 && graph.getModel().isEdge(cell))
+		if (this.isShowStyleItems() && graph.getSelectionCount() == 1 &&
+			graph.getModel().isEdge(cell))
 		{
 			menu.addSeparator();
 			this.addSubmenu('line', menu);
@@ -1591,7 +1620,12 @@ Menus.prototype.addPopupMenuCellItems = function(menu, cell, evt)
 			}
 			
 			menu.addSeparator();
-			this.addMenuItem(menu, 'turn', null, evt, null, mxResources.get('reverse'));
+
+			if (this.isShowCellEditItems())
+			{
+				this.addMenuItem(menu, 'turn', null, evt, null, mxResources.get('reverse'));
+			}
+
 			this.addMenuItems(menu, [(isWaypoint) ? 'removeWaypoint' : 'addWaypoint'], null, evt);
 			
 			// Adds reset waypoints option if waypoints exist
@@ -1599,17 +1633,28 @@ Menus.prototype.addPopupMenuCellItems = function(menu, cell, evt)
 			hasWaypoints = geo != null && geo.points != null && geo.points.length > 0;
 		}
 
-		if (graph.getSelectionCount() == 1 && (hasWaypoints || (graph.getModel().isVertex(cell) &&
+		if (graph.getSelectionCount() == 1 && this.isShowCellEditItems() && 
+			(hasWaypoints || (graph.getModel().isVertex(cell) &&
 			graph.getModel().getEdgeCount(cell) > 0)))
 		{
 			this.addMenuItems(menu, ['-', 'clearWaypoints'], null, evt);
 		}
-	
-		if (graph.getSelectionCount() == 1 && graph.isCellEditable(cell))
+		
+		if (this.isShowCellEditItems() &&
+			graph.getSelectionCount() == 1 &&
+			graph.isCellEditable(cell))
 		{
 			this.addPopupMenuCellEditItems(menu, cell, evt);
 		}
 	}
+};
+
+/**
+ * Creates the keyboard event handler for the current graph and history.
+ */
+Menus.prototype.isShowCellEditItems = function()
+{
+	return true;
 };
 
 /**
@@ -1635,7 +1680,7 @@ Menus.prototype.addPopupMenuCellEditItems = function(menu, cell, evt, parent)
 		this.addMenuItem(menu, 'editConnectionPoints', parent, evt);
 	}
 };
- 
+
 /**
  * Creates the keyboard event handler for the current graph and history.
  */

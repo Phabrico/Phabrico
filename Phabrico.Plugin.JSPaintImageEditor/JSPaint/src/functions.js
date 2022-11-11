@@ -990,7 +990,7 @@ async function confirm_overwrite_capability() {
 function file_save(maybe_saved_callback = () => { }, update_from_saved = true) {
 	deselect();
 
-	window.content.postMessage({
+	window.parent.postMessage({
 		event: "save",
 		data: main_canvas.toDataURL()
 	}, "*");

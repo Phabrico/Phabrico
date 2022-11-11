@@ -29,7 +29,7 @@
 			{
 				item: localize("E&xit"),
 				action: () => {
-					window.content.postMessage({
+					window.parent.postMessage({
 						event: "exit"
 					}, "*");
 				},

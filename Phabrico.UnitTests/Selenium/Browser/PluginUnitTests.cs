@@ -170,7 +170,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
 
                 // click on 'dummy.txt'
-                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(20));
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(60));
                 wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
                 wait.Until(condition => condition.FindElements(By.TagName("a"))
                                                  .Any(a => a.Displayed 

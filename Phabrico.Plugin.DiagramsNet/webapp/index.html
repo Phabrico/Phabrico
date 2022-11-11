@@ -101,7 +101,6 @@
     html body div.diagramContainer button, html body .mxWindow button, html body .geDialog button {
         min-width: 0px;
         border-radius: 5px;
-        color: #353535 !important;
         border-style: solid;
         border-width: 1px;
         border-color: rgb(216, 216, 216);
@@ -560,8 +559,8 @@
 		var mxScriptsLoaded = false, mxWinLoaded = false;
 
 		function checkAllLoaded()
-		{
-		    if (mxScriptsLoaded && mxWinLoaded)
+        {
+            if (mxScriptsLoaded && mxWinLoaded)
 			{
 				App.main();
 			}
@@ -625,7 +624,7 @@
     <script>
         var goToDiagramsGithub = function () {
             if (event.ctrlKey == false) {
-                window.content.postMessage({
+                window.parent.postMessage({
                     event: "goToDiagramsGithub"
                 }, "*");
             }

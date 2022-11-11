@@ -51,6 +51,9 @@
 				}
                 else if (msg.event == 'load')
                 {
+                    // enable Mathematical Typesettings by default in Diagrams.Net
+                    iframe.contentWindow.sb.editorUi.setMathEnabled(true);
+
                     @{IF @@SHOW-APPROVE-TRANSLATION-BTN@@=True@
                         var menubar = iframe.contentWindow.document.querySelector('.geMenubarContainer');
                         var btnSave = menubar.querySelector('.geMenuItem.gePrimaryBtn');

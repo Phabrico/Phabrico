@@ -758,6 +758,10 @@ Actions.prototype.init = function()
 			ui.actions.get('image').funct();
 		}
 	})).isEnabled = isGraphEnabled;
+	this.addAction('editImage...', function()
+	{
+		ui.actions.get('image').funct();
+	});
 	this.put('insertLink', new Action(mxResources.get('link') + '...', function()
 	{
 		if (graph.isEnabled() && !graph.isCellLocked(graph.getDefaultParent()))
@@ -938,7 +942,7 @@ Actions.prototype.init = function()
 			    		
 			    		// Removes HTML tags
 		    			var temp = document.createElement('div');
-		    			temp.innerHTML = graph.sanitizeHtml(label);
+		    			temp.innerHTML = Graph.sanitizeHtml(label);
 		    			label = mxUtils.extractTextWithWhitespace(temp.childNodes);
 		    			
 						graph.cellLabelChanged(state.cell, label);
@@ -956,7 +960,7 @@ Actions.prototype.init = function()
 			    			label = label.replace(/\n/g, '<br/>');
 						}
 			    		
-			    		graph.cellLabelChanged(state.cell, graph.sanitizeHtml(label));
+			    		graph.cellLabelChanged(state.cell, Graph.sanitizeHtml(label));
 			    		graph.setCellStyles('html', value, [cells[i]]);
 			    	}
 				}
