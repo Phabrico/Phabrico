@@ -331,16 +331,27 @@
         var webSocket = new WebSocket("ws://" + virtualRootPath + "/" + link + "/notification");
         webSocket.onmessage = function(event) {
             var notification = JSON.parse(event.data);
-            notifier.innerText = notification.Message;
             if (notification.Type == "error") {
+                notifier.innerText = notification.Message;
+                notifier.classList.remove('busy');
                 notifier.classList.remove('information');
                 notifier.classList.remove('warning');
                 notifier.classList.add('error');
             } else if (notification.Type == "warning") {
+                notifier.innerText = notification.Message;
+                notifier.classList.remove('busy');
                 notifier.classList.remove('error');
                 notifier.classList.remove('information');
                 notifier.classList.add('warning');
+            } else if (notification.Type == "busy") {
+                notifier.innerText = "";
+                notifier.classList.remove('error');
+                notifier.classList.remove('information');
+                notifier.classList.remove('warning');
+                notifier.classList.add('busy');
             } else {
+                notifier.innerText = notification.Message;
+                notifier.classList.remove('busy');
                 notifier.classList.remove('error');
                 notifier.classList.remove('warning');
                 notifier.classList.add('information');

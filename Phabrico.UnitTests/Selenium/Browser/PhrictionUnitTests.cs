@@ -332,6 +332,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
         {
             Initialize(browser, httpRootPath);
 
+            WebBrowser.Manage().Window.Maximize();  // maximize window, otherwise some toolbar-buttons are not accessible
+
             // create a translated copy for all master wiki documents
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.Content contentTranslationStorage = new Storage.Content(Database);

@@ -589,6 +589,8 @@ img.darkness-moderate {
 select {
     background: var(--select-background-color);
     color: var(--select-color);
+    border: var(--select-border);
+    padding-left: 4px;
 }
 
 select:-moz-focusring {

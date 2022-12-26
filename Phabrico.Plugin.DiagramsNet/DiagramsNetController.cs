@@ -323,6 +323,8 @@ namespace Phabrico.Plugin
                 
                 string saveData = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
                 string fileID = browser.Session.FormVariables[browser.Request.RawUrl]["fileID"];
+                bool isTranslation = false;
+                bool.TryParse(browser.Session.FormVariables[browser.Request.RawUrl]["isTranslation"], out isTranslation);
 
                 if (saveData.StartsWith(base64Prefix))
                 {
@@ -375,9 +377,31 @@ namespace Phabrico.Plugin
                             int numericFileID;
                             if (Int32.TryParse(fileID, out numericFileID))  // fileID could be NaN (when creating a new diagram or when creating from remarkup editor)
                             {
-                                Storage.File fileStorage = new Storage.File();
-                                Phabricator.Data.File originalFile = fileStorage.GetByID(database, Int32.Parse(fileID), true);
-                                IEnumerable<Phabricator.Data.PhabricatorObject> referrers = database.GetDependentObjects(originalFile.Token, Language.NotApplicable);
+                                Content content = new Content(database);
+                                IEnumerable<Phabricator.Data.PhabricatorObject> referrers = new Phabricator.Data.PhabricatorObject[0];
+                                Phabricator.Data.File originalFile = null;
+                                if (isTranslation)
+                                {
+                                    string phidObjectToken = string.Format("PHID-OBJECT-{0}", fileID.PadLeft(18, '0'));
+                                    Storage.Content.Translation translation = content.GetTranslation(phidObjectToken, browser.Session.Locale);
+                                    if (translation != null)
+                                    {
+                                        Newtonsoft.Json.Linq.JObject fileObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
+                                        if (fileObjectInfo != null)
+                                        {
+                                            originalFile = new Phabricator.Data.File();
+                                            originalFile.ID = Int32.Parse(fileID);
+
+                                            referrers = database.GetDependentObjects(phidObjectToken, browser.Session.Locale);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Storage.File fileStorage = new Storage.File();
+                                    originalFile = fileStorage.GetByID(database, Int32.Parse(fileID), true);
+                                    referrers = database.GetDependentObjects(originalFile.Token, Language.NotApplicable);
+                                }
 
                                 RemarkupEngine remarkupEngine = new RemarkupEngine();
                                 foreach (Phabricator.Data.PhabricatorObject referrer in referrers)
@@ -398,7 +422,16 @@ namespace Phabrico.Plugin
                                         string originalFileID = originalFile.ID.ToString();
                                         foreach (RuleReferenceFile referencedFileObject in referencedFileObjects)
                                         {
-                                            Match matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{F(-?[0-9]*)", RegexOptions.None);
+                                            Match matchReferencedFileObject;
+                                            if (isTranslation)
+                                            {
+                                                matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{FTRAN([0-9]*)", RegexOptions.None);
+                                            }
+                                            else
+                                            {
+                                                matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{F(-?[0-9]*)", RegexOptions.None);
+                                            }
+
                                             if (matchReferencedFileObject.Success)
                                             {
                                                 if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
@@ -406,6 +439,11 @@ namespace Phabrico.Plugin
                                                 phrictionDocument.Content = phrictionDocument.Content.Substring(0, referencedFileObject.Start)
                                                                           + "{F" + file.ID
                                                                           + phrictionDocument.Content.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
+
+                                                if (isTranslation)
+                                                {
+                                                    content.DisapproveTranslation(phrictionDocument.Token, browser.Session.Locale);
+                                                }
                                             }
                                         }
 

@@ -129,7 +129,7 @@ namespace Phabrico.Plugin
             if (string.IsNullOrWhiteSpace(phrictionDocument.Content)) return null;
             if (phrictionDocument.Content.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) == -1) return null;
 
-            string[] words = phrictionDocument.Content.Split(' ', ',', '.', '\'', '"', '(', ')', ':', ';', '{', '}', '[', ']', '\\', '|', '?', '!', '<', '>');
+            string[] words = phrictionDocument.Content.Split(' ', ',', '.', '\'', '"', '(', ')', ':', ';', '{', '}', '[', ']', '\\', '|', '?', '!', '<', '>', '\r', '\n');
             foreach (string searchWord in searchText.Split(' '))
             {
                 if (words.Contains(searchWord, StringComparer.OrdinalIgnoreCase) == false) return null;

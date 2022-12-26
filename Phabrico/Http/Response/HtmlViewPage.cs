@@ -223,9 +223,9 @@ namespace Phabrico.Http.Response
                 HttpServer.Customization.ApplicationNameStyle["line-height"] = "44px";
 
                 // correct css strings
-                string customApplicationLogoStyle = string.Join(";", HttpServer.Customization.ApplicationLogoStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value));
-                string customApplicationNameStyle = string.Join(";", HttpServer.Customization.ApplicationNameStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value));
-                string customApplicationHeaderStyle = string.Join(";", HttpServer.Customization.ApplicationHeaderStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value));
+                string customApplicationLogoStyle = string.Join(";", HttpServer.Customization.ApplicationLogoStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value).ToArray());
+                string customApplicationNameStyle = string.Join(";", HttpServer.Customization.ApplicationNameStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value).ToArray());
+                string customApplicationHeaderStyle = string.Join(";", HttpServer.Customization.ApplicationHeaderStyle.Where(css => css.Key != "").Select(css => css.Key + ":" + css.Value).ToArray());
 
                 SetText("CUSTOM-APPLICATION-LOGO", customApplicationLogo, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);
                 SetText("CUSTOM-APPLICATION-LOGO-STYLE", customApplicationLogoStyle, ArgumentOptions.NoHtmlEncoding | ArgumentOptions.AllowEmptyParameterValue);

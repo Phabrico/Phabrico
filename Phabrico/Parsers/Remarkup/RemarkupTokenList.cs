@@ -41,6 +41,33 @@ namespace Phabrico.Parsers.Remarkup
         }
 
         /// <summary>
+        /// Flat version of token list
+        /// </summary>
+        public RemarkupTokenList Flat
+        {
+            get
+            {
+                RemarkupTokenList result = new RemarkupTokenList();
+                foreach (Rules.RemarkupRule token in this)
+                {
+                    if (token.ChildTokenList.Any())
+                    {
+                        foreach (Rules.RemarkupRule childToken in token.ChildTokenList.Flat)
+                        {
+                            result.Add(childToken);
+                        }
+                    }
+                    else
+                    {
+                        result.Add(token);
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Inner function used for converting Remarkup to XML
         /// The &lt; and &gt; characters in XML tag names however are replaced by \x02 and \x03.
         /// The will be replaced again by the outer export function ToXML

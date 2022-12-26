@@ -181,22 +181,34 @@ namespace Phabrico.Storage
             {
                 using (var reader = dbCommand.ExecuteReader())
                 {
-                    UInt64 lastNewTokenId = 0;
+                    UInt64 lastExistingTokenId = 0;
                     if (reader.Read() && (reader["lastToken"] is DBNull) == false)
                     {
-                        lastNewTokenId = UInt64.Parse(System.Text.UTF8Encoding.UTF8.GetString((byte[])reader["lastToken"]).Substring("PHID-NEWTOKEN-".Length));
+                        lastExistingTokenId = UInt64.Parse(System.Text.UTF8Encoding.UTF8.GetString((byte[])reader["lastToken"]).Substring("PHID-NEWTOKEN-".Length));
                     }
 
                     string operation = "new";
                     Stage.Data stageData = new Data();
                     stageData.Operation = operation;
-                    stageData.Token = string.Format("PHID-NEWTOKEN-{0:D16}", lastNewTokenId + 1);
-                    newPhabricatorObject.Token = stageData.Token;
 
                     Phabricator.Data.File stagedFileData = newPhabricatorObject as Phabricator.Data.File;
+                    ulong newTokenID = lastExistingTokenId + 1;
                     if (stagedFileData != null)
                     {
-                        stageData.ObjectID = -(int)(lastNewTokenId + 1);
+                        if (stagedFileData.ID < 0 && lastExistingTokenId < (ulong)(-stagedFileData.ID))
+                        {
+                            newTokenID = (ulong)(-stagedFileData.ID);
+                        }
+
+                        if (lastExistingTokenId == 0)
+                        {
+                            newTokenID = 1;
+                        }
+
+                        stageData.Token = string.Format("PHID-NEWTOKEN-{0:D16}", newTokenID);
+                        newPhabricatorObject.Token = stageData.Token;
+
+                        stageData.ObjectID = -(int)newTokenID;
                         stagedFileData.ID = stageData.ObjectID;
                         if (string.IsNullOrWhiteSpace(stagedFileData.TemplateFileName) == false)
                         {
@@ -211,10 +223,28 @@ namespace Phabrico.Storage
                         // invalidate cached data
                         Server.InvalidateNonStaticCache(database, DateTime.MaxValue);
                     }
+                    else
+                    {
+                        stageData.Token = string.Format("PHID-NEWTOKEN-{0:D16}", newTokenID);
+                        newPhabricatorObject.Token = stageData.Token;
+                    }
 
                     stageData.DateModified = DateTimeOffset.UtcNow;
                     stageData.HeaderData = JsonConvert.SerializeObject(newPhabricatorObject);
                     stageData.TokenPrefix = newPhabricatorObject.TokenPrefix;
+
+                    Phabricator.Data.File newFile = newPhabricatorObject as Phabricator.Data.File;
+                    if (newFile != null)
+                    {
+                        Phabricator.Data.File previouslyImportedFile = Get<Phabricator.Data.File>(database, newFile.Language)
+                                                                         .FirstOrDefault(file => file.OriginalID == newFile.OriginalID
+                                                                                              && file.OriginalID != 0
+                                                                                        );
+                        if (previouslyImportedFile != null)
+                        {
+                            Remove(database, browser, previouslyImportedFile, previouslyImportedFile.Language);
+                        }
+                    }
 
                     SaveStageData(database, browser, stageData, newPhabricatorObject.Language);
 
@@ -874,8 +904,16 @@ namespace Phabrico.Storage
                 }
             }
 
-            Content content = new Content(database);
-            bool isTranslation = content.GetTranslation(modifiedPhabricatorObject.Token, browser.Session.Locale) != null;
+            bool isTranslation;
+            if (modifiedPhabricatorObject.TokenPrefix.StartsWith("PHID-FILE-"))
+            {
+                isTranslation = (modifiedPhabricatorObject.Language.Equals(Language.NotApplicable) == false);
+            }
+            else
+            {
+                Content content = new Content(database);
+                isTranslation = content.GetTranslation(modifiedPhabricatorObject.Token, browser.Session.Locale) != null;
+            }
 
             Language language = isTranslation 
                     ? browser.Session.Locale

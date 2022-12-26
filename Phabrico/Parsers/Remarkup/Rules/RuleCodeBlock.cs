@@ -52,6 +52,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 { "pgsql"        , "pgsql"   },
                 { "php"          , "php"     },
                 { "plaintext"    , "plaintext"},
+                { "powershell"   , "powershell"},
                 { "properties"   , "properties"},
                 { "puppet"       , "puppet"  },
                 { "python"       , "python"  },

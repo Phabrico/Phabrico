@@ -114,7 +114,7 @@ namespace Phabrico.Controllers
 
                 crumbs.Add(new JObject
                 {
-                    new JProperty("slug", slug),
+                    new JProperty("slug", hiddenCrumb ? "" : slug),
                     new JProperty("name", translation?.TranslatedTitle
                                           ?? crumbPhrictionReference?.Name
                                           ?? ConvertPhabricatorUrlPartToDescription(slug)
@@ -172,6 +172,16 @@ namespace Phabrico.Controllers
                 url = url.Split(new string[] { "?" }, StringSplitOptions.None).FirstOrDefault();
                 url = url.TrimEnd('/') + "/";
 
+                if (rootDocumentPath == null)
+                {
+                    rootDocumentPath = phrictionStorage.Get(database, browser.Session.Locale)
+                                                       .OrderBy(document => document.Path.Length)
+                                                       .FirstOrDefault()
+                                                       ?.Path
+                                                       ?.TrimEnd('/');
+                }
+                string unaliasedUrl = (rootDocumentPath + "/" + string.Join("/", url.Split('/').Skip(1))).Replace("//", "/");
+
                 // set private encryption key
                 database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
 
@@ -181,7 +191,10 @@ namespace Phabrico.Controllers
                 foreach (Phabricator.Data.Phriction stagedPhrictionDocument in stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale))
                 {
                     if (stagedPhrictionDocument.Path != null &&
-                        stagedPhrictionDocument.Path.Equals(url, StringComparison.OrdinalIgnoreCase))
+                        ( stagedPhrictionDocument.Path.Equals(url, StringComparison.OrdinalIgnoreCase) ||
+                          stagedPhrictionDocument.Path.Equals(unaliasedUrl, StringComparison.OrdinalIgnoreCase)
+                        )
+                       )
                     {
                         phrictionDocument = stagedPhrictionDocument;
                         documentIsStaged = true;
@@ -195,6 +208,10 @@ namespace Phabrico.Controllers
                     if (parameters.Any())
                     {
                         phrictionDocument = phrictionStorage.Get(database, HttpUtility.UrlDecode(url), browser.Session.Locale);
+                        if (phrictionDocument == null)
+                        {
+                            phrictionDocument = phrictionStorage.Get(database, HttpUtility.UrlDecode(unaliasedUrl), browser.Session.Locale);
+                        }
                     }
                     else
                     {
@@ -409,6 +426,12 @@ namespace Phabrico.Controllers
                     else
                     {
                         formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false);
+
+                        documentState = "translated";
+                        if (translation.IsReviewed == false)
+                        {
+                            unreviewedTranslation = "unreviewed";
+                        }
                     }
                 }
 
@@ -423,7 +446,7 @@ namespace Phabrico.Controllers
                     if (documentHierarchy.Any())
                     {
                         Http.Response.HtmlViewPage documentHierarchyViewPage = new Http.Response.HtmlViewPage(httpServer, browser, true, "PhrictionHierarchy", parameters);
-                        documentHierarchyViewPage.SetText("TREE-CONTENT", documentHierarchy.ToHTML(), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        documentHierarchyViewPage.SetText("TREE-CONTENT", documentHierarchy.ToHTML(rootDocumentPath), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         viewPage.SetText("DOCUMENT-HIERARCHY", documentHierarchyViewPage.Content, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     }
                     else
@@ -1142,11 +1165,21 @@ namespace Phabrico.Controllers
 
                             // (re)assign dependent Phabricator objects
                             List<Phabricator.Data.PhabricatorObject> referencedObjects = database.GetReferencedObjects(modifiedPhrictionDocument.Token, browser.Session.Locale).ToList();
-                            database.ClearAssignedTokens(modifiedPhrictionDocument.Token, language);
+                            string[] unassignedStagedTokens = database.ClearAssignedTokens(modifiedPhrictionDocument.Token, language)
+                                                                      .Where(token => token.StartsWith("PHID-NEWTOKEN-"))
+                                                                      .ToArray();
                             RemarkupParserOutput remarkupParserOutput;
                             List<Phabricator.Data.PhabricatorObject> linkedPhabricatorObjects;
                             ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, modifiedPhrictionDocument.Content, out remarkupParserOutput, false);
                             linkedPhabricatorObjects = remarkupParserOutput.LinkedPhabricatorObjects;
+                            referencedObjects.AddRange(unassignedStagedTokens.Select(unassignedStagedToken =>
+                            {
+                                return stageStorage.Get<Phabricator.Data.File>(database, unassignedStagedToken, browser.Session.Locale);
+                            }));
+                            referencedObjects = referencedObjects.Where(obj => obj != null)
+                                                                 .GroupBy(obj => obj.Token)
+                                                                 .Select(g => g.FirstOrDefault())
+                                                                 .ToList();
                             if (originalPhrictionDocument != null)
                             {
                                 if (isTranslation)

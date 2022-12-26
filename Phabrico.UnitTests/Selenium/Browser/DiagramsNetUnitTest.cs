@@ -21,6 +21,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
         public void OpenPhrictionAndAddDiagram(Type browser, string httpRootPath)
         {
             Initialize(browser, httpRootPath);
+            
+            WebBrowser.Manage().Window.Maximize();  // maximize window, otherwise some toolbar-buttons are not accessible
 
             Logon();
 

@@ -185,6 +185,7 @@ namespace Phabrico.Plugin
 
         private void ValidateDocument(Database database, string phrictionToken, Dictionary<int, List<string>> invalidFiles, Dictionary<string, List<string>> invalidHyperlinks)
         {
+            Content content = new Content(database);
             Storage.File fileStorage = new Storage.File();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.Stage stageStorage = new Storage.Stage();
@@ -212,6 +213,12 @@ namespace Phabrico.Plugin
                         if (referencedFile.FileID < 0)
                         {
                             fileExists = stageStorage.Get(database, browser.Session.Locale).Any(stageData => stageData.ObjectID == referencedFile.FileID);
+                        }
+                        else
+                        if (referencedFile.Text.StartsWith("{FTRAN"))
+                        {
+                            string token = string.Format("PHID-OBJECT-{0}", referencedFile.FileID.ToString().PadLeft(18, '0'));
+                            fileExists = content.GetTranslation(token, browser.Session.Locale) != null;
                         }
                         else
                         {

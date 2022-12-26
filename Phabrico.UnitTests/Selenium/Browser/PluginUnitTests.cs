@@ -607,6 +607,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
         {
             Initialize(browser, httpRootPath);
 
+            WebBrowser.Manage().Window.Maximize();  // maximize window, otherwise some toolbar-buttons are not accessible
+
             // read translations.po and convert it to a dictionary (which we'll use in the dummy translator)
             string translated = File.ReadAllText(@"ContentTranslation\translations.po");
             Dictionary<string, string> translations = RegexSafe.Matches(translated, "^msgid +\"([^\"]*)\"\r?\nmsgstr +\"([^\"]*)", RegexOptions.Multiline)
@@ -1276,6 +1278,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
         public void PhrictionTranslatorDiagramsUndo(Type browser, string httpRootPath)
         {
             Initialize(browser, httpRootPath);
+
+            WebBrowser.Manage().Window.Maximize();  // maximize window, otherwise some toolbar-buttons are not accessible
 
             // read translations.po and convert it to a dictionary (which we'll use in the dummy translator)
             string translated = File.ReadAllText(@"ContentTranslation\translations.po");

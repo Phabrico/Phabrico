@@ -439,8 +439,24 @@ select {
     padding: 3px 5px 3px 5px;
 }
 
+    .navigator-menuitem-notification.busy {
+        font: normal normal normal 1.5em/1 FontAwesome;
+        text-rendering: auto;
+        margin-left: 8px;
+        margin-top: -3px;
+        display: inline-block !important;
+        position: absolute;
+        border-radius: unset;
+        padding: unset;
+        animation: fa-spin 2s infinite linear;
+    }
+
+    .navigator-menuitem-notification.busy::before {
+        content: "\f021";
+    }
+
 .navigator-menuitem-notification:empty {
-  display: none;
+    display: none;
 }
 
 .maniphest-list .phui-font-fa.fa-anchor:before {

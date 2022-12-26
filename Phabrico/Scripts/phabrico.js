@@ -154,7 +154,7 @@ class AutoLogOff {
 class CrumbsHeader {
     constructor(crumbsContainer, title, crumbs) {
         var lastCrumbObject = crumbsContainer.firstElementChild;
-        var slug = lastCrumbObject.href;
+        var slug = lastCrumbObject.href.replace(/\/$/, "");
 
         var a = document.createElement('a');
         a.href = slug;
@@ -1972,11 +1972,13 @@ class TextAreaDropZone {
                 }
 
                 if (items[i].type.indexOf("image") === 0) {
+                    var isTranslation = document.querySelector('.edit-container.translation') != null;
+
                     // paste image
                     image = items[i].getAsFile();
 
                     var fileReader = new FileReader();
-                    fileReader.onload = (me.fileReaderLoad)(evt, evt.clipboardData.files, 0);
+                    fileReader.onload = (me.fileReaderLoad)(evt, evt.clipboardData.files, 0, isTranslation);
                     fileReader.readAsBinaryString(evt.clipboardData.files[i],"UTF-8");
                     return true;
                 }
@@ -2838,6 +2840,31 @@ document.addEventListener('DOMContentLoaded', function() {
             phrictionCorrectButtonLocations();
         }, 100);
     });
+
+    // finalize all plugin-buttons in images
+    Array.prototype.slice.call(document.querySelectorAll('a[href*="JSPaintImageEditor/F"], a[href*="diagrams.net/F"]'), 0)
+        .forEach(a => {
+            var isTranslation = false;
+            if (document.querySelector('.edit-container') != null) {
+                isTranslation = document.querySelector('.edit-container.translation') != null;
+            } else {
+                isTranslation = document.querySelector('a.edit[href*="?action=translate"]') != null
+            }
+            if (isTranslation == false) return;
+
+            var href = a.attributes["href"].value;
+            var url = href.split('?')[0];
+            var params = href.split('?')[1] || null
+            if (params == null) {
+                a.href = url + "?isTranslation=" + isTranslation;
+            } else {
+                var otherParams = params.split('&')
+                    .filter(p => p.split('=')[0] != 'isTranslation')
+                    .join('&');
+                href = url + "?" + otherParams + "&isTranslation=" + isTranslation;
+                a.href = href.replace(/\?&/, "?");
+            }
+        });
 
     // finalize syntax highlighting codeblocks
     document.querySelectorAll('.codeblock pre code').forEach((codeblock) => {

@@ -57,6 +57,7 @@ namespace Phabrico.Plugin
             public string Crumbs { get; set; }
             public string Path { get; set; }
             public bool IsPrepared { get; set; }
+            public bool IsTranslation { get; set; }
             public ConfirmResponse ConfirmState { get; set; }
         }
         

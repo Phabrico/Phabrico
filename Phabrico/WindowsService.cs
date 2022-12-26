@@ -31,7 +31,7 @@ namespace Phabrico
         /// </summary>
         public const string Description = "Offline Reader and Editor for Phabricator documents and tasks";
 
-        private static readonly Mutex singleInstanceMutex = new Mutex(false, MutexName);
+        private static Mutex singleInstanceMutex;
         private static Task serviceMainTask = null;
         private static TaskStatus serviceMainTaskStatus = TaskStatus.WaitingToRun; 
         private static CancellationTokenSource serviceMainTaskCancellationTokenSource;
@@ -124,6 +124,8 @@ namespace Phabrico
                 }
                 else
                 {
+                    singleInstanceMutex = new Mutex(false, MutexName);
+
                     Logging.WriteInfo(null, "*** Startup ***");
 
                     // only 1 instance of Phabrico is allowed 
@@ -149,6 +151,8 @@ namespace Phabrico
             }
             else
             {
+                singleInstanceMutex = new Mutex(false, MutexName);
+
                 Logging.WriteInfo(null, "*** Startup ***");
 
                 // program is running  as a service

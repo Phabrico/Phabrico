@@ -85,6 +85,7 @@ namespace Phabrico.Parsers.Remarkup
                                                                .ToList();
                 }
 
+                int currentPosition = 0;
                 while (unprocessedRemarkupText.Any())
                 {
                     string localHtml = "";
@@ -105,10 +106,13 @@ namespace Phabrico.Parsers.Remarkup
                             remarkupRule.LinkedPhabricatorObjects.Clear();
                             remarkupRule.ParentRemarkupRule = currentRemarkupRule;
                             remarkupRule.TokenList = remarkupParserOutput.TokenList;
+                            remarkupRule.Start = currentPosition;
                             success = remarkupRule.ToHTML(database, browser, url, ref unprocessedRemarkupText, out localHtml);
                             if (success)
                             {
-                                remarkupRule.Start = remarkupText.IndexOf(processedRemarkupText);
+                                currentPosition = remarkupText.IndexOf(processedRemarkupText);
+                                remarkupRule.Start = currentPosition;
+                                currentPosition += remarkupRule.Length;
                                 remarkupRule.Text = processedRemarkupText.Substring(0, remarkupRule.Length);
                                 remarkupRule.Html = localHtml;
 
@@ -178,6 +182,7 @@ namespace Phabrico.Parsers.Remarkup
                         bool addNewLineAfterFullStop = false;
                         if (unprocessedRemarkupText.Length > 0)
                         {
+                            Rules.RuleUnknownToken unknownToken;
                             byte[] utf16 = System.Text.UnicodeEncoding.Unicode.GetBytes( unprocessedRemarkupText );
 
                             if (unprocessedRemarkupText.Length == 1 || utf16[1] == 0x00)
@@ -251,20 +256,32 @@ namespace Phabrico.Parsers.Remarkup
                                 if (utf16.Length >= 4 && utf16[3] != 0x00)
                                 {
                                     html += (char)BitConverter.ToUInt16(utf16, 2);
-                                    remarkupParserOutput.TokenList.Add(new Rules.RuleUnknownToken(unprocessedRemarkupText[0].ToString()));
+                                    unknownToken = new Rules.RuleUnknownToken(unprocessedRemarkupText[0].ToString());
+                                    unknownToken.Start = remarkupText.IndexOf(unprocessedRemarkupText);
+                                    unknownToken.Length = 1;
+                                    remarkupParserOutput.TokenList.Add(unknownToken);
                                     unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
+                                    currentPosition++;
                                 }
                             }
-                            
-                            remarkupParserOutput.TokenList.Add(new Rules.RuleUnknownToken(unprocessedRemarkupText[0].ToString()));
+
+                            unknownToken = new Rules.RuleUnknownToken(unprocessedRemarkupText[0].ToString());
+                            unknownToken.Start = remarkupText.IndexOf(unprocessedRemarkupText);
+                            unknownToken.Length = 1;
+                            remarkupParserOutput.TokenList.Add(unknownToken);
                             unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
+                            currentPosition++;
 
                             if (addNewLineAfterFullStop)
                             {
                                 html += "<br>\n";
                                 while (unprocessedRemarkupText.StartsWith(" ")) unprocessedRemarkupText = unprocessedRemarkupText.Substring(1);
 
-                                remarkupParserOutput.TokenList.Add(new Rules.RuleUnknownToken(" "));
+                                unknownToken = new Rules.RuleUnknownToken(" ");
+                                unknownToken.Start = remarkupText.IndexOf(unprocessedRemarkupText);
+                                unknownToken.Length = 1;
+                                remarkupParserOutput.TokenList.Add(unknownToken);
+                                currentPosition++;
                             }
                         }
 

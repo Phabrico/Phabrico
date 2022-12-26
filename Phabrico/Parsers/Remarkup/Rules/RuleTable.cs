@@ -51,14 +51,15 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     //
                     // Start converting it to a HTML table
 
+                    List<List<int>> tokenPositions = new List<List<int>>();
                     string tableContent = "<table>";
                     string lastLine = null;
-                    foreach (string line in match.Value
-                                                 .Split('\n')
-                                                 .Select(m => m.Trim('\r'))
-                                                 .Where(m => string.IsNullOrEmpty(m) == false)
-                            )
+                    foreach (Match matchRow in RegexSafe.Matches(match.Value, "[^\n]*\n"))
                     {
+                        string line = matchRow.Value.Trim('\r', '\n');
+
+                        if (string.IsNullOrEmpty(line)) continue;
+
                         string lineContent = line;
                         if (lineContent.EndsWith("|"))
                         {
@@ -74,6 +75,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         }
 
                         // search for hyperlinks in table cells and replace them temporarilly
+                        string lineContentForTokenPositions = lineContent;
                         Dictionary<string, string> hyperlinks = new Dictionary<string, string>();
                         foreach (Match hyperlink in RegexSafe.Matches(lineContent, @"\[\[(.+?(?=\]\]))\]\]", RegexOptions.Singleline).OfType<Match>().OrderByDescending(m => m.Index).ToList())
                         {
@@ -83,6 +85,10 @@ namespace Phabrico.Parsers.Remarkup.Rules
                             lineContent = lineContent.Substring(0, hyperlink.Index) +
                                           key +
                                           lineContent.Substring(hyperlink.Index + hyperlink.Length);
+
+                            lineContentForTokenPositions = lineContentForTokenPositions.Substring(0, hyperlink.Index) +
+                                                           new string('?', hyperlink.Length) +
+                                                           lineContentForTokenPositions.Substring(hyperlink.Index + hyperlink.Length);
                         }
 
                         if (string.IsNullOrEmpty(lineContent)) break;
@@ -121,6 +127,15 @@ namespace Phabrico.Parsers.Remarkup.Rules
                             }
                             lineContent += "</tr>\n";
                         }
+                        else
+                        {
+                            List<int> tokenPositionsRow = new List<int>();
+                            tokenPositionsRow.AddRange(RegexSafe.Matches(lineContentForTokenPositions, "\\|[ \t]*")
+                                                                .OfType<Match>()
+                                                                .Select(m => matchRow.Index + m.Index + m.Length)
+                                                      );
+                            tokenPositions.Add(tokenPositionsRow);
+                        }
 
                         tableContent += lineContent;
 
@@ -138,7 +153,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         remarkup = remarkup.Substring(match.Length);
 
                         // process HTML further
-                        if (ProcessHtmlTable(browser, database, url, ref tableContent, out html))
+                        if (ProcessHtmlTable(browser, database, url, ref tableContent, out html, tokenPositions))
                         {
                             Length = match.Length;
                             return true;
@@ -150,7 +165,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 else
                 {
                     // If content is a HTML table, process it further
-                    return ProcessHtmlTable(browser, database, url, ref remarkup, out html);
+                    return ProcessHtmlTable(browser, database, url, ref remarkup, out html, null);
                 }
             }
 
@@ -216,8 +231,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <param name="url">URL from where the content origins from</param>
         /// <param name="remarkup">Content to be validated</param>
         /// <param name="html">Generated HTML (if success)</param>
+        /// <param name="tokenPositions">Start position of each cell token per row (if null, ProcessHtmlTable will generate it itself)</param>
         /// <returns>True if content was HTML table</returns>
-        private bool ProcessHtmlTable(Browser browser, Storage.Database database, string url, ref string remarkup, out string html)
+        private bool ProcessHtmlTable(Browser browser, Storage.Database database, string url, ref string remarkup, out string html, List<List<int>> tokenPositions)
         {
             html = "";
 
@@ -230,16 +246,29 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 Storage.Account accountStorage = new Storage.Account();
                 Account existingAccount = accountStorage.WhoAmI(database, browser);
 
-                string[] concealedHeaders = existingAccount.Parameters.ColumnHeadersToHide?.Select(columnHeaderToHide => columnHeaderToHide.ToLower()).ToArray() ?? new string[0];
+                string[] concealedHeaders = existingAccount?.Parameters?.ColumnHeadersToHide?.Select(columnHeaderToHide => columnHeaderToHide.ToLower()).ToArray() ?? new string[0];
                 List<int> concealedColumnIndices = new List<int>();
                 List<int> concealedHeaderIndices = new List<int>();
 
+                bool generateTokenPositions = (tokenPositions == null);
+                if (generateTokenPositions)
+                {
+                    tokenPositions = new List<List<int>>();
+                }
+
+                int rowIndex = -1;
                 string tableContent = "<table class='remarkup-table'>\n";
                 foreach (Match row in rows.OfType<Match>())
                 {
                     List<Match> tableRowData = RegexSafe.Matches(row.Value, "<(th)>([^<]*)</th>|<(td)>([^<]*)</td>", RegexOptions.Singleline).OfType<Match>().ToList();
                     bool firstCellIsHeader = false;
                     bool allCellsAreHeaders = false;
+
+                    rowIndex++;
+                    if (generateTokenPositions)
+                    {
+                        tokenPositions.Add(new List<int>());
+                    }
 
                     if (tableRowData.Any())
                     {
@@ -280,8 +309,17 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         string cellValue = Engine.ToHTML(this, database, browser, url, cell.Groups[3].Value.Trim(' ', '\r'), out remarkupParserOutput, false);
                         string cellConcealed = cellType.Equals("td") && concealedHeaderIndices.Contains(cellIndex) ? " class='concealed'" : "";
 
+                        if (generateTokenPositions)
+                        {
+                            tokenPositions[rowIndex].Add(match.Index + match.Groups[1].Index + row.Index + cell.Groups[3].Index);
+                        }
+
                         LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
-                        ChildTokenList.AddRange(remarkupParserOutput.TokenList);
+                        foreach (Rules.RemarkupRule childtoken in remarkupParserOutput.TokenList.ToArray())
+                        {
+                            childtoken.Start += Start + tokenPositions[rowIndex][cellIndex];
+                            ChildTokenList.Add(childtoken);
+                        }
 
                         string cellValueWithBR = "";
                         for (int c = 0; c < cellValue.Length; c++)

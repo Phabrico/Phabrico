@@ -42,8 +42,9 @@ namespace Phabrico.Data.References
         /// <summary>
         /// Translates the current tree item to HTML
         /// </summary>
+        /// <param name="rootDocumentPath"></param>
         /// <returns></returns>
-        public string ToHTML()
+        public string ToHTML(string rootDocumentPath)
         {
             string html = "<ul class='phui-document-hierarchy'><li>";
 
@@ -57,7 +58,7 @@ namespace Phabrico.Data.References
 
                     if (childHierarchy.Any())
                     {
-                        string url = GetURL(childHierarchy.Data).ToString();
+                        string url = GetURL(childHierarchy.Data, rootDocumentPath).ToString();
                         string description = GetDescription(childHierarchy.Data).ToString();
                         if (string.IsNullOrWhiteSpace(description))
                         {
@@ -73,7 +74,7 @@ namespace Phabrico.Data.References
 
                             if (grandchildHierarchy.Any())
                             {
-                                url = GetURL(grandchildHierarchy.Data).ToString();
+                                url = GetURL(grandchildHierarchy.Data, rootDocumentPath).ToString();
                                 description = GetDescription(grandchildHierarchy.Data).ToString();
                                 if (string.IsNullOrWhiteSpace(description))
                                 {
@@ -84,7 +85,7 @@ namespace Phabrico.Data.References
                                 html += "<ul class='phui-document-hierarchy-item'>";
                                 foreach (PhrictionDocumentTree greatgrandchildHierarchy in grandchildHierarchy.OrderBy(grandchild => grandchild.Data))
                                 {
-                                    url = GetURL(greatgrandchildHierarchy.Data).ToString();
+                                    url = GetURL(greatgrandchildHierarchy.Data, rootDocumentPath).ToString();
                                     description = GetDescription(greatgrandchildHierarchy.Data).ToString();
                                     if (string.IsNullOrWhiteSpace(description))
                                     {
@@ -98,7 +99,7 @@ namespace Phabrico.Data.References
                             }
                             else
                             {
-                                url = GetURL(grandchildHierarchy.Data).ToString();
+                                url = GetURL(grandchildHierarchy.Data, rootDocumentPath).ToString();
                                 description = GetDescription(grandchildHierarchy.Data).ToString();
                                 if (string.IsNullOrWhiteSpace(description))
                                 {
@@ -115,7 +116,7 @@ namespace Phabrico.Data.References
                     }
                     else
                     {
-                        string url = GetURL(childHierarchy.Data).ToString();
+                        string url = GetURL(childHierarchy.Data, rootDocumentPath).ToString();
                         string description = GetDescription(childHierarchy.Data).ToString();
                         if (string.IsNullOrWhiteSpace(description))
                         {
@@ -154,10 +155,13 @@ namespace Phabrico.Data.References
         /// <summary>
         /// Returns the URL to a given Phriction document
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="phrictionDocument"></param>
+        /// <param name="rootDocumentPath"></param>
         /// <returns></returns>
-        private string GetURL(Phabricator.Data.Phriction phrictionDocument)
+        private string GetURL(Phabricator.Data.Phriction phrictionDocument, string rootDocumentPath)
         {
+            string url;
+
             if (phrictionDocument != null)
             {
                 string encodedUrl = phrictionDocument.Path;
@@ -170,8 +174,14 @@ namespace Phabrico.Data.References
                     encodedUrl = HttpUtility.UrlEncode(encodedUrl);
                 }
 
-                return "w/" + encodedUrl.Replace("%2f", "/")   // make sure we don't have encoded '/' characters
-                                         .Replace("%2F", "/");  //
+                url = encodedUrl.Replace("%2f", "/")   // make sure we don't have encoded '/' characters
+                                .Replace("%2F", "/");  //
+                if (rootDocumentPath.Any() && url.StartsWith(rootDocumentPath))
+                {
+                    url = url.Substring(rootDocumentPath.Length);
+                }
+
+                return ("w/" + url).Replace("//", "/");
             }
 
             return "";

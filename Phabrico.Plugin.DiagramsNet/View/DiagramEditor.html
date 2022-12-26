@@ -56,7 +56,7 @@
 
                     @{IF @@SHOW-APPROVE-TRANSLATION-BTN@@=True@
                         var menubar = iframe.contentWindow.document.querySelector('.geMenubarContainer');
-                        var btnSave = menubar.querySelector('.geMenuItem.gePrimaryBtn');
+                        var btnSave = menubar.querySelector('.gePrimaryBtn');
                         var btnApproveAnchor = iframe.contentWindow.document.createElement('a');
                         btnApproveAnchor.id = 'btnApproveAnchor';
                         btnApproveAnchor.className = 'geMenuItem geGreenBtn';
@@ -85,8 +85,8 @@
                                     xmlRequest.onreadystatechange = function() {
                                         if (xmlRequest.readyState == 4 && xmlRequest.status == 200) {
                                             var jsonResponse = JSON.parse(xmlRequest.responseText);
-                                            if (jsonResponse.Status == 'OK') {
-                                                document.location.reload();
+											if (jsonResponse.Status == 'OK') {
+												document.location = document.baseURI + "diagrams.net/FTRAN" + jsonResponse.TranslationObjectID;
                                                 return;
                                             }
                                             if (jsonResponse.Status == 'MasterDataModified') {
@@ -160,16 +160,30 @@
 
 	function saveFlowchart(name, flowchartData, iframe)
 	{
+		var isTranslation = false;
         var fileID = parseInt(
                         document.location.pathname.split("/diagrams.net/")
                                                   .reverse()[0]
                                                   .substring("F".length)
                      );
+		if (isNaN(fileID)) {
+            fileID = parseInt(
+                document.location.pathname.split("/diagrams.net/")
+                    .reverse()[0]
+                    .substring("FTRAN".length)
+			);
+
+			if (isNaN(fileID) == false) {
+				isTranslation = true;
+            }
+		}
+
 	    var isStaged = fileID < 0;
 
 	    var data = new FormData();
 	    data.append('data', flowchartData);
-	    data.append('fileID', fileID);
+		data.append('fileID', fileID);
+		data.append('isTranslation', isTranslation);
 
 	    var xmlhttp = new XMLHttpRequest();
 	    xmlhttp.overrideMimeType("application/json");

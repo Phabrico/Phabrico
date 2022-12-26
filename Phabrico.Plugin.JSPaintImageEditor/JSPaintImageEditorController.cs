@@ -22,7 +22,7 @@ namespace Phabrico.Plugin
     {
 
         /// <summary>
-        /// This method is fired when the user opens the Diagram screen (from the Phabrico navigator or via a Remarkup-editor)
+        /// This method is fired when the user opens the JSPaintImageEditor screen (from the Phabrico navigator or via a Remarkup-editor)
         /// </summary>
         /// <param name="httpServer"></param>
         /// <param name="httpFound"></param>
@@ -35,86 +35,77 @@ namespace Phabrico.Plugin
             Storage.Account accountStorage = new Storage.Account();
             Storage.File fileStorage = new Storage.File();
             string imageFileName;
-            string theme;
-            bool openedFromRemarkupEditor = false;
-            Phabricator.Data.Account.DarkenImageStyle darkenImageStyle;
-
+            
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
                 if (parameters.Any())
                 {
-                    if (parameters.FirstOrDefault().Equals("new"))
-                    {
-                        // diagramsnet is opened from a remarkup editor
-                        openedFromRemarkupEditor = true;
-                        imageFileName = Locale.TranslateText("(New)", browser.Session.Locale);
-                    }
-                    else
-                    {
-                        // parameter is file object to be edited
-                        string fileObjectName = parameters.FirstOrDefault();
+                    // first parameter is file object to be edited
+                    string fileObjectName = parameters.FirstOrDefault();
 
-                        // check if parameter is really a file object
-                        Match matchFileObjectName = RegexSafe.Match(fileObjectName, "F(TRAN)?(-?[0-9]+)", RegexOptions.None);
-                        if (matchFileObjectName.Success)
+                    bool isTranslation = parameters.Any(p => p.TrimStart('?', '&').StartsWith("isTranslation=true"));
+                    
+                    // check if parameter is really a file object
+                    Match matchFileObjectName = RegexSafe.Match(fileObjectName, "F(TRAN)?(-?[0-9]+)", RegexOptions.None);
+                    if (matchFileObjectName.Success)
+                    {
+                        // open given file object
+                        bool isTranslatedObject = matchFileObjectName.Groups[1].Success;
+                        int fileObjectId = Int32.Parse(matchFileObjectName.Groups[2].Value);
+
+                        if (isTranslatedObject)
                         {
-                            // open given file object
-                            bool isTranslatedObject = matchFileObjectName.Groups[1].Success;
-                            int fileObjectId = Int32.Parse(matchFileObjectName.Groups[2].Value);
-
-                            if (isTranslatedObject)
+                            string token = string.Format("PHID-OBJECT-{0}", fileObjectId.ToString().PadLeft(18, '0'));
+                            Storage.Content content = new Content(database);
+                            Storage.Content.Translation translation = content.GetTranslation(token, browser.Session.Locale);
+                            if (translation != null)
                             {
-                                string token = string.Format("PHID-OBJECT-{0}", fileObjectId.ToString().PadLeft(18, '0'));
-                                Storage.Content content = new Content(database);
-                                Storage.Content.Translation translation = content.GetTranslation(token, browser.Session.Locale);
-                                if (translation != null)
+                                Newtonsoft.Json.Linq.JObject fileObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
+                                if (fileObjectInfo != null)
                                 {
-                                    Newtonsoft.Json.Linq.JObject fileObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
-                                    if (fileObjectInfo != null)
+                                    fileObject = new Phabricator.Data.File();
+                                    fileObject.ID = fileObjectId;
+                                    fileObject.Token = token;
+
+                                    string base64EncodedData = (string)fileObjectInfo["Data"];
+                                    byte[] buffer = new byte[(int)(base64EncodedData.Length * 0.8)];
+                                    using (MemoryStream ms = new MemoryStream(buffer))
+                                    using (Phabrico.Parsers.Base64.Base64EIDOStream base64EIDOStream = new Parsers.Base64.Base64EIDOStream(base64EncodedData))
                                     {
-                                        fileObject = new Phabricator.Data.File();
-                                        fileObject.ID = fileObjectId;
-                                        fileObject.Token = token;
-
-                                        string base64EncodedData = (string)fileObjectInfo["Data"];
-                                        byte[] buffer = new byte[(int)(base64EncodedData.Length * 0.8)];
-                                        using (MemoryStream ms = new MemoryStream(buffer))
-                                        using (Phabrico.Parsers.Base64.Base64EIDOStream base64EIDOStream = new Parsers.Base64.Base64EIDOStream(base64EncodedData))
-                                        {
-                                            base64EIDOStream.CopyTo(ms);
-                                            Array.Resize(ref buffer, (int)base64EIDOStream.Length);
-                                        }
-
-                                        fileObject.Data = buffer;
-                                        fileObject.Size = buffer.Length;
-                                        fileObject.Properties = (string)fileObjectInfo["Properties"];
-                                        fileObject.FileName = (string)fileObjectInfo["FileName"];
+                                        base64EIDOStream.CopyTo(ms);
+                                        Array.Resize(ref buffer, (int)base64EIDOStream.Length);
                                     }
+
+                                    fileObject.Data = buffer;
+                                    fileObject.Size = buffer.Length;
+                                    fileObject.Properties = (string)fileObjectInfo["Properties"];
+                                    fileObject.FileName = (string)fileObjectInfo["FileName"];
                                 }
                             }
-                            else
-                            if (fileObjectName.StartsWith("F-"))
-                            {
-                                Storage.Stage stageStorage = new Storage.Stage();
-                                fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileObjectId, true);
-                            }
-                            else
-                            {
-                                fileObject = fileStorage.GetByID(database, fileObjectId, false);
-                            }
+                        }
+                        else
+                        if (fileObjectName.StartsWith("F-"))
+                        {
+                            Storage.Stage stageStorage = new Storage.Stage();
+                            fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileObjectId, true);
+                        }
+                        else
+                        {
+                            fileObject = fileStorage.GetByID(database, fileObjectId, false);
+                        }
 
-                            imageFileName = string.Format("F{0}{1}",
-                                isTranslatedObject ? "TRAN" : "",
-                                fileObjectId);
+                        imageFileName = string.Format("F{0}{1}",
+                            isTranslatedObject ? "TRAN" : "",
+                            fileObjectId);
 
-                            if (fileObject != null && fileObject.FileType == Phabricator.Data.File.FileStyle.Image && fileObject.ContentType.Equals("image/drawio") == false)
-                            {
-                                // use loaded XML/PNG content from fileobject as initial template for IFrame content
-                                string base64Data = fileObject.DataStream.ReadEncodedBlock(0, (int)fileObject.DataStream.LengthEncodedData);
-                                htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64," + base64Data, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                                htmlViewPage.SetText("IMAGE-FILE-NAME", imageFileName);
-                                return;
-                            }
+                        if (fileObject != null && fileObject.FileType == Phabricator.Data.File.FileStyle.Image && fileObject.ContentType.Equals("image/drawio") == false)
+                        {
+                            // use loaded XML/PNG content from fileobject as initial template for IFrame content
+                            string base64Data = fileObject.DataStream.ReadEncodedBlock(0, (int)fileObject.DataStream.LengthEncodedData);
+                            htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64," + base64Data, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                            htmlViewPage.SetText("IMAGE-FILE-NAME", imageFileName);
+                            htmlViewPage.SetText("CONTENT-LANGUAGE", isTranslation ? browser.Session.Locale : Language.NotApplicable);
+                            return;
                         }
                     }
                 }
@@ -124,8 +115,8 @@ namespace Phabrico.Plugin
         }
 
         /// <summary>
-        /// The Diagrams.Net (formerly known as Draw.io) application is loaded in an IFRAME tag.
-        /// The IFRAME will execute this method to load (and show) the Diagrams.Net application
+        /// The JSPaintImageEditor application is loaded in an IFRAME tag.
+        /// The IFRAME will execute this method to load (and show) the JSPaintImageEditor application
         /// </summary>
         /// <param name="httpServer"></param>
         /// <param name="httpFound"></param>
@@ -133,7 +124,7 @@ namespace Phabrico.Plugin
         /// <param name="parameterActions"></param>
         /// <returns></returns>
         [UrlController(URL = "/JSPaint", HtmlViewPageOptions = HtmlViewPage.ContentOptions.IFrame)]
-        public HttpMessage HttpGetDiagramsNetEditorIFrame(Http.Server httpServer, ref HttpFound httpFound, string[] parameters, string parameterActions)
+        public HttpMessage HttpGetJSPaintImageEditorIFrame(Http.Server httpServer, ref HttpFound httpFound, string[] parameters, string parameterActions)
         {
             if (parameters.TakeWhile(parameter => parameter.StartsWith("?") == false).Any() == false)
             {
@@ -196,8 +187,11 @@ namespace Phabrico.Plugin
             {
                 const string base64Prefix = "data:image/png;base64,";
 
+                bool isTranslation;
                 string saveData = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
                 string fileID = browser.Session.FormVariables[browser.Request.RawUrl]["fileID"];
+                string contentLanguage = browser.Session.FormVariables[browser.Request.RawUrl]["language"];
+                bool.TryParse(browser.Session.FormVariables[browser.Request.RawUrl]["isTranslation"], out isTranslation);
                 string jsonData;
 
                 if (saveData.StartsWith(base64Prefix))
@@ -241,6 +235,7 @@ namespace Phabrico.Plugin
                                 file = new Phabricator.Data.File();
                                 file.Data = buffer;
                                 file.TemplateFileName = originalFile.FileName;
+                                file.Language = contentLanguage;
 
                                 using (MemoryStream memoryStream = new MemoryStream(file.Data))
                                 {
@@ -254,7 +249,7 @@ namespace Phabrico.Plugin
                                 stageStorage.Create(database, browser, file);
 
                                 // search for all wiki/task objects in which the original file is referenced
-                                IEnumerable<Phabricator.Data.PhabricatorObject> referrers = database.GetDependentObjects(originalFile.Token, Language.NotApplicable);
+                                IEnumerable<Phabricator.Data.PhabricatorObject> referrers = database.GetDependentObjects(originalFile.Token, contentLanguage);
 
                                 RemarkupEngine remarkupEngine = new RemarkupEngine();
                                 foreach (Phabricator.Data.PhabricatorObject referrer in referrers)

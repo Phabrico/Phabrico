@@ -26,6 +26,8 @@ namespace Phabrico.Http
 
         private static readonly List<string> preloaded = new List<string>();
 
+        public static Browser Dummy { get; private set; } = null;
+
         /// <summary>
         /// Represents the fingerprint of the browser
         /// </summary>
@@ -140,6 +142,11 @@ namespace Phabrico.Http
             this.HttpServer = httpServer;
             this.httpListenerContext = httpListenerContext;
 
+            if (Dummy == null)
+            {
+                Dummy = this;
+            }
+
             CopyCookiesFromRequestToResponse();
 
             // set fingerprint
@@ -160,6 +167,7 @@ namespace Phabrico.Http
                 if (httpListenerContext.Request.Cookies["language"] != null)
                 {
                     Language = httpListenerContext.Request.Cookies["language"].Value;
+                    Session.Locale = Language;
                 }
                 else
                 {
@@ -423,7 +431,7 @@ namespace Phabrico.Http
                 httpListenerContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
                 httpListenerContext.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
                 httpListenerContext.Response.Headers["Content-Security-Policy"] = string.Join(";", (new string[] {
-                    "default-src 'self' https://api.github.com/repos/phabrico/phabrico/releases/latest https://github.com/jgraph/drawio https://github.com/1j01/jspaint",
+                    "default-src 'self' blob: https://api.github.com/repos/phabrico/phabrico/releases/latest https://github.com/jgraph/drawio https://github.com/1j01/jspaint",
                     "img-src 'self' blob: data:",
                     "style-src 'self' 'unsafe-inline'",
                     "script-src 'self' 'unsafe-inline'",

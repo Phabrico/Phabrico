@@ -31,6 +31,8 @@ namespace Phabrico.Storage
         private string encryptionKey;
         private PolyCharacterCipherEncryption keywordEncryptor = null;
 
+        private static bool invalidDataHasBeenCleanedUp = false;
+
         public delegate void InvalidUrlEventHandler(object sender, string origin, string invalidUrl);
 
         public event InvalidUrlEventHandler InvalidUrlFound = null;
@@ -230,6 +232,93 @@ namespace Phabrico.Storage
             {
                 // ignore exception, so we can continue to show stacktrace
                 this.IsConnected = false;
+            }
+
+            if (encryptionKey != null && IsConnected && invalidDataHasBeenCleanedUp == false)
+            {
+                CleanupInvalidData();
+                invalidDataHasBeenCleanedUp = true;
+            }
+        }
+
+        public void CleanupInvalidData()
+        {
+            List<string> tokensToDelete = new List<string>();
+            List<string> linkedTokensToDelete = new List<string>();
+
+            using (SQLiteCommand cmdStageInfo = new SQLiteCommand(@"
+                        SELECT 1
+                        FROM stageInfo
+                        WHERE token = @token
+                    ", Connection))
+            {
+                using (SQLiteCommand cmdObjectRelationInfo = new SQLiteCommand(@"
+                        SELECT DISTINCT token
+                        FROM objectRelationInfo
+                        WHERE token LIKE 'PHID-NEWTOKEN-%'
+                    ", Connection))
+                {
+                    using (var reader = cmdObjectRelationInfo.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string token = (string)reader["token"];
+                            cmdStageInfo.Parameters.Clear();
+                            cmdStageInfo.Parameters.Add(new SQLiteParameter("token", token));
+                            if (cmdStageInfo.ExecuteScalar() == null)
+                            {
+                                tokensToDelete.Add(token);
+                            }
+                        }
+                    }
+                }
+
+                using (SQLiteCommand cmdObjectRelationInfo = new SQLiteCommand(@"
+                        SELECT DISTINCT linkedToken
+                        FROM objectRelationInfo
+                        WHERE linkedToken LIKE 'PHID-NEWTOKEN-%'
+                    ", Connection))
+                {
+                    using (var reader = cmdObjectRelationInfo.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string linkedToken = (string)reader["linkedToken"];
+                            cmdStageInfo.Parameters.Clear();
+                            cmdStageInfo.Parameters.Add(new SQLiteParameter("token", linkedToken));
+                            if (cmdStageInfo.ExecuteScalar() == null)
+                            {
+                                linkedTokensToDelete.Add(linkedToken);
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (string token in tokensToDelete)
+            {
+                using (SQLiteCommand cmdObjectRelationInfo = new SQLiteCommand(@"
+                        DELETE FROM objectRelationInfo
+                        WHERE token = @token
+                    ", Connection))
+                {
+                    cmdObjectRelationInfo.Parameters.Clear();
+                    AddParameter(cmdObjectRelationInfo, "token", token, EncryptionMode.None);
+                    cmdObjectRelationInfo.ExecuteNonQuery();
+                }
+            }
+
+            foreach (string token in linkedTokensToDelete)
+            {
+                using (SQLiteCommand cmdObjectRelationInfo = new SQLiteCommand(@"
+                        DELETE FROM objectRelationInfo
+                        WHERE linkedToken = @token
+                    ", Connection))
+                {
+                    cmdObjectRelationInfo.Parameters.Clear();
+                    AddParameter(cmdObjectRelationInfo, "token", token, EncryptionMode.None);
+                    cmdObjectRelationInfo.ExecuteNonQuery();
+                }
             }
         }
 
@@ -789,10 +878,40 @@ namespace Phabrico.Storage
         /// Deletes all references for a given token
         /// </summary>
         /// <param name="mainToken">Token to be freed</param>
-        public void ClearAssignedTokens(string mainToken, Language language)
+        public IEnumerable<string> ClearAssignedTokens(string mainToken, Language language)
         {
+            List<string> result = new List<string>();
+
             using (SQLiteTransaction transaction = Connection.BeginTransaction())
             {
+                using (SQLiteCommand cmdSelectObjectRelationInfo = new SQLiteCommand(@"
+                           SELECT linkedToken FROM objectRelationInfo
+                           WHERE token = @token
+                             AND (@language IS NULL
+                                  OR language = @language
+                                 );
+                       ", Connection, transaction))
+                {
+                    AddParameter(cmdSelectObjectRelationInfo, "token", mainToken, EncryptionMode.None);
+                    if (language == null)
+                    {
+                        cmdSelectObjectRelationInfo.Parameters.Add(new SQLiteParameter("language", DBNull.Value));
+                    }
+                    else
+                    {
+                        AddParameter(cmdSelectObjectRelationInfo, "language", language, EncryptionMode.None);
+                    }
+
+                    using (var reader = cmdSelectObjectRelationInfo.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            result.Add((string)reader["linkedToken"]);
+                        }
+                    }
+                }
+             
+
                 using (SQLiteCommand cmdDeleteObjectRelationInfo = new SQLiteCommand(@"
                            DELETE FROM objectRelationInfo
                            WHERE token = @token
@@ -815,6 +934,8 @@ namespace Phabrico.Storage
                 
                 transaction.Commit();
             }
+
+            return result;
         }
 
         /// <summary>

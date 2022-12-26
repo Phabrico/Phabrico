@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Miscellaneous;
-using Phabrico.Parsers.Remarkup;
 using Phabrico.Parsers.Remarkup.Rules;
 using System;
 using System.Collections.Generic;
@@ -23,6 +22,7 @@ namespace Phabrico
             {
                 public string[] projectTags { get; set; }
                 public string[] userTags { get; set; }
+                public bool showTasks { get; set; }
             }
 
             public class Phriction
@@ -30,6 +30,8 @@ namespace Phabrico
                 public string[] projectTags { get; set; }
                 public string[] userTags { get; set; }
                 public bool combined { get; set; } = true;
+                public string initialPath { get; set; } = "";
+                public bool showDocuments { get; set; }
                 public bool tree { get; set; } = true;
                 public string translation { get; set; }
             }
@@ -322,15 +324,15 @@ namespace Phabrico
                 synchronizationParameters.existingAccount = new Phabricator.Data.Account();
                 synchronizationParameters.existingAccount.Token = Encryption.GenerateTokenKey(Configuration.username, Configuration.password);
                 synchronizationParameters.existingAccount.UserName = Configuration.username;
-                synchronizationParameters.existingAccount.Parameters.Synchronization = (Configuration.maniphest.projectTags != null && Configuration.maniphest.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.ManiphestSelectedProjectsOnly
-                                                                                     : (Configuration.maniphest.userTags != null && Configuration.maniphest.userTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.ManiphestSelectedUsersOnly
+                synchronizationParameters.existingAccount.Parameters.Synchronization = (Configuration.maniphest != null && Configuration.maniphest.projectTags != null && Configuration.maniphest.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.ManiphestSelectedProjectsOnly
+                                                                                     : (Configuration.maniphest != null && Configuration.maniphest.userTags != null && Configuration.maniphest.userTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.ManiphestSelectedUsersOnly
                                                                                      : Phabricator.Data.Account.SynchronizationMethod.None;
-                synchronizationParameters.existingAccount.Parameters.Synchronization |= (Configuration.phriction.combined && Configuration.phriction.projectTags != null && Configuration.phriction.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly
-                                                                                      : (Configuration.phriction.combined == false && Configuration.phriction.projectTags != null && Configuration.phriction.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnly
-                                                                                      : (Configuration.phriction.userTags != null && Configuration.phriction.userTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedUsersOnly
+                synchronizationParameters.existingAccount.Parameters.Synchronization |= (Configuration.phriction != null && Configuration.phriction.combined && Configuration.phriction.projectTags != null && Configuration.phriction.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly
+                                                                                      : (Configuration.phriction != null && Configuration.phriction.combined == false && Configuration.phriction.projectTags != null && Configuration.phriction.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnly
+                                                                                      : (Configuration.phriction != null && Configuration.phriction.userTags != null && Configuration.phriction.userTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedUsersOnly
                                                                                       : Phabricator.Data.Account.SynchronizationMethod.None;
-                synchronizationParameters.existingAccount.Parameters.Synchronization |= (Configuration.phriction.tree && Configuration.phriction.combined) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnlyIncludingDocumentTree
-                                                                                      : (Configuration.phriction.tree && Configuration.phriction.combined == false) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree
+                synchronizationParameters.existingAccount.Parameters.Synchronization |= (Configuration.phriction != null && Configuration.phriction.tree && Configuration.phriction.combined) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnlyIncludingDocumentTree
+                                                                                      : (Configuration.phriction != null && Configuration.phriction.tree && Configuration.phriction.combined == false) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree
                                                                                       : Phabricator.Data.Account.SynchronizationMethod.None;
                 synchronizationParameters.existingAccount.Parameters.ColumnHeadersToHide = new string[0];
                 synchronizationParameters.existingAccount.PhabricatorUrl = Configuration.source;
@@ -414,8 +416,8 @@ namespace Phabrico
                     project.Selected = Phabricator.Data.Project.Selection.Unselected;
                     projectStorage.Add(database, project);
 
-                    string[] maniphestProjectTags = Configuration.maniphest.projectTags ?? new string[0];
-                    string[] phrictionProjectTags = Configuration.phriction.projectTags ?? new string[0];
+                    string[] maniphestProjectTags = Configuration.maniphest?.projectTags ?? new string[0];
+                    string[] phrictionProjectTags = Configuration.phriction?.projectTags ?? new string[0];
 
                     // select all projects from json config
                     foreach (string projectTag in maniphestProjectTags.Concat(phrictionProjectTags).Distinct())
@@ -457,8 +459,8 @@ namespace Phabrico
                 }
 
                 // continue download process - phase 3
-                if ((Configuration.maniphest.projectTags != null && Configuration.maniphest.projectTags.Any()) || 
-                    (Configuration.maniphest.userTags != null && Configuration.maniphest.userTags.Any()))
+                if ((Configuration.maniphest?.projectTags != null && Configuration.maniphest.projectTags.Any()) || 
+                    (Configuration.maniphest?.userTags != null && Configuration.maniphest.userTags.Any()))
                 {
                     ConsoleWriteStatus("Downloading Maniphest priorities and states...");
                     synchronizationController.ProgressMethod_DownloadManiphestPrioritiesAndStates(synchronizationParameters, 0, 0);
@@ -467,8 +469,8 @@ namespace Phabrico
 
                 }
 
-                if ((Configuration.phriction.projectTags != null && Configuration.phriction.projectTags.Any()) || 
-                    (Configuration.phriction.userTags != null && Configuration.phriction.userTags.Any()))
+                if ((Configuration.phriction?.projectTags != null && Configuration.phriction.projectTags.Any()) || 
+                    (Configuration.phriction?.userTags != null && Configuration.phriction.userTags.Any()))
                 {
                     ConsoleWriteStatus("Downloading Phriction wiki documents...");
                     synchronizationController.ProgressMethod_DownloadPhrictionDocuments(synchronizationParameters, 0, 0);
@@ -487,11 +489,43 @@ namespace Phabrico
 
                 // clear sensitive information in database (1)
                 List<string> referencedTokens = new List<string>();
-                Phabricator.Data.Maniphest[] downloadedManiphestTasks = maniphestStorage.Get(database, Language.NotApplicable).ToArray();
-                Phabricator.Data.Phriction[] downloadedPhrictionDocuments = phrictionStorage.Get(database, Language.NotApplicable).ToArray();
+                List<Phabricator.Data.Maniphest> downloadedManiphestTasks = maniphestStorage.Get(database, Language.NotApplicable).ToList();
+                List<Phabricator.Data.Phriction> downloadedPhrictionDocuments = phrictionStorage.Get(database, Language.NotApplicable).ToList();
 
                 synchronizationParameters.existingAccount.PhabricatorUrl = "";
                 accountStorage.Add(database, synchronizationParameters.existingAccount);
+
+                if (string.IsNullOrWhiteSpace(Configuration.phriction?.initialPath) == false)
+                {
+                    // delete all phriction document whose path does not start with c
+                    string initialPath = Configuration.phriction.initialPath;
+                    if (initialPath.StartsWith("http://") || initialPath.StartsWith("https://"))
+                    {
+                        Match absoluteInitialPath = RegexSafe.Match(initialPath, "/w/", RegexOptions.IgnoreCase);
+                        if (absoluteInitialPath.Success)
+                        {
+                            initialPath = initialPath.Substring(absoluteInitialPath.Index);
+                        }
+                        else
+                        {
+                            initialPath = "";
+                        }
+                    }
+                    initialPath = initialPath.TrimStart('/');
+                    if (initialPath.StartsWith("w/"))
+                    {
+                        initialPath = initialPath.Substring("w/".Length);
+                    }
+
+                    foreach (Phabricator.Data.Phriction downloadedInvalidPhrictionDocument in downloadedPhrictionDocuments.Where(wiki => wiki.Path.StartsWith(initialPath) == false)
+                                                                                                                          .OrderByDescending(wiki => wiki.Path.Length)
+                                                                                                                          .ToArray())
+                    {
+                        phrictionStorage.Remove(database, downloadedInvalidPhrictionDocument);
+
+                        downloadedPhrictionDocuments.Remove(downloadedInvalidPhrictionDocument);
+                    }
+                }
 
                 if (downloadedManiphestTasks.Any() == false && downloadedPhrictionDocuments.Any() == true)
                 {
@@ -690,6 +724,26 @@ namespace Phabrico
                     }
                 }
 
+                if (Configuration.maniphest?.showTasks == true)
+                {
+                    informationalMessages.Add("");
+                    informationalMessages.Add("The following maniphest tasks(s) are included:");
+                    foreach (Phabricator.Data.Maniphest downloadedManiphestTask in downloadedManiphestTasks.OrderBy(task => task.ID))
+                    {
+                        informationalMessages.Add(string.Format(" - T{0}\r\n     => {1}", downloadedManiphestTask.ID, downloadedManiphestTask.Name));
+                    }
+                }
+
+                if (Configuration.phriction?.showDocuments == true)
+                {
+                    informationalMessages.Add("");
+                    informationalMessages.Add("The following wiki documents(s) are included:");
+                    foreach (Phabricator.Data.Phriction downloadedPhrictionDocument in downloadedPhrictionDocuments.OrderBy(wiki => wiki.Path))
+                    {
+                        informationalMessages.Add(string.Format(" - {0}\r\n     => {1}", downloadedPhrictionDocument.Path, downloadedPhrictionDocument.Name));
+                    }
+                }
+
                 ConsoleWriteStatus("");
             }
         }
@@ -801,14 +855,14 @@ namespace Phabrico
             List<Phabricator.Data.Project> destinationProjects = Storage.Project.Copy(sourceDatabasePath, sourcePhabricoUsername, sourcePhabricoPassword, Configuration.destination, Configuration.username, Configuration.password);
 
             // convert configured project tags to project tokens
-            Configuration.maniphest.projectTags = Configuration.maniphest.projectTags
+            Configuration.maniphest.projectTags = Configuration.maniphest?.projectTags
                                                                          ?.Select(project => destinationProjects.FirstOrDefault(p => p.InternalName.Equals(project)
                                                                                                                                   || p.Token.Equals(project)
                                                                                                                                )
                                                                                  )
                                                                           .Select(project => project.Token)
                                                                           .ToArray();
-            Configuration.phriction.projectTags = Configuration.phriction.projectTags
+            Configuration.phriction.projectTags = Configuration.phriction?.projectTags
                                                                          ?.Select(project => destinationProjects.FirstOrDefault(p => p.InternalName.Equals(project)
                                                                                                                                   || p.Token.Equals(project)
                                                                                                                                )
@@ -817,14 +871,14 @@ namespace Phabrico
                                                                           .ToArray();
 
             // convert configured users to user tokens
-            Configuration.maniphest.userTags = Configuration.maniphest.userTags
+            Configuration.maniphest.userTags = Configuration.maniphest?.userTags
                                                                       ?.Select(user => destinationUsers.FirstOrDefault(u => u.UserName.Equals(user)
                                                                                                                          || u.Token.Equals(user)
                                                                                                                       )
                                                                               )
                                                                        .Select(user => user.Token)
                                                                        .ToArray();
-            Configuration.phriction.userTags = Configuration.phriction.userTags
+            Configuration.phriction.userTags = Configuration.phriction?.userTags
                                                                       ?.Select(user => destinationUsers.FirstOrDefault(u => u.UserName.Equals(user)
                                                                                                                          || u.Token.Equals(user)
                                                                                                                       )
@@ -978,7 +1032,7 @@ namespace Phabrico
                     }
                 }
 
-                if (string.IsNullOrWhiteSpace(Configuration.phriction.translation) == false)
+                if (string.IsNullOrWhiteSpace(Configuration.phriction?.translation) == false)
                 {
                     // copy translations
                     ConsoleWriteStatus("Copying translation(s)...");

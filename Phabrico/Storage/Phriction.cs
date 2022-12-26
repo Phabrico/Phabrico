@@ -258,6 +258,19 @@ namespace Phabrico.Storage
         /// <returns></returns>
         public override Phabricator.Data.Phriction Get(Database database, string key, Language language, bool ignoreStageData = false)
         {
+            return Get(database, key, language, ignoreStageData, true);
+        }
+
+        /// <summary>
+        /// Returns a specific PhrictionInfo or StageInfo record
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="key"></param>
+        /// <param name="ignoreStageData"></param>
+        /// <param name="includeAliases"></param>
+        /// <returns></returns>
+        public Phabricator.Data.Phriction Get(Database database, string key, Language language, bool ignoreStageData, bool includeAliases)
+        {
             Phabricator.Data.Phriction result = null;
             string url = key;
             if (url.EndsWith("/") == false) url += "/";
@@ -335,18 +348,21 @@ namespace Phabrico.Storage
 
             if (result == null)
             {
-                Phabricator.Data.Phriction[] aliases = GetAliases(database).ToArray();
-                foreach (Phabricator.Data.Phriction alias in aliases)
+                if (includeAliases)
                 {
-                    if (alias.Path.Equals(key.TrimEnd('/') + "/")) continue;
-
-                    Phabricator.Data.Phriction reference = Get(database, alias.Content, language);
-                    if (reference != null)
+                    Phabricator.Data.Phriction[] aliases = GetAliases(database).ToArray();
+                    foreach (Phabricator.Data.Phriction alias in aliases)
                     {
-                        if (key.StartsWith(reference.Path)) continue;
+                        if (alias.Path.Equals(key.TrimEnd('/') + "/")) continue;
 
-                        result = Get(database, reference.Path + key.TrimEnd('/') + "/", language);
-                        if (result != null) break;
+                        Phabricator.Data.Phriction reference = Get(database, alias.Content, language, false, false);
+                        if (reference != null)
+                        {
+                            if (key.StartsWith(reference.Path)) continue;
+
+                            result = Get(database, reference.Path + key.TrimEnd('/') + "/", language);
+                            if (result != null) break;
+                        }
                     }
                 }
             }

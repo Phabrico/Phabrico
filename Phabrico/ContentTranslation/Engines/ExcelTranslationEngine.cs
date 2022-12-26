@@ -2,6 +2,7 @@
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Base64;
 using Phabrico.Parsers.Remarkup;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -103,7 +104,7 @@ namespace Phabrico.ContentTranslation.Engines
 
                             cell = worksheet.Cell("B" + rowIndex);
                             cell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Top);
-                            cell.SetValue(translation.Value.OriginalText);
+                            cell.SetValue(translation.Value.OriginalText.Replace("\r", "").Replace("\n", "\r\n"));
 
                             cell = worksheet.Cell("C" + rowIndex);
                             cell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Top);
@@ -244,14 +245,30 @@ namespace Phabrico.ContentTranslation.Engines
             string unformattedContent = DecodeBrokenXmlFormatting(xmlData);
 
             Parsers.BrokenXML.BrokenXmlParser brokenXmlParser = new Parsers.BrokenXML.BrokenXmlParser();
-            Parsers.BrokenXML.BrokenXmlToken[] brokenXmlTokens = brokenXmlParser.Parse(unformattedContent)
-                                                                                .ToArray();
+            List<Parsers.BrokenXML.BrokenXmlToken> brokenXmlTokens = brokenXmlParser.Parse(unformattedContent)
+                                                                                    .ToList();
 
             int previousMatchEndPosition = 0;
             int tokenIndex;
-            for (tokenIndex = 0; tokenIndex < brokenXmlTokens.Length; tokenIndex++)
+            bool inTableCell = false;
+            for (tokenIndex = 0; tokenIndex < brokenXmlTokens.Count; tokenIndex++)
             {
                 Parsers.BrokenXML.BrokenXmlToken brokenXmlToken = brokenXmlTokens[tokenIndex];
+
+                if (inTableCell == false)
+                {
+                    if (brokenXmlToken.Value.Equals("<td>", StringComparison.OrdinalIgnoreCase))
+                    {
+                        inTableCell = true;
+                    }
+                }
+                else
+                {
+                    if (brokenXmlToken.Value.Equals("</td>", StringComparison.OrdinalIgnoreCase))
+                    {
+                        inTableCell = false;
+                    }
+                }
 
                 Parsers.BrokenXML.BrokenXmlText brokenXmlTextToken = brokenXmlToken as Parsers.BrokenXML.BrokenXmlText;
                 if (brokenXmlTextToken != null
@@ -267,9 +284,39 @@ namespace Phabrico.ContentTranslation.Engines
                     while (char.IsWhiteSpace(brokenXmlTextToken.Value[brokenXmlTextToken.Value.Length - (postfix + 1)])) postfix++;
 
                     string text = brokenXmlTextToken.Value.Substring(prefix, brokenXmlTextToken.Value.Length - (prefix + postfix));
+                    if (inTableCell)
+                    {
+                        int nextTokenIndex = tokenIndex + 1;
+                        while (nextTokenIndex < brokenXmlTokens.Count)
+                        {
+                            if (brokenXmlTokens[nextTokenIndex].Value.Equals("<N>") == false) break;
+
+                            while (brokenXmlTokens[nextTokenIndex].Value.Equals("<N>"))
+                            {
+                                postfix = postfix - brokenXmlTokens.Skip(nextTokenIndex)
+                                                                   .Take(3)
+                                                                   .Sum(token => token.Length);
+                                brokenXmlTokens.RemoveRange(nextTokenIndex, 3);  // skip Newline tags
+                            }
+
+                            Parsers.BrokenXML.BrokenXmlText brokenXmlTextNextToken = brokenXmlTokens[nextTokenIndex] as Parsers.BrokenXML.BrokenXmlText;
+                            if (brokenXmlTextNextToken == null) break;
+
+                            text += brokenXmlTextNextToken.Value;
+                            postfix = postfix - brokenXmlTextNextToken.Length;
+                            brokenXmlTokens.RemoveAt(nextTokenIndex);
+                            tokenIndex = nextTokenIndex;
+                        }
+                    }
 
                     // in case multiple sentences in 1 translation -> put each sentence on a separate line
                     text = Regex.Replace(text, @"([^.].[.]) ", "$1\r\n");
+
+                    bool hasNewlineAtEnd = text.EndsWith("\n");
+                    if (hasNewlineAtEnd)
+                    {
+                        text = text.TrimEnd('\r', '\n');
+                    }
 
                     string hashKey = string.Join("",
                                         md5.ComputeHash(
@@ -300,8 +347,21 @@ namespace Phabrico.ContentTranslation.Engines
                         TranslationKeyProcessed[translationKey] = true;
                     }
 
-                    translatedContent += unformattedContent.Substring(previousMatchEndPosition, brokenXmlTextToken.Index - previousMatchEndPosition)
-                                       + translation.TranslatedText.Replace("\r", "").Replace("\n", " ");
+                    if (inTableCell)
+                    {
+                        translatedContent += unformattedContent.Substring(previousMatchEndPosition, brokenXmlTextToken.Index - previousMatchEndPosition)
+                                           + translation.TranslatedText.Replace("\r", "");
+                    }
+                    else
+                    {
+                        translatedContent += unformattedContent.Substring(previousMatchEndPosition, brokenXmlTextToken.Index - previousMatchEndPosition)
+                                           + translation.TranslatedText.Replace("\r", "").Replace("\n", " ");
+                    }
+
+                    if (hasNewlineAtEnd)
+                    {
+                        translatedContent += "\n";
+                    }
 
                     previousMatchEndPosition = brokenXmlTextToken.Index + brokenXmlTextToken.Length - postfix;
 
@@ -377,7 +437,10 @@ namespace Phabrico.ContentTranslation.Engines
             translatedContent += unformattedContent.Substring(previousMatchEndPosition);
 
             // convert to remarkup
+            Language originalLanguage = browser.Session.Locale;
+            browser.Session.Locale = targetLanguage;
             translatedContent = remarkupParserOutput.TokenList.FromXML(database, browser, "/", translatedContent);
+            browser.Session.Locale = originalLanguage;
 
             // check if everything is translated
             bool moreTranslationsNeeded = TranslationKeyProcessed.Values.Any(value => value == false);
@@ -399,7 +462,32 @@ namespace Phabrico.ContentTranslation.Engines
             result = RegexSafe.Replace(result, "</?S>", "~~");
             result = RegexSafe.Replace(result, "</?HL>", "!!");
             result = RegexSafe.Replace(result, "<M>(`[^`]*`)</M>", "$1");
-            result = RegexSafe.Replace(result, "<BR>(.*?)</BR>", "($1)");
+
+            // convert <BR></BR> to brackets
+            while (true)
+            {
+                Match match = RegexSafe.Match(result,
+                                              @"<BR>                        # opening (
+                                               (                            # begin of content
+                                                   (?>                      # now match...
+                                                      <BR>   (?<DEPTH>)     # a {, increasing the depth counter
+                                                   |                        # or
+                                                      </BR>  (?<-DEPTH>)    # a }, decreasing the depth counter
+                                                   |                        # or
+                                                      .                     # any characters except braces
+                                                   )*                       # any number of times
+                                                   (?(DEPTH)(?!))           # until the depth counter is zero again
+                                               )                            # end of content
+                                             </BR>                          # then match the closing )",
+                                              RegexOptions.IgnorePatternWhitespace);
+                if (match.Success == false) break;
+
+                result = result.Substring(0, match.Index)
+                       + "("
+                       + result.Substring(match.Index + "<BR>".Length, match.Length - "<BR></BR>".Length)
+                       + ")"
+                       + result.Substring(match.Index + match.Length);
+            }
 
             return result;
         }
@@ -420,13 +508,58 @@ namespace Phabrico.ContentTranslation.Engines
             string unformattedContent = DecodeBrokenXmlFormatting(content);
 
             Parsers.BrokenXML.BrokenXmlParser brokenXmlParser = new Parsers.BrokenXML.BrokenXmlParser();
-            Parsers.BrokenXML.BrokenXmlText[] brokenXmlTextTokens = brokenXmlParser.Parse(unformattedContent)
-                                                                                   .OfType<Parsers.BrokenXML.BrokenXmlText>()
+            List<Parsers.BrokenXML.BrokenXmlToken> brokenXmlTokens = brokenXmlParser.Parse(unformattedContent)
+                                                                                    .ToList();
+
+            // search for table cells which have newlines in them
+            int startTableCell = 0;
+            while (true)
+            {
+                while (startTableCell < brokenXmlTokens.Count && brokenXmlTokens[startTableCell].Value.Equals("<td>", StringComparison.OrdinalIgnoreCase) == false) startTableCell++;
+                if (startTableCell >= brokenXmlTokens.Count) break;
+
+                int endTableCell = startTableCell + 1;
+                while (endTableCell < brokenXmlTokens.Count && brokenXmlTokens[endTableCell].Value.Equals("</td>", StringComparison.OrdinalIgnoreCase) == false) endTableCell++;
+                if (endTableCell >= brokenXmlTokens.Count) break;
+
+                int tableCellContentToken = startTableCell + 1;
+                while (tableCellContentToken < endTableCell)
+                {
+                    if (brokenXmlTokens[tableCellContentToken].Value.Equals("<N>"))
+                    {
+                        for (int previousTextToken = tableCellContentToken - 1; previousTextToken >= 0; previousTextToken--)
+                        {
+                            Parsers.BrokenXML.BrokenXmlText precedingTextToken = brokenXmlTokens[previousTextToken] as Parsers.BrokenXML.BrokenXmlText;
+                            if (precedingTextToken != null)
+                            {
+                                brokenXmlTokens.RemoveRange(tableCellContentToken, 3);
+                                endTableCell -= 3;
+
+                                int nextToken = previousTextToken + 1;
+                                if (nextToken < brokenXmlTokens.Count && brokenXmlTokens[nextToken] is Parsers.BrokenXML.BrokenXmlText)
+                                {
+                                    precedingTextToken.Value += brokenXmlTokens[nextToken].Value;
+                                    brokenXmlTokens.RemoveAt(nextToken);
+                                    endTableCell--;
+                                    tableCellContentToken--;
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    tableCellContentToken++;
+                }
+
+                startTableCell = endTableCell + 1;
+            }
+
+            List<Parsers.BrokenXML.BrokenXmlText> brokenXmlTextTokens = brokenXmlTokens.OfType<Parsers.BrokenXML.BrokenXmlText>()
                                                                                    .Where(token => RegexSafe.IsMatch(token.Value, @"^{[FTM][^}]*}$", RegexOptions.Singleline) == false)
                                                                                    .Where(token => RegexSafe.IsMatch(token.Value, @"[a-zA-Z]", RegexOptions.Singleline)
                                                                                                 || RegexSafe.IsMatch(token.Value, @"[\p{IsCJKUnifiedIdeographs}\p{IsThai}]", RegexOptions.Singleline)
                                                                                          )
-                                                                                   .ToArray();
+                                                                                   .ToList();
 
             foreach (Parsers.BrokenXML.BrokenXmlText brokenXmlTextToken in brokenXmlTextTokens)
             {

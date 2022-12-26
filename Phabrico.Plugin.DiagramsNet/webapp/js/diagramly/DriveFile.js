@@ -69,6 +69,23 @@ DriveFile.prototype.getMode = function()
 /**
  * Returns true if copy, export and print are not allowed for this file.
  */
+DriveFile.prototype.getFileUrl = function()
+{
+	return 'https://drive.google.com/open?authuser=0&id=' + this.getId();
+};
+
+/**
+ * Returns true if copy, export and print are not allowed for this file.
+ */
+DriveFile.prototype.getFolderUrl = function()
+{
+	return (this.desc.parents != null && this.desc.parents.length > 0) ?
+		'https://drive.google.com/drive/folders/' + this.desc.parents[0].id : null;
+};
+
+/**
+ * Returns true if copy, export and print are not allowed for this file.
+ */
 DriveFile.prototype.getPublicUrl = function(fn)
 {
 	this.ui.drive.executeRequest({

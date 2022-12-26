@@ -119,7 +119,14 @@ namespace Phabrico.Miscellaneous
                                                        .Where(file => file.CompareTo(oldestLogFileToKeep) <= 0)
                                                        .ToList())
             {
-                File.Delete(oldLogFileName);
+                try
+                {
+                    File.Delete(oldLogFileName);
+                }
+                catch
+                {
+                    // skip it -> this can for example happen in case there are multiple Phabrico's running under a different user account (i.e. UnauthorizedAccessException)
+                }
             }
 
             // create new logfile

@@ -1202,6 +1202,8 @@ dateModified won't change when a subscription is added or removed
         }
 
         if (e.ctrlKey && e.keyCode == 'A'.charCodeAt(0)) {
+            if (typeof (searchPhabrico) !== "undefined" && document.activeElement == searchPhabrico) return;
+
             e.preventDefault();
 
             document.querySelector('.phabrico-page-content').classList.toggle('right-collapsed');

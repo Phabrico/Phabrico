@@ -82,7 +82,15 @@ namespace Phabrico.Storage
                 {
                     if (reader.Read())
                     {
-                        token = (string)reader["token"];
+                        if (reader["token"] is string)
+                        {
+                            token = (string)reader["token"];
+                        }
+                        else
+                        {
+                            token = System.Text.ASCIIEncoding.ASCII.GetString(reader["token"] as byte[]);
+                        }
+
                         tokenReferenceID = Int32.Parse(token.Substring("PHID-OBJECT-".Length)) + 1;
                         token = string.Format("PHID-OBJECT-{0}", tokenReferenceID.ToString().PadLeft(18, '0'));
                     }
@@ -221,6 +229,31 @@ namespace Phabrico.Storage
             finally
             {
                 Storage.Database.DataSource = originalDataSource;
+            }
+        }
+
+        /// <summary>
+        /// Translation for a given token has been disapproved (again)
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="language"></param>
+        public void DisapproveTranslation(string token, Language language)
+        {
+            if (language == Language.NotApplicable) return;
+
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                        UPDATE Translation.contentTranslation
+                           SET reviewed = 0,
+                               dateModified = @dateModified
+                        WHERE token = @token
+                          AND language = @language
+                   ", database.Connection))
+            {
+                database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
+                database.AddParameter(dbCommand, "language", language, EncryptionMode.None);
+                database.AddParameter(dbCommand, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
+
+                dbCommand.ExecuteNonQuery();
             }
         }
 

@@ -18,12 +18,17 @@ DrawioFileSync = function(file)
 	{
 		this.updateOnlineState();
 
-		if (this.isConnected())
+		if (this.isConnected() && !this.ui.isOffline(true))
 		{
 			this.fileChangedNotify();
 		}
+		else
+		{
+			this.updateStatus();
+		}
 	});
     
+	mxEvent.addListener(window, 'offline', this.onlineListener);
 	mxEvent.addListener(window, 'online', this.onlineListener);
 
     // Listens to realtime state changes
@@ -465,135 +470,94 @@ DrawioFileSync.prototype.updateOnlineState = function()
 		return;
 	}
 
-	var addClickHandler = mxUtils.bind(this, function(elt)
-	{
-		mxEvent.addListener(elt, 'click', mxUtils.bind(this, function(evt)
-		{
-			if (this.file.isRealtimeEnabled() && this.file.isRealtimeSupported())
-			{
-				var state = this.file.getRealtimeState();
-				var status = mxResources.get('disconnected');
-
-				if (this.file.invalidChecksum)
-				{
-					status = mxResources.get('error') + ': ' + mxResources.get('checksum');
-				}
-				else if (this.ui.isOffline(true) || !this.isConnected())
-				{
-					status = mxResources.get('offline');
-				}
-				else if (state == 1)
-				{
-					status = mxResources.get('online');
-				}
-
-				this.ui.showError(mxResources.get('realtimeCollaboration'), mxUtils.htmlEntities(status));
-			}
-			else
-			{
-				this.enabled = !this.enabled;
-				this.ui.updateButtonContainer();
-				this.resetUpdateStatusThread();
-				this.updateOnlineState();
-				this.updateStatus();
-				
-				if (!this.file.inConflictState && this.enabled)
-				{
-					this.fileChangedNotify();
-				}
-			}
-		}));
-	});
-
 	if (this.ui.toolbarContainer != null && this.collaboratorsElement == null)
 	{
-		var elt = document.createElement('a');
-		elt.className = 'geButton geAdaptiveAsset';
-		elt.style.position = 'absolute';
-		elt.style.display = 'inline-block';
-		elt.style.verticalAlign = 'bottom';
-		elt.style.color = '#666';
-		elt.style.top = '6px';
-		elt.style.right = (Editor.currentTheme != 'atlas') ? (this.ui.darkModeElement != null ?
-			'90px' : '70px') : '50px';
-		elt.style.padding = '2px';
-		elt.style.fontSize = '8pt';
-		elt.style.verticalAlign = 'middle';
-		elt.style.textDecoration = 'none';
-		elt.style.backgroundPosition = 'center center';
-		elt.style.backgroundRepeat = 'no-repeat';
-		elt.style.backgroundSize = '16px 16px';
-		elt.style.width = '16px';
-		elt.style.height = '16px';
-		mxUtils.setOpacity(elt, 60);
-		
-		// Prevents focus
-		mxEvent.addListener(elt, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown',
-			mxUtils.bind(this, function(evt)
-		{
-			evt.preventDefault();
-		}));
-		
-		addClickHandler(elt);
-		this.ui.toolbarContainer.appendChild(elt);
-		this.collaboratorsElement = elt;
+		this.collaboratorsElement = this.createCollaboratorsElement();
+		this.ui.toolbarContainer.appendChild(this.collaboratorsElement);
 	}
-	
+
+	this.updateCollaboratorsElement();
+};
+
+/**
+ * Updates the status bar with the latest change.
+ */
+DrawioFileSync.prototype.updateCollaboratorsElement = function()
+{
 	if (this.collaboratorsElement != null)
 	{
-		this.collaboratorsElement.style.display = 'inline-block';
-		var src = Editor.cloudImage;
-		var status = '';
+		var status = this.ui.getNetworkStatus();
 
-		if (!this.enabled)
+		if (status != null)
 		{
-			status = mxResources.get('disconnected');
-			src = Editor.cloudOffImage;
-		}
-		else if (this.file.invalidChecksum)
-		{
-			status = mxResources.get('error') + ': ' + mxResources.get('checksum');
-			src = Editor.syncProblemImage;
-		}
-		else if (this.ui.isOffline(true) || !this.isConnected())
-		{
-			status = mxResources.get('offline');
-			src = Editor.cloudOffImage;
+			this.collaboratorsElement.style.backgroundImage = 'url(' +
+				Editor.syncProblemImage + ')';
+			this.collaboratorsElement.style.display = 'inline-block';
+			this.collaboratorsElement.setAttribute('title', status);
 		}
 		else
 		{
-			status = mxResources.get('online');
+			this.collaboratorsElement.style.display = 'none';
+		}
+	}
+};
 
-			if (this.file.isRealtimeEnabled() && this.file.isRealtimeSupported())
+/**
+ * Updates the status bar with the latest change.
+ */
+DrawioFileSync.prototype.createCollaboratorsElement = function()
+{
+	var elt = document.createElement('a');
+	elt.className = 'geButton geAdaptiveAsset';
+	elt.style.position = 'absolute';
+	elt.style.display = 'inline-block';
+	elt.style.verticalAlign = 'bottom';
+	elt.style.color = '#666';
+	elt.style.top = '6px';
+	elt.style.right = (Editor.currentTheme != 'atlas') ? '70px' : '50px';
+	elt.style.padding = '2px';
+	elt.style.fontSize = '8pt';
+	elt.style.verticalAlign = 'middle';
+	elt.style.textDecoration = 'none';
+	elt.style.backgroundPosition = 'center center';
+	elt.style.backgroundRepeat = 'no-repeat';
+	elt.style.backgroundSize = '16px 16px';
+	elt.style.width = '16px';
+	elt.style.height = '16px';
+	elt.style.opacity = '0.6';
+	
+	// Prevents focus
+	mxEvent.addListener(elt, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown',
+		mxUtils.bind(this, function(evt)
+	{
+		evt.preventDefault();
+	}));
+
+	mxEvent.addListener(elt, 'click', mxUtils.bind(this, function(evt)
+	{
+		if (this.file.isRealtimeEnabled() && this.file.isRealtimeSupported())
+		{
+			var status = this.ui.getNetworkStatus();
+			this.ui.showError(mxResources.get('realtimeCollaboration'),
+				mxUtils.htmlEntities((status != null) ? status :
+				mxResources.get('online')));
+		}
+		else
+		{
+			this.enabled = !this.enabled;
+			this.ui.updateButtonContainer();
+			this.resetUpdateStatusThread();
+			this.updateOnlineState();
+			this.updateStatus();
+			
+			if (!this.file.inConflictState && this.enabled)
 			{
-				var err = this.file.getRealtimeError();
-				var state = this.file.getRealtimeState();
-				status = mxResources.get('realtimeCollaboration');
-		
-				if (state == 1)
-				{
-					this.collaboratorsElement.style.display = 'none';
-					src = Editor.syncImage;
-				}
-				else
-				{
-					src = Editor.syncProblemImage;
-		
-					if (err != null && err.message != null)
-					{
-						status += ' (' + err.message + ')';
-					}
-					else
-					{
-						status += ' (' + mxResources.get('disconnected') + ')';
-					}
-				}
+				this.fileChangedNotify();
 			}
 		}
+	}));
 
-		this.collaboratorsElement.setAttribute('title', status);
-		this.collaboratorsElement.style.backgroundImage = 'url(' + src + ')';
-	}
+	return elt;
 };
 
 /**
@@ -607,7 +571,7 @@ DrawioFileSync.prototype.updateStatus = function()
 	{
 		this.stop();
 	}
-	
+
 	if (!this.file.isModified() && !this.file.inConflictState &&
 		this.file.autosaveThread == null && !this.file.savingFile &&
 		!this.file.redirectDialogShowing)
@@ -631,12 +595,18 @@ DrawioFileSync.prototype.updateStatus = function()
 				msg = msg.substring(0, 40) + '...';
 			}
 
+			var status = this.ui.getNetworkStatus();
 			var label = mxResources.get('lastChange', [str]);
 			var rev = (this.file.isRevisionHistorySupported()) ? 'data-action="revisionHistory" ' : '';
+			
 			this.ui.editor.setStatus('<div ' + rev + 'title="'+ mxUtils.htmlEntities(label) + '">' + mxUtils.htmlEntities(label) + '</div>' +
-				(this.file.isEditable() ? '' : '<div class="geStatusAlert">' + mxUtils.htmlEntities(mxResources.get('readOnly')) + '</div>') +
-				(this.isConnected() ? '' : '<div class="geStatusAlert">' + mxUtils.htmlEntities(mxResources.get('disconnected')) + '</div>') +
-				((msg != null) ? ' <div data-effect="fade" title="' + mxUtils.htmlEntities(msg) + '">(' + mxUtils.htmlEntities(msg) + ')</div>' : ''));
+				(!this.file.isEditable() ? '<div class="geStatusBox" title="' +
+					mxUtils.htmlEntities(mxResources.get('readOnly')) + '">' +
+					mxUtils.htmlEntities(mxResources.get('readOnly')) + '</div>' : '') +
+				(status != null ? '<div class="geStatusBox" title="' + mxUtils.htmlEntities(status) + '">' +
+					mxUtils.htmlEntities(status) + '</div>' : '') +
+				((msg != null) ? ' <div class="geStatusBox" data-effect="fade" title="' + mxUtils.htmlEntities(msg) + '">' +
+					mxUtils.htmlEntities(msg) + '</div>' : ''));
 
 			this.resetUpdateStatusThread();
 		}
@@ -1854,7 +1824,8 @@ DrawioFileSync.prototype.fileSaved = function(pages, lastDesc, success, error, t
 						}
 						else
 						{
-							error({code: req.getStatus(), message: req.getStatus()});
+							error({message: mxResources.get('realtimeCollaboration') +
+								((req.getStatus() != 0) ? ': ' + req.getStatus() : '')});
 						}
 					}
 				}));
@@ -2018,6 +1989,7 @@ DrawioFileSync.prototype.destroy = function()
 
 	if (this.onlineListener != null)
 	{
+		mxEvent.removeListener(window, 'offline', this.onlineListener);
 		mxEvent.removeListener(window, 'online', this.onlineListener);
 		this.onlineListener = null;
 	}

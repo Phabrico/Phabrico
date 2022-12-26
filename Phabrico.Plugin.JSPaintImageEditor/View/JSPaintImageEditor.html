@@ -54,11 +54,12 @@
                                                   .reverse()[0]
                                                   .substring("F".length)
                      );
-	    var isStaged = fileID < 0;
+		var isStaged = fileID < 0;
 
 	    var data = new FormData();
 	    data.append('data', imageData);
-	    data.append('fileID', fileID);
+        data.append('fileID', fileID);
+        data.append('language', "@@CONTENT-LANGUAGE@@");
 
 	    var xmlhttp = new XMLHttpRequest();
 	    xmlhttp.overrideMimeType("application/json");

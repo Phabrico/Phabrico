@@ -497,13 +497,43 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         break;
 
                     case "width":
-                        imgStyles += string.Format("max-width:{0}px; width:{1}px; cursor:pointer;", fileObject.ImagePropertyPixelWidth, fileObjectOptions[style]);
-                        clickAction = string.Format("onclick=\"resizeImage('width', this, {0})\"", fileObjectOptions[style]);
+                        int width, maxWidth;
+                        if (Int32.TryParse(fileObjectOptions[style], out width) == false)
+                        {
+                            width = 100;
+                        }
+
+                        if (fileObject.ImagePropertyPixelWidth > width)
+                        {
+                            maxWidth = fileObject.ImagePropertyPixelWidth;
+                        }
+                        else
+                        {
+                            maxWidth = width;
+                            width = fileObject.ImagePropertyPixelWidth;
+                        }
+                        imgStyles += string.Format("max-width:{0}px; width:{1}px; cursor:pointer;", maxWidth, width);
+                        clickAction = string.Format("onclick=\"resizeImage('width', this, {0})\"", width);
                         break;
 
                     case "height":
-                        imgStyles += string.Format("max-height:{0}px; height:{1}px; cursor:pointer;", fileObject.ImagePropertyPixelHeight, fileObjectOptions[style]);
-                        clickAction = string.Format("onclick=\"resizeImage('height', this, {0})\"", fileObjectOptions[style]);
+                        int height, maxHeight;
+                        if (Int32.TryParse(fileObjectOptions[style], out height) == false)
+                        {
+                            height = 100;
+                        }
+
+                        if (fileObject.ImagePropertyPixelHeight > height)
+                        {
+                            maxHeight = fileObject.ImagePropertyPixelHeight;
+                        }
+                        else
+                        {
+                            maxHeight = height;
+                            height = fileObject.ImagePropertyPixelHeight;
+                        }
+                        imgStyles += string.Format("max-height:{0}px; height:{1}px; cursor:pointer;", maxHeight, height);
+                        clickAction = string.Format("onclick=\"resizeImage('height', this, {0})\"", height);
                         break;
 
                     case "size":

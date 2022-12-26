@@ -160,6 +160,12 @@ namespace Phabrico.Http
         public static bool UnitTesting = false;
 
         /// <summary>
+        /// Asynchronous tasks which will be executed in after impersonation is finished
+        /// </summary>
+        private static Dictionary<string,UnimpersonatedTask> unimpersonatedTasks = new Dictionary<string,UnimpersonatedTask>();
+        private static object unimpersonatedTasksSynchronize = new object();
+
+        /// <summary>
         /// User roles per username
         /// </summary>
         public Dictionary<string, string[]> UserRoles { get; internal set; } = null;
@@ -643,14 +649,21 @@ namespace Phabrico.Http
                 url = url + "?" + arguments;
             }
 
-            // cache result
-            cachedController = new CachedControllerInfo();
-            cachedController.ControllerUrl = controllerUrl;
-            cachedController.ControllerUrlAlias = controllerUrlAlias;
-            cachedController.ControllerMethods = controllerMethods;
-            cachedController.ControllerParameters = controllerParameters;
-            cachedController.ControllerConstructor = controller?.GetType()?.GetConstructor(Type.EmptyTypes);
-            cachedControllerInfo[baseUrl] = cachedController;
+            try
+            {
+                // cache result
+                cachedController = new CachedControllerInfo();
+                cachedController.ControllerUrl = controllerUrl;
+                cachedController.ControllerUrlAlias = controllerUrlAlias;
+                cachedController.ControllerMethods = controllerMethods;
+                cachedController.ControllerParameters = controllerParameters;
+                cachedController.ControllerConstructor = controller?.GetType()?.GetConstructor(Type.EmptyTypes);
+                cachedControllerInfo[baseUrl] = cachedController;
+            }
+            catch
+            {
+                // skip caching
+            }
 
             return controller;
         }
@@ -1584,6 +1597,19 @@ namespace Phabrico.Http
                             token.EncryptionKey = publicEncryptionKey;
                             token.AuthenticationFactor = AuthenticationFactor.Public;
                             Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
+
+                            if (browser.Request.RawUrl.Contains("?ReturnURL="))
+                            {
+                                string redirectURL = RootPath + string.Join("?ReturnURL=",
+                                                                            browser.Request.RawUrl
+                                                                                           .Split(new string[] { "?ReturnURL=" }, StringSplitOptions.None)
+                                                                                           .Skip(1)
+                                                                           );
+                                redirectURL = redirectURL.Replace("//", "/");
+                                Http.Response.HttpRedirect httpRedirect = new Http.Response.HttpRedirect(browser.HttpServer, browser, redirectURL);
+                                httpRedirect.Send(browser);
+                                return;
+                            }
                         }
                         break;
 
@@ -1650,7 +1676,11 @@ namespace Phabrico.Http
 
                             if (browser.Request.RawUrl.Contains("?ReturnURL="))
                             {
-                                string redirectURL = RootPath + browser.Request.RawUrl.Substring((RootPath + "?ReturnURL=").Length);
+                                string redirectURL = RootPath + string.Join("?ReturnURL=",
+                                                                            browser.Request.RawUrl
+                                                                                           .Split(new string[] { "?ReturnURL=" }, StringSplitOptions.None)
+                                                                                           .Skip(1)
+                                                                           );
                                 redirectURL = redirectURL.Replace("//", "/");
                                 Http.Response.HttpRedirect httpRedirect = new Http.Response.HttpRedirect(browser.HttpServer, browser, redirectURL);
                                 httpRedirect.Send(browser);
@@ -1858,6 +1888,7 @@ namespace Phabrico.Http
                                     pluginController.PhrictionData.Content = browser.Session.FormVariables[browser.Request.RawUrl]["content"];
                                     pluginController.PhrictionData.Crumbs = browser.Session.FormVariables[browser.Request.RawUrl]["crumbs"];
                                     pluginController.PhrictionData.IsPrepared = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["isPrepared"]);
+                                    pluginController.PhrictionData.IsTranslation = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["isTranslation"] ?? "false");
                                     pluginController.PhrictionData.Path = browser.Session.FormVariables[browser.Request.RawUrl]["path"];
                                     pluginController.PhrictionData.TOC = browser.Session.FormVariables[browser.Request.RawUrl]["toc"];
                                 }
@@ -1892,6 +1923,42 @@ namespace Phabrico.Http
                             {
                                 Environment.SetEnvironmentVariable("USERPROFILE", originalUserProfileString);
                             }
+                        }
+
+                        string[] unimpersonatedTasksToStart;
+                        lock (unimpersonatedTasksSynchronize)
+                        {
+                            unimpersonatedTasksToStart = unimpersonatedTasks.Where(task => task.Value.IsRunning == false).Select(t => t.Key).ToArray();
+                        }
+                        foreach (var taskName in unimpersonatedTasksToStart)
+                        {
+                            string loggingIdentifier = taskName.Split('|')[0];
+                            string threadName = taskName.Split('|')[1];
+                            
+                            UnimpersonatedTask unimpersonatedTask;
+                            lock (unimpersonatedTasksSynchronize)
+                            {
+                                unimpersonatedTask = unimpersonatedTasks[taskName];
+                                unimpersonatedTask.IsRunning = true;
+                            }
+
+                            Task task = Task.Factory.StartNew((arg) =>
+                            {
+                                try
+                                {
+                                    unimpersonatedTask.Action.Invoke(unimpersonatedTask.CancellationTokenSource.Token);
+                                }
+                                catch (System.Exception exception)
+                                {
+                                    Logging.WriteInfo(loggingIdentifier, threadName + ": " + exception.Message);
+                                }
+                                finally
+                                {
+                                    unimpersonatedTask.ManualResetEvent.Reset();
+
+                                    Logging.WriteInfo(loggingIdentifier, threadName + " finished");
+                                }
+                            }, new Object[] { unimpersonatedTasks[taskName] });
                         }
                     }
                     Logging.WriteInfo(browser.Token?.ID, "Finished {0}.{1}", controller.GetType().Name, controllerMethod.Name);
@@ -2171,6 +2238,41 @@ namespace Phabrico.Http
         }
 
         /// <summary>
+        /// Pushes an busy message to one or more browser sessions via WebSockets
+        /// </summary>
+        /// <param name="webSocketMessageIdentifier">
+        /// Local path of websocket
+        /// For example: if websocket connects to http://localhost:13467/abc/def the webSocketMessageIdentifier should be /abc/def
+        /// If there are multiple browser sessions connected to this identifier, they will all receive a message
+        /// </param>
+        /// <param name="message">data to be sent to browser</param>
+        public static void SendNotificationBusy(string webSocketMessageIdentifier)
+        {
+            string jsonData = JsonConvert.SerializeObject(new
+            {
+                Type = "busy"
+            });
+
+            // prepend root-path
+            webSocketMessageIdentifier = RootPath.TrimEnd('/') + webSocketMessageIdentifier;
+
+            currentNotifications[webSocketMessageIdentifier] = jsonData;
+
+            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
+                                                                                                 && websocket.RequestUri
+                                                                                                             .LocalPath
+                                                                                                             .TrimEnd('/')
+                                                                                                             .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                                                      )
+                                                                                .ToArray())
+            {
+                Logging.WriteInfo("Notify-Busy", webSocketContext.RequestUri.LocalPath);
+                byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
+                webSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+        }
+
+        /// <summary>
         /// Pushes an informational message to one or more browser sessions via WebSockets.
         /// </summary>
         /// <param name="webSocketMessageIdentifier">
@@ -2277,6 +2379,49 @@ namespace Phabrico.Http
                 Logging.WriteInfo("Notify-Warning", webSocketContext.RequestUri.LocalPath);
                 byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
                 webSocketContext.WebSocket.SendAsync(new ArraySegment<byte>(data), WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+        }
+
+        public static void StartUnimpersonatedThread(Action before, Action<CancellationToken> action, string loggingIdentifier, string threadName)
+        {
+            lock (unimpersonatedTasksSynchronize)
+            {
+                UnimpersonatedTask unimpersonatedTask;
+                if (unimpersonatedTasks.TryGetValue(loggingIdentifier + "|" + threadName, out unimpersonatedTask))
+                {
+                    // cancel previous task
+                    unimpersonatedTask.CancellationTokenSource.Cancel();
+                    
+                    // wait until previous task is completely canceled
+                    while (unimpersonatedTask.ManualResetEvent.WaitOne(0))
+                    {
+                        Thread.Sleep(100);
+                    }
+
+                    unimpersonatedTasks.Remove(loggingIdentifier + "|" + threadName);
+                }
+
+                Logging.WriteInfo(loggingIdentifier, threadName + " started");
+
+                try
+                {
+                    before.Invoke();
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    // start new task searching all .git directories
+                    CancellationTokenSource cancellationToken = new CancellationTokenSource();
+                    ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+
+                    unimpersonatedTasks[loggingIdentifier + "|" + threadName] = new UnimpersonatedTask(action);
+                }
+                catch
+                {
+                }
             }
         }
 

@@ -57,7 +57,6 @@ var queryObj = {
 	'mode': 'device',
 	'export': 'https://convert.diagrams.net/node/export',
 	'disableUpdate': disableUpdate? 1 : 0,
-	'winCtrls': isMac? 0 : 1,
 	'enableSpellCheck': enableSpellCheck? 1 : 0,
 	'enableStoreBkp': enableStoreBkp? 1 : 0
 };
@@ -100,7 +99,6 @@ function createWindow (opt = {})
 
 	let options = Object.assign(
 	{
-		frame: isMac,
 		backgroundColor: '#FFF',
 		width: parseInt(lastWinSize[0]),
 		height: parseInt(lastWinSize[1]),
@@ -319,6 +317,8 @@ app.on('ready', e =>
 				'export all pages (for PDF format only)')
 			.option('-p, --page-index <pageIndex>',
 				'selects a specific page, if not specified and the format is an image, the first page is selected', parseInt)
+			.option('-l, --layers <comma separated layer indexes>',
+				'selects which layers to export (applies to all pages), if not specified, all layers are selected')
 			.option('-g, --page-range <from>..<to>',
 				'selects a page range (for PDF format only)', argsRange)
 			.option('-u, --uncompressed',
@@ -350,6 +350,11 @@ app.on('ready', e =>
     	
     	windowsRegistry.push(dummyWin);
     	
+		/*ipcMain.on('log', function(event, msg)
+		{
+			console.log(msg);
+		});*/
+	
     	try
     	{
 	    	//Prepare arguments and confirm it's valid
@@ -418,6 +423,11 @@ app.on('ready', e =>
 				uncompressed: options.uncompressed
 			};
 
+			if (options.layers)
+			{
+				expArgs.extras = JSON.stringify({layers: options.layers.split(',')});
+			}
+
 			var paths = program.args;
 			
 			// If a file is passed 
@@ -475,14 +485,9 @@ app.on('ready', e =>
 						{
 							var ext = path.extname(curFile);
 							
-							expArgs.xml = fs.readFileSync(curFile, ext === '.png' || ext === '.vsdx' ? null : 'utf-8');
+							let fileContent = fs.readFileSync(curFile, ext === '.png' || ext === '.vsdx' ? null : 'utf-8');
 							
-							if (ext === '.png')
-							{
-								expArgs.xml = Buffer.from(expArgs.xml).toString('base64');
-								startExport();
-							}
-							else if (ext === '.vsdx')
+							if (ext === '.vsdx')
 							{
 								dummyWin.loadURL(`file://${__dirname}/vsdxImporter.html`);
 								
@@ -490,7 +495,7 @@ app.on('ready', e =>
 
 								contents.on('did-finish-load', function()
 							    {
-									contents.send('import', expArgs.xml);
+									contents.send('import', fileContent);
 
 									ipcMain.once('import-success', function(evt, xml)
 						    	    {
@@ -507,6 +512,19 @@ app.on('ready', e =>
 							}
 							else
 							{
+								if (ext === '.csv')
+								{
+									expArgs.csv = fileContent;
+								}
+								else if (ext === '.png')
+								{
+									expArgs.xml = Buffer.from(fileContent).toString('base64');
+								}
+								else
+								{
+									expArgs.xml = fileContent;
+								}
+
 								startExport();
 							}
 							

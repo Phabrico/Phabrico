@@ -1,4 +1,5 @@
 ﻿using Phabrico.Miscellaneous;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,6 +12,7 @@ namespace Phabrico.Parsers.BrokenXML
         /// Converts a BrokenXml string into a bunch of BrokenXmlTokens
         /// </summary>
         /// <param name="xml"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
         internal IEnumerable<BrokenXmlToken> Parse(string xml)
         {

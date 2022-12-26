@@ -814,9 +814,10 @@ DrawioFile.prototype.ignorePatches = function(patches)
 };
 
 /**
- * Applies the given patches to the file.
+ * Applies the given patches to the file. If sendChanges is true the snapshot in
+ * the sync client is not updated so a diff can be computed and propagated.
  */
-DrawioFile.prototype.patch = function(patches, resolver, undoable)
+DrawioFile.prototype.patch = function(patches, resolver, undoable, sendChanges)
 {
 	if (patches != null)
 	{
@@ -911,12 +912,11 @@ DrawioFile.prototype.patch = function(patches, resolver, undoable)
 			}
 
 			// Updates snapshot for finding local changes in sync
-			if (this.sync != null && this.isRealtime())
+			if (this.sync != null && this.isRealtime() && !sendChanges)
 			{
 				this.sync.snapshot = this.ui.clonePages(this.ui.pages);
 			}
 			
-			this.ui.updateTabContainer();
 			this.ui.editor.fireEvent(new mxEventObject('pagesPatched', 'patches', patches));
 		}
 
@@ -1091,6 +1091,22 @@ DrawioFile.prototype.saveAs = function(filename, success, error) { };
  * @param {number} dy Y-coordinate of the translation.
  */
 DrawioFile.prototype.saveFile = function(title, revision, success, error) { };
+
+/**
+ * Returns true if copy, export and print are not allowed for this file.
+ */
+DrawioFile.prototype.getFileUrl = function()
+{
+	return null;
+};
+
+/**
+ * Returns true if copy, export and print are not allowed for this file.
+ */
+DrawioFile.prototype.getFolderUrl = function(fn)
+{
+	return null;
+};
 
 /**
  * Returns true if copy, export and print are not allowed for this file.
@@ -1687,7 +1703,8 @@ DrawioFile.prototype.addAllSavedStatus = function(status)
 	if (this.ui.statusContainer != null && this.ui.getCurrentFile() == this)
 	{
 		status = (status != null) ? status : mxUtils.htmlEntities(mxResources.get(this.allChangesSavedKey));
-		var rev = (this.isRevisionHistorySupported()) ? 'data-action="revisionHistory" ' : '';
+		var rev = (this.isRevisionHistorySupported() && status != mxUtils.htmlEntities(
+			mxResources.get(this.savingStatusKey)) + '...') ? 'data-action="revisionHistory" ' : '';
 		this.ui.editor.setStatus('<div ' + rev + 'title="'+ status + '">' + status + '</div>');
 	}
 };
@@ -1795,8 +1812,8 @@ DrawioFile.prototype.addUnsavedStatus = function(err)
 			var action = 'data-action="' + ((this.ui.mode == null || !this.isEditable()) ?
 				'saveAs' : 'save') + '"';
 			this.ui.editor.setStatus('<div ' + action + ' title="' +
-				status + '" class="geStatusAlertOrange">' + status +
-				' <img src="' + Editor.saveImage + '"/></div>');
+				status + '" class="geStatusAlert">' + status +
+				' <img class="geAdaptiveAsset" src="' + Editor.saveImage + '"/></div>');
 			
 			if (EditorUi.enableDrafts && (this.getMode() == null || EditorUi.isElectronApp))
 			{
@@ -2172,6 +2189,11 @@ DrawioFile.prototype.getErrorMessage = function(err)
 	if (msg == null && err != null && err.code == App.ERROR_TIMEOUT)
 	{
 		msg = mxResources.get('timeout');
+	}
+	// XHR blocked by CORS or response has no CORS headers
+	else if (msg == '0')
+	{
+		msg = mxResources.get('noResponse');
 	}
 	
 	return msg;

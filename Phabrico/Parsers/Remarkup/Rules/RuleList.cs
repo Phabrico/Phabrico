@@ -80,6 +80,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
             public int BulletStart { get; set; }
 
             /// <summary>
+            /// Start position in Remarkup content
+            /// </summary>
+            public int StartOffset { get; set; }
+
+            /// <summary>
             /// Constructor
             /// </summary>
             /// <param name="depth"></param>
@@ -217,15 +222,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 }
 
                 // start converting lines into ListElements
-                string[] lines = localRemarkup
-                                      .Trim('\r', '\n')
-                                      .Split('\n')
-                                      .Select(line => line.TrimEnd(' ', '\r'))
-                                      .ToArray();
+                Match[] lineMatches = RegexSafe.Matches(localRemarkup.TrimEnd('\r', '\n'), "[^\n]+(\n|$)")
+                                         .OfType<Match>()
+                                         .ToArray();
 
                 listElements = new List<ListElement>();
-                foreach (string line in lines)
+                foreach (Match lineMatch in lineMatches.SkipWhile(m => m.Value.Trim('\r', '\n').Length == 0))
                 {
+                    string line = lineMatch.Value.TrimEnd(' ', '\r', '\n');
                     Match matchLine = RegexSafe.Match(line, @"^( *)(-+|#+|\*+|\[[ xX]?\]|[1-9[0-9]*[).])? +(.*) *", RegexOptions.Singleline);
                     if (matchLine.Success == false)
                     {
@@ -252,6 +256,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     else
                     {
                         ListElement listElement = new ListElement(depth, listBullet, content);
+                        listElement.StartOffset = lineMatch.Index;
                         listElements.Add(listElement);
                     }
                 }
@@ -523,14 +528,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     {
                         case ListElement.ListBulletType.Unchecked:
                             html += string.Format("<li class='remarkup-list-item remarkup-unchecked-item'><input type='checkbox' disabled='disabled'> {0}",
-                                            Engine.ToHTML(this, database, browser, url, child.Me.Content, out remarkupParserOutput, false));
+                                            Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                             ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
 
                         case ListElement.ListBulletType.Checked:
                             html += string.Format("<li class='remarkup-list-item remarkup-checked-item'><input type='checkbox' checked='checked' disabled='disabled'> {0}",
-                                            Engine.ToHTML(this, database, browser, url, child.Me.Content, out remarkupParserOutput, false));
+                                            Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                             ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
@@ -539,10 +544,15 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         case ListElement.ListBulletType.Regular:
                         default:
                             html += string.Format("<li class='remarkup-list-item'>{0}",
-                                            ParagraphText(Engine.ToHTML(this, database, browser, url, child.Me.Content, out remarkupParserOutput, false)));
+                                            ParagraphText(Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false)));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                             ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
+                    }
+
+                    foreach (RemarkupRule rule in remarkupParserOutput.TokenList)
+                    {
+                        rule.Start += Start + child.Me.StartOffset;
                     }
 
                     string innerHTML = GenerateListHtml(child, browser, database, url);
@@ -597,7 +607,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
             foreach (DataTreeNode<ListElement> node in nodes)
             {
                 RemarkupParserOutput innerRemarkupParserOutput;
-                remarkupEngine.ToHTML(this, database, browser, url, node.Me.Content, out innerRemarkupParserOutput, false);
+                string content = node.Me.Content.TrimEnd('\n');
+                remarkupEngine.ToHTML(this, database, browser, url, content, out innerRemarkupParserOutput, false);
 
                 string xmlContent = innerRemarkupParserOutput.TokenList.PrepareForXmlExport(database, browser, url);
 

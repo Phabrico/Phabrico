@@ -493,6 +493,7 @@ namespace Phabrico.Plugin
         public JsonMessage HttpPostUploadTranslation(Http.Server httpServer, string[] parameters)
         {
             Phabrico.Storage.Phriction phrictionStorage = new Phabrico.Storage.Phriction();
+            Phabrico.Storage.Stage stageStorage = new Phabrico.Storage.Stage();
             using (Phabrico.Storage.Database database = new Phabrico.Storage.Database(EncryptionKey))
             {
                 DictionarySafe<string, string> formVariables = browser.Session.FormVariables[browser.Request.RawUrl];
@@ -516,6 +517,29 @@ namespace Phabrico.Plugin
                 Content content = new Content(database);
                 content.AddTranslation(phrictionDocument.Token, targetLanguage, translatedTitle, translatedContent);
 
+                RemarkupParserOutput remarkupParserOutput;
+                RemarkupEngine remarkup = new RemarkupEngine();
+                if (string.IsNullOrWhiteSpace(translatedContent) == false)
+                {
+                    // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
+                    remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
+                    database.ClearAssignedTokens(phrictionToken, targetLanguage);
+                    foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                    {
+                        database.AssignToken(phrictionDocument.Token, linkedPhabricatorObject.Token, targetLanguage);
+                    }
+                }
+
+                // clean up old translations
+                content.DeleteUnreferencedTranslatedObjects();
+
+                // remove staged translation (if any)
+                Phabricator.Data.Phriction stagedPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phrictionToken, (Language)targetLanguage);
+                if (stagedPhrictionDocument != null && stagedPhrictionDocument.Language.Equals(targetLanguage))
+                {
+                    stageStorage.Remove(database, browser, stagedPhrictionDocument, (Language)targetLanguage);
+                }
+
                 // uncache document
                 httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
 
@@ -532,6 +556,27 @@ namespace Phabrico.Plugin
 
                         moreTranslationsNeeded = translationEngine.ImportTranslationDictionary(targetLanguage, database, browser, phrictionDocument, out translatedTitle, out translatedContent);
                         content.AddTranslation(phrictionDocument.Token, targetLanguage, translatedTitle, translatedContent);
+
+                        if (string.IsNullOrWhiteSpace(translatedContent) == false)
+                        {
+                            // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
+                            remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
+                            database.ClearAssignedTokens(phrictionToken, targetLanguage);
+                            foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                            {
+                                database.AssignToken(phrictionDocument.Token, linkedPhabricatorObject.Token, targetLanguage);
+                            }
+                        }
+
+                        // clean up old translations
+                        content.DeleteUnreferencedTranslatedObjects();
+
+                        // remove staged translation (if any)
+                        stagedPhrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, underlyingPhrictionToken, (Language)targetLanguage);
+                        if (stagedPhrictionDocument != null && stagedPhrictionDocument.Language.Equals(targetLanguage))
+                        {
+                            stageStorage.Remove(database, browser, stagedPhrictionDocument, (Language)targetLanguage);
+                        }
 
                         // uncache document
                         httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
@@ -658,7 +703,7 @@ namespace Phabrico.Plugin
                 string translatedTitle = translator.TranslateText(sourceLanguage, targetLanguage, phrictionDocument.Name, phrictionDocument.Token);
                 if (string.IsNullOrWhiteSpace(phrictionDocument.Content) == false)
                 {
-                    remarkup.ToHTML(null, database, browser, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                    remarkup.ToHTML(null, database, browser, phrictionDocument.Path, phrictionDocument.Content + "\n", out remarkupParserOutput, false);
 
                     string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
 

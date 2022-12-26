@@ -54,16 +54,6 @@ namespace Phabrico.Plugin
         private static FileSystemWatcher[] _fileSystemWatchers = new FileSystemWatcher[0];
 
         /// <summary>
-        /// Asynchronous task which will create a FileSystemWatcher for each GitanosConfigurationRootPath
-        /// </summary>
-        private static Task _taskDirectoryMonitor = null;
-
-        /// <summary>
-        /// ManualResetEvent for detecting when the cancellation action has been finished
-        /// </summary>
-        private readonly static ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
-
-        /// <summary>
         /// Array of all available GitanosConfigurationRepositoryPath
         /// </summary>
         public static Model.GitanosConfigurationRepositoryPath[] Repositories { get; private set; } = new Model.GitanosConfigurationRepositoryPath[0];
@@ -96,123 +86,103 @@ namespace Phabrico.Plugin
         /// <param name="rootPaths"></param>
         public static void Start(IEnumerable<Model.GitanosConfigurationRootPath> rootPaths)
         {
-            if (_taskDirectoryMonitor != null)
+            Http.Server.StartUnimpersonatedThread(() =>
             {
-                // cancel previous task
-                Cancel();
-            }
-
-            Logging.WriteInfo("Gitanos", "DirectoryMonitor started");
-
-            _rootPaths = rootPaths.ToList();
-
-            // start new task searching all .git directories
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
-            _taskDirectoryMonitor = Task.Factory.StartNew(() =>
+                _rootPaths = rootPaths.ToList();
+            },
+            (cancellationToken) =>
             {
-                try
+                List<string> gitRepositories = new List<string>();
+
+                List<string> processedRootPathNames = new List<string>();
+                List<FileSystemWatcher> fileSystemWatchers = new List<FileSystemWatcher>();
+                foreach (Model.GitanosConfigurationRootPath rootPath in _rootPaths)
                 {
-                    List<string> gitRepositories = new List<string>();
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    List<string> processedRootPathNames = new List<string>();
-                    List<FileSystemWatcher> fileSystemWatchers = new List<FileSystemWatcher>();
-                    foreach (Model.GitanosConfigurationRootPath rootPath in _rootPaths)
+                    if (processedRootPathNames.Contains(rootPath.Directory, StringComparer.OrdinalIgnoreCase))
+                    {
+                        // duplicated rootpath: ignore
+                        continue;
+                    }
+
+                    // go through all directories of rootpath and search for ".git" directories
+                    foreach (string subdirectory in Directory.EnumerateDirectories(rootPath.Directory, "*.*", SearchOption.TopDirectoryOnly)
+                                                                    .Where(directory => Directory.Exists(directory + "\\.git"))
+                                )
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        if (processedRootPathNames.Contains(rootPath.Directory, StringComparer.OrdinalIgnoreCase))
-                        {
-                            // duplicated rootpath: ignore
-                            continue;
-                        }
-
-                        // go through all directories of rootpath and search for ".git" directories
-                        foreach (string subdirectory in Directory.EnumerateDirectories(rootPath.Directory, "*.*", SearchOption.TopDirectoryOnly)
-                                                                 .Where(directory => Directory.Exists(directory + "\\.git"))
-                                )
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            gitRepositories.Add(subdirectory);
-                        }
-
-                        processedRootPathNames.Add(rootPath.Directory);
-
-                        FileSystemWatcher fileSystemWatcher = new FileSystemWatcher(rootPath.Directory);
-                        fileSystemWatcher.EnableRaisingEvents = true;
-                        fileSystemWatcher.IncludeSubdirectories = true;
-                        fileSystemWatcher.Changed += FileSystemWatcher_Changed;
-                        fileSystemWatcher.Created += FileSystemWatcher_Created;
-                        fileSystemWatcher.Deleted += FileSystemWatcher_Deleted;
-                        fileSystemWatchers.Add(fileSystemWatcher);
+                        gitRepositories.Add(subdirectory);
                     }
 
-                    List<Model.GitanosConfigurationRepositoryPath> gitanosConfigurationRepositoryPaths = new List<Model.GitanosConfigurationRepositoryPath>();
-                    foreach (string gitRepository in gitRepositories)
-                    {
-                        Model.GitanosConfigurationRepositoryPath gitanosRepo = new Model.GitanosConfigurationRepositoryPath(gitRepository);
-                        gitanosRepo.Name = System.IO.Path.GetFileName(gitanosRepo.Directory);
-                        gitanosConfigurationRepositoryPaths.Add(gitanosRepo);
+                    processedRootPathNames.Add(rootPath.Directory);
 
-                        foreach (Model.GitanosConfigurationRepositoryPath childRepo in gitanosRepo.SubModules)
+                    FileSystemWatcher fileSystemWatcher = new FileSystemWatcher(rootPath.Directory);
+                    fileSystemWatcher.EnableRaisingEvents = true;
+                    fileSystemWatcher.IncludeSubdirectories = true;
+                    fileSystemWatcher.Changed += FileSystemWatcher_Changed;
+                    fileSystemWatcher.Created += FileSystemWatcher_Created;
+                    fileSystemWatcher.Deleted += FileSystemWatcher_Deleted;
+                    fileSystemWatchers.Add(fileSystemWatcher);
+                }
+
+                List<Model.GitanosConfigurationRepositoryPath> gitanosConfigurationRepositoryPaths = new List<Model.GitanosConfigurationRepositoryPath>();
+                foreach (string gitRepository in gitRepositories)
+                {
+                    Model.GitanosConfigurationRepositoryPath gitanosRepo = new Model.GitanosConfigurationRepositoryPath(gitRepository);
+                    gitanosRepo.Name = System.IO.Path.GetFileName(gitanosRepo.Directory);
+                    gitanosConfigurationRepositoryPaths.Add(gitanosRepo);
+
+                    foreach (Model.GitanosConfigurationRepositoryPath childRepo in gitanosRepo.SubModules)
+                    {
+                        childRepo.Name = gitanosRepo.Name + "\t" + System.IO.Path.GetFileName(childRepo.Directory);
+                        gitanosConfigurationRepositoryPaths.Add(childRepo);
+                        foreach (Model.GitanosConfigurationRepositoryPath grandchildRepo in childRepo.SubModules)
                         {
-                            childRepo.Name = gitanosRepo.Name + "\t" + System.IO.Path.GetFileName(childRepo.Directory);
-                            gitanosConfigurationRepositoryPaths.Add(childRepo);
-                            foreach (Model.GitanosConfigurationRepositoryPath grandchildRepo in childRepo.SubModules)
+                            grandchildRepo.Name = childRepo.Name + "\t" + System.IO.Path.GetFileName(grandchildRepo.Directory);
+                            gitanosConfigurationRepositoryPaths.Add(grandchildRepo);
+                            foreach (Model.GitanosConfigurationRepositoryPath greatgrandchildRepo in grandchildRepo.SubModules)
                             {
-                                grandchildRepo.Name = childRepo.Name + "\t" + System.IO.Path.GetFileName(grandchildRepo.Directory);
-                                gitanosConfigurationRepositoryPaths.Add(grandchildRepo);
-                                foreach (Model.GitanosConfigurationRepositoryPath greatgrandchildRepo in grandchildRepo.SubModules)
-                                {
-                                    greatgrandchildRepo.Name = grandchildRepo.Name + "\t" + System.IO.Path.GetFileName(greatgrandchildRepo.Directory);
-                                    gitanosConfigurationRepositoryPaths.Add(greatgrandchildRepo);
-                                }
+                                greatgrandchildRepo.Name = grandchildRepo.Name + "\t" + System.IO.Path.GetFileName(greatgrandchildRepo.Directory);
+                                gitanosConfigurationRepositoryPaths.Add(greatgrandchildRepo);
                             }
                         }
                     }
+                }
 
-                    lock (DirectoryMonitor.DatabaseAccess)
+                lock (DirectoryMonitor.DatabaseAccess)
+                {
+                    // reset FileSystemWatchers
+                    foreach (FileSystemWatcher previousFileSystemWatcher in _fileSystemWatchers)
                     {
-                        // reset FileSystemWatchers
-                        foreach (FileSystemWatcher previousFileSystemWatcher in _fileSystemWatchers)
-                        {
-                            previousFileSystemWatcher.EnableRaisingEvents = false;
-                            previousFileSystemWatcher.Changed -= FileSystemWatcher_Changed;
-                        }
-                        _fileSystemWatchers = fileSystemWatchers.ToArray();
+                        previousFileSystemWatcher.EnableRaisingEvents = false;
+                        previousFileSystemWatcher.Changed -= FileSystemWatcher_Changed;
+                    }
+                    _fileSystemWatchers = fileSystemWatchers.ToArray();
 
-                        Repositories = gitanosConfigurationRepositoryPaths.ToArray();
+                    Repositories = gitanosConfigurationRepositoryPaths.ToArray();
 
-                        if (Repositories.Any(repo => repo.HasUnpushedCommits))
+                    if (Repositories.Any(repo => repo.HasUnpushedCommits))
+                    {
+                        Http.Server.SendNotificationError("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                    }
+                    else
+                    {
+                        int numberOfLocalChanges = Repositories.Sum(repo => repo.NumberOfLocalChanges);
+                        if (numberOfLocalChanges == 0)
                         {
-                            Http.Server.SendNotificationError("/gitanos/notification", Repositories.Sum(repo => repo.NumberOfLocalChanges).ToString());
+                            Http.Server.SendNotificationInformation("/gitanos/notification", "");  // don't show a notification
                         }
                         else
                         {
-                            int numberOfLocalChanges = Repositories.Sum(repo => repo.NumberOfLocalChanges);
-                            if (numberOfLocalChanges == 0)
-                            {
-                                Http.Server.SendNotificationInformation("/gitanos/notification", "");  // don't show a notification
-                            }
-                            else
-                            {
-                                Http.Server.SendNotificationInformation("/gitanos/notification", numberOfLocalChanges.ToString());
-                            }
+                            Http.Server.SendNotificationInformation("/gitanos/notification", numberOfLocalChanges.ToString());
                         }
                     }
                 }
-                catch (System.Exception exception)
-                {
-                    Logging.WriteError("Gitanos", "DirectoryMonitor: " + exception.Message);
-                }
-                finally
-                {
-                    _taskDirectoryMonitor = null;
-                    _manualResetEvent.Reset();
-
-                    Logging.WriteInfo("Gitanos", "DirectoryMonitor finished");
-                }
-            });
+            },
+            "Gitanos",
+            "DirectoryMonitor");
         }
 
         /// <summary>
@@ -324,6 +294,8 @@ namespace Phabrico.Plugin
                                     // repository directory was deleted
                                     DirectoryMonitor.Stop();
                                     DirectoryMonitor.Start(_rootPaths);
+
+                                    Http.Server.SendNotificationBusy("/gitanos/notification");
                                 }
                                 else
                                 {
@@ -411,6 +383,8 @@ namespace Phabrico.Plugin
                     {
                         DirectoryMonitor.Stop();
                         DirectoryMonitor.Start(_rootPaths);
+
+                        Http.Server.SendNotificationBusy("/gitanos/notification");
                     });
             }
         }
@@ -474,24 +448,10 @@ namespace Phabrico.Plugin
                     {
                         DirectoryMonitor.Stop();
                         DirectoryMonitor.Start(_rootPaths);
+
+                        Http.Server.SendNotificationBusy("/gitanos/notification");
                     });
             }
-        }
-
-        /// <summary>
-        /// Cancels collecting all files from all available GitanosConfigurationRepositoryPaths
-        /// </summary>
-        public static void Cancel()
-        {
-            cancellationTokenSource.Cancel();
-
-            // wait until previous task is completely canceled
-            while (_manualResetEvent.WaitOne(0))
-            {
-                Thread.Sleep(100);
-            }
-
-            cancellationTokenSource = new CancellationTokenSource();
         }
     }
 }

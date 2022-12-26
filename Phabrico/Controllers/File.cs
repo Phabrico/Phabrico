@@ -326,8 +326,6 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/file/getIDForNewFile")]
         public void HttpPostIDForNewFile(Http.Server httpServer, string[] parameters)
         {
-            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/getIDForNewFile");
-
             string jsonData;
             Storage.File fileStorage = new Storage.File();
 
@@ -467,8 +465,6 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/file/uploadChunk")]
         public void HttpPostUploadChunk(Http.Server httpServer, string[] parameters)
         {
-            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/uploadChunk");
-
             lock (ReentrancyLock)
             {
                 int fileID = Int32.Parse(parameters[0]);

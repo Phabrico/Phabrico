@@ -421,12 +421,12 @@ namespace Phabrico.Controllers
                 numberUncommittedObjects = uncommittedObjects.Count;
                 if (numberUncommittedObjects > 0)
                 {
-                    if (uncommittedPhrictionDocuments.Any(document => document.Path.Length >= Phabricator.Data.Phriction.MaximumLengthSlug))
+                    if (uncommittedPhrictionDocuments.Any(document => document.Path.Length >= Phabricator.Data.Phriction.MaximumLengthSlug && document.Token.StartsWith("PHID-NEWTOKEN-")))
                     {
                         issueType = JsonRecordData.IssueType.SlugIsTooLong;
                         Http.Server.SendNotificationError("/offline/changes/notification", numberUncommittedObjects.ToString());
                     }
-                    else if (uncommittedPhrictionDocuments.Any(document => document.Path.Length >= Phabricator.Data.Phriction.MaximumPreferredLengthSlug))
+                    else if (uncommittedPhrictionDocuments.Any(document => document.Path.Length >= Phabricator.Data.Phriction.MaximumPreferredLengthSlug && document.Token.StartsWith("PHID-NEWTOKEN-")))
                     {
                         issueType = JsonRecordData.IssueType.SlugIsLong;
                         Http.Server.SendNotificationWarning("/offline/changes/notification", numberUncommittedObjects.ToString());
@@ -750,12 +750,6 @@ namespace Phabrico.Controllers
             string phabricatorObjectToken = input.Groups[1].Value;
             string operation = input.Groups[2].Value;
 
-            Language language = Language.NotApplicable;
-            if (browser.Session.FormVariables[browser.Request.RawUrl].ContainsKey("use-local-language"))
-            {
-                language = browser.Session.Locale;
-            }
-
             SessionManager.Token token = SessionManager.GetToken(browser);
             if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
 
@@ -773,7 +767,7 @@ namespace Phabrico.Controllers
                 Phabricator.Data.PhabricatorObject phabricatorObject = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, phabricatorObjectToken, browser.Session.Locale, operation);
                 if (phabricatorObject != null)
                 {
-                    stageStorage.Remove(database, browser, phabricatorObject, language);
+                    stageStorage.Remove(database, browser, phabricatorObject, phabricatorObject.Language);
                     
                     Regex matchFileAttachments = new Regex("{F(-[0-9]+)[^}]*}");
                     List<int> unreferencedStagedFileIDs = new List<int>();
@@ -799,7 +793,7 @@ namespace Phabrico.Controllers
 
                     if (maniphestTask != null || phrictionDocument != null)
                     {
-                        foreach (Phabricator.Data.PhabricatorObject stagedObject in stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, browser.Session.Locale))
+                        foreach (Phabricator.Data.PhabricatorObject stagedObject in stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, phabricatorObject.Language))
                         {
                             maniphestTask = stagedObject as Phabricator.Data.Maniphest;
                             phrictionDocument = stagedObject as Phabricator.Data.Phriction;
@@ -828,7 +822,7 @@ namespace Phabrico.Controllers
                             Phabricator.Data.File unreferencedStageFile = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, unreferencedStagedFileID, false);
                             if (unreferencedStageFile != null)
                             {
-                                stageStorage.Remove(database, browser, unreferencedStageFile, language);
+                                stageStorage.Remove(database, browser, unreferencedStageFile, phabricatorObject.Language);
                             }
                         }
                     }

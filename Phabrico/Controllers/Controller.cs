@@ -236,6 +236,18 @@ namespace Phabrico.Controllers
                      + html.Substring(modifiedHeaderTag.Match.Index + modifiedHeaderTag.Match.Length);
             }
 
+            // == remove newlines at end of list-items ========
+            var listItemsWithNewlinesAtEnd = RegexSafe.Matches(html, @"<br></li>", RegexOptions.Singleline)
+                                                      .OfType<Match>()
+                                                      .OrderByDescending(m => m.Index)
+                                                      .ToArray();
+            foreach (var listItemWithNewlinesAtEnd in listItemsWithNewlinesAtEnd)
+            {
+                html = html.Substring(0, listItemWithNewlinesAtEnd.Index)
+                     + "</li>"
+                     + html.Substring(listItemWithNewlinesAtEnd.Index + listItemWithNewlinesAtEnd.Length);
+            }
+            
             return html;
         }
 

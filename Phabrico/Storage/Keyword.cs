@@ -115,6 +115,33 @@ namespace Phabrico.Storage
                 keyword.Language = language;
 
                 Content.Translation translation = content.GetTranslation(phabricatorObject.Token, language);
+                if (translation != null)
+                {
+                    // check if we have a staged translation
+                    Storage.Stage stageStorage = new Storage.Stage();
+                    Phabricator.Data.PhabricatorObject stagedTranslation = stageStorage.Get<Phabricator.Data.PhabricatorObject>(database, phabricatorObject.Token, language);
+                    if (stagedTranslation != null)
+                    {
+                        // update translation content
+                        Phabricator.Data.Phriction stagedPhrictionDocument = stagedTranslation as Phabricator.Data.Phriction;
+                        Phabricator.Data.Maniphest stagedManiphestTask = stagedTranslation as Phabricator.Data.Maniphest;
+                        Phabricator.Data.PhamePost stagedBlogPost = stagedTranslation as Phabricator.Data.PhamePost;
+
+                        if (stagedPhrictionDocument != null)
+                        {
+                            translation.TranslatedRemarkup = stagedPhrictionDocument.Content;
+                        }
+                        if (stagedManiphestTask != null)
+                        {
+                            translation.TranslatedRemarkup = stagedManiphestTask.Description;
+                        }
+                        if (stagedBlogPost != null)
+                        {
+                            translation.TranslatedRemarkup = stagedBlogPost.Content;
+                        }
+
+                    }
+                }
 
                 Phabricator.Data.Phriction phrictionDocument = phabricatorObject as Phabricator.Data.Phriction;
                 Phabricator.Data.Maniphest maniphestTask = phabricatorObject as Phabricator.Data.Maniphest;

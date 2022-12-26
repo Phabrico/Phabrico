@@ -263,8 +263,12 @@
         }, false);
 
         if ("@@CONTENT-IS-TRANSLATION@@" == "yes") {
-            tags.closest('div').style.display = 'none';
-            subscribers.closest('div').style.display = 'none';
+            if ("@@ACCESS-HIDE-PROJECTS@@" == "False") {
+                tags.closest('div').style.display = 'none';
+            }
+            if ("@@ACCESS-HIDE-USERS@@" == "False") {
+                subscribers.closest('div').style.display = 'none';
+            }
         } else {
             // if title was available during creation, the document was created by a ref-link
             if ("@@DOCUMENT-TITLE@@" !== "" && operation.value !== "new") {
