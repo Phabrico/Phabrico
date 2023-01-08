@@ -299,11 +299,11 @@ window.uiTheme = window.uiTheme || (function()
 	try
 	{
 		if (ui == null && urlParams['embed'] != '1' &&
-			(window.location.hostname == 'test.draw.io' ||
-			window.location.hostname == 'www.draw.io' ||
-			window.location.hostname == 'stage.diagrams.net' ||
-			window.location.hostname == 'app.diagrams.net' ||
-			window.location.hostname == 'jgraph.github.io'))
+			(window.location.hostname === 'test.draw.io' ||
+			window.location.hostname === 'www.draw.io' ||
+			window.location.hostname === 'stage.diagrams.net' ||
+			window.location.hostname === 'app.diagrams.net' ||
+			window.location.hostname === 'jgraph.github.io'))
 		{
 			var iw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 			
@@ -318,8 +318,9 @@ window.uiTheme = window.uiTheme || (function()
 		// ignore
 	}
 
-	// Redirects sketch UI to min UI with sketch URL parameter
-	if (ui == 'sketch')
+	// Activates sketch mode in Confluence Cloud sketch theme
+	if (ui == 'sketch' && urlParams['sketch'] == null &&
+		window.location.hostname === 'ac.draw.io')
 	{
 		urlParams['sketch'] = '1';
 	}
@@ -436,7 +437,8 @@ window.uiTheme = window.uiTheme || (function()
 
 // Enables offline mode
 if (urlParams['offline'] == '1' || urlParams['demo'] == '1' || 
-		urlParams['stealth'] == '1' || urlParams['local'] == '1' || urlParams['lockdown'] == '1')
+	urlParams['stealth'] == '1' || urlParams['local'] == '1' ||
+	urlParams['lockdown'] == '1')
 {
 	urlParams['picker'] = '0';
 	urlParams['gapi'] = '0';

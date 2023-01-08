@@ -619,6 +619,9 @@ msgstr "Action"
 msgid "Original Title"
 msgstr "Original Title"
 
+msgid "Last Reviewed At"
+msgstr "Last Reviewed At"
+
 msgid "All translations have been approved"
 msgstr "All translations have been approved"
 

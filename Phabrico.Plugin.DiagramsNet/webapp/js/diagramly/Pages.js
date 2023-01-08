@@ -550,9 +550,9 @@ EditorUi.prototype.initPages = function()
 		});
 
 		this.addListener('currentThemeChanged', pagesChanged);
+		this.editor.addListener('pagesPatched', pagesChanged);
 		this.editor.addListener('pageRenamed', pagesChanged);
 		this.editor.addListener('pageMoved', pagesChanged);
-		this.editor.addListener('fileLoaded', pagesChanged);
 		this.editor.addListener('fileLoaded', pagesChanged);
 
 		this.editor.addListener('pageSelected', mxUtils.bind(this, function(sender, evt)
@@ -586,7 +586,8 @@ EditorUi.prototype.scrollToPage = function()
 {
 	var index = this.getSelectedPageIndex();
 
-	if (this.tabScroller != null && this.tabScroller.children.length > index)
+	if (this.tabScroller != null && this.tabScroller.children.length > index &&
+		this.tabScroller.children[index] != null)
 	{
 		this.tabScroller.children[index].scrollIntoView();
 		this.tabScroller.children[index].className = 'geTab gePageTab geActivePage';
@@ -1809,47 +1810,49 @@ EditorUi.prototype.createPageMenu = function(page, label)
 {
 	return mxUtils.bind(this, function(menu, parent)
 	{
-		if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp && this.getServiceName() == 'draw.io')
+		if (urlParams['embed'] != 1)
 		{
-			menu.addItem(mxResources.get('openInNewWindow'), null, mxUtils.bind(this, function()
+			var url = this.getLinkForPage(page);
+
+			if (url != null)
 			{
-				this.editor.editAsNew(this.getFileData(true, null, null, null, true, true));
-			}), parent);
+				menu.addItem(mxResources.get('link') + '...', null, mxUtils.bind(this, function()
+				{
+					this.showPageLinkDialog(page);
+				}));
+			}
+			
+			if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp && this.getServiceName() == 'draw.io')
+			{
+				menu.addItem(mxResources.get('openInNewWindow'), null, mxUtils.bind(this, function()
+				{
+					this.editor.editAsNew(this.getFileData(true, null, null, null, true, true));
+				}), parent);
+			}
+
+			menu.addSeparator(parent);
 		}
 
-		var url = this.getLinkForPage(page);
-
-		if (url != null)
+		menu.addItem(mxResources.get('duplicate'), null, mxUtils.bind(this, function()
 		{
-			menu.addItem(mxResources.get('link') + '...', null, mxUtils.bind(this, function()
-			{
-				this.showPageLinkDialog(page);
-			}));
-		}
-		
-		menu.addSeparator(parent);
-
-		menu.addItem(mxResources.get('rename') + '...', null, mxUtils.bind(this, function()
-		{
-			this.renamePage(page, label);
+			this.duplicatePage(page, mxResources.get('copyOf', [page.getName()]));
 		}), parent);
-	
+
+		menu.addSeparator(parent);
+		
+		if (this.currentPage == page && this.pages.length > 1)
+		{
+			this.menus.addSubmenu('movePage', menu, parent, mxResources.get('move'));
+		}
+
 		menu.addItem(mxResources.get('delete'), null, mxUtils.bind(this, function()
 		{
 			this.removePage(page);
 		}), parent);
 		
-		if (this.currentPage == page && this.pages.length > 1)
+		menu.addItem(mxResources.get('rename') + '...', null, mxUtils.bind(this, function()
 		{
-			this.menus.addSubmenu('movePage', menu, parent, mxResources.get('move'));
-			menu.addSeparator(parent);
-		}
-
-		menu.addSeparator(parent);
-		
-		menu.addItem(mxResources.get('duplicate'), null, mxUtils.bind(this, function()
-		{
-			this.duplicatePage(page, mxResources.get('copyOf', [page.getName()]));
+			this.renamePage(page, label);
 		}), parent);
 	});
 };

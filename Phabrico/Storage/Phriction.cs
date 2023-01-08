@@ -321,11 +321,13 @@ namespace Phabrico.Storage
                                 {
                                     record.Name = (string)info["Name"];
                                     record.Content = (string)info["Content"];
+                                    record.Language = Language.NotApplicable;
                                 }
                                 else
                                 {
                                     record.Name = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["title"]);
                                     record.Content = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["translation"]);
+                                    record.Language = language;
                                 }
                                 record.Author = (string)info["Author"];
                                 record.LastModifiedBy = (string)info["LastModifiedBy"];
@@ -362,6 +364,19 @@ namespace Phabrico.Storage
 
                             result = Get(database, reference.Path + key.TrimEnd('/') + "/", language);
                             if (result != null) break;
+
+                            // check if reference-path-url and key-url overlap (this can happen when the database was downloaded by the commandline with the initialPath parameter)
+                            if (reference.Path.TrimEnd('/').Split('/').LastOrDefault() == key.TrimStart('/').Split('/').FirstOrDefault())
+                            {
+                                // overlap found
+                                string[] referenceParts = reference.Path.TrimEnd('/').Split('/');
+                                string[] keyParts = key.TrimStart('/').Split('/');
+
+                                string nonOverlappedUrl = string.Join("/", referenceParts.Take(referenceParts.Length - 1))
+                                                        + "/"
+                                                        + string.Join("/", keyParts);
+                                result = Get(database, nonOverlappedUrl, language);
+                            }
                         }
                     }
                 }

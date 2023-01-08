@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+Klik på et element i sidebaren"
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Træk fra sidebar"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+Klik"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Tilbagetræk eller Slet"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+Restørrelse"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+Klik"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Ctrl / Shift + Valg / Træk"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Shift+Slet"
@@ -299,20 +302,17 @@ msgstr "Shift+Forbind"
 msgid "Shift+Cursor"
 msgstr "Shift+Cursor"
 
-msgid "Shift+Drag"
-msgstr "Shift+Stræk"
-
 msgid "Shift+Enter"
-msgstr "Skift+indtastning"
+msgstr "Shift+indtastning"
 
 msgid "Shift+Home"
-msgstr "Skift+Hjem"
+msgstr "Shift+Hjem"
 
 msgid "Shift+Mouse wheel"
-msgstr "Skift+Musehjul"
+msgstr "Shift+Musehjul"
 
 msgid "Shift+Resize"
-msgstr "Skift+Restørrelse"
+msgstr "Shift+Restørrelse"
 
 msgid "Space / Right mouse Drag"
 msgstr "Mellemrum / højre musetræk"
@@ -320,8 +320,8 @@ msgstr "Mellemrum / højre musetræk"
 msgid "About"
 msgstr "Om"
 
-msgid "Toggle to Selection"
-msgstr "Skift til valg"
+msgid "Select (all) children / siblings"
+msgstr "Vælg (alle) underordnede og søskendeknuder"
 
 msgid "Autosize"
 msgstr "Autosize"
@@ -557,8 +557,8 @@ msgstr "Vælg alle / ingen"
 msgid "Select Cell Below"
 msgstr "Vælg celle under"
 
-msgid "Select Child / Parent"
-msgstr "Vælg barn / forælder"
+msgid "Select Parent"
+msgstr "Vælg forælder"
 
 msgid "Select Next / Previous"
 msgstr "Vælg Næste / Forrige"

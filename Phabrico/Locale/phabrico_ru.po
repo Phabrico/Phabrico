@@ -619,6 +619,9 @@ msgstr "Действие"
 msgid "Original Title"
 msgstr "Оригинальное название"
 
+msgid "Last Reviewed At"
+msgstr "Последний раз просмотрено в"
+
 msgid "All translations have been approved"
 msgstr "Все переводы были одобрены"
 

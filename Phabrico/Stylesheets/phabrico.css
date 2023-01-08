@@ -1247,6 +1247,10 @@ width: 30px;
     overflow-y: unset;
 }
 
+.maniphest-task .app-window-body.edit {
+    height: calc(100% - 80px);
+    min-height: 12em;
+}
 
 .app-window-body.edit > textarea {
     max-width: calc(100% + 16px);

@@ -256,14 +256,13 @@ namespace Phabrico.Storage
                 dbCommand.ExecuteNonQuery();
             }
         }
-
+        
         /// <summary>
         /// A previously approved translation for a given token has been disapproved.
         /// This can happen in case the original document has been changed.
         /// The translation should occur again on the new version of this original document.
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="language"></param>
         public void DisapproveTranslationForAllLanguages(string token)
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
@@ -273,6 +272,29 @@ namespace Phabrico.Storage
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
+
+                dbCommand.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// A previously approved translation for a given token has been disapproved.
+        /// This can happen in case the original document has been changed.
+        /// The translation should occur again on the new version of this original document.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="utcSince"></param>
+        public void DisapproveTranslationForAllLanguagesIfOlderThan(string token, DateTimeOffset utcSince)
+        {
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                        UPDATE Translation.contentTranslation
+                           SET reviewed = 0
+                        WHERE token = @token
+                          AND dateModified < @dateModified
+                   ", database.Connection))
+            {
+                database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
+                database.AddParameter(dbCommand, "dateModified", utcSince, EncryptionMode.None);
 
                 dbCommand.ExecuteNonQuery();
             }

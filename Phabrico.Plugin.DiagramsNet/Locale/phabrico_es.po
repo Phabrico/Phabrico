@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+clic en un elemento de la barra lateral"
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Arrastrar desde la barra lateral"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+clic"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Retroceso o Supr"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+Redimensionar"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+clic"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Ctrl / Mayús + Selección / Arrastrar"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Shift+Delete"
@@ -299,9 +302,6 @@ msgstr "Shift+Conectar"
 msgid "Shift+Cursor"
 msgstr "Shift+Cursor"
 
-msgid "Shift+Drag"
-msgstr "Shift+Arrastrar"
-
 msgid "Shift+Enter"
 msgstr "Shift+Enter"
 
@@ -320,8 +320,8 @@ msgstr "Space / Arrastrar con el botón<br />derecho del ratón"
 msgid "About"
 msgstr "Sobre"
 
-msgid "Toggle to Selection"
-msgstr "Pasar a la selección"
+msgid "Select (all) children / siblings"
+msgstr "Seleccionar (todos) los nodos hijos y hermanos"
 
 msgid "Autosize"
 msgstr "Autocálculo"
@@ -557,8 +557,8 @@ msgstr "Seleccionar todos / ninguno"
 msgid "Select Cell Below"
 msgstr "Seleccione la celda de abajo"
 
-msgid "Select Child / Parent"
-msgstr "Seleccionar hijo / padre"
+msgid "Select Parent"
+msgstr "Seleccionar padre"
 
 msgid "Select Next / Previous"
 msgstr "Seleccionar siguiente / anterior"

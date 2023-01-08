@@ -85,6 +85,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\plugins\nextcloud.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\commons-text-1.10.0.jar" />
     <EmbeddedResource Include="webapp\img\lib\azure2\storage\Azure_Fileshare.svg" />
     <EmbeddedResource Include="webapp\img\lib\azure2\storage\Storage_Explorer.svg" />

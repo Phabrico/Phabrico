@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Base64;
+using Phabrico.Parsers.BrokenXML;
 using Phabrico.Parsers.Remarkup;
 using System;
 using System.Collections.Generic;
@@ -108,7 +109,7 @@ namespace Phabrico.ContentTranslation.Engines
 
                             cell = worksheet.Cell("C" + rowIndex);
                             cell.Style.Alignment.SetVertical(XLAlignmentVerticalValues.Top);
-                            cell.SetValue(translation.Value.TranslatedText);
+                            cell.SetValue(translation.Value.TranslatedText.Replace("\r", "").Replace("\n", "\r\n"));
                         }
 
                         worksheet.RangeUsed().SetAutoFilter(true);
@@ -498,20 +499,79 @@ namespace Phabrico.ContentTranslation.Engines
         /// <param name="sourceLanguage">Language of content</param>
         /// <param name="destinationLanguage">Language of translated content</param>
         /// <param name="content">Content to be translated</param>
+        /// <param name="previouslyTranslatedContent">Translated content. Can be empty if this is the first translation time or it can contain a translation from a previous call</param>
         /// <param name="origin">Location where the content can be found (i.e. a token)</param>
         /// <returns>Translated content</returns>
-        protected override string Translate(string sourceLanguage, string destinationLanguage, string content, string origin)
+        protected override string Translate(string sourceLanguage, string destinationLanguage, string content, string previouslyTranslatedContent, string origin)
         {
             MD5 md5 = MD5.Create();
             int hashCounter = 1;
 
             string unformattedContent = DecodeBrokenXmlFormatting(content);
+            string unformattedPreviouslyTranslatedContent = DecodeBrokenXmlFormatting(previouslyTranslatedContent);
 
             Parsers.BrokenXML.BrokenXmlParser brokenXmlParser = new Parsers.BrokenXML.BrokenXmlParser();
+
             List<Parsers.BrokenXML.BrokenXmlToken> brokenXmlTokens = brokenXmlParser.Parse(unformattedContent)
                                                                                     .ToList();
-
+            List<Parsers.BrokenXML.BrokenXmlToken> brokenXmlTokensPreviousTranslation = brokenXmlParser.Parse(unformattedPreviouslyTranslatedContent)
+                                                                                                       .ToList();
             // search for table cells which have newlines in them
+            DecodeMultilinedTableCells(ref brokenXmlTokens);
+            DecodeMultilinedTableCells(ref brokenXmlTokensPreviousTranslation);
+
+            if (brokenXmlTokensPreviousTranslation.Count != brokenXmlTokens.Count)
+            {
+                brokenXmlTokensPreviousTranslation = null;
+            }
+
+            List<Parsers.BrokenXML.BrokenXmlText> brokenXmlTextTokens = brokenXmlTokens.OfType<Parsers.BrokenXML.BrokenXmlText>()
+                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"^{[FTM][^}]*}$", RegexOptions.Singleline) == false)
+                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"[a-zA-Z]", RegexOptions.Singleline)
+                                                                                                || RegexSafe.IsMatch(token.Value, @"[\p{IsCJKUnifiedIdeographs}\p{IsThai}]", RegexOptions.Singleline)
+                                                                                         )
+                                                                                   .ToList();
+
+            foreach (Parsers.BrokenXML.BrokenXmlText brokenXmlTextToken in brokenXmlTextTokens)
+            {
+                // calculate prefix/postfix which identify identify the number of whitespace characters at the front and back
+                int prefix = 0, postfix = brokenXmlTextToken.Value.Length - 1;
+                while (char.IsWhiteSpace(brokenXmlTextToken.Value[prefix])) prefix++;
+                while (postfix > prefix && char.IsWhiteSpace(brokenXmlTextToken.Value[postfix])) postfix--;
+                if (postfix == prefix) continue;
+
+                string text = brokenXmlTextToken.Value.Substring(prefix, 1 + postfix - prefix);
+
+                // in case multiple sentences in 1 translation -> put each sentence on a separate line
+                text = Regex.Replace(text, @"([^.].[.]) ", "$1\r\n");
+
+                string hashKey = string.Join("",
+                                    md5.ComputeHash(
+                                        UTF8Encoding.UTF8.GetBytes(origin + text)
+                                    )
+                                    .Select(b => b.ToString("X2"))
+                                 );
+
+                string previouslyTranslatedText = "";
+                if (brokenXmlTokensPreviousTranslation != null &&
+                    brokenXmlTokens.IndexOf(brokenXmlTextToken) >= 0)
+                {
+                    previouslyTranslatedText = brokenXmlTokensPreviousTranslation[brokenXmlTokens.IndexOf(brokenXmlTextToken)].Value;
+
+                    // in case multiple sentences in 1 translation -> put each sentence on a separate line
+                    previouslyTranslatedText = Regex.Replace(previouslyTranslatedText, @"([^.].[.]) ", "$1\r\n");
+
+                    previouslyTranslatedText = previouslyTranslatedText.Trim('\r', '\n');
+                }
+
+                TranslationalDictionary[hashKey + hashCounter.ToString("D4")] = new Translation(text, previouslyTranslatedText);
+                hashCounter++;
+            }
+            return "";
+        }
+
+        private void DecodeMultilinedTableCells(ref List<BrokenXmlToken> brokenXmlTokens)
+        {
             int startTableCell = 0;
             while (true)
             {
@@ -553,38 +613,6 @@ namespace Phabrico.ContentTranslation.Engines
 
                 startTableCell = endTableCell + 1;
             }
-
-            List<Parsers.BrokenXML.BrokenXmlText> brokenXmlTextTokens = brokenXmlTokens.OfType<Parsers.BrokenXML.BrokenXmlText>()
-                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"^{[FTM][^}]*}$", RegexOptions.Singleline) == false)
-                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"[a-zA-Z]", RegexOptions.Singleline)
-                                                                                                || RegexSafe.IsMatch(token.Value, @"[\p{IsCJKUnifiedIdeographs}\p{IsThai}]", RegexOptions.Singleline)
-                                                                                         )
-                                                                                   .ToList();
-
-            foreach (Parsers.BrokenXML.BrokenXmlText brokenXmlTextToken in brokenXmlTextTokens)
-            {
-                // calculate prefix/postfix which identify identify the number of whitespace characters at the front and back
-                int prefix = 0, postfix = brokenXmlTextToken.Value.Length - 1;
-                while (char.IsWhiteSpace(brokenXmlTextToken.Value[prefix])) prefix++;
-                while (postfix > prefix && char.IsWhiteSpace(brokenXmlTextToken.Value[postfix])) postfix--;
-                if (postfix == prefix) continue;
-
-                string text = brokenXmlTextToken.Value.Substring(prefix, 1 + postfix - prefix);
-
-                // in case multiple sentences in 1 translation -> put each sentence on a separate line
-                text = Regex.Replace(text, @"([^.].[.]) ", "$1\r\n");
-
-                string hashKey = string.Join("",
-                                    md5.ComputeHash(
-                                        UTF8Encoding.UTF8.GetBytes(origin + text)
-                                    )
-                                    .Select(b => b.ToString("X2"))
-                                 );
-
-                TranslationalDictionary[hashKey + hashCounter.ToString("D4")] = new Translation(text, "");
-                hashCounter++;
-            }
-            return "";
         }
     }
 }

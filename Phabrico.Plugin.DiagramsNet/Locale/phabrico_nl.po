@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+Klik op een item in de zijbalk"
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Slepen vanuit zijbalk"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+klik"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Backspace of Del"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+Resize"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+klik"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Ctrl / Shift + Selectie / Slepen"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Shift+Delete"
@@ -299,9 +302,6 @@ msgstr "Shift+Verbinden"
 msgid "Shift+Cursor"
 msgstr "Shift+Cursor"
 
-msgid "Shift+Drag"
-msgstr "Shift+Slepen"
-
 msgid "Shift+Enter"
 msgstr "Shift+Enter"
 
@@ -320,8 +320,8 @@ msgstr "Space / Slepen met de rechtermuisknop"
 msgid "About"
 msgstr "Over"
 
-msgid "Toggle to Selection"
-msgstr "Wisselen naar selectie"
+msgid "Select (all) children / siblings"
+msgstr "Selecteer (alle) kind- en zusterknooppunten"
 
 msgid "Autosize"
 msgstr "Autosize"
@@ -557,8 +557,8 @@ msgstr "Selecteer Alles / Niets"
 msgid "Select Cell Below"
 msgstr "Selecteer onderstaande cel"
 
-msgid "Select Child / Parent"
-msgstr "Selecteer kind / ouder"
+msgid "Select Parent"
+msgstr "Selecteer ouder"
 
 msgid "Select Next / Previous"
 msgstr "Kies Volgende / Vorige"

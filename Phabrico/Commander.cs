@@ -168,7 +168,15 @@ namespace Phabrico
             }
             catch (System.Exception exception)
             {
-                Console.WriteLine("{0}: {1}", exception.Message, argument);
+                Console.Write("{0}\nArguments: {1}", 
+                    exception.Message, 
+                    string.Join(" ", arguments.Where(arg => arg.StartsWith("/token:", StringComparison.OrdinalIgnoreCase) == false))
+                );
+                if (arguments.Any(arg => arg.StartsWith("/token:", StringComparison.OrdinalIgnoreCase)))
+                {
+                    Console.Write(" /token:<hidden>");
+                }
+                Console.WriteLine();
                 Action = CommanderAction.Nothing;
 
                 Console.WriteLine();

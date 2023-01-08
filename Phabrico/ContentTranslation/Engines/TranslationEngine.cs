@@ -71,9 +71,10 @@ namespace Phabrico.ContentTranslation.Engines
         /// <param name="sourceLanguage">Language of content</param>
         /// <param name="destinationLanguage">Language of translated content</param>
         /// <param name="content">Content to be translated</param>
+        /// <param name="previouslyTranslatedContent">Translated content. Can be empty if this is the first translation time or it can contain a translation from a previous call</param>
         /// <param name="origin">Location where the content can be found (i.e. a token)</param>
         /// <returns>Translated content</returns>
-        protected abstract string Translate(string sourceLanguage, string destinationLanguage, string content, string origin);
+        protected abstract string Translate(string sourceLanguage, string destinationLanguage, string content, string previouslyTranslatedContent, string origin);
 
         /// <summary>
         /// If the translation enigne is a file-based translator, this method will return the file content in a base64 encoding
@@ -265,14 +266,21 @@ namespace Phabrico.ContentTranslation.Engines
         /// <param name="sourceLanguage"></param>
         /// <param name="destinationLanguage"></param>
         /// <param name="brokenXml"></param>
+        /// <param name="previousTranslatedBrokenXml"></param>
         /// <param name="origin"></param>
         /// <returns></returns>
-        public string TranslateXML(string sourceLanguage, string destinationLanguage, string brokenXml, string origin)
+        public string TranslateXML(string sourceLanguage, string destinationLanguage, string brokenXml, string previousTranslatedBrokenXml, string origin)
         {
             untranslatableTextParts.Clear();
 
             string translatableContent = PrepareTranslatableContent(brokenXml);
-            string translatedContent = Translate(sourceLanguage, destinationLanguage, translatableContent, origin);
+            string previousTranslatedContent = "";
+            if (string.IsNullOrWhiteSpace(previousTranslatedBrokenXml) == false)
+            {
+                previousTranslatedContent = PrepareTranslatableContent(previousTranslatedBrokenXml);
+            }
+
+            string translatedContent = Translate(sourceLanguage, destinationLanguage, translatableContent, previousTranslatedContent, origin);
 
             Match[] untranslatedMatches = RegexSafe.Matches(translatedContent, "<UT i=\"([0-9]+)\"></UT>", RegexOptions.Singleline)
                                                    .OfType<Match>()
@@ -297,11 +305,12 @@ namespace Phabrico.ContentTranslation.Engines
         /// <param name="sourceLanguage"></param>
         /// <param name="targetLanguage"></param>
         /// <param name="text"></param>
+        /// <param name="previouslyTranslatedText"></param>
         /// <param name="origin"></param>
         /// <returns></returns>
-        public virtual string TranslateText(string sourceLanguage, string targetLanguage, string text, string origin)
+        public virtual string TranslateText(string sourceLanguage, string targetLanguage, string text, string previouslyTranslatedText, string origin)
         {
-            return TranslateXML(sourceLanguage, targetLanguage, text, origin);
+            return TranslateXML(sourceLanguage, targetLanguage, text, previouslyTranslatedText, origin);
         }
 
         /// <summary>

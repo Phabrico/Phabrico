@@ -619,6 +619,9 @@ msgstr "Åtgärd"
 msgid "Original Title"
 msgstr "Ursprunglig titel"
 
+msgid "Last Reviewed At"
+msgstr "Senast granskad av"
+
 msgid "All translations have been approved"
 msgstr "Alla översättningar har godkänts"
 

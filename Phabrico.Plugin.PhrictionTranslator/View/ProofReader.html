@@ -23,6 +23,10 @@
         border-bottom: solid 1px;
     }
 
+    .proofreader .content .html img {
+        margin: 16px 0px;
+    }
+
     .proofreader .content #right .title {
         margin-top: -6px;
         margin-bottom: 10px;
@@ -51,6 +55,10 @@
 
     .proofreader .content #right .remarkup #edit {
         height: calc(100% - 68px);
+    }
+
+    .proofreader .image-container a.button {
+        left: calc(100% - 50px);
     }
 
     .edit-left {
@@ -97,8 +105,8 @@
 <div class="proofreader">
     <div class="toolbar">
         <div class="app-edit-window-head" style="margin-top:9px;">
-            <span class="phui-font-fa fa-eye tooltip-top" style="display:none"><span class="tooltiptext">View result</span></span>
-            <span class="phui-font-fa fa-code tooltip-top"><span class="tooltiptext">View remarkup code</span></span>
+            <span class="phui-font-fa fa-eye tooltip-top" style="display:none" data-keyboard-shortcut="CTRL+E"><span class="tooltiptext">View result</span></span>
+            <span class="phui-font-fa fa-code tooltip-top" data-keyboard-shortcut="CTRL+E"><span class="tooltiptext">View remarkup code</span></span>
         </div>
     </div>
     <div class="content">
@@ -216,6 +224,24 @@
         xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
         xmlhttp.send(data);
     });
+
+
+    document.onkeydown = function (e) {
+        if (e.ctrlKey || e.altKey) {
+            var shortcut = "";
+            if (e.ctrlKey) shortcut += "CTRL+";
+            if (e.altKey) shortcut += "ALT+";
+            if (e.shiftKey) shortcut += "SHIFT+";
+            shortcut += String.fromCharCode(e.keyCode);
+
+            var actionMenuItem = document.querySelector('*:not([style*="none"])[data-keyboard-shortcut="' + shortcut + '"]');
+            if (actionMenuItem != null) {
+                e.preventDefault();
+
+                actionMenuItem.click();
+            }
+        }
+    };
 
     var leftPane = document.getElementById('left');
     var rightPane = document.getElementById('right');

@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+Klikkaa sivupalkin kohdetta."
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Vedä sivupalkista"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+Klikkaa"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Backspace tai Delete"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+Koon muuttaminen"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+Klikkaa"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Ctrl / Shift + valinta / vedä"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Vaihto+Poista"
@@ -299,9 +302,6 @@ msgstr "Shift+Yhteys"
 msgid "Shift+Cursor"
 msgstr "Vaihto+Kursori"
 
-msgid "Shift+Drag"
-msgstr "Vaihto+Vetää"
-
 msgid "Shift+Enter"
 msgstr "Shift+Enter"
 
@@ -320,8 +320,8 @@ msgstr "Välilyönti / hiiren oikean puoleinen veto"
 msgid "About"
 msgstr "Tietoja"
 
-msgid "Toggle to Selection"
-msgstr "Vaihda valintaan"
+msgid "Select (all) children / siblings"
+msgstr "Valitse (kaikki) lapsi- ja sisarsolmut"
 
 msgid "Autosize"
 msgstr "Autosize"
@@ -557,8 +557,8 @@ msgstr "Valitse Kaikki / Ei mitään"
 msgid "Select Cell Below"
 msgstr "Valitse solu alla"
 
-msgid "Select Child / Parent"
-msgstr "Valitse lapsi / vanhempi"
+msgid "Select Parent"
+msgstr "Valitse vanhempi"
 
 msgid "Select Next / Previous"
 msgstr "Valitse Seuraava / Edellinen"

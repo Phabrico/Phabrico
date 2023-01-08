@@ -34,6 +34,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 Initialize(browser, httpRootPath);
                 Logon();
 
+                WebBrowser.Manage().Window.Maximize();  // maximize window, otherwise some buttons are not accessible
+
                 // ## Step 1: prepare "remote" git repository ########################################################################
                 // (re)create directory for "remote" git repository
                 string gitanosRemoteRepository = DownloadDirectory + "\\GitanosRemote";

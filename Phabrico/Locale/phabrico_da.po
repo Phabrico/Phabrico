@@ -619,6 +619,9 @@ msgstr "Handling"
 msgid "Original Title"
 msgstr "Original titel"
 
+msgid "Last Reviewed At"
+msgstr "Sidst revideret på"
+
 msgid "All translations have been approved"
 msgstr "Alle oversættelser er blevet godkendt"
 

@@ -1561,6 +1561,10 @@ namespace Phabrico.Http
                     case AuthenticationFactor.Public:
                         // auto-logon is configured
                         string publicEncryptionKey = database.GetConfigurationParameter("EncryptionKey");
+                        if (publicEncryptionKey == null)
+                        {
+                            throw new System.Exception("Phabrico database is corrupted");
+                        }
 
                         // find out if public token already exists
                         bool createPublicToken = false;
@@ -2457,10 +2461,13 @@ namespace Phabrico.Http
 
             numberOfInstancesCreated--;
 
-            // shrinks the database
-            using (Database database = new Storage.Database(null))
+            if (IsHttpModule == false)  // do not shrink when using IIS, as it can take too long to execute this command
             {
-                database.Shrink();
+                // shrinks the database
+                using (Database database = new Storage.Database(null))
+                {
+                    database.Shrink();
+                }
             }
         }
 

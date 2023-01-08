@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+Click on a sidebar item"
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Drag from sidebar"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+Click"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Backspace or Delete"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+Resize"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+Click"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Ctrl / Shift+Select / Drag"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Shift+Delete"
@@ -299,9 +302,6 @@ msgstr "Shift+Connect"
 msgid "Shift+Cursor"
 msgstr "Shift+Cursor"
 
-msgid "Shift+Drag"
-msgstr "Shift+Drag"
-
 msgid "Shift+Enter"
 msgstr "Shift+Enter"
 
@@ -320,8 +320,8 @@ msgstr "Space / Right mouse Drag"
 msgid "About"
 msgstr "About"
 
-msgid "Toggle to Selection"
-msgstr "Toggle to Selection"
+msgid "Select (all) children / siblings"
+msgstr "Select (all) children / siblings"
 
 msgid "Autosize"
 msgstr "Autosize"
@@ -557,8 +557,8 @@ msgstr "Select All / None"
 msgid "Select Cell Below"
 msgstr "Select Cell Below"
 
-msgid "Select Child / Parent"
-msgstr "Select Child / Parent"
+msgid "Select Parent"
+msgstr "Select Parent"
 
 msgid "Select Next / Previous"
 msgstr "Select Next / Previous"

@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Strg)+Klick auf ein Element in der Seitenleiste"
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Aus der Seitenleiste ziehen"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+Klick"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Rücktaste oder Entf"
 
@@ -92,8 +95,8 @@ msgstr "Strg - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Strg / Meta+Resize"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Strg / Shift+Klick"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Strg / Umschalt + Auswahl / Ziehen"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Strg / Shift+Delete"
@@ -299,9 +302,6 @@ msgstr "Shift+Verbinden"
 msgid "Shift+Cursor"
 msgstr "Shift+Cursor"
 
-msgid "Shift+Drag"
-msgstr "Shift+Ziehen"
-
 msgid "Shift+Enter"
 msgstr "Shift+Enter"
 
@@ -320,8 +320,8 @@ msgstr "Space / Ziehen mit der<br />rechten Maustaste"
 msgid "About"
 msgstr "Über"
 
-msgid "Toggle to Selection"
-msgstr "Zur Auswahl umschalten"
+msgid "Select (all) children / siblings"
+msgstr "Auswahl (aller) Kind- und Geschwisterknoten"
 
 msgid "Autosize"
 msgstr "Autosize"
@@ -557,8 +557,8 @@ msgstr "Alle / Keine auswählen"
 msgid "Select Cell Below"
 msgstr "Zelle unten auswählen"
 
-msgid "Select Child / Parent"
-msgstr "Kind / Elternteil auswählen"
+msgid "Select Parent"
+msgstr "Elternteil auswählen"
 
 msgid "Select Next / Previous"
 msgstr "Nächste / Vorherige auswählen"

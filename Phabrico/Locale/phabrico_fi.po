@@ -619,6 +619,9 @@ msgstr "Toiminta"
 msgid "Original Title"
 msgstr "Alkuperäinen otsikko"
 
+msgid "Last Reviewed At"
+msgstr "Viimeksi tarkistettu"
+
 msgid "All translations have been approved"
 msgstr "Kaikki käännökset on hyväksytty"
 

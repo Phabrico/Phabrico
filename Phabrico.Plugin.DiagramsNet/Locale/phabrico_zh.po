@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+点击一个侧栏项目"
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)从侧栏拖动"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+点击"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "退格键或删除键"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+调整大小"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+点击"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "按Ctrl键/Shift+选择/拖动"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Shift+Delete"
@@ -299,9 +302,6 @@ msgstr "Shift+连接"
 msgid "Shift+Cursor"
 msgstr "Shift+光标"
 
-msgid "Shift+Drag"
-msgstr "Shift+拖拽"
-
 msgid "Shift+Enter"
 msgstr "Shift+Enter"
 
@@ -320,8 +320,8 @@ msgstr "Space / 用鼠标右键拖动"
 msgid "About"
 msgstr "关于"
 
-msgid "Toggle to Selection"
-msgstr "切换到选区"
+msgid "Select (all) children / siblings"
+msgstr "选择（所有）子节点和兄弟节点"
 
 msgid "Autosize"
 msgstr "自动尺寸"
@@ -557,8 +557,8 @@ msgstr "选择全部/无"
 msgid "Select Cell Below"
 msgstr "选择下面的单元格"
 
-msgid "Select Child / Parent"
-msgstr "选择子女/父母"
+msgid "Select Parent"
+msgstr "选择父元素"
 
 msgid "Select Next / Previous"
 msgstr "选择下一个/上一个"

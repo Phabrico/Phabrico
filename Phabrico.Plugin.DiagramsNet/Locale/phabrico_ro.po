@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+Click pe un element din bara laterală"
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Trageți din bara laterală"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+Click"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Backspace sau Delete"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+Redimensionare"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+Click"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Ctrl / Shift + Selecție / Trageți"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Shift+Delete"
@@ -299,9 +302,6 @@ msgstr "Shift+Conectare"
 msgid "Shift+Cursor"
 msgstr "Shift+Cursor"
 
-msgid "Shift+Drag"
-msgstr "Shift+Drag"
-
 msgid "Shift+Enter"
 msgstr "Shift+Intrare"
 
@@ -320,8 +320,8 @@ msgstr "Spațiu / Tragere dreapta mouse-ului"
 msgid "About"
 msgstr "Despre"
 
-msgid "Toggle to Selection"
-msgstr "Treci la selecție"
+msgid "Select (all) children / siblings"
+msgstr "Selectați (toate) nodurile copil și frate sau soră"
 
 msgid "Autosize"
 msgstr "Autodimensionare"
@@ -557,8 +557,8 @@ msgstr "Selectați toate / Niciuna"
 msgid "Select Cell Below"
 msgstr "Selectați celula de mai jos"
 
-msgid "Select Child / Parent"
-msgstr "Selectați copil / părinte"
+msgid "Select Parent"
+msgstr "Selectați părinte"
 
 msgid "Select Next / Previous"
 msgstr "Selectați Următorul / Precedentul"

@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+Клик по элементу боковой пан�
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Перетащить из боковой панели"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+Клик"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Backspace или Delete"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+Размер"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+Клик"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Ctrl / Shift + выделение / перетаскивание"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Shift+Delete"
@@ -299,9 +302,6 @@ msgstr "Shift+Связать"
 msgid "Shift+Cursor"
 msgstr "Shift+Курсор"
 
-msgid "Shift+Drag"
-msgstr "Shift+Перетащить"
-
 msgid "Shift+Enter"
 msgstr "Shift+Enter"
 
@@ -320,8 +320,8 @@ msgstr "Пробел / Перетаскивание правой кнопкой 
 msgid "About"
 msgstr "О"
 
-msgid "Toggle to Selection"
-msgstr "Переключение на выделение"
+msgid "Select (all) children / siblings"
+msgstr "Выберите (все) дочерние и родственные узлы"
 
 msgid "Autosize"
 msgstr "Авторазмер"
@@ -557,8 +557,8 @@ msgstr "Выбрать все / ни одной"
 msgid "Select Cell Below"
 msgstr "Выбрать ячейку ниже"
 
-msgid "Select Child / Parent"
-msgstr "Выбрать дочернюю / родительскую ячейку"
+msgid "Select Parent"
+msgstr "Выберите родителя"
 
 msgid "Select Next / Previous"
 msgstr "Выбрать следующую / предыдущую"

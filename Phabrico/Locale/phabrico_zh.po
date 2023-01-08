@@ -619,6 +619,9 @@ msgstr "行动"
 msgid "Original Title"
 msgstr "原标题"
 
+msgid "Last Reviewed At"
+msgstr "最后一次审查是在"
+
 msgid "All translations have been approved"
 msgstr "所有的翻译都被批准"
 

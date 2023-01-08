@@ -71,7 +71,8 @@
                     <thead>
                         <tr>
                             <th id="tblUnreviewedTranslations#Title" class="sortableColumn wide title sortedColumn ascending">Title</th>
-                            <th id="tblUnreviewedTranslations#OriginalTitle wide" class="sortableColumn wide originaltitle">Original Title</th>
+                            <th id="tblUnreviewedTranslations#OriginalTitle" class="sortableColumn wide originaltitle">Original Title</th>
+                            <th id="tblUnreviewedTranslations#LastReviewedAt" class="sortableColumn wide lastReviewedAt">Last Reviewed At</th>
                             <th id="tblUnreviewedTranslations#Action" class="sortableColumn action">Action</th>
                         </tr>
                     </thead>
@@ -191,8 +192,14 @@
 
                             cell = row.insertCell();
                             cell.classList.add('originalTitle');
-                            cell.classList.add('wide');
                             text = document.createTextNode(record.OriginalTitle);
+                            cell.appendChild(text);
+
+                            cell = row.insertCell();
+                            cell.classList.add('lastReviewedAt');
+                            cell.classList.add('wide');
+                            text = document.createElement('span');
+                            text.innerHTML = record.LastReviewedAt;
                             cell.appendChild(text);
 
                             // add action button to row

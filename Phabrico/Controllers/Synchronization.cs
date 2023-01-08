@@ -4,6 +4,7 @@ using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Base64;
 using Phabrico.Parsers.Remarkup;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1652,6 +1653,7 @@ namespace Phabrico.Controllers
             Phabricator.API.Phriction phabricatorPhrictionAPI = new Phabricator.API.Phriction();
             Storage.Phriction phrictionStorage = new Storage.Phriction();
             Storage.Keyword keywordStorage = new Storage.Keyword();
+            Content content = new Content(synchronizationParameters.database);
 
             phabricatorPhrictionAPI.TimeDifferenceBetweenPhabricatorAndLocalComputer = synchronizationParameters.TimeDifferenceBetweenPhabricatorAndLocalComputer;
 
@@ -1942,6 +1944,8 @@ namespace Phabrico.Controllers
                         synchronizationParameters.database.AssignToken(phabricatorPhrictionDocument.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
                     }
                 }
+
+                content.DisapproveTranslationForAllLanguagesIfOlderThan(phabricatorPhrictionDocument.Token, phabricatorPhrictionDocument.DateModified);
             }
 
             // delete any local document tagged with a disallowed project

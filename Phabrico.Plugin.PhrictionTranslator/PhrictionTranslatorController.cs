@@ -693,6 +693,14 @@ namespace Phabrico.Plugin
             RemarkupEngine remarkup = new RemarkupEngine();
             RemarkupParserOutput remarkupParserOutput;
             Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, phrictionToken, Language.NotApplicable);
+            Phabricator.Data.Phriction translatedPhrictionDocument = phrictionStorage.Get(database, phrictionToken, targetLanguage);
+
+            if (translatedPhrictionDocument.Language == Language.NotApplicable)
+            {
+                translatedPhrictionDocument = null;
+            }
+
+            string previouslyTranslatedTitle = translatedPhrictionDocument?.Name ?? "";
 
             Language originalLanguage = browser.Session.Locale;
             browser.Session.Locale = targetLanguage;
@@ -700,14 +708,20 @@ namespace Phabrico.Plugin
             try
             {
                 string translatedContent = "";
-                string translatedTitle = translator.TranslateText(sourceLanguage, targetLanguage, phrictionDocument.Name, phrictionDocument.Token);
+                string translatedTitle = translator.TranslateText(sourceLanguage, targetLanguage, phrictionDocument.Name, previouslyTranslatedTitle, phrictionDocument.Token);
                 if (string.IsNullOrWhiteSpace(phrictionDocument.Content) == false)
                 {
-                    remarkup.ToHTML(null, database, browser, phrictionDocument.Path, phrictionDocument.Content + "\n", out remarkupParserOutput, false);
+                    string previouslyTranslatedContent = translatedPhrictionDocument?.Content ?? "";
+                    if (string.IsNullOrWhiteSpace(previouslyTranslatedContent) == false)
+                    {
+                        remarkup.ToHTML(null, database, browser, phrictionDocument.Path, previouslyTranslatedContent + "\n", out remarkupParserOutput, false);
+                        previouslyTranslatedContent = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
+                    }
 
+                    remarkup.ToHTML(null, database, browser, phrictionDocument.Path, phrictionDocument.Content + "\n", out remarkupParserOutput, false);
                     string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
 
-                    string translatedXmlContent = translator.TranslateXML(sourceLanguage, targetLanguage, xmlData, phrictionDocument.Token);
+                    string translatedXmlContent = translator.TranslateXML(sourceLanguage, targetLanguage, xmlData, previouslyTranslatedContent, phrictionDocument.Token);
                     string correctedTranslatedXmlContent = CorrectTranslatedXmlContent(translatedXmlContent);
                     browser.Language = targetLanguage;
                     translatedContent = remarkupParserOutput.TokenList.FromXML(database, browser, "/", correctedTranslatedXmlContent, true);

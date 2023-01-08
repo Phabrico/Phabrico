@@ -619,6 +619,9 @@ msgstr "Acțiune"
 msgid "Original Title"
 msgstr "Titlul original"
 
+msgid "Last Reviewed At"
+msgstr "Revizuit ultima dată la"
+
 msgid "All translations have been approved"
 msgstr "Toate traducerile au fost aprobate"
 

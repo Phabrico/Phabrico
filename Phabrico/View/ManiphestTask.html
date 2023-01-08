@@ -441,6 +441,7 @@
 
         if (e.ctrlKey && e.keyCode == 'A'.charCodeAt(0)) {
             if (typeof (searchPhabrico) !== "undefined" && document.activeElement == searchPhabrico) return;
+            if (document.activeElement == textarea) return;
 
             e.preventDefault();
 

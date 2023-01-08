@@ -44,8 +44,8 @@ msgstr "Alt+(Shift / Ctrl)+Klicka på ett objekt i sidofältet"
 msgid "Alt+(Shift+)Drag from sidebar"
 msgstr "Alt+(Shift+)Dra från sidofältet"
 
-msgid "Alt+(Shift+)Tab"
-msgstr "Alt+(Shift+)Tab"
+msgid "Alt+Shift+P / Alt+Tab"
+msgstr "Alt+Shift+P / Alt+Tab"
 
 msgid "Alt+Click"
 msgstr "Alt+Klicka"
@@ -80,6 +80,9 @@ msgstr "Alt+Shift+V"
 msgid "Alt+Shift+X"
 msgstr "Alt+Shift+X"
 
+msgid "Alt+Shift+X / C / S"
+msgstr "Alt+Shift+X / C / S"
+
 msgid "Backspace or Delete"
 msgstr "Backspace eller Radera"
 
@@ -92,8 +95,8 @@ msgstr "Ctrl - (Numpad)"
 msgid "Ctrl / Meta+Resize"
 msgstr "Ctrl / Meta+Restorlek"
 
-msgid "Ctrl / Shift+Click"
-msgstr "Ctrl / Shift+Klicka"
+msgid "Ctrl / Shift+Select / Drag"
+msgstr "Ctrl / Shift+Välja / Dra"
 
 msgid "Ctrl / Shift+Delete"
 msgstr "Ctrl / Shift+Ta bort"
@@ -294,22 +297,19 @@ msgid "Shift+Click on a sidebar item"
 msgstr "Shift+Klicka på ett objekt i sidofältet"
 
 msgid "Shift+Connect"
-msgstr "Skift+Koppla ihop"
+msgstr "Shift+Koppla ihop"
 
 msgid "Shift+Cursor"
-msgstr "Skift+Cursor"
-
-msgid "Shift+Drag"
-msgstr "Skift+Släpp"
+msgstr "Shift+Cursor"
 
 msgid "Shift+Enter"
-msgstr "Skift+Engång"
+msgstr "Shift+Engång"
 
 msgid "Shift+Home"
-msgstr "Skift+Hem"
+msgstr "Shift+Hem"
 
 msgid "Shift+Mouse wheel"
-msgstr "Skift+Mushjul"
+msgstr "Shift+Mushjul"
 
 msgid "Shift+Resize"
 msgstr "Shift+Resize"
@@ -320,8 +320,8 @@ msgstr "Spalt / Höger mus drar"
 msgid "About"
 msgstr "Om"
 
-msgid "Toggle to Selection"
-msgstr "Växla till urval"
+msgid "Select (all) children / siblings"
+msgstr "Välj (alla) underordnade noder och syskonnoder"
 
 msgid "Autosize"
 msgstr "Automatisk storlek"
@@ -557,8 +557,8 @@ msgstr "Välj alla / ingen"
 msgid "Select Cell Below"
 msgstr "Välj cell nedan"
 
-msgid "Select Child / Parent"
-msgstr "Välj barn / förälder"
+msgid "Select Parent"
+msgstr "Välj förälder"
 
 msgid "Select Next / Previous"
 msgstr "Välj nästa / föregående"

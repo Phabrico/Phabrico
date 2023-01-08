@@ -619,6 +619,9 @@ msgstr "Actie"
 msgid "Original Title"
 msgstr "Oorspronkelijke titel"
 
+msgid "Last Reviewed At"
+msgstr "Laatst herzien op"
+
 msgid "All translations have been approved"
 msgstr "Alle vertalingen zijn goedgekeurd"
 

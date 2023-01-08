@@ -4,6 +4,7 @@ using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
 using Phabrico.Parsers.Remarkup.Rules;
+using Phabrico.Phabricator.Data;
 using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace Phabrico.Controllers
             public string Title;
             public string OriginalTitle;
             public string URL;
+            public string LastReviewedAt;
         }
 
         /// <summary>
@@ -273,6 +275,7 @@ namespace Phabrico.Controllers
                                                                 Token = translation.Token,
                                                                 TranslatedTitle = translation.TranslatedTitle,
                                                                 Language = translation.Language,
+                                                                LastReviewedAt = translation.DateModified,
                                                                 OriginalPhrictionDocument = phrictionStorage.Get(database, translation.Token, translation.Language, false)
                                                             })
                                                             .Where(translation => translation.OriginalPhrictionDocument != null)
@@ -280,6 +283,7 @@ namespace Phabrico.Controllers
                                                             {
                                                                 Token = translation.Token,
                                                                 Title = translation.TranslatedTitle,
+                                                                LastReviewedAt = FormatDateTimeOffset(translation.LastReviewedAt, browser.Session.Locale),
                                                                 OriginalTitle = string.IsNullOrWhiteSpace(translation.OriginalPhrictionDocument.Name)
                                                                               ? Locale.TranslateText("EmptyParameter", translation.Language)
                                                                               : translation.OriginalPhrictionDocument.Name,
@@ -292,6 +296,7 @@ namespace Phabrico.Controllers
                                                                 Token = translation.Token,
                                                                 TranslatedTitle = translation.TranslatedTitle,
                                                                 Language = translation.Language,
+                                                                LastReviewedAt = translation.DateModified,
                                                                 OriginalFileObject = fileStorage.Get(database, translation.Token, translation.Language)
                                                             })
                                                             .Where(translation => translation.OriginalFileObject != null)
@@ -299,6 +304,7 @@ namespace Phabrico.Controllers
                                                             {
                                                                 Token = translation.Token,
                                                                 Title = "F" + translation.OriginalFileObject.ID,
+                                                                LastReviewedAt = FormatDateTimeOffset(translation.LastReviewedAt, browser.Session.Locale),
                                                                 OriginalTitle = "Diagram " + translation.TranslatedTitle,
                                                                 URL = "diagrams.net/F" + translation.OriginalFileObject.ID
                                                             })
