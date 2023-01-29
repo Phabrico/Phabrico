@@ -73,34 +73,7 @@
 
         <script>
             // create navigation-tree based on header tags
-            var navigationTree = Array.prototype.slice.call( 
-                                      document.querySelector('#documentContent')
-                                              .querySelectorAll("h1, h2, h3")
-                                      , 0 
-                                 )
-                                 .map( function(item) {
-                                     var anchor = '#' + item.children[0].name;
-                                     switch (item.tagName)
-                                     {
-                                         case "H1":
-                                             return "<h1><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h1>";
-                                         case "H2":
-                                             return "<h2><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h2>";
-                                         case "H3":
-                                             return "<h3><li><a href='" + anchor +"'>" + item.innerText + "</a></li></h3>";
-                                         default:
-                                             return "";
-                                     }
-                                 })
-                                 .join()
-                                 .replace(/<\/h1>,<h[23]>/g, '<ul>')
-                                 .replace(/<\/h2>,<h3>/g, '<ul>')
-                                 .replace(/<\/h[23]>,<h1>/g, '</ul>')
-                                 .replace(/<\/h2>,<h1>/g, '</ul>')
-                                 .replace(/<\/h.>,<h.>/g, '')
-                                 .replace(/<\/?h.>/g, '')
-                                 .replace(/<ul>/g, '<li><ul>')
-                                 .replace(/<\/ul>/g, '</ul></li>');
+            var navigationTree = getNavigationTree(document.querySelector('#documentContent'));
             document.getElementById('phui-navigator').innerHTML = navigationTree;
     
             // hide 'Contents' label if there's no navigation tree

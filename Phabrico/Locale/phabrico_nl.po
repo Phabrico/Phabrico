@@ -19,6 +19,21 @@ msgstr "J"
 msgid "Button-AccessKey-No"
 msgstr "N"
 
+msgid "Copy"
+msgstr "Kopiëren"
+
+msgid "Open in new tab"
+msgstr "In nieuw tabblad openen"
+
+msgid "Convert to diagram"
+msgstr "Omzetten naar diagram"
+
+msgid "Image is converted to diagram"
+msgstr "Figuur is getransformeerd in diagram"
+
+msgid "Image could not be converted to diagram"
+msgstr "Afbeelding kon niet worden omgevormd in diagram"
+
 msgid "Undo"
 msgstr "Ongedaan maken"
 
@@ -1128,6 +1143,9 @@ msgstr "Diagram"
 
 msgid "Unlock edit and view windows"
 msgstr "Bewerken en bekijken ontgrendelen"
+
+msgid "Show chapters"
+msgstr "Toon hoofdstukken"
 
 msgid "Help"
 msgstr "Help"

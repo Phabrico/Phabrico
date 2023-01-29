@@ -145,7 +145,6 @@ if (!Uint8Array.from) {
   }());
 }
 
-// Changes default colors
 /**
  * Measurements Units
  */
@@ -207,7 +206,7 @@ mxGraphView.prototype.defaultGridColor = '#d0d0d0';
 mxGraphView.prototype.defaultDarkGridColor = '#424242';
 mxGraphView.prototype.gridColor = mxGraphView.prototype.defaultGridColor;
 
-//Units
+// Units
 mxGraphView.prototype.unit = mxConstants.POINTS;
 
 mxGraphView.prototype.setUnit = function(unit) 
@@ -229,7 +228,7 @@ mxShape.prototype.getConstraints = function(style, w, h)
 	return null;
 };
 
-// Override for clipSvg style.
+// Override for clipSvg style
 mxImageShape.prototype.getImageDataUri = function()
 {
 	var src = this.image;
@@ -248,6 +247,23 @@ mxImageShape.prototype.getImageDataUri = function()
 
 	return src;
 };
+
+// Override to use key as fallback
+(function()
+{
+	var mxResourcesGet = mxResources.get;
+
+	mxResources.get = function(key, params, defaultValue)
+	{
+		if (defaultValue == null)
+		{
+			defaultValue = key;
+		}
+
+		return mxResourcesGet.apply(this, [key, params, defaultValue]);
+	};
+
+})();
 
 /**
  * Constructs a new graph instance. Note that the constructor does not take a
@@ -1376,10 +1392,9 @@ Graph.pasteStyles = ['rounded', 'shadow', 'dashed', 'dashPattern', 'fontFamily',
 /**
  * Whitelist for known layout names.
  */
-Graph.layoutNames = ['mxHierarchicalLayout', 'mxCircleLayout',
-	'mxCompactTreeLayout', 'mxEdgeLabelLayout', 'mxFastOrganicLayout',
-	'mxParallelEdgeLayout', 'mxPartitionLayout', 'mxRadialTreeLayout',
-	'mxStackLayout'];
+Graph.layoutNames = ['mxHierarchicalLayout', 'mxCircleLayout', 'mxCompactTreeLayout',
+	'mxEdgeLabelLayout', 'mxFastOrganicLayout', 'mxParallelEdgeLayout',
+	'mxPartitionLayout', 'mxRadialTreeLayout', 'mxStackLayout'];
 
 /**
  * Creates a temporary graph instance for rendering off-screen content.
@@ -2342,7 +2357,7 @@ Graph.prototype.init = function(container)
 	 */
 	Graph.prototype.isStrokeState = function(state)
 	{
-		return !this.isSpecialColor(state.style[mxConstants.STYLE_STROKECOLOR]);
+		return true;
 	};
 	
 	/**
@@ -3353,13 +3368,21 @@ Graph.prototype.createLayouts = function(list)
 	{
 		if (mxUtils.indexOf(Graph.layoutNames, list[i].layout) >= 0)
 		{
-			var layout = new window[list[i].layout](this);
-			
+			// Handles special case of branch optimizer in orgchart
+			var layout = (list[i].layout == 'mxOrgChartLayout' && list[i].config != null) ?
+				new window[list[i].layout](this, list[i].config['branchOptimizer']) :
+				new window[list[i].layout](this);
+
 			if (list[i].config != null)
 			{
 				for (var key in list[i].config)
 				{
-					layout[key] = list[i].config[key];
+					// Ignores branch optimizer in orgchart (handled above)
+					if (list[i].layout != 'mxOrgChartLayout' ||
+						key != 'branchOptimizer')
+					{
+						layout[key] = list[i].config[key];
+					}
 				}
 			}
 
@@ -4308,6 +4331,78 @@ Graph.prototype.snapCellsToGrid = function(cells, gridSize)
 	{
 		this.getModel().endUpdate();
 	}
+};
+
+/**
+ * Creates a drop handler for inserting the given cells.
+ */
+Graph.prototype.updateShapes = function(source, targets)
+{
+	var sourceCellStyle = this.getCellStyle(source);
+	var result = [];
+	
+	this.model.beginUpdate();
+	try
+	{
+		var cellStyle = this.getModel().getStyle(source);
+
+		// Lists the styles to carry over from the existing shape
+		var styles = ['shadow', 'dashed', 'dashPattern', 'fontFamily', 'fontSize', 'fontColor', 'align', 'startFill',
+		              'startSize', 'endFill', 'endSize', 'strokeColor', 'strokeWidth', 'fillColor', 'gradientColor',
+		              'html', 'part', 'noEdgeStyle', 'edgeStyle', 'elbow', 'childLayout', 'recursiveResize',
+		              'container', 'collapsible', 'connectable', 'comic', 'sketch', 'fillWeight', 'hachureGap',
+		              'hachureAngle', 'jiggle', 'disableMultiStroke', 'disableMultiStrokeFill',
+		              'fillStyle', 'curveFitting', 'simplification', 'sketchStyle'];
+		
+		for (var i = 0; i < targets.length; i++)
+		{
+			var targetCell = targets[i];
+			
+			if ((this.getModel().isVertex(targetCell) == this.getModel().isVertex(source)) ||
+				(this.getModel().isEdge(targetCell) == this.getModel().isEdge(source)))
+			{
+				var style = this.getCellStyle(targets[i], false);
+				this.getModel().setStyle(targetCell, cellStyle);
+				
+				// Removes all children of composite cells
+				if (mxUtils.getValue(style, 'composite', '0') == '1')
+				{
+					var childCount = this.model.getChildCount(targetCell);
+					
+					for (var j = childCount; j >= 0; j--)
+					{
+						this.model.remove(this.model.getChildAt(targetCell, j));
+					}
+				}
+
+				// Replaces the participant style in the lifeline shape with the target shape
+				if (style[mxConstants.STYLE_SHAPE] == 'umlLifeline' &&
+					sourceCellStyle[mxConstants.STYLE_SHAPE] != 'umlLifeline')
+				{
+					this.setCellStyles(mxConstants.STYLE_SHAPE, 'umlLifeline', [targetCell]);
+					this.setCellStyles('participant', sourceCellStyle[mxConstants.STYLE_SHAPE], [targetCell]);
+				}
+				
+				for (var j = 0; j < styles.length; j++)
+				{
+					var value = style[styles[j]];
+					
+					if (value != null)
+					{
+						this.setCellStyles(styles[j], value, [targetCell]);
+					}
+				}
+				
+				result.push(targetCell);
+			}
+		}
+	}
+	finally
+	{
+		this.model.endUpdate();
+	}
+	
+	return result;
 };
 
 /**
@@ -6346,9 +6441,9 @@ Graph.prototype.createTable = function(rowCount, colCount, w, h, title, startSiz
 	startSize = (startSize != null) ? startSize : 30;
 	tableStyle = (tableStyle != null) ? tableStyle : 'shape=table;startSize=' +
 		((title != null) ? startSize : '0') + ';container=1;collapsible=0;childLayout=tableLayout;';
-	rowStyle = (rowStyle != null) ? rowStyle : 'shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;' +
+	rowStyle = (rowStyle != null) ? rowStyle : 'shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;strokeColor=inherit;' +
     	'top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;';
-	cellStyle = (cellStyle != null) ? cellStyle : 'shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;' +
+	cellStyle = (cellStyle != null) ? cellStyle : 'shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;strokeColor=inherit;' +
 		'overflow=hidden;fillColor=none;top=0;left=0;bottom=0;right=0;pointerEvents=1;';
 	
 	return this.createParent(this.createVertex(null, null, (title != null) ? title : '',
@@ -6400,11 +6495,11 @@ Graph.prototype.createCrossFunctionalSwimlane = function(rowCount, colCount, w, 
 	var s = 'collapsible=0;recursiveResize=0;expand=0;';
 	tableStyle = (tableStyle != null) ? tableStyle : 'shape=table;childLayout=tableLayout;' +
 		((title == null) ? 'startSize=0;fillColor=none;' : 'startSize=40;') + s;
-	rowStyle = (rowStyle != null) ? rowStyle : 'shape=tableRow;horizontal=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;' +
+	rowStyle = (rowStyle != null) ? rowStyle : 'shape=tableRow;horizontal=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;strokeColor=inherit;' +
 		'bottom=0;right=0;dropTarget=0;fontStyle=0;fillColor=none;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;startSize=40;' + s;
-	firstCellStyle = (firstCellStyle != null) ? firstCellStyle : 'swimlane;swimlaneHead=0;swimlaneBody=0;fontStyle=0;' +
+	firstCellStyle = (firstCellStyle != null) ? firstCellStyle : 'swimlane;swimlaneHead=0;swimlaneBody=0;fontStyle=0;strokeColor=inherit;' +
 		'connectable=0;fillColor=none;startSize=40;' + s;
-	cellStyle = (cellStyle != null) ? cellStyle : 'swimlane;swimlaneHead=0;swimlaneBody=0;fontStyle=0;connectable=0;' +
+	cellStyle = (cellStyle != null) ? cellStyle : 'swimlane;swimlaneHead=0;swimlaneBody=0;fontStyle=0;connectable=0;strokeColor=inherit;' +
 		'fillColor=none;startSize=0;' + s;
 	
 	var table = this.createVertex(null, null, (title != null) ? title : '', 0, 0,
@@ -7775,6 +7870,9 @@ mxStencilRegistry.loadStencil = function(filename, fn)
 		var req = mxUtils.get(filename, mxUtils.bind(this, function(req)
 		{
 			fn((req.getStatus() >= 200 && req.getStatus() <= 299) ? req.getXml() : null);
+		}), mxUtils.bind(this, function(req)
+		{
+			fn(null);	
 		}));
 	}
 	else

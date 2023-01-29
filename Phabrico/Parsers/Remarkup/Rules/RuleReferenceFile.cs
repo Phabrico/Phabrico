@@ -560,7 +560,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
             string btnEditImageHtml = "...";
             if (fileObject.ContentType.Equals("image/drawio"))
             {
-                if (Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.DiagramsNet")))
+                if (Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.DiagramsNet"))
+                    && (browser.HttpServer.Customization.HidePlugins.ContainsKey("DiagramsNet") == false
+                        || browser.HttpServer.Customization.HidePlugins["DiagramsNet"] == false
+                        )
+                   )
                 {
                     isEditable = true;
                     imgClass += " diagram";
@@ -574,7 +578,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
             else
             if (fileObject.FileType == Phabricator.Data.File.FileStyle.Image)
             {
-                if (Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.JSPaintImageEditor")))
+                if (Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.JSPaintImageEditor"))
+                    && (browser.HttpServer.Customization.HidePlugins.ContainsKey("JSPaintImageEditor") == false
+                        || browser.HttpServer.Customization.HidePlugins["JSPaintImageEditor"] == false
+                        )
+                   )
                 {
                     isEditable = true;
                     imgClass += " editable-image";

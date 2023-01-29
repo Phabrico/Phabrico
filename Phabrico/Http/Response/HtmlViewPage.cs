@@ -358,7 +358,7 @@ namespace Phabrico.Http.Response
                 Language language = HttpServer.Customization.AvailableLanguages.FirstOrDefault();
 
                 SetText("LOCALE", language, ArgumentOptions.AllowEmptyParameterValue);
-                browser.Language = language;
+                browser.Properties.Language = language;
                 browser.Session.Locale = language;
             }
 
@@ -370,7 +370,11 @@ namespace Phabrico.Http.Response
                 HttpServer.Customization.HideProjects &&
                 HttpServer.Customization.HideUsers &&
                 HttpServer.Customization.HidePhriction == false &&
-                Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false)
+                Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false
+                                               || (browser.HttpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name)
+                                                   && browser.HttpServer.Customization.HidePlugins[plugin.GetType().Name] == true
+                                                   )
+                                       )
                )
             {
                 SetText("ONLY-MANIPHEST", "True", ArgumentOptions.AllowEmptyParameterValue);
@@ -583,7 +587,11 @@ namespace Phabrico.Http.Response
                                     plugin.State = Plugin.PluginBase.PluginState.Initialized;
                                 }
 
-                                if (plugin.IsVisibleInNavigator(browser))
+                                if (plugin.IsVisibleInNavigator(browser)
+                                    && (browser.HttpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name) == false
+                                        || browser.HttpServer.Customization.HidePlugins[plugin.GetType().Name] == false
+                                        )
+                                   )
                                 {
                                     HtmlPartialViewPage htmlPluginNavigatorMenuItem = htmlPartialViewPage.GetPartialView("PLUGINS");
                                     if (htmlPluginNavigatorMenuItem != null)
@@ -597,7 +605,11 @@ namespace Phabrico.Http.Response
                                 }
 
                                 foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
-                                                                                                        .Where(ext => ext.IsVisibleInNavigator(browser))
+                                                                                                        .Where(ext => ext.IsVisibleInNavigator(browser)
+                                                                                                                   && (browser.HttpServer.Customization.HidePlugins.ContainsKey(ext.GetType().Name) == false
+                                                                                                                       || browser.HttpServer.Customization.HidePlugins[ext.GetType().Name] == false
+                                                                                                                       )
+                                                                                                              )
                                         )
                                 {
                                     if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)

@@ -167,39 +167,58 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns></returns>
         private string GenerateHeaderName(string headerText)
         {
-            // replace all non-alphanumeric characters by dashes (and convert all characters to lowercase characters)
-            string result = RegexSafe.Replace(headerText.ToLower(), "[^a-z0-9]", "-", RegexOptions.Singleline);
+            string anchor = headerText.ToLowerInvariant();
+            anchor = RegexSafe.Replace(anchor, "{icon[^}]+}", "span-class-visual-only-phui-icon");
+            anchor = anchor.Replace("'", "-039-");
+            anchor = anchor.Replace("&", "-amp-");
+            anchor = RegexSafe.Replace(anchor, "[\\x00-\\x2F\\x3A-\\x60\\x7B-\\xFF]+", "-");
+            anchor = anchor.Trim('-');
 
-            // remove all duplicated dashes
-            result = RegexSafe.Replace(result, "-+", "-");
-
-            // in case a dash ppears at the end: remove it
-            result = result.Trim('-');
-
-            // name should contain all words until the 30th position
-            string[] words = result.Split('-');
-            result = "";
+            string[] words = anchor.Split('-');
+            anchor = "";
             foreach (string word in words)
             {
-                if (result.Length >= 30) break;
+                string newAnchor = anchor + "-" + word;
+                if (newAnchor.Length > 33)
+                {
+                    break;
+                }
 
-                result += word + "-";
+                anchor = newAnchor;
             }
 
-            // remove generated dash at end
-            result = result.TrimEnd('-');
+            if (string.IsNullOrEmpty(anchor))
+            {
+                anchor = words.FirstOrDefault();
+            }
 
-            // remember results
-            HeaderName = result;
-            HeaderNameCopy = TokenList.OfType<RuleHeader>().Count(header => header.HeaderName.Equals(result));
+            if (string.IsNullOrEmpty(anchor) == false)
+            {
+                anchor = anchor.Substring(1);
+            }
+            anchor = RegexSafe.Replace(anchor, "\\W+(a|an|the|at|by|for|in|of|on|per|to|up|and|as|but|if|or|nor)$", "");
 
             // if a duplicated header was found -> add counter
-            if (HeaderNameCopy >= 1)
+            string[] similarHeaders = TokenList.OfType<RuleHeader>()
+                                               .Select(header => header.HeaderName)
+                                               .Where(header => header.Equals(anchor)
+                                                             || ( header.StartsWith(anchor + "-")
+                                                               && RegexSafe.IsMatch(header.Substring(anchor.Length + 1),
+                                                                                    "[0-9]+$",
+                                                                                    RegexOptions.None
+                                                                                   )
+                                                                )
+                                                     )
+                                               .ToArray();
+            if (similarHeaders.Any())
             {
-                result = result + "-" + HeaderNameCopy;
+                HeaderNameCopy = similarHeaders.Length;
+                anchor = anchor + "-" + HeaderNameCopy;
             }
 
-            return result;
+            HeaderName = anchor;
+
+            return anchor;
         }
 
         /// <summary>

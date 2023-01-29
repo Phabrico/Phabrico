@@ -109,7 +109,7 @@ function P2PCollab(ui, sync, channelId)
 		{
 			if (window.console != null)
 			{
-				console.log('Error:', e);
+				console.error(e, type, data);
 			}
 		}
 	};
@@ -479,7 +479,7 @@ function P2PCollab(ui, sync, channelId)
 		{
 			if (window.console != null)
 			{
-				console.log('Error:', e);
+				console.warn(e, msg, fromCId);
 			}
 		}
 	};
@@ -659,43 +659,55 @@ function P2PCollab(ui, sync, channelId)
 					sync.scheduleCleanup();
 				}
 			});
-		
-			ws.addEventListener('message', mxUtils.bind(this, function(event)
+
+			function messageListener(event)
 			{
-				if (!NO_P2P)
+				try
 				{
-					EditorUi.debug('P2PCollab: msg received', [event]);
-				}
+					if (!NO_P2P)
+					{
+						EditorUi.debug('P2PCollab: msg received', [event]);
+					}
 
-				var data = JSON.parse(event.data);
-				
-				if (NO_P2P && data.action != 'message')
-				{
-					EditorUi.debug('P2PCollab: msg received', [event]);
-				}
+					var data = JSON.parse(event.data);
+					
+					if (NO_P2P && data.action != 'message')
+					{
+						EditorUi.debug('P2PCollab: msg received', [event]);
+					}
 
-				switch (data.action)
-				{
-					case 'message':
-						processMsg(data.msg, data.from);
-					break;
-					case 'clientsList':
-						clientsList(data.msg);
-					break;
-					case 'signal':
-						signal(data.msg);
-					break;
-					case 'newClient':
-						newClient(data.msg);
-					break;
-					case 'clientLeft':
-						clientLeft(data.msg);
-					break;
-					case 'sendSignalFailed':
-						sendSignalFailed(data.msg);
-					break;
+					switch (data.action)
+					{
+						case 'message':
+							processMsg(data.msg, data.from);
+						break;
+						case 'clientsList':
+							clientsList(data.msg);
+						break;
+						case 'signal':
+							signal(data.msg);
+						break;
+						case 'newClient':
+							newClient(data.msg);
+						break;
+						case 'clientLeft':
+							clientLeft(data.msg);
+						break;
+						case 'sendSignalFailed':
+							sendSignalFailed(data.msg);
+						break;
+					}
 				}
-			}));
+				catch (e)
+				{
+					if (window.console != null)
+					{
+						console.warn(e, event);
+					}
+				}
+			};
+		
+			ws.addEventListener('message', messageListener);
 
 			var rejoinCalled = false;
 				

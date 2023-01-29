@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using WebDriverManager.DriverConfigs.Impl;
@@ -2532,5 +2533,28 @@ namespace Phabrico.UnitTests.Selenium.Browser
             Assert.IsTrue(invalidHyperlinks.Any(invalidHyperlink => invalidHyperlink.GetAttribute("textContent").Equals("Invalid hyperlink [[ ./inexistant ]]")));
             Assert.IsTrue(invalidHyperlinks.Any(invalidHyperlink => invalidHyperlink.GetAttribute("textContent").Equals("Invalid hyperlink [[ ./inexistant2 ]]")));
         }
+        /*
+        [TestMethod]
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
+        [DataRow(typeof(FirefoxConfig), "")]
+        [DataRow(typeof(FirefoxConfig), "phabrico")]
+        public void JSPaintEditor(Type browser, string httpRootPath)
+        {
+            var assemblyPhabrico = System.Reflection.Assembly.GetAssembly(typeof(Http.Server));
+            var pathPlugin = System.IO.Path.GetDirectoryName(assemblyPhabrico.Location) + @"\..\..\..\Phabrico.Plugin.JSPaintImageEditor\bin\debug\Phabrico.Plugin.JSPaintImageEditor.dll";
+            var assemblyPlugin = Assembly.Load(File.ReadAllBytes(pathPlugin));
+
+            Assert.AreEqual(assemblyPhabrico.GetCustomAttribute<AssemblyFileVersionAttribute>().Version, assemblyPhabrico.GetCustomAttribute<AssemblyFileVersionAttribute>().Version, "Invalid assembly version");
+
+            System.IO.File.Copy(pathPlugin, System.IO.Path.GetDirectoryName(assemblyPhabrico.Location) + "\\" + System.IO.Path.GetFileName(pathPlugin), true);
+
+            Initialize(browser, httpRootPath);
+            Logon();
+
+            System.IO.File.Delete(System.IO.Path.GetDirectoryName(assemblyPhabrico.Location) + "\\" + System.IO.Path.GetFileName(pathPlugin));
+        }*/
     }
 }

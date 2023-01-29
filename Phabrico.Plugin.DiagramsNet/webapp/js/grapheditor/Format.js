@@ -934,6 +934,8 @@ BaseFormatPanel.prototype.createCellOption = function(label, key, defaultValue, 
 BaseFormatPanel.prototype.createColorOption = function(label, getColorFn, setColorFn,
 	defaultColor, listener, callbackFn, hideCheckbox, defaultColorValue)
 {
+	var graph = this.editorUi.editor.graph;
+
 	var div = document.createElement('div');
 	div.style.padding = '3px 0px 3px 0px';
 	div.style.whiteSpace = 'nowrap';
@@ -960,6 +962,15 @@ BaseFormatPanel.prototype.createColorOption = function(label, getColorFn, setCol
 	var applying = false;
 	var dropper = null;
 	var btn = null;
+
+	var clrInput = document.createElement('input');
+	clrInput.setAttribute('type', 'color');
+	clrInput.style.position = 'relative';
+	clrInput.style.visibility = 'hidden';
+	clrInput.style.top = '10px';
+	clrInput.style.width = '0px';
+	clrInput.style.height = '0px';
+	clrInput.style.border = 'none';
 
 	// Adds native color dialog
 	if (!mxClient.IS_IE && !mxClient.IS_IE11 && !mxClient.IS_TOUCH)
@@ -1030,8 +1041,9 @@ BaseFormatPanel.prototype.createColorOption = function(label, getColorFn, setCol
 					btn.setAttribute('title', name);
 				}
 			}
-			
-			if (color != null && color != mxConstants.NONE)
+
+			if (color != null && color != mxConstants.NONE &&
+				!graph.isSpecialColor(color))
 			{
 				cb.setAttribute('checked', 'checked');
 				cb.defaultChecked = true;
@@ -1066,15 +1078,9 @@ BaseFormatPanel.prototype.createColorOption = function(label, getColorFn, setCol
 		}
 	};
 	
-	var clrInput = document.createElement('input');
-	clrInput.setAttribute('type', 'color');
-	clrInput.style.visibility = 'hidden';
-	clrInput.style.width = '0px';
-	clrInput.style.height = '0px';
-	clrInput.style.border = 'none';
 	div.appendChild(clrInput);
 
-	mxEvent.addListener(clrInput, 'input', function()
+	mxEvent.addListener(clrInput, 'change', function()
 	{
 		apply(clrInput.value, null, true);
 	});
@@ -1167,7 +1173,7 @@ BaseFormatPanel.prototype.createCellColorOption = function(label, colorKey, defa
 		}
 		
 		return null;
-	}, function(color, realValue)
+	}, function(color)
 	{
 		graph.getModel().beginUpdate();
 		try
@@ -4369,17 +4375,27 @@ StyleFormatPanel.prototype.init = function()
 		this.container.appendChild(opacityPanel);
 		this.container.appendChild(this.addEffects(this.createPanel()));
 	}
-		
+
+	var opsPanel = this.createPanel();
+	
 	if (ss.cells.length == 1)
 	{
-		var opsPanel = this.addEditOps(this.createPanel());
+		this.addEditOps(opsPanel);
 		
 		if (opsPanel.firstChild != null)
 		{
 			mxUtils.br(opsPanel);
 		}
-		
-		this.container.appendChild(this.addStyleOps(opsPanel));
+	}
+
+	if (ss.cells.length >= 1)
+	{
+		this.addStyleOps(opsPanel);
+	}
+
+	if (opsPanel.firstChild != null)
+	{
+		this.container.appendChild(opsPanel);
 	}
 };
 
@@ -4913,6 +4929,26 @@ StyleFormatPanel.prototype.addStroke = function(container)
 	var lineColor = this.createCellColorOption(label, strokeKey, 'default', null, mxUtils.bind(this, function(color)
 	{
 		graph.setCellStyles(strokeKey, color, ss.cells);
+
+		// Sets strokeColor to inherit for rows and cells in tables
+		if (color == null || color == mxConstants.NONE)
+		{
+			var tableCells = [];
+
+			for (var i = 0; i < ss.cells.length; i++)
+			{
+				if (graph.isTableCell(ss.cells[i]) ||
+					graph.isTableRow(ss.cells[i]))
+				{
+					tableCells.push(ss.cells[i]);
+				}
+			}
+
+			if (tableCells.length > 0)
+			{
+				graph.setCellStyles(strokeKey, 'inherit', tableCells);
+			}
+		}
 	}), graph.shapeForegroundColor);
 	
 	lineColor.appendChild(styleSelect);
@@ -4963,10 +4999,14 @@ StyleFormatPanel.prototype.addStroke = function(container)
 	
 	var edgeShape = this.editorUi.toolbar.addMenuFunctionInContainer(altStylePanel, 'geSprite-connection', mxResources.get('connection'), false, mxUtils.bind(this, function(menu)
 	{
-		this.editorUi.menus.styleChange(menu, '', [mxConstants.STYLE_SHAPE, mxConstants.STYLE_STARTSIZE, mxConstants.STYLE_ENDSIZE, 'width'], [null, null, null, null], 'geIcon geSprite geSprite-connection', null, true).setAttribute('title', mxResources.get('line'));
-		this.editorUi.menus.styleChange(menu, '', [mxConstants.STYLE_SHAPE, mxConstants.STYLE_STARTSIZE, mxConstants.STYLE_ENDSIZE, 'width'], ['link', null, null, null], 'geIcon geSprite geSprite-linkedge', null, true).setAttribute('title', mxResources.get('link'));
-		this.editorUi.menus.styleChange(menu, '', [mxConstants.STYLE_SHAPE, mxConstants.STYLE_STARTSIZE, mxConstants.STYLE_ENDSIZE, 'width'], ['flexArrow', null, null, null], 'geIcon geSprite geSprite-arrow', null, true).setAttribute('title', mxResources.get('arrow'));
-		this.editorUi.menus.styleChange(menu, '', [mxConstants.STYLE_SHAPE, mxConstants.STYLE_STARTSIZE, mxConstants.STYLE_ENDSIZE, 'width'], ['arrow', null, null, null], 'geIcon geSprite geSprite-simplearrow', null, true).setAttribute('title', mxResources.get('simpleArrow')); 
+		this.editorUi.menus.styleChange(menu, '', [mxConstants.STYLE_SHAPE, mxConstants.STYLE_STARTSIZE, mxConstants.STYLE_ENDSIZE, 'width'],
+			[null, null, null, null], 'geIcon geSprite geSprite-connection', null, null, null, true).setAttribute('title', mxResources.get('line'));
+		this.editorUi.menus.styleChange(menu, '', [mxConstants.STYLE_SHAPE, mxConstants.STYLE_STARTSIZE, mxConstants.STYLE_ENDSIZE, 'width'],
+			['link', null, null, null], 'geIcon geSprite geSprite-linkedge', null, null, null, true).setAttribute('title', mxResources.get('link'));
+		this.editorUi.menus.styleChange(menu, '', [mxConstants.STYLE_SHAPE, mxConstants.STYLE_STARTSIZE, mxConstants.STYLE_ENDSIZE, 'width'],
+			['flexArrow', null, null, null], 'geIcon geSprite geSprite-arrow', null, null, null, true).setAttribute('title', mxResources.get('arrow'));
+		this.editorUi.menus.styleChange(menu, '', [mxConstants.STYLE_SHAPE, mxConstants.STYLE_STARTSIZE, mxConstants.STYLE_ENDSIZE, 'width'],
+			['arrow', null, null, null], 'geIcon geSprite geSprite-simplearrow', null, null, null, true).setAttribute('title', mxResources.get('simpleArrow')); 
 	}));
 
 	var altPattern = this.editorUi.toolbar.addMenuFunctionInContainer(altStylePanel, 'geSprite-orthogonal', mxResources.get('pattern'), false, mxUtils.bind(this, function(menu)
@@ -5355,7 +5395,9 @@ StyleFormatPanel.prototype.addStroke = function(container)
 			altInput.value = (isNaN(tmp)) ? '' : tmp + ' pt';
 		}
 		
-		styleSelect.style.visibility = (ss.style.shape == 'connector' || ss.style.shape == 'filledEdge') ? '' : 'hidden';
+		styleSelect.style.visibility = (ss.style.shape == 'connector' ||
+			ss.style.shape == 'filledEdge' || ss.style.shape == 'wire') ?
+			'' : 'hidden';
 		
 		if (mxUtils.getValue(ss.style, mxConstants.STYLE_CURVED, null) == '1')
 		{

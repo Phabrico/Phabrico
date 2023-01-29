@@ -4,8 +4,10 @@ query ##SELECT * FROM `table`##
 
 `**x**`
 
+to be:`not to be`
 ~~~~~~~~~~
 query <tt class='remarkup-monospaced'>SELECT * FROM `table`</tt><p class='paragraph'></p>
 <tt class='remarkup-monospaced'>SELECT * FROM ##table##</tt><p class='paragraph'></p>
-<tt class='remarkup-monospaced'>**x**</tt>
+<tt class='remarkup-monospaced'>**x**</tt><p class='paragraph'></p>
+to be:<tt class='remarkup-monospaced'>not to be</tt>
 ~~~~~~~~~~

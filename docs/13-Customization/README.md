@@ -89,22 +89,49 @@ namespace My.Wiki
 | ApplicationNameStyle                        | CSS styles for formatting the ApplicationName                                                                                                                           | 
 | AuthenticationFactor                        | If Knowledge, one should authenticate with username and password to access Phabrico; If Public, no authentication is needed                                             | Knowledge
 | FavIcon                                     | If set to a PNG image, the PNG image will be used as icon in the browser tab; if not set, the default Phabrico icon will be used                                        | Phabrico icon
-| HideConfig                                  | If true, Config screen will not be accessible                                                                                                                           | false
-| HideFiles                                   | If true, Files screen will not be accessible                                                                                                                            | false
-| HideOfflineChanges                          | If true, Offline Changes screen will not be accessible                                                                                                                  | false
-| HideManiphest                               | If true, Maniphest tasks will not be accessible                                                                                                                         | false
-| HideNavigatorTooltips                       | If true, the tooltips for the menu items in the homepage will not be shown                                                                                              | false
-| HidePhriction                               | If true, Phriction/wiki documents will not be accessible                                                                                                                | false
-| HidePhrictionActionMenu                     | If true, the menu on the right side of the Phriction documents is no longer visible                                                                                     | false
-| HidePhrictionChanges                        | If true, the changes made in Phriction/wiki documents can not be seen or undone                                                                                         | false
-| HidePhrictionFavorites                      | If true, Phriction/wiki documents can not be marked as favorite                                                                                                         | false
-| HideProjects                                | If true, Phabricator projects will not be accessible                                                                                                                    | false
+| HideConfig                                  | If true (*), Config screen will not be accessible                                                                                                                       | false
+| HideFiles                                   | If true (*), Files screen will not be accessible                                                                                                                        | false
+| HideManiphest                               | If true (*), Maniphest tasks will not be accessible                                                                                                                     | false
+| HideNavigatorTooltips                       | If true (*), the tooltips for the menu items in the homepage will not be shown                                                                                          | false
+| HideOfflineChanges                          | If true (*), Offline Changes screen will not be accessible                                                                                                              | false
+| HidePhame                                   | If true (*), Phame blogs will not be accessible                                                                                                                         | false
+| HidePhriction                               | If true (*), Phriction/wiki documents will not be accessible                                                                                                            | false
+| HidePhrictionActionMenu                     | If true (*), the menu on the right side of the Phriction documents is no longer visible                                                                                 | false
+| HidePhrictionChanges                        | If true (*), the changes made in Phriction/wiki documents can not be seen or undone                                                                                     | false
+| HidePhrictionFavorites                      | If true (*), Phriction/wiki documents can not be marked as favorite                                                                                                     | false
+| HidePlugins                                 | If true (*) for a specific plugin, the plugin will not be accessible. See further below for more information.                                                           | false
+| HideProjects                                | If true (*), Phabricator projects will not be accessible                                                                                                                | false
+| HideSearch                                  | If true (*), Search field will not be accessible                                                                                                                        | false
 | HideUsers                                   | If true, Phabricator users will not be accessible                                                                                                                       | false
-| HideSearch                                  | If true, Search field will not be accessible                                                                                                                            | false
-| IsReadonly                                  | If true, no Phriction document or Maniphest task can be edited                                                                                                          | false
+| IsReadonly                                  | If true (*), no Phriction document or Maniphest task can be edited                                                                                                      | false
 | AvailableLanguages                          | Array of language codes for Phabrico application.  (Content of Phriction documents might be translated if translation exists). If not set, all languages are available  | Language of browser or English
 | MasterDataIsAccessible                      | If false, the master data on Phabricator is not accessible via Phabrico. If IsReadonly is true, MasterDataIsAccessible wil be false                                     | true
 | Theme                                       | Auto, Light or Dark; If Auto, the user can change the theme in the Config screen (if accessible)                                                                        | Auto
+
+(*) Some of the Customization parameters are boolean vectors. These can be set as a normal boolean value (true or false), but can also be set to a LINQ method with some browser specifics parameter.
+The example below will hide the Action menu in Phriction in case you're using Firefox but not if you are using Edge:
+```
+httpServer.Customization.HidePhrictionActionMenu = new Phabrico.Miscellaneous.BooleanVector<Phabrico.Http.Browser>(browser => browser.UserAgent.ToLower().Contains("firefox") == false);
+```
+The following browser specifics are avaiable: IPAddress, (Phabrico) Language, URL and UserAgent
+
+### HidePlugins
+Some Phabrico plugins can be specifically hidden by means of the HidePlugins parameter.
+This is a dictionary of BooleanVectors per plugin name.
+The following plugin names are available:
+* DiagramsNet
+* Gitanos
+* JSPaintImageEditor
+* PhrictionSearch
+* PhrictionToPDF
+* PhrictionTranslator
+* PhrictionValidator
+
+For example:
+```
+httpServer.Customization.HidePlugins["DiagramsNet"] = new Phabrico.Miscellaneous.BooleanVector<Phabrico.Http.Browser>(browser => browser.IPAddress.Equals("127.0.0.1") == false);
+```
+
 
 ## IIS Configuration
 * WebSocket protocol should be installed in IIS:

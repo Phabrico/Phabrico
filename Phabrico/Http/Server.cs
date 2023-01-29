@@ -233,7 +233,7 @@ namespace Phabrico.Http
                 try
                 {
                     string absolutePathPluginDLL = Path.GetFullPath(pluginFileName);
-                    var pluginDLL = Assembly.LoadFile(absolutePathPluginDLL);
+                    var pluginDLL = Assembly.Load(System.IO.File.ReadAllBytes(absolutePathPluginDLL));
 
                     foreach (Type pluginType in pluginDLL.GetExportedTypes().Where(t => t.BaseType == typeof(Plugin.PluginBase)))
                     {
@@ -863,7 +863,7 @@ namespace Phabrico.Http
                 {
                     lock (synchronizationProcessHttpRequest)
                     {
-                        string cacheKey = token + theme + clonedBrowser.Language + "/w/" + phrictionDocument.Path;
+                        string cacheKey = token + theme + clonedBrowser.Properties.Language + "/w/" + phrictionDocument.Path;
                         if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
 
                         string[] parameters = phrictionDocument.Path.Trim('/').Split('/');
@@ -904,7 +904,7 @@ namespace Phabrico.Http
                 {
                     lock (synchronizationProcessHttpRequest)
                     {
-                        string cacheKey = token + theme + clonedBrowser.Language + "/maniphest/T" + assignedManiphestTask.ID + "/";
+                        string cacheKey = token + theme + clonedBrowser.Properties.Language + "/maniphest/T" + assignedManiphestTask.ID + "/";
                         if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
 
                         string[] parameters = new string[] { "T" + assignedManiphestTask.ID };
@@ -1109,7 +1109,7 @@ namespace Phabrico.Http
                             // check if we have a cached non-static url
                             string theme = database.ApplicationTheme;
                             CachedHttpMessage cachedHttpMessage;
-                            if (cachedHttpMessages.TryGetValue(browser?.Token?.ID + theme + browser.Language + cmdGetUrl, out cachedHttpMessage))
+                            if (cachedHttpMessages.TryGetValue(browser?.Token?.ID + theme + browser.Properties.Language + cmdGetUrl, out cachedHttpMessage))
                             {
                                 cachedHttpMessage.Timestamp = DateTime.UtcNow;
                                 browser.Response.ContentType = cachedHttpMessage.ContentType;
@@ -1433,7 +1433,7 @@ namespace Phabrico.Http
                                 lock (synchronizationProcessHttpRequest)
                                 {
                                     string theme = database.ApplicationTheme;
-                                    cachedHttpMessages[browser.Token?.ID + theme + browser.Language + cmdGetUrl] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(dataSent), "text/html");
+                                    cachedHttpMessages[browser.Token?.ID + theme + browser.Properties.Language + cmdGetUrl] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(dataSent), "text/html");
                                 }
                             }
                         }
@@ -1664,17 +1664,24 @@ namespace Phabrico.Http
                         }
                         else
                         {
-                            tokenId = existingAccount?.Token;
-                            token = Session.CreateToken(tokenId, browser);
-                            browser.SetCookie("token", token.ID, true);
+                            bool tokenAlreadyExists = string.IsNullOrEmpty(browser?.GetCookie("token")) == false;
+                            if (tokenAlreadyExists == false || token == null)
+                            {
+                                tokenId = existingAccount?.Token;
+                                token = Session.CreateToken(tokenId, browser);
+                                browser.SetCookie("token", token.ID, true);
+                            }
                             token.EncryptionKey = database.EncryptionKey;
                             token.PrivateEncryptionKey = database.PrivateEncryptionKey;
                             token.AuthenticationFactor = AuthenticationFactor.Ownership;
-                            Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
-                            Session.ClientSessions[token.ID].Locale = browser.Language;
+                            if (tokenAlreadyExists == false)
+                            {
+                                Session.ClientSessions[token.ID] = new SessionManager.ClientSession();
+                                Session.ClientSessions[token.ID].Locale = browser.Properties.Language;
 
-                            // store AuthenticationFactor in database
-                            database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
+                                // store AuthenticationFactor in database
+                                database.SetConfigurationParameter("AuthenticationFactor", AuthenticationFactor.Ownership);
+                            }
 
                             database.UpgradeIfNeeded();
 
@@ -2024,6 +2031,30 @@ namespace Phabrico.Http
                         try
                         {
                             browser.Conduit = new Conduit(this, browser);
+
+                            Customization.HideConfig.Data = browser.Properties;
+                            Customization.HideFiles.Data = browser.Properties;
+                            Customization.HideManiphest.Data = browser.Properties;
+                            Customization.HideNavigatorTooltips.Data = browser.Properties;
+                            Customization.HideOfflineChanges.Data = browser.Properties;
+                            Customization.HidePhame.Data = browser.Properties;
+                            Customization.HidePhriction.Data = browser.Properties;
+                            Customization.HidePhrictionActionMenu.Data = browser.Properties;
+                            Customization.HidePhrictionChanges.Data = browser.Properties;
+                            Customization.HidePhrictionFavorites.Data = browser.Properties;
+                            Customization.HideProjects.Data = browser.Properties;
+                            Customization.HideSearch.Data = browser.Properties;
+                            Customization.HideUsers.Data = browser.Properties;
+                            Customization.IsReadonly.Data = browser.Properties;
+                            foreach (string pluginName in Plugins.Select(plugin => plugin.GetType().Name))
+                            {
+                                if (Customization.HidePlugins.ContainsKey(pluginName) == false)
+                                {
+                                    Customization.HidePlugins[pluginName] = false;
+                                }
+
+                                Customization.HidePlugins[pluginName].Data = browser.Properties;
+                            }
 
                             // === Process GET commando ==================================================================================================================================
                             if (browser.Request.HttpMethod.Equals("GET"))

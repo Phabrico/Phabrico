@@ -19,6 +19,21 @@ msgstr "S"
 msgid "Button-AccessKey-No"
 msgstr "N"
 
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Open in new tab"
+msgstr "Abrir en una nueva pestaña"
+
+msgid "Convert to diagram"
+msgstr "Convertir a diagrama"
+
+msgid "Image is converted to diagram"
+msgstr "La figura se transforma en diagrama"
+
+msgid "Image could not be converted to diagram"
+msgstr "No se ha podido convertir la imagen en diagrama"
+
 msgid "Undo"
 msgstr "Deshacer"
 
@@ -1131,6 +1146,9 @@ msgstr "Desbloquear edición y vista"
 
 msgid "Help"
 msgstr "Ayuda"
+
+msgid "Show chapters"
+msgstr "Mostrar capítulos"
 
 msgid "Set Sail for Adventure"
 msgstr "Navega hacia la aventura"

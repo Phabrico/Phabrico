@@ -2,10 +2,18 @@
 using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
+using Phabrico.Parsers.Remarkup.Rules;
+using Phabrico.Parsers.Remarkup;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows.Media.Imaging;
+using DocumentFormat.OpenXml.Math;
 
 namespace Phabrico.Controllers
 {
@@ -454,6 +462,211 @@ namespace Phabrico.Controllers
 
             string jsonData = JsonConvert.SerializeObject(tableRows);
             jsonMessage = new JsonMessage(jsonData);
+        }
+
+        /// <summary>
+        /// This method is executed when the user right-clicks on a non-diagram-image and selects "Convert to diagram"
+        /// from the context menu
+        /// The image will be converted to a Diagrams/DrawIO compatible PNG file, which contains a Mxfile EXIF tag
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="parameters"></param>
+        [UrlController(URL = "/file/convertImageToDiagram")]
+        public JsonMessage HttpPostConvertImageToDiagram(Http.Server httpServer, string[] parameters)
+        {
+            try
+            {
+                using (Storage.Database database = new Storage.Database(EncryptionKey))
+                {
+                    Phabricator.Data.File fileObject;
+                    Storage.File fileStorage = new Storage.File();
+                    Storage.Stage stageStorage = new Storage.Stage();
+
+                    int fileID = Int32.Parse(parameters[0]);
+                    if (fileID < 0)
+                    {
+                        // file is staged object
+                        fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileID, true);
+                    }
+                    else
+                    {
+                        // file is a non-staged object
+                        fileObject = fileStorage.GetByID(database, fileID, false);
+                    }
+
+                    string originalFileToken = fileObject.Token;
+                    string originalFileID = fileObject.ID.ToString();
+                    byte[] pngData = fileObject.Data;
+                    string base64 = Convert.ToBase64String(pngData);
+
+                    using (System.IO.MemoryStream stream = new System.IO.MemoryStream(pngData))
+                    {
+                        // prepare EXIF data
+                        BitmapSource img = BitmapFrame.Create(stream);
+                        BitmapMetadata md = (BitmapMetadata)img.Metadata.Clone();
+                        string decodedMxGraphModel = string.Format(@"<mxGraphModel dx=""1102"" dy=""875"" grid=""1"" gridSize=""10"" guides=""1"" tooltips=""1"" connect=""1"" arrows=""1"" fold=""1"" page=""1"" pageScale=""1"" pageWidth=""{0}"" pageHeight=""{1}"" background=""#ffffff"" backgroundImage=""{{&quot;src&quot;:&quot;data:image/png;base64,{2}&quot;,&quot;width&quot;:&quot;{0}&quot;,&quot;height&quot;:&quot;{1}&quot;,&quot;x&quot;:0,&quot;y&quot;:0}}"" math=""1"" shadow=""0""><root><mxCell id=""0""/><mxCell id=""1"" parent=""0""/></root></mxGraphModel>",
+                                                    img.Width,
+                                                    img.Height,
+                                                    base64
+                                              );
+                        string encodedMxGraphModel = "";
+                        using (MemoryStream mxGraphModel = new MemoryStream(UTF8Encoding.UTF8.GetBytes(decodedMxGraphModel)))
+                        {
+                            using (var compressStream = new MemoryStream())
+                            using (var compressor = new DeflateStream(compressStream, CompressionMode.Compress))
+                            {
+                                mxGraphModel.CopyTo(compressor);
+                                compressor.Close();
+                                encodedMxGraphModel = Convert.ToBase64String(compressStream.ToArray());
+                            }
+                        }
+
+                        string decodedMxFile = string.Format(@"<mxfile host=""Electron"" modified=""{0}"" agent=""5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/16.0.0 Chrome/91.0.4472.164 Electron/13.6.3 Safari/537.36"" etag=""sJtJQDIZgAXuD363YfFW"" version=""16.0.0"" type=""device""><diagram id=""N-JL6pS2rrN_-Bk4NTlQ"" name=""Page-1"">{1}</diagram></mxfile>",
+                                                    DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                                                    encodedMxGraphModel
+                                        );
+                        int uriDecodingPartialLength = 25000;
+                        StringBuilder sb = new StringBuilder();
+                        int loops = decodedMxFile.Length / uriDecodingPartialLength;
+                        for (int i = 0; i <= loops; i++)
+                        {
+                            if (i < loops)
+                            {
+                                sb.Append(Uri.EscapeDataString(decodedMxFile.Substring(uriDecodingPartialLength * i, uriDecodingPartialLength)));
+                            }
+                            else
+                            {
+                                sb.Append(Uri.EscapeDataString(decodedMxFile.Substring(uriDecodingPartialLength * i)));
+                            }
+                        }
+                        string encodedMxFile = sb.ToString();
+
+                        // set EXIF data
+                        md.SetQuery("/Text/{str=mxfile}", encodedMxFile);
+
+                        // overwrite image data
+                        using (MemoryStream output = new MemoryStream())
+                        {
+                            BitmapEncoder encoder = new PngBitmapEncoder();
+                            encoder.Frames.Add(BitmapFrame.Create(img, null, md, null));
+                            encoder.Save(output);
+
+                            pngData = output.ToArray();
+                        }
+
+                        // overwrite stage data
+                        fileObject.Data = pngData;
+                        stageStorage.Edit(database, fileObject, browser);
+
+                        // uncache references
+                        Phabricator.Data.PhabricatorObject[] dependentObjects = database.GetDependentObjects(originalFileToken, Language.NotApplicable).ToArray();
+                        Storage.Phriction phrictionStorage = new Storage.Phriction();
+                        Phabricator.Data.Phriction phrictionDocument = phrictionStorage.Get(database, originalFileToken, Language.NotApplicable);
+                        if (phrictionDocument != null)
+                        {
+                            httpServer.InvalidateNonStaticCache(EncryptionKey, phrictionDocument.Path);
+                        }
+
+                        foreach (Phabricator.Data.PhabricatorObject dependentObject in dependentObjects)
+                        {
+                            Phabricator.Data.Phriction dependentPhrictionDocument = dependentObject as Phabricator.Data.Phriction;
+                            if (dependentPhrictionDocument != null)
+                            {
+                                httpServer.InvalidateNonStaticCache(EncryptionKey, dependentPhrictionDocument.Path);
+                                continue;
+                            }
+
+                            Phabricator.Data.Maniphest dependentManiphestTask = dependentObject as Phabricator.Data.Maniphest;
+                            if (dependentManiphestTask != null)
+                            {
+                                httpServer.InvalidateNonStaticCache(EncryptionKey, "/maniphest/T" + dependentManiphestTask.ID);
+                                continue;
+                            }
+                        }
+                    }
+
+                    if (fileID > 0)
+                    {
+                        // original file was not staged yet: search for all wiki/task objects in which the original file is referenced
+                        IEnumerable<Phabricator.Data.PhabricatorObject> referrers = database.GetDependentObjects(originalFileToken, browser.Session.Locale);
+
+                        RemarkupEngine remarkupEngine = new RemarkupEngine();
+                        foreach (Phabricator.Data.PhabricatorObject referrer in referrers)
+                        {
+                            RemarkupParserOutput remarkupParserOutput;
+                            Phabricator.Data.Phriction phrictionDocument = referrer as Phabricator.Data.Phriction;
+                            Phabricator.Data.Maniphest maniphestTask = referrer as Phabricator.Data.Maniphest;
+
+                            // rename file object in referencing phriction document
+                            if (phrictionDocument != null)
+                            {
+                                remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+                                List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
+                                                                                                    .OfType<RuleReferenceFile>()
+                                                                                                    .ToList();
+                                referencedFileObjects.Reverse();
+
+                                foreach (RuleReferenceFile referencedFileObject in referencedFileObjects)
+                                {
+                                    Match matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{F(-?[0-9]*)", RegexOptions.None);
+                                    if (matchReferencedFileObject.Success)
+                                    {
+                                        if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
+
+                                        phrictionDocument.Content = phrictionDocument.Content.Substring(0, referencedFileObject.Start)
+                                                                  + "{F" + fileObject.ID  // replace by staged file id
+                                                                  + phrictionDocument.Content.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
+                                    }
+                                }
+
+                                // stage document
+                                stageStorage.Modify(database, phrictionDocument, browser);
+                            }
+
+                            // rename file object in referencing maniphest task
+                            if (maniphestTask != null)
+                            {
+                                remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false);
+                                List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
+                                                                                                    .OfType<RuleReferenceFile>()
+                                                                                                    .ToList();
+                                referencedFileObjects.Reverse();
+
+                                foreach (RuleReferenceFile referencedFileObject in referencedFileObjects)
+                                {
+                                    Match matchReferencedFileObject = RegexSafe.Match(referencedFileObject.Text, "{F(-?[0-9]*)", RegexOptions.None);
+                                    if (matchReferencedFileObject.Success)
+                                    {
+                                        if (matchReferencedFileObject.Groups[1].Value.Equals(originalFileID) == false) continue;
+
+                                        maniphestTask.Description = maniphestTask.Description.Substring(0, referencedFileObject.Start)
+                                                                  + "{F" + fileObject.ID    // replace by staged file id
+                                                                  + maniphestTask.Description.Substring(referencedFileObject.Start + matchReferencedFileObject.Length);
+                                    }
+                                }
+
+                                // stage maniphest task
+                                stageStorage.Modify(database, maniphestTask, browser);
+                            }
+                        }
+                    }
+                }
+
+                return new JsonMessage(
+                    JsonConvert.SerializeObject(new {
+                        Status = "success"
+                    })
+                );
+            }
+            catch (System.Exception exception)
+            {
+                return new JsonMessage(
+                    JsonConvert.SerializeObject(new {
+                        Status = "error",
+                        Message = exception.Message
+                    })
+                );
+            }
         }
 
         /// <summary>

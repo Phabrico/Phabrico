@@ -23,6 +23,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -46px;
     --remarkup-editor-tooltip-lock-width: 278px;
     --remarkup-editor-tooltip-lock-margin-left: -154px;
+    --remarkup-editor-tooltip-showtoc-width: 74px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -79px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -34px;
 }
@@ -52,6 +55,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -52px;
     --remarkup-editor-tooltip-lock-width: -133px;
     --remarkup-editor-tooltip-lock-margin-left: 250px;
+    --remarkup-editor-tooltip-showtoc-width: 109px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -104px;
+    --remarkup-editor-tooltip-showtoc-right: 22px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -81,6 +87,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -50px;
     --remarkup-editor-tooltip-lock-width: 186px;
     --remarkup-editor-tooltip-lock-margin-left: -107px;
+    --remarkup-editor-tooltip-showtoc-width: 119px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -124px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 40px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -110,6 +119,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -39px;
     --remarkup-editor-tooltip-lock-width: 358px;
     --remarkup-editor-tooltip-lock-margin-left: -193px;
+    --remarkup-editor-tooltip-showtoc-width: 77px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -83px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 32px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -139,6 +151,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -45px;
     --remarkup-editor-tooltip-lock-width: 242px;
     --remarkup-editor-tooltip-lock-margin-left: -135px;
+    --remarkup-editor-tooltip-showtoc-width: 126px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -129px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -168,6 +183,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -51px;
     --remarkup-editor-tooltip-lock-width: 286px;
     --remarkup-editor-tooltip-lock-margin-left: -157px;
+    --remarkup-editor-tooltip-showtoc-width: 100px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -104px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 42px;
     --remarkup-editor-tooltip-help-margin-left: -37px;
 }
@@ -197,6 +215,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -58px;
     --remarkup-editor-tooltip-lock-width: 350px;
     --remarkup-editor-tooltip-lock-margin-left: -189px;
+    --remarkup-editor-tooltip-showtoc-width: 108px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -113px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 57px;
     --remarkup-editor-tooltip-help-margin-left: -54px;
 }
@@ -236,6 +257,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -46px;
     --remarkup-editor-tooltip-lock-width: 272px;
     --remarkup-editor-tooltip-lock-margin-left: -150px;
+    --remarkup-editor-tooltip-showtoc-width: 75px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -79px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -265,6 +289,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -31px;
     --remarkup-editor-tooltip-lock-width: 100px;
     --remarkup-editor-tooltip-lock-margin-left: -64px;
+    --remarkup-editor-tooltip-showtoc-width: 58px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -64px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }
@@ -294,6 +321,9 @@
     --remarkup-editor-tooltip-sitemap-margin-left: -46px;
     --remarkup-editor-tooltip-lock-width: 197px;
     --remarkup-editor-tooltip-lock-margin-left: -108px;
+    --remarkup-editor-tooltip-showtoc-width: 100px;
+    --remarkup-editor-tooltip-showtoc-margin-left: -104px;
+    --remarkup-editor-tooltip-showtoc-right: 12px;
     --remarkup-editor-tooltip-help-width: 35px;
     --remarkup-editor-tooltip-help-margin-left: -32px;
 }

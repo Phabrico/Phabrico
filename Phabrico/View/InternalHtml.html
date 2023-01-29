@@ -15,17 +15,26 @@
 </div>
 
 <script>
-    function showHideMessageDialog(show, title, message) {
+    function showHideMessageDialog(show, title, message, fnOK = null) {
         if (show) {
             // set title and text
             dlgMessage.querySelector('.title').innerText = title;
             dlgMessage.querySelector('.message').innerHTML = message;
+            dlgMessage.fnOK = fnOK;
 
             dlgMessage.style.display = 'block';
             document.querySelector('html').style.overflow = 'hidden';
         } else {
             dlgMessage.style.display = 'none';
             document.querySelector('html').style.overflow = 'unset';
+
+            if (fnOK == null) {
+                fnOK = dlgMessage.fnOK;
+            }
+
+            if (fnOK != null) {
+                fnOK();
+            }
         }
 
         return false;
@@ -178,6 +187,64 @@
 	    if (parseInt(img.naturalHeight) < window.innerHeight) {
             img.classList.add('center');
             img.classList.add('vertical');
+        }
+    }
+</script>
+
+<script>
+    function getNavigationTree(elem) {
+        // create navigation-tree based on header tags
+        var navigationTree = Array.prototype.slice.call(
+            elem.querySelectorAll("h1, h2, h3")
+            , 0
+        )
+            .map(function (item) {
+                var anchor = document.location.href.split('#')[0] + '#' + item.children[0].name;
+                switch (item.tagName) {
+                    case "H1":
+                        return "<h1><li><a href='" + anchor + "'>" + item.innerText + "</a></li></h1>";
+                    case "H2":
+                        return "<h2><li><a href='" + anchor + "'>" + item.innerText + "</a></li></h2>";
+                    case "H3":
+                        return "<h3><li><a href='" + anchor + "'>" + item.innerText + "</a></li></h3>";
+                    default:
+                        return "";
+                }
+            })
+            .join()
+            .replace(/<\/h1>,<h[23]>/g, '<ul>')
+            .replace(/<\/h2>,<h3>/g, '<ul>')
+            .replace(/<\/h3>,<h2>/g, '</ul>')
+            .replace(/<\/h2>,<h1>/g, '</ul>')
+            .replace(/<\/h3>,<h1>/g, '</ul></ul>')
+            .replace(/<\/h.>,<h.>/g, '')
+            .replace(/<\/?h.>/g, '')
+            .replace(/<ul>/g, '<li><ul>')
+            .replace(/<\/ul>/g, '</ul></li>');
+
+        return navigationTree;
+    }
+
+    function showRemarkupToc(doShow) {
+        var toc = document.querySelector("#remarkupTOC");
+        if (toc != null) {
+            toc.parentElement.removeChild(toc);
+        }
+
+        if (doShow) {
+            toc = document.createElement('div');
+            toc.id = "remarkupTOC";
+            toc.innerHTML = getNavigationTree(right);
+            right.appendChild(toc);
+
+            toc.querySelectorAll('a').forEach(a => a.onmouseup = function (e) {
+                setTimeout(function () {
+                    showRemarkupToc(false);
+                    repositionRemarkupWindowWithHtmlWindow();
+                }, 100);
+
+                return true;
+            })
         }
     }
 </script>

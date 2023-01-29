@@ -669,6 +669,7 @@ class Remarkup {
                 correctHeaderHeights();
 
                 finishHyperlinks();
+                finishImages();
                 finishMetaDataElements();
             }
 
@@ -680,6 +681,10 @@ class Remarkup {
         this.tmrDecodeRemarkup = null;
 
         document.querySelectorAll('.edit .app-edit-window-head > .phui-font-fa').forEach((toolbarButton) => {
+            if (toolbarButton.classList.contains('fa-th-list')) {
+                return;
+            }
+
             toolbarButton.onclick = function(ev) {
                 var span = ev.target;
                 var textarea = document.querySelector('.app-window-body.edit > textarea');
@@ -1989,17 +1994,74 @@ class TextAreaDropZone {
             return false;
         }
 
+        this.handleKeyDown = function (evt) {
+            if (evt.ctrlKey) {
+                var numeric = parseInt(evt.key);
+                if (isNaN(numeric) == false) {
+                    // make sure that CTRL-numeric does not change tabs in browser
+                    evt.preventDefault();
+                    return false;
+                }
+            }
+        }
+
+        this.handleKeyUp = function (evt) {
+            var textarea = event.target;
+            if (evt.ctrlKey) {
+                if (!textarea.annotationCharacters) {
+                    textarea.annotationCharacters = "";
+                }
+
+                var numeric = parseInt(evt.key);
+                if (isNaN(numeric) == false) {
+                    textarea.annotationCharacters += numeric;
+                } else {
+                    textarea.annotationCharacters = null;
+                }
+            }
+            else
+                if (evt.key == "Control") {
+                    if (!textarea.annotationCharacters == false) {
+                        var annotationNumeric = parseInt(textarea.annotationCharacters);
+                        if (annotationNumeric <= 0 || annotationNumeric > 20) {
+                            textarea.annotationCharacters = null;
+                            return;
+                        }
+
+                        var annotationCharacter = String.fromCharCode(9311 + annotationNumeric);
+
+                        var selectionStart = textarea.selectionStart;
+                        var selectionEnd = textarea.selectionEnd;
+
+                        textarea.Text = textarea.Text.substring(0, selectionStart)
+                            + annotationCharacter
+                            + textarea.Text.substring(selectionEnd);
+                        textarea.selectionStart = selectionStart + 1;
+                        textarea.selectionEnd = textarea.selectionStart;
+
+                        textarea.annotationCharacters = null;
+
+                        evt.preventDefault();
+                        return false;
+                    }
+                }
+        }
+
         // Setup the dnd listeners.
         var handleDragLeave = this.handleDragLeave;
         var handleDragOver = this.handleDragOver;
         var handleFileSelect = this.handleFileSelect;
         var handleCtrlV = this.handleCtrlV;
+        var handleKeyDown = this.handleKeyDown;
+        var handleKeyUp = this.handleKeyUp;
         document.querySelectorAll('textarea.dropzone')
                 .forEach(function(dropZone) {
                     dropZone.addEventListener('dragover', handleDragOver, false);
                     dropZone.addEventListener('dragleave', handleDragLeave, false);
                     dropZone.addEventListener('drop', handleFileSelect, false);
                     dropZone.addEventListener('paste', handleCtrlV, false);
+                    dropZone.addEventListener('keydown', handleKeyDown, false);
+                    dropZone.addEventListener('keyup', handleKeyUp, false);
                 });
     }
 }
@@ -2183,7 +2245,7 @@ function finishHyperlinks() {
             var mnuCopyAnchor = document.createElement('a');
             var mnuCopyIcon = document.createElement('i');
             mnuCopyIcon.className = 'fa fa-copy';
-            var mnuCopyContent = document.createTextNode("Copy");
+            var mnuCopyContent = document.createTextNode(Locale.Translate("Copy"));
             mnuCopyAnchor.appendChild(mnuCopyIcon);
             mnuCopyAnchor.appendChild(mnuCopyContent);
             mnuCopy.appendChild(mnuCopyAnchor);
@@ -2203,6 +2265,105 @@ function finishHyperlinks() {
                 }, 100);
             });
             // == end Copy-to-clipboard ==========================================================================================
+
+            return false;
+        }, false);
+    });
+}
+
+function finishImages() {
+    document.querySelectorAll('img').forEach((img) => {
+        var contextMenu = document.body.querySelector('.context-menu');
+        if (contextMenu != null) document.body.removeChild(contextMenu);
+
+        // set events for context-menu for images
+        img.addEventListener('contextmenu', function (ev) {
+            ev.preventDefault();
+
+            document.body.querySelectorAll('.context-menu').forEach((c) => {
+                document.body.removeChild(c);
+            });
+
+            var contextMenu = document.createElement('div');
+            document.body.appendChild(contextMenu);
+            contextMenu.className = 'context-menu';
+            contextMenu.style.display = 'block';
+            contextMenu.style.position = 'absolute';
+            contextMenu.style.left = ev.pageX + "px";
+            contextMenu.style.top = ev.pageY + "px";
+
+            var menuItems = document.createElement('ul');
+            menuItems.className = 'menu';
+
+            // == start Open-in-new-tab ==========================================================================================
+            var mnuNewTab = document.createElement('li');
+            mnuNewTab.className = 'opennewtab';
+            var mnuNewTabAnchor = document.createElement('a');
+            var mnuNewTabIcon = document.createElement('i');
+            mnuNewTabIcon.className = 'fa fa-file-picture-o';
+            var mnuNewTabContent = document.createTextNode(Locale.Translate("Open in new tab"));
+            mnuNewTabAnchor.appendChild(mnuNewTabIcon);
+            mnuNewTabAnchor.appendChild(mnuNewTabContent);
+            mnuNewTab.appendChild(mnuNewTabAnchor);
+            menuItems.appendChild(mnuNewTab);
+
+            contextMenu.appendChild(menuItems);
+
+            mnuNewTabAnchor.addEventListener('mouseup', function (e) {
+                setTimeout(function () {
+                    contextMenu.removeChild(menuItems);
+                }, 100);
+                window.open(img.src, '_blank');
+            });
+            // == end Open-in-new-tab ============================================================================================
+
+            if (img.classList.contains('diagram') == false) {
+                // == start Convert-to-diagram =======================================================================================
+                var mnuConvertToDiagram = document.createElement('li');
+                mnuConvertToDiagram.className = 'opennewtab';
+                var mnuConvertToDiagramAnchor = document.createElement('a');
+                var mnuConvertToDiagramIcon = document.createElement('i');
+                mnuConvertToDiagramIcon.className = 'fa fa-sitemap';
+                var mnuConvertToDiagramContent = document.createTextNode(Locale.Translate("Convert to diagram"));
+                mnuConvertToDiagramAnchor.appendChild(mnuConvertToDiagramIcon);
+                mnuConvertToDiagramAnchor.appendChild(mnuConvertToDiagramContent);
+                mnuConvertToDiagram.appendChild(mnuConvertToDiagramAnchor);
+                menuItems.appendChild(mnuConvertToDiagram);
+
+                contextMenu.appendChild(menuItems);
+
+                mnuConvertToDiagramAnchor.addEventListener('mouseup', function (e) {
+                    setTimeout(function () {
+                        contextMenu.removeChild(menuItems);
+                    }, 100);
+
+                    var convertImageToDiagram = new XMLHttpRequest();
+
+                    convertImageToDiagram.onreadystatechange = function() {
+                        if (convertImageToDiagram.readyState == 4) {
+                            if (convertImageToDiagram.status == 200) {
+                                var response = JSON.parse(convertImageToDiagram.responseText);
+                                if (response.Status == "success") {
+                                    showHideMessageDialog(true, "", Locale.Translate("Image is converted to diagram"), function() {
+                                        // refresh screen
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    showHideMessageDialog(true, "", Locale.Translate("Image could not be converted to diagram") + ": " + response.Message);
+                                }
+                            } else {
+                                showHideMessageDialog(true, "", Locale.Translate("Image could not be converted to diagram"));
+                            }
+                        }
+                    };
+
+                    var fileID = img.src.replace(/\/$/, "").split('/').reverse()[0];
+                    convertImageToDiagram.open('POST', "file/convertImageToDiagram/" + fileID, true);
+                    convertImageToDiagram.setRequestHeader('Content-type', 'application/octet-stream');
+                    convertImageToDiagram.send();
+                });
+                // == end Convert-to-diagram =========================================================================================
+            }
 
             return false;
         }, false);
@@ -2239,7 +2400,7 @@ function finishMetaDataElements() {
             var mnuCopyAnchor = document.createElement('a');
             var mnuCopyIcon = document.createElement('i');
             mnuCopyIcon.className = 'fa fa-copy';
-            var mnuCopyContent = document.createTextNode("Copy");
+            var mnuCopyContent = document.createTextNode(Locale.Translate("Copy"));
             mnuCopyAnchor.appendChild(mnuCopyIcon);
             mnuCopyAnchor.appendChild(mnuCopyContent);
             mnuCopy.appendChild(mnuCopyAnchor);
@@ -2432,6 +2593,33 @@ function postForm(form, url)
     http.send(data);
 }
 
+function repositionRemarkupWindowWithHtmlWindow() {
+    var topLine = Array.prototype.slice.call(right.querySelectorAll('span[data-line]')).find(function (span) {
+        return cumulativeOffset(span).top > right.scrollTop + 20;
+    })
+
+    if (typeof topLine != 'undefined') {
+        var topLineNumber = topLine.dataset.line;
+        if (textarea.previousTopLineNumber == topLineNumber) return;
+        textarea.previousTopLineNumber = topLineNumber;
+
+        var regexNewlines = /\n/g;
+        var match = null;
+        for (var i=0; i<topLineNumber; i++) match=regexNewlines.exec(textarea.value);
+        if (match != null) {
+            var selectionIndex = match.index;
+            var lineCount = topLineNumber;
+            while (match != null) {
+                lineCount++;
+                match=regexNewlines.exec(textarea.value);
+            }
+
+            textarea.selectionStart = textarea.selectionEnd = selectionIndex;
+            textarea.scrollTop = (textarea.scrollHeight / lineCount) * topLineNumber;
+        }
+    }
+}
+
 function resizeImage(direction, img, size) {
     if (direction == "width") {
         if (img.style.width === "" || img.style.width === "100%") {
@@ -2588,30 +2776,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            var topLine = Array.prototype.slice.call(right.querySelectorAll('span[data-line]')).find(function (span) {
-                return cumulativeOffset(span).top > right.scrollTop + 20;
-            })
-
-            if (typeof topLine != 'undefined') {
-                var topLineNumber = topLine.dataset.line;
-                if (textarea.previousTopLineNumber == topLineNumber) return;
-                textarea.previousTopLineNumber = topLineNumber;
-
-                var regexNewlines = /\n/g;
-                var match = null;
-                for (var i=0; i<topLineNumber; i++) match=regexNewlines.exec(textarea.value);
-                if (match != null) {
-                    var selectionIndex = match.index;
-                    var lineCount = topLineNumber;
-                    while (match != null) {
-                        lineCount++;
-                        match=regexNewlines.exec(textarea.value);
-                    }
-
-                    textarea.selectionStart = textarea.selectionEnd = selectionIndex;
-                    textarea.scrollTop = (textarea.scrollHeight / lineCount) * topLineNumber;
-                }
-            }
+            repositionRemarkupWindowWithHtmlWindow();
         });
     });
 
@@ -3024,6 +3189,9 @@ function htmlLoaded() {
     // add some extra code to hyperlinks
     finishHyperlinks();
 
+    // add some extra code to images
+    finishImages();
+
     // add some extra code to meta-elements (e.g. ip addresses in content)
     finishMetaDataElements();
 }
@@ -3054,10 +3222,8 @@ window.addEventListener('mousedown', function(e) {
     }
 }, false);
 
-// disable contextmenu (except for images)
+// disable contextmenu
 document.addEventListener('contextmenu', function (ev) {
-    if (ev.target.tagName == 'IMG') return true; 
-
     ev.preventDefault();
     return false;
 })

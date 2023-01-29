@@ -116,7 +116,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         this.BulletStart = 1;
                     }
                     else
-                    if (RegexSafe.IsMatch(bullet, @"\[[ ?]\]", RegexOptions.Singleline))
+                    if (RegexSafe.IsMatch(bullet, @"\[[ ]?\]", RegexOptions.Singleline))
                     {
                         this.Bullet = ListBulletType.Unchecked;
                     }

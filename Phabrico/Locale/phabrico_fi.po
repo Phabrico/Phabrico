@@ -19,6 +19,21 @@ msgstr "K"
 msgid "Button-AccessKey-No"
 msgstr "E"
 
+msgid "Copy"
+msgstr "Kopioi"
+
+msgid "Open in new tab"
+msgstr "Avaa uudessa välilehdessä"
+
+msgid "Convert to diagram"
+msgstr "Muunna kaavioksi"
+
+msgid "Image is converted to diagram"
+msgstr "Kuva muutetaan kaavioksi"
+
+msgid "Image could not be converted to diagram"
+msgstr "Kuvaa ei voitu muuntaa kaavioksi"
+
 msgid "Undo"
 msgstr "Kumoa"
 
@@ -1131,6 +1146,9 @@ msgstr "Muokkaus- ja katseluikkunoiden lukituksen avaaminen"
 
 msgid "Help"
 msgstr "Ohje"
+
+msgid "Show chapters"
+msgstr "Näytä luvut"
 
 msgid "Set Sail for Adventure"
 msgstr "Purjehdi seikkailuun"

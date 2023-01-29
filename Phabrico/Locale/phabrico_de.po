@@ -19,6 +19,21 @@ msgstr "J"
 msgid "Button-AccessKey-No"
 msgstr "N"
 
+msgid "Copy"
+msgstr "Kopieren"
+
+msgid "Open in new tab"
+msgstr "In neuer Registerkarte öffnen"
+
+msgid "Convert to diagram"
+msgstr "In Diagramm umwandeln"
+
+msgid "Image is converted to diagram"
+msgstr "Abbildung ist in ein Diagramm umgewandelt"
+
+msgid "Image could not be converted to diagram"
+msgstr "Bild konnte nicht in ein Diagramm umgewandelt werden"
+
 msgid "Undo"
 msgstr "Rückgängig machen"
 
@@ -1131,6 +1146,9 @@ msgstr "Bearbeiten und Anzeigen freischalten"
 
 msgid "Help"
 msgstr "Hilfe"
+
+msgid "Show chapters"
+msgstr "Kapitel anzeigen"
 
 msgid "Set Sail for Adventure"
 msgstr "Segel setzen für Abenteuer"

@@ -19,6 +19,21 @@ msgstr "Д"
 msgid "Button-AccessKey-No"
 msgstr "Н"
 
+msgid "Copy"
+msgstr "Копировать"
+
+msgid "Open in new tab"
+msgstr "Открыть в новой вкладке"
+
+msgid "Convert to diagram"
+msgstr "Преобразование в диаграмму"
+
+msgid "Image is converted to diagram"
+msgstr "Рисунок преобразуется в диаграмму"
+
+msgid "Image could not be converted to diagram"
+msgstr "Изображение не удалось преобразовать в диаграмму"
+
 msgid "Undo"
 msgstr "Отменить"
 
@@ -1131,6 +1146,9 @@ msgstr "Разблокировка окон редактирования и пр
 
 msgid "Help"
 msgstr "Помощь"
+
+msgid "Show chapters"
+msgstr "Показать главы"
 
 msgid "Set Sail for Adventure"
 msgstr "Отправляйтесь на поиски приключений"

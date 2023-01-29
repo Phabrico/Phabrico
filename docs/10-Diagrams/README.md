@@ -23,4 +23,19 @@ If you click on it, the Diagram editor will be opened.
 
 The user manuals for Diagrams.net can be found at <https://www.diagrams.net/doc/>
 
+## Annotations
+Diagrams.Net can also be used for annotating screenshots or pictures.
+After pasting a screenshot in a wiki document, you can convert the image into a diagram by right-clicking on the image and select //Convert to diagram//:
+![Diagrams 03](Diagrams-03.png)
+
+The image can then be edited in Diagrams.Net by clicking on the blue icon in the top right corner of the image:
+![Diagrams 04](Diagrams-04.png)
+
+Annotation numbers can be selected from the "1-20" shapes on the left:
+![Diagrams 05](Diagrams-05.png)
+
+By pressing CTRL and a number, you can enter the annotation number in Remarkup:
+![Diagrams 06](Diagrams-06.png)
+
+
 [Index](../README.md) | [Previous Page](../09-FileObjects/README.md) |  [Next page](../11-Gitanos/README.md)

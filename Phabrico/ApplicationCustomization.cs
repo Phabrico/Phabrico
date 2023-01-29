@@ -1,4 +1,5 @@
-﻿using Phabrico.Miscellaneous;
+﻿using Phabrico.Http;
+using Phabrico.Miscellaneous;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -221,72 +222,78 @@ namespace Phabrico
         /// <summary>
         /// If true, Config screen will not be accessible
         /// </summary>
-        public bool HideConfig { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HideConfig { get; set; } = false;
 
         /// <summary>
         /// If true, Files screen will not be accessible
         /// </summary>
-        public bool HideFiles { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HideFiles { get; set; } = false;
 
         /// <summary>
         /// If true, Offline Changes screen will not be accessible
         /// </summary>
-        public bool HideOfflineChanges { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HideOfflineChanges { get; set; } = false;
 
         /// <summary>
         /// If true, Maniphest tasks will not be accessible
         /// </summary>
-        public bool HideManiphest { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HideManiphest { get; set; } = false;
 
         /// <summary>
         /// If true, the tooltips for the menu items in the homepage will not be shown
         /// </summary>
-        public bool HideNavigatorTooltips { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HideNavigatorTooltips { get; set; } = false;
 
         /// <summary>
         /// If true, Phame blog postswill not be accessible
         /// </summary>
-        public bool HidePhame { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HidePhame { get; set; } = false;
 
         /// <summary>
         /// If true, Phriction/wiki documents will not be accessible
         /// </summary>
-        public bool HidePhriction { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HidePhriction { get; set; } = false;
 
         /// <summary>
         /// If true, the menu on the right side of the Phriction documents is no longer visible
         /// </summary>
-        public bool HidePhrictionActionMenu { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HidePhrictionActionMenu { get; set; } = false;
 
         /// <summary>
         /// If true, the changes made in Phriction/wiki documents can not be seen or undone
         /// </summary>
-        public bool HidePhrictionChanges { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HidePhrictionChanges { get; set; } = false;
 
         /// <summary>
         /// If true, Phriction/wiki documents can not be marked as favorite
         /// </summary>
-        public bool HidePhrictionFavorites { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HidePhrictionFavorites { get; set; } = false;
+
+        /// <summary>
+        /// List of plugins which may or may not be visible
+        /// Key = name of plugin, value = visibility state
+        /// </summary>
+        public Dictionary<string,BooleanVector<Browser.PublishedProperties>> HidePlugins { get; set; } = new Dictionary<string, BooleanVector<Browser.PublishedProperties>>();
 
         /// <summary>
         /// If true, Phabricator projects will not be accessible
         /// </summary>
-        public bool HideProjects { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HideProjects { get; set; } = false;
 
         /// <summary>
         /// If true, Phabricator users will not be accessible
         /// </summary>
-        public bool HideUsers { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HideUsers { get; set; } = false;
 
         /// <summary>
         /// If true, Search field will not be accessible
         /// </summary>
-        public bool HideSearch { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> HideSearch { get; set; } = false;
 
         /// <summary>
         /// If true, no Phriction document or Maniphest task can be edited
         /// </summary>
-        public bool IsReadonly { get; set; } = false;
+        public BooleanVector<Browser.PublishedProperties> IsReadonly { get; set; } = false;
 
         /// <summary>
         /// If false, the master data on Phabricator is not accessible via Phabrico.

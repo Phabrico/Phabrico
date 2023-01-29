@@ -52,6 +52,13 @@ namespace Phabrico.Controllers
                     relativeUrl = relativeUrl.Substring("/w/".Length);
                 }
 
+                // in case we're busy creating a new page, create a ghost relative url so that all relative
+                // hyperlinks being entered in Remarkup are shown correctly
+                if (url.EndsWith("?action=new"))
+                {
+                    relativeUrl += "some-new-page-being-created/";
+                }
+
                 RemarkupParserOutput remarkupParserOutput;
                 string htmlData = ConvertRemarkupToHTML(database, relativeUrl, remarkupData, out remarkupParserOutput, true);
 

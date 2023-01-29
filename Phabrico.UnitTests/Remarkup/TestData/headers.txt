@@ -27,5 +27,5 @@ blah blah blah<br>
 <h2 class='remarkup-header'><a name='markdown-style-small-header' style='padding-top: 80px;'></a>Markdown-Style Small Header </h2>
 <br>
 <h3 class='remarkup-header'><a name='remarkup-style-smaller-header' style='padding-top: 80px;'></a>Remarkup-Style Smaller Header </h3>
-<h1 class='remarkup-header'><a name='utf8-header' style='padding-top: 80px;'></a>☃☃☃ UTF8 Header ☃☃☃ </h1>
+<h1 class='remarkup-header'><a name='☃☃☃-utf8-header-☃☃☃' style='padding-top: 80px;'></a>☃☃☃ UTF8 Header ☃☃☃ </h1>
 ~~~~~~~~~~

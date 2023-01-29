@@ -19,6 +19,21 @@ msgstr "D"
 msgid "Button-AccessKey-No"
 msgstr "N"
 
+msgid "Copy"
+msgstr "Copiere"
+
+msgid "Open in new tab"
+msgstr "Deschideți în fila nouă"
+
+msgid "Convert to diagram"
+msgstr "Conversia în diagramă"
+
+msgid "Image is converted to diagram"
+msgstr "Figura se transformă în diagramă"
+
+msgid "Image could not be converted to diagram"
+msgstr "Imaginea nu a putut fi convertită în diagramă"
+
 msgid "Undo"
 msgstr "Anulați"
 
@@ -1131,6 +1146,9 @@ msgstr "Deblocați ferestrele de editare și vizualizare"
 
 msgid "Help"
 msgstr "Ajutor"
+
+msgid "Show chapters"
+msgstr "Arată capitolele"
 
 msgid "Set Sail for Adventure"
 msgstr "Porniți spre aventură"

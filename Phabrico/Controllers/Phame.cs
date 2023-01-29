@@ -73,7 +73,7 @@ namespace Phabrico.Controllers
                     blogPost.SetText("BLOG-POST-CONTENT", formattedDocumentContent, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     blogPost.SetText("BLOG-POST-ID", phamePost.ID);
                     blogPost.SetText("AUTHOR", authorName);
-                    blogPost.SetText("DATE-MODIFIED", FormatDateTimeOffset(phamePost.DateModified, browser.Language), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    blogPost.SetText("DATE-MODIFIED", FormatDateTimeOffset(phamePost.DateModified, browser.Properties.Language), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                 }
             }
         }
@@ -115,7 +115,7 @@ namespace Phabrico.Controllers
                 viewPage.SetText("BLOG-POST-TITLE", phamePost.Title);
                 viewPage.SetText("BLOG-POST-CONTENT", formattedDocumentContent, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                 viewPage.SetText("AUTHOR", authorName);
-                viewPage.SetText("DATE-MODIFIED", FormatDateTimeOffset(phamePost.DateModified, browser.Language), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                viewPage.SetText("DATE-MODIFIED", FormatDateTimeOffset(phamePost.DateModified, browser.Properties.Language), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
             }
         }
 

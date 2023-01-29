@@ -19,6 +19,21 @@ msgstr "Y"
 msgid "Button-AccessKey-No"
 msgstr "N"
 
+msgid "Copy"
+msgstr "复制"
+
+msgid "Open in new tab"
+msgstr "在新标签中打开"
+
+msgid "Convert to diagram"
+msgstr "转换为图示"
+
+msgid "Image is converted to diagram"
+msgstr "图被转化为图表"
+
+msgid "Image could not be converted to diagram"
+msgstr "图片无法转换为图表"
+
 msgid "Undo"
 msgstr "撤销"
 
@@ -1131,6 +1146,9 @@ msgstr "解锁编辑和查看"
 
 msgid "Help"
 msgstr "救命"
+
+msgid "Show chapters"
+msgstr "显示章节"
 
 msgid "Set Sail for Adventure"
 msgstr "踏上冒险之路"

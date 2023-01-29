@@ -19,6 +19,21 @@ msgstr "Y"
 msgid "Button-AccessKey-No"
 msgstr "N"
 
+msgid "Copy"
+msgstr "Copy"
+
+msgid "Open in new tab"
+msgstr "Open in new tab"
+
+msgid "Convert to diagram"
+msgstr "Convert to diagram"
+
+msgid "Image is converted to diagram"
+msgstr "Image is converted to diagram"
+
+msgid "Image could not be converted to diagram"
+msgstr "Image could not be converted to diagram"
+
 msgid "Undo"
 msgstr "Undo"
 
@@ -1128,6 +1143,9 @@ msgstr "Diagram"
 
 msgid "Unlock edit and view windows"
 msgstr "Unlock edit and view windows"
+
+msgid "Show chapters"
+msgstr "Show chapters"
 
 msgid "Help"
 msgstr "Help"

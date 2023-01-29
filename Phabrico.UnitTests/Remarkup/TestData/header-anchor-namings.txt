@@ -1,0 +1,79 @@
+= Afghanistan
+== Capital
+Kabul
+
+== Language(s)
+* Pashto
+* Dari
+
+== Time Zone
+UTC +4:30
+
+== Part of Europe ? Part of BRICS ?
+No
+No
+
+== Prime Minister's political party
+Taliban
+
+=== ① {icon list} Birt place
+Pashmul
+
+= Albania
+== Capital
+Tirana
+
+== Language(s)
+* Albanian
+* Greek
+
+== Time Zone
+UTC +4:30
+
+== Part of Europe ? Part of BRICS ?
+Yes
+No
+
+== Prime Minister's political party
+PS
+
+=== ① {icon list} Birt place
+Tirana
+~~~~~~~~~~
+<h1 class='remarkup-header'><a name='afghanistan' style='padding-top: 80px;'></a>Afghanistan </h1>
+<h2 class='remarkup-header'><a name='capital' style='padding-top: 80px;'></a>Capital </h2>
+Kabul<br>
+<h2 class='remarkup-header'><a name='language-s' style='padding-top: 80px;'></a>Language(s) </h2>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>Pashto</li>
+  <li class='remarkup-list-item'>Dari</li>
+</ul>
+
+<h2 class='remarkup-header'><a name='time-zone' style='padding-top: 80px;'></a>Time Zone </h2>
+UTC +4:30<br>
+<h2 class='remarkup-header'><a name='part-of-europe-part-of-brics' style='padding-top: 80px;'></a>Part of Europe ? Part of BRICS ? </h2>
+No<br>
+No<br>
+<h2 class='remarkup-header'><a name='prime-minister-039-s-political' style='padding-top: 80px;'></a>Prime Minister&#39;s political party </h2>
+Taliban<br>
+<h3 class='remarkup-header'><a name='①-span-class-visual-only-phui' style='padding-top: 80px;'></a>① <span class='visual-only phui-icon-view phui-font-fa fa-list ' style='color:unset;;'></span> Birt place </h3>
+Pashmul<br>
+<h1 class='remarkup-header'><a name='albania' style='padding-top: 80px;'></a>Albania </h1>
+<h2 class='remarkup-header'><a name='capital-1' style='padding-top: 80px;'></a>Capital </h2>
+Tirana<br>
+<h2 class='remarkup-header'><a name='language-s-1' style='padding-top: 80px;'></a>Language(s) </h2>
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>Albanian</li>
+  <li class='remarkup-list-item'>Greek</li>
+</ul>
+
+<h2 class='remarkup-header'><a name='time-zone-1' style='padding-top: 80px;'></a>Time Zone </h2>
+UTC +4:30<br>
+<h2 class='remarkup-header'><a name='part-of-europe-part-of-brics-1' style='padding-top: 80px;'></a>Part of Europe ? Part of BRICS ? </h2>
+Yes<br>
+No<br>
+<h2 class='remarkup-header'><a name='prime-minister-039-s-political-1' style='padding-top: 80px;'></a>Prime Minister&#39;s political party </h2>
+PS<br>
+<h3 class='remarkup-header'><a name='①-span-class-visual-only-phui-1' style='padding-top: 80px;'></a>① <span class='visual-only phui-icon-view phui-font-fa fa-list ' style='color:unset;;'></span> Birt place </h3>
+Tirana
+~~~~~~~~~~

@@ -17,6 +17,8 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			//----------------------------------------------------------//
 			//------------- Bootstrap script in index.html -------------//
 			//----------------------------------------------------------//
+			// Version 20.8.12
+			'\'sha256-6g514VrT/cZFZltSaKxIVNFF46+MFaTSDTPB8WfYK+c=\' ' +
 			// Version 16.4.4
 			'\'sha256-AVuOIxynOo/05KDLjyp0AoBE+Gt/KE1/vh2pS+yfqes=\' ' +
 			// Version 15.8.3
@@ -46,7 +48,7 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			'https://*.googleapis.com wss://app.diagrams.net wss://*.pusher.com https://*.pusher.com ' +
 			'https://api.github.com https://raw.githubusercontent.com https://gitlab.com ' +
 			'https://graph.microsoft.com https://*.sharepoint.com  https://*.1drv.com https://api.onedrive.com ' +
-			'https://dl.dropboxusercontent.com ' +
+			'https://dl.dropboxusercontent.com https://api.openai.com ' +
 			'https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; ' +
 			// font-src about: is required for MathJax HTML-CSS output with STIX
 			'img-src * data: blob:; media-src * data:; font-src * about:; ' +
@@ -83,17 +85,16 @@ if (!mxIsElectron && location.protocol !== 'http:')
 					replace(/  /g, ' ') + ' frame-ancestors \'self\' https://teams.microsoft.com;';
 			console.log('app.diagrams.net:', app_diagrams_net);
 
-			var se_diagrams_net = hashes.replace(/%script-src%/g, '') +
-				'connect-src \'self\' https://*.diagrams.net ' +
-				'https://*.googleapis.com wss://app.diagrams.net wss://*.pusher.com https://*.pusher.com ' +
-				'https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; ' +
-				'img-src * data: blob:; media-src * data:; font-src * about:; ' +
-				'frame-src \'self\' https://viewer.diagrams.net https://*.google.com; ' +
-				'style-src \'self\' https://fonts.googleapis.com ' + styleHashes + ' ' +
+			var viewer_diagrams_net = hashes.replace(/%script-src%/g, 'https://www.dropbox.com https://api.trello.com https://app.diagrams.net') +
+				'connect-src *; ' +
+				'img-src * data: blob:; ' +
+				'media-src * data:; ' +
+				'font-src * about:; ' +
+				'style-src \'self\' https://fonts.googleapis.com \'unsafe-inline\'' +
+				'base-uri \'none\';' +
 				'object-src \'none\';' +
-				'frame-src \'none\';' +
-				'worker-src https://se.diagrams.net/service-worker.js;'
-			console.log('se.diagrams.net:', se_diagrams_net);
+				'worker-src https://viewer.diagrams.net/service-worker.js;'
+			console.log('viewer.diagrams.net:', viewer_diagrams_net);
 
 			var ac_draw_io = csp.replace(/%script-src%/g, 'https://aui-cdn.atlassian.com https://connect-cdn.atl-paas.net').
 					replace(/%frame-src%/g, 'https://www.lucidchart.com https://app.lucidchart.com https://lucid.app blob:').
@@ -120,10 +121,9 @@ if (!mxIsElectron && location.protocol !== 'http:')
 					"Content-Security-Policy" : app_diagrams_net,
 					"Permissions-Policy" : "microphone=()"
 				},
-				se: {
-					"Content-Security-Policy" : se_diagrams_net,
+				viewer: {
+					"Content-Security-Policy" : viewer_diagrams_net,
 					"Permissions-Policy" : "microphone=()",
-					"Access-Control-Allow-Origin": "https://se.diagrams.net"
 				},
 				teams: {
 					"Content-Security-Policy" : app_diagrams_net.replace(/ 'sha256-[^']+'/g, '') + 'worker-src https://app.diagrams.net/service-worker.js;',

@@ -458,12 +458,41 @@
 
 	WireShape.prototype.paintEdgeShape = function(c, pts)
 	{
-		c.save();
+		// The indirection via functions for markers is needed in
+		// order to apply the offsets before painting the line and
+		// paint the markers after painting the line.
+		var sourceMarker = this.createMarker(c, pts, true);
+		var targetMarker = this.createMarker(c, pts, false);
+
+		// Paints base line without dash pattern
 		c.setDashed(false);
-		mxConnector.prototype.paintEdgeShape.apply(this, [c, pts]);
-		c.restore();
+		mxPolyline.prototype.paintEdgeShape.apply(this, arguments);
+		
+		// Paints dashed line with dash pattern and fill color
+		if (this.isDashed != null)
+		{
+			c.setDashed(this.isDashed, (this.style != null) ?
+				mxUtils.getValue(this.style, mxConstants.STYLE_FIX_DASH, false) == 1 : false);
+		}
+
+		c.setShadow(false);
 		c.setStrokeColor(this.fill);
-		mxPolyline.prototype.paintEdgeShape.apply(this, [c, pts]);
+		mxPolyline.prototype.paintEdgeShape.apply(this, arguments);
+
+		// Paints markers with stroke color
+		c.setStrokeColor(this.stroke);
+		c.setFillColor(this.stroke);
+		c.setDashed(false);
+		
+		if (sourceMarker != null)
+		{
+			sourceMarker();
+		}
+		
+		if (targetMarker != null)
+		{
+			targetMarker();
+		}
 	};
 
 	mxCellRenderer.registerShape('wire', WireShape);
@@ -5892,21 +5921,29 @@
 			return createHandle(state, keys, function(bounds)
 			{
 				var pts = state.absolutePoints;
-				var n = pts.length - 1;
-				
-				var tr = state.view.translate;
-				var s = state.view.scale;
-				
-				var p0 = (start) ? pts[0] : pts[n];
-				var p1 = (start) ? pts[1] : pts[n - 1];
-				var dx = (start) ? p1.x - p0.x : p1.x - p0.x;
-				var dy = (start) ? p1.y - p0.y : p1.y - p0.y;
 
-				var dist = Math.sqrt(dx * dx + dy * dy);
-				
-				var pt = getPosition.call(this, dist, dx / dist, dy / dist, p0, p1);
-				
-				return new mxPoint(pt.x / s - tr.x, pt.y / s - tr.y);
+				if (pts != null && pts.length > 0)
+				{
+					var n = pts.length - 1;
+					
+					var tr = state.view.translate;
+					var s = state.view.scale;
+					
+					var p0 = (start) ? pts[0] : pts[n];
+					var p1 = (start) ? pts[1] : pts[n - 1];
+					var dx = (start) ? p1.x - p0.x : p1.x - p0.x;
+					var dy = (start) ? p1.y - p0.y : p1.y - p0.y;
+
+					var dist = Math.sqrt(dx * dx + dy * dy);
+					
+					var pt = getPosition.call(this, dist, dx / dist, dy / dist, p0, p1);
+					
+					return new mxPoint(pt.x / s - tr.x, pt.y / s - tr.y);
+				}
+				else
+				{
+					return null;
+				}
 			}, function(bounds, pt, me)
 			{
 				var pts = state.absolutePoints;

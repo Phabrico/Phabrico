@@ -236,7 +236,7 @@ namespace Phabrico.Http
                 }
                 else
                 {
-                    ClientSessions[token.ID].Locale = browser.Language;
+                    ClientSessions[token.ID].Locale = browser.Properties.Language;
                 }
             
                 Logging.WriteInfo(token.ID, "SessionManager: new token created: {0}", token.ID);

@@ -189,13 +189,13 @@ namespace Phabrico.Controllers
                             HtmlPartialViewPage htmlPluginNavigatorTabHeader = viewPage.GetPartialView("CONFIGURABLE-PLUGIN-TAB-HEADER");
                             if (htmlPluginNavigatorTabHeader != null)
                             {
-                                htmlPluginNavigatorTabHeader.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale ?? browser.Language), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                htmlPluginNavigatorTabHeader.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale ?? browser.Properties.Language), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                             }
 
                             HtmlPartialViewPage htmlPluginNavigatorTabContent = viewPage.GetPartialView("CONFIGURABLE-PLUGIN-TAB-CONTENT");
                             if (htmlPluginNavigatorTabContent != null)
                             {
-                                htmlPluginNavigatorTabContent.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale ?? browser.Language), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
+                                htmlPluginNavigatorTabContent.SetText("PLUGIN-NAME", plugin.GetName(browser.Session.Locale ?? browser.Properties.Language), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                                 htmlPluginNavigatorTabContent.SetText("PLUGIN-SCREEN-CONTENT", configurationViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
 
                                 Type loadConfigurationParametersControllerType = plugin.Assembly.GetExportedTypes()
@@ -226,7 +226,7 @@ namespace Phabrico.Controllers
                                     }
                                     catch (System.Exception loadConfigurationParametersException)
                                     {
-                                        Logging.WriteException(plugin.GetName(browser.Session.Locale ?? browser.Language) + "::loadConfigurationParameters", loadConfigurationParametersException);
+                                        Logging.WriteException(plugin.GetName(browser.Session.Locale ?? browser.Properties.Language) + "::loadConfigurationParameters", loadConfigurationParametersException);
                                     }
                                 }
                             }

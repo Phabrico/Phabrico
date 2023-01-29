@@ -342,9 +342,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 }
                             }
 
-                                                        urlHyperlink = UrlEncode(urlHyperlink);
+                            urlHyperlink = UrlEncode(urlHyperlink);
 
-                            if (urlHyperlink.StartsWith("http://") == false && urlHyperlink.StartsWith("https://") == false)
+                            if (urlHyperlink.StartsWith("#") == false 
+                                && urlHyperlink.StartsWith("http://") == false 
+                                && urlHyperlink.StartsWith("https://") == false)
                             {
                                 string encryptionKey = browser.Token?.EncryptionKey;
                                 if (string.IsNullOrEmpty(encryptionKey) == false)
@@ -411,7 +413,6 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 }
                             }
                         }
-
 
                         if (InvalidUrl(database, browser, url, ref urlHyperlink, ref urlHyperlinkText))
                         {
@@ -658,6 +659,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
             {
                 InvalidHyperlink = new EmailAddressAttribute().IsValid(urlHyperlink.Substring("mailto:".Length).Trim()) == false;
                 if (InvalidHyperlink) return true;
+            }
+
+            if (urlHyperlink.StartsWith("#"))
+            {
+                return false;
             }
 
             string localHyperlink = urlHyperlink;

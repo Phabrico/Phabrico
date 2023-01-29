@@ -167,6 +167,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public bool RuleStartAfterWhiteSpace { get; set; } = true;
 
         /// <summary>
+        /// If true, the current rule will only be valid if a punctuation character precedes it
+        /// </summary>
+        public bool RuleStartAfterPunctuation { get; set; } = true;
+
+        /// <summary>
         /// List of processed tokens
         /// </summary>
         public RemarkupTokenList TokenList { get; set; }

@@ -20,6 +20,58 @@ namespace Phabrico.Http
     /// </summary>
     public class Browser : IDisposable
     {
+        public class PublishedProperties
+        {
+            private Browser _owner;
+
+            /// <summary>
+            /// IP Address where the browser is running on
+            /// </summary>
+            public string IPAddress
+            {
+                get
+                {
+                    return _owner.Request.RemoteEndPoint.Address.MapToIPv4().ToString();
+                }
+            }
+
+            /// <summary>
+            /// Language of the web browser
+            /// </summary>
+            public Language Language
+            {
+                get;
+                set;
+            }
+
+            /// <summary>
+            /// URL address
+            /// </summary>
+            public string URL
+            {
+                get
+                {
+                    return _owner.Request.RawUrl;
+                }
+            }
+
+            /// <summary>
+            /// Browser's useragent string
+            /// </summary>
+            public string UserAgent
+            {
+                get
+                {
+                    return _owner.Request.UserAgent;
+                }
+            }
+
+            internal PublishedProperties(Browser browser)
+            {
+                _owner = browser;
+            }
+        }
+
         private SessionManager.Token _token = null;
 
         private Miscellaneous.HttpListenerContext httpListenerContext { get; set; }
@@ -47,12 +99,12 @@ namespace Phabrico.Http
         }
 
         /// <summary>
-        /// Language of the web browser
+        /// Properties of the browser session which can be used in plugins
         /// </summary>
-        public Language Language
+        public PublishedProperties Properties
         {
             get;
-            set;
+            internal set;
         }
 
         /// <summary>
@@ -161,45 +213,47 @@ namespace Phabrico.Http
                             + httpListenerContext.Request.RemoteEndPoint.Address;
             }
 
+            Properties = new PublishedProperties(this);
+
             if (httpServer.Customization.AvailableLanguages == null || httpServer.Customization.AvailableLanguages.Count() != 1)
             {
                 // set language based on language-cookie
                 if (httpListenerContext.Request.Cookies["language"] != null)
                 {
-                    Language = httpListenerContext.Request.Cookies["language"].Value;
-                    Session.Locale = Language;
+                    Properties.Language = httpListenerContext.Request.Cookies["language"].Value;
+                    Session.Locale = Properties.Language;
                 }
                 else
                 {
                     // no cookie-found: first time or in incognito-mode -> set language based on server-session-variable
                     using (Storage.Database database = new Storage.Database(null))
                     {
-                        Language = database.GetSessionVariable(this, "language");
+                        Properties.Language = database.GetSessionVariable(this, "language");
 
-                        if (string.IsNullOrWhiteSpace(Language))
+                        if (string.IsNullOrWhiteSpace(Properties.Language))
                         {
                             // no session-variable found: set default language to the language of the browser
-                            Language = httpListenerContext.Request
-                                                          .UserLanguages
-                                                          .FirstOrDefault()
-                                                          .Split('-')
-                                                          .FirstOrDefault();
+                            Properties.Language = httpListenerContext.Request
+                                                                     .UserLanguages
+                                                                     .FirstOrDefault()
+                                                                     .Split('-')
+                                                                     .FirstOrDefault();
 
-                            database.SetSessionVariable(this, "language", Language);
+                            database.SetSessionVariable(this, "language", Properties.Language);
                         }
                     }
 
                     // set language cookie
-                    Session.Locale = Language;
-                    SetCookie("language", Language, false);
+                    Session.Locale = Properties.Language;
+                    SetCookie("language", Properties.Language, false);
                 }
             }
             else
             {
                 // set language cookie
-                Language = httpServer.Customization.AvailableLanguages.FirstOrDefault();
-                Session.Locale = Language;
-                SetCookie("language", Language, false);
+                Properties.Language = httpServer.Customization.AvailableLanguages.FirstOrDefault();
+                Session.Locale = Properties.Language;
+                SetCookie("language", Properties.Language, false);
             }
         }
 

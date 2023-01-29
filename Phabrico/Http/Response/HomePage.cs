@@ -153,7 +153,7 @@ namespace Phabrico.Http.Response
                 case HomePageStatus.Authenticated:
                     token = SessionManager.GetToken(browser);
                     browser.ResetToken(token);
-                    browser.Session.Locale = browser.Language;  // restore locale
+                    browser.Session.Locale = browser.Properties.Language;  // restore locale
 
                     string encryptionKey = token.EncryptionKey;
 
@@ -181,7 +181,7 @@ namespace Phabrico.Http.Response
                             url = favorite.Path == "/"
                                         ? "w/"
                                         : "w/" + favorite.Path,
-                            title = GetCrumbPath(database, favorite, browser.Language),
+                            title = GetCrumbPath(database, favorite, browser.Properties.Language),
                             order = favorite.DisplayOrderInFavorites
                         })
                         .ToArray();
@@ -220,7 +220,11 @@ namespace Phabrico.Http.Response
                             Plugin.PluginTypeAttribute pluginType = plugin.GetType().GetCustomAttributes(typeof(Plugin.PluginTypeAttribute), true).FirstOrDefault() as Plugin.PluginTypeAttribute;
                             if (pluginType != null && pluginType.Usage != Plugin.PluginTypeAttribute.UsageType.Navigator) continue;
 
-                            if (plugin.IsVisibleInNavigator(browser))
+                            if (plugin.IsVisibleInNavigator(browser)
+                                && (browser.HttpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name) == false
+                                    || browser.HttpServer.Customization.HidePlugins[plugin.GetType().Name] == false
+                                    )
+                               )
                             {
                                 if (plugin.State == Plugin.PluginBase.PluginState.Loaded)
                                 {
@@ -240,7 +244,11 @@ namespace Phabrico.Http.Response
                             }
 
                             foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
-                                                                                                    .Where(ext => ext.IsVisibleInNavigator(browser))
+                                                                                                    .Where(ext => ext.IsVisibleInNavigator(browser)
+                                                                                                               && (browser.HttpServer.Customization.HidePlugins.ContainsKey(ext.GetType().Name) == false
+                                                                                                                   || browser.HttpServer.Customization.HidePlugins[ext.GetType().Name] == false
+                                                                                                                   )
+                                                                                                          )
                                     )
                             {
                                 if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)
@@ -280,7 +288,7 @@ namespace Phabrico.Http.Response
                         string languageCookie = browser.GetCookie("language");
                         if (string.IsNullOrEmpty(languageCookie))
                         {
-                            browser.Session.Locale = browser.Language;
+                            browser.Session.Locale = browser.Properties.Language;
                         }
                         else
                         {
@@ -499,7 +507,6 @@ namespace Phabrico.Http.Response
             }
             else
             {
-
                 if (Status == HomePageStatus.Authenticated &&
                     HttpServer.Customization.HideConfig &&
                     HttpServer.Customization.HideFiles &&
@@ -508,7 +515,11 @@ namespace Phabrico.Http.Response
                     HttpServer.Customization.HideProjects &&
                     HttpServer.Customization.HideUsers &&
                     HttpServer.Customization.HidePhriction == false &&
-                    Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false)
+                    Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false
+                                                   || (browser.HttpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name)
+                                                       && browser.HttpServer.Customization.HidePlugins[plugin.GetType().Name] == true
+                                                       )
+                                           )
                    )
                 {
                     HttpRedirect httpRedirect = new HttpRedirect(HttpServer, Browser, Http.Server.RootPath + "w");
@@ -524,7 +535,11 @@ namespace Phabrico.Http.Response
                     HttpServer.Customization.HideProjects &&
                     HttpServer.Customization.HideUsers &&
                     HttpServer.Customization.HideManiphest == false &&
-                    Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false)
+                    Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false
+                                                   || (browser.HttpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name)
+                                                       && browser.HttpServer.Customization.HidePlugins[plugin.GetType().Name] == true
+                                                       )
+                                           )
                    )
                 {
                     HttpRedirect httpRedirect = new HttpRedirect(HttpServer, Browser, Http.Server.RootPath + "maniphest");

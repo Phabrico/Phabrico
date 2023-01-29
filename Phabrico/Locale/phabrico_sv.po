@@ -19,6 +19,21 @@ msgstr "J"
 msgid "Button-AccessKey-No"
 msgstr "N"
 
+msgid "Copy"
+msgstr "Kopiera"
+
+msgid "Open in new tab"
+msgstr "Öppna i ny flik"
+
+msgid "Convert to diagram"
+msgstr "Konvertera till diagram"
+
+msgid "Image is converted to diagram"
+msgstr "Figuren omvandlas till ett diagram"
+
+msgid "Image could not be converted to diagram"
+msgstr "Bilden kunde inte konverteras till diagram"
+
 msgid "Undo"
 msgstr "Ångra"
 
@@ -1131,6 +1146,9 @@ msgstr "Lås upp redigerings- och visningsfönster"
 
 msgid "Help"
 msgstr "Hjälp"
+
+msgid "Show chapters"
+msgstr "Visa kapitel"
 
 msgid "Set Sail for Adventure"
 msgstr "Sätt segel för äventyr"

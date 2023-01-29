@@ -487,7 +487,7 @@ namespace Phabrico.Controllers
                     viewPage.SetText("DOCUMENT-STATE", documentState, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     viewPage.SetText("UNREVIEWED-TRANSLATION", unreviewedTranslation, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                     viewPage.SetText("DOCUMENT-TIMESTAMP", phrictionDocument.DateModified.ToUnixTimeSeconds().ToString(), editMode ? HtmlViewPage.ArgumentOptions.Default : HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                    viewPage.SetText("DOCUMENT-DATE", FormatDateTimeOffset(phrictionDocument.DateModified, browser.Session.Locale ?? browser.Language), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                    viewPage.SetText("DOCUMENT-DATE", FormatDateTimeOffset(phrictionDocument.DateModified, browser.Session.Locale ?? browser.Properties.Language), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     viewPage.SetText("DOCUMENT-LAST-MODIFIED-BY", getAccountName(phrictionDocument.LastModifiedBy), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
 
                     if (translation == null)
@@ -507,7 +507,11 @@ namespace Phabrico.Controllers
                          httpServer.Customization.HideProjects &&
                          httpServer.Customization.HideUsers &&
                          httpServer.Customization.HidePhriction == false &&
-                         Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false)
+                         Http.Server.Plugins.All(plugin => plugin.IsVisibleInNavigator(browser) == false
+                                                        || (browser.HttpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name)
+                                                            && browser.HttpServer.Customization.HidePlugins[plugin.GetType().Name] == true
+                                                           )
+                                                )
                         )
                         || 
                         (rootDocumentPath != null &&
@@ -663,7 +667,11 @@ namespace Phabrico.Controllers
                                                                       .FirstOrDefault(pluginTypeAttribute => pluginTypeAttribute.Usage == Plugin.PluginTypeAttribute.UsageType.PhrictionDocument);
                         if (pluginType == null) continue;
 
-                        if (plugin.IsVisibleInApplication(database, browser, phrictionDocument.Token))
+                        if (plugin.IsVisibleInApplication(database, browser, phrictionDocument.Token)
+                            && (httpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name) == false
+                                || httpServer.Customization.HidePlugins[plugin.GetType().Name] == false
+                                )
+                           )
                         {
                             HtmlPartialViewPage phrictionPluginData = viewPage.GetPartialView("PHRICTION-PLUGINS");
                             if (phrictionPluginData == null) break;  // we're in edit-mode, no need for plugins
@@ -675,7 +683,11 @@ namespace Phabrico.Controllers
                         }
 
                         foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
-                                                                                                .Where(ext => ext.IsVisibleInApplication(database, browser, phrictionDocument.Token))
+                                                                                                .Where(ext => ext.IsVisibleInApplication(database, browser, phrictionDocument.Token)
+                                                                                                           && (httpServer.Customization.HidePlugins.ContainsKey(ext.GetType().Name) == false
+                                                                                                               || httpServer.Customization.HidePlugins[ext.GetType().Name] == false
+                                                                                                               )
+                                                                                                      )
                                 )
                         {
                             if (pluginExtension.State == Plugin.PluginBase.PluginState.Loaded)

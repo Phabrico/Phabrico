@@ -92,6 +92,14 @@ namespace Phabrico.UnitTests
             userWhoAmI.Token = "PHID-USER-e807f1fcf82d132f9bb0";
             userStorage.Add(Database, userWhoAmI);
 
+            Phabricator.Data.User secondaryUser = new Phabricator.Data.User();
+            secondaryUser.DateSynchronized = DateTimeOffset.MinValue;
+            secondaryUser.RealName = "Suzy Little";
+            secondaryUser.UserName = "suzy";
+            secondaryUser.Selected = true;
+            secondaryUser.Token = "PHID-USER-a451e1dad99e151a0ca1";
+            userStorage.Add(Database, secondaryUser);
+
             accountWhoAmI = new Phabricator.Data.Account();
             accountWhoAmI.ConduitAPIToken = "api-sat642eqloqv72ecax9qfkf54e61";
             accountWhoAmI.PhabricatorUrl = "http://127.0.0.2:46975";

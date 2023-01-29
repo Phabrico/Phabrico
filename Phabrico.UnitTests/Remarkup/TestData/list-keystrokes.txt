@@ -1,0 +1,8 @@
+- Press {key Ctrl+A} to select all text
+- Press {key Delete}
+~~~~~~~~~~
+<ul class='remarkup-list'>
+  <li class='remarkup-list-item'>Press <kbd>CTRL+A</kbd> to select all text</li>
+  <li class='remarkup-list-item'>Press <kbd>DELETE</kbd></li>
+</ul>
+~~~~~~~~~~

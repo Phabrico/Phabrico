@@ -78,18 +78,15 @@ You can use <tt class='remarkup-monospaced'>{key ...}</tt> to render a stylized 
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>Press {key M} to view the starmap.</code></pre></div>
 <br>
 ...renders this:<p class='paragraph'></p>
-<blockquote><p>Press <kbd>M</kbd>
- to view the starmap.</p></blockquote>
+<blockquote><p>Press <kbd>M</kbd> to view the starmap.</p></blockquote>
 <br>
 You can also render sequences with modifier keys. This:<br>
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>Use {key command option shift 3} to take a screenshot.
 Press {key down down-right right LP} to activate the hadoken technique.</code></pre></div>
 <br>
 ...renders this:<p class='paragraph'></p>
-<blockquote><p>Use <kbd>&#8984;</kbd><span class='kbd-join'>+</span><kbd>&#8997;</kbd><span class='kbd-join'>+</span><kbd>&#8679;</kbd><span class='kbd-join'>+</span><kbd>3</kbd>
- to take a screenshot.<br>
-Press <kbd>&#x2B63;</kbd><span class='kbd-join'>+</span><kbd>&#x2B68;</kbd><span class='kbd-join'>+</span><kbd>&#x2B62;</kbd><span class='kbd-join'>+</span><kbd>LP</kbd>
- to activate the hadoken technique.</p></blockquote>
+<blockquote><p>Use <kbd>&#8984;</kbd><span class='kbd-join'>+</span><kbd>&#8997;</kbd><span class='kbd-join'>+</span><kbd>&#8679;</kbd><span class='kbd-join'>+</span><kbd>3</kbd> to take a screenshot.<br>
+Press <kbd>&#x2B63;</kbd><span class='kbd-join'>+</span><kbd>&#x2B68;</kbd><span class='kbd-join'>+</span><kbd>&#x2B62;</kbd><span class='kbd-join'>+</span><kbd>LP</kbd> to activate the hadoken technique.</p></blockquote>
 <br>
 <h1 class='remarkup-header'><a name='fullscreen-mode' style='padding-top: 80px;'></a>Fullscreen Mode </h1>
 Remarkup editors provide a fullscreen composition mode. This can make it easier<br>

@@ -37,7 +37,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 return true;
             }
 
-            if (RuleStartAfterWhiteSpace)
+            if (RuleStartAfterWhiteSpace || RuleStartAfterPunctuation)
             {
                 Match matchBackTick = RegexSafe.Match(remarkup, @"^`([^`\r\n]+)`", RegexOptions.Singleline);
                 if (matchBackTick.Success)

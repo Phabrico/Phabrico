@@ -723,9 +723,9 @@ namespace Phabrico.Plugin
 
                     string translatedXmlContent = translator.TranslateXML(sourceLanguage, targetLanguage, xmlData, previouslyTranslatedContent, phrictionDocument.Token);
                     string correctedTranslatedXmlContent = CorrectTranslatedXmlContent(translatedXmlContent);
-                    browser.Language = targetLanguage;
+                    browser.Properties.Language = targetLanguage;
                     translatedContent = remarkupParserOutput.TokenList.FromXML(database, browser, "/", correctedTranslatedXmlContent, true);
-                    browser.Language = sourceLanguage;
+                    browser.Properties.Language = sourceLanguage;
                 }
 
                 if (translator.IsFileBasedTranslationService)

@@ -1,0 +1,12 @@
+- work for @johnny and @suzy
+- work for @johnny / @suzy
+[] work for @johnny and @suzy
+[] work for @johnny / @suzy
+~~~~~~~~~~
+<ul class='remarkup-list remarkup-list-with-checkmarks'>
+  <li class='remarkup-list-item'>work for <a class='user-reference' href='user/info/johnny/'>@johnny</a> and <a class='user-reference' href='user/info/suzy/'>@suzy</a></li>
+  <li class='remarkup-list-item'>work for <a class='user-reference' href='user/info/johnny/'>@johnny</a> / <a class='user-reference' href='user/info/suzy/'>@suzy</a></li>
+  <li class='remarkup-list-item remarkup-unchecked-item'><input type='checkbox' disabled='disabled'> work for <a class='user-reference' href='user/info/johnny/'>@johnny</a> and <a class='user-reference' href='user/info/suzy/'>@suzy</a></li>
+  <li class='remarkup-list-item remarkup-unchecked-item'><input type='checkbox' disabled='disabled'> work for <a class='user-reference' href='user/info/johnny/'>@johnny</a> / <a class='user-reference' href='user/info/suzy/'>@suzy</a></li>
+</ul>
+~~~~~~~~~~

@@ -244,7 +244,16 @@
     <Content Include="Remarkup\TestData\dupicated-anchor-names.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Remarkup\TestData\header-anchor-namings.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Remarkup\TestData\headers-long-names.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Remarkup\TestData\list-keystrokes.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Remarkup\TestData\list-referenced-user.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Remarkup\TestData\list-bold-items.txt">

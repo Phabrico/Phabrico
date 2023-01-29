@@ -254,7 +254,7 @@ namespace Phabrico.Controllers
         [UrlController(URL = "/maniphest", HtmlViewPageOptions = Http.Response.HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetLoadParameters(Http.Server httpServer, ref HtmlViewPage viewPage, string[] parameters, string parameterActions)
         {
-            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound("/maiphest");
+            if (httpServer.Customization.HideManiphest) throw new Phabrico.Exception.HttpNotFound("/maniphest");
 
             int firstIndex = 0;
             int previousIndex;
@@ -1373,7 +1373,11 @@ namespace Phabrico.Controllers
                                                                               .FirstOrDefault(pluginTypeAttribute => pluginTypeAttribute.Usage == Plugin.PluginTypeAttribute.UsageType.ManiphestTask);
                                 if (pluginType == null) continue;
 
-                                if (plugin.IsVisibleInApplication(database, browser, maniphestTask.Token))
+                                if (plugin.IsVisibleInApplication(database, browser, maniphestTask.Token)
+                                    && (httpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name) == false
+                                        || httpServer.Customization.HidePlugins[plugin.GetType().Name] == false
+                                        )
+                                   )
                                 {
                                     HtmlPartialViewPage maniphestTaskPluginData = viewPage.GetPartialView("MANIPHEST-TASK-PLUGINS");
                                     if (maniphestTaskPluginData == null) break;  // we're in edit-mode, no need for plugins
@@ -1385,7 +1389,11 @@ namespace Phabrico.Controllers
                                 }
 
                                 foreach (Plugin.PluginWithoutConfigurationBase pluginExtension in plugin.Extensions
-                                                                                                        .Where(ext => ext.IsVisibleInApplication(database, browser, maniphestTask.Token))
+                                                                                                        .Where(ext => ext.IsVisibleInApplication(database, browser, maniphestTask.Token)
+                                                                                                                   && (httpServer.Customization.HidePlugins.ContainsKey(ext.GetType().Name) == false
+                                                                                                                       || httpServer.Customization.HidePlugins[ext.GetType().Name] == false
+                                                                                                                      )
+                                                                                                              )
 
                                         )
                                 {

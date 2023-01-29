@@ -1230,8 +1230,7 @@ DrawioFileSync.prototype.merge = function(patches, checksum, desc, success, erro
 						EditorUi.logError('Merge checksum fallback ' + (failed ?
 							'failed' : 'success') + ' ' + id, null,
 							this.file.getMode() + '.' + this.file.getId(),
-							'user_' + uid + ((this.sync != null) ?
-							'-client_' + this.clientId : '-nosync') +
+							'user_' + uid + '-client_' + this.clientId +
 							'-bytes_' + bytes + '-patches_' + patches.length +
 							'-size_' + this.file.getSize() +
 							((checksum != null) ? ('-expected_' + checksum) : '') +
@@ -1248,8 +1247,6 @@ DrawioFileSync.prototype.merge = function(patches, checksum, desc, success, erro
 				// Fallback to full reload with logging
 				this.reload(mxUtils.bind(this, function()
 				{
-					logError(false);
-
 					if (success != null)
 					{
 						success();
@@ -1622,7 +1619,7 @@ DrawioFileSync.prototype.catchup = function(desc, success, error, abort)
 										}
 									}
 								}
-							}));
+							}), error);
 						}
 					}
 				});
@@ -1741,7 +1738,7 @@ DrawioFileSync.prototype.createToken = function(secret, success, error)
 				error({code: req.getStatus(), message: 'Token Error ' + req.getStatus()});
 			}
 		}
-	}));
+	}), error);
 };
 
 /**

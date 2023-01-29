@@ -39,7 +39,7 @@ commits and Maniphest tasks, by mentioning the name of an object:<p class='parag
 D123          # Link to Differential revision D123<br>
 rX123         # Link to SVN commit 123 from the &quot;X&quot; repository<br>
 rXaf3192cd5   # Link to Git commit &quot;af3192cd5...&quot; from the &quot;X&quot; repository.<br>
-<h1 class='remarkup-header'><a name='you-must-specify-at-least-7-characters' style='padding-top: 80px;'></a>You must specify at least 7 characters of the hash. </h1>
+<h1 class='remarkup-header'><a name='you-must-specify-at-least-7' style='padding-top: 80px;'></a>You must specify at least 7 characters of the hash. </h1>
 T123          # Link to Maniphest task T123<p class='paragraph'></p>
 You can also link directly to a comment in Maniphest and Differential (these<br>
 can be found on the date stamp of any transaction/comment):<p class='paragraph'></p>

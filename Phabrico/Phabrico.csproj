@@ -154,6 +154,7 @@
     <Compile Include="Http\UnimpersonatedTask.cs" />
     <Compile Include="Miscellaneous\AppConfigLoader.cs" />
     <Compile Include="Miscellaneous\AuthenticationFactor.cs" />
+    <Compile Include="Miscellaneous\BooleanVector.cs" />
     <Compile Include="Miscellaneous\ColorFunctionality.cs" />
     <Compile Include="Miscellaneous\DataTreeNode.cs" />
     <Compile Include="Exception\PhabricoException.cs" />

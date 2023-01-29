@@ -996,17 +996,6 @@ namespace Phabrico
                             }
                         }
                     }
-                    else
-                    {
-                        if (Configuration.phriction.tree)
-                        {
-                            // TODO
-                        }
-                        else
-                        {
-                            // TODO
-                        }
-                    }
 
                     // check if root wiki document is available
                     if (destinationWikis.Any(wiki => wiki.Path.Equals("/")) == false)

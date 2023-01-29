@@ -634,12 +634,12 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // edit title
             title = WebBrowser.FindElement(By.Id("title"));
-            title.SendKeys(OpenQA.Selenium.Keys.Control + "A");
+            title.SendKeys(OpenQA.Selenium.Keys.Control + "a");
             title.SendKeys("Het levensverhaal van mijn vader");
 
             // edit content
             textarea = WebBrowser.FindElement(By.Id("textarea"));
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "A");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "a");
             textarea.SendKeys("Vroeger las ik het verhaal van mijn vader steeds weer opnieuw");
 
             // click Save button
@@ -742,12 +742,12 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // edit title
             title = WebBrowser.FindElement(By.Id("title"));
-            title.SendKeys(OpenQA.Selenium.Keys.Control + "A");
+            title.SendKeys(OpenQA.Selenium.Keys.Control + "a");
             title.SendKeys("Het levensverhaal van mijn grootvader");
 
             // edit content
             textarea = WebBrowser.FindElement(By.Id("textarea"));
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "A");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "a");
             textarea.SendKeys("Vroeger las ik het verhaal van mijn grootvader steeds weer opnieuw");
 
             // click Save button
@@ -850,12 +850,12 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // edit title
             title = WebBrowser.FindElement(By.Id("title"));
-            title.SendKeys(OpenQA.Selenium.Keys.Control + "A");
+            title.SendKeys(OpenQA.Selenium.Keys.Control + "a");
             title.SendKeys("Diagrammen");
 
             // edit content
             textarea = WebBrowser.FindElement(By.Id("textarea"));
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "A");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "a");
             textarea.SendKeys("Dit is een diagram: {F1235}");
 
             // click Save button
@@ -1528,12 +1528,11 @@ namespace Phabrico.UnitTests.Selenium.Browser
             Assert.AreEqual("Story of my dad's life > Should the $ be replaced by the ¥ ?", navigationCrumbs);
         }
 
-
         [TestMethod]
-        // [DataRow(typeof(ChromeConfig), "")]          // CTRL-V image is not working in Chrome
-        // [DataRow(typeof(ChromeConfig), "phabrico")]  // CTRL-V image is not working in Chrome
-        // [DataRow(typeof(EdgeConfig), "")]            // CTRL-V image is not working in Edge
-        // [DataRow(typeof(EdgeConfig), "phabrico")]    // CTRL-V image is not working in Edge
+        [DataRow(typeof(ChromeConfig), "")]
+        [DataRow(typeof(ChromeConfig), "phabrico")]
+        [DataRow(typeof(EdgeConfig), "")]
+        [DataRow(typeof(EdgeConfig), "phabrico")]
         [DataRow(typeof(FirefoxConfig), "")]
         [DataRow(typeof(FirefoxConfig), "phabrico")]
         public void OpenPhrictionAndReuseFileObjects(Type browser, string httpRootPath)
@@ -1588,8 +1587,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // edit content
             IWebElement textarea = WebBrowser.FindElement(By.Id("textarea"));
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "A");
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "V");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "a");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "v");
 
             // wait a while until javascript processing is finished
             Thread.Sleep(1000);
@@ -1627,8 +1626,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // copy content to clipboard
             textarea = WebBrowser.FindElement(By.Id("textarea"));
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "A");
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "C");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "a");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "c");
             Thread.Sleep(250);
 
             // click Cancel button
@@ -1668,8 +1667,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // paste content from clipboard
             textarea = WebBrowser.FindElement(By.Id("textarea"));
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "A");
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "V");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "a");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "v");
 
             // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -1683,9 +1682,14 @@ namespace Phabrico.UnitTests.Selenium.Browser
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
 
-             // navigate to root Phriction document
-            IWebElement linkPhriction = WebBrowser.FindElement(By.XPath("//a[@href='w/']"));
-            linkPhriction.Click();
+            // click on logo to go back to the homepage
+            IWebElement logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
+            logo.Click();
+            Thread.Sleep(500);
+
+             // click on 'Phriction' in the menu navigator
+            navigatorPhriction = WebBrowser.FindElement(By.LinkText("Phriction"));
+            navigatorPhriction.Click();
 
             // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -1712,7 +1716,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // overwrite content
             textarea = WebBrowser.FindElement(By.Id("textarea"));
-            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "A");
+            textarea.SendKeys(OpenQA.Selenium.Keys.Control + "a");
             textarea.SendKeys("The content was completely overwritten");
 
             // wait a while
@@ -1731,9 +1735,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             linkStoryDadsLife = WebBrowser.FindElement(By.XPath("//*[contains(text(), \"Story of my dad's life\")]"));
             linkStoryDadsLife.Click();
 
-            // wait a while and make sure image is still visible
+            // wait a while and make sure image is not visible anymore
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
-            wait.Until(condition => condition.FindElements(By.CssSelector(".phui-document img")).Any());
+            wait.Until(condition => condition.FindElements(By.CssSelector(".phui-document img")).Any() == false);
         }
     }
 }

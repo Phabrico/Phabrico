@@ -60,7 +60,7 @@ namespace Phabrico.UnitTests.Remarkup
                 testResultHtmlData = testResultHtmlData.Replace("\r", "\n");
                 testResultHtmlData = testResultHtmlData.TrimEnd('\n');
 
-                if (testResultHtmlData.Equals(expectedHtmlData) == false)
+                if (expectedHtmlData.Equals(testResultHtmlData) == false)
                 {
                     Assert.AreEqual(expectedHtmlData, testResultHtmlData, string.Format("Remarkup Unit Test '{0}' failed!!", System.IO.Path.GetFileName(testFileName)));
                 }

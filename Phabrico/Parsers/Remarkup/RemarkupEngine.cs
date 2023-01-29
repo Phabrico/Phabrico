@@ -67,6 +67,7 @@ namespace Phabrico.Parsers.Remarkup
                 string unprocessedRemarkupText = remarkupText;
                 bool ruleStartsOnNewLine = true;
                 bool ruleStartsAfterWhiteSpace = true;
+                bool ruleStartsAfterPunctuation = true;
                 int previousLineNumber = 0;
 
                 remarkupParserOutput = new RemarkupParserOutput();
@@ -102,6 +103,7 @@ namespace Phabrico.Parsers.Remarkup
                             string processedRemarkupText = unprocessedRemarkupText;
                             remarkupRule.RuleStartOnNewLine = ruleStartsOnNewLine;
                             remarkupRule.RuleStartAfterWhiteSpace = ruleStartsAfterWhiteSpace;
+                            remarkupRule.RuleStartAfterPunctuation = ruleStartsAfterPunctuation;
                             remarkupRule.ChildTokenList.Clear();
                             remarkupRule.LinkedPhabricatorObjects.Clear();
                             remarkupRule.ParentRemarkupRule = currentRemarkupRule;
@@ -146,9 +148,13 @@ namespace Phabrico.Parsers.Remarkup
                                              (remarkupRule is RuleFormattingMonospace) == false &&
                                              (remarkupRule is RuleFormattingStrikeThrough) == false &&
                                              (remarkupRule is RuleFormattingUnderline) == false &&
-                                             (remarkupRule is RuleNavigation) == false;
+                                             (remarkupRule is RuleReferenceUser) == false &&
+                                             (remarkupRule is RuleReferenceProject) == false &&
+                                             (remarkupRule is RuleNavigation) == false &&
+                                             (remarkupRule is RuleKey) == false;
 
                                 ruleStartsAfterWhiteSpace = remarkupRule.Text.EndsWith(" ");
+                                ruleStartsAfterPunctuation = RegexSafe.IsMatch(remarkupRule.Text.LastOrDefault().ToString(), "[\\p{P}\\p{S}]", RegexOptions.None);
 
                                 if (includeLineNumbers)
                                 {
@@ -190,7 +196,8 @@ namespace Phabrico.Parsers.Remarkup
                                 char character = unprocessedRemarkupText[0];
                                 html += HttpUtility.HtmlEncode(character);
                                 ruleStartsAfterWhiteSpace = character == ' ';
-                                
+                                ruleStartsAfterPunctuation = RegexSafe.IsMatch(character.ToString(), "[\\p{P}\\p{S}]", RegexOptions.None);
+
                                 if (character == '.' && unprocessedRemarkupText.Length > 1)
                                 {
                                     char nextCharacter = unprocessedRemarkupText[1];

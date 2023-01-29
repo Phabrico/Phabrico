@@ -1279,6 +1279,12 @@ width: 30px;
     cursor:pointer;
 }
 
+    .app-edit-window-head > .phui-font-fa.fa-th-list.tooltip-top {
+        float: right;
+        color: var(--a-color);
+        padding-top: 1px;
+    }
+
 .right {
     float: right;
 }
@@ -2260,6 +2266,15 @@ a.remarkup-embed {
     margin-left: var(--remarkup-editor-tooltip-help-margin-left);
 }
 
+.tooltip-top.phui-font-fa.fa-th-list .tooltiptext {
+    width: var(--remarkup-editor-tooltip-showtoc-width);
+    margin-left: var(--remarkup-editor-tooltip-showtoc-margin-left);
+}
+
+    .tooltip-top.phui-font-fa.fa-th-list .tooltiptext::after {
+        right: var(--remarkup-editor-tooltip-showtoc-right);
+    }
+
 .tooltip-right .tooltiptext {
     visibility: hidden;
     text-align: center;
@@ -2498,6 +2513,21 @@ ul.remarkup-list.remarkup-list-with-checkmarks > li > ul {
 
 ul.remarkup-list.remarkup-list-with-checkmarks > li > ul.remarkup-list.remarkup-list-with-checkmarks {
     margin-left: 48px;
+}
+
+#remarkupTOC {
+    position: fixed;
+    display: inline-block;
+    left: 939px;
+    top: 78px;
+    padding: 5px;
+    overflow-y: scroll;
+    min-height: 150px;
+    max-height: calc(100vh - 115px);
+    border-radius: 7px;
+    border: solid 2px black;
+    background: var(--remarkup-toc-background);
+    list-style-type: none;
 }
 
 kbd {
