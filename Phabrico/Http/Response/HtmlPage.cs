@@ -14,7 +14,7 @@ namespace Phabrico.Http.Response
         private static string internalHtml = null;
         private static string internalLanguage = "";
 
-        public string[] CssUrls { get; set; } = new string[0];
+        public List<string> CssUrls { get; set; } = new List<string>();
 
         protected string InternalHtml
         {

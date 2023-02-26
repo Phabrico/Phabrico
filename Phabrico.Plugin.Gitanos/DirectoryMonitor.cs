@@ -94,6 +94,8 @@ namespace Phabrico.Plugin
             {
                 List<string> gitRepositories = new List<string>();
 
+                Http.Server.SendNotificationBusy("/gitanos/notification");
+
                 List<string> processedRootPathNames = new List<string>();
                 List<FileSystemWatcher> fileSystemWatchers = new List<FileSystemWatcher>();
                 foreach (Model.GitanosConfigurationRootPath rootPath in _rootPaths)

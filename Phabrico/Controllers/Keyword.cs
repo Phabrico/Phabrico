@@ -7,6 +7,7 @@ using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Phabrico.Controllers
@@ -118,11 +119,14 @@ namespace Phabrico.Controllers
 
                         searchResults.Add(searchResult);
 
-                        // show maximum 10 results
-                        if (searchResults.Count == 10) break;
+                        // collect a limit of search results, so we can filter out later the 10 best results
+                        if (searchResults.Count(r => r.Priority > 3) == 10
+                            || searchResults.Count(r => r.Priority > 2) == 30
+                            || searchResults.Count == 50) break;
                     }
 
-                    string result = JsonConvert.SerializeObject(searchResults.OrderByDescending(r => r.Priority));
+                    // return maximum 10 results
+                    string result = JsonConvert.SerializeObject(searchResults.OrderByDescending(r => r.Priority).Take(10));
                     jsonMessage = new JsonMessage(result);
                 }
             }

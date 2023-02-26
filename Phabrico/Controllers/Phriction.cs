@@ -35,6 +35,12 @@ namespace Phabrico.Controllers
         }
 
         /// <summary>
+        /// internal static dictionary for speeding up the GenerateCrumbs method
+        /// </summary>
+        private static object lockCachedCrumbTranslations = new object();
+        private static TransientDictionary<string, Tuple<Phabricator.Data.Phriction, Content.Translation>> cachedCrumbTranslations = new TransientDictionary<string, Tuple<Phabricator.Data.Phriction, Content.Translation>>(TimeSpan.FromSeconds(2), false);
+
+        /// <summary>
         /// Location of root Phriction document (=homepage of Phriction)
         /// </summary>
         private static string rootDocumentPath = null;
@@ -66,7 +72,7 @@ namespace Phabrico.Controllers
             string[] urlParts = phrictionDocument.Path.Split('?');
             string url = urlParts.FirstOrDefault();
             Content content = new Content(database);
-            Content.Translation translation;
+            Tuple<Phabricator.Data.Phriction, Content.Translation> crumbTranslation = null;
 
             if (rootDocumentPath == null)
             {
@@ -86,47 +92,57 @@ namespace Phabrico.Controllers
                 hiddenCrumb = rootDocumentPath != null
                             && completeCrumb.StartsWith(rootDocumentPath) == false;
 
-                Phabricator.Data.Phriction crumbPhrictionReference = stageStorage.Get<Phabricator.Data.Phriction>(database, language)
-                                                                                 .FirstOrDefault(document => document.Path.Equals(completeCrumb));
-                if (crumbPhrictionReference == null)
+                lock (lockCachedCrumbTranslations)
                 {
-                    documentIsStaged = false;
-                    crumbPhrictionReference = phrictionStorage.Get(database, completeCrumb, language);
-                }
+                    if (cachedCrumbTranslations.TryGetValue(completeCrumb + language, out crumbTranslation) == false)
+                    {
+                        Content.Translation translation;
+                        Phabricator.Data.Phriction crumbPhrictionReference = stageStorage.Get<Phabricator.Data.Phriction>(database, language)
+                                                                                         .FirstOrDefault(document => document.Path.Equals(completeCrumb));
+                        if (crumbPhrictionReference == null)
+                        {
+                            documentIsStaged = false;
+                            crumbPhrictionReference = phrictionStorage.Get(database, completeCrumb, language);
+                        }
 
-                if (documentIsStaged && crumbPhrictionReference.Language.Equals(language))
-                {
-                    // we have a staged translation: keep staged data (=modified translation) instead of (original) translation
-                    translation = null;
-                }
-                else
-                if (crumbPhrictionReference?.Token == null)
-                {
-                    // this is our first wiki document
-                    translation = null;
-                }
-                else
-                {
-                    // get translation
-                    translation = content.GetTranslation(crumbPhrictionReference.Token, language);
-                }
+                        if (documentIsStaged && crumbPhrictionReference.Language.Equals(language))
+                        {
+                            // we have a staged translation: keep staged data (=modified translation) instead of (original) translation
+                            translation = null;
+                        }
+                        else
+                        if (crumbPhrictionReference?.Token == null)
+                        {
+                            // this is our first wiki document
+                            translation = null;
+                        }
+                        else
+                        {
+                            // get translation
+                            translation = content.GetTranslation(crumbPhrictionReference.Token, language);
+                        }
 
+                        crumbTranslation = new Tuple<Phabricator.Data.Phriction, Content.Translation>(crumbPhrictionReference, translation);
+
+                        cachedCrumbTranslations[completeCrumb + language] = crumbTranslation;
+                    }
+                }
 
                 crumbs.Add(new JObject
                 {
                     new JProperty("slug", hiddenCrumb ? "" : slug),
-                    new JProperty("name", translation?.TranslatedTitle
-                                          ?? crumbPhrictionReference?.Name
+                    new JProperty("name", crumbTranslation.Item2?.TranslatedTitle
+                                          ?? crumbTranslation.Item1?.Name
                                           ?? ConvertPhabricatorUrlPartToDescription(slug)
                                  ),
-                    new JProperty("inexistant", crumbPhrictionReference == null),
+                    new JProperty("inexistant", crumbTranslation.Item1 == null),
                     new JProperty("hidden", hiddenCrumb)
                 });
             }
 
             if (urlParts.Count() > 1)
             {
-                Dictionary<string,string> arguments = string.Join("?", urlParts.Skip(1))
+                Dictionary<string, string> arguments = string.Join("?", urlParts.Skip(1))
                                                             .Split('&')
                                                             .ToDictionary(arg => arg.Split('=').FirstOrDefault(),
                                                                           arg => HttpUtility.UrlDecode(arg.Split('=').Skip(1).FirstOrDefault() ?? "")
@@ -191,7 +207,7 @@ namespace Phabrico.Controllers
                 foreach (Phabricator.Data.Phriction stagedPhrictionDocument in stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale))
                 {
                     if (stagedPhrictionDocument.Path != null &&
-                        ( stagedPhrictionDocument.Path.Equals(url, StringComparison.OrdinalIgnoreCase) ||
+                        (stagedPhrictionDocument.Path.Equals(url, StringComparison.OrdinalIgnoreCase) ||
                           stagedPhrictionDocument.Path.Equals(unaliasedUrl, StringComparison.OrdinalIgnoreCase)
                         )
                        )
@@ -1129,6 +1145,12 @@ namespace Phabrico.Controllers
                             {
                                 // make sure we have no url ending with multiple slashes
                                 redirectUrl = redirectUrl.Substring(0, redirectUrl.Length - 1);
+                            }
+
+                            // clear cached crumbs translations
+                            lock (lockCachedCrumbTranslations)
+                            {
+                                cachedCrumbTranslations = new TransientDictionary<string, Tuple<Phabricator.Data.Phriction, Content.Translation>>(TimeSpan.FromSeconds(2), false);
                             }
 
                             redirectUrl = Http.Server.RootPath + redirectUrl;

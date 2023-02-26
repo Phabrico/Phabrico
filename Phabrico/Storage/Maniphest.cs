@@ -336,6 +336,8 @@ namespace Phabrico.Storage
                     database.ClearAssignedTokens(maniphestTask.Token, Language.NotApplicable);
 
                     database.CleanupUnusedObjectRelations();
+
+                    Database.IsModified = true;
                 }
             }
         }

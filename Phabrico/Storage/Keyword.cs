@@ -91,6 +91,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "numberOccurrences", keyword.NumberOccurrences.ToString());
                     dbCommand.ExecuteNonQuery();
 
+                    Database.IsModified = true;
+
                     transaction.Commit();
                 }
             }
@@ -167,6 +169,13 @@ namespace Phabrico.Storage
                     blobContent = phrictionDocument.Name + " ";         // phriction document title
                     blobContent += urlCrumbs;                           // crumbs from phriction document url
                     blobContent += remarkupParserOutput.Text;           // phriction document content
+                    foreach (var header in remarkupParserOutput.TokenList.OfType<Parsers.Remarkup.Rules.RuleHeader>().Where(h => h.Depth < 3)) // insert duplicates for header
+                    {                                                                                                                          // content, so the word count
+                        for (int depth = 0; depth < 3 - header.Depth; depth++)                                                                 // will be larger for words found
+                        {                                                                                                                      // in headers
+                            blobContent += header.Text;                                                                                        // The bigger the header is, the
+                        }                                                                                                                      // larger the word count is
+                    }                                                                                                                          //
                     keyword.Description = phrictionDocument.Name;
                 }
 
@@ -209,7 +218,7 @@ namespace Phabrico.Storage
                                                            .ToList();
 
 
-                    string nonCJKBlobContent = RegexSafe.Replace(blobContent, @"[\p{P}\p{IsCJKUnifiedIdeographs}\p{IsThai}$^+=<>`|~]", " ", RegexOptions.Singleline);
+                    string nonCJKBlobContent = RegexSafe.Replace(blobContent, @"[\p{IsCJKUnifiedIdeographs}\p{IsThai}!#$%&'()*+,-./:;<=>?@[\]^`{|}~]", " ", RegexOptions.Singleline);
                     List<string> words = nonCJKBlobContent.Split(new char[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
                                                           .Where(word => word.Length >= 2)                                                              // only store words which are at least 2 characters and ...
                                                           .Where(word => word.Length <= 50)                                                             // ... at maximum 50 characters long
@@ -285,7 +294,10 @@ namespace Phabrico.Storage
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "token", phabricatorObject.Token);
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 

@@ -776,6 +776,8 @@ namespace Phabrico.Controllers
                 {
                     SharedResource.Instance.ProgressRequestData = "";
                 }
+
+                Logging.WriteException("FullSynchronizationThread", exception);
             }
             finally
             {

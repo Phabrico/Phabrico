@@ -31,7 +31,15 @@ namespace Phabrico.Http
             {
                 get
                 {
-                    return _owner.Request.RemoteEndPoint.Address.MapToIPv4().ToString();
+                    string ipv4Address = _owner.Request.IPv4Address;
+                    if (string.IsNullOrEmpty(ipv4Address))
+                    {
+                        return _owner.Request.RemoteEndPoint.Address.MapToIPv4().ToString();
+                    }
+                    else
+                    {
+                        return ipv4Address;
+                    }
                 }
             }
 

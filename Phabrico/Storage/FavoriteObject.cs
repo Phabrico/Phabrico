@@ -27,7 +27,10 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "accountUserName", favoriteObject.AccountUserName, Database.EncryptionMode.Default);
                     database.AddParameter(dbCommand, "token", favoriteObject.Token, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "displayOrder", (int)favoriteObject.DisplayOrder, Database.EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
 
                     transaction.Commit();
                 }
@@ -131,7 +134,10 @@ namespace Phabrico.Storage
                 {
                     database.AddParameter(dbCommand, "accountUserName", favoriteObject.AccountUserName, Database.EncryptionMode.Default);
                     database.AddParameter(dbCommand, "token", favoriteObject.Token, Database.EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
 
                     transaction.Commit();
                 }

@@ -1024,21 +1024,22 @@ class Responsiveness {
 
 // ************************************************************************************************
 class Search {
-    constructor()
-    {
+    constructor() {
+        var instance = this;
+        instance.icon = null;
+        instance.timeoutTimer = null;
+
         // initialize AJAX object
         const xmlhttp = new XMLHttpRequest();
         this.xmlhttp = xmlhttp;
 
-        this.xmlhttp.onreadystatechange = function ()
-        {
+        this.xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 popSearchResults.innerHTML = "";
                 popSearchResults.classList.remove('show');
 
                 var searchResults = JSON.parse(xmlhttp.responseText);
-                for (var idx in searchResults)
-                {
+                for (var idx in searchResults) {
                     var result = searchResults[idx];
 
                     var a = document.createElement('a');
@@ -1062,69 +1063,73 @@ class Search {
                     path.className = "search-result-url";
                     item.appendChild(path);
 
-                    if (result.URL.startsWith("maniphest/"))
-                    {
+                    if (result.URL.startsWith("maniphest/")) {
                         smallIcon.className = "phui-font-fa fa-anchor lightgraytext";
                         path.innerText = "Maniphest Task";
                     }
                     else
-                    if (result.URL.startsWith("phame/"))
-                    {
-                        smallIcon.className = "phui-font-fa fa-feed lightgraytext";
-                        path.innerText = "Blog Post";
-                    }
-                    else
-                    {
-                        smallIcon.className = "phui-font-fa fa-book lightgraytext";
-                        path.innerText = result.Path;
-                    }
+                        if (result.URL.startsWith("phame/")) {
+                            smallIcon.className = "phui-font-fa fa-feed lightgraytext";
+                            path.innerText = "Blog Post";
+                        }
+                        else {
+                            smallIcon.className = "phui-font-fa fa-book lightgraytext";
+                            path.innerText = result.Path;
+                        }
 
                     popSearchResults.appendChild(a);
-
-                    popSearchResults.classList.add('show');
                 }
+
+                popSearchResults.classList.add('show');
+                instance.icon.classList.remove("busy");
             }
         }
-    }
 
-    Show(keyword) {
-        if (event.key == "Tab" ||
-            event.key == "Shift" ||
-            event.key == "Control" ||
-            event.key == "ArrowLeft" ||
-            event.key == "ArrowRight" ||
-            event.key == "ArrowUp" ||
-            event.key == "ArrowDown" ||
-            event.key == "ContextMenu")
-        {
-            // control character pressed -> skip ajax call
-            return;
-        }
-
-        if (keyword == "")
-        {
-            // hide context menu when no input
-            this.Hide();
-        }
-
-        if (event.key == "Enter")
-        {
-            if (popSearchResults.classList.contains('show') &&
-                popSearchResults.querySelectorAll('a').length == 1)
-            {
-                // browse to the only selected item from the popup menu
-                window.location = popSearchResults.querySelectorAll('a')[0].href;
+        this.Show = function (keyword, icon) {
+            if (event.key == "Tab" ||
+                event.key == "Shift" ||
+                event.key == "Control" ||
+                event.key == "ArrowLeft" ||
+                event.key == "ArrowRight" ||
+                event.key == "ArrowUp" ||
+                event.key == "ArrowDown" ||
+                event.key == "ContextMenu") {
+                // control character pressed -> skip ajax call
+                return;
             }
 
-            return;
+            if (keyword == "") {
+                // hide context menu when no input
+                this.Hide();
+                return;
+            }
+
+            if (event.key == "Enter") {
+                if (popSearchResults.classList.contains('show') &&
+                    popSearchResults.querySelectorAll('a').length == 1) {
+                    // browse to the only selected item from the popup menu
+                    window.location = popSearchResults.querySelectorAll('a')[0].href;
+                }
+
+                return;
+            }
+
+            if (instance.timeoutTimer != null) {
+                clearTimeout(instance.timeoutTimer);
+            }
+
+            instance.icon = icon;
+            instance.icon.classList.add("busy");
+
+            instance.timeoutTimer = setTimeout(function () {
+                instance.xmlhttp.open("GET", "search/" + keyword + "/", true);
+                instance.xmlhttp.send();
+            }, 250);
         }
 
-        this.xmlhttp.open("GET", "search/" + keyword + "/", true);
-        this.xmlhttp.send();
-    }
-
-    Hide() {
-        popSearchResults.classList.remove('show');
+        this.Hide = function() {
+            popSearchResults.classList.remove('show');
+        }
     }
 }
 

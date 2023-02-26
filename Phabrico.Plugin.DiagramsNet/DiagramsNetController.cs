@@ -301,7 +301,17 @@ namespace Phabrico.Plugin
                 HtmlViewPage htmlViewPage = httpFound as HtmlViewPage;
                 if (htmlViewPage != null)
                 {
-                    htmlViewPage.CssUrls = new string[] { "styles/dark.css" };
+                    htmlViewPage.CssUrls.Add("styles/grapheditor.css");
+
+                    using (Storage.Database database = new Storage.Database(EncryptionKey))
+                    {
+                        Storage.Account accountStorage = new Storage.Account();
+                        Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
+                        if (accountData.Theme.Equals("dark"))
+                        {
+                            htmlViewPage.CssUrls.Add("styles/dark.css");
+                        }
+                    };
                 }
             }
 

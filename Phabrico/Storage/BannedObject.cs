@@ -27,7 +27,10 @@ namespace Phabrico.Storage
                 {
                     database.AddParameter(dbCommand, "key", reference);
                     database.AddParameter(dbCommand, "title", title);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
 
                     transaction.Commit();
                 }
@@ -44,7 +47,10 @@ namespace Phabrico.Storage
                        DELETE FROM bannedObjectInfo;
                    ", database.Connection))
             {
-                sqlCommand.ExecuteNonQuery();
+                if (sqlCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 

@@ -928,15 +928,15 @@ namespace Phabrico.Controllers
                 {
                     // load and filter all maniphest tasks
                     List<Phabricator.Data.Maniphest> stagedTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).ToList();
-                    foreach (Phabricator.Data.Maniphest stagedTask in stagedTasks)
+                    availableManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database, browser.Session.Locale)
+                                                                                 .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
+                                                                                 .ToList();
+                    foreach (Phabricator.Data.Maniphest stagedTask in availableManiphestTasks)
                     {
                         // load staged transactions (e.g. new owner, new priority, ...) into maniphestTask
                         maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedTask, browser.Session.Locale);
                     }
 
-                    availableManiphestTasks = stagedTasks.Concat(maniphestStorage.Get(database, browser.Session.Locale)
-                                                                                 .Where(task => stagedTasks.All(stagedTask => stagedTask.Token.Equals(task.Token) == false)))
-                                                                                 .ToList();
 
                     IEnumerable<string> visibleManiphestStates = database.GetConfigurationParameter("VisibleManiphestStates")?.Split('\t');
                     if (visibleManiphestStates == null)
@@ -968,7 +968,7 @@ namespace Phabrico.Controllers
         }
 
         /// <summary>
-        /// This method is fired when the user modifies a Maniphest task (conten and/or metadata)
+        /// This method is fired when the user modifies a Maniphest task (content and/or metadata)
         /// </summary>
         /// <param name="httpServer"></param>
         /// <param name="parameters"></param>

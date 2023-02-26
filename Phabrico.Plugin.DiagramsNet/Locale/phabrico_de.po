@@ -7,6 +7,16 @@ msgstr "Diagramm"
 msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
 msgstr "Editor für Flussdiagramme, Prozessdiagramme, Organigramme, UML-, ER- und Netzwerkdiagramme."
 
+# Intro screen
+msgid "Flowchart Maker and Online Diagram Software"
+msgstr "Flowchart Maker og Online Diagram Software"
+
+msgid "diagrams.net (formerly draw.io) is free online diagram software. You can use it as a flowchart maker, network diagram software, to create UML online, as an ER diagram tool, to design database schema, to build BPMN online, as a circuit diagram maker, and more. draw.io can import .vsdx, Gliffy&trade; and Lucidchart&trade; files ."
+msgstr "diagrams.net (ehemals draw.io) ist eine kostenlose Online-Diagrammsoftware. Sie können es als Flussdiagramm-Ersteller, Netzwerkdiagramm-Software, zum Erstellen von UML online, als ER-Diagramm-Tool, zum Entwerfen von Datenbankschemata, zum Erstellen von BPMN online, als Schaltplan-Ersteller und mehr verwenden. draw.io kann .vsdx, Gliffy&trade; und Lucidchart&trade; Dateien importieren."
+
+msgid "Loading..."
+msgstr "Laden..."
+
 # Help shortcuts
 msgid "Styles"
 msgstr "Styles"

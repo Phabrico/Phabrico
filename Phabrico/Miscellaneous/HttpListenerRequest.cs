@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Phabrico.Miscellaneous
 {
@@ -140,6 +141,23 @@ namespace Phabrico.Miscellaneous
                 {
                     return internalHttpListenerRequest?.InputStream;
                 }
+            }
+        }
+
+        /// <summary>
+        /// In case the request contains a direct IPv4 address, the IPv4 address will be returned as string.
+        /// If no IPv4 is detected (e.g. IPv6 or a DNS name), an empty string is returned.
+        /// </summary>
+        public string IPv4Address
+        {
+            get
+            {
+                if (internalHttpRequest == null) return "";
+
+                Match matchIPv4 = RegexSafe.Match(internalHttpRequest.Url.Host, @"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)", RegexOptions.None);
+                if (matchIPv4.Success == false) return "";
+
+                return matchIPv4.Value;
             }
         }
 

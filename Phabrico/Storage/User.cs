@@ -35,6 +35,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "isDisabled", Encryption.Encrypt(database.EncryptionKey, user.IsDisabled.ToString()));
                     database.AddParameter(dbCommand, "dateSynchronized", user.DateSynchronized);
                     dbCommand.ExecuteNonQuery();
+
+                    Database.IsModified = true;
                 }
 
                 transaction.Commit();
@@ -237,7 +239,10 @@ namespace Phabrico.Storage
             {
                 database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, doSelectUser.ToString()));
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 
@@ -254,7 +259,10 @@ namespace Phabrico.Storage
                    ", database.Connection))
             {
                 database.AddParameter(cmdDeleteUserInfo, "token", user.Token, Database.EncryptionMode.None);
-                cmdDeleteUserInfo.ExecuteNonQuery();
+                if (cmdDeleteUserInfo.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
     }

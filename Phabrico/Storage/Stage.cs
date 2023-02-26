@@ -562,9 +562,9 @@ namespace Phabrico.Storage
         /// <param name="database"></param>
         /// <param name="token"></param>
         /// <param name="language"></param>
-        /// <param name="operation"></param>
+        /// <param name="operations"></param>
         /// <returns></returns>
-        public T Get<T>(Database database, string token, Language language, string operation = null) where T : Phabricator.Data.PhabricatorObject
+        public T Get<T>(Database database, string token, Language language, string operations = null) where T : Phabricator.Data.PhabricatorObject
         {
             string sqlStatement = @"
                 SELECT token, tokenPrefix, objectID, operation, dateModified, headerData, frozen, language
@@ -583,7 +583,7 @@ namespace Phabrico.Storage
                   )
             ";
 
-            if (string.IsNullOrEmpty(operation))
+            if (string.IsNullOrEmpty(operations))
             {
                 // return staged maniphest task or phriction document
                 sqlStatement += " AND (operation LIKE 'edit' OR operation LIKE 'new')";
@@ -591,7 +591,15 @@ namespace Phabrico.Storage
             else
             {
                 // return staged maniphest transaction item
-                sqlStatement += " AND operation = @operation";
+                sqlStatement += " AND (1 = 2 ";
+
+                foreach (string operation in operations.Split('|'))
+                {
+                    // return staged maniphest transaction item
+                    sqlStatement += " OR operation LIKE '" + operation + "'";
+                }
+
+                sqlStatement += ")";
             }
 
             sqlStatement += ";";
@@ -601,10 +609,6 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
                 dbCommand.Parameters.Add(new SQLiteParameter("language", language));
                 dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
-                if (operation != null)
-                {
-                    database.AddParameter(dbCommand, "operation", operation, Database.EncryptionMode.None);
-                }
 
                 using (var reader = dbCommand.ExecuteReader())
                 {
@@ -776,7 +780,10 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "frozen", Encryption.Encrypt(database.EncryptionKey, doFreeze.ToString()));
                 dbCommand.Parameters.Add(new SQLiteParameter("language", browser.Session.Locale));
                 dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 
@@ -963,7 +970,10 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "token", stagedTransaction.Token, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "operation", stagedTransaction.Type, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
 
                 if (stagedTransaction.Type.StartsWith("subscriber-") || stagedTransaction.Type.StartsWith("project-"))
@@ -988,7 +998,10 @@ namespace Phabrico.Storage
                         {
                             database.AddParameter(dbCommand, "token", newerStagedTransaction.Token, Database.EncryptionMode.None);
                             database.AddParameter(dbCommand, "operation", newerStagedTransaction.Type, Database.EncryptionMode.None);
-                            dbCommand.ExecuteNonQuery();
+                            if (dbCommand.ExecuteNonQuery() > 0)
+                            {
+                                Database.IsModified = true;
+                            }
                         }
 
                         // change the name of this transaction item and save it again
@@ -1022,7 +1035,10 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "token", stagedFile.Token, Database.EncryptionMode.None);
                     dbCommand.Parameters.Add(new SQLiteParameter("language", language ?? browser.Session.Locale));
                     dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
             else
@@ -1058,7 +1074,10 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "token", existingPhabricatorObject.Token, Database.EncryptionMode.None);
                     dbCommand.Parameters.Add(new SQLiteParameter("language", language ?? browser.Session.Locale));
                     dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
 
                 // (re)assign dependent Phabricator objects
@@ -1148,6 +1167,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "frozen", Encryption.Encrypt(database.EncryptionKey, stageData.Frozen.ToString()));
                     database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
                     dbCommand.ExecuteNonQuery();
+
+                    Database.IsModified = true;
 
                     transaction.Commit();
                 }

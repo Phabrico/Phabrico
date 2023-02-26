@@ -70,7 +70,10 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "dateModified", file.DateModified);
                     database.AddParameter(dbCommand, "contentType", file.ContentType);
                     database.AddParameter(dbCommand, "properties", file.Properties);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
 
                     transaction.Commit();
                 }
@@ -100,7 +103,10 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "nbrChunks", fileChunk.NbrChunks, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "dateModified", fileChunk.DateModified, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "data", System.Convert.ToBase64String(fileChunk.Data), Database.EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
 
                     transaction.Commit();
                 }
@@ -202,7 +208,10 @@ namespace Phabrico.Storage
                        ", database.Connection))
                 {
                     database.AddParameter(dbCommand, "id", fileChunk.FileID, Database.EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }

@@ -60,7 +60,7 @@
                 </li>
                 @{IF @@ACCESS-READONLY@@=False@
                 <li id="actionUndoLocalChanges" data-task-state="@@TASK-UNSYNCED@@" class="list-item-view">
-                    <a href="#@@TASK-TOKEN@@[edit]" class="list-item-href" onclick="showUndoConfirmation(this);">
+                    <a href="#@@TASK-TOKEN@@[edit|owner|priority|status|comment]" class="list-item-href" onclick="showUndoConfirmation(this);">
                         <span class="phui-font-fa fa-times phui-list-item-icon">
                             <span class="phui-list-item-name">Dismiss local changes</span>
                         </span>

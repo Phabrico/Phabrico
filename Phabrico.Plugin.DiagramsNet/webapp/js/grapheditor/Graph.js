@@ -1041,12 +1041,14 @@ Graph = function(container, model, renderHint, stylesheet, themes, standalone)
 			return mxEvent.isMouseEvent(me.getEvent());
 		};
 	
-		// Handles links if graph is read-only or cell is locked
+		// Handles links in read-only graphs
+		// and cells in locked layers
 		var click = this.click;
 		this.click = function(me)
 		{
 			var locked = me.state == null && me.sourceState != null &&
-				this.isCellLocked(me.sourceState.cell);
+				this.isCellLocked(this.getLayerForCell(
+					me.sourceState.cell));
 			
 			if ((!this.isEnabled() || locked) && !me.isConsumed())
 			{
@@ -1067,11 +1069,6 @@ Graph = function(container, model, renderHint, stylesheet, themes, standalone)
 							this.openLink(link);
 						}
 					}
-				}
-				
-				if (this.isEnabled() && locked)
-				{
-					this.clearSelection();
 				}
 			}
 			else
@@ -1148,11 +1145,9 @@ Graph = function(container, model, renderHint, stylesheet, themes, standalone)
 		this.selectRegion = function(rect, evt)
 		{
 			var isect = (mxEvent.isAltDown(evt)) ? rect : null;
-
-			var cells = this.getCells(rect.x, rect.y, rect.width, rect.height, null, null, isect, function(state)
-			{
-				return mxUtils.getValue(state.style, 'locked', '0') == '1';
-			}, true);
+			var cells = this.getCells(rect.x, rect.y,
+				rect.width, rect.height, null, null,
+				isect, null, true);
 
 			if (this.isToggleEvent(evt))
 			{
@@ -1179,6 +1174,28 @@ Graph = function(container, model, renderHint, stylesheet, themes, standalone)
 			}
 			
 			return graphHandlerShouldRemoveCellsFromParent.apply(this, arguments);
+		};
+
+		// Enables rubberband selection on cells in locked layers
+		var graphUpdateMouseEvent = this.updateMouseEvent;
+		this.updateMouseEvent = function(me)
+		{
+			me = graphUpdateMouseEvent.apply(this, arguments);
+
+			if (me.state != null && this.isCellLocked(this.getLayerForCell(me.getCell())))
+			{
+				me.state = null;
+			}
+
+			return me;
+		};
+
+		// Cells in locked layers are not selectable
+		var graphIsCellSelectable = this.isCellSelectable;
+		this.isCellSelectable = function(cell)
+		{
+			return graphIsCellSelectable.apply(this, arguments) &&
+				!this.isCellLocked(this.getLayerForCell(cell));
 		};
 
 		// Returns true if the given cell is locked
@@ -1283,22 +1300,6 @@ Graph = function(container, model, renderHint, stylesheet, themes, standalone)
 		{
 			this.initTouch();
 		}
-		
-		/**
-		 * Adds locking
-		 */
-		var graphUpdateMouseEvent = this.updateMouseEvent;
-		this.updateMouseEvent = function(me)
-		{
-			me = graphUpdateMouseEvent.apply(this, arguments);
-			
-			if (me.state != null && this.isCellLocked(me.getCell()))
-			{
-				me.state = null;
-			}
-			
-			return me;
-		};
 	}
 	
 	//Create a unique offset object for each graph instance.
@@ -1388,6 +1389,11 @@ Graph.pasteStyles = ['rounded', 'shadow', 'dashed', 'dashPattern', 'fontFamily',
 					'endSize', 'targetPerimeterSpacing', 'startFill', 'startArrow', 'startSize', 'sourcePerimeterSpacing',
 					'arcSize', 'comic', 'sketch', 'fillWeight', 'hachureGap', 'hachureAngle', 'jiggle', 'disableMultiStroke',
 					'disableMultiStrokeFill', 'fillStyle', 'curveFitting', 'simplification', 'comicStyle'];
+
+/**
+ * 	
+ */
+Graph.updateShapeStyles = Graph.pasteStyles.concat([mxConstants.STYLE_SHAPE, mxConstants.STYLE_PERIMETER]);
 
 /**
  * Whitelist for known layout names.
@@ -2613,6 +2619,8 @@ Graph.prototype.init = function(container)
 				if (this.model.isVertex(cells[i]) || this.model.isEdge(cells[i]))
 				{
 					var cellStyle = this.getCellStyle(cells[i], false);
+					var perimeter = cellStyle[mxConstants.STYLE_PERIMETER];
+					var restorePerimeter = false;
 
 					for (var key in style)
 					{
@@ -2620,8 +2628,22 @@ Graph.prototype.init = function(container)
 
 						if (cellStyle[key] != value)
 						{
+							// Handles paste of shape to UML lifeline
+							if (key == mxConstants.STYLE_SHAPE &&
+								cellStyle[key] == 'umlLifeline' &&
+								value != 'umlLifeline')
+							{
+								restorePerimeter = true;
+								key = 'participant';
+							}
+
 							this.setCellStyles(key, value, [cells[i]]);
 						}
+					}
+
+					if (restorePerimeter)
+					{
+						this.setCellStyles(mxConstants.STYLE_PERIMETER, perimeter, [cells[i]]);
 					}
 				}
 			}
@@ -2786,7 +2808,35 @@ Graph.prototype.init = function(container)
 
 		return newCells;
 	};
-	
+
+	/**
+	 * Returns the given terminal that is not relative, an edge or a part.
+	 */
+	Graph.prototype.getReferenceTerminal = function(terminal)
+	{
+		if (terminal != null)
+		{
+			var geo = this.getCellGeometry(terminal);
+
+			if (geo != null && geo.relative)
+			{
+				terminal = this.model.getParent(terminal);
+			}
+		}
+
+		if (terminal != null && this.model.isEdge(terminal))
+		{
+			terminal = this.model.getParent(terminal);
+		}
+
+		if (terminal != null)
+		{
+			terminal = this.getCompositeParent(terminal);
+		}
+
+		return terminal;
+	};
+
 	/**
 	 * Returns the first parent that is not a part.
 	 */
@@ -4018,18 +4068,26 @@ Graph.prototype.formatDate = function(date, mask, utc)
 /**
  * 
  */
+Graph.prototype.getLayerForCell = function(cell)
+{
+	while (cell != null && !this.model.isLayer(cell))
+	{
+		cell = this.model.getParent(cell);
+	}
+
+	return cell;
+};
+
+/**
+ * 
+ */
 Graph.prototype.getLayerForCells = function(cells)
 {
 	var result = null;
 	
 	if (cells.length > 0)
 	{
-		result = cells[0];
-		
-		while (!this.model.isLayer(result))
-		{
-			result = this.model.getParent(result);
-		}
+		result = this.getLayerForCell(cells[0]);
 		
 		for (var i = 1; i < cells.length; i++)
 		{
@@ -4336,64 +4394,41 @@ Graph.prototype.snapCellsToGrid = function(cells, gridSize)
 /**
  * Creates a drop handler for inserting the given cells.
  */
-Graph.prototype.updateShapes = function(source, targets)
+Graph.prototype.removeChildCells = function(cell)
 {
-	var sourceCellStyle = this.getCellStyle(source);
-	var result = [];
-	
 	this.model.beginUpdate();
 	try
 	{
-		var cellStyle = this.getModel().getStyle(source);
-
-		// Lists the styles to carry over from the existing shape
-		var styles = ['shadow', 'dashed', 'dashPattern', 'fontFamily', 'fontSize', 'fontColor', 'align', 'startFill',
-		              'startSize', 'endFill', 'endSize', 'strokeColor', 'strokeWidth', 'fillColor', 'gradientColor',
-		              'html', 'part', 'noEdgeStyle', 'edgeStyle', 'elbow', 'childLayout', 'recursiveResize',
-		              'container', 'collapsible', 'connectable', 'comic', 'sketch', 'fillWeight', 'hachureGap',
-		              'hachureAngle', 'jiggle', 'disableMultiStroke', 'disableMultiStrokeFill',
-		              'fillStyle', 'curveFitting', 'simplification', 'sketchStyle'];
+		var childCount = this.model.getChildCount(cell);
 		
+		for (var j = childCount; j >= 0; j--)
+		{
+			this.model.remove(this.model.getChildAt(cell, j));
+		}
+	}
+	finally
+	{
+		this.model.endUpdate();
+	}
+};
+
+/**
+ * Creates a drop handler for inserting the given cells.
+ */
+Graph.prototype.updateShapes = function(source, targets)
+{
+	this.model.beginUpdate();
+	try
+	{
+		this.pasteStyle(this.copyStyle(source), targets, Graph.updateShapeStyles);
+
+		// Removes child cells of composite cells
 		for (var i = 0; i < targets.length; i++)
 		{
-			var targetCell = targets[i];
-			
-			if ((this.getModel().isVertex(targetCell) == this.getModel().isVertex(source)) ||
-				(this.getModel().isEdge(targetCell) == this.getModel().isEdge(source)))
+			if (mxUtils.getValue(this.getCellStyle(targets[i],
+				false), 'composite', '0') == '1')
 			{
-				var style = this.getCellStyle(targets[i], false);
-				this.getModel().setStyle(targetCell, cellStyle);
-				
-				// Removes all children of composite cells
-				if (mxUtils.getValue(style, 'composite', '0') == '1')
-				{
-					var childCount = this.model.getChildCount(targetCell);
-					
-					for (var j = childCount; j >= 0; j--)
-					{
-						this.model.remove(this.model.getChildAt(targetCell, j));
-					}
-				}
-
-				// Replaces the participant style in the lifeline shape with the target shape
-				if (style[mxConstants.STYLE_SHAPE] == 'umlLifeline' &&
-					sourceCellStyle[mxConstants.STYLE_SHAPE] != 'umlLifeline')
-				{
-					this.setCellStyles(mxConstants.STYLE_SHAPE, 'umlLifeline', [targetCell]);
-					this.setCellStyles('participant', sourceCellStyle[mxConstants.STYLE_SHAPE], [targetCell]);
-				}
-				
-				for (var j = 0; j < styles.length; j++)
-				{
-					var value = style[styles[j]];
-					
-					if (value != null)
-					{
-						this.setCellStyles(styles[j], value, [targetCell]);
-					}
-				}
-				
-				result.push(targetCell);
+				this.removeChildCells(targets[i]);
 			}
 		}
 	}
@@ -4401,8 +4436,6 @@ Graph.prototype.updateShapes = function(source, targets)
 	{
 		this.model.endUpdate();
 	}
-	
-	return result;
 };
 
 /**
@@ -8635,9 +8668,7 @@ if (typeof mxVertexHandler !== 'undefined')
 				var sourceState = this.view.getState(cells[0]);
 
 				if (targetState != null && sourceState != null &&
-					((evt != null && mxEvent.isShiftDown(evt)) ||
-					(targetState.style['shape'] == 'umlLifeline' &&
-					sourceState.style['shape'] == 'umlLifeline')))
+					(evt != null && mxEvent.isShiftDown(evt)))
 				{
 					var g1 = this.getCellGeometry(target);
 					var g2 = this.getCellGeometry(cells[0]);
@@ -9068,14 +9099,14 @@ if (typeof mxVertexHandler !== 'undefined')
 				tables = tables && this.isTable(cells[i]);
 				rows = rows && this.isTableRow(cells[i]);
 			}
-			
-			return ((cells.length == 1 && evt != null && mxEvent.isShiftDown(evt) &&
-				!mxEvent.isControlDown(evt) && !mxEvent.isAltDown(evt)) ||
+
+			return !this.isCellLocked(cell) && ((cells.length == 1 && evt != null &&
+				mxEvent.isShiftDown(evt) && !mxEvent.isControlDown(evt) &&
+				!mxEvent.isAltDown(evt)) || this.isTargetShape(cell, cells, evt) ||
 				((mxUtils.getValue(style, 'part', '0') != '1' || this.isContainer(cell)) &&
-				mxUtils.getValue(style, 'dropTarget', '1') != '0' &&
-				(mxGraph.prototype.isValidDropTarget.apply(this, arguments) ||
-				this.isContainer(cell)) && !this.isTableRow(cell) &&
-				(!this.isTable(cell) || rows || tables))) && !this.isCellLocked(cell);
+				mxUtils.getValue(style, 'dropTarget', '1') != '0' && (mxGraph.prototype.
+				isValidDropTarget.apply(this, arguments) || this.isContainer(cell)) &&
+				!this.isTableRow(cell) && (!this.isTable(cell) || rows || tables)));
 		};
 	
 		/**
@@ -9611,6 +9642,30 @@ if (typeof mxVertexHandler !== 'undefined')
 			
 			this.model.setValue(cell, value);
 		};
+
+		/**
+		 * 
+		 */
+		Graph.prototype.isTargetShape = function(target, cells, evt)
+		{
+			var shape = mxUtils.getValue(
+				this.getCurrentCellStyle(target),
+				mxConstants.STYLE_SHAPE, '');
+
+			for (var i = 0; i < cells.length; i++)
+			{
+				var shapes = mxUtils.getValue(
+					this.getCurrentCellStyle(cells[i]),
+					'targetShapes', '').split(',');
+				
+				if (mxUtils.indexOf(shapes, shape) >= 0)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		};
 		
 		/**
 		 * Overridden to stop moving edge labels between cells.
@@ -9618,8 +9673,6 @@ if (typeof mxVertexHandler !== 'undefined')
 		var graphGetDropTarget = Graph.prototype.getDropTarget;
 		Graph.prototype.getDropTarget = function(cells, evt, cell, clone)
 		{
-			var model = this.getModel();
-			
 			// Disables drop into group if alt is pressed
 			if (mxEvent.isAltDown(evt))
 			{
@@ -10125,7 +10178,6 @@ if (typeof mxVertexHandler !== 'undefined')
 			model.beginUpdate();
 			try
 			{
-
 				var cloneMap = new Object();
 				var lookup = this.createCellLookup(cells);
 				var clones = this.cloneCells(cells, false, cloneMap, true);
@@ -14252,7 +14304,8 @@ if (typeof mxVertexHandler !== 'undefined')
 					{
 						this.linkHint.appendChild(this.graph.createLinkForHint(link));
 						
-						if (this.graph.isEnabled() && typeof this.graph.editLink === 'function')
+						if (this.graph.isEnabled() && typeof this.graph.editLink === 'function' &&
+							!this.graph.isCellLocked(this.state.cell))
 						{
 							var changeLink = document.createElement('img');
 							changeLink.className = 'geAdaptiveAsset';

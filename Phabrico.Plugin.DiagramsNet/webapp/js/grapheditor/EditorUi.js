@@ -1863,7 +1863,8 @@ EditorUi.prototype.centerShapePicker = function(div, rect, x, y, dir)
 /**
  * Creates a temporary graph instance for rendering off-screen content.
  */
-EditorUi.prototype.showShapePicker = function(x, y, source, callback, direction, hovering, getInsertLocationFn, showEdges)
+EditorUi.prototype.showShapePicker = function(x, y, source, callback, direction, hovering,
+	getInsertLocationFn, showEdges, startEditing)
 {
 	showEdges = showEdges || source == null;
 
@@ -1871,7 +1872,7 @@ EditorUi.prototype.showShapePicker = function(x, y, source, callback, direction,
 	{	
 		this.hideShapePicker();
 	}), this.getCellsForShapePicker(source, hovering, showEdges), hovering,
-		getInsertLocationFn, showEdges);
+		getInsertLocationFn, showEdges, startEditing);
 	
 	if (div != null)
 	{
@@ -1897,8 +1898,9 @@ EditorUi.prototype.showShapePicker = function(x, y, source, callback, direction,
  * Creates a temporary graph instance for rendering off-screen content.
  */
 EditorUi.prototype.createShapePicker = function(x, y, source, callback, direction,
-	afterClick, cells, hovering, getInsertLocationFn, showEdges)
+	afterClick, cells, hovering, getInsertLocationFn, showEdges, startEditing)
 {
+	startEditing = (startEditing != null) ? startEditing : true;
 	var graph = this.editor.graph;
 	var div = null;
 
@@ -2038,7 +2040,11 @@ EditorUi.prototype.createShapePicker = function(x, y, source, callback, directio
 							
 							graph.setSelectionCell(clone);
 							graph.scrollCellToVisible(clone);
-							graph.startEditingAtCell(clone);
+							
+							if (startEditing)
+							{
+								graph.startEditing(clone);
+							}
 							
 							if (ui.hoverIcons != null)
 							{
@@ -2278,9 +2284,9 @@ EditorUi.prototype.isImmediateEditingEvent = function(evt)
  */
 EditorUi.prototype.updateCssForMarker = function(markerDiv, prefix, shape, marker, fill)
 {
-	markerDiv.style.verticalAlign = 'top';
-	markerDiv.style.height = '21px';
-	markerDiv.style.width = '21px';
+	markerDiv.style.display = 'inline-flex';
+	markerDiv.style.alignItems = 'center';
+	markerDiv.style.justifyContent = 'center';
 	markerDiv.innerText = '';
 
 	if (shape == 'flexArrow')
@@ -2296,8 +2302,6 @@ EditorUi.prototype.updateCssForMarker = function(markerDiv, prefix, shape, marke
 		{
 			var img = document.createElement('img');
 			img.className = 'geAdaptiveAsset';
-			img.style.position = 'absolute';
-			img.style.marginTop = '0.5px';
 			img.setAttribute('src', src);
 			markerDiv.className = '';
 
@@ -2313,12 +2317,8 @@ EditorUi.prototype.updateCssForMarker = function(markerDiv, prefix, shape, marke
 			markerDiv.className = 'geSprite geSprite-noarrow';
 			markerDiv.innerHTML = mxUtils.htmlEntities(mxResources.get('none'));
 			markerDiv.style.backgroundImage = 'none';
-			markerDiv.style.verticalAlign = 'top';
-			markerDiv.style.marginTop = '4px';
-			markerDiv.style.fontSize = '10px';
+			markerDiv.style.fontSize = '11px';
 			markerDiv.style.filter = 'none';
-			markerDiv.style.color = this.defaultStrokeColor;
-			markerDiv.nextSibling.style.marginTop = '0px';
 		}
 	}
 };

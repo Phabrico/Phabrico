@@ -46,6 +46,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "info", info);
                     dbCommand.ExecuteNonQuery();
 
+                    Database.IsModified = true;
+
                     transaction.Commit();
                 }
             }
@@ -70,6 +72,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "path", url);
                     database.AddParameter(dbCommand, "info", linkedDocument.Token);
                     dbCommand.ExecuteNonQuery();
+
+                    Database.IsModified = true;
 
                     transaction.Commit();
                 }
@@ -637,6 +641,8 @@ namespace Phabrico.Storage
                 database.AddParameter(cmdDeletePhrictionInfo, "token", phrictionDocument.Token, Database.EncryptionMode.None);
                 if (cmdDeletePhrictionInfo.ExecuteNonQuery() > 0)
                 {
+                    Database.IsModified = true;
+
                     using (SQLiteCommand cmdDeleteKeywordInfo = new SQLiteCommand(@"
                                DELETE FROM keywordInfo
                                WHERE token = @token;

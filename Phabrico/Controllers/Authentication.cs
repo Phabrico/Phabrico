@@ -5,7 +5,6 @@ using Phabrico.Miscellaneous;
 using Phabrico.Phabricator.Data;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Phabrico.Controllers
 {

@@ -35,6 +35,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "dateSynchronized", project.DateSynchronized);
                     dbCommand.ExecuteNonQuery();
 
+                    Database.IsModified = true;
+
                     transaction.Commit();
                 }
             }
@@ -243,7 +245,10 @@ namespace Phabrico.Storage
                    ", database.Connection))
             {
                 database.AddParameter(cmdDeleteProjectInfo, "token", project.Token, Database.EncryptionMode.None);
-                cmdDeleteProjectInfo.ExecuteNonQuery();
+                if (cmdDeleteProjectInfo.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 
@@ -264,7 +269,10 @@ namespace Phabrico.Storage
             {
                 database.AddParameter(dbCommand, "projectToken", projectToken, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, projectSelection.ToString()));
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
 
             if (projectSelection == Phabricator.Data.Project.Selection.Selected)
@@ -282,7 +290,10 @@ namespace Phabrico.Storage
                     {
                         database.AddParameter(dbCommand, "projectToken", projectToken, Database.EncryptionMode.None);
                         database.AddParameter(dbCommand, "dateSynchronized", currentProject.DateSynchronized);
-                        dbCommand.ExecuteNonQuery();
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
                     }
                 }
             }

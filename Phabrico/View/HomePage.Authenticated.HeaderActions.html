@@ -55,10 +55,11 @@
         }@
 
         @{IF @@ACCESS-HIDE-SEARCH@@=False@
-            <input id="searchPhabrico" aria-label="Search" autocomplete="off" type="text" placeholder="Search" class="form-control search-box" min-length="4" oninput="phabrico.search.Show(this.value);" onfocus="select();" onmouseup="return false;" onblur="phabrico.search.Hide();" />
+            <input id="searchPhabrico" aria-label="Search" autocomplete="off" type="text" placeholder="Search" class="form-control search-box" min-length="4" oninput="phabrico.search.Show(this.value, searchPhabricoIcon);" onfocus="select();" onmouseup="return false;" onblur="phabrico.search.Hide();" />
 
-            <span style="position: absolute; top: 50%; right: 25px; margin-top: -12px; text-decoration:none;">
+            <span id="searchPhabricoIcon" style="position: absolute; top: 50%; right: 25px; margin-top: -12px; text-decoration:none;">
                 <i class="phui-font-fa fa fa-search"></i>
+                <i class="phui-font-fa fa fa-spinner fa-spin"></i>
             </span>
 
             <span>&nbsp;</span>                

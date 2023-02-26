@@ -1,11 +1,37 @@
-﻿<style>
+﻿<script src="diagrams.net/webapp/js/spin/spin.min.js"></script>
+<style>
     .diagram-editor .phabrico-standard-page-body {
         padding-left: 0px;
         padding-right: 0px;
     }
 </style>
 <div>
-    <img class="drawio" src="@@IMG-SRC-BASE64@@" />
+	<img class="drawio" src="@@IMG-SRC-BASE64@@" />
+	<div id="loadingtext" class="geBlock" style="margin-top:80px;text-align:center;min-width:50%;height:100vh;">
+		<h1>Flowchart Maker and Online Diagram Software</h1>
+		<p style="width: 800px;position: sticky;left: calc(50% - 400px);">
+			diagrams.net (formerly draw.io) is free online diagram software. You can use it as a flowchart maker, network diagram software, to create UML online, as an ER diagram tool, to design database schema, to build BPMN online, as a circuit diagram maker, and more. draw.io can import .vsdx, Gliffy&trade; and Lucidchart&trade; files .
+		</p>
+		<h2 id="geStatus">Loading...</h2>
+		<div id="spinnerLoading"></div>
+		<script>
+			var spinnerOpts = {
+				hwaccel: false,
+				length: 24,
+				radius: 12,
+				shadow: false,
+				speed: 1.5,
+				trail: 60,
+				width: 8
+			};
+
+			if (document.body.getAttribute('data-theme') == 'dark') {
+				spinnerOpts.color = "#fff";
+			}
+
+			var spinner = new Spinner(spinnerOpts).spin(spinnerLoading);
+		</script>
+	</div>
 </div>
 
 <script>
@@ -42,7 +68,6 @@
 			if (evt.data.length > 0)
 			{
 				var msg = JSON.parse(evt.data);
-
 				if (msg.event == 'init')
 				{
 				    iframe.style.filter = "@@IFRAME-FILTER@@";
@@ -53,6 +78,10 @@
                 {
                     // enable Mathematical Typesettings by default in Diagrams.Net
                     iframe.contentWindow.sb.editorUi.setMathEnabled(true);
+
+                    if (document.body.getAttribute('data-theme') == 'dark') {
+                        iframe.contentWindow.sb.editorUi.setDarkMode(true);
+                    }
 
                     @{IF @@SHOW-APPROVE-TRANSLATION-BTN@@=True@
                         var menubar = iframe.contentWindow.document.querySelector('.geMenubarContainer');
@@ -121,6 +150,8 @@
                             }
                         }, 500);
                     }@
+
+					loadingtext.style.display = 'none';
                 }
 				else if (msg.event == 'export')
 				{
@@ -150,6 +181,11 @@
 		window.addEventListener('message', receive);
 		iframe.setAttribute('src', editor);
 		document.querySelector('.phabrico-page-content').appendChild(iframe);
+		iframe.contentWindow.RESOURCES_PATH = document.baseURI + "diagrams.net/webapp/resources";
+		iframe.contentWindow.STENCIL_PATH   = document.baseURI + "diagrams.net/webapp/stencils";
+		iframe.contentWindow.IMAGE_PATH		= document.baseURI + "diagrams.net/webapp/images";
+		iframe.contentWindow.STYLE_PATH		= document.baseURI + "diagrams.net/webapp/styles";
+		iframe.contentWindow.CSS_PATH		= document.baseURI + "diagrams.net/webapp/styles";
 	};
 
 	function load()

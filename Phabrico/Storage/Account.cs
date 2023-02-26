@@ -73,6 +73,8 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "theme", account.Theme, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "parameters", JsonConvert.SerializeObject(account.Parameters));
                 dbCommand.ExecuteNonQuery();
+
+                Database.IsModified = true;
             }
         }
 
@@ -391,7 +393,10 @@ namespace Phabrico.Storage
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "tokenHash", account.Token, Database.EncryptionMode.None);
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 
@@ -420,6 +425,10 @@ namespace Phabrico.Storage
                     {
                         Add(database, existingAccount);
                     }
+                    else
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
             else
@@ -441,6 +450,10 @@ namespace Phabrico.Storage
                     if (dbCommand.ExecuteNonQuery() == 0)
                     {
                         Add(database, existingAccount);
+                    }
+                    else
+                    {
+                        Database.IsModified = true;
                     }
                 }
             }
@@ -480,8 +493,14 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "newPrivateXorValue", privateXorCipherBytes, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "newToken", newToken, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "oldToken", oldToken, Database.EncryptionMode.None);
-                
-                return dbCommand.ExecuteNonQuery() > 0;
+
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                    return true;
+                }
+
+                return false;
             }
         }
 
@@ -508,7 +527,13 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "newPublicDpapiXorValue", dpapiPublicXorCipherBytes, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "newPrivateDpapiXorValue", dpapiPrivateXorCipherBytes, Database.EncryptionMode.None);
 
-                return dbCommand.ExecuteNonQuery() > 0;
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                    return true;
+                }
+
+                return false;
             }
         }
 

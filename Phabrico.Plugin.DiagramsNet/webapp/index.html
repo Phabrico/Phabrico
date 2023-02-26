@@ -180,10 +180,6 @@
         background-color: #ffffff;
     }
 
-        div.geSidebarContainer .geTitle {
-            background-color: #fdfdfd;
-        }
-
     div.mxWindow td.mxWindowPane button {
         background-image: none;
         float: none;
@@ -383,230 +379,196 @@
 </style>
 <div>
     <script type="text/javascript">
-		/**
-		 * URL Parameters and protocol description are here:
-		 *
-		 * https://desk.draw.io/support/solutions/articles/16000042546-what-url-parameters-are-supported
-		 *
-		 * Parameters for developers:
-		 *
-		 * - dev=1: For developers only
-		 * - test=1: For developers only
-		 * - export=URL for export: For developers only
-		 * - ignoremime=1: For developers only (see DriveClient.js). Use Cmd-S to override mime.
-		 * - createindex=1: For developers only (see etc/build/README)
-		 * - filesupport=0: For developers only (see Editor.js in core)
-		 * - savesidebar=1: For developers only (see Sidebar.js)
-		 * - pages=1: For developers only (see Pages.js)
-		 * - lic=email: For developers only (see LicenseServlet.java)
-		 * --
-		 * - networkshapes=1: For testing network shapes (temporary)
-		 */
-		var urlParams = (function()
-		{
-			var result = new Object();
-			var params = window.location.search.slice(1).split('&');
+        /**
+         * URL Parameters and protocol description are here:
+         *
+         * https://desk.draw.io/support/solutions/articles/16000042546-what-url-parameters-are-supported
+         *
+         * Parameters for developers:
+         *
+         * - dev=1: For developers only
+         * - test=1: For developers only
+         * - export=URL for export: For developers only
+         * - ignoremime=1: For developers only (see DriveClient.js). Use Cmd-S to override mime.
+         * - createindex=1: For developers only (see etc/build/README)
+         * - filesupport=0: For developers only (see Editor.js in core)
+         * - savesidebar=1: For developers only (see Sidebar.js)
+         * - pages=1: For developers only (see Pages.js)
+         * - lic=email: For developers only (see LicenseServlet.java)
+         * --
+         * - networkshapes=1: For testing network shapes (temporary)
+         */
+        var urlParams = (function () {
+            var result = new Object();
+            var params = window.location.search.slice(1).split('&');
 
-			for (var i = 0; i < params.length; i++)
-			{
-				idx = params[i].indexOf('=');
+            for (var i = 0; i < params.length; i++) {
+                idx = params[i].indexOf('=');
 
-				if (idx > 0)
-				{
-					result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
-				}
-			}
-			return result;
-		})();
+                if (idx > 0) {
+                    result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
+                }
+            }
+            return result;
+        })();
 
-		// Forces CDN caches by passing URL parameters via URL hash
-		if (window.location.hash != null && window.location.hash.substring(0, 2) == '#P')
-		{
-		    try
-			{
-				urlParams = JSON.parse(decodeURIComponent(window.location.hash.substring(2)));
+        // Forces CDN caches by passing URL parameters via URL hash
+        if (window.location.hash != null && window.location.hash.substring(0, 2) == '#P') {
+            try {
+                urlParams = JSON.parse(decodeURIComponent(window.location.hash.substring(2)));
 
-				if (urlParams.hash != null)
-				{
-					window.location.hash = urlParams.hash;
-				}
-			}
-			catch (e)
-			{
-				// ignore
-			}
-		}
+                if (urlParams.hash != null) {
+                    window.location.hash = urlParams.hash;
+                }
+            }
+            catch (e) {
+                // ignore
+            }
+        }
 
-		/**
-		 * Adds meta tag to the page.
-		 */
-		function mxmeta(name, content, httpEquiv)
-		{
-		    try
-			{
-				var s = document.createElement('meta');
+        /**
+         * Adds meta tag to the page.
+         */
+        function mxmeta(name, content, httpEquiv) {
+            try {
+                var s = document.createElement('meta');
 
-				if (name != null)
-				{
-					s.setAttribute('name', name);
-				}
+                if (name != null) {
+                    s.setAttribute('name', name);
+                }
 
-				s.setAttribute('content', content);
+                s.setAttribute('content', content);
 
-				if (httpEquiv != null)
-				{
-					s.setAttribute('http-equiv', httpEquiv);
-				}
+                if (httpEquiv != null) {
+                    s.setAttribute('http-equiv', httpEquiv);
+                }
 
-			  	var t = document.getElementsByTagName('meta')[0];
-			  	t.parentNode.insertBefore(s, t);
-			}
-			catch (e)
-			{
-				// ignore
-			}
-		};
+                var t = document.getElementsByTagName('meta')[0];
+                t.parentNode.insertBefore(s, t);
+            }
+            catch (e) {
+                // ignore
+            }
+        };
 
-		/**
-		 * Synchronously adds scripts to the page.
-		 */
-		function mxscript(src, onLoad, id, dataAppKey, noWrite)
-		{
-		    var defer = onLoad == null && !noWrite;
+        /**
+         * Synchronously adds scripts to the page.
+         */
+        function mxscript(src, onLoad, id, dataAppKey, noWrite) {
+            var defer = onLoad == null && !noWrite;
 
-			if ((urlParams['dev'] != '1' && typeof document.createElement('canvas').getContext === "function") ||
-				onLoad != null || noWrite)
-			{
-				var s = document.createElement('script');
-				s.setAttribute('type', 'text/javascript');
-				s.setAttribute('defer', 'true');
-				s.setAttribute('src', src);
+            if ((urlParams['dev'] != '1' && typeof document.createElement('canvas').getContext === "function") ||
+                onLoad != null || noWrite) {
+                var s = document.createElement('script');
+                s.setAttribute('type', 'text/javascript');
+                s.setAttribute('defer', 'true');
+                s.setAttribute('src', src);
 
-				if (id != null)
-				{
-					s.setAttribute('id', id);
-				}
+                if (id != null) {
+                    s.setAttribute('id', id);
+                }
 
-				if (dataAppKey != null)
-				{
-					s.setAttribute('data-app-key', dataAppKey);
-				}
+                if (dataAppKey != null) {
+                    s.setAttribute('data-app-key', dataAppKey);
+                }
 
-				if (onLoad != null)
-				{
-					var r = false;
+                if (onLoad != null) {
+                    var r = false;
 
-					s.onload = s.onreadystatechange = function()
-					{
-						if (!r && (!this.readyState || this.readyState == 'complete'))
-						{
-				      		r = true;
-				      		onLoad();
-						}
-				  	};
-				}
+                    s.onload = s.onreadystatechange = function () {
+                        if (!r && (!this.readyState || this.readyState == 'complete')) {
+                            r = true;
+                            onLoad();
+                        }
+                    };
+                }
 
-			  	var t = document.getElementsByTagName('script')[0];
+                var t = document.getElementsByTagName('script')[0];
 
-			  	if (t != null)
-			  	{
-			  		t.parentNode.insertBefore(s, t);
-			  	}
-			}
-			else
-			{
-				document.write('<script src="' + src + '"' + ((id != null) ? ' id="' + id +'" ' : '') +
-					((dataAppKey != null) ? ' data-app-key="' + dataAppKey +'" ' : '') + '></scr' + 'ipt>');
-			}
-		};
+                if (t != null) {
+                    t.parentNode.insertBefore(s, t);
+                }
+            }
+            else {
+                document.write('<script src="' + src + '"' + ((id != null) ? ' id="' + id + '" ' : '') +
+                    ((dataAppKey != null) ? ' data-app-key="' + dataAppKey + '" ' : '') + '></scr' + 'ipt>');
+            }
+        };
 
-		/**
-		 * Asynchronously adds scripts to the page.
-		 */
-		function mxinclude(src)
-		{
-		    var g = document.createElement('script');
-			g.type = 'text/javascript';
-			g.async = true;
-			g.src = src;
+        /**
+         * Asynchronously adds scripts to the page.
+         */
+        function mxinclude(src) {
+            var g = document.createElement('script');
+            g.type = 'text/javascript';
+            g.async = true;
+            g.src = src;
 
-		    var s = document.getElementsByTagName('script')[0];
-		    s.parentNode.insertBefore(g, s);
-		};
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(g, s);
+        };
 
-		/**
-		 * Adds meta tags with application name (depends on offline URL parameter)
-		 */
-		(function()
-		{
-		    var name = 'diagrams.net';
-			mxmeta('apple-mobile-web-app-title', name);
-			mxmeta('application-name', name);
-		})();
+        /**
+         * Adds meta tags with application name (depends on offline URL parameter)
+         */
+        (function () {
+            var name = 'diagrams.net';
+            mxmeta('apple-mobile-web-app-title', name);
+            mxmeta('application-name', name);
+        })();
 
-		// Checks for local storage
-		var isLocalStorage = false;
+        // Checks for local storage
+        var isLocalStorage = false;
 
-		try
-		{
-			isLocalStorage = urlParams['local'] != '1' && typeof(localStorage) != 'undefined';
-		}
-		catch (e)
-		{
-			// ignored
-		}
+        try {
+            isLocalStorage = urlParams['local'] != '1' && typeof (localStorage) != 'undefined';
+        }
+        catch (e) {
+            // ignored
+        }
 
-		var mxScriptsLoaded = false, mxWinLoaded = false;
+        var mxScriptsLoaded = false, mxWinLoaded = false;
 
-		function checkAllLoaded()
-        {
-            if (mxScriptsLoaded && mxWinLoaded)
-			{
-				App.main();
-			}
-		};
+        function checkAllLoaded() {
+            if (mxScriptsLoaded && mxWinLoaded) {
+                App.main();
+            }
+        };
 
-		var t0 = new Date();
+        var t0 = new Date();
 
-		(function()
-		{
-			var hostName = window.location.hostname;
+        (function () {
+            var hostName = window.location.hostname;
 
-			// Supported domains are *.draw.io and the packaged version in Quip
-			var supportedDomain = (hostName.substring(hostName.length - 8, hostName.length) === '.draw.io') ||
-				(hostName.substring(hostName.length - 13, hostName.length) === '.diagrams.net');
-				(hostName.substring(hostName.length - 17, hostName.length) === '.quipelements.com');
+            // Supported domains are *.draw.io and the packaged version in Quip
+            var supportedDomain = (hostName.substring(hostName.length - 8, hostName.length) === '.draw.io') ||
+                (hostName.substring(hostName.length - 13, hostName.length) === '.diagrams.net');
+            (hostName.substring(hostName.length - 17, hostName.length) === '.quipelements.com');
 
-			function loadAppJS()
-			{
-				mxscript('js/app.min.js', function()
-				{
-					mxScriptsLoaded = true;
-					checkAllLoaded();
+            function loadAppJS() {
+                mxscript('js/app.min.js', function () {
+                    mxScriptsLoaded = true;
+                    checkAllLoaded();
 
-					if (!supportedDomain)
-					{
-						mxscript('js/PostConfig.js');
-					}
-				});
-			};
+                    if (!supportedDomain) {
+                        mxscript('js/PostConfig.js');
+                    }
+                });
+            };
 
-			loadAppJS();
-		})();
+            loadAppJS();
+        })();
 
-		// Adds basic error handling
-		window.onerror = function()
-		{
-		    var status = document.getElementById('geStatus');
+        // Adds basic error handling
+        window.onerror = function () {
+            var status = document.getElementById('geStatus');
 
-			if (status != null)
-			{
-				status.innerHTML = 'Page could not be loaded. Please try refreshing.';
-			}
-		};
+            if (status != null) {
+                status.innerHTML = 'Page could not be loaded. Please try refreshing.';
+            }
+        };
     </script>
-    <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
-    <link rel="manifest" href="images/manifest.json">
+
     <!-- Workaround for binary XHR in IE 9/10, see App.loadUrl -->
     <!--[if (IE 9)|(IE 10)]><!-->
     <script type="text/vbscript">
@@ -634,23 +596,12 @@
         }
     </script>
     <div class="geEditor">
-        <div id="geInfo">
-            <div class="geBlock" style="text-align:center;min-width:50%;">
-                <h1>Flowchart Maker and Online Diagram Software</h1>
-                <p>
-                    diagrams.net (formerly draw.io) is free online diagram software. You can use it as a flowchart maker, network diagram software, to create UML online, as an ER diagram tool,
-                    to design database schema, to build BPMN online, as a circuit diagram maker, and more. draw.io can import .vsdx, Gliffy&trade; and Lucidchart&trade; files .
-                </p>
-                <h2 id="geStatus">Loading...</h2>
-                <p>
-                    Please ensure JavaScript is enabled.
-                </p>
-            </div>
-        </div>
+        <div id="geInfo"></div>
         <script type="text/javascript">
             window.addEventListener('load', function () {
                 mxWinLoaded = true;
                 checkAllLoaded();
+                document.body.classList.add("geEditor");
             });
         </script>
     </div>

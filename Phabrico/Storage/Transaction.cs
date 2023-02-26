@@ -35,6 +35,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "dateModified", transaction.DateModified);
                     dbCommand.ExecuteNonQuery();
 
+                    Database.IsModified = true;
+
                     sqlTransaction.Commit();
                 }
             }

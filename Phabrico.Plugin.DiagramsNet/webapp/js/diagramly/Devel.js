@@ -17,6 +17,8 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			//----------------------------------------------------------//
 			//------------- Bootstrap script in index.html -------------//
 			//----------------------------------------------------------//
+			// Version 20.8.14
+			'\'sha256-vrEVJkYyBW9H4tt1lYZtK5fDowIeRwUgYZfFTT36YpE=\' ' +
 			// Version 20.8.12
 			'\'sha256-6g514VrT/cZFZltSaKxIVNFF46+MFaTSDTPB8WfYK+c=\' ' +
 			// Version 16.4.4
@@ -90,7 +92,7 @@ if (!mxIsElectron && location.protocol !== 'http:')
 				'img-src * data: blob:; ' +
 				'media-src * data:; ' +
 				'font-src * about:; ' +
-				'style-src \'self\' https://fonts.googleapis.com \'unsafe-inline\'' +
+				'style-src \'self\' https://fonts.googleapis.com \'unsafe-inline\'; ' +
 				'base-uri \'none\';' +
 				'object-src \'none\';' +
 				'worker-src https://viewer.diagrams.net/service-worker.js;'
@@ -302,3 +304,6 @@ if (urlParams['orgChartDev'] == '1')
 
 // Miro Import
 mxscript(drawDevUrl + 'js/diagramly/miro/MiroImporter.js');
+
+// Mermaid to draw.io converter
+mxscript(drawDevUrl + 'js/mermaid/mermaid2drawio.js');

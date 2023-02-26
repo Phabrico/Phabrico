@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 
 namespace Phabrico.Phabricator.API
 {
@@ -116,10 +117,31 @@ namespace Phabrico.Phabricator.API
             JObject fileData = JsonConvert.DeserializeObject(json) as JObject;
             if (fileData != null)
             {
+                System.Exception exception = null;
+                HttpWebResponse response = null;
                 string downloadURL = fileData["result"]["data"][0]["fields"]["dataURI"].ToString();
-                HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(downloadURL);
-                webRequest.Method = "GET";
-                HttpWebResponse response = (HttpWebResponse)webRequest.GetResponse();
+                for (int retry = 0; retry < 10; retry++)
+                {
+                    try
+                    {
+                        HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(downloadURL);
+                        webRequest.Method = "GET";
+                        response = (HttpWebResponse)webRequest.GetResponse();
+                        break;
+                    }
+                    catch (System.Exception e)
+                    {
+                        response = null;
+                        exception = e;
+                        Thread.Sleep(1000);
+                    }
+                }
+
+                if (response == null && exception != null)
+                {
+                    throw exception;
+                }
+
                 using (BinaryReader binaryReader = new BinaryReader(response.GetResponseStream()))
                 {
                     byte[] buffer = binaryReader.ReadBytes(0x400000);

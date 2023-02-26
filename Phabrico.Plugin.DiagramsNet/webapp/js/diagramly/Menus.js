@@ -1088,7 +1088,7 @@
 				// Moves show start screen option to configuration dialog in sketch
 				var splashCb = document.createElement('input');
 				splashCb.setAttribute('type', 'checkbox');
-				splashCb.style.marginRight = '4px';
+				splashCb.style.marginRight = '8px';
 				splashCb.checked = mxSettings.getShowStartScreen();
 				splashCb.defaultChecked = splashCb.checked;
 
@@ -1096,10 +1096,12 @@
 					Editor.currentTheme == 'simple' || Editor.currentTheme == 'min'))
 				{
 					var showSplash = document.createElement('span');
+					showSplash.style.display = 'flex';
+					showSplash.style.alignItems = 'center';
 					showSplash.style['float'] = 'right';
 					showSplash.style.cursor = 'pointer';
 					showSplash.style.userSelect = 'none';
-					showSplash.style.marginTop = '-4px';
+					showSplash.style.marginTop = '-3px';
 					showSplash.appendChild(splashCb);
 					mxUtils.write(showSplash, mxResources.get('showStartScreen'));
 
@@ -2492,6 +2494,19 @@
 		action.label = mxResources.get('searchShapes');
 		action.setToggleAction(true);
 		action.setSelectedCallback(function() { return editorUi.sidebar.isEntryVisible('search'); });
+
+		editorUi.actions.get('clearDefaultStyle').funct = function(exit)
+		{
+			if (graph.isEnabled())
+			{
+				editorUi.clearDefaultStyle();
+
+				if (Editor.sketchMode)
+				{
+					editorUi.setSketchMode(false);
+				}
+			}
+		};
 		
 		if (urlParams['embed'] == '1')
 		{
@@ -2578,7 +2593,7 @@
 							mxResources.get('cancel'), mxResources.get('discardChanges'));
 					}
 				}
-			});
+			}, null, null, (urlParams['embedInline'] == '1') ? 'Escape' : null);
 		}
 		
 		this.put('exportAs', new Menu(mxUtils.bind(this, function(menu, parent)
@@ -4000,7 +4015,7 @@
 			}
 		}));
 		
-		// Extends toolbar dropdown to add comments
+		// Extends toolbar dropdown
 		var viewPanelsMenu = this.get('viewPanels');
 		
 		viewPanelsMenu.funct = function(menu, parent)
@@ -4035,9 +4050,21 @@
 					editorUi.menus.addMenuItems(menu, ['pageTabs'], parent);
 				}
 
-				editorUi.menus.addMenuItems(menu, ['ruler', '-', 'findReplace',
-					'layers', 'tags', 'outline', '-'], parent);
+				editorUi.menus.addMenuItems(menu, ['ruler', '-', 'search'], parent);
 
+				if (isLocalStorage || mxClient.IS_CHROMEAPP)
+				{
+					var item = editorUi.menus.addMenuItem(menu, 'scratchpad', parent);
+					
+					if (!editorUi.isOffline() || mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
+					{
+						editorUi.menus.addLinkToItem(item, 'https://www.diagrams.net/doc/faq/scratchpad');
+					}
+				}
+				
+				editorUi.menus.addMenuItems(menu, ['-', 'findReplace',
+					'layers', 'tags', 'outline', '-'], parent);
+				
 				if (editorUi.commentsSupported())
 				{
 					editorUi.menus.addMenuItems(menu, ['comments'], parent);

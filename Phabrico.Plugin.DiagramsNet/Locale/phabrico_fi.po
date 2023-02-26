@@ -7,6 +7,16 @@ msgstr "Kaavio"
 msgid "Editor for flowcharts, process diagrams, org charts, UML, ER and network diagrams."
 msgstr "Virtauskaavioiden, prosessikaavioiden, organisaatiokaavioiden, UML-, ER- ja verkkokaavioiden editori."
 
+# Intro screen
+msgid "Flowchart Maker and Online Diagram Software"
+msgstr "Virtauskaavio Maker ja Online-kaavio-ohjelmisto"
+
+msgid "diagrams.net (formerly draw.io) is free online diagram software. You can use it as a flowchart maker, network diagram software, to create UML online, as an ER diagram tool, to design database schema, to build BPMN online, as a circuit diagram maker, and more. draw.io can import .vsdx, Gliffy&trade; and Lucidchart&trade; files ."
+msgstr "diagrams.net (aiemmin draw.io) on ilmainen online-kaavio-ohjelmisto. Voit käyttää sitä vuokaavioiden tekijänä, verkkokaavio-ohjelmistona, UML:n luomiseen verkossa, ER-kaaviointityökaluna, tietokantakaavion suunnitteluun, BPMN:n rakentamiseen verkossa, piirikaavioiden tekijänä ja paljon muuta. draw.io voi tuoda .vsdx-, Gliffy&trade; ja Lucidchart&trade; -tiedostoja."
+
+msgid "Loading..."
+msgstr "Ladataan..."
+
 # Help shortcuts
 msgid "Styles"
 msgstr "Tyylit"

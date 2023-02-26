@@ -35,6 +35,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "lastModifiedBy", synchronizationLogging.LastModifiedBy);
                     dbCommand.ExecuteNonQuery();
 
+                    Database.IsModified = true;
+
                     transaction.Commit();
                 }
             }
@@ -52,7 +54,10 @@ namespace Phabrico.Storage
                            DELETE FROM synchronizationLogging;
                        ", database.Connection, transaction))
                 {
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
 
                     transaction.Commit();
                 }
@@ -74,7 +79,10 @@ namespace Phabrico.Storage
                        ", database.Connection, transaction))
                 {
                     database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
 
                     transaction.Commit();
                 }

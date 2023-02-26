@@ -275,6 +275,8 @@ namespace Phabrico.Http
                             Logging.WriteError(plugin.GetType().Name, "Error during loading: {0}", pluginException.Message);
                         }
                     }
+
+                    ResumeUnimpersonatedTasks();
                 }
                 catch (System.Exception pluginException)
                 {
@@ -820,110 +822,118 @@ namespace Phabrico.Http
 
             cacheStatusHttpMessages = CacheState.Busy;
 
-            using (Storage.Database database = new Database(encryptionKey))
+            try
             {
-                Storage.Account accountStorage = new Storage.Account();
-                whoAmI = accountStorage.WhoAmI(database, browser);
-                if (whoAmI == null)
+                using (Storage.Database database = new Database(encryptionKey))
                 {
-                    // this can happen during unit tests which are running too fast -> this is not critical, so skip it
-                    return;
+                    Storage.Account accountStorage = new Storage.Account();
+                    whoAmI = accountStorage.WhoAmI(database, browser);
+                    if (whoAmI == null)
+                    {
+                        // this can happen during unit tests which are running too fast -> this is not critical, so skip it
+                        return;
+                    }
+
+                    SessionManager.Token sessionToken = Session.CreateToken(whoAmI.Token, browser);
+                    clonedBrowser.SetCookie("token", sessionToken.ID, true);
+
+                    whoAmI.PublicXorCipher = accountStorage.GetPublicXorCipher(database, sessionToken);
+
+                    // reinitialize session variables
+                    sessionToken.EncryptionKey = Encryption.XorString(encryptionKey, whoAmI.PublicXorCipher);
+                    sessionToken.AuthenticationFactor = AuthenticationFactor.Public;
+                    Session.ClientSessions[sessionToken.ID] = new SessionManager.ClientSession();
+
+                    // set language
+                    clonedBrowser.Session.Locale = browser.Session.Locale;
                 }
 
-                SessionManager.Token sessionToken = Session.CreateToken(whoAmI.Token, browser);
-                clonedBrowser.SetCookie("token", sessionToken.ID, true);
+                Logging.WriteInfo("(internal)", "PreloadContent");
 
-                whoAmI.PublicXorCipher = accountStorage.GetPublicXorCipher(database, sessionToken);
+                using (Storage.Database database = new Database(encryptionKey))
+                {
+                    string htmlContent;
+                    string theme = database.ApplicationTheme;
+                    Response.HtmlViewPage.ContentOptions htmlViewPageOptions;
 
-                // reinitialize session variables
-                sessionToken.EncryptionKey = Encryption.XorString(encryptionKey, whoAmI.PublicXorCipher);
-                sessionToken.AuthenticationFactor = AuthenticationFactor.Public;
-                Session.ClientSessions[sessionToken.ID] = new SessionManager.ClientSession();
+                    // preload favorite phriction documents
+                    Storage.Phriction phrictionStorage = new Storage.Phriction();
+                    List<Phabricator.Data.Phriction> favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, browser, username).ToList();
+                    favoritePhrictionDocuments.Add(phrictionStorage.Get(database, "/", browser.Session.Locale));
+                    htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
+                    Controllers.Phriction phrictionController = new Controllers.Phriction();
+                    phrictionController.browser = clonedBrowser;
+                    foreach (Phabricator.Data.Phriction phrictionDocument in favoritePhrictionDocuments.Where(document => document != null))
+                    {
+                        lock (synchronizationProcessHttpRequest)
+                        {
+                            string cacheKey = token + theme + clonedBrowser.Properties.Language + "/w/" + phrictionDocument.Path;
+                            if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
 
-                // set language
-                clonedBrowser.Session.Locale = browser.Session.Locale;
+                            string[] parameters = phrictionDocument.Path.Trim('/').Split('/');
+                            Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "Phriction", parameters);
+
+                            phrictionController.EncryptionKey = encryptionKey;
+
+                            phrictionController.HttpGetLoadParameters(this, ref viewPage, parameters, "");
+
+                            viewPage.Theme = theme;
+                            htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
+
+                            cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
+                        }
+
+                        Thread.Sleep(100);
+                    }
+
+                    // preload assigned maniphest tasks
+                    Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+                    Storage.Stage stageStorage = new Storage.Stage();
+                    Phabricator.Data.Maniphest[] stagedManiphestTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).ToArray();
+                    foreach (Phabricator.Data.Maniphest stagedManiphestTask in stagedManiphestTasks)
+                    {
+                        maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedManiphestTask, browser.Session.Locale);
+                    }
+
+                    Phabricator.Data.Maniphest[] assignedManiphestTasks = maniphestStorage.Get(database, browser.Session.Locale)
+                                                                                          .Where(maniphestTask => stagedManiphestTasks.All(stagedTask => stagedTask.Token.Equals(maniphestTask.Token) == false)
+                                                                                                               && maniphestTask.Owner.Equals(whoAmI.Parameters.UserToken)
+                                                                                                               && maniphestTask.IsOpen
+                                                                                                )
+                                                                                          .ToArray();
+                    htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
+                    Controllers.Maniphest maniphestController = new Controllers.Maniphest();
+                    maniphestController.browser = clonedBrowser;
+                    foreach (Phabricator.Data.Maniphest assignedManiphestTask in assignedManiphestTasks)
+                    {
+                        lock (synchronizationProcessHttpRequest)
+                        {
+                            string cacheKey = token + theme + clonedBrowser.Properties.Language + "/maniphest/T" + assignedManiphestTask.ID + "/";
+                            if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
+
+                            string[] parameters = new string[] { "T" + assignedManiphestTask.ID };
+                            Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "ManiphestTask", parameters);
+
+                            maniphestController.EncryptionKey = encryptionKey;
+
+                            maniphestController.HttpGetLoadParameters(this, ref viewPage, parameters, "");
+
+                            viewPage.Theme = theme;
+                            htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
+
+                            cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
+                        }
+
+                        Thread.Sleep(100);
+                    }
+
+                    // cache was filled up again
+                    cacheStatusHttpMessages = CacheState.Valid;
+                }
             }
-
-            Logging.WriteInfo("(internal)", "PreloadContent");
-
-            using (Storage.Database database = new Database(encryptionKey))
+            catch
             {
-                string htmlContent;
-                string theme = database.ApplicationTheme;
-                Response.HtmlViewPage.ContentOptions htmlViewPageOptions;
-
-                // preload favorite phriction documents
-                Storage.Phriction phrictionStorage = new Storage.Phriction();
-                List<Phabricator.Data.Phriction> favoritePhrictionDocuments = phrictionStorage.GetFavorites(database, browser, username).ToList();
-                favoritePhrictionDocuments.Add(phrictionStorage.Get(database, "/", browser.Session.Locale));
-                htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
-                Controllers.Phriction phrictionController = new Controllers.Phriction();
-                phrictionController.browser = clonedBrowser;
-                foreach (Phabricator.Data.Phriction phrictionDocument in favoritePhrictionDocuments.Where(document => document != null))
-                {
-                    lock (synchronizationProcessHttpRequest)
-                    {
-                        string cacheKey = token + theme + clonedBrowser.Properties.Language + "/w/" + phrictionDocument.Path;
-                        if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
-
-                        string[] parameters = phrictionDocument.Path.Trim('/').Split('/');
-                        Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "Phriction", parameters);
-
-                        phrictionController.EncryptionKey = encryptionKey;
-
-                        phrictionController.HttpGetLoadParameters(this, ref viewPage, parameters, "");
-
-                        viewPage.Theme = theme;
-                        htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
-
-                        cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
-                    }
-
-                    Thread.Sleep(100);
-                }
-
-                // preload assigned maniphest tasks
-                Storage.Maniphest maniphestStorage = new Storage.Maniphest();
-                Storage.Stage stageStorage = new Storage.Stage();
-                Phabricator.Data.Maniphest[] stagedManiphestTasks = stageStorage.Get<Phabricator.Data.Maniphest>(database, browser.Session.Locale).ToArray();
-                foreach (Phabricator.Data.Maniphest stagedManiphestTask in stagedManiphestTasks)
-                {
-                    maniphestStorage.LoadStagedTransactionsIntoManiphestTask(database, stagedManiphestTask, browser.Session.Locale);
-                }
-
-                Phabricator.Data.Maniphest[] assignedManiphestTasks = maniphestStorage.Get(database, browser.Session.Locale)
-                                                                                      .Where(maniphestTask => stagedManiphestTasks.All(stagedTask => stagedTask.Token.Equals(maniphestTask.Token) == false)
-                                                                                                           && maniphestTask.Owner.Equals(whoAmI.Parameters.UserToken)
-                                                                                                           && maniphestTask.IsOpen
-                                                                                            )
-                                                                                      .ToArray();
-                htmlViewPageOptions = Response.HtmlViewPage.ContentOptions.HideGlobalTreeView;
-                Controllers.Maniphest maniphestController = new Controllers.Maniphest();
-                maniphestController.browser = clonedBrowser;
-                foreach (Phabricator.Data.Maniphest assignedManiphestTask in assignedManiphestTasks)
-                {
-                    lock (synchronizationProcessHttpRequest)
-                    {
-                        string cacheKey = token + theme + clonedBrowser.Properties.Language + "/maniphest/T" + assignedManiphestTask.ID + "/";
-                        if (cachedHttpMessages.ContainsKey(cacheKey)) continue;
-
-                        string[] parameters = new string[] { "T" + assignedManiphestTask.ID };
-                        Response.HtmlViewPage viewPage = new Response.HtmlViewPage(this, clonedBrowser, true, "ManiphestTask", parameters);
-
-                        maniphestController.EncryptionKey = encryptionKey;
-
-                        maniphestController.HttpGetLoadParameters(this, ref viewPage, parameters, "");
-
-                        viewPage.Theme = theme;
-                        htmlContent = viewPage.GetFullContent(clonedBrowser, htmlViewPageOptions);
-
-                        cachedHttpMessages[cacheKey] = new CachedHttpMessage(encryptionKey, UTF8Encoding.UTF8.GetBytes(htmlContent), "text/html");
-                    }
-
-                    Thread.Sleep(100);
-                }
-
-                // cache was filled up again
+                // some error occurred -> do not try again
                 cacheStatusHttpMessages = CacheState.Valid;
             }
         }
@@ -1936,41 +1946,7 @@ namespace Phabrico.Http
                             }
                         }
 
-                        string[] unimpersonatedTasksToStart;
-                        lock (unimpersonatedTasksSynchronize)
-                        {
-                            unimpersonatedTasksToStart = unimpersonatedTasks.Where(task => task.Value.IsRunning == false).Select(t => t.Key).ToArray();
-                        }
-                        foreach (var taskName in unimpersonatedTasksToStart)
-                        {
-                            string loggingIdentifier = taskName.Split('|')[0];
-                            string threadName = taskName.Split('|')[1];
-                            
-                            UnimpersonatedTask unimpersonatedTask;
-                            lock (unimpersonatedTasksSynchronize)
-                            {
-                                unimpersonatedTask = unimpersonatedTasks[taskName];
-                                unimpersonatedTask.IsRunning = true;
-                            }
-
-                            Task task = Task.Factory.StartNew((arg) =>
-                            {
-                                try
-                                {
-                                    unimpersonatedTask.Action.Invoke(unimpersonatedTask.CancellationTokenSource.Token);
-                                }
-                                catch (System.Exception exception)
-                                {
-                                    Logging.WriteInfo(loggingIdentifier, threadName + ": " + exception.Message);
-                                }
-                                finally
-                                {
-                                    unimpersonatedTask.ManualResetEvent.Reset();
-
-                                    Logging.WriteInfo(loggingIdentifier, threadName + " finished");
-                                }
-                            }, new Object[] { unimpersonatedTasks[taskName] });
-                        }
+                        ResumeUnimpersonatedTasks();
                     }
                     Logging.WriteInfo(browser.Token?.ID, "Finished {0}.{1}", controller.GetType().Name, controllerMethod.Name);
 
@@ -2214,6 +2190,49 @@ namespace Phabrico.Http
             htmlViewPage.SetText("PHABRICO-ROOTPATH", Http.Server.RootPath, Response.HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
             htmlViewPage.Merge();
             htmlViewPage.Send(browser);
+        }
+        
+        /// <summary>
+        /// Execute the post-execution code of the impersonated threads.
+        /// This post-execution code should not be executed impersonated
+        /// </summary>
+        private void ResumeUnimpersonatedTasks()
+        {
+            string[] unimpersonatedTasksToStart;
+            lock (unimpersonatedTasksSynchronize)
+            {
+                unimpersonatedTasksToStart = unimpersonatedTasks.Where(task => task.Value.IsRunning == false).Select(t => t.Key).ToArray();
+            }
+            foreach (var taskName in unimpersonatedTasksToStart)
+            {
+                string loggingIdentifier = taskName.Split('|')[0];
+                string threadName = taskName.Split('|')[1];
+
+                UnimpersonatedTask unimpersonatedTask;
+                lock (unimpersonatedTasksSynchronize)
+                {
+                    unimpersonatedTask = unimpersonatedTasks[taskName];
+                    unimpersonatedTask.IsRunning = true;
+                }
+
+                Task task = Task.Factory.StartNew((arg) =>
+                {
+                    try
+                    {
+                        unimpersonatedTask.Action.Invoke(unimpersonatedTask.CancellationTokenSource.Token);
+                    }
+                    catch (System.Exception exception)
+                    {
+                        Logging.WriteInfo(loggingIdentifier, threadName + ": " + exception.Message);
+                    }
+                    finally
+                    {
+                        unimpersonatedTask.ManualResetEvent.Reset();
+
+                        Logging.WriteInfo(loggingIdentifier, threadName + " finished");
+                    }
+                }, new Object[] { unimpersonatedTasks[taskName] });
+            }
         }
 
         /// <summary>

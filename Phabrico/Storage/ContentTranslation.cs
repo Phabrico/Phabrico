@@ -56,6 +56,8 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommandUpdate, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
 
                 dbCommandUpdate.ExecuteNonQuery();
+
+                Database.IsModified = true;
             }
         }
 
@@ -113,6 +115,8 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommandUpdate, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
 
                 dbCommandUpdate.ExecuteNonQuery();
+
+                Database.IsModified = true;
             }
 
             newToken = token;
@@ -140,7 +144,10 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "language", language, EncryptionMode.None);
                 database.AddParameter(dbCommand, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
 
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 
@@ -253,7 +260,10 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "language", language, EncryptionMode.None);
                 database.AddParameter(dbCommand, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
 
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
         
@@ -273,7 +283,10 @@ namespace Phabrico.Storage
             {
                 database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
 
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 
@@ -296,7 +309,10 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
                 database.AddParameter(dbCommand, "dateModified", utcSince, EncryptionMode.None);
 
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 
@@ -318,7 +334,10 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
                 database.AddParameter(dbCommand, "language", language, EncryptionMode.None);
 
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    Database.IsModified = true;
+                }
             }
         }
 
@@ -346,7 +365,13 @@ namespace Phabrico.Storage
                           AND token LIKE 'PHID-NEWTOKEN%'
                    ", database.Connection))
             {
-                return dbCommand.ExecuteNonQuery();
+                int nbrRowsAffected = dbCommand.ExecuteNonQuery();
+                if (nbrRowsAffected > 0)
+                {
+                    Database.IsModified = true;
+                }
+
+                return nbrRowsAffected;
             }
         }
 
@@ -543,7 +568,10 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "token", translation.Token, EncryptionMode.None);
                     database.AddParameter(dbCommand, "language", translation.Language, EncryptionMode.None);
 
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }

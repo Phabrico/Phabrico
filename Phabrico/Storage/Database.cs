@@ -37,6 +37,8 @@ namespace Phabrico.Storage
 
         public event InvalidUrlEventHandler InvalidUrlFound = null;
 
+        internal static bool IsModified { get; set; } = false;
+
         /// <summary>
         /// Represents how the column of a table should be encrypted/decrypted
         /// </summary>
@@ -304,7 +306,10 @@ namespace Phabrico.Storage
                 {
                     cmdObjectRelationInfo.Parameters.Clear();
                     AddParameter(cmdObjectRelationInfo, "token", token, EncryptionMode.None);
-                    cmdObjectRelationInfo.ExecuteNonQuery();
+                    if (cmdObjectRelationInfo.ExecuteNonQuery() > 0)
+                    {
+                        IsModified = true;
+                    }
                 }
             }
 
@@ -317,7 +322,10 @@ namespace Phabrico.Storage
                 {
                     cmdObjectRelationInfo.Parameters.Clear();
                     AddParameter(cmdObjectRelationInfo, "token", token, EncryptionMode.None);
-                    cmdObjectRelationInfo.ExecuteNonQuery();
+                    if (cmdObjectRelationInfo.ExecuteNonQuery() > 0)
+                    {
+                        IsModified = true;
+                    }
                 }
             }
         }
@@ -620,7 +628,10 @@ namespace Phabrico.Storage
                 {
                     AddParameter(dbCommand, "token", tokenToBeAssigned, EncryptionMode.None);
                     AddParameter(dbCommand, "parentToken", parentToken, EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        IsModified = true;
+                    }
 
                     transaction.Commit();
                 }
@@ -647,7 +658,10 @@ namespace Phabrico.Storage
                     AddParameter(dbCommand, "token", mainToken, EncryptionMode.None);
                     AddParameter(dbCommand, "linkedToken", dependentToken, EncryptionMode.None);
                     AddParameter(dbCommand, "language", language, EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        IsModified = true;
+                    }
 
                     transaction.Commit();
                 }
@@ -866,7 +880,10 @@ namespace Phabrico.Storage
                             ", Connection, transaction))
                     {
                         AddParameter(dbCommand, "token", tokenToRemove, EncryptionMode.None);
-                        dbCommand.ExecuteNonQuery();
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            IsModified = true;
+                        }
                     }
                 }
 
@@ -929,7 +946,10 @@ namespace Phabrico.Storage
                     {
                         AddParameter(cmdDeleteObjectRelationInfo, "language", language, EncryptionMode.None);
                     }
-                    cmdDeleteObjectRelationInfo.ExecuteNonQuery();
+                    if (cmdDeleteObjectRelationInfo.ExecuteNonQuery() > 0)
+                    {
+                        IsModified = true;
+                    }
                 }
                 
                 transaction.Commit();
@@ -1739,7 +1759,10 @@ namespace Phabrico.Storage
             {
                 dbCommand.Parameters.Add(new SQLiteParameter("name", name));
                 dbCommand.Parameters.Add(new SQLiteParameter("value", value));
-                dbCommand.ExecuteNonQuery();
+                if (dbCommand.ExecuteNonQuery() > 0)
+                {
+                    IsModified = true;
+                }
             }
         }
 
@@ -1748,29 +1771,34 @@ namespace Phabrico.Storage
         /// </summary>
         public void Shrink()
         {
-            try
+            if (IsModified)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                try
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                                 VACUUM
                             ", Connection))
-                {
-                    dbCommand.ExecuteNonQuery();
-                }
-            }
-            catch (System.Exception e)
-            {
-                SQLiteException sqliteException = e as SQLiteException;
-                if (sqliteException != null)
-                {
-                    if ((SQLiteErrorCode)sqliteException.ErrorCode == SQLiteErrorCode.Busy)
                     {
-                        // we might get an exception in case the local SQLite database is locked
-                        // This is not a big issue -> ignore exception
-                        return;
+                        dbCommand.ExecuteNonQuery();
+
+                        IsModified = false;
                     }
                 }
+                catch (System.Exception e)
+                {
+                    SQLiteException sqliteException = e as SQLiteException;
+                    if (sqliteException != null)
+                    {
+                        if ((SQLiteErrorCode)sqliteException.ErrorCode == SQLiteErrorCode.Busy)
+                        {
+                            // we might get an exception in case the local SQLite database is locked
+                            // This is not a big issue -> ignore exception
+                            return;
+                        }
+                    }
 
-                Logging.WriteInfo(null, e.Message);
+                    Logging.WriteInfo(null, e.Message);
+                }
             }
         }
 
@@ -1791,7 +1819,10 @@ namespace Phabrico.Storage
                 {
                     AddParameter(dbCommand, "token", tokenToBeUnassigned, EncryptionMode.None);
                     AddParameter(dbCommand, "parentToken", parentToken, EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        IsModified = true;
+                    }
 
                     transaction.Commit();
                 }

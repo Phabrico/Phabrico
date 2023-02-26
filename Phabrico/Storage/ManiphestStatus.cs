@@ -38,6 +38,8 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "info", info);
                     dbCommand.ExecuteNonQuery();
 
+                    Database.IsModified = true;
+
                     transaction.Commit();
                 }
             }

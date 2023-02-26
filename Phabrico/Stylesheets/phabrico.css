@@ -1563,6 +1563,22 @@ button.small, .small, a.small:visited {
     margin-bottom: unset;
 }
 
+#searchPhabricoIcon .fa-search {
+    display: inline-block;
+}
+
+#searchPhabricoIcon .fa-spinner {
+    display: none;
+}
+
+#searchPhabricoIcon.busy .fa-search {
+    display: none;
+}
+
+#searchPhabricoIcon.busy .fa-spinner {
+    display: inline-block;
+}
+
 #popSearchResults {
     top: 40px;
     z-index: 6;
