@@ -4485,6 +4485,27 @@ Graph.prototype.isCloneConnectSource = function(source)
 };
 
 /**
+ * Inserts the given edge before the given cell.
+ */
+Graph.prototype.insertEdgeBeforeCell = function(edge, cell)
+{
+	var index = null;
+	var tmp = cell;
+	
+	while (tmp.parent != null && tmp.geometry != null &&
+		tmp.geometry.relative && tmp.parent != edge.parent)
+	{
+		tmp = this.model.getParent(tmp);
+	}
+
+	if (tmp != null && tmp.parent != null && tmp.parent == edge.parent)
+	{
+		var index = tmp.parent.getIndex(tmp);
+		this.model.add(tmp.parent, edge, index);
+	}
+};
+
+/**
  * Adds a connection to the given vertex or clones the vertex in special layout
  * containers without creating a connection.
  */
@@ -4678,22 +4699,14 @@ Graph.prototype.connectVertex = function(source, direction, length, evt, forceCl
 					(target == null && cloneSource)) ? null : this.insertEdge(this.model.getParent(source),
 						null, '', source, realTarget, this.createCurrentEdgeStyle());
 		
-				// Inserts edge before source
-				if (edge != null && this.connectionHandler.insertBeforeSource)
+				if (edge != null)
 				{
-					var index = null;
-					var tmp = source;
+					result.push(edge);
+					this.applyNewEdgeStyle(source, [edge], direction);
 					
-					while (tmp.parent != null && tmp.geometry != null &&
-						tmp.geometry.relative && tmp.parent != edge.parent)
+					if (this.connectionHandler.insertBeforeSource)
 					{
-						tmp = this.model.getParent(tmp);
-					}
-				
-					if (tmp != null && tmp.parent != null && tmp.parent == edge.parent)
-					{
-						var index = tmp.parent.getIndex(tmp);
-						this.model.add(tmp.parent, edge, index);
+						this.insertEdgeBeforeCell(edge, source);
 					}
 				}
 				
@@ -4703,12 +4716,6 @@ Graph.prototype.connectVertex = function(source, direction, length, evt, forceCl
 				{
 					var index = source.parent.getIndex(source);
 					this.model.add(source.parent, realTarget, index);
-				}
-				
-				if (edge != null)
-				{
-					result.push(edge);
-					this.applyNewEdgeStyle(source, [edge], direction);
 				}
 				
 				if (target == null && realTarget != null)
@@ -8561,14 +8568,6 @@ if (typeof mxVertexHandler !== 'undefined')
 					}
 				}
 				
-				// Removes end arrow and target perimetr Spacing on first segment, start arrow on second segment
-				this.setCellStyles(mxConstants.STYLE_TARGET_PERIMETER_SPACING, null, [newEdge]);
-				this.setCellStyles(mxConstants.STYLE_ENDARROW, mxConstants.NONE, [newEdge]);
-				
-				// Removes start arrow and source perimeter spacing on second segment
-				this.setCellStyles(mxConstants.STYLE_SOURCE_PERIMETER_SPACING, null, [edge]);
-				this.setCellStyles(mxConstants.STYLE_STARTARROW, mxConstants.NONE, [edge]);
-				
 				// Removes entryX/Y and exitX/Y if snapToPoint is used
 				var target = this.model.getTerminal(newEdge, false);
 				
@@ -9416,7 +9415,9 @@ if (typeof mxVertexHandler !== 'undefined')
 			for (var i = 0; i < cells.length; i++)
 			{
 				// Changes font tags inside HTML labels
-				if (this.isHtmlLabel(cells[i]))
+				var style = this.getCurrentCellStyle(cells[i]);
+
+				if (style != null && style['html'] == '1')
 				{
 					var label = this.convertValueToString(cells[i]);
 					

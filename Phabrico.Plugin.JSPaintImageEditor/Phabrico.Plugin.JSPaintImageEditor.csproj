@@ -2135,4 +2135,29 @@ if exist BuildVersion.pdb del BuildVersion.pdb</PreBuildEvent>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.117.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.117.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>SET plugin=$(TargetName)
+
+IF EXIST ..\nugetPackage RD /s /q ..\nugetPackage
+
+WHERE nuget 2&gt;nul || GOTO end
+
+    MKDIR ..\nugetPackage
+    DEL /Q ..\nugetPackage\*.nupkg 2&gt;nul
+
+    COPY %25plugin%25.dll    ..\nugetPackage
+    COPY %25plugin%25.pdb    ..\nugetPackage
+
+    POWERSHELL "[system.io.file]::ReadAllText('%25plugin%25.nuspec').Replace('%25%25version%25%25', ((Get-Item -path '../nugetPackage/%25plugin%25.dll').VersionInfo.ProductVersion.Split('.') | Select-Object -First 4) -join '.')" &gt; VersionedPhabrico.nuspec
+
+    NUGET pack VersionedPhabrico.nuspec
+
+    DEL VersionedPhabrico.nuspec
+    DEL ..\nugetPackage\%25plugin%25.dll
+    DEL ..\nugetPackage\%25plugin%25.pdb
+
+    MOVE *.nupkg  ..\nugetPackage
+:end
+SET ERRORLEVEL = 0</PostBuildEvent>
+  </PropertyGroup>
 </Project>

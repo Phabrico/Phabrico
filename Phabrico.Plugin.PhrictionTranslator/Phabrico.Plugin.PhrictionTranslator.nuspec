@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Phabrico.Plugin.PhrictionTranslator</id>
+    <version>%version%</version>
+    <authors>Phabrico</authors>
+    <owners>Phabrico</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Translation functionality for Phriction documents in Phabrico</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2022</copyright>
+    <projectUrl>https://github.com/Phabrico/Phabrico</projectUrl>
+    <license type="expression">Apache-2.0</license>
+    <tags></tags>
+    <dependencies>
+      <dependency id="Phabrico" version="%version%" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionTranslator.dll" target="lib\net461" />
+    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionTranslator.pdb" target="lib\net461" />
+  </files>
+</package>

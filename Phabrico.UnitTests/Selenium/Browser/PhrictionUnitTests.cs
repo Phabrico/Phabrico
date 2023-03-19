@@ -985,6 +985,13 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // wait a while to make sure the verify-title AJAX call is finished
             wait.Until(condition => condition.FindElements(By.Id("btnSave")).Any(button => button.Enabled && button.Displayed));
 
+            // validate crumbs
+            string navigationCrumbs = WebBrowser.FindElement(By.Id("crumbsContainer"))
+                                                .Text
+                                                .Split('\n')[0]
+                                                .Replace("\r", "");
+            Assert.AreEqual("Story of my dad's life > (New)", navigationCrumbs);
+
             // click save button
             IWebElement btnSave = WebBrowser.FindElement(By.Id("btnSave"));
             btnSave.Click();
@@ -1003,10 +1010,10 @@ namespace Phabrico.UnitTests.Selenium.Browser
             Assert.AreEqual("But I can't tell what tomorrow will be", documentContent);
 
             // validate crumbs
-            string navigationCrumbs = WebBrowser.FindElement(By.Id("crumbsContainer"))
-                                                .Text
-                                                .Split('\n')[0]
-                                                .Replace("\r", "");
+            navigationCrumbs = WebBrowser.FindElement(By.Id("crumbsContainer"))
+                                         .Text
+                                         .Split('\n')[0]
+                                         .Replace("\r", "");
             Assert.AreEqual("Story of my dad's life > Today is the greatest day I've ever known", navigationCrumbs);
 
 

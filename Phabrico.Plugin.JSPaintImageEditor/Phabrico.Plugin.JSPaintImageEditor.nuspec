@@ -1,24 +1,23 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>Phabrico.Plugin.PhrictionToPDF</id>
+    <id>Phabrico.Plugin.JSPaintImageEditor</id>
     <version>%version%</version>
     <authors>Phabrico</authors>
     <owners>Phabrico</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>PDF Exporter for Phabrico. Uses NReco's PDF Exporter (https://www.nrecosite.com/pdf_generator_net.aspx)</description>
+    <description>Image Editor for Phabrico</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2022</copyright>
     <projectUrl>https://github.com/Phabrico/Phabrico</projectUrl>
     <license type="expression">Apache-2.0</license>
-    <tags>NRecoFramework</tags>
+    <tags>JSPaint</tags>
     <dependencies>
       <dependency id="Phabrico" version="%version%" />
     </dependencies>
   </metadata>
   <files>
-    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionToPDF.dll" target="lib\net461" />
-    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionToPDF.pdb" target="lib\net461" />
-    <file src="..\nugetPackage\NReco.PdfGenerator.dll" target="lib\net461" />
+    <file src="..\nugetPackage\Phabrico.Plugin.JSPaintImageEditor.dll" target="lib\net461" />
+    <file src="..\nugetPackage\Phabrico.Plugin.JSPaintImageEditor.pdb" target="lib\net461" />
   </files>
 </package>

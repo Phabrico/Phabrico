@@ -572,6 +572,11 @@ select {
     margin-bottom: 20px;
 }
 
+    #phui-navigator a.selected {
+        text-shadow: var(--phui-document-toc-selected-text-shadow);
+        color: var(--phui-document-toc-selected-color);
+    }
+
 #phui-navigator li a {
     white-space: pre-wrap;
     text-indent: 1em;
@@ -1704,6 +1709,10 @@ h6.remarkup-header {
   z-index: 2;
 }
 
+.toc .phui-font-fa {
+    display: contents;
+}
+
 .no-crumbs .toc {
     top: 40px !important;
     height: calc(100vh - 40px);
@@ -2545,6 +2554,29 @@ ul.remarkup-list.remarkup-list-with-checkmarks > li > ul.remarkup-list.remarkup-
     background: var(--remarkup-toc-background);
     list-style-type: none;
 }
+
+    #remarkupTOC > li > ul,
+    #remarkupTOC > li > ul > li > ul,
+    #remarkupTOC > li > ul > li > ul > li > ul,
+    #remarkupTOC > li > ul > li > ul > li > ul > li > ul {
+        margin-left: 10px;
+        list-style: none; 
+    }
+
+    #remarkupTOC li {
+        padding-left: .75em;
+    }
+
+    #remarkupTOC a {
+        text-decoration: none;
+    }
+
+    #remarkupTOC a::before {
+        content: "\25b8";
+        font-size: 1.5em;
+        position: absolute;
+        margin-left: -.75em;
+    }
 
 kbd {
     display: inline-block;

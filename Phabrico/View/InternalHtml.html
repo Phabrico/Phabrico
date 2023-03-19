@@ -193,6 +193,8 @@
 
 <script>
     function getNavigationTree(elem) {
+        var tempDiv = document.createElement('div');
+
         // create navigation-tree based on header tags
         var navigationTree = Array.prototype.slice.call(
             elem.querySelectorAll("h1, h2, h3")
@@ -200,13 +202,15 @@
         )
             .map(function (item) {
                 var anchor = document.location.href.split('#')[0] + '#' + item.children[0].name;
+                tempDiv.innerHTML = item.innerHTML;
+                tempDiv.removeChild(tempDiv.children[0]); // remove anchor-name-tag
                 switch (item.tagName) {
                     case "H1":
-                        return "<h1><li><a href='" + anchor + "'>" + item.innerText + "</a></li></h1>";
+                        return "<h1><li><a href='" + anchor + "'>" + tempDiv.innerHTML + "</a></li></h1>";
                     case "H2":
-                        return "<h2><li><a href='" + anchor + "'>" + item.innerText + "</a></li></h2>";
+                        return "<h2><li><a href='" + anchor + "'>" + tempDiv.innerHTML + "</a></li></h2>";
                     case "H3":
-                        return "<h3><li><a href='" + anchor + "'>" + item.innerText + "</a></li></h3>";
+                        return "<h3><li><a href='" + anchor + "'>" + tempDiv.innerHTML + "</a></li></h3>";
                     default:
                         return "";
                 }

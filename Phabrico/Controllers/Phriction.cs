@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json.Linq;
 using Phabrico.Data.References;
 using Phabrico.Http;
 using Phabrico.Http.Response;
@@ -404,7 +405,7 @@ namespace Phabrico.Controllers
                             }
                             else
                             {
-                                phrictionDocument.Path = "";
+                                phrictionDocument.Path += Locale.TranslateText("(New)", browser.Session.Locale);
                             }
 
                             documentState = "modified";

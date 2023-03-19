@@ -5190,11 +5190,11 @@
 									{
 										this.handleError({message: mxResources.get('errorSavingFile')});
 									}
-								}), function(resp)
+								}), mxUtils.bind(this, function(resp)
 								{
 									this.spinner.stop();
 									this.handleError(resp);
-								});
+								}));
 							}
 						}));
 					}
@@ -7940,7 +7940,7 @@
 	/**
 	 * Generates a Mermaid image.
 	 */
-	EditorUi.prototype.generateOpenAiMermaidDiagram = function(key, prompt, success, error)
+	EditorUi.prototype.generateOpenAiMermaidDiagram = function(prompt, success, error)
 	{
 		var maxRetries = 3;
 		var retryCount = 0;
@@ -7954,22 +7954,10 @@
 					EditorUi.logEvent({category: 'OPENAI-DIAGRAM',
 						action: 'generateOpenAiMermaidDiagram',
 						label: prompt});
-					var url = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+					var url = 'https://www.draw.io/generate/v1';
 
-					var params = {
-						prompt: prompt,
-						temperature: 0.9,
-						max_tokens: 4000
-					};
-
-					var req = new mxXmlRequest(url, JSON.stringify(params), 'POST');
+					var req = new mxXmlRequest(url, prompt, 'POST');
 					
-					req.setRequestHeaders = mxUtils.bind(this, function(request, params)
-					{
-						request.setRequestHeader('Authorization', 'Bearer ' + key);
-						request.setRequestHeader('Content-Type', 'application/json');
-					});
-
 					var handleError = mxUtils.bind(this, function(e)
 					{
 						if (timeout.clear())
@@ -7987,9 +7975,8 @@
 							{
 								this.tryAndHandle(mxUtils.bind(this, function()
 								{
-									var response = JSON.parse(req.getText());
-									var text = mxUtils.trim(response.choices[0].text);
-									var result = this.extractMermaidDeclaration(text);
+									var response = mxUtils.trim(req.getText());
+									var result = this.extractMermaidDeclaration(response);
 									
 									this.generateMermaidImage(result, null, mxUtils.bind(this, function(data, w, h)
 									{
@@ -7998,8 +7985,7 @@
 											if (timeout.clear())
 											{
 												EditorUi.debug('EditorUi.generateOpenAiMermaidDiagram',
-													'\nrequest:', params, '\nresponse:', response,
-													'\nprompt:', prompt, '\noutput:', text,
+													'\nprompt:', prompt, '\nresponse:', response,
 													'\nresult:', result);
 												
 												this.spinner.stop();
@@ -8025,7 +8011,7 @@
 							}
 							else
 							{
-								var e = null;
+								var e = {message: mxResources.get('error') + ' ' + req.getStatus()};
 
 								try
 								{
@@ -8129,9 +8115,7 @@
 					config.theme = 'dark';
 				}
 				
-				mermaid.mermaidAPI.initialize(config);
-	    		
-				mermaid.mermaidAPI.renderAsync('geMermaidOutput-' + new Date().getTime(), data,  mxUtils.bind(this, function(svg)
+				var renderCallback = mxUtils.bind(this, function(svg)
 				{
 					try
 					{
@@ -8184,7 +8168,24 @@
 					{
 						error(e);
 					}
-				}));
+				});
+
+				mermaid.mermaidAPI.initialize(config);
+
+				mermaid.mermaidAPI.render('geMermaidOutput-' + new Date().getTime(), data).then(function(result)
+				{
+					renderCallback(result.svg);
+				}).catch(function(e)
+				{
+					if (parseErrorHandler != null)
+					{
+						parseErrorHandler(e);
+					}
+					else
+					{
+						error(e);
+					}
+				});
 			}
 			catch (e)
 			{
@@ -8206,15 +8207,8 @@
 					}));
 				}
 				
-				mxscript('js/mermaid/mermaid.min.js', function()
-				{
-					// Load mindmap plugin in dev only so far
-					mxscript('js/mermaid/mermaid-mindmap.min.js', async function()
-					{
-						await mermaid.registerExternalDiagrams([window['mermaid-mindmap']]);
-						delayed();
-					}, null, null, null, onerror);
-				}, null, null, null, onerror);
+				mxscript('js/mermaid/mermaid.min.js', delayed,
+					null, null, null, onerror);
 			}
 			else
 			{
@@ -12456,7 +12450,8 @@
 				
 								addElt(this.sidebar.createEdgeTemplateFromCells([cell],
 									cell.geometry.width, 40, mxResources.get('arrow'),
-									true, null, true, false, tw, th), mxResources.get('arrow')).
+									true, null, true, false, null, tw, th),
+									mxResources.get('arrow')).
 									style.margin = em;
 								
 								addElt(freehandElt, mxResources.get('freehand') + ' (X)', null, 'X');
@@ -13548,7 +13543,6 @@
 				Graph.prototype.defaultThemeName = graph.defaultThemeName;
 				StyleFormatPanel.prototype.defaultStrokeColor = Editor.isDarkMode() ? '#cccccc' : 'black';
 				Format.inactiveTabBackgroundColor = Editor.isDarkMode() ? '#000000' : '#e4e4e4';
-				Dialog.backdropColor = Editor.isDarkMode() ? Editor.darkColor : 'white';
 				mxConstants.DROP_TARGET_COLOR = Editor.isDarkMode() ? '#00ff00' : '#0000FF';
 				Editor.helpImage = (Editor.isDarkMode() && mxClient.IS_SVG) ?
 					Editor.darkHelpImage : Editor.lightHelpImage;
@@ -16582,7 +16576,7 @@
 						this.handleError(e);
 					}
 				}
-			}), null, null, null, null, function(buttons, input)
+			}), null, null, null, null, mxUtils.bind(this, function(buttons, input)
 			{
 				var copyBtn = mxUtils.button(mxResources.get('copy'), mxUtils.bind(this, function()
 				{
@@ -16615,7 +16609,7 @@
 				copyBtn.setAttribute('title', 'copy');
 				copyBtn.className = 'geBtn';
 				buttons.appendChild(copyBtn);
-			}, true, null, null, 'https://www.diagrams.net/doc/faq/apply-layouts');
+			}), true, null, null, 'https://www.diagrams.net/doc/faq/apply-layouts');
 
 			this.showDialog(dlg.container, 620, 460, true, true);
 			dlg.init();
@@ -17627,7 +17621,7 @@
 		this.menus.get('viewPanels').setEnabled(active);
 		this.menus.get('viewZoom').setEnabled(active);
 		
-		var restricted = (urlParams['embed'] != '1' ||
+		var restricted = (urlParams['embed'] != '1' || urlParams['embedRT'] == '1' ||
 			!this.editor.graph.isEnabled()) &&
 			(file == null || file.isRestricted());
 		this.actions.get('makeCopy').setEnabled(!restricted);
@@ -18501,11 +18495,7 @@
 			}
 			else if (error != null)
 			{
-				error(e);
-			}
-			else if (window.console != null)
-			{
-				console.error(e);
+				error(new Error('IndexedDB not supported'));
 			}
 		}
 		else
@@ -18978,13 +18968,15 @@ var CommentsWindow = function(editorUi, x, y, w, h, saveCallback)
 		
 	var div = document.createElement('div');
 	div.className = 'geCommentsWin';
-	div.style.background = (!Editor.isDarkMode()) ? 'whiteSmoke' : Dialog.backdropColor;
+	div.style.background = (Editor.isDarkMode()) ?
+		Editor.darkColor : 'whiteSmoke';
 
 	var tbarHeight = (!EditorUi.compactUi) ? '30px' : '26px';
 	
 	var listDiv = document.createElement('div');
 	listDiv.className = 'geCommentsList';
-	listDiv.style.backgroundColor = (!Editor.isDarkMode()) ? 'whiteSmoke' : Dialog.backdropColor;
+	listDiv.style.backgroundColor = (Editor.isDarkMode()) ?
+		Editor.darkColor : 'whiteSmoke';
 	listDiv.style.bottom = (parseInt(tbarHeight) + 7) + 'px';
 	div.appendChild(listDiv);
 	

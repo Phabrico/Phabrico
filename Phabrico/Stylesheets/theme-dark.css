@@ -134,6 +134,8 @@
     --phui-document-hierarchy-border: solid 1px #222;
     --phui-document-hierarchy-border-background: transparent;
     --phui-document-toc-li-hover-background-color: rgba(255,255,255,0.2);
+    --phui-document-toc-selected-text-shadow: 1px 1px 1px #cccc;
+    --phui-document-toc-selected-color: #fff;
     --phui-font-fa-color: #b4b2ae;
     --phui-info-severity-error-border-color: #cc3000;
     --phui-info-severity-error-color: #ff5000;
@@ -234,7 +236,7 @@
     --remarkup-nav-sequence-item-background: #468;
     --remarkup-nav-sequence-item-border: solid 1px #fff;
     --remarkup-nav-sequence-item-color: #fff;
-    --remarkup-toc-background: 444;
+    --remarkup-toc-background: #444;
     --select-background-color: #333337;
     --select-color: #fff;
     --select-border: 1px solid #888;

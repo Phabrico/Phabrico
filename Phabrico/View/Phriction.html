@@ -1180,4 +1180,26 @@ dateModified won't change when a subscription is added or removed
             document.querySelector('.phabrico-page-content').classList.toggle('right-collapsed');
         }
     }
+
+
+    // format table of contents when scrolling through wiki page
+    window.addEventListener('scroll', function (e) {
+        var topHeader = null;
+        var headersReversed = Array.prototype.slice.call(remarkupContent.querySelectorAll('h1 > a, h2 > a, h3 > a'), 0).reverse();
+        if (headersReversed.length > 0) {
+            topHeader = headersReversed.filter(r => r.getBoundingClientRect().y < 20)[0];
+            if (typeof topHeader == 'undefined') {
+                topHeader = headersReversed[headersReversed.length - 1];
+            }
+        }
+
+        Array.prototype.slice.call(document.querySelector('#phui-navigator').querySelectorAll('a'), 0)
+            .forEach(a => a.classList.remove('selected'));
+
+        if (topHeader != null) {
+            Array.prototype.slice.call(document.querySelector('#phui-navigator').querySelectorAll('a'), 0)
+                .filter(a => a.hash == '#' + encodeURI(topHeader.name))[0]
+                .classList.add('selected');
+        }
+    });
 </script>

@@ -132,6 +132,8 @@
     --phui-document-create-message-background: #eee;
     --phui-document-border-bottom: 30px solid #f3f5f7;
     --phui-document-toc-li-hover-background-color: rgba(0,0,0,.15);
+    --phui-document-toc-selected-text-shadow: 1px 1px 1px #444c;
+    --phui-document-toc-selected-color: #000;
     --phui-document-hierarchy-border: solid 1px #ccc;
     --phui-document-hierarchy-border-background: #888;
     --phui-font-fa-color: #4B4D51;
