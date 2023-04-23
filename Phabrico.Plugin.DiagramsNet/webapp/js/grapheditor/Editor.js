@@ -270,6 +270,17 @@ Editor.isPngData = function(data)
 };
 
 /**
+ * Converts HTML to plain text.
+ */
+Editor.convertHtmlToText = function(label)
+{
+	var temp = document.createElement('div');
+	temp.innerHTML = Graph.sanitizeHtml(label);
+
+	return mxUtils.extractTextWithWhitespace(temp.childNodes);
+};
+
+/**
  * Extracts the XML from the compressed or non-compressed text chunk.
  */
 Editor.extractGraphModelFromPng = function(data)
@@ -891,6 +902,7 @@ OpenFile.prototype.cancel = function(cancel)
  */
 function Dialog(editorUi, elt, w, h, modal, closable, onClose, noScroll, transparent, onResize, ignoreBgClick)
 {
+	this.editorUi = editorUi;
 	var dx = transparent? 57 : 0;
 	var w0 = w;
 	var h0 = h;
@@ -1023,7 +1035,8 @@ function Dialog(editorUi, elt, w, h, modal, closable, onClose, noScroll, transpa
 			}
 		}
 		
-		var ds = this.getDocumentSize();
+		var ds = (!Editor.inlineFullscreen && editorUi.embedViewport != null) ?
+			mxUtils.clone(editorUi.embedViewport) : this.getDocumentSize();
 		dh = ds.height;
 		this.bg.style.height = dh + 'px';
 		
@@ -1036,10 +1049,24 @@ function Dialog(editorUi, elt, w, h, modal, closable, onClose, noScroll, transpa
 		top = Math.max(1, Math.round((dh - h - editorUi.footerHeight) / 3));
 		w = (document.body != null) ? Math.min(w0, document.body.scrollWidth - padding) : w0;
 		h = Math.min(h0, dh - padding);
+
+		// var dh = ds.height;
+		var left = Math.max(1, Math.round((ds.width - w - padding) / 2));
+		var top = Math.max(1, Math.round((dh - h - editorUi.footerHeight) / 3));
 		
 		var pos = this.getPosition(left, top, w, h);
 		left = pos.x;
 		top = pos.y;
+
+		var origin = mxUtils.getDocumentScrollOrigin(document);
+		left += origin.x;
+		top += origin.y;
+	
+		if (!Editor.inlineFullscreen && editorUi.embedViewport != null)
+		{
+			top += editorUi.embedViewport.y;
+			left += editorUi.embedViewport.x;
+		}
 		
 		div.style.left = left + 'px';
 		div.style.top = top + 'px';
@@ -1059,7 +1086,14 @@ function Dialog(editorUi, elt, w, h, modal, closable, onClose, noScroll, transpa
 		}
 	});
 	
-	mxEvent.addListener(window, 'resize', this.resizeListener);
+	if (editorUi.embedViewport != null)
+	{
+		editorUi.addListener('embedViewportChanged', this.resizeListener);
+	}
+	else
+	{
+		mxEvent.addListener(window, 'resize', this.resizeListener);
+	}
 
 	this.onDialogClose = onClose;
 	this.container = div;
@@ -1133,8 +1167,15 @@ Dialog.prototype.close = function(cancel, isEsc)
 	{
 		this.bg.parentNode.removeChild(this.bg);
 	}
-	
-	mxEvent.removeListener(window, 'resize', this.resizeListener);
+
+	if (this.editorUi.embedViewport != null)
+	{
+		this.editorUi.removeListener(this.resizeListener);
+	}
+	else
+	{
+		mxEvent.removeListener(window, 'resize', this.resizeListener);
+	}
 
 	if (this.container.parentNode != null)
 	{
@@ -1173,6 +1214,12 @@ var ErrorDialog = function(editorUi, title, message, buttonText, fn, retry, butt
 	var p2 = document.createElement('div');
 	p2.style.lineHeight = '1.2em';
 	p2.style.padding = '6px';
+	
+	if (typeof message === 'string')
+	{
+		message = message.replace(/\n/g, '<br/>');
+	}
+
 	p2.innerHTML = message;
 	div.appendChild(p2);
 	

@@ -632,7 +632,7 @@ namespace Phabrico.Http
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
-        public void SetCookie(string name, string value, bool httpOnly)
+        public void SetCookie(string name, string value, bool httpOnly, bool strict=true)
         {
             DictionarySafe<string,string> originalFormVariables = null;
 
@@ -648,10 +648,20 @@ namespace Phabrico.Http
                                                                    .ToDictionary(c => c.Name, 
                                                                                  c => c
                                                                                 );
-            
+
             string cookieValue;
             string cookieDate = DateTime.UtcNow.AddDays(1).ToString("ddd, dd-MMM-yyyy H:mm:ss");
-            string cookieSettings = ";SameSite=Strict;Path=" + Http.Server.RootPath + ";Expires=" + cookieDate + " GMT";
+            string cookieSettings;
+            if (strict)
+            {
+                cookieSettings = ";SameSite=Strict";
+            }
+            else
+            {
+                cookieSettings = ";SameSite=None;Secure";
+            }
+
+            cookieSettings += ";Path=" + Http.Server.RootPath + ";Expires=" + cookieDate + " GMT";
 
             if (cookies.Any())
             {

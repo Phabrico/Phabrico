@@ -311,6 +311,9 @@ msgstr "Makrotietojen lataaminen..."
 msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "Tiedosto-objektien lataaminen..."
 
+msgid "Synchronization.Status.LoadingUnreferencedFileObjects"
+msgstr "Kiireinen puuttuvien tiedosto-objektien lataaminen......"
+
 msgid "Synchronization.Status.UploadingManiphestData"
 msgstr "Maniphest-tehtävien lähettäminen..."
 

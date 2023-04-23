@@ -399,9 +399,6 @@ msgstr "Kopiera"
 msgid "Copy Size"
 msgstr "Kopiera storlek"
 
-msgid "Copy Style"
-msgstr "Kopiera stil"
-
 msgid "Create / Remove Space"
 msgstr "Skapa / Ta bort utrymme"
 
@@ -518,9 +515,6 @@ msgstr "Klistra in"
 
 msgid "Paste Size"
 msgstr "Klistra in storlek"
-
-msgid "Paste Style"
-msgstr "Klistra in stil"
 
 msgid "Previous Page"
 msgstr "Föregående sida"

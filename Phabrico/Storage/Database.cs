@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Base64;
@@ -999,6 +1000,27 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
+        /// Returns all file ID's which were referenced by some remarkup content, but for which the file content was not downloaded.
+        /// </summary>
+        /// <returns></returns>
+        internal IEnumerable<int> GetAllMarkedFileIDs()
+        {
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       SELECT fileID
+                       FROM unreferencedFileObjects
+                   ", Connection))
+            {
+                using (var reader = dbCommand.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        yield return (int)reader["fileID"];
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns the way how authentication to Phabrico should be handled
         /// </summary>
         /// <param name="browser">Reference to browser</param>
@@ -1521,6 +1543,10 @@ namespace Phabrico.Storage
                          IF NOT EXISTS idxTransactionInfoInfoParentToken
                          ON transactionInfo (parentToken);
 
+                       CREATE TABLE IF NOT EXISTS unreferencedFileObjects (
+                           fileID INT PRIMARY KEY
+                       );
+
                        CREATE TABLE IF NOT EXISTS userInfo(
                            token VARCHAR(30) PRIMARY KEY,
                            realName BLOB,
@@ -1572,6 +1598,40 @@ namespace Phabrico.Storage
                 }
 
                 _utcNextTimeToVacuum = DateTime.UtcNow.AddSeconds(60);
+            }
+        }
+
+        /// <summary>
+        /// (Un)Marks a file as 'Unreferenced'
+        /// In case someone edits and publishes a document on Phabricator with a file object (e.g. an image) which is not published, the file
+        /// will be marked as 'Unreferenced' during the synchronization process of Phabrico.
+        /// In the next synchronization process, Phabrico will try to download all unreferencedFileObjects again.
+        /// </summary>
+        /// <param name="fileID"></param>
+        /// <param name="isUnreferenced"></param>
+        public void MarkFileObject(int fileID, bool isUnreferenced)
+        {
+            if (isUnreferenced)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                        INSERT OR REPLACE INTO unreferencedFileObjects(fileID)
+                        VALUES (@fileID);
+                    ", Connection))
+                {
+                    dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID));
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
+            else
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                        DELETE FROM unreferencedFileObjects
+                        WHERE fileID = @fileID;
+                    ", Connection))
+                {
+                    dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID));
+                    dbCommand.ExecuteNonQuery();
+                }
             }
         }
 

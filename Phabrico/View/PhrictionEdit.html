@@ -84,9 +84,10 @@
         var newPath = ""
 
         window.addEventListener('load', function() {
-            var textAreaUserContextMenu = new TextAreaContextMenu(textarea, "@", "user", "/user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
-            var textAreaProjectContextMenu = new TextAreaContextMenu(textarea, "#", "project", "/project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
-            var textAreaEmojiContextMenu = new TextAreaContextMenu(textarea, ":", "emoji", "/remarkup/emoji/", "Code", "Name");
+            var textAreaUserContextMenu = new TextAreaContextMenu(textarea, "@", "", "user", "/user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
+            var textAreaProjectContextMenu = new TextAreaContextMenu(textarea, "#", "", "project", "/project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
+            var textAreaEmojiContextMenu = new TextAreaContextMenu(textarea, ":", "", "emoji", "/remarkup/emoji/", "Code", "Name");
+            var textAreaPhrictionDocumentsContextMenu = new TextAreaContextMenu(textarea, "[[", "]]", "document", "/phriction/query/", "Path", "Title");
             remarkup = new Remarkup(() => { });
         }, false);
 

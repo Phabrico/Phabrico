@@ -1268,7 +1268,7 @@ namespace Phabrico.Controllers
                             }
 
                             string stagedComment = "";
-                            Phabricator.Data.Transaction stagedCommentTransaction = stageStorage.Get<Phabricator.Data.Transaction>(database, maniphestTask.Token, "comment");
+                            Phabricator.Data.Transaction stagedCommentTransaction = stageStorage.Get<Phabricator.Data.Transaction>(database, maniphestTask.Token, Language.NotApplicable, "comment");
                             if (stagedCommentTransaction != null)
                             {
                                 stagedComment = stagedCommentTransaction.NewValue;

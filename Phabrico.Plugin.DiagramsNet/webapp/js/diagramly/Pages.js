@@ -1112,7 +1112,8 @@ EditorUi.prototype.createPageId = function()
  */
 EditorUi.prototype.createPage = function(name, id)
 {
-	var page = new DiagramPage(this.fileNode.ownerDocument.createElement('diagram'), id);
+	var doc = (this.fileNode != null) ? this.fileNode.ownerDocument : document;
+	var page = new DiagramPage(doc.createElement('diagram'), id);
 	page.setName((name != null) ? name : this.createPageName());
 	this.initDiagramNode(page);
 	
@@ -1291,11 +1292,25 @@ EditorUi.prototype.initDiagramNode = function(page)
  */
 EditorUi.prototype.clonePages = function(pages)
 {
+	var errors = [];
 	var result = [];
 	
 	for (var i = 0; i < pages.length; i++)
 	{
-		result.push(this.clonePage(pages[i]));
+		try
+		{
+			result.push(this.clonePage(pages[i]));
+		}
+		catch (e)
+		{
+			errors.push(mxResources.get('pageWithNumber', [i + 1]) +
+				' (' + pages[i].getName() + '): ' + e.message);
+		}
+	}
+
+	if (errors.length > 0)
+	{
+		throw new Error(errors.join('\n'));
 	}
 	
 	return result;

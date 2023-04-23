@@ -721,6 +721,7 @@ namespace Phabrico.Controllers
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadPhrictionDocuments });  // download uploaded phriction documents again from server so we get the correct tokens
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadManiphestTasks });      // download uploaded maniphest tasks again from server so we get the correct tokens
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 10, Method = ProgressMethod_DownloadFileObjects });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadUnreferencedFileObjects });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadMacros });
 
                     foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
@@ -2030,6 +2031,69 @@ namespace Phabrico.Controllers
                                                                     key => key.Token,
                                                                     value => value.Selected
                                                                 );
+        }
+
+        /// <summary>
+        /// Downloads unreferenced files from Phabricator
+        /// </summary>
+        /// <param name="synchronizationParameters"></param>
+        /// <param name="processedDuration"></param>
+        /// <param name="totalDuration"></param>
+        public void ProgressMethod_DownloadUnreferencedFileObjects(SynchronizationParameters synchronizationParameters, int processedDuration, int totalDuration)
+        {
+            Phabricator.API.File phabricatorFileAPI = new Phabricator.API.File();
+            Storage.File fileStorage = new Storage.File();
+
+            // load all file objects from phabricator which were referenced in the downloaded phriction and maniphest objects
+            string messageLoadingFileObjects = Miscellaneous.Locale.TranslateText("Synchronization.Status.LoadingUnreferencedFileObjects", browser.Session.Locale);
+            SharedResource.Instance.ProgressDescription = messageLoadingFileObjects;
+            List<int> fileIDsToDownload = synchronizationParameters.database.GetAllMarkedFileIDs().ToList();
+
+            IEnumerable<Phabricator.Data.File> phabricatorFileReferences = phabricatorFileAPI.GetReferences(synchronizationParameters.database,
+                                                                                                            synchronizationParameters.browser.Conduit,
+                                                                                                            fileIDsToDownload
+                                                                                                           );
+
+            int index = 0;
+            int count = phabricatorFileReferences.Count();
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
+            foreach (Phabricator.Data.File phabricatorFileReference in phabricatorFileReferences)
+            {
+                string size;
+                if (phabricatorFileReference.Size > 1024 * 1024)
+                {
+                    size = string.Format("{0} MB", phabricatorFileReference.Size / (1024*1024));
+                }
+                else
+                if (phabricatorFileReference.Size > 1024)
+                {
+                    size = string.Format("{0} KB", phabricatorFileReference.Size / 1024);
+                }
+                else
+                {
+                    size = string.Format("{0} bytes", phabricatorFileReference.Size);
+                }
+
+                SharedResource.Instance.ProgressDescription = string.Format("{0} [{1}/{2}] ({3})", messageLoadingFileObjects, index++, count, size);
+                SharedResource.Instance.ProgressPercentage += stepsize;
+
+                // sleep a bit, so the progress-bar is shown a little more animated...
+                if ((index % 100) == 0) Thread.Sleep(100);
+
+                Phabricator.Data.File phabricatorFile = new Phabricator.Data.File(phabricatorFileReference);
+                Base64EIDOStream base64EIDOStream = phabricatorFileAPI.DownloadData(synchronizationParameters.browser.Conduit, phabricatorFileReference.Token);
+                base64EIDOStream.Seek(0, System.IO.SeekOrigin.Begin);
+                phabricatorFile.DataStream = base64EIDOStream;
+                fileStorage.Add(synchronizationParameters.database, phabricatorFile);
+
+                // link file-references to their owners (e.g. Phriction document or Maniphest task)
+                foreach (string owner in synchronizationParameters.fileObjectsPerToken.Where(kvp => kvp.Value.Contains(phabricatorFile.ID)).Select(kvp => kvp.Key))
+                {
+                    synchronizationParameters.database.AssignToken(owner, phabricatorFile.Token, Language.NotApplicable);
+                }
+            }
+
+            synchronizationParameters.fileObjectsPerToken.Clear();
         }
 
         /// <summary>

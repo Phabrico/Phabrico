@@ -620,6 +620,8 @@ namespace Phabrico.Storage
                         if (deserializedObject == null) continue;
                         if (typeof(T) == typeof(Phabricator.Data.Phriction) && deserializedObject["TokenPrefix"].ToString().Equals(Phabricator.Data.Phriction.Prefix) == false) continue;
                         if (typeof(T) == typeof(Phabricator.Data.Maniphest) && deserializedObject["TokenPrefix"].ToString().Equals(Phabricator.Data.Maniphest.Prefix) == false) continue;
+                        if (typeof(T) == typeof(Phabricator.Data.Transaction) && deserializedObject["TokenPrefix"].ToString().Equals(Phabricator.Data.Maniphest.Prefix) == false 
+                                                                              && deserializedObject["TokenPrefix"].ToString().Equals(Phabricator.Data.Transaction.Prefix) == false) continue;
 
                         record.Token = (string)reader["token"];
                         record.Operation = (string)reader["operation"];

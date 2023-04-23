@@ -2362,7 +2362,6 @@
     <EmbeddedResource Include="webapp\plugins\googledrive.js" />
     <EmbeddedResource Include="webapp\plugins\import.js" />
     <EmbeddedResource Include="webapp\plugins\number.js" />
-    <EmbeddedResource Include="webapp\plugins\p1.js" />
     <EmbeddedResource Include="webapp\plugins\page.js" />
     <EmbeddedResource Include="webapp\plugins\props.js" />
     <EmbeddedResource Include="webapp\plugins\rackF5.js" />

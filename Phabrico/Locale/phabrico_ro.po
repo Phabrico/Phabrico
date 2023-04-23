@@ -311,6 +311,9 @@ msgstr "Încărcarea datelor macro..."
 msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "Încărcarea obiectelor de fișier..."
 
+msgid "Synchronization.Status.LoadingUnreferencedFileObjects"
+msgstr "Încărcarea obiectelor de fișier lipsă..."
+
 msgid "Synchronization.Status.UploadingManiphestData"
 msgstr "Încărcarea sarcinilor de manipulare..."
 

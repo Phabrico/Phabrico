@@ -136,13 +136,28 @@
     }
 
     .maniphest .toc {
-        display: none;
+        display: flex;
+        width: 100%;
+        padding-left: 25px;
+        height: 90px;
     }
 
     .maniphest .maniphest-list-overview {
         width: calc(100vw + 14px);
         margin-left: -32px;
         margin-top: -32px;
+    }
+
+    .maniphest-list #phui-navigator > li:nth-child(2) > ul:nth-child(1) {
+        flex-direction: row;
+        display: flex;
+        position: absolute;
+        z-index: 99999;
+        width: 100vw;
+    }
+
+    .maniphest-list-overview .app-window-body {
+        padding-top: 80px;
     }
 }
 

@@ -348,7 +348,7 @@
 		editorUi.actions.addAction('properties...', function()
 		{
 			var dlg = new FilePropertiesDialog(editorUi);
-			editorUi.showDialog(dlg.container, 320, 120, true, true);
+			editorUi.showDialog(dlg.container, 320, 140, true, true);
 			dlg.init();
 		}).isEnabled = isGraphEnabled;
 	
@@ -396,7 +396,7 @@
 			
 			var selection = editorUi.addCheckbox(div, mxResources.get('selectionOnly'),
 				false, graph.isSelectionEmpty());
-			var compressed = editorUi.addCheckbox(div, mxResources.get('compressed'), true);
+			var compressed = editorUi.addCheckbox(div, mxResources.get('compressed'), Editor.defaultCompressed);
 			var pages = editorUi.addCheckbox(div, mxResources.get('allPages'), !noPages, noPages);
 			pages.style.marginBottom = '16px';
 			
@@ -637,7 +637,7 @@
 				editorUi.showDialog(dlg.container, 300, dlgH, true, true);
 			}
 		}));
-		
+
 		editorUi.actions.addAction('open...', function()
 		{
 			editorUi.pickFile();
@@ -808,7 +808,7 @@
 			{
 				currentStyle = graph.copyStyle(graph.getSelectionCell())
 			}
-		}, null, null, Editor.ctrlKey + '+Shift+C');
+		}, null, null, 'Alt+Shift+Q');
 
 		editorUi.actions.addAction('pasteStyle', function()
 		{
@@ -816,7 +816,7 @@
 			{
 				graph.pasteStyle(currentStyle, graph.getSelectionCells())
 			}
-		}, null, null, Editor.ctrlKey + '+Shift+V');
+		}, null, null, 'Alt+Shift+W');
 		
 		editorUi.actions.put('exportSvg', new Action(mxResources.get('formatSvg') + '...', function()
 		{
@@ -1637,19 +1637,43 @@
 			}
 		})));
 
-		// Experimental
+		// LATER: Remove when translations are updated
 		mxResources.parse('diagramLanguage=Diagram Language');
-		editorUi.actions.addAction('diagramLanguage...', function()
+		mxResources.parse('languageCode=Language Code');
+
+		editorUi.actions.addAction('languageCode...', function()
 		{
-			var lang = prompt('Language Code', Graph.diagramLanguage || '');
-			
-			if (lang != null)
+			var lang = Graph.diagramLanguage || '';
+					
+			var dlg = new FilenameDialog(editorUi, lang, mxResources.get('ok'), mxUtils.bind(this, function(newLang)
 			{
-				Graph.diagramLanguage = (lang.length > 0) ? lang : null;
-				graph.refresh();
-			}
+				if (newLang != null)
+				{
+					Graph.diagramLanguage = (newLang.length > 0) ? newLang : null;
+					Graph.translateDiagram = true;
+					graph.refresh();
+				}
+			}), mxResources.get('languageCode'), null, null, 'https://www.diagrams.net/blog/translate-diagrams');
+			editorUi.showDialog(dlg.container, 340, 96, true, true);
+			dlg.init();
 		});
 		
+		this.put('diagramLanguage', new Menu(mxUtils.bind(this, function(menu, parent)
+		{
+			this.addMenuItems(menu, ['languageCode', '-'], parent);
+
+			var item = menu.addItem(mxResources.get('disabled'), null, function()
+			{
+				Graph.translateDiagram = false;
+				graph.refresh();
+			}, parent);
+
+			if (!Graph.translateDiagram)
+			{
+				menu.addCheckmark(item, Editor.checkmarkImage);
+			}
+		})));
+
 		// Only visible in test mode
 		if (urlParams['test'] == '1')
 		{
@@ -4337,12 +4361,8 @@
 				{
 					editorUi.menus.addMenuItems(menu, ['-', 'spellCheck', 'autoBkp', 'drafts', '-'], parent);
 				}
-	
-				if (Graph.translateDiagram)
-				{
-					editorUi.menus.addMenuItems(menu, ['diagramLanguage'], parent);
-				}
 
+				this.addSubmenu('diagramLanguage', menu, parent);
 				menu.addSeparator(parent);
 				
 				if (editorUi.mode != App.MODE_ATLAS) 
@@ -4367,7 +4387,8 @@
 					editorUi.menus.addSubmenu('appearance', menu, parent);
 				}
 
-				if (urlParams['embed'] != '1')
+				if (urlParams['embed'] != '1' && urlParams['extAuth'] != '1' &&
+					editorUi.mode != App.MODE_ATLAS)
 				{
 					this.addSubmenu('theme', menu, parent);
 				}
@@ -4411,12 +4432,7 @@
 				}
 
 				this.addMenuItems(menu, ['-', 'editDiagram'], parent);
-		
-				if (Graph.translateDiagram)
-				{
-					this.addMenuItems(menu, ['diagramLanguage']);
-				}
-				
+				this.addSubmenu('diagramLanguage', menu, parent);
 				menu.addSeparator(parent);
 
 				if (urlParams['embed'] != '1' && (isLocalStorage || mxClient.IS_CHROMEAPP))
@@ -4644,8 +4660,7 @@
 					var filename = (file.getTitle() != null) ?
 						file.getTitle() : editorUi.defaultFilename;
 					
-					if (!/(\.html)$/i.test(filename) &&
-						!/(\.svg)$/i.test(filename))
+					if (!/(\.html)$/i.test(filename))
 					{
 						this.addMenuItems(menu, ['-', 'properties']);
 					}
@@ -4881,8 +4896,7 @@
 						file.getTitle() : editorUi.defaultFilename;
 					
 					if ((file.constructor == DriveFile && file.sync != null &&
-						file.sync.isConnected()) || (!/(\.html)$/i.test(filename) &&
-						!/(\.svg)$/i.test(filename)))
+						file.sync.isConnected()) || !/(\.html)$/i.test(filename))
 					{
 						this.addMenuItems(menu, ['properties'], parent);
 					}
@@ -5008,8 +5022,7 @@
 						file.getTitle() : editorUi.defaultFilename;
 					
 					if ((file.constructor == DriveFile && file.sync != null &&
-						file.sync.isConnected()) || (!/(\.html)$/i.test(filename) &&
-						!/(\.svg)$/i.test(filename)))
+						file.sync.isConnected()) || !/(\.html)$/i.test(filename))
 					{
 						this.addMenuItems(menu, ['-', 'properties']);
 					}

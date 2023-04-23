@@ -399,9 +399,6 @@ msgstr "Copiere"
 msgid "Copy Size"
 msgstr "Copiere dimensiune"
 
-msgid "Copy Style"
-msgstr "Copiere stil"
-
 msgid "Create / Remove Space"
 msgstr "Creează / Elimină spațiu"
 
@@ -518,9 +515,6 @@ msgstr "Lipire"
 
 msgid "Paste Size"
 msgstr "Dimensiune lipire"
-
-msgid "Paste Style"
-msgstr "Stil de lipire"
 
 msgid "Previous Page"
 msgstr "Pagina anterioară"

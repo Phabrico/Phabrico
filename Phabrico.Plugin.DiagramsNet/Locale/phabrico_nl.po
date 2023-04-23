@@ -399,9 +399,6 @@ msgstr "Kopiëren"
 msgid "Copy Size"
 msgstr "Grootte kopiëren"
 
-msgid "Copy Style"
-msgstr "Stijl kopiëren"
-
 msgid "Create / Remove Space"
 msgstr "Ruimte maken / verwijderen"
 
@@ -518,9 +515,6 @@ msgstr "Plakken"
 
 msgid "Paste Size"
 msgstr "Grootte plakken"
-
-msgid "Paste Style"
-msgstr "Stijl plakken"
 
 msgid "Previous Page"
 msgstr "Vorige pagina"

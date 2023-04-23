@@ -76,7 +76,7 @@ namespace Phabrico.Controllers
                     parameters = HttpUtility.UrlDecode(parameters.FirstOrDefault()).Split(' ').ToArray();
 
                     // loop through all tokens which can relate to the given filter values
-                    foreach (string token in keywordStorage.GetTokensByWords(database, parameters, browser.Session.Locale))
+                    foreach (string token in keywordStorage.GetTokensByWords(database, parameters, "", browser.Session.Locale))
                     {
                         SearchResult searchResult = null;
 

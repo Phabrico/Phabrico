@@ -67,7 +67,9 @@
     <Compile Include="PhrictionTranslatorController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="packages.config" />
-    <None Include="Phabrico.Plugin.PhrictionTranslator.nuspec" />
+    <None Include="Phabrico.Plugin.PhrictionTranslator.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Phabrico\Phabrico.csproj">

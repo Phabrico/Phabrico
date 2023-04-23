@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Phabrico.Data.References;
 using Phabrico.Http;
@@ -905,6 +906,93 @@ namespace Phabrico.Controllers
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// This method is fired when the user enters 2 brackets in a Remarkup-editor.
+        /// This method will return the items for the context menu item, that will be shown next.
+        /// This context menu contains all the wiki documents, based on the filter the user is entering.
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="jsonMessage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/phriction/query")]
+        public JsonMessage HttpPostPopulatePhrictionDocumentsContextMenu(Http.Server httpServer, string[] parameters)
+        {
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/query");
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+            if (token.PrivateEncryptionKey == null) throw new Phabrico.Exception.AccessDeniedException("/user/query", "You don't have sufficient rights to configure Phabrico");
+
+            Storage.Keyword keywordStorage = new Storage.Keyword();
+            Storage.Phriction phrictionStorage = new Storage.Phriction();
+            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            {
+                string[] phrictionTokens = new string[0];
+                string requestedTitlePartial = "";
+
+                if (parameters.Any())
+                {
+                    string[] words = System.Web.HttpUtility.UrlDecode(parameters[0])
+                                                           .TrimStart(' ')
+                                                           .Split(' ')
+                                                           .Where(w => w.Any())
+                                                           .ToArray();
+                    if (words.Any())
+                    {
+                        requestedTitlePartial = string.Join(" ", words);
+                        string[] titleWords = words.Select(p => "title:" + p).ToArray();
+                        phrictionTokens = keywordStorage.GetTokensByWords(database, titleWords, Phabricator.Data.Phriction.Prefix, browser.Session.Locale)
+                                                        .Take(50)
+                                                        .ToArray();
+                    }
+                }
+
+                Uri referer = new Uri(browser.Request.Referer);
+                string localUrl = referer.LocalPath.PadRight(3, ' ').Substring("/w/".Length).TrimEnd('/');
+                string parentUrl = string.Join("/", localUrl.Split('/').Reverse().Skip(1).Reverse());
+
+                // translate tokens from search result into list of urls and titles
+                List<Tuple<string, string>> records = new List<Tuple<string, string>>(
+                    phrictionTokens.Select(t => new
+                    {
+                        Path = phrictionStorage.Get(database, t, browser.Session.Locale, false).Path,
+                        Title = phrictionStorage.Get(database, t, browser.Session.Locale, false).Name
+                    })
+                    .Where(r => r.Title.IndexOf(requestedTitlePartial, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .Select(r => new Tuple<string, string>(r.Path, r.Title))
+                );
+
+                string jsonData = JsonConvert.SerializeObject(new
+                {
+                    nbrSelected = records.Count(),
+                    fontAwesomeIcon = "fa-book",
+                    records = records.Select(r => new { Path = r.Item1, Title = r.Item2 })
+                                     .Select(r => new
+                                     {
+                                         // convert path to relative path if possible
+                                         Path = r.Path.StartsWith(localUrl)
+                                                            ? ("[" + r.Path).Replace("[" + localUrl, ".")
+                                                            : (parentUrl.Any() && r.Path.StartsWith(parentUrl))
+                                                              ? ("[" + r.Path).Replace("[" + parentUrl, "..")
+                                                              : r.Path,
+                                         Title = r.Title
+,                    fontAwesomeIcon = "fa-book",
+                                     })
+                                     .OrderBy(r => r.Title.StartsWith(requestedTitlePartial, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                                     .ThenBy(r => r.Path.StartsWith("..")
+                                                  ? 2
+                                                  : r.Path.StartsWith(".")
+                                                    ? 1
+                                                    : 3
+                                            )
+                                     .ThenBy(r => r.Title)
+                                     .Take(5)
+                });
+                return new JsonMessage(jsonData);
+            }
         }
 
         /// <summary>

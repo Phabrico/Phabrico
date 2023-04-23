@@ -377,9 +377,10 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="database">SQLite database</param>
         /// <param name="words">keywords that exist in the document or task</param>
+        /// <param name="tokenPrefix">first characters of tokens. Can be used to filter type of Phabricator objects (only wiki-documents for example). If empty, all objects are returned</param>
         /// <param name="language">language of the keywords</param>
         /// <returns></returns>
-        public IEnumerable<string> GetTokensByWords(Database database, string[] words, Language language)
+        public IEnumerable<string> GetTokensByWords(Database database, string[] words, string tokenPrefix, Language language)
         {
             string sqlStatement;
             SQLiteCommand dbCommand;
@@ -448,6 +449,8 @@ namespace Phabrico.Storage
                             WordsArraySearchResult wordSearchResult;
                             bool exactWord;
                             string token = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["token"]);
+                            if (token.StartsWith(tokenPrefix) == false) continue;
+
                             int numberOccurrences = Int32.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["nbrocc"]));
                             word = (string)reader["name"];
 

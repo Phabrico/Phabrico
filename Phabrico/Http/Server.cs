@@ -174,6 +174,7 @@ namespace Phabrico.Http
         /// List of active WebSockets
         /// </summary>
         public static List<WebSocketContext> WebSockets = new List<WebSocketContext>();
+        public static object lockWebSockets = new object();
 
         /// <summary>
         /// Constructor
@@ -364,7 +365,7 @@ namespace Phabrico.Http
                 Match shortenedManiphestTaskUrl = RegexSafe.Match(cmdGetUrl, "^/T[0-9]+/?(\\?.*)?", RegexOptions.None);
                 if (shortenedManiphestTaskUrl.Success)
                 {
-                    cmdGetUrl = "maniphest/" + shortenedManiphestTaskUrl.Value;
+                    cmdGetUrl = "/maniphest/" + shortenedManiphestTaskUrl.Value;
                     return true;
                 }
             }
@@ -1703,6 +1704,7 @@ namespace Phabrico.Http
                                                                                            .Skip(1)
                                                                            );
                                 redirectURL = redirectURL.Replace("//", "/");
+                                browser.SetCookie("token", token.ID, true, false);
                                 Http.Response.HttpRedirect httpRedirect = new Http.Response.HttpRedirect(browser.HttpServer, browser, redirectURL);
                                 httpRedirect.Send(browser);
                                 return;
@@ -1801,9 +1803,12 @@ namespace Phabrico.Http
             if (cmdPostUrl.StartsWith("/prod"))
             {
                 string csrf = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
-                if (browser.Session.ActiveCSRF.ContainsKey(csrf))
+                if (string.IsNullOrWhiteSpace(csrf) == false)
                 {
-                    browser.Session.ActiveCSRF[csrf] = DateTime.UtcNow;
+                    if (browser.Session.ActiveCSRF.ContainsKey(csrf))
+                    {
+                        browser.Session.ActiveCSRF[csrf] = DateTime.UtcNow;
+                    }
                 }
 
                 Http.Response.HttpMessage httpResponse = new Http.Response.HttpFound(this, browser, browser.Request.RawUrl);
@@ -2271,7 +2276,14 @@ namespace Phabrico.Http
         {
             foreach (string webSocketMessageIdentifier in currentNotifications.Keys.ToArray())
             {
-                foreach (WebSocketContext webSocketContext in WebSockets.ToArray().Where(websocket => websocket != null).ToArray())
+                WebSocketContext[] webSocketContexts;
+
+                lock (lockWebSockets)
+                {
+                    webSocketContexts = WebSockets.ToArray().Where(websocket => websocket != null).ToArray();
+                }
+
+                foreach (WebSocketContext webSocketContext in webSocketContexts)
                 {
                     try
                     {
@@ -2285,7 +2297,10 @@ namespace Phabrico.Http
                     }
                     catch
                     {
-                        WebSockets.Remove(webSocketContext);
+                        lock (lockWebSockets)
+                        {
+                            WebSockets.Remove(webSocketContext);
+                        }
                     }
                 }
             }
@@ -2312,13 +2327,20 @@ namespace Phabrico.Http
 
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
-                                                                                                 && websocket.RequestUri
-                                                                                                             .LocalPath
-                                                                                                             .TrimEnd('/')
-                                                                                                             .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
-                                                                                      )
-                                                                                .ToArray())
+            WebSocketContext[] webSocketContexts;
+            lock (lockWebSockets)
+            {
+                webSocketContexts = WebSockets.Where(websocket => websocket != null
+                                                                  && websocket.RequestUri
+                                                                              .LocalPath
+                                                                              .TrimEnd('/')
+                                                                              .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                     )
+                                               .OfType<HttpListenerWebSocketContext>()
+                                               .ToArray();
+            }
+
+            foreach (HttpListenerWebSocketContext webSocketContext in webSocketContexts)
             {
                 Logging.WriteInfo("Notify-Busy", webSocketContext.RequestUri.LocalPath);
                 byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
@@ -2386,13 +2408,21 @@ namespace Phabrico.Http
 
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
-                                                                                                 && websocket.RequestUri
-                                                                                                             .LocalPath
-                                                                                                             .TrimEnd('/')
-                                                                                                             .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
-                                                                                      )
-                                                                                .ToArray())
+
+            WebSocketContext[] webSocketContexts;
+            lock (lockWebSockets)
+            {
+                webSocketContexts = WebSockets.Where(websocket => websocket != null
+                                                               && websocket.RequestUri
+                                                                           .LocalPath
+                                                                           .TrimEnd('/')
+                                                                           .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                    )
+                                              .OfType<HttpListenerWebSocketContext>()
+                                              .ToArray();
+            }
+
+            foreach (HttpListenerWebSocketContext webSocketContext in webSocketContexts)
             {
                 Logging.WriteInfo("Notify-Error", webSocketContext.RequestUri.LocalPath);
                 byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);
@@ -2422,13 +2452,20 @@ namespace Phabrico.Http
 
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            foreach (HttpListenerWebSocketContext webSocketContext in WebSockets.Where(websocket => websocket != null
-                                                                                                 && websocket.RequestUri
-                                                                                                             .LocalPath
-                                                                                                             .TrimEnd('/')
-                                                                                                             .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
-                                                                                      )
-                                                                                .ToArray())
+            WebSocketContext[] webSocketContexts;
+            lock (lockWebSockets)
+            {
+                webSocketContexts = WebSockets.Where(websocket => websocket != null
+                                                               && websocket.RequestUri
+                                                                           .LocalPath
+                                                                           .TrimEnd('/')
+                                                                           .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                    )
+                                              .OfType<HttpListenerWebSocketContext>()
+                                              .ToArray();
+            }
+
+            foreach (HttpListenerWebSocketContext webSocketContext in webSocketContexts)
             {
                 Logging.WriteInfo("Notify-Warning", webSocketContext.RequestUri.LocalPath);
                 byte[] data = UTF8Encoding.UTF8.GetBytes(currentNotifications[webSocketMessageIdentifier]);

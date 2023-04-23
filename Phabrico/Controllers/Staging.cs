@@ -473,12 +473,12 @@ namespace Phabrico.Controllers
                 Storage.Stage stageStorage = new Storage.Stage();
                 Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken, browser.Session.Locale);
                 Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken, browser.Session.Locale);
-                Phabricator.Data.Transaction transactionPriorityChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "priority");
-                Phabricator.Data.Transaction transactionStatusChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "status");
-                Phabricator.Data.Transaction transactionOwnerChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "owner");
-                Phabricator.Data.Transaction transactionCommentChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "comment");
-                Phabricator.Data.Transaction transactionSubscriberChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "subscriber-0");
-                Phabricator.Data.Transaction transactionProjectChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "project-0");
+                Phabricator.Data.Transaction transactionPriorityChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "priority");
+                Phabricator.Data.Transaction transactionStatusChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "status");
+                Phabricator.Data.Transaction transactionOwnerChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "owner");
+                Phabricator.Data.Transaction transactionCommentChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "comment");
+                Phabricator.Data.Transaction transactionSubscriberChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "subscriber-0");
+                Phabricator.Data.Transaction transactionProjectChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "project-0");
                 List<int> referencedStagedFileIDs = new List<int>();
                 Regex matchFileAttachments = new Regex("{F(-[0-9]+)[^}]*}");
 
@@ -581,12 +581,12 @@ namespace Phabrico.Controllers
                 Storage.Stage stageStorage = new Storage.Stage();
                 Phabricator.Data.Maniphest maniphestTask = stageStorage.Get<Phabricator.Data.Maniphest>(database, phabricatorObjectToken, browser.Session.Locale);
                 Phabricator.Data.Phriction phrictionDocument = stageStorage.Get<Phabricator.Data.Phriction>(database, phabricatorObjectToken, browser.Session.Locale);
-                Phabricator.Data.Transaction transactionPriorityChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "priority");
-                Phabricator.Data.Transaction transactionStatusChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "status");
-                Phabricator.Data.Transaction transactionOwnerChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "owner");
-                Phabricator.Data.Transaction transactionCommentChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "comment");
-                Phabricator.Data.Transaction transactionSubscriberChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "subscriber-0");
-                Phabricator.Data.Transaction transactionProjectChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, "project-0");
+                Phabricator.Data.Transaction transactionPriorityChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "priority");
+                Phabricator.Data.Transaction transactionStatusChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "status");
+                Phabricator.Data.Transaction transactionOwnerChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "owner");
+                Phabricator.Data.Transaction transactionCommentChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "comment");
+                Phabricator.Data.Transaction transactionSubscriberChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "subscriber-0");
+                Phabricator.Data.Transaction transactionProjectChange = stageStorage.Get<Phabricator.Data.Transaction>(database, phabricatorObjectToken, Language.NotApplicable, "project-0");
                 List<int> referencedStagedFileIDs = new List<int>();
                 Regex matchFileAttachments = new Regex("{F(-[0-9]+)[^}]*}");
 

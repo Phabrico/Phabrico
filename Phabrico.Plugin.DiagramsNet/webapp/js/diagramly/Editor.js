@@ -219,6 +219,11 @@
 	Editor.compressXml = true;
 
 	/**
+	 * Specifies if XML files should be compressed by default. Default is false.
+	 */
+	Editor.defaultCompressed = false;
+
+	/**
 	 * Specifies if XML files should be compressed. Default is true.
 	 */
 	Editor.oneDriveInlinePicker = (window.urlParams != null && window.urlParams['inlinePicker'] == '0') ? false : true;
@@ -1849,6 +1854,7 @@
 
 			if (config.compressXml != null)
 			{
+				Editor.defaultCompressed = config.compressXml;
 				Editor.compressXml = config.compressXml;
 			}
 			
@@ -2509,14 +2515,39 @@
 		{
 			src = (src != null) ? src : DRAW_MATH_URL + '/startup.js';
 			Editor.mathJaxQueue = [];
+
+			// Blocks concurrent rendering while
+			// async rendering is in progress
+			var rendering = null;
+
+			function mathJaxDone()
+			{
+				rendering = null;
+
+				if (Editor.mathJaxQueue.length > 0)
+				{
+					Editor.doMathJaxRender(Editor.mathJaxQueue.shift());
+				}
+				else
+				{
+					Editor.onMathJaxDone();
+				}
+			};
 			
 			Editor.doMathJaxRender = function(container)
 			{
 				try
 				{
-					MathJax.typesetClear([container]);
-					MathJax.typeset([container]);
-					Editor.onMathJaxDone();
+					if (rendering == null)
+					{
+						MathJax.typesetClear([container]);
+						MathJax.typeset([container]);
+						mathJaxDone();
+					}
+					else if (rendering != container)
+					{
+						Editor.mathJaxQueue.push(container);
+					}
 				}
 				catch (e)
 				{
@@ -2524,14 +2555,24 @@
 
 					if (e.retry != null)
 					{
+						rendering = container;
+
 						e.retry.then(function()
 						{
-							MathJax.typesetPromise([container]).then(Editor.onMathJaxDone);
-						});
+							MathJax.typesetPromise([container]).then(mathJaxDone)['catch'](function(e)
+							{
+								console.log('Error in MathJax.typesetPromise: ' + e.toString());
+								mathJaxDone();
+							});
+						})['catch'](function(e)
+						{
+							console.log('Error in MathJax.retry: ' + e.toString());
+							mathJaxDone();
+						});;
 					}
 					else if (window.console != null)
 					{
-						console.log('Error in MathJax: ' + e.toString());
+						console.log('Error in MathJax.typeset: ' + e.toString());
 					}
 				}
 			};
@@ -4333,6 +4374,7 @@
 		
 		mxCellRenderer.defaultShapes['swimlane'].prototype.customProperties = [
 	        {name: 'arcSize', dispName: 'Arc Size', type: 'float', min:0, defVal: 15},
+	        {name: 'absoluteArcSize', dispName: 'Abs. Arc Size', type: 'bool', defVal: false},
 	        {name: 'startSize', dispName: 'Header Size', type: 'float'},
 			{name: 'swimlaneHead', dispName: 'Head Border', type: 'bool', defVal: true},
 			{name: 'swimlaneBody', dispName: 'Body Border', type: 'bool', defVal: true},
@@ -8200,7 +8242,7 @@
 				graph.refresh();
 			}
 
-			function printGraph(thisGraph, pv, forcePageBreaks)
+			function printGraph(thisGraph, pv, forcePageBreaks, pageId)
 			{
 				// Workaround for CSS transforms affecting the print output
 				// is to disable during print output and restore after
@@ -8265,6 +8307,8 @@
 				{
 					autoOrigin = true;
 				}
+
+				var anchorId = (pageId != null) ? 'page/id,' + pageId : null;
 				
 				if (pv == null)
 				{
@@ -8378,7 +8422,7 @@
 					}
 					
 					// Generates the print output
-					pv.open(null, null, forcePageBreaks, true);
+					pv.open(null, null, forcePageBreaks, true, anchorId);
 					
 					// Restores flowAnimation
 					graph.enableFlowAnimation = enableFlowAnimation;
@@ -8403,7 +8447,7 @@
 					
 					pv.backgroundColor = bg;
 					pv.autoOrigin = autoOrigin;
-					pv.appendGraph(thisGraph, scale, x0, y0, forcePageBreaks, true);
+					pv.appendGraph(thisGraph, scale, x0, y0, forcePageBreaks, true, anchorId);
 					
 					var extFonts = thisGraph.getCustomFonts();
 					
@@ -8576,7 +8620,7 @@
 						tempGraph.model.setRoot(page.root);
 					}
 					
-					pv = printGraph(tempGraph, pv, i != imax);
+					pv = printGraph(tempGraph, pv, i != imax, page.getId());
 
 					if (tempGraph != graph)
 					{
@@ -8611,6 +8655,9 @@
 				}
 				
 				pv.closeDocument();
+
+				// Rewrites page links to point to internal anchors
+				Graph.rewritePageLinks(pv.wnd.document);
 				
 				if (!pv.mathEnabled && print)
 				{

@@ -311,6 +311,9 @@ msgstr "正在下载宏观数据"
 msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "正在下载文件对象"
 
+msgid "Synchronization.Status.LoadingUnreferencedFileObjects"
+msgstr "加载丢失的文件对象"
+
 msgid "Synchronization.Status.UploadingManiphestData"
 msgstr "正在上传任务"
 

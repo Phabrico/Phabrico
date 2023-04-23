@@ -399,9 +399,6 @@ msgstr "复制"
 msgid "Copy Size"
 msgstr "复制大小"
 
-msgid "Copy Style"
-msgstr "复制样式"
-
 msgid "Create / Remove Space"
 msgstr "创建/删除空间"
 
@@ -518,9 +515,6 @@ msgstr "粘贴"
 
 msgid "Paste Size"
 msgstr "粘贴大小"
-
-msgid "Paste Style"
-msgstr "粘贴样式"
 
 msgid "Previous Page"
 msgstr "上一页"

@@ -311,6 +311,9 @@ msgstr "Загрузка данных макросов..."
 msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "Загрузка объектов файлов..."
 
+msgid "Synchronization.Status.LoadingUnreferencedFileObjects"
+msgstr "Загрузка отсутствующих объектов файлов..."
+
 msgid "Synchronization.Status.UploadingManiphestData"
 msgstr "Загрузка задач Манифест..."
 

@@ -165,6 +165,9 @@
 				    }
 				}
 				else if (msg.event == 'save') {
+					var btnExit = Array.prototype.slice.call(iframe.contentWindow.document.querySelector('.geMenubarContainer').querySelectorAll('button'), 0).reverse()[0];
+					btnExit.disabled = true;
+
 				    iframe.contentWindow.postMessage(JSON.stringify({
 				        action: 'export',
 				        format: 'xmlpng', 
@@ -239,9 +242,12 @@
 	                        modified: false
 	                    }), '*');
 
-	                    if (isStaged == false) {
-	                        document.location = document.baseURI + "diagrams.net/F" + result.FileToken;  // reload with new File-ID
-	                    }
+						if (isStaged == false) {
+							document.location = document.baseURI + "diagrams.net/F" + result.FileToken;  // reload with new File-ID
+						} else {
+                            var btnExit = Array.prototype.slice.call(iframe.contentWindow.document.querySelector('.geMenubarContainer').querySelectorAll('button'), 0).reverse()[0];
+                            btnExit.disabled = false;
+						}
 	                }
 	            } catch(exc) {
 	                errorMessage = exc.message;

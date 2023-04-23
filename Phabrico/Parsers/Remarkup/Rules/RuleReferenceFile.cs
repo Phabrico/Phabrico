@@ -170,6 +170,13 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         break;
                 }
             }
+            else
+            if (isTranslatedObject == false && FileID > 0)
+            {
+                // ERROR: file object not found!
+                // file object was not downloaded from Phabricator (or file object was not granted on Phabricator to be viewed by everybody)
+                database.MarkFileObject(FileID, true);
+            }
 
             remarkup = remarkup.Substring(match.Length);
 

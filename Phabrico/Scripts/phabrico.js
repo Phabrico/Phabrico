@@ -1283,15 +1283,17 @@ class Table {
 
 // ************************************************************************************************
 class TextAreaContextMenu {
-    constructor(textArea, contextMenuTriggerCharacter, objectType, urlData, propertyResult, propertyInternalName, propertyReadableName = null, conditionToShow = null)
+    constructor(textArea, contextMenuTriggerCharacter, contextMenuCloseCharacter, objectType, urlData, propertyResult, propertyInternalName, propertyReadableName = null, conditionToShow = null)
     {
         var me = this;
         me.showDropDownMenu = false;
         me.offsetSearchValue = 0;
         me.endOffsetSearchValue = 0;
+        me.contextMenuTriggerCharacterIndex = 0;
         me.autocomplete = null;
         me.searchValue = null;
         me.contextMenuTriggerCharacter = contextMenuTriggerCharacter;
+        me.contextMenuCloseCharacter = contextMenuCloseCharacter;
         me.urlData = urlData;
         me.ObjectType = objectType;
         me.PropertyResult = propertyResult;
@@ -1301,7 +1303,6 @@ class TextAreaContextMenu {
 
         // credits for getCaretCoordinates function go to Dan Dascalescu
         me.getCaretCoordinates = function(element, position) {
-            var isFirefox = !(window.mozInnerScreenX == null);
             var computed, style;
 
             // The properties that we copy into a hidden div.
@@ -1366,15 +1367,11 @@ class TextAreaContextMenu {
                 style[prop] = computed[prop];
             });
 
-            if (isFirefox) {
-                style.width = parseInt(computed.width) - 2 + 'px'  // Firefox adds 2 pixels to the padding - https://bugzilla.mozilla.org/show_bug.cgi?id=753662
+            style.width = parseInt(computed.width) - 2 + 'px'  // Firefox adds 2 pixels to the padding - https://bugzilla.mozilla.org/show_bug.cgi?id=753662
 
-                // Firefox lies about the overflow property for textareas: https://bugzilla.mozilla.org/show_bug.cgi?id=984275
-                if (element.scrollHeight > parseInt(computed.height))
-                    style.overflowY = 'scroll';
-            } else {
-                style.overflow = 'hidden';  // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
-            }
+            // Firefox lies about the overflow property for textareas: https://bugzilla.mozilla.org/show_bug.cgi?id=984275
+            if (element.scrollHeight > parseInt(computed.height))
+                style.overflowY = 'scroll';
 
             hiddenDiv.textContent = element.value.substring(0, position);
 
@@ -1394,7 +1391,8 @@ class TextAreaContextMenu {
 
             var coordinates = {
                 top: span.offsetTop + parseInt(computed['borderTopWidth']),
-                left: span.offsetLeft + parseInt(computed['borderLeftWidth'])
+                left: span.offsetLeft + parseInt(computed['borderLeftWidth']),
+                visibleTop: element.scrollTop
             };
 
             return coordinates;
@@ -1422,6 +1420,7 @@ class TextAreaContextMenu {
                         if (me.autocomplete != null)
                         {
                             document.body.removeChild(me.autocomplete);
+                            me.contextMenuTriggerCharacterIndex = 0;
                             me.autocomplete = null;
                         }
                         return;
@@ -1442,6 +1441,7 @@ class TextAreaContextMenu {
                 if (eventKey == "Escape")
                 {
                     document.body.removeChild(me.autocomplete);
+                    me.contextMenuTriggerCharacterIndex = 0;
                     me.autocomplete = null;
                     return;
                 }
@@ -1452,6 +1452,7 @@ class TextAreaContextMenu {
                     if (me.offsetSearchValue >= textarea.selectionStart)
                     {
                         document.body.removeChild(me.autocomplete);
+                        me.contextMenuTriggerCharacterIndex = 0;
                         me.autocomplete = null;
                         return;
                     }
@@ -1463,6 +1464,7 @@ class TextAreaContextMenu {
                     if (me.endOffsetSearchValue <= textarea.selectionEnd)
                     {
                         document.body.removeChild(me.autocomplete);
+                        me.contextMenuTriggerCharacterIndex = 0;
                         me.autocomplete = null;
                         return;
                     }
@@ -1502,7 +1504,10 @@ class TextAreaContextMenu {
                         selectedIndex = 0;
                     }
 
-                    highlightedMenuItem.classList.remove('focused');
+                    if (highlightedMenuItem != null)
+                    {
+                        highlightedMenuItem.classList.remove('focused');
+                    }
                     me.autocomplete.list.children[selectedIndex].classList.add('focused');
                     e.preventDefault();
                     return;
@@ -1526,24 +1531,37 @@ class TextAreaContextMenu {
             if (eventType == "keypress")
             {
                 keyPressed = eventKey;
-                if (me.showDropDownMenu == false && keyPressed == me.contextMenuTriggerCharacter)
+                if (me.showDropDownMenu == false)
                 {
-                    me.showDropDownMenu = true;
-
-                    // contextmenu can only be shown if previous character allows it
-                    var previousCharacter = textarea.value.substring(textarea.selectionStart - 1, textarea.selectionStart);
-                    if ([' ','\n','\t','.','-',')','>','!','|',''].indexOf(previousCharacter) < 0)
+                    if (keyPressed == me.contextMenuTriggerCharacter[me.contextMenuTriggerCharacterIndex])
                     {
-                        me.showDropDownMenu = false;
+                        me.contextMenuTriggerCharacterIndex++;
+
+                        if (me.contextMenuTriggerCharacterIndex == me.contextMenuTriggerCharacter.length)
+                        {
+                            me.showDropDownMenu = true;
+
+                            if (me.contextMenuTriggerCharacterIndex == 1)
+                            { 
+                                // contextmenu can only be shown if previous character allows it
+                                var previousCharacter = textarea.value.substring(textarea.selectionStart - 1, textarea.selectionStart);
+                                if ([' ','\n','\t','.','-',')','>','!','|',''].indexOf(previousCharacter) < 0)
+                                {
+                                    me.showDropDownMenu = false;
+                                }
+                            }
+
+                            if (me.showDropDownMenu)
+                            {
+                                me.searchValue = "";
+                                me.offsetSearchValue = textarea.selectionStart + 1;
+                                me.endOffsetSearchValue = me.offsetSearchValue;
+                            }
+                        }
+                        return;
                     }
 
-                    if (me.showDropDownMenu)
-                    {
-                        me.searchValue = "";
-                        me.offsetSearchValue = textarea.selectionStart + 1;
-                        me.endOffsetSearchValue = me.offsetSearchValue;
-                    }
-                    return;
+                    me.contextMenuTriggerCharacterIndex = 0;
                 }
 
                 if (me.autocomplete != null)
@@ -1558,6 +1576,7 @@ class TextAreaContextMenu {
                         else
                         {
                             document.body.removeChild(me.autocomplete);
+                            me.contextMenuTriggerCharacterIndex = 0;
                             me.autocomplete = null;
                         }
 
@@ -1566,22 +1585,40 @@ class TextAreaContextMenu {
                     }
                 }
 
-                // contextmenu should be hidden when the next character (=new key pressed) says so
-                if (['.',' ', ':', ',', ')','#', '@', '!', '?', '{', '}'].indexOf(keyPressed) >= 0)
+                if (contextMenuCloseCharacter == "")
                 {
-                    if (me.autocomplete != null)
+                    // contextmenu should be hidden when the next character (=new key pressed) says so
+                    if (['.',' ', ':', ',', ')','#', '@', '!', '?', '{', '}'].indexOf(keyPressed) >= 0)
                     {
-                        document.body.removeChild(me.autocomplete);
-                        me.autocomplete = null;
+                        if (me.autocomplete != null)
+                        {
+                            document.body.removeChild(me.autocomplete);
+                            me.contextMenuTriggerCharacterIndex = 0;
+                            me.autocomplete = null;
+                        }
+                        return;
                     }
-                    return;
+                }
+                else
+                {
+                    // contextmenu should be hidden when the next character (=new key pressed) says so
+                    if (contextMenuCloseCharacter.indexOf(keyPressed) >= 0)
+                    {
+                        if (me.autocomplete != null)
+                        {
+                            document.body.removeChild(me.autocomplete);
+                            me.contextMenuTriggerCharacterIndex = 0;
+                            me.autocomplete = null;
+                        }
+                        return;
+                    }
                 }
 
                 if (me.autocomplete == null)
                 {
                     // check if trigger character was removed (e.g. by backspace)
                     if (textarea.selectionStart < 1 ||
-                        textarea.value.substring(textarea.selectionStart - 1, textarea.selectionStart) != me.contextMenuTriggerCharacter)
+                        textarea.value.substring(textarea.selectionStart - 1, textarea.selectionStart) != me.contextMenuTriggerCharacter[0])
                     {
                         // don't show context menu
                         me.showDropDownMenu = false;
@@ -1590,7 +1627,9 @@ class TextAreaContextMenu {
 
                     // check if trigger character is pressed twice
                     if (textarea.selectionStart >= 2 &&
-                        textarea.value.substring(textarea.selectionStart - 2, textarea.selectionStart - 1) == me.contextMenuTriggerCharacter)
+                        textarea.value.substring(textarea.selectionStart - 2, textarea.selectionStart - 1) == me.contextMenuTriggerCharacter[0] &&
+                        textarea.value.substring(textarea.selectionStart - 2, textarea.selectionStart) != me.contextMenuTriggerCharacter
+                       )
                     {
                         // don't show context menu
                         me.showDropDownMenu = false;
@@ -1657,16 +1696,19 @@ class TextAreaContextMenu {
                     }
 
                     // calculate position of context menu
-                    var menuItemHeight = 28;
+                    var menuItemHeight = 30;
+                    var menuHeaderHeight = 22;
+                    var currentLineHeight = 25;
                     var cursorPosition = me.getCaretCoordinates(textarea, textarea.selectionEnd);
                     var textAreaBoundaries = textarea.getBoundingClientRect();
                     var menuPostion = {
-                        top: textarea.offsetTop + cursorPosition.top + menuItemHeight,
+                        top: (cursorPosition.top - cursorPosition.visibleTop) + textAreaBoundaries.top + menuHeaderHeight,
                         left: cursorPosition.left
                     };
-                    if (menuPostion.top + (2 + menuItems.length) * menuItemHeight > textAreaBoundaries.bottom)
+                    if ((menuItemHeight * menuItems.length) + menuHeaderHeight + menuPostion.top > textAreaBoundaries.bottom)
                     {
-                        menuPostion.top = menuPostion.top - menuItemHeight * (2.5 + menuItems.length);
+                        // menu will not fit on screen: show it above the current line instead of below
+                        menuPostion.top = menuPostion.top - ((menuItemHeight * menuItems.length) + menuHeaderHeight + currentLineHeight);
                     }
 
                     // create context menu if it does not exist yet
@@ -1738,18 +1780,19 @@ class TextAreaContextMenu {
                         anchor.onclick = function(e) {
                             var clickedAnchor = e.target.children[0].closest('a');
                             if (fontAwesomeIcon == null) {
-                                me.autocomplete.target.setRangeText(clickedAnchor.shortenedName + " ", me.offsetSearchValue - 1, me.endOffsetSearchValue);
+                                me.autocomplete.target.setRangeText(clickedAnchor.shortenedName + me.contextMenuCloseCharacter + " ", me.offsetSearchValue - 1, me.endOffsetSearchValue);
                             } else {
-                                me.autocomplete.target.setRangeText(clickedAnchor.shortenedName + " ", me.offsetSearchValue, me.endOffsetSearchValue);
+                                me.autocomplete.target.setRangeText(clickedAnchor.shortenedName + me.contextMenuCloseCharacter + " ", me.offsetSearchValue, me.endOffsetSearchValue);
                             }
                             me.autocomplete.target.focus()
-                            me.autocomplete.target.selectionStart += clickedAnchor.shortenedName.length + 1;
+                            me.autocomplete.target.selectionStart += clickedAnchor.shortenedName.length + me.contextMenuCloseCharacter.length + 1;
 
                             // trigger oninput event for refreshing remarkup decoding
                             var oninputEvent = new Event('input', { 'bubbles': true, 'cancelable': true });
                             me.autocomplete.target.dispatchEvent(oninputEvent);
 
                             document.body.removeChild(me.autocomplete);
+                            me.contextMenuTriggerCharacterIndex = 0;
                             me.autocomplete = null;
                             return false;
                         };
@@ -1767,7 +1810,7 @@ class TextAreaContextMenu {
                         if (fontAwesomeIcon == null) {
                             anchor.head.icon.innerHTML = item[me.PropertyResult];
                         } else {
-                            anchor.head.icon.classList.add('fa-user');
+                            anchor.head.icon.classList.add(fontAwesomeIcon);
                         }
                         anchor.head.icon.classList.add('bluegrey');
                         anchor.head.appendChild(anchor.head.icon);
@@ -3234,7 +3277,7 @@ document.addEventListener('contextmenu', function (ev) {
 })
 
 // correct colors for animated wait icon in case we're in dark mode
-if (document.body.dataset.theme == "dark") {
+if (document.body != null && document.body.dataset.theme == "dark") {
     document.querySelectorAll('.wait svg rect').forEach(function (r) {
         r.setAttribute('fill', "#fff");
     });

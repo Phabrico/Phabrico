@@ -180,6 +180,10 @@ div.codeblock {
     margin-bottom:8px;
 }
 
+.maniphest-task div.codeblock {
+    width: 100vw;
+}
+
 .phriction-edit div.codeblock {
     width: calc(50vw - 30px);
 }
@@ -249,15 +253,19 @@ div.codeblock:hover button.codeblock.copy {
 
 h1, h2, h3, h4, h5, h6 {
     margin-top: .75em;
+    line-height: normal;
 }
 
+#remarkupContent br + h1 {
+    padding-top: 20px;
+}
 .phui-document h1,
 h2.remarkup-header,
 h3.remarkup-header,
 h4.remarkup-header,
 h5.remarkup-header,
 h6.remarkup-header {
-    margin-top: .25em;
+    margin-top: .75em;
 }
 
 .remarkupContent.multilevel-headers h1.remarkup-header {
@@ -269,11 +277,22 @@ h1.remarkup-header:first-child,
     margin-top: .25em;
 }
 
+.remarkupContent br {
+    display: block;
+}
+
+.remarkupContent.multilevel-headers span[data-line="1"] + h1.remarkup-header {
+    margin-top: -.5em;
+}
+
 .remarkupContent br + h1.remarkup-header,
 .remarkupContent.multilevel-headers br + h1.remarkup-header,
-.remarkupContent br + span[data-line] + h1.remarkup-header,
-.remarkupContent.multilevel-headers br + span[data-line] + h1.remarkup-header {
+.remarkupContent br + span[data-line] + h1.remarkup-header {
     margin-top: 0em;
+}
+
+.remarkupContent.multilevel-headers br + span[data-line] + h1.remarkup-header {
+    margin-top: 1em;
 }
 
 .edit-right h1.remarkup-header:nth-child(2) {
@@ -571,7 +590,7 @@ select {
 #phui-navigator {
     margin-bottom: 20px;
 }
-
+    .phui-document-toc-header.selected,
     #phui-navigator a.selected {
         text-shadow: var(--phui-document-toc-selected-text-shadow);
         color: var(--phui-document-toc-selected-color);
@@ -1885,7 +1904,7 @@ table.remarkup-table td {
 div.remarkup-notification.note,
 div.remarkup-notification.warning,
 div.remarkup-notification.important {
-    margin: 16px 0;
+    margin: 16px 0 0 0;
     padding: 12px;
 }
 
@@ -1907,13 +1926,23 @@ div.remarkup-notification.important {
     max-width: calc(100vw - 50px);
 }
 
-div.remarkup-notification + br + div.remarkup-notification {
-    margin-top: -15px;
+div.remarkup-notification + br + div.remarkup-notification,
+div.remarkup-notification + br + span[data-line] + div.remarkup-notification {
+    margin-top: 5px;
 }
 
 hr.remarkup-hr {
     margin: 24px 0;
     clear: both;
+}
+
+.remarkupContent.multilevel-headers hr.remarkup-hr + h1.remarkup-header,
+.remarkupContent.multilevel-headers hr.remarkup-hr + h2.remarkup-header,
+.remarkupContent.multilevel-headers hr.remarkup-hr + h3.remarkup-header,
+.remarkupContent.multilevel-headers hr.remarkup-hr + h4.remarkup-header,
+.remarkupContent.multilevel-headers hr.remarkup-hr + h5.remarkup-header,
+.remarkupContent.multilevel-headers hr.remarkup-hr + h6.remarkup-header {
+    margin-top: -.25em;
 }
 
 span.remarkup-note-word {
@@ -3379,6 +3408,10 @@ div.color-selector .btnSetColorForAll {
     height: auto;
 }
 
+br + h1, br + h2, br + h3, br + h4, br + h5, br + h6 {
+    margin-top: 0px;
+}
+
 .edit-right .image-locator.allow-full-screen .image-container {
     cursor: unset;
 }
@@ -3425,6 +3458,10 @@ div.color-selector .btnSetColorForAll {
     top: 50%;
 }
 
+.image-locator + br {
+    display: block;
+    margin-top: -1em;
+}
 
 .color-selector:focus,
 .phabrico-page-content.tabkey a:focus {

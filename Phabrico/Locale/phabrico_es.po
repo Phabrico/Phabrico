@@ -311,6 +311,9 @@ msgstr "Descargando datos de macro..."
 msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "Descargando objetos de archivo..."
 
+msgid "Synchronization.Status.LoadingUnreferencedFileObjects"
+msgstr "Descargando objetos de archivo perdidos......"
+
 msgid "Synchronization.Status.UploadingManiphestData"
 msgstr "Cargando en las tareas del Maniphest..."
 

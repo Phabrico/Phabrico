@@ -2145,7 +2145,8 @@ var ParseDialog = function(editorUi, title, defaultType)
 				var diagramType = lines[k].trim().toLowerCase();
 				var sp = diagramType.indexOf(' ');
 				diagramType = diagramType.substring(0, sp > 0 ? sp : diagramType.length);
-				var inDrawioFormat = type == 'mermaid2drawio' && diagramType != 'gantt' && diagramType != 'pie';
+				var inDrawioFormat = typeof mxMermaidToDrawio !== 'undefined' && 
+							type == 'mermaid2drawio' && diagramType != 'gantt' && diagramType != 'pie';
 
 				var graph = editorUi.editor.graph;
 				
@@ -2534,7 +2535,8 @@ var ParseDialog = function(editorUi, title, defaultType)
 	var typeSelect = document.createElement('select');
 	typeSelect.className = 'geBtn';
 	
-	if (defaultType == 'formatSql' || (defaultType == 'mermaid' && editorUi.getServiceName() != 'draw.io'))
+	if (defaultType == 'formatSql' || (defaultType == 'mermaid' && 
+			editorUi.getServiceName() != 'draw.io' && editorUi.getServiceName() != 'atlassian'))
 	{
 		typeSelect.style.display = 'none';
 	}
@@ -3225,7 +3227,7 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	{
 		var content = document.createElement('div');
 		content.style.position = 'absolute';
-		content.style.overflow = 'hidden';
+		content.style.overflow = 'visible';
 		content.style.left = '8px';
 		content.style.right = '8px';
 		content.style.bottom = '8px';
@@ -3295,6 +3297,13 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 			option.setAttribute('value', type);
 			mxUtils.write(option, title);
 			typeSelect.appendChild(option);
+		}
+
+		var type = urlParams['smart-template-type'];
+
+		if (type != null)
+		{
+			typeSelect.value = type;
 		}
 
 		var button = mxUtils.button(mxResources.get('generate'), function()
@@ -3397,6 +3406,14 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 		{
 			description.value = decodeURIComponent(temp);
 			updateState();
+
+			if (urlParams['smart-template-generate'] == '1')
+			{
+				window.setTimeout(function()
+				{
+					button.click();
+				}, 0);
+			}
 		}
 
 		mxEvent.addListener(description, 'change', updateState);
@@ -3873,8 +3890,8 @@ var NewDialog = function(editorUi, compact, showName, callback, createOnly, canc
 	// Adds local basic templates
 	categories['basic'] = [{title: 'blankDiagram', select: true}];
 	var templates = categories['basic'];
-
-	if (editorUi.getServiceName() == 'draw.io')
+	
+	if (editorUi.isExternalDataComms() && editorUi.getServiceName() == 'draw.io')
 	{
 		categories['smartTemplate'] = {content: createSmartTemplateContent()};
 	}
@@ -7342,7 +7359,7 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 	
 	function updateReplBtns()
 	{
-		if (lastSearchSuccessful && replaceInput.value)
+		if (lastSearchSuccessful)
 		{
 			replaceFindBtn.removeAttribute('disabled');
 			replaceBtn.removeAttribute('disabled');
@@ -7353,7 +7370,7 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 			replaceBtn.setAttribute('disabled', 'disabled');
 		}
 		
-		if (replaceInput.value && searchInput.value)
+		if (searchInput.value)
 		{
 			replaceAllBtn.removeAttribute('disabled');
 		}
@@ -7700,7 +7717,7 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 		{
 			try
 			{
-				if (lblMatch != null && lastFound != null && replaceInput.value)
+				if (lblMatch != null && lastFound != null)
 				{
 					var cell = lastFound.cell, lbl = graph.getLabel(cell);
 					
@@ -7737,11 +7754,12 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 		{
 			try
 			{
-				if (lblMatch != null && lastFound != null && replaceInput.value)
+				if (lblMatch != null && lastFound != null)
 				{
 					var cell = lastFound.cell, lbl = graph.getLabel(cell);
 					
-					graph.model.setValue(cell, replaceInLabel(lbl, lblMatch, replaceInput.value, lblMatchPos - lblMatch.length, graph.getCurrentCellStyle(cell)));
+					graph.model.setValue(cell, replaceInLabel(lbl, lblMatch, replaceInput.value,
+						lblMatchPos - lblMatch.length, graph.getCurrentCellStyle(cell)));
 					replaceFindBtn.setAttribute('disabled', 'disabled');
 					replaceBtn.setAttribute('disabled', 'disabled');
 				}
@@ -7768,59 +7786,56 @@ var FindWindow = function(ui, x, y, w, h, withReplace)
 		{
 			replAllNotif.innerText = '';
 			
-			if (replaceInput.value)
+			lastSearch = null; // Reset last search to check all matches
+			var currentPage = ui.currentPage;
+			var cells = ui.editor.graph.getSelectionCells();
+			ui.editor.graph.rendering = false;
+			
+			graph.getModel().beginUpdate();
+			try
 			{
-				lastSearch = null; // Reset last search to check all matches
-				var currentPage = ui.currentPage;
-				var cells = ui.editor.graph.getSelectionCells();
-				ui.editor.graph.rendering = false;
+				var safeguard = 0;
+				var seen = {};
 				
-				graph.getModel().beginUpdate();
-				try
+				while (search(false, true, true) && safeguard < 100)
 				{
-					var safeguard = 0;
-					var seen = {};
+					var cell = lastFound.cell, lbl = graph.getLabel(cell);
+					var oldSeen = seen[cell.id];
 					
-					while (search(false, true, true) && safeguard < 100)
+					if (oldSeen && oldSeen.replAllMrk == marker && oldSeen.replAllPos >= lblMatchPos)
 					{
-						var cell = lastFound.cell, lbl = graph.getLabel(cell);
-						var oldSeen = seen[cell.id];
-						
-						if (oldSeen && oldSeen.replAllMrk == marker && oldSeen.replAllPos >= lblMatchPos)
-						{
-							break;
-						}
-						
-						seen[cell.id] = {replAllMrk: marker, replAllPos: lblMatchPos};
-						
-						if (graph.isCellEditable(cell))
-						{
-							graph.model.setValue(cell, replaceInLabel(lbl, lblMatch, replaceInput.value,
-								lblMatchPos - lblMatch.length, graph.getCurrentCellStyle(cell)));
-							safeguard++;
-						}
+						break;
 					}
 					
-					if (currentPage != ui.currentPage)
-					{
-						ui.editor.graph.model.execute(new SelectPage(ui, currentPage));
-					}
+					seen[cell.id] = {replAllMrk: marker, replAllPos: lblMatchPos};
 					
-					mxUtils.write(replAllNotif, mxResources.get('matchesRepl', [safeguard]));
-				}
-				catch (e)
-				{
-					ui.handleError(e);
-				}
-				finally
-				{
-					graph.getModel().endUpdate();
-					ui.editor.graph.setSelectionCells(cells);
-					ui.editor.graph.rendering = true;
+					if (graph.isCellEditable(cell))
+					{
+						graph.model.setValue(cell, replaceInLabel(lbl, lblMatch, replaceInput.value,
+							lblMatchPos - lblMatch.length, graph.getCurrentCellStyle(cell)));
+						safeguard++;
+					}
 				}
 				
-				marker++;
+				if (currentPage != ui.currentPage)
+				{
+					ui.editor.graph.model.execute(new SelectPage(ui, currentPage));
+				}
+				
+				mxUtils.write(replAllNotif, mxResources.get('matchesRepl', [safeguard]));
 			}
+			catch (e)
+			{
+				ui.handleError(e);
+			}
+			finally
+			{
+				graph.getModel().endUpdate();
+				ui.editor.graph.setSelectionCells(cells);
+				ui.editor.graph.rendering = true;
+			}
+			
+			marker++;
 		});
 		
 		replaceAllBtn.setAttribute('title', mxResources.get('replaceAll'));
@@ -12853,9 +12868,10 @@ var FilePropertiesDialog = function(editorUi)
 	var filename = (file != null && file.getTitle() != null) ?
 		file.getTitle() : editorUi.defaultFilename;
 	var isPng = /(\.png)$/i.test(filename);
+	var isSvg = /(\.svg)$/i.test(filename);
 	var apply = function() { };
 
-	if (isPng)
+	if (isPng || isSvg)
 	{
 		var scale = 1;
 		var border = 0;
@@ -12886,7 +12902,7 @@ var FilePropertiesDialog = function(editorUi)
 		var zoomInput = document.createElement('input');
 		zoomInput.setAttribute('value', (scale * 100) + '%');
 		zoomInput.style.marginLeft = '4px';
-		zoomInput.style.width ='180px';
+		zoomInput.style.width = '120px';
 		
 		td = document.createElement('td');
 		td.style.whiteSpace = 'nowrap';
@@ -12906,7 +12922,7 @@ var FilePropertiesDialog = function(editorUi)
 		var borderInput = document.createElement('input');
 		borderInput.setAttribute('value', border);
 		borderInput.style.marginLeft = '4px';
-		borderInput.style.width ='180px';
+		borderInput.style.width = '120px';
 		
 		td = document.createElement('td');
 		td.style.whiteSpace = 'nowrap';
@@ -12947,7 +12963,7 @@ var FilePropertiesDialog = function(editorUi)
 	else if (!/(\.html)$/i.test(filename) &&
 		!/(\.svg)$/i.test(filename))
 	{
-		var initialCompressed = (file != null) ? file.isCompressed() : Editor.compressXml;
+		var initialCompressed = (file != null) ? file.isCompressed() : Editor.defaultCompressed;
 
 		row = document.createElement('tr');
 		td = document.createElement('td');
@@ -12994,7 +13010,7 @@ var FilePropertiesDialog = function(editorUi)
 			editorUi.hideDialog();
 		};
 	}
-
+	
 	if (file != null && file.isRealtimeOptional())
 	{
 		row = document.createElement('tr');

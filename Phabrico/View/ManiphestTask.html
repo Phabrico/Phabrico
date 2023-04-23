@@ -396,9 +396,10 @@
     // set page title
     window.addEventListener('load', function() {
         document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + fromHTML("@@TASK-HEADER@@");
-        new TextAreaContextMenu(textarea, "@", "user", "user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
-        new TextAreaContextMenu(textarea, "#", "project", "project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
-        new TextAreaContextMenu(textarea, ":", "emoji", "remarkup/emoji/", "Code", "Name");
+        new TextAreaContextMenu(textarea, "@", "", "user", "user/query/", "UserName", "UserName", "RealName", ignoreNoUser);
+        new TextAreaContextMenu(textarea, "#", "", "project", "project/query/", "InternalName", "ProjectName", null, ignoreNoProject);
+        new TextAreaContextMenu(textarea, ":", "", "emoji", "remarkup/emoji/", "Code", "Name");
+        var textAreaPhrictionDocumentsContextMenu = new TextAreaContextMenu(textarea, "[[", "]]", "document", "/phriction/query/", "Path", "Title");
         remarkup = new Remarkup(() => { });
     }, false);
 
@@ -419,8 +420,9 @@
     }, 60000)
 
     @{IF @@ACCESS-MASTER-DATA@@=True@
-        actionViewPhabricatorTask.href = "@@PHABRICATOR-URL@@" + document.location.href.substring(document.baseURI.length + "maniphest/".length)
-                                                                                       .match(/^T-?[0-9]+/)[0]
+        var urlTaskID = document.location.href.substring(document.baseURI.length);
+        if (urlTaskID.replace(/^\//, "").startsWith("maniphest/")) urlTaskID = urlTaskID.substring("maniphest/".length);
+        actionViewPhabricatorTask.href = "@@PHABRICATOR-URL@@" + urlTaskID.match(/^T-?[0-9]+/)[0];
     }@
 
     document.onkeydown = function (e) {
@@ -445,7 +447,7 @@
 
             e.preventDefault();
 
-            document.querySelector('.phabrico-page-content').classList.toggle('right-collapsed');
+            document.querySelectorAll('div.right-collapsed > div > div.expandcollapse .fa-chevron-left, div:not(.right-collapsed) > div > div.expandcollapse .fa-chevron-right')[0].click();
         }
     }
 </script>

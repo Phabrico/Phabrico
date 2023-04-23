@@ -364,7 +364,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "=====" formatted header was found</returns>
         private bool ProcessDoubleLinedHeaderLevel5(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^===== *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^=====+ *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
@@ -529,7 +529,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "#####" formatted header was found</returns>
         private bool ProcessHashLinedHeaderLevel5(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^##### +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^#####+ +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);

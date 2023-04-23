@@ -311,6 +311,9 @@ msgstr "Bezig met macro-data te downloaden..."
 msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "Bezig met bestandsobjecten te downloaden..."
 
+msgid "Synchronization.Status.LoadingUnreferencedFileObjects"
+msgstr "Bezig met ontbrekende bestandsobjecten te downloaden......"
+
 msgid "Synchronization.Status.UploadingManiphestData"
 msgstr "Bezig met Maniphest taken up te loaden..."
 

@@ -241,17 +241,67 @@ namespace Phabrico.Plugin
                     }
                     else
                     // check if hyperlink is valid
-                    if (hyperlink != null && hyperlink.InvalidHyperlink)
+                    if (hyperlink != null)
                     {
-                        if (invalidHyperlinks.TryGetValue(hyperlink.Text, out invalidHyperlinkReferences) == false)
+                        bool invalidHyperlink = hyperlink.InvalidHyperlink;
+
+                        if (invalidHyperlink == false && hyperlink.URL.Contains("#"))
                         {
-                            invalidHyperlinkReferences = new List<string>();
-                            invalidHyperlinks[hyperlink.Text] = invalidHyperlinkReferences;
+                            bool doValidateURL = true;
+                            string[] urlParts = hyperlink.URL.Split('#');
+                            string urlDocument = urlParts.FirstOrDefault();
+                            string localReference = HttpUtility.UrlDecode(urlParts.Skip(1).FirstOrDefault());
+                            Parsers.Remarkup.RemarkupParserOutput referencedRemarkupPerserOutput = null;
+
+                            if (string.IsNullOrWhiteSpace(urlDocument) == false)
+                            {
+                                if (urlDocument.StartsWith("http:")) doValidateURL = false;
+                                if (urlDocument.StartsWith("https:")) doValidateURL = false;
+                                if (urlDocument.StartsWith("w/")) urlDocument = urlDocument.Substring("w/".Length);
+
+                                if (doValidateURL)
+                                {
+                                    Phabricator.Data.Phriction referencedPhrictionDocument = phrictionStorage.Get(database, urlDocument, browser.Session.Locale);
+                                    if (referencedPhrictionDocument != null)
+                                    {
+                                        if (string.IsNullOrWhiteSpace(referencedPhrictionDocument.Content) == false)
+                                        {
+                                            ConvertRemarkupToHTML(database, referencedPhrictionDocument.Path, referencedPhrictionDocument.Content, out referencedRemarkupPerserOutput, false);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                referencedRemarkupPerserOutput = remarkupPerserOutput;
+                            }
+
+                            if (doValidateURL)
+                            {
+                                if (referencedRemarkupPerserOutput != null)
+                                {
+                                    Parsers.Remarkup.Rules.RuleHeader[] allHeaders = GetAllRemarkupTokens(referencedRemarkupPerserOutput.TokenList).OfType<Parsers.Remarkup.Rules.RuleHeader>().ToArray();
+                                    invalidHyperlink = allHeaders.Any(h => h.HeaderName.Equals(localReference)) == false;
+                                }
+                                else
+                                {
+                                    invalidHyperlink = true;
+                                }
+                            }
                         }
 
-                        if (invalidHyperlinkReferences.Contains(phrictionDocument.Path) == false)
+                        if (invalidHyperlink)
                         {
-                            invalidHyperlinkReferences.Add(phrictionDocument.Path);
+                            if (invalidHyperlinks.TryGetValue(hyperlink.Text, out invalidHyperlinkReferences) == false)
+                            {
+                                invalidHyperlinkReferences = new List<string>();
+                                invalidHyperlinks[hyperlink.Text] = invalidHyperlinkReferences;
+                            }
+
+                            if (invalidHyperlinkReferences.Contains(phrictionDocument.Path) == false)
+                            {
+                                invalidHyperlinkReferences.Add(phrictionDocument.Path);
+                            }
                         }
                     }
                 }

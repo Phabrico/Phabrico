@@ -245,7 +245,9 @@ namespace Phabrico.Parsers.Remarkup
                                             int positionNextFullStop = RegexSafe.Match(unprocessedRemarkupText.Substring(1), "[.\n]", RegexOptions.Singleline).Index;
                                             if (latestText.Length > 60 && 
                                                 latestText.Length + positionNextFullStop > 200 &&
-                                                positionNextFullStop > 15
+                                                positionNextFullStop > 15 &&
+                                                html.Length > 3 &&
+                                                html[html.Length - 3] != '.'
                                                )
                                             {
                                                 addNewLineAfterFullStop = true;

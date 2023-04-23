@@ -399,9 +399,6 @@ msgstr "Копировать"
 msgid "Copy Size"
 msgstr "Размер копирования"
 
-msgid "Copy Style"
-msgstr "Копировать стиль"
-
 msgid "Create / Remove Space"
 msgstr "Создать / Удалить пространство"
 
@@ -518,9 +515,6 @@ msgstr "Вставить"
 
 msgid "Paste Size"
 msgstr "Размер вставки"
-
-msgid "Paste Style"
-msgstr "Стиль вставки"
 
 msgid "Previous Page"
 msgstr "Предыдущая страница"

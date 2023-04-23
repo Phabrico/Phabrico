@@ -311,6 +311,9 @@ msgstr "Laddning av makrodata..."
 msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "Laddning av filobjekt..."
 
+msgid "Synchronization.Status.LoadingUnreferencedFileObjects"
+msgstr "Laddning av saknade filobjekt..."
+
 msgid "Synchronization.Status.UploadingManiphestData"
 msgstr "Uppladdning av Maniphest-uppdrag..."
 

@@ -48,6 +48,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 { "markdown"     , "markdown"},
                 { "nginx"        , "nginx"   },
                 { "objectivec"   , "objectivec"},
+                { "patch"        , "diff"    },
                 { "perl"         , "perl"    },
                 { "pgsql"        , "pgsql"   },
                 { "php"          , "php"     },

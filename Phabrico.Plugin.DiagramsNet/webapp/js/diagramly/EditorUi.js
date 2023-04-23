@@ -335,9 +335,9 @@
 	EditorUi.prototype.maxBackgroundSize = 1600;
 
 	/**
-	 * Defines the maximum size for images.
+	 * Defines the maximum size for images in px. Default is 1200.
 	 */
-	EditorUi.prototype.maxImageSize = 520;
+	EditorUi.prototype.maxImageSize = 1200;
 	
 	/**
 	 * Defines the maximum width for pasted text.
@@ -351,9 +351,9 @@
 	EditorUi.prototype.resampleThreshold = 100000;
 
 	/**
-	 * Maximum allowed size for images is 1 MB.
+	 * Defines the maximum size for images in bytes. Default is 2 MB.
 	 */
-	EditorUi.prototype.maxImageBytes = 1000000;
+	EditorUi.prototype.maxImageBytes = 2000000;
 
 	/**
 	 * Maximum size for background images is 2.5 MB.
@@ -1085,6 +1085,7 @@
 		graph = (graph != null) ? graph : this.editor.graph;
 		forceXml = (forceXml != null) ? forceXml : false;
 		ignoreSelection = (ignoreSelection != null) ? ignoreSelection : true;
+		uncompressed = (uncompressed != null) ? uncompressed : !Editor.defaultCompressed;
 		
 		var editLink = null;
 		var redirect = null;
@@ -1169,7 +1170,8 @@
 				
 				// Adds new metadata
 				fileNode.setAttribute('modified', new Date().toISOString());
-				fileNode.setAttribute('agent', navigator.appVersion);
+				fileNode.setAttribute('agent', (navigator.userAgent != null) ?
+					navigator.userAgent : navigator.appVersion);
 				fileNode.setAttribute('version', EditorUi.VERSION);
 				fileNode.setAttribute('etag', Editor.guid());
 				
@@ -1212,9 +1214,13 @@
 				{
 					url = null;
 				}
+
+				var props = this.getSvgFileProperties(fileNode);
 				
-				xml = this.getEmbeddedSvg(xml, graph, url, null, embeddedCallback, ignoreSelection, redirect);
+				xml = this.getEmbeddedSvg(xml, graph, url, null, embeddedCallback, ignoreSelection, redirect,
+					null, null, props.scale, props.border);
 			}
+			
 			
 			return xml;
 		}
@@ -1230,7 +1236,7 @@
 	{
 		ignoreSelection = (ignoreSelection != null) ? ignoreSelection : true;
 		currentPage = (currentPage != null) ? currentPage : false;
-		uncompressed = (uncompressed != null) ? uncompressed : !Editor.compressXml;
+		uncompressed = (uncompressed != null) ? uncompressed : !Editor.defaultCompressed;
 		
 		// Generats graph model XML node for single page export
 		var node = this.editor.getGraphXml(ignoreSelection, resolveReferences);
@@ -1613,13 +1619,13 @@
 	{
 		ignoreSelection = (ignoreSelection != null) ? ignoreSelection : true;
 		currentPage = (currentPage != null) ? currentPage : false;
+		uncompressed = (uncompressed != null) ? uncompressed : !Editor.defaultCompressed;
 		var graph = this.editor.graph;
 		
 		// Forces compression of embedded XML
 		if (forceSvg || (!forceXml && file != null && /(\.svg)$/i.test(file.getTitle())))
 		{
 			var darkTheme = graph.themes != null && graph.defaultThemeName == 'darkTheme';
-			uncompressed = false;
 
 			// Exports SVG for first page while other page is visible by creating a graph
 			// LATER: Add caching for the graph or SVG while not on first page
@@ -2113,8 +2119,8 @@
 	EditorUi.prototype.createDownloadRequest = function(filename, format, ignoreSelection,
 		base64, transparent, currentPage, scale, border, grid, includeXml, pageRange, w, h)
 	{
-		var params = this.downloadRequestBuilder(filename, format, ignoreSelection,
-							base64, transparent, currentPage, scale, border, grid, includeXml, pageRange, w, h);
+		var params = this.downloadRequestBuilder(filename, format, ignoreSelection, base64,
+			transparent, currentPage, scale, border, grid, includeXml, pageRange, w, h);
 
 		var paramsStr = '';
 
@@ -2148,7 +2154,7 @@
 		// the from/to URL parameters to specify the page to be exported.
 		var data = this.getFileData(true, null, null, null, ignoreSelection,
 			currentPage == false ? false : format != 'xmlpng', null, null,
-			null, false, format == 'pdf');
+			null, !Editor.defaultCompressed, format == 'pdf');
 		var from = null, to = null, allPages = null;
 
 		if (bounds.width * bounds.height > MAX_AREA || data.length > MAX_REQUEST_SIZE)
@@ -3118,12 +3124,24 @@
 	 */
 	EditorUi.prototype.createLibraryDataFromImages = function(images)
 	{
+		// Uncompresses existing entries for saving
+		if (!Editor.defaultCompressed)
+		{
+			for (var i = 0; i < images.length; i++)
+			{
+				if (images[i].xml != null && images[i].xml.charAt(0) != '<')
+				{
+					images[i].xml = mxUtils.trim(Graph.decompress(images[i].xml));
+				}
+			}
+		}
+
 		var doc = mxUtils.createXmlDocument();
 		var library = doc.createElement('mxlibrary');
-		mxUtils.setTextContent(library, JSON.stringify(images));
+		mxUtils.setTextContent(library, JSON.stringify(images, null, 2));
 		doc.appendChild(library);
 		
-		return mxUtils.getXml(doc);
+		return mxUtils.getXml(doc, '\n');
 	};
 	
 	/**
@@ -3457,7 +3475,13 @@
 
 				contentDiv.appendChild(this.sidebar.createVertexTemplateFromCells(
 					cells, bounds.width, bounds.height, title || '', true, null, false));
-				var xml = Graph.compress(mxUtils.getXml(this.editor.graph.encodeCells(cells)));
+				var xml = mxUtils.getXml(this.editor.graph.encodeCells(cells));
+
+				if (Editor.defaultCompressed)
+				{
+					xml = Graph.compress(xml);
+				}
+
 				var entry = {xml: xml, w: bounds.width, h: bounds.height};
 				
 				if (title != null)
@@ -4032,7 +4056,7 @@
 	
 		if (e != null || title != null)
 		{
-			var msg = mxUtils.htmlEntities(mxResources.get('unknownError'));
+			var msg = mxUtils.htmlEntities(mxResources.get('unknownError'), false);
 			var btn = mxResources.get('ok');
 			var retry = null;
 			title = (title != null) ? title : mxResources.get('error');
@@ -4055,11 +4079,11 @@
 					{
 						if (e.message != null)
 						{
-							msg = mxUtils.htmlEntities(e.message);
+							msg = mxUtils.htmlEntities(e.message, false);
 						}
 						else
 						{
-							msg = mxUtils.htmlEntities(mxResources.get('accessDenied'));
+							msg = mxUtils.htmlEntities(mxResources.get('accessDenied'), false);
 						}
 					}
 					else
@@ -4067,7 +4091,7 @@
 						msg = (notFoundMessage != null) ? notFoundMessage :
 							mxUtils.htmlEntities(mxResources.get('fileNotFoundOrDenied') +
 							((this.drive != null && this.drive.user != null) ? ' (' + this.drive.user.displayName +
-							', ' + this.drive.user.email+ ')' : ''));
+							', ' + this.drive.user.email+ ')' : ''), false);
 					}
 					
 					var id = (notFoundMessage != null) ? null : ((fileHash != null) ? fileHash : window.location.hash);
@@ -4180,30 +4204,30 @@
 				{
 					if (e.message == '' && e.name != null)
 					{
-						msg = mxUtils.htmlEntities(e.name);
+						msg = mxUtils.htmlEntities(e.name, false);
 					}
 					else
 					{
-						msg = mxUtils.htmlEntities(e.message);
+						msg = mxUtils.htmlEntities(e.message, false);
 					}
 				}
 				else if (e.response != null && e.response.error != null)
 				{
-					msg = mxUtils.htmlEntities(e.response.error);
+					msg = mxUtils.htmlEntities(e.response.error, false);
 				}
 				else if (typeof window.App !== 'undefined')
 				{
 					if (e.code == App.ERROR_TIMEOUT)
 					{
-						msg = mxUtils.htmlEntities(mxResources.get('timeout'));
+						msg = mxUtils.htmlEntities(mxResources.get('timeout'), false);
 					}
 					else if (e.code == App.ERROR_BUSY)
 					{
-						msg = mxUtils.htmlEntities(mxResources.get('busy'));
+						msg = mxUtils.htmlEntities(mxResources.get('busy'), false);
 					}
 					else if (typeof e === 'string' && e.length > 0)
 					{
-						msg = mxUtils.htmlEntities(e);
+						msg = mxUtils.htmlEntities(e, false);
 					}
 				}
 			}
@@ -4224,7 +4248,7 @@
 			{
 				btn3 = mxResources.get('contactOwner');
 				
-				msg += mxUtils.htmlEntities(' (' + btn3 + ': ' + e.ownerEmail + ')');
+				msg += mxUtils.htmlEntities(' (' + btn3 + ': ' + e.ownerEmail + ')', false);
 				
 				fn3 = mxUtils.bind(this, function()
 				{
@@ -6859,6 +6883,14 @@
 		
 		return node;
 	};
+
+	/**
+	 * 
+	 */
+	EditorUi.prototype.getSvgFileProperties = function(node)
+	{
+		return this.getPngFileProperties(node);
+	};
 	
 	/**
 	 * 
@@ -7603,7 +7635,14 @@
 
 												reader.onload = function() 
 												{
-													handleError({message: JSON.parse(reader.result).Message});
+													try
+													{	
+														handleError({message: JSON.parse(reader.result).Message});
+													}
+													catch (e)
+													{
+														handleError(e);
+													}
 												}
 
 												reader.readAsText(xhr.response);
@@ -8033,6 +8072,47 @@
 
 		fn();
 	};
+	
+	/**
+	 * Generates a Mermaid image.
+	 */
+	EditorUi.prototype.extractMermaidMindmap = function(lines)
+	{
+		if (lines[1].indexOf('orientation') > 0)
+		{
+			lines.splice(1, 1);
+		}
+
+		while (lines.length > 1 && lines[1] == '')
+		{
+			lines.splice(1, 1);
+		}
+
+		var newLines = [];
+
+		// Removes dashes in entries
+		for (var i = 2; i < lines.length; i++)
+		{
+			var temp = mxUtils.trim(lines[i]);
+
+			if (temp != '[' && temp != ']' &&
+				temp.substring(0, 2) != '%%' &&
+				temp.substring(0, 2) != '##')
+			{
+				temp = lines[i].replace(/[-|>]/g, ' ')
+				
+				if (mxUtils.trim(temp) != '' &&
+					temp.charAt(0) == ' ')
+				{
+					newLines.push(temp);
+				}
+			}
+		}
+
+		// Removes indentiation for root element
+		return 'mindmap\nroot((' + mxUtils.trim(lines[1]) +
+			'))\n' + newLines.join('\n');
+	};
 
 	/**
 	 * Generates a Mermaid image.
@@ -8068,6 +8148,18 @@
 		// Validates diagram type on first line
 		var type = lines[0].split(' ')[0].replace(/:$/, '');
 
+		try
+		{
+			if (type == 'mindmap' && lines.length > 2)
+			{
+				text = this.extractMermaidMindmap(lines);
+			}
+		}
+		catch (e)
+		{
+			// ignore
+		}
+
 		if (type.charAt(0) != '@' && mxUtils.indexOf(
 			EditorUi.mermaidDiagramTypes, type) < 0)
 		{
@@ -8080,7 +8172,7 @@
 
 		return text;
 	};
-
+	
 	/**
 	 * Generates a Mermaid image.
 	 */
@@ -10161,7 +10253,7 @@
 				{
 					if (this.isShowCellEditItems())
 					{
-						this.addMenuItems(menu, ['delete', '-'], null, evt);
+						this.addPopupDeleteItem(menu, cell, evt);
 					}
 					else
 					{
@@ -10173,20 +10265,7 @@
 
 					if (!this.isShowCellEditItems())
 					{
-						var item = this.addMenuItem(menu, 'delete');
-
-						if (item != null && item.firstChild != null &&
-							item.firstChild.nextSibling != null)
-						{
-							item.firstChild.nextSibling.style.color = 'red';
-
-							if (graph.getSelectionCount() > 1)
-							{
-								item.firstChild.nextSibling.innerHTML =
-									mxUtils.htmlEntities(mxResources.get('delete') +
-									' (' + graph.getSelectionCount() + ')');
-							}
-						}
+						this.addPopupDeleteItem(menu, cell, evt);
 					}
 
 					this.addMenuItems(menu, ['lockUnlock', '-'], null, evt);
@@ -10368,8 +10447,6 @@
 		{
 			// Defines additional hotkeys
 			this.keyHandler.bindAction(70, true, 'findReplace'); // Ctrl+F
-			this.keyHandler.bindAction(67, true, 'copyStyle', true); // Ctrl+Shift+C
-			this.keyHandler.bindAction(86, true, 'pasteStyle', true); // Ctrl+Shift+V
 			this.keyHandler.bindAction(77, true, 'editGeometry', true); // Ctrl+Shift+M
 			this.keyHandler.bindAction(75, true, 'tags'); // Ctrl+K
 			this.keyHandler.bindAction(65, false, 'insertText'); // A
@@ -10381,6 +10458,8 @@
 			this.keyHandler.bindAction(67, false, 'insertEdge'); // C
 			this.keyHandler.bindAction(88, false, 'insertFreehand'); // X
 			this.keyHandler.bindAction(75, true, 'toggleShapes', true); // Ctrl+Shift+K
+			this.altShiftActions[81] = 'copyStyle'; // Alt+Shift+Q
+			this.altShiftActions[87] = 'pasteStyle'; // Alt+Shift+W
 			this.altShiftActions[83] = 'synchronize'; // Alt+Shift+S
 			
 			if (urlParams['embedInline'] == '1')
@@ -12570,7 +12649,8 @@
 					status = mxResources.get('error') + ': ' +
 						mxResources.get('checksum');
 				}
-				else if (file.sync != null && !file.sync.enabled)
+				else if (file.sync != null && (!file.sync.enabled ||
+					!file.sync.isRealtimeActive()))
 				{
 					status = mxResources.get('realtimeCollaboration') +
 						': ' + mxResources.get('disabled');
@@ -15311,56 +15391,66 @@
 	 */
 	EditorUi.prototype.sendEmbeddedSvgExport = function(noExit)
 	{
-		var graph = this.editor.graph;
-
-		if (graph.isEditing())
+		try
 		{
-			graph.stopEditing(!graph.isInvokesStopCellEditing());
+			var graph = this.editor.graph;
+
+			if (graph.isEditing())
+			{
+				graph.stopEditing(!graph.isInvokesStopCellEditing());
+			}
+
+			var parent = window.opener || window.parent;
+			
+			if (!this.editor.modified)
+			{
+				if (!noExit)
+				{
+					parent.postMessage(JSON.stringify({event: 'exit',
+						point: this.embedExitPoint}), '*');
+				}
+			}
+			else
+			{
+				var bg = graph.background;
+			
+				if (bg == null || bg == mxConstants.NONE)
+				{
+					bg = this.embedExportBackground;
+				}
+
+				this.getEmbeddedSvg(this.getFileData(true, null, null, null, null,
+					null, null, null, null, false), graph, null, true,
+					mxUtils.bind(this, function(svg)
+				{
+					parent.postMessage(JSON.stringify({
+						event: 'export', point: this.embedExitPoint,
+						exit: (noExit != null) ? !noExit : true,
+						data: Editor.createSvgDataUri(svg)
+					}), '*');
+				}), null, null, true, bg, 1, this.embedExportBorder);
+			}
+
+			if (!noExit)
+			{
+				this.diagramContainer.removeAttribute('data-bounds');
+				Editor.inlineFullscreen = false;
+				graph.model.clear();
+				this.editor.undoManager.clear();
+				this.setBackgroundImage(null);
+				this.editor.modified = false;
+
+				if (urlParams['embed'] != '1')
+				{
+					this.fireEvent(new mxEventObject('editInlineStop'));
+				}
+			}
 		}
-
-		var parent = window.opener || window.parent;
-
-		if (!this.editor.modified)
+		catch (e)
 		{
 			if (!noExit)
 			{
-				parent.postMessage(JSON.stringify({event: 'exit',
-					point: this.embedExitPoint}), '*');
-			}
-		}
-		else
-		{
-			var bg = graph.background;
-		
-			if (bg == null || bg == mxConstants.NONE)
-			{
-				bg = this.embedExportBackground;
-			}
-
-			this.getEmbeddedSvg(this.getFileData(true, null, null, null, null,
-				null, null, null, null, false), graph, null, true,
-				mxUtils.bind(this, function(svg)
-			{
-				parent.postMessage(JSON.stringify({
-					event: 'export', point: this.embedExitPoint,
-					exit: (noExit != null) ? !noExit : true,
-					data: Editor.createSvgDataUri(svg)
-				}), '*');
-			}), null, null, true, bg, 1, this.embedExportBorder);
-		}
-
-		if (!noExit)
-		{
-			this.diagramContainer.removeAttribute('data-bounds');
-			Editor.inlineFullscreen = false;
-			graph.model.clear();
-			this.editor.undoManager.clear();
-			this.setBackgroundImage(null);
-			this.editor.modified = false;
-
-			if (urlParams['embed'] != '1')
-			{
-				this.fireEvent(new mxEventObject('editInlineStop'));
+				this.handleError(e);
 			}
 		}
 	};
@@ -15715,6 +15805,7 @@
 						{
 							this.embedViewport = data.viewport;
 							this.editor.graph.refresh();
+							this.fireEvent(new mxEventObject('embedViewportChanged'));
 						}
 
 						return;
@@ -19827,3 +19918,24 @@ var ConfirmDialog = function(editorUi, message, okFn, cancelFn, okLabel, cancelL
 	
 	this.container = div;
 };
+
+/**
+ * Headless Editor UI class for offscreen editor instances.
+ */
+var HeadlessEditorUi = function()
+{
+	EditorUi.call(this, new Editor(true), document.createElement('div'), true);
+};
+
+/**
+ * Extends EditorUi.
+ */
+mxUtils.extend(HeadlessEditorUi, EditorUi);
+
+/**
+ * Avoid creating UI and event listeners.
+ */
+HeadlessEditorUi.prototype.createUi = function() {};
+HeadlessEditorUi.prototype.addTrees = function() {};
+HeadlessEditorUi.prototype.onBeforeUnload = function() {};
+HeadlessEditorUi.prototype.updateActionStates = function() {};

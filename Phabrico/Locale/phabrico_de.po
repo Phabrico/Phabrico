@@ -311,6 +311,9 @@ msgstr "Laden von Makro-Daten..."
 msgid "Synchronization.Status.LoadingFileObjects"
 msgstr "Laden von File-Objekten..."
 
+msgid "Synchronization.Status.LoadingUnreferencedFileObjects"
+msgstr "Laden von vermissten Dateiobjekten..."
+
 msgid "Synchronization.Status.UploadingManiphestData"
 msgstr "Maniphest-Aufgaben hochladen..."
 

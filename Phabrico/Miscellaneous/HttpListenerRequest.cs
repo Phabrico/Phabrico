@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net;
+using System.Security.AccessControl;
 using System.Text.RegularExpressions;
 
 namespace Phabrico.Miscellaneous
@@ -221,6 +222,29 @@ namespace Phabrico.Miscellaneous
             set
             {
                 internalRequestUrl = value;
+            }
+        }
+
+        /// <summary>
+        /// URL from where the request was executed
+        /// </summary>
+        public string Referer
+        {
+            get
+            {
+                string referer = "";
+
+                if (internalHttpRequest != null)
+                {
+                    referer = internalHttpRequest.Headers.Get("Referer");
+                }
+                else
+                if (internalHttpListenerRequest != null)
+                {
+                    referer = internalHttpListenerRequest.Headers.Get("Referer");
+                }
+
+                return referer;
             }
         }
 

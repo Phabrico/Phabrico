@@ -399,9 +399,6 @@ msgstr "Kopioi"
 msgid "Copy Size"
 msgstr "Kopioi koko"
 
-msgid "Copy Style"
-msgstr "Kopioi tyyli"
-
 msgid "Create / Remove Space"
 msgstr "Luo / Poista väli"
 
@@ -518,9 +515,6 @@ msgstr "Liitä"
 
 msgid "Paste Size"
 msgstr "Liitä koko"
-
-msgid "Paste Style"
-msgstr "Liitä-tyyli"
 
 msgid "Previous Page"
 msgstr "Edellinen sivu"

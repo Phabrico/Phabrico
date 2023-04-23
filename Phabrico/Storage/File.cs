@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using static Phabrico.Controllers.Synchronization;
 
 namespace Phabrico.Storage
 {
@@ -74,9 +75,11 @@ namespace Phabrico.Storage
                     {
                         Database.IsModified = true;
                     }
-
                     transaction.Commit();
                 }
+
+                // in case file was marked as 'Unreferenced', unmark it.
+                database.MarkFileObject(file.ID, false);
             }
         }
 

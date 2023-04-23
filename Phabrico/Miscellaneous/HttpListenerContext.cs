@@ -223,7 +223,10 @@ namespace Phabrico.Miscellaneous
         private async Task AcceptWebSocketAsync(WebSocketContext context)
         {
             byte[] buffer = new byte[8192];
-            Http.Server.WebSockets.Add(context);
+            lock (Http.Server.lockWebSockets)
+            {
+                Http.Server.WebSockets.Add(context);
+            }
 
             try
             {
@@ -244,9 +247,16 @@ namespace Phabrico.Miscellaneous
                     }
                 }
             }
+            catch
+            {
+                // ignore
+            }
             finally
             {
-                Http.Server.WebSockets.Remove(context);
+                lock (Http.Server.lockWebSockets)
+                {
+                    Http.Server.WebSockets.Remove(context);
+                }
             }
         }
     }

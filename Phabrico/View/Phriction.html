@@ -1177,7 +1177,7 @@ dateModified won't change when a subscription is added or removed
 
             e.preventDefault();
 
-            document.querySelector('.phabrico-page-content').classList.toggle('right-collapsed');
+            document.querySelectorAll('div.right-collapsed .expandcollapse .fa-chevron-left, div:not(.right-collapsed) .expandcollapse .fa-chevron-right')[0].click();
         }
     }
 
@@ -1185,21 +1185,35 @@ dateModified won't change when a subscription is added or removed
     // format table of contents when scrolling through wiki page
     window.addEventListener('scroll', function (e) {
         var topHeader = null;
+        var contents = document.querySelector('a.phui-document-toc-header');
         var headersReversed = Array.prototype.slice.call(remarkupContent.querySelectorAll('h1 > a, h2 > a, h3 > a'), 0).reverse();
         if (headersReversed.length > 0) {
             topHeader = headersReversed.filter(r => r.getBoundingClientRect().y < 20)[0];
-            if (typeof topHeader == 'undefined') {
-                topHeader = headersReversed[headersReversed.length - 1];
-            }
         }
 
+        contents.classList.remove('selected');
         Array.prototype.slice.call(document.querySelector('#phui-navigator').querySelectorAll('a'), 0)
             .forEach(a => a.classList.remove('selected'));
 
+        var selectedTocElement = null;
+        if (typeof topHeader == 'undefined') {
+            selectedTocElement = contents;
+        }
+        else
         if (topHeader != null) {
-            Array.prototype.slice.call(document.querySelector('#phui-navigator').querySelectorAll('a'), 0)
-                .filter(a => a.hash == '#' + encodeURI(topHeader.name))[0]
-                .classList.add('selected');
+            selectedTocElement = Array.prototype.slice.call(document.querySelector('#phui-navigator').querySelectorAll('a'), 0)
+                                                .filter(a => a.hash == '#' + encodeURI(topHeader.name))[0]
+        }
+
+        if (selectedTocElement != null)
+        {
+            selectedTocElement.classList.add('selected');
+
+            var selectedTocElementPosition = selectedTocElement.getBoundingClientRect();
+            var tocBoundaries = contents.parentElement.getBoundingClientRect();
+            if (selectedTocElementPosition.top < tocBoundaries.top || selectedTocElementPosition.bottom > tocBoundaries.height) {
+                selectedTocElement.scrollIntoView();
+            }
         }
     });
 </script>
