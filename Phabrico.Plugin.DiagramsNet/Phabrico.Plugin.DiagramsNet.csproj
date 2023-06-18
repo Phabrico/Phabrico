@@ -85,6 +85,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\js\vsdxImporter.js" />
     <EmbeddedResource Include="webapp\plugins\nextcloud.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\commons-text-1.10.0.jar" />
     <EmbeddedResource Include="webapp\img\lib\azure2\storage\Azure_Fileshare.svg" />
@@ -316,7 +317,6 @@
     <EmbeddedResource Include="webapp\templates\business\swimlane.png" />
     <EmbeddedResource Include="webapp\js\integrate.min.js" />
     <EmbeddedResource Include="webapp\workbox-12cca165.js" />
-    <EmbeddedResource Include="webapp\electron-preload.js" />
     <EmbeddedResource Include="webapp\workbox-dfbb910f.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\commons-fileupload-1.4.jar" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\commons-io-2.11.0.jar" />
@@ -466,9 +466,7 @@
     <EmbeddedResource Include="images\diagrams-net-quick-start-video-poster.png" />
     <Content Include="scripts\initialization.js" />
     <EmbeddedResource Include="webapp\clear.html" />
-    <EmbeddedResource Include="webapp\disableUpdate.js" />
     <EmbeddedResource Include="webapp\dropbox.html" />
-    <EmbeddedResource Include="webapp\electron.js" />
     <EmbeddedResource Include="webapp\export-fonts.css" />
     <EmbeddedResource Include="webapp\export3.html" />
     <EmbeddedResource Include="webapp\favicon.ico" />

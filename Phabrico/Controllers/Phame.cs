@@ -62,7 +62,7 @@ namespace Phabrico.Controllers
                     }
 
                     string shortedContent = string.Join("\n", firstLines);
-                    string formattedDocumentContent = ConvertRemarkupToHTML(database, "/", shortedContent, out remarkupParserOutput, false);
+                    string formattedDocumentContent = ConvertRemarkupToHTML(database, "/", shortedContent, out remarkupParserOutput, false, phamePost.Token);
 
                     string authorName = "";
                     Phabricator.Data.User author = userStorage.Get(database, phamePost.Author, browser.Session.Locale);
@@ -110,7 +110,7 @@ namespace Phabrico.Controllers
                 if (author != null) authorName = author.UserName;
 
                 RemarkupParserOutput remarkupParserOutput;
-                string formattedDocumentContent = ConvertRemarkupToHTML(database, "/", phamePost.Content, out remarkupParserOutput, false);
+                string formattedDocumentContent = ConvertRemarkupToHTML(database, "/", phamePost.Content, out remarkupParserOutput, false, phamePost.Token);
 
                 viewPage.SetText("BLOG-POST-TITLE", phamePost.Title);
                 viewPage.SetText("BLOG-POST-CONTENT", formattedDocumentContent, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);

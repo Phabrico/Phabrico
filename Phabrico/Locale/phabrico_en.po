@@ -123,6 +123,15 @@ msgstr "Password should contain at least 1 capital letter"
 msgid "Password should be at least 12 characters long"
 msgstr "Password should be at least 12 characters long"
 
+msgid "User name should be at least 1 character long"
+msgstr "User name should be at least 1 character long"
+
+msgid "Only HTTP or HTTPS urls are supported"
+msgstr "Only HTTP or HTTPS urls are supported"
+
+msgid "Invalid API token"
+msgstr "Invalid API token"
+
 msgid "Log out"
 msgstr "Log out"
 
@@ -1107,6 +1116,22 @@ msgstr "An internal error occurred"
 msgid "A document already exists with this slug path"
 msgstr "A document already exists with this slug path"
 
+# Inaccessible files
+msgid "Inaccessible files"
+msgstr "Inaccessible files"
+
+msgid "View references to inaccessible files"
+msgstr "View references to inaccessible files"
+
+msgid "Reference"
+msgstr "Reference"
+
+msgid "File ID"
+msgstr "File ID"
+
+msgid "Type some text to filter the references of inaccessible file objects..."
+msgstr "Type some text to filter the references of inaccessible file objects..."
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Bold"
@@ -1173,6 +1198,9 @@ msgstr "WARNING"
 
 msgid "FileReference.Download"
 msgstr "Download"
+
+msgid "File inaccessible"
+msgstr "File inaccessible"
 
 # Browser not supported
 msgid "Browser not supported"

@@ -58,8 +58,9 @@ namespace Phabrico.Parsers.Remarkup
         /// <param name="remarkupText">Remarkup encoded text</param>
         /// <param name="remarkupParserOutput">Additional information generated from the specified remarkup (e.g. linked files)</param>
         /// <param name="includeLineNumbers">If true, empty SPAN elements with a line data-attribute will be added to generated HTML code. This line data-attribute contains the (first) line number of the original Remarkup code for all the generated elements</param>
+        /// <param name="phabricatorObjectToken">Token of Phabricator document or task on which the RemarkupEngine is processed on</param>
         /// <returns>The decoded HTML</returns>
-        public string ToHTML(RemarkupRule currentRemarkupRule, Storage.Database database, Browser browser, string url, string remarkupText, out RemarkupParserOutput remarkupParserOutput, bool includeLineNumbers)
+        public string ToHTML(RemarkupRule currentRemarkupRule, Storage.Database database, Browser browser, string url, string remarkupText, out RemarkupParserOutput remarkupParserOutput, bool includeLineNumbers, string phabricatorObjectToken)
         {
             lock (remarkupRules)
             {
@@ -107,6 +108,7 @@ namespace Phabrico.Parsers.Remarkup
                             remarkupRule.ChildTokenList.Clear();
                             remarkupRule.LinkedPhabricatorObjects.Clear();
                             remarkupRule.ParentRemarkupRule = currentRemarkupRule;
+                            remarkupRule.PhabricatorObjectToken = phabricatorObjectToken;
                             remarkupRule.TokenList = remarkupParserOutput.TokenList;
                             remarkupRule.Start = currentPosition;
                             success = remarkupRule.ToHTML(database, browser, url, ref unprocessedRemarkupText, out localHtml);

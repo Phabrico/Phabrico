@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Phabrico.Controllers;
-using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Parsers.Remarkup;
@@ -27,12 +26,12 @@ namespace Phabrico.Plugin.Extensions
                 }
 
                 RemarkupParserOutput remarkupParserOutput;
-                string masterDocumentHtml = ConvertRemarkupToHTML(database, masterDocument.Path, masterDocument.Content, out remarkupParserOutput, true);
+                string masterDocumentHtml = ConvertRemarkupToHTML(database, masterDocument.Path, masterDocument.Content, out remarkupParserOutput, true, masterDocument.Token);
 
                 // retrieve translated version
                 Storage.Content content = new Storage.Content(database);
                 Storage.Content.Translation translatedDocument = content.GetTranslation(masterDocument.Token, browser.Session.Locale);
-                string translatedDocumentHtml = ConvertRemarkupToHTML(database, masterDocument.Path, translatedDocument.TranslatedRemarkup, out remarkupParserOutput, true);
+                string translatedDocumentHtml = ConvertRemarkupToHTML(database, masterDocument.Path, translatedDocument.TranslatedRemarkup, out remarkupParserOutput, true, masterDocument.Token);
 
                 // create resulting view
                 viewPage = new HtmlViewPage(httpServer, browser, true, "ProofReader", parameters);

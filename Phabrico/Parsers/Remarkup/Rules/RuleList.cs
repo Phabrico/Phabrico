@@ -461,7 +461,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     }
 
                     result += " ";
-                    result += RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, listItem.Substring(header.Length));
+                    result += RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, listItem.Substring(header.Length), PhabricatorObjectToken);
                     result += "\n";
                 }
             }
@@ -528,14 +528,14 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     {
                         case ListElement.ListBulletType.Unchecked:
                             html += string.Format("<li class='remarkup-list-item remarkup-unchecked-item'><input type='checkbox' disabled='disabled'> {0}",
-                                            Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false));
+                                            Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false, PhabricatorObjectToken));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                             ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
 
                         case ListElement.ListBulletType.Checked:
                             html += string.Format("<li class='remarkup-list-item remarkup-checked-item'><input type='checkbox' checked='checked' disabled='disabled'> {0}",
-                                            Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false));
+                                            Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false, PhabricatorObjectToken));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                             ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
@@ -544,7 +544,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                         case ListElement.ListBulletType.Regular:
                         default:
                             html += string.Format("<li class='remarkup-list-item'>{0}",
-                                            ParagraphText(Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false)));
+                                            ParagraphText(Engine.ToHTML(this, database, browser, url, child.Me.Content.TrimEnd('\r', '\n'), out remarkupParserOutput, false, PhabricatorObjectToken)));
                             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                             ChildTokenList.AddRange(remarkupParserOutput.TokenList);
                             break;
@@ -608,9 +608,9 @@ namespace Phabrico.Parsers.Remarkup.Rules
             {
                 RemarkupParserOutput innerRemarkupParserOutput;
                 string content = node.Me.Content.TrimEnd('\n');
-                remarkupEngine.ToHTML(this, database, browser, url, content, out innerRemarkupParserOutput, false);
+                remarkupEngine.ToHTML(this, database, browser, url, content, out innerRemarkupParserOutput, false, PhabricatorObjectToken);
 
-                string xmlContent = innerRemarkupParserOutput.TokenList.PrepareForXmlExport(database, browser, url);
+                string xmlContent = innerRemarkupParserOutput.TokenList.PrepareForXmlExport(database, browser, url, PhabricatorObjectToken);
 
                 string tagName;
                 string bulletStart = "";

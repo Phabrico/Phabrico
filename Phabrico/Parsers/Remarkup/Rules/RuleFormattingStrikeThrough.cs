@@ -51,7 +51,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
             RemarkupParserOutput remarkupParserOutput;
             remarkup = remarkup.Substring(match.Groups[1].Length);
-            UnformattedText = Engine.ToHTML(this, database, browser, url, match.Groups[2].Value, out remarkupParserOutput, false);
+            UnformattedText = Engine.ToHTML(this, database, browser, url, match.Groups[2].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
             html = string.Format("<del>{0}</del>", UnformattedText);
             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
             ChildTokenList.AddRange(remarkupParserOutput.TokenList);

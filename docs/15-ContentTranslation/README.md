@@ -151,4 +151,4 @@ If you *undo* a diagram, the translated document will link back to the original 
 This way you can create diagrams which are the same for all languages.
 
 
-[Index](../README.md) | [Previous Page](../14-CommandLineInterfacing/README.md)
+[Index](../README.md) | [Previous Page](../14-CommandLineInterfacing/README.) |  [Next page](../16-InaccessibleFiles/README.md)

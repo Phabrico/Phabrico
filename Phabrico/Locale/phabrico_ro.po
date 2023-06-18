@@ -123,6 +123,15 @@ msgstr "Parola trebuie să conțină cel puțin 1 literă majusculă"
 msgid "Password should be at least 12 characters long"
 msgstr "Parola trebuie să conțină cel puțin 12 caractere"
 
+msgid "User name should be at least 1 character long"
+msgstr "Numele de utilizator trebuie să aibă cel puțin 1 caracter"
+
+msgid "Only HTTP or HTTPS urls are supported"
+msgstr "Sunt acceptate doar urile HTTP sau HTTPS"
+
+msgid "Invalid API token"
+msgstr "Invalid API token"
+
 msgid "Log out"
 msgstr "Deconectați-vă"
 
@@ -1107,6 +1116,22 @@ msgstr "A apărut o eroare internă"
 msgid "A document already exists with this slug path"
 msgstr "Există deja un document cu această cale slug"
 
+# Inaccessible files
+msgid "Inaccessible files"
+msgstr "Fișiere inaccesibile"
+
+msgid "View references to inaccessible files"
+msgstr "Vizualizați referințele la fișierele inaccesibile"
+
+msgid "Reference"
+msgstr "Referință"
+
+msgid "File ID"
+msgstr "File ID"
+
+msgid "Type some text to filter the references of inaccessible file objects..."
+msgstr "Introduceți un text pentru a filtra referințele obiectelor de fișiere inaccesibile..."
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Bold"
@@ -1173,6 +1198,9 @@ msgstr "AVERTISMENT"
 
 msgid "FileReference.Download"
 msgstr "Descărcați"
+
+msgid "File inaccessible"
+msgstr "Fișierul nu este disponibil"
 
 # Browser not supported
 msgid "Browser not supported"

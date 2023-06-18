@@ -55,7 +55,7 @@ namespace Phabrico.UnitTests.Remarkup
 
                 // execute test
                 RemarkupParserOutput remarkupParserOutput;
-                string testResultHtmlData = remarkupController.ConvertRemarkupToHTML(Database, "/", inputRemarkupData, out remarkupParserOutput, false);
+                string testResultHtmlData = remarkupController.ConvertRemarkupToHTML(Database, "/", inputRemarkupData, out remarkupParserOutput, false, "");
                 testResultHtmlData = testResultHtmlData.Replace("\r\n", "\n");
                 testResultHtmlData = testResultHtmlData.Replace("\r", "\n");
                 testResultHtmlData = testResultHtmlData.TrimEnd('\n');
@@ -90,8 +90,8 @@ namespace Phabrico.UnitTests.Remarkup
 
                 // execute test
                 RemarkupParserOutput remarkupParserOutput;
-                remarkupController.ConvertRemarkupToHTML(Database, "/", inputRemarkupData, out remarkupParserOutput, false);
-                string testResultXmlData = remarkupParserOutput.TokenList.ToXML(Database, remarkupController.browser, "");
+                remarkupController.ConvertRemarkupToHTML(Database, "/", inputRemarkupData, out remarkupParserOutput, false, "");
+                string testResultXmlData = remarkupParserOutput.TokenList.ToXML(Database, remarkupController.browser, "", "");
                 if (testResultXmlData.Equals(expectedXmlData) == false)
                 {
                     Assert.AreEqual(expectedXmlData, testResultXmlData, string.Format("Remarkup Unit Test '{0}' failed!!", System.IO.Path.GetFileName(testFileName)));
@@ -122,7 +122,7 @@ namespace Phabrico.UnitTests.Remarkup
 
                 // execute test
                 RemarkupParserOutput remarkupParserOutput;
-                remarkupController.ConvertRemarkupToHTML(Database, "/", expectedRemarkupData, out remarkupParserOutput, false);
+                remarkupController.ConvertRemarkupToHTML(Database, "/", expectedRemarkupData, out remarkupParserOutput, false, "");
                 string testResultRemarkup = remarkupParserOutput.TokenList.FromXML(Database, remarkupController.browser, "/", inputXmlData)
                                                                 .Replace("\r", "");
                 if (testResultRemarkup.TrimEnd('\n').Equals(expectedRemarkupData) == false)

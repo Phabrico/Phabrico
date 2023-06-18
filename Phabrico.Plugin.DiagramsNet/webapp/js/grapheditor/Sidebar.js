@@ -289,9 +289,48 @@ Sidebar.prototype.refresh = function()
 	var graph = this.editorUi.editor.graph;
 	this.graph.stylesheet.styles = mxUtils.clone(
 		graph.getDefaultStylesheet().styles);
+	var scrollTop = this.wrapper.scrollTop;
 	this.wrapper.innerText = '';
+	var temp = this.palettes;
 	this.palettes = new Object();
-	this.init();
+
+	// Overrides addPalette to restore expanded state
+	var addPalette = this.addPalette;
+
+	this.addPalette = function(id, title, expanded, onInit)
+	{
+		expanded = this.wasPaletteExpanded(temp, id, expanded);
+
+		return addPalette.apply(this, arguments);
+	};
+
+	this.init(temp);
+
+	// Restores previous implementation
+	this.addPalette = addPalette;
+
+	// Restores scrollbar position
+	window.setTimeout(mxUtils.bind(this, function()
+	{	
+		this.wrapper.scrollTop = scrollTop;
+	}), 0);
+};
+
+/**
+ * Overrides the sidebar init.
+ */
+Sidebar.prototype.wasPaletteExpanded = function(paletteStates, id, defaultExpanded)
+{
+	var elts = (paletteStates != null && id != null) ? paletteStates[id] : null;
+	var result = defaultExpanded
+
+	if (elts != null && elts.length == 2 &&
+		elts[1].firstChild != null)
+	{
+		result = elts[1].firstChild.style.display != 'none';
+	}
+
+	return result;
 };
 
 /**
@@ -502,7 +541,9 @@ Sidebar.prototype.createTooltip = function(elt, cells, w, h, title, showLabel, o
 		}
 		else
 		{
-			this.graph2.view.setScale(Math.round(Math.min(this.maxTooltipWidth / bounds.width, this.maxTooltipHeight / bounds.height) * 100) / 100);
+			this.graph2.view.setScale(Math.round(Math.min(
+				this.maxTooltipWidth / bounds.width,
+				this.maxTooltipHeight / bounds.height) * 100) / 100);
 			bounds = this.graph2.getGraphBounds();
 		}
 	}
@@ -662,6 +703,16 @@ Sidebar.prototype.hideTooltip = function()
  */
 Sidebar.prototype.addDataEntry = function(tags, width, height, title, data)
 {
+	if (tags == null)
+	{
+		tags = '';
+	}
+
+	if (title != null)
+	{
+		tags += ' ' + title;
+	}
+
 	return this.addEntry(tags, mxUtils.bind(this, function()
 	{
 	   	return this.createVertexTemplateFromData(data, width, height, title);
@@ -750,8 +801,8 @@ Sidebar.prototype.addEntry = function(tags, fn)
 			}
 			
 			// Adds additional entry with removed trailing numbers
-			var normalized = tmp[i].replace(/\.*\d*$/, '');
-			
+			var normalized = Editor.soundex(tmp[i].replace(/\.*\d*$/, ''));
+
 			if (normalized != tmp[i])
 			{
 				if (hash[normalized] == null)
@@ -805,9 +856,11 @@ Sidebar.prototype.searchEntries = function(searchTerms, count, page, success, er
 		
 		for (var i = 0; i < tmp.length; i++)
 		{
-			if (tmp[i].length > 0)
+			var normalized = Editor.soundex(tmp[i].replace(/\.*\d*$/, ''));
+
+			if (normalized.length > 0)
 			{
-				var entry = this.taglist[tmp[i]];
+				var entry = this.taglist[normalized];
 				var tmpDict = new mxDictionary();
 				
 				if (entry != null)
@@ -1797,6 +1850,8 @@ Sidebar.prototype.addUmlPalette = function(expand)
 		}),
 		this.createVertexTemplateEntry('shape=providedRequiredInterface;html=1;verticalLabelPosition=bottom;sketch=0;', 20, 20, '', 'Provided/Required Interface', null, null, 'uml provided required interface lollipop notation'),
 		this.createVertexTemplateEntry('shape=requiredInterface;html=1;verticalLabelPosition=bottom;sketch=0;', 10, 20, '', 'Required Interface', null, null, 'uml required interface lollipop notation'),
+		this.addDataEntry('uml lollipop notation provided required interface', 20, 20, 'Required Interface',
+			'jVNNb6MwEP01XCsCYu8NaXvZlSr1sNujCxPsreNBw5CQ/vrOYDcJbaNdySC/Nx+237Ozst5ND2R6+wtb8Fl5l5U1IXKc7aYavM+K3LVZucmKIpcvK+6vRFdzNO8NQeD/KShiwd74ESITiYGPPhGEY2hB8/OsXCOxxQ6D8T8ReyFXQv4F5uOTe9MKMzIKZXnnUxRCe0uEB4HW+G3tqNHeyt8771Nj2TAd/yi4qT7g8wVsU/8fggYmfIXfrmWb1hhegRubWm0xcMpeFYKbkfbzATQzng/aDhaSsaEOkmTlVxXnrCThA+AOZHeSQuANu/2ylRki7E55p9JHdNKxyKekfhUrjhFWy/oBR2oglZw9lMnFHs7U7Oz3Lpf/dlkKXD+oLQfrGJ5602jkIDdz6abxrgsyb0QbICWGHhqVaesmVXm9FVNr9CjBTcAAJ8M+kQSDezMv8w7Utl5POp+9WstQ44ta/9VGh9y9kb0L0iaEuGJ+8nMPxDBdfQRX7DukG6QZ8Z3kFlxnecl9Z+jCjbP0As+PNzp1+bbfAQ=='),
 		this.addEntry('uml lollipop notation provided required interface', function()
 		{
 			return sb.createVertexTemplateFromData('zVRNT8MwDP01uaLSMu6sfFxAmrQDcAytaQJZXLnu2u7XkzQZXTUmuIA4VIqf/ZzkvdQiyzf9HclaPWAJRmQ3IssJkcNq0+dgjEgTXYrsWqRp4j6R3p7Ino/ZpJYEln9CSANhK00LAQlAw4OJAGFrS/D1iciWSKywQivNPWLtwHMHvgHzsNY7z5Ato4MUb0zMgi2viLBzoUULAbnVxsSWzTtwofYBtlTACkhvgIHWtSy0rWKSJVXAJ5Lh4FBWMNMicAJ0cSzPWBW1uQN0fWlwJQRGst7OW8kmhNVn3Sd1hdp1TJMhVCzmhHipUDO54RYHm07Q6NHXfmV/65eS5jXXVJhj15yCNDz54GyxD58PwjL2v/SmMuE7POqSVdxj5vm/cK6PG4X/5deNvPjeSEfQdeOV75Rm8K/dZzo3LOaGSaMr69aF0wbIA00NhZfpVff+JSwJGr2TL2Nnr3jtbzDeabEUi2v/Tlo22kKO1gbq0Z8ZDwzE0J+cNidM2ROinF18CR6KeivQleI59pVrM8knfV04Dc1gx+FM/QA=',
@@ -2132,7 +2187,8 @@ Sidebar.prototype.createThumb = function(cells, width, height, parent, title, sh
 	{
 		var s = Math.floor(Math.min((width - 2 * this.thumbBorder) / bounds.width,
 			(height - 2 * this.thumbBorder) / bounds.height) * 100) / 100;
-		this.graph.view.scaleAndTranslate(s, Math.floor((width - bounds.width * s) / 2 / s - bounds.x),
+		this.graph.view.scaleAndTranslate(s,
+			Math.floor((width - bounds.width * s) / 2 / s - bounds.x),
 			Math.floor((height - bounds.height * s) / 2 / s - bounds.y));
 	}
 
@@ -3550,7 +3606,6 @@ Sidebar.prototype.createDragSource = function(elt, dropHandler, preview, cells, 
 		var target = ((!mxEvent.isAltDown(evt) || mxEvent.isShiftDown(evt)) &&
 			!(currentStyleTarget != null && activeArrow == styleTarget)) ?
 			mxDragSource.prototype.getDropTarget.apply(this, arguments) : null;
-		var model = graph.getModel();
 
 		if (target != null && (activeArrow != null ||
 			!graph.isSplitTarget(target, cells, evt)))
@@ -3908,50 +3963,69 @@ Sidebar.prototype.addFoldingHandler = function(title, content, funct)
 
 	mxEvent.addListener(title, 'click', mxUtils.bind(this, function(evt)
 	{
-		if (content.style.display == 'none')
+		if (mxEvent.getSource(evt) == title)
 		{
-			if (!initialized)
+			if (content.style.display == 'none')
 			{
-				initialized = true;
-				
-				if (funct != null)
+				if (!initialized)
 				{
-					// Wait cursor does not show up on Mac
-					title.style.cursor = 'wait';
-					var prev = title.innerHTML;
-					title.innerHTML = mxResources.get('loading') + '...';
+					initialized = true;
 					
-					window.setTimeout(mxUtils.bind(this, function()
+					if (funct != null)
+					{
+						// Wait cursor does not show up on Mac
+						title.style.cursor = 'wait';
+
+						// Captures child nodes
+						var children = [];
+
+						for (var i = 0; i < title.children.length; i++)
+						{
+							children.push(title.children[i]);
+							title.removeChild(title.children[i]);
+						}			
+
+						var prev = title.innerHTML;
+						title.innerHTML = mxResources.get('loading') + '...';
+						
+						window.setTimeout(mxUtils.bind(this, function()
+						{
+							this.setContentVisible(content, true);
+							title.style.cursor = '';
+							title.innerHTML = prev;
+
+							// Restores child nodes
+							for (var i = 0; i < children.length; i++)
+							{
+								title.appendChild(children[i]);
+							}
+
+							var fo = mxClient.NO_FO;
+							mxClient.NO_FO = Editor.prototype.originalNoForeignObject;
+							funct(content, title);
+							mxClient.NO_FO = fo;
+						}), (mxClient.IS_FF) ? 20 : 0);
+					}
+					else
 					{
 						this.setContentVisible(content, true);
-						title.style.cursor = '';
-						title.innerHTML = prev;
-
-						var fo = mxClient.NO_FO;
-						mxClient.NO_FO = Editor.prototype.originalNoForeignObject;
-						funct(content, title);
-						mxClient.NO_FO = fo;
-					}), (mxClient.IS_FF) ? 20 : 0);
+					}
 				}
 				else
 				{
 					this.setContentVisible(content, true);
 				}
+				
+				title.style.backgroundImage = 'url(\'' + this.expandedImage + '\')';
 			}
 			else
 			{
-				this.setContentVisible(content, true);
+				title.style.backgroundImage = 'url(\'' + this.collapsedImage + '\')';
+				this.setContentVisible(content, false);
 			}
 			
-			title.style.backgroundImage = 'url(\'' + this.expandedImage + '\')';
+			mxEvent.consume(evt);
 		}
-		else
-		{
-			title.style.backgroundImage = 'url(\'' + this.collapsedImage + '\')';
-			this.setContentVisible(content, false);
-		}
-		
-		mxEvent.consume(evt);
 	}));
 	
 	// Prevents focus

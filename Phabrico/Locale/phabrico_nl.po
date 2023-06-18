@@ -123,6 +123,15 @@ msgstr "Wachtwoord moet minstens 1 hoofdletter bevatten"
 msgid "Password should be at least 12 characters long"
 msgstr "Wachtwoord moet minstens 12 karakters lang zijn"
 
+msgid "User name should be at least 1 character long"
+msgstr "Gebruikersnaam moet minstens 1 karakter lang zijn"
+
+msgid "Only HTTP or HTTPS urls are supported"
+msgstr "Enkel HTTP of HTTPS urls zijn toegelaten"
+
+msgid "Invalid API token"
+msgstr "Foutief API token"
+
 msgid "Log out"
 msgstr "Afmelden"
 
@@ -1107,6 +1116,22 @@ msgstr "Er is een interne fout opgetreden"
 msgid "A document already exists with this slug path"
 msgstr "Er bestaat al een document met dit slug-pad"
 
+# Inaccessible files
+msgid "Inaccessible files"
+msgstr "Niet toonbare files"
+
+msgid "View references to inaccessible files"
+msgstr "Verwijzingen naar ontoegankelijke bestanden bekijken"
+
+msgid "Reference"
+msgstr "Referentie"
+
+msgid "File ID"
+msgstr "Bestand-ID"
+
+msgid "Type some text to filter the references of inaccessible file objects..."
+msgstr "Typ wat tekst om de verwijzingen van ontoegankelijke bestandsobjecten te filteren..."
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Vetgedrukt"
@@ -1173,6 +1198,9 @@ msgstr "WAARSCHUWING"
 
 msgid "FileReference.Download"
 msgstr "Download"
+
+msgid "File inaccessible"
+msgstr "Bestand niet beschikbaar"
 
 # Browser not supported
 msgid "Browser not supported"

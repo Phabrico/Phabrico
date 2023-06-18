@@ -928,6 +928,8 @@ namespace Phabrico.Storage
                     ? browser.Session.Locale
                     : Language.NotApplicable;
 
+            database.MarkFileObject(null, false, modifiedPhabricatorObject.Token);
+
             SaveStageData(database, browser, stageData, language);
 
             // invalidate cached data
@@ -1086,6 +1088,8 @@ namespace Phabrico.Storage
                 Phabrico.Parsers.Remarkup.RemarkupParserOutput remarkupParserOutput;
                 string remarkupContent = null;
                 string url = "/";
+                int[] newFileObjectReferences = null;
+                int[] originalFileObjectReferences = null;
                 if (stagedManiphestTask != null)
                 {
                     Storage.Maniphest maniphestStorage = new Storage.Maniphest();
@@ -1094,6 +1098,18 @@ namespace Phabrico.Storage
                     {
                         remarkupContent = originalManiphestTask.Description;
                     }
+
+                    originalFileObjectReferences = RegexSafe.Matches(stagedManiphestTask.Description, "{F(-?[1-9][0-9]*)[^}]*}", RegexOptions.Singleline)
+                                                            .OfType<Match>()
+                                                            .Select(m => Int32.Parse(m.Groups[1].Value))
+                                                            .Distinct()
+                                                            .ToArray();
+
+                    newFileObjectReferences = RegexSafe.Matches(remarkupContent, "{F(-?[1-9][0-9]*)[^}]*}", RegexOptions.Singleline)
+                                                       .OfType<Match>()
+                                                       .Select(m => Int32.Parse(m.Groups[1].Value))
+                                                       .Distinct()
+                                                       .ToArray();
                 }
                 else
                 if (stagedPhrictionDocument != null)
@@ -1114,6 +1130,26 @@ namespace Phabrico.Storage
                         }
 
                         url = "/" + originalPhrictionDocument.Path;
+
+                        originalFileObjectReferences = RegexSafe.Matches(stagedPhrictionDocument.Content, "{F(-?[1-9][0-9]*)[^}]*}", RegexOptions.Singleline)
+                                                                .OfType<Match>()
+                                                                .Select(m => Int32.Parse(m.Groups[1].Value))
+                                                                .Distinct()
+                                                                .ToArray();
+
+                        newFileObjectReferences = RegexSafe.Matches(remarkupContent, "{F(-?[1-9][0-9]*)[^}]*}", RegexOptions.Singleline)
+                                                           .OfType<Match>()
+                                                           .Select(m => Int32.Parse(m.Groups[1].Value))
+                                                           .Distinct()
+                                                           .ToArray();
+                    }
+                }
+
+                if (originalFileObjectReferences != null)
+                {
+                    foreach (int oldFileID in originalFileObjectReferences.Except(newFileObjectReferences))
+                    {
+                        database.MarkFileObject(oldFileID, false, existingPhabricatorObject.Token);
                     }
                 }
 
@@ -1121,7 +1157,7 @@ namespace Phabrico.Storage
                 {
                     database.ClearAssignedTokens(existingPhabricatorObject.Token, language);
                     privateStagingController.browser = browser;
-                    privateStagingController.ConvertRemarkupToHTML(database, url, remarkupContent, out remarkupParserOutput, false);
+                    privateStagingController.ConvertRemarkupToHTML(database, url, remarkupContent, out remarkupParserOutput, false, existingPhabricatorObject.Token);
                     foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                     {
                         database.AssignToken(existingPhabricatorObject.Token, linkedPhabricatorObject.Token, language);

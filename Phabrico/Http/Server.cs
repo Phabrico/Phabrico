@@ -19,6 +19,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.UI.WebControls;
 
 namespace Phabrico.Http
 {
@@ -1905,6 +1906,7 @@ namespace Phabrico.Http
                                     pluginController.ManiphestTaskData = new Plugin.PluginController.ManiphestTaskDataType();
                                     pluginController.ManiphestTaskData.ConfirmState = (Plugin.PluginController.ConfirmResponse)Enum.Parse(typeof(Plugin.PluginController.ConfirmResponse), browser.Session.FormVariables[browser.Request.RawUrl]["confirm"]);
                                     pluginController.ManiphestTaskData.TaskID = browser.Session.FormVariables[browser.Request.RawUrl]["taskID"];
+                                    pluginClass.CurrentUsageType = Plugin.PluginTypeAttribute.UsageType.ManiphestTask;
                                 }
 
                                 if (pluginUsages.Contains(Plugin.PluginTypeAttribute.UsageType.PhrictionDocument))
@@ -1917,6 +1919,7 @@ namespace Phabrico.Http
                                     pluginController.PhrictionData.IsTranslation = bool.Parse(browser.Session.FormVariables[browser.Request.RawUrl]["isTranslation"] ?? "false");
                                     pluginController.PhrictionData.Path = browser.Session.FormVariables[browser.Request.RawUrl]["path"];
                                     pluginController.PhrictionData.TOC = browser.Session.FormVariables[browser.Request.RawUrl]["toc"];
+                                    pluginClass.CurrentUsageType = Plugin.PluginTypeAttribute.UsageType.PhrictionDocument;
                                 }
                             }
                         }

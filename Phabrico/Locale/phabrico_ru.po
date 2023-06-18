@@ -123,6 +123,15 @@ msgstr "Пароль должен содержать не менее 1 загл�
 msgid "Password should be at least 12 characters long"
 msgstr "Пароль должен содержать не менее 12 символов"
 
+msgid "User name should be at least 1 character long"
+msgstr "Имя пользователя должно быть длиной не менее 1 символа."
+
+msgid "Only HTTP or HTTPS urls are supported"
+msgstr "Поддерживаются только HTTP- или HTTPS-урлы."
+
+msgid "Invalid API token"
+msgstr "Неверный токен API"
+
 msgid "Log out"
 msgstr "Выйдите из системы"
 
@@ -1107,6 +1116,22 @@ msgstr "Произошла внутренняя ошибка"
 msgid "A document already exists with this slug path"
 msgstr "Документ с таким путем уже существует"
 
+# Inaccessible files
+msgid "Inaccessible files"
+msgstr "недоступные файлы"
+
+msgid "View references to inaccessible files"
+msgstr "Просмотр ссылок на недоступные файлы"
+
+msgid "Reference"
+msgstr "Ссылка"
+
+msgid "File ID"
+msgstr "Идентификатор файла"
+
+msgid "Type some text to filter the references of inaccessible file objects..."
+msgstr "Введите текст для фильтрации ссылок на недоступные файловые объекты..."
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Полужирный"
@@ -1173,6 +1198,9 @@ msgstr "ПРЕДОСТЕРЕЖЕНИЕ"
 
 msgid "FileReference.Download"
 msgstr "Скачать"
+
+msgid "File inaccessible"
+msgstr "Файл недоступен"
 
 # Browser not supported
 msgid "Browser not supported"

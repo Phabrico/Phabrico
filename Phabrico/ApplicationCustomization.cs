@@ -235,6 +235,11 @@ namespace Phabrico
         public BooleanVector<Browser.PublishedProperties> HideOfflineChanges { get; set; } = false;
 
         /// <summary>
+        /// If true, Inaccessible Files screen will not be accessible
+        /// </summary>
+        public BooleanVector<Browser.PublishedProperties> HideInaccessibleFiles { get; set; } = false;
+
+        /// <summary>
         /// If true, Maniphest tasks will not be accessible
         /// </summary>
         public BooleanVector<Browser.PublishedProperties> HideManiphest { get; set; } = false;

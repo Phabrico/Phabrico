@@ -142,8 +142,9 @@ namespace Phabrico.Controllers
         /// <param name="remarkupText">The remarkup content to be parsed</param>
         /// <param name="remarkupParserOutput">References found in the Remarkup content</param>
         /// <param name="includeLineNumbers">If true, empty SPAN elements with a line data-attribute will be added to generated HTML code. This line data-attribute contains the (first) line number of the original Remarkup code for all the generated elements</param>
+        /// <param name="phabricatorObjectToken"></param>
         /// <returns>HTML</returns>
-        public string ConvertRemarkupToHTML(Storage.Database database, string url, string remarkupText, out RemarkupParserOutput remarkupParserOutput, bool includeLineNumbers)
+        public string ConvertRemarkupToHTML(Storage.Database database, string url, string remarkupText, out RemarkupParserOutput remarkupParserOutput, bool includeLineNumbers, string phabricatorObjectToken)
         {
             if (remarkupText == null) remarkupText = "";
 
@@ -152,7 +153,7 @@ namespace Phabrico.Controllers
 
             browser.Token.EncryptionKey = database.EncryptionKey;
             browser.Token.PrivateEncryptionKey = database.PrivateEncryptionKey;
-            string result = remarkupEngine.ToHTML(null, database, browser, url, "\n" + remarkupText + "\n", out remarkupParserOutput, includeLineNumbers);
+            string result = remarkupEngine.ToHTML(null, database, browser, url, "\n" + remarkupText + "\n", out remarkupParserOutput, includeLineNumbers, phabricatorObjectToken);
 
             result = CorrectInvalidHTML(result);
 

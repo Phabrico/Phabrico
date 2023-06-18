@@ -1567,7 +1567,7 @@ namespace Phabrico.Controllers
 
                 // parse task content
                 RemarkupParserOutput remarkupParserOutput;
-                ConvertRemarkupToHTML(synchronizationParameters.database, "/", phabricatorManiphestTask.Description, out remarkupParserOutput, false);
+                ConvertRemarkupToHTML(synchronizationParameters.database, "/", phabricatorManiphestTask.Description, out remarkupParserOutput, false, phabricatorManiphestTask.Token);
 
                 // get all available words from task content and save it into search database
                 keywordStorage.DeletePhabricatorObject(synchronizationParameters.database, phabricatorManiphestTask);
@@ -1630,7 +1630,7 @@ namespace Phabrico.Controllers
 
                 // parse task content
                 RemarkupParserOutput remarkupParserOutput;
-                ConvertRemarkupToHTML(synchronizationParameters.database, "/", newPhamePost.Content, out remarkupParserOutput, false);
+                ConvertRemarkupToHTML(synchronizationParameters.database, "/", newPhamePost.Content, out remarkupParserOutput, false, newPhamePost.Token);
 
                 // get all available words from task content and save it into search database
                 keywordStorage.DeletePhabricatorObject(synchronizationParameters.database, newPhamePost);
@@ -1934,7 +1934,7 @@ namespace Phabrico.Controllers
 
                     // parse document content
                     RemarkupParserOutput remarkupParserOutput;
-                    ConvertRemarkupToHTML(synchronizationParameters.database, "/", phabricatorPhrictionDocument.Content, out remarkupParserOutput, false);
+                    ConvertRemarkupToHTML(synchronizationParameters.database, "/", phabricatorPhrictionDocument.Content, out remarkupParserOutput, false, phabricatorPhrictionDocument.Token);
 
                     // get all available words from phriction document and save it into search database
                     keywordStorage.DeletePhabricatorObject(synchronizationParameters.database, phabricatorPhrictionDocument);
@@ -2045,9 +2045,13 @@ namespace Phabrico.Controllers
             Storage.File fileStorage = new Storage.File();
 
             // load all file objects from phabricator which were referenced in the downloaded phriction and maniphest objects
-            string messageLoadingFileObjects = Miscellaneous.Locale.TranslateText("Synchronization.Status.LoadingUnreferencedFileObjects", browser.Session.Locale);
+            List<int> fileIDsToDownload = synchronizationParameters.database
+                                                                   .GetAllMarkedFileIDs()
+                                                                   .Select(f => f.FileID)
+                                                                   .ToList();
+
+            string messageLoadingFileObjects = Miscellaneous.Locale.TranslateText("Synchronization.Status.LoadingUnreferencedFileObjects", browser.Session.Locale) + " [" + fileIDsToDownload.Count + "]";
             SharedResource.Instance.ProgressDescription = messageLoadingFileObjects;
-            List<int> fileIDsToDownload = synchronizationParameters.database.GetAllMarkedFileIDs().ToList();
 
             IEnumerable<Phabricator.Data.File> phabricatorFileReferences = phabricatorFileAPI.GetReferences(synchronizationParameters.database,
                                                                                                             synchronizationParameters.browser.Conduit,
@@ -2092,6 +2096,9 @@ namespace Phabrico.Controllers
                     synchronizationParameters.database.AssignToken(owner, phabricatorFile.Token, Language.NotApplicable);
                 }
             }
+
+            int nbrMarkedFileObjects = synchronizationParameters.database.GetAllMarkedFileIDs().Count();
+            Http.Server.SendNotificationError("/errorinaccessiblefiles/notification", nbrMarkedFileObjects.ToString());
 
             synchronizationParameters.fileObjectsPerToken.Clear();
         }

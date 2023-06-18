@@ -51,6 +51,11 @@ namespace Phabrico.Controllers
             /// Represents the 'Type' column
             /// </summary>
             public string Type { get; set; }
+
+            /// <summary>
+            /// Represents the URL of the object whichs links to the fileobject
+            /// </summary>
+            public string URL { get; set; }
         }
 
         /// <summary>
@@ -321,6 +326,137 @@ namespace Phabrico.Controllers
 
             string jsonData = JsonConvert.SerializeObject(tableRows);
             resultHttpMessage = new JsonMessage(jsonData);
+        }
+
+        /// <summary>
+        /// This method is fired from the File Objects screen to fill the table.
+        /// It's also executed when the search filter is changed
+        /// </summary>
+        /// <param name="httpServer"></param>
+        /// <param name="jsonMessage"></param>
+        /// <param name="parameters"></param>
+        /// <param name="parameterActions"></param>
+        [UrlController(URL = "/file/error/inaccessible")]
+        public void HttpGetPopulateInaccessibleFileReferenceTableData(Http.Server httpServer, ref JsonMessage jsonMessage, string[] parameters, string parameterActions)
+        {
+            if (httpServer.Customization.HideFiles) throw new Phabrico.Exception.HttpNotFound("/file/query");
+
+            List<JsonRecordData> tableRows = new List<JsonRecordData>();
+
+            Storage.File fileStorage = new Storage.File();
+            if (fileStorage != null)
+            {
+                SessionManager.Token token = SessionManager.GetToken(browser);
+                if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+
+                using (Storage.Database database = new Storage.Database(EncryptionKey))
+                {
+                    Storage.Phriction phrictionStorage = new Storage.Phriction();
+                    Storage.Maniphest maniphestStorage = new Storage.Maniphest();
+                    Storage.PhamePost phamePostStorage = new Storage.PhamePost();
+
+                    IEnumerable<FileReference> files = database.GetAllMarkedFileIDs()
+                                                               .OrderBy(file => file.FileID)
+                                                               .Select(file => new 
+                                                               {
+                                                                   FileID = file.FileID,
+                                                                   LinkedToken = file.LinkedToken,
+                                                                   PhabricatorObject =  file.LinkedToken.StartsWith(Phabricator.Data.Phriction.Prefix)
+                                                                                        ? (Phabricator.Data.PhabricatorObject)phrictionStorage.Get(database, file.LinkedToken, Language.Default)
+                                                                                        : file.LinkedToken.StartsWith(Phabricator.Data.Maniphest.Prefix)
+                                                                                            ? (Phabricator.Data.PhabricatorObject)maniphestStorage.Get(database, file.LinkedToken, Language.Default)
+                                                                                            : file.LinkedToken.StartsWith(Phabricator.Data.PhamePost.Prefix)
+                                                                                                ? (Phabricator.Data.PhabricatorObject)phamePostStorage.Get(database, file.LinkedToken, Language.Default)
+                                                                                                : null
+
+                                                               })
+                                                               .Select(file => new
+                                                               {
+                                                                   FileID = file.FileID,
+                                                                   LinkedToken = file.LinkedToken,
+                                                                   LinkedDescription = (file.PhabricatorObject as Phabricator.Data.Phriction)?.Name
+                                                                                       ?? (file.PhabricatorObject as Phabricator.Data.Maniphest)?.Name
+                                                                                          ?? (file.PhabricatorObject as Phabricator.Data.PhamePost)?.Title,
+                                                                   LinkedURL = (file.PhabricatorObject as Phabricator.Data.Phriction)?.Path
+                                                                                ?? (file.PhabricatorObject as Phabricator.Data.Maniphest)?.ID
+                                                                                   ?? (file.PhabricatorObject as Phabricator.Data.PhamePost)?.ID,
+                                                                   PhabricatorObject = file.PhabricatorObject
+                                                               }).Select(file => new FileReference
+                                                               {
+                                                                   FileID = file.FileID,
+                                                                   LinkedToken = file.LinkedToken,
+                                                                   LinkedDescription = file.LinkedDescription,
+                                                                   LinkedURL = (file.PhabricatorObject is Phabricator.Data.Phriction)
+                                                                                  ? "w/" + file.LinkedURL
+                                                                                  : (file.PhabricatorObject is Phabricator.Data.Maniphest)
+                                                                                      ? "T" + file.LinkedURL
+                                                                                      : (file.PhabricatorObject is Phabricator.Data.PhamePost)
+                                                                                          ? "phame/post/" + file.LinkedURL
+                                                                                          : "/"
+                                                               });
+
+                    if (parameters.Any())
+                    {
+                        string filter = "";
+                        string orderBy = System.Web.HttpUtility.UrlDecode(parameters[0]);
+                        if (parameters.Length > 1)
+                        {
+                            filter = System.Web.HttpUtility.UrlDecode(parameters[1]);
+                            if (filter.StartsWith("F"))
+                            {
+                                filter = filter.Substring(1);
+                            }
+                        }
+
+                        int numericFilterText;
+                        if (Int32.TryParse(filter, out numericFilterText) == false)
+                        {
+                            numericFilterText = Int32.MinValue;
+                        }
+
+                        files = files.Where(file => file.FileID.ToString().Equals(filter)
+                                                 || file.LinkedDescription.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0
+                                           );
+
+                        switch (orderBy)
+                        {
+                            case "ID":
+                                files = files.OrderBy(o => o.FileID);
+                                break;
+
+                            case "ID-":
+                                files = files.OrderByDescending(o => o.FileID);
+                                break;
+
+                            case "Name":
+                                files = files.OrderBy(o => o.LinkedDescription);
+                                break;
+
+                            case "Name-":
+                                files = files.OrderByDescending(o => o.LinkedDescription);
+                                break;
+
+                            default:
+                                files = files.OrderBy(o => o.FileID);
+                                break;
+                        }
+                    }
+
+                    foreach (FileReference fileData in files)
+                    {
+                        JsonRecordData record = new JsonRecordData();
+
+                        record.ID = fileData.FileID;
+                        record.Name = fileData.LinkedDescription;
+                        record.URL = fileData.LinkedURL;
+
+                        tableRows.Add(record);
+                    }
+                }
+            }
+
+            string jsonData = JsonConvert.SerializeObject(tableRows);
+            jsonMessage = new JsonMessage(jsonData);
         }
 
         /// <summary>
@@ -600,7 +736,7 @@ namespace Phabrico.Controllers
                             // rename file object in referencing phriction document
                             if (phrictionDocument != null)
                             {
-                                remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+                                remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
                                 List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
                                                                                                     .OfType<RuleReferenceFile>()
                                                                                                     .ToList();
@@ -626,7 +762,7 @@ namespace Phabrico.Controllers
                             // rename file object in referencing maniphest task
                             if (maniphestTask != null)
                             {
-                                remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false);
+                                remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false, maniphestTask.Token);
                                 List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
                                                                                                     .OfType<RuleReferenceFile>()
                                                                                                     .ToList();

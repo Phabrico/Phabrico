@@ -123,6 +123,15 @@ msgstr "Salasanan tulisi sisältää vähintään 1 iso kirjain"
 msgid "Password should be at least 12 characters long"
 msgstr "Salasanan on oltava vähintään 12 merkkiä pitkä"
 
+msgid "User name should be at least 1 character long"
+msgstr "Käyttäjänimen tulee olla vähintään 1 merkin pituinen"
+
+msgid "Only HTTP or HTTPS urls are supported"
+msgstr "Vain HTTP- tai HTTPS-urleja tuetaan"
+
+msgid "Invalid API token"
+msgstr "Invalid API token"
+
 msgid "Log out"
 msgstr "Kirjaudu ulos"
 
@@ -1107,6 +1116,22 @@ msgstr "Tapahtui sisäinen virhe"
 msgid "A document already exists with this slug path"
 msgstr "Asiakirja on jo olemassa tällä nimipolulla"
 
+# Inaccessible files
+msgid "Inaccessible files"
+msgstr "Ei-saatavilla tiedostot"
+
+msgid "View references to inaccessible files"
+msgstr "Näytä viittaukset tiedostoihin, joihin ei ole pääsyä"
+
+msgid "Reference"
+msgstr "Viite"
+
+msgid "File ID"
+msgstr "Tiedoston tunnus"
+
+msgid "Type some text to filter the references of inaccessible file objects..."
+msgstr "Kirjoita tekstiä suodattaaksesi käyttökelvottomien tiedosto-objektien viittaukset..."
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Lihavoitu"
@@ -1173,6 +1198,9 @@ msgstr "VAROITUS"
 
 msgid "FileReference.Download"
 msgstr "Lataa"
+
+msgid "File inaccessible"
+msgstr "Tiedostoa ei ole saatavilla"
 
 # Browser not supported
 msgid "Browser not supported"

@@ -96,7 +96,7 @@
 
 [data-locale="fi"] * {
     --app-side-window-width: 300px;
-    --navigator-width: 200px;
+    --navigator-width: 210px;
     --maniphest-navigator-width: 180px;
     --maniphest-editor-label-width: 90px;
     --remarkup-editor-tooltip-bold-width: 62px;
@@ -234,7 +234,7 @@
 
 [data-locale="sv"] * {
     --app-side-window-width: 250px;
-    --navigator-width: 265px;
+    --navigator-width: 200px;
     --maniphest-navigator-width: 160px;
     --maniphest-editor-label-width: 115px;
     --remarkup-editor-tooltip-bold-width: 42px;
@@ -266,7 +266,7 @@
 
 [data-locale="zh"] * {
     --app-side-window-width: 250px;
-    --navigator-width: 130px;
+    --navigator-width: 140px;
     --maniphest-navigator-width: 135px;
     --maniphest-editor-label-width: 90px;
     --remarkup-editor-tooltip-bold-width: 35px;

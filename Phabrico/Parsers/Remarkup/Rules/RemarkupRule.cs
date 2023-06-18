@@ -38,6 +38,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public string Text { get; set; }
 
         /// <summary>
+        /// Token of document, task, ... on which the Remarkup is processed upon
+        /// </summary>
+        public string PhabricatorObjectToken { get; set; }
+
+        /// <summary>
         /// Determines the process order of the rule.
         /// A low priority number means a earlier rule processing
         /// </summary>

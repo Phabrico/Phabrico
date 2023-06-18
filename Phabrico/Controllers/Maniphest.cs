@@ -237,7 +237,7 @@ namespace Phabrico.Controllers
             // (re)assign dependent Phabricator objects
             database.ClearAssignedTokens(newManiphestTask.Token, Language.NotApplicable);
             RemarkupParserOutput remarkupParserOutput;
-            ConvertRemarkupToHTML(database, "/", newManiphestTask.Description, out remarkupParserOutput, false);
+            ConvertRemarkupToHTML(database, "/", newManiphestTask.Description, out remarkupParserOutput, false, newManiphestTask.Token);
             foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
             {
                 database.AssignToken(newManiphestTask.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
@@ -1307,7 +1307,7 @@ namespace Phabrico.Controllers
                             viewPage.SetText("TASK-ASSIGNED-TOKEN", maniphestTask.Owner);
                             viewPage.SetText("TASK-ASSIGNED-NAME", getAccountName(maniphestTask.Owner));
                             viewPage.SetText("TASK-RAW-DESCRIPTION", maniphestTask.Description, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
-                            viewPage.SetText("TASK-DESCRIPTION", ConvertRemarkupToHTML(database, "maniphest/" + maniphestTask.ID + "/", maniphestTask.Description, out remarkupParserOutput, true), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                            viewPage.SetText("TASK-DESCRIPTION", ConvertRemarkupToHTML(database, "maniphest/" + maniphestTask.ID + "/", maniphestTask.Description, out remarkupParserOutput, true, maniphestTask.Token), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                             viewPage.SetText("TASK-AUTHOR-NAME", getAccountName(maniphestTask.Author));
                             viewPage.SetText("TASK-AUTHOR-TOKEN", maniphestTask.Author);
                             viewPage.SetText("TASK-DATE", FormatDateTimeOffset(maniphestTask.DateModified, browser.Session.Locale), HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
@@ -1372,6 +1372,8 @@ namespace Phabrico.Controllers
                                                                               .OfType<Plugin.PluginTypeAttribute>()
                                                                               .FirstOrDefault(pluginTypeAttribute => pluginTypeAttribute.Usage == Plugin.PluginTypeAttribute.UsageType.ManiphestTask);
                                 if (pluginType == null) continue;
+
+                                plugin.CurrentUsageType = Plugin.PluginTypeAttribute.UsageType.ManiphestTask;
 
                                 if (plugin.IsVisibleInApplication(database, browser, maniphestTask.Token)
                                     && (httpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name) == false
@@ -1508,7 +1510,7 @@ namespace Phabrico.Controllers
                                         break;
 
                                     case "comment":
-                                        SetTransactionDataComment(transactionData, maniphestTransaction, maniphestTask.ID, database);
+                                        SetTransactionDataComment(transactionData, maniphestTransaction, maniphestTask, database);
                                         break;
 
                                     case "status":
@@ -1660,9 +1662,9 @@ namespace Phabrico.Controllers
                 database.ClearAssignedTokens(modifiedManiphestTask.Token, Language.NotApplicable);
                 RemarkupParserOutput remarkupParserOutput;
                 List<Phabricator.Data.PhabricatorObject> linkedPhabricatorObjects;
-                ConvertRemarkupToHTML(database, "/", modifiedManiphestTask.Description, out remarkupParserOutput, false);
+                ConvertRemarkupToHTML(database, "/", modifiedManiphestTask.Description, out remarkupParserOutput, false, modifiedManiphestTask.Token);
                 linkedPhabricatorObjects = remarkupParserOutput.LinkedPhabricatorObjects;
-                ConvertRemarkupToHTML(database, "/", originalManiphestTask.Description, out remarkupParserOutput, false);  // remember also references in original content, so we can always undo our modifications
+                ConvertRemarkupToHTML(database, "/", originalManiphestTask.Description, out remarkupParserOutput, false, originalManiphestTask.Token);  // remember also references in original content, so we can always undo our modifications
                 linkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in linkedPhabricatorObjects)
                 {
@@ -1694,7 +1696,7 @@ namespace Phabrico.Controllers
         /// <param name="transactionData"></param>
         /// <param name="maniphestTransaction"></param>
         /// <param name="maniphestTaskID"></param>
-        private void SetTransactionDataComment(HtmlPartialViewPage transactionData, Phabricator.Data.Transaction maniphestTransaction, string maniphestTaskID, Database database)
+        private void SetTransactionDataComment(HtmlPartialViewPage transactionData, Phabricator.Data.Transaction maniphestTransaction, Phabricator.Data.Maniphest maniphestTask, Database database)
         {
             RemarkupParserOutput remarkupParserOutput;
 
@@ -1702,7 +1704,7 @@ namespace Phabrico.Controllers
                 Locale.TranslateText("@@COMMENT-AUTHOR@@ added a comment.", browser.Session.Locale)
                       .Replace("@@COMMENT-AUTHOR@@", getAccountName(maniphestTransaction.Author)));
             transactionData.SetText("TASK-TRANSACTION-DETAIL",
-                    ConvertRemarkupToHTML(database, "maniphest/T" + maniphestTaskID, maniphestTransaction.NewValue, out remarkupParserOutput, false),
+                    ConvertRemarkupToHTML(database, "maniphest/T" + maniphestTask.ID, maniphestTransaction.NewValue, out remarkupParserOutput, false, ""),
                     HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
         }
 

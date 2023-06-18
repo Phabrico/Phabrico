@@ -108,6 +108,7 @@
     <Compile Include="ContentTranslation\ContentTranslationTest.cs" />
     <Compile Include="Nuget\NugetTest.cs" />
     <Compile Include="Selenium\BrowserUnitTest.cs" />
+    <Compile Include="Selenium\Browser\InaccessbleFilesUnitTest.cs" />
     <Compile Include="Selenium\Browser\PluginUnitTests.cs" />
     <Compile Include="Selenium\Browser\SynchronizationUnitTests.cs" />
     <Compile Include="Selenium\Browser\InstallationPhabricoUnitTest.cs" />

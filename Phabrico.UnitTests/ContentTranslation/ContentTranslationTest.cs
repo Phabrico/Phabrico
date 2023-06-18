@@ -66,8 +66,8 @@ namespace Phabrico.UnitTests.ContentTranslation
 
                     // execute test
                     RemarkupParserOutput remarkupParserOutput;
-                    remarkupController.ConvertRemarkupToHTML(Database, "/", originalContent, out remarkupParserOutput, false);
-                    string testResultXmlData = remarkupParserOutput.TokenList.ToXML(Database, remarkupController.browser, "");
+                    remarkupController.ConvertRemarkupToHTML(Database, "/", originalContent, out remarkupParserOutput, false, "");
+                    string testResultXmlData = remarkupParserOutput.TokenList.ToXML(Database, remarkupController.browser, "", "");
                     string translatedTestResultXmlData = dummyTranslationEngine.TranslateXML("en", "nl", testResultXmlData, "", "");
                     string testResult = remarkupParserOutput.TokenList.FromXML(Database, remarkupController.browser, "/", translatedTestResultXmlData);
 

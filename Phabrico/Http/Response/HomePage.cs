@@ -2,10 +2,12 @@
 using Newtonsoft.Json.Linq;
 using Phabrico.Miscellaneous;
 using Phabrico.Phabricator.Data;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static Phabrico.Http.Response.HtmlViewPage;
 
 namespace Phabrico.Http.Response
 {
@@ -206,19 +208,26 @@ namespace Phabrico.Http.Response
                         htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.SetText("HAS-FAVORITES", favorites.Any() ? "True" : "False", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlPartialViewPage.SetText("FAVORITES", JsonConvert.SerializeObject(favorites), HtmlViewPage.ArgumentOptions.JsonEncoding);
+
                         htmlPartialViewPage.Customize(browser);
                         htmlPartialViewPage.Merge();
+
+                        int nbrMarkedFileObjects = database.GetAllMarkedFileIDs().Count();
+                        Http.Server.SendNotificationError("/errorinaccessiblefiles/notification", nbrMarkedFileObjects.ToString());
 
                         htmlViewPage.SetContent(browser, GetViewData("HomePage.TreeView.Template"));
                         htmlViewPage.SetText("AUTOLOGOUTAFTERMINUTESOFINACTIVITY", database.GetAccountConfiguration()?.AutoLogOutAfterMinutesOfInactivity.ToString(), HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue);
                         htmlViewPage.SetText("CONTENT", htmlPartialViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlViewPage.SetText("ANY-INACCESSIBLE-FILES", nbrMarkedFileObjects > 0 ? "True" : "False", ArgumentOptions.NoHtmlEncoding);
                         htmlViewPage.Customize(browser);
 
                         foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                         {
                             Plugin.PluginTypeAttribute pluginType = plugin.GetType().GetCustomAttributes(typeof(Plugin.PluginTypeAttribute), true).FirstOrDefault() as Plugin.PluginTypeAttribute;
                             if (pluginType != null && pluginType.Usage != Plugin.PluginTypeAttribute.UsageType.Navigator) continue;
+
+                            plugin.CurrentUsageType = Plugin.PluginTypeAttribute.UsageType.Navigator;
 
                             if (plugin.IsVisibleInNavigator(browser)
                                 && (browser.HttpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name) == false
@@ -376,12 +385,16 @@ namespace Phabrico.Http.Response
 
                         configurationViewPage = new HtmlViewPage(HttpServer, browser, true, "configure", null);
                         configurationController.HttpGetLoadParameters(HttpServer, ref configurationViewPage, null, null);
-                    }
 
-                    htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.TreeView.Template"));
-                    htmlPartialViewPage.SetText("CONTENT", configurationViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                    htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                    htmlPartialViewPage.Merge();
+                        int nbrMarkedFileObjects = database.GetAllMarkedFileIDs().Count();
+                        Http.Server.SendNotificationError("/errorinaccessiblefiles/notification", nbrMarkedFileObjects.ToString());
+
+                        htmlPartialViewPage.SetContent(browser, GetViewData("HomePage.TreeView.Template"));
+                        htmlPartialViewPage.SetText("CONTENT", configurationViewPage.Content, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.SetText("ANY-INACCESSIBLE-FILES", nbrMarkedFileObjects > 0 ? "True" : "False", ArgumentOptions.NoHtmlEncoding);
+                        htmlPartialViewPage.Merge();
+                    }
 
                     htmlPartialHeaderViewPage.SetContent(browser, GetViewData("HomePage.Authenticated.HeaderActions"));
                     htmlPartialHeaderViewPage.SetText("AUTHENTICATION-FACTOR", authenticationFactor, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);

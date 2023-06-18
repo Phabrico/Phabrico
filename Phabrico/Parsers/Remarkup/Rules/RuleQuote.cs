@@ -48,7 +48,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 remarkup = remarkup.Substring(match.Length);
 
                 RemarkupParserOutput remarkupParserOutput;
-                html = Engine.ToHTML(this, database, browser, url, quotedContent, out remarkupParserOutput, false);
+                html = Engine.ToHTML(this, database, browser, url, quotedContent, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.Add(new RuleRegular() { Text = "> " });  // add 1st '>'
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);

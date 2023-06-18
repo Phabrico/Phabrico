@@ -618,7 +618,7 @@ namespace Phabrico
                 foreach (Phabricator.Data.Maniphest maniphestTask in downloadedManiphestTasks)
                 {
                     Parsers.Remarkup.RemarkupParserOutput remarkupParserOutput;
-                    synchronizationController.ConvertRemarkupToHTML(database, "maniphest/" + maniphestTask.ID, maniphestTask.Description, out remarkupParserOutput, false);
+                    synchronizationController.ConvertRemarkupToHTML(database, "maniphest/" + maniphestTask.ID, maniphestTask.Description, out remarkupParserOutput, false, maniphestTask.Token);
                 }
 
                 foreach (Phabricator.Data.Phriction phrictionDocument in downloadedPhrictionDocuments)
@@ -626,7 +626,7 @@ namespace Phabrico
                     // convert Remarkup content to HTML
                     // in case any invalid URLs are found, the Database_InvalidUrlFound method will be executed
                     Parsers.Remarkup.RemarkupParserOutput remarkupParserOutput;
-                    synchronizationController.ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                    synchronizationController.ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
 
                     // collect all referenced users in Remarkup content
                     foreach (RuleReferenceUser ruleReferenceUser in remarkupParserOutput.TokenList

@@ -181,6 +181,22 @@
         </li>
     }@
 
+    @{IF @@ACCESS-HIDE-INACCESSIBLE-FILES@@=False@
+        @{IF @@ANY-INACCESSIBLE-FILES@@=True@
+            <li class="phui-list-item-view">
+                <a href="errorinaccessiblefiles/" class="phui-list-item-href tooltip-right">
+                    <span class="phui-font-fa fa-low-vision phui-list-item-icon">
+                        <span class="phui-list-item-name">Inaccessible files<span class="navigator-menuitem-notification unreferenced-files-notifier"></span>
+                            @{IF @@ACCESS-HIDE-NAVIGATOR-TOOLTIPS@@=False@
+                                <span class="tooltiptext">View references to inaccessible files</span>
+                            }@
+                        </span>
+                    </span>
+                </a>
+            </li>
+        }@
+    }@
+
     @{IF @@ACCESS-MASTER-DATA@@=True@
         <li class="phui-list-item-view">
             <div style="margin:20px 5px; text-align:center;">

@@ -41,7 +41,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
             RemarkupParserOutput remarkupParserOutput;
             remarkup = remarkup.Substring(match.Length);
-            UnformattedText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+            UnformattedText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
             html = string.Format("<span class='remarkup-highlight'>{0}</span>", UnformattedText);
             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
             ChildTokenList.AddRange(remarkupParserOutput.TokenList);

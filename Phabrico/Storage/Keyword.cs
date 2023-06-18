@@ -164,7 +164,7 @@ namespace Phabrico.Storage
                                            );
                     
                     RemarkupParserOutput remarkupParserOutput;
-                    controller.ConvertRemarkupToHTML(database, "", phrictionDocument.Content, out remarkupParserOutput, false);
+                    controller.ConvertRemarkupToHTML(database, "", phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
 
                     blobContent = phrictionDocument.Name + " ";         // phriction document title
                     blobContent += urlCrumbs;                           // crumbs from phriction document url
@@ -182,7 +182,7 @@ namespace Phabrico.Storage
                 if (maniphestTask != null)
                 {
                     RemarkupParserOutput remarkupParserOutput;
-                    controller.ConvertRemarkupToHTML(database, "", maniphestTask.Description, out remarkupParserOutput, false);
+                    controller.ConvertRemarkupToHTML(database, "", maniphestTask.Description, out remarkupParserOutput, false, maniphestTask.Token);
 
                     blobContent = maniphestTask.Name + " ";                     // maniphest task title
                     blobContent += remarkupParserOutput.Text + " ";             // maniphest task description
@@ -193,7 +193,7 @@ namespace Phabrico.Storage
                 if (blogPost != null)
                 {
                     RemarkupParserOutput remarkupParserOutput;
-                    controller.ConvertRemarkupToHTML(database, "", blogPost.Content, out remarkupParserOutput, false);
+                    controller.ConvertRemarkupToHTML(database, "", blogPost.Content, out remarkupParserOutput, false, blogPost.Token);
 
                     blobContent = blogPost.Title + " ";                         // blog post title
                     blobContent += remarkupParserOutput.Text + " ";             // blog post content
@@ -406,6 +406,7 @@ namespace Phabrico.Storage
                 }
 
                 string encryptedWord = database.PolyCharacterCipherEncrypt(word.ToUpper());
+                string encryptedQuotedWord = database.PolyCharacterCipherEncrypt("\"" + word.ToUpper());
 
                 sqlStatement = string.Format(@"
                     SELECT keywordInfo.name,
@@ -419,24 +420,25 @@ namespace Phabrico.Storage
                         FROM (
                             SELECT 1 level, token
                             FROM keywordInfo
-                            WHERE name LIKE '{0}%'
+                            WHERE (name LIKE '{0}%'  OR  name LIKE '{1}%')
                               AND language = @language
 
                             UNION
 
                             SELECT 2 level, token
                             FROM keywordInfo
-                            WHERE name LIKE '{0}%'
+                            WHERE (name LIKE '{0}%'  OR  name LIKE '{1}%')
                               AND language = @notApplicable
                         ) drv
                         GROUP BY token
                     ) selection
                     ON keywordInfo.token = selection.token
-                    AND keywordInfo.name LIKE '{0}%'
+                    AND (keywordInfo.name LIKE '{0}%'  OR  keywordInfo.name LIKE '{1}%')
                     AND ((selection.level = 1 AND keywordInfo.language = @language)         -- translation available
                       OR (selection.level = 2 AND keywordInfo.language = @notApplicable)    -- no translation available
                         ) 
-                ", encryptedWord);
+                ", encryptedWord,
+                   encryptedQuotedWord);
 
                 using (dbCommand = new SQLiteCommand(sqlStatement, database.Connection))
                 {

@@ -1010,10 +1010,20 @@ EditorUi = function(editor, container, lightbox)
 	
 		// Updates the editor UI after the window has been resized or the orientation changes
 		// Timeout is workaround for old IE versions which have a delay for DOM client sizes.
-		// Should not use delay > 0 to avoid handle multiple repaints during window resize
+		var resizeThread = null;
+
 		this.resizeHandler = mxUtils.bind(this, function()
 	   	{
-			this.windowResized();
+			if (resizeThread != null)
+			{
+				window.clearTimeout(resizeThread);
+			}
+
+			resizeThread = window.setTimeout(mxUtils.bind(this, function()
+			{
+				resizeThread = null;
+				this.windowResized();
+			}), 100);
 	   	});
 		
 	   	mxEvent.addListener(window, 'resize', this.resizeHandler);
@@ -1306,7 +1316,8 @@ EditorUi.prototype.init = function()
 			ui.updateActionStates();
 		};
 		
-		// Hack to make editLink available in vertex handler
+		// Hack to make showLinkDialog and editLink available in vertex handler
+		graph.showLinkDialog = mxUtils.bind(ui, ui.showLinkDialog);
 		graph.editLink = ui.actions.get('editLink').funct;
 		
 		this.updateActionStates();
@@ -2653,7 +2664,7 @@ EditorUi.prototype.lazyZoomDelay = 20;
 /**
  * Delay before update of DOM when using preview.
  */
-EditorUi.prototype.wheelZoomDelay = 400;
+EditorUi.prototype.wheelZoomDelay = 500;
 
 /**
  * Delay before update of DOM when using preview.
@@ -2711,7 +2722,9 @@ EditorUi.prototype.initCanvas = function()
                 cx = (cx != null) ? cx : 0;
                 cy = (cy != null) ? cy : 0;
                 
-                var bds = (graph.pageVisible) ? graph.view.getBackgroundPageBounds() : graph.getGraphBounds();
+                var bds = (graph.pageVisible) ?
+					graph.view.getBackgroundPageBounds() :
+					graph.getGraphBounds();
                 var scroll = mxUtils.hasScrollbars(graph.container);
                 var tr = graph.view.translate;
                 var s = graph.view.scale;
@@ -3175,8 +3188,8 @@ EditorUi.prototype.initCanvas = function()
 				}), Editor.fullscreenImage, mxResources.get('openInNewWindow', null, 'Open in New Window'));
 			}
 			
-			if ((toolbarConfig.closeBtn && window.self === window.top) ||
-				(graph.lightbox && (urlParams['close'] == '1' || this.container != document.body)))
+			if (!toolbarConfig.noCloseBtn && ((toolbarConfig.closeBtn && window.self === window.top) ||
+				(graph.lightbox && (urlParams['close'] == '1' || this.container != document.body))))
 			{
 				addButton(mxUtils.bind(this, function(evt)
 				{
@@ -3308,22 +3321,62 @@ EditorUi.prototype.initCanvas = function()
 		/**
 		 * Guesses autoTranslate to avoid another repaint (see below).
 		 * Works if only the scale of the graph changes or if pages
-		 * are visible and the visible pages do not change.
+		 * are visible and the visible pages do not change. Uses
+		 * geometries to guess the bounding box of the graph.
 		 */
 		var graphViewValidate = graph.view.validate;
+		var zero = new mxPoint();
+		var lastPage = null;
+
 		graph.view.validate = function()
 		{
-			if (this.graph.container != null && mxUtils.hasScrollbars(this.graph.container))
+			if (graph.container != null &&
+				mxUtils.hasScrollbars(graph.container))
 			{
-				var pad = this.graph.getPagePadding();
-				var size = this.graph.getPageSize();
+				// Sets initial state after page changes
+				if (ui.currentPage != null &&
+					lastPage != ui.currentPage)
+				{
+					lastPage = ui.currentPage;
+
+					// Sets initial translate based on geometries
+					// to avoid revalidation in sizeDidChange
+					var bbox = graph.getBoundingBoxFromGeometry(
+						graph.model.getCells(), true);
+					
+					// Handles blank diagrams
+					if (bbox == null)
+					{
+						bbox = new mxRectangle(
+							graph.view.translate.x * graph.view.scale,
+							graph.view.translate.y * graph.view.scale);
+					}
+
+					var pageLayout = graph.getPageLayout(bbox, zero, 1);
+					var tr = graph.getDefaultTranslate(pageLayout);
+					this.x0 = pageLayout.x;
+					this.y0 = pageLayout.y;
+					
+					if (tr.x != this.translate.x ||
+						tr.y != this.translate.y)
+					{
+						this.invalidate();
+						this.translate.x = tr.x;
+						this.translate.y = tr.y;
+					}
+				}
 				
-				// Updating scrollbars here causes flickering in quirks and is not needed
-				// if zoom method is always used to set the current scale on the graph.
-				var tx = this.translate.x;
-				var ty = this.translate.y;
-				this.translate.x = pad.x - (this.x0 || 0) * size.width;
-				this.translate.y = pad.y - (this.y0 || 0) * size.height;
+				var pad = graph.getPagePadding();
+				var size = graph.getPageSize();
+				var tx = pad.x - (this.x0 || 0) * size.width;
+				var ty = pad.y - (this.y0 || 0) * size.height;
+
+				if (this.translate.x != tx || this.translate.y != ty)
+				{
+					this.invalidate();	
+					this.translate.x = tx
+					this.translate.y = ty
+				}
 			}
 			
 			graphViewValidate.apply(this, arguments);
@@ -3332,60 +3385,44 @@ EditorUi.prototype.initCanvas = function()
 		if (!graph.isViewer())
 		{
 			var graphSizeDidChange = graph.sizeDidChange;
-			
+
 			graph.sizeDidChange = function()
 			{
-				if (this.container != null && mxUtils.hasScrollbars(this.container))
+				if (this.container != null &&
+					mxUtils.hasScrollbars(this.container))
 				{
-					var pages = this.getPageLayout();
-					var pad = this.getPagePadding();
-					var size = this.getPageSize();
-					
-					// Updates the minimum graph size
-					var minw = Math.ceil(2 * pad.x + pages.width * size.width);
-					var minh = Math.ceil(2 * pad.y + pages.height * size.height);
-					
-					var min = graph.minimumGraphSize;
-					
-					// LATER: Fix flicker of scrollbar size in IE quirks mode
-					// after delayed call in window.resize event handler
-					if (min == null || min.width != minw || min.height != minh)
+					this.updateMinimumSize();
+
+					if (!this.autoTranslate)
 					{
-						graph.minimumGraphSize = new mxRectangle(0, 0, minw, minh);
+						var pageLayout = this.getPageLayout();
+						var tr = this.getDefaultTranslate(pageLayout);
+						var tx = this.view.translate.x;
+						var ty = this.view.translate.y;
+						
+						if (tr.x != tx || tr.y != ty)
+						{
+							this.view.x0 = pageLayout.x;
+							this.view.y0 = pageLayout.y;
+							this.autoTranslate = true;
+
+							// Requires full revalidation
+							this.view.setTranslate(tr.x, tr.y);
+							this.container.scrollLeft += Math.round((tr.x - tx) * this.view.scale);
+							this.container.scrollTop += Math.round((tr.y - ty) * this.view.scale);
+							this.autoTranslate = false;
+							
+							return;
+						}
 					}
 					
-					// Updates auto-translate to include padding and graph size
-					var dx = pad.x - pages.x * size.width;
-					var dy = pad.y - pages.y * size.height;
-					
-					if (!this.autoTranslate && (this.view.translate.x != dx || this.view.translate.y != dy))
-					{
-						this.autoTranslate = true;
-						this.view.x0 = pages.x;
-						this.view.y0 = pages.y;
-	
-						// NOTE: THIS INVOKES THIS METHOD AGAIN. UNFORTUNATELY THERE IS NO WAY AROUND THIS SINCE THE
-						// BOUNDS ARE KNOWN AFTER THE VALIDATION AND SETTING THE TRANSLATE TRIGGERS A REVALIDATION.
-						// SHOULD MOVE TRANSLATE/SCALE TO VIEW.
-						var tx = graph.view.translate.x;
-						var ty = graph.view.translate.y;
-						graph.view.setTranslate(dx, dy);
-						
-						// LATER: Fix rounding errors for small zoom
-						graph.container.scrollLeft += Math.round((dx - tx) * graph.view.scale);
-						graph.container.scrollTop += Math.round((dy - ty) * graph.view.scale);
-						
-						this.autoTranslate = false;
-						
-						return;
-					}
-	
 					graphSizeDidChange.apply(this, arguments);
 				}
 				else
 				{
 					// Fires event but does not invoke superclass
-					this.fireEvent(new mxEventObject(mxEvent.SIZE, 'bounds', this.getGraphBounds()));
+					this.fireEvent(new mxEventObject(mxEvent.SIZE,
+						'bounds', this.getGraphBounds()));
 				}
 			};
 		}
@@ -4108,6 +4145,53 @@ EditorUi.prototype.setScrollbars = function(value)
 };
 
 /**
+ * Function: fitDiagramToWindow
+ * 
+ * Zooms the diagram to fit into the window.
+ */
+EditorUi.prototype.fitDiagramToWindow = function()
+{
+	var graph = this.editor.graph;
+	var bounds = (graph.isSelectionEmpty()) ?
+		mxRectangle.fromRectangle(graph.getGraphBounds()) :
+		graph.getBoundingBox(graph.getSelectionCells())
+	var t = graph.view.translate;
+	var s = graph.view.scale;
+	
+	bounds.x = bounds.x / s - t.x;
+	bounds.y = bounds.y / s - t.y;
+	bounds.width /= s;
+	bounds.height /= s;
+
+	if (graph.backgroundImage != null)
+	{
+		bounds.add(new mxRectangle(0, 0,
+			graph.backgroundImage.width,
+			graph.backgroundImage.height));
+	}
+
+	if (bounds.width == 0 || bounds.height == 0)
+	{
+		graph.zoomTo(1);
+		this.resetScrollbars();
+	}
+	else
+	{
+		var b = Editor.fitWindowBorders;
+		
+		if (b != null)
+		{
+			bounds.x -= b.x;
+			bounds.y -= b.y;
+			bounds.width += b.width + b.x;
+			bounds.height += b.height + b.y;
+		}
+		
+		graph.fitWindow(bounds);
+	}
+};
+
+/**
  * Returns true if the graph has scrollbars.
  */
 EditorUi.prototype.hasScrollbars = function()
@@ -4173,14 +4257,17 @@ EditorUi.prototype.resetScrollbars = function()
 				{
 					var width = Math.max(bounds.width, graph.scrollTileSize.width * graph.view.scale);
 					var height = Math.max(bounds.height, graph.scrollTileSize.height * graph.view.scale);
-					c.scrollTop = Math.floor(Math.max(0, bounds.y - Math.max(20, (c.clientHeight - height) / 4)));
+
 					c.scrollLeft = Math.floor(Math.max(0, bounds.x - Math.max(0, (c.clientWidth - width) / 2)));
+					c.scrollTop = Math.floor(Math.max(0, bounds.y - Math.max(20, (c.clientHeight - height) / 4)));
 				}
 			}
 		}
 		else
 		{
-			var b = mxRectangle.fromRectangle((graph.pageVisible) ? graph.view.getBackgroundPageBounds() : graph.getGraphBounds())
+			var b = mxRectangle.fromRectangle((graph.pageVisible) ?
+				graph.view.getBackgroundPageBounds() :
+				graph.getGraphBounds())
 			var tr = graph.view.translate;
 			var s = graph.view.scale;
             b.x = b.x / s - tr.x;
@@ -4374,7 +4461,7 @@ ChangePageSetup.prototype.execute = function()
 		var tmp = graph.backgroundImage;
 		var img = this.previousImage;
 
-		if (img != null && img.src != null && img.src.substring(0, 13) == 'data:page/id,')
+		if (img != null && Graph.isPageLink(img.src))
 		{
 			img = this.ui.createImageForPageLink(img.src, this.ui.currentPage);
 		}
@@ -5255,7 +5342,7 @@ EditorUi.prototype.hideDialog = function(cancel, isEsc, matchContainer)
 		{
 			window.setTimeout(mxUtils.bind(this, function()
 			{
-				if (this.editor != null)
+				if (this.editor != null && (this.dialogs == null || this.dialogs.length == 0))
 				{
 					if (this.editor.graph.isEditing() && this.editor.graph.cellEditor.textarea != null)
 					{
@@ -5994,12 +6081,18 @@ EditorUi.prototype.createKeyHandler = function(editor)
 	{
 		// Handles undo/redo/ctrl+./,/u via action and allows ctrl+b/i
 		// only if editing value is HTML (except for FF and Safari)
+		// 66, 73 are keycodes for editing actions like bold, italic
 		return !(mxEvent.isShiftDown(evt) && evt.keyCode == 9) &&
 			((!this.isControlDown(evt) || mxEvent.isShiftDown(evt) ||
 			(evt.keyCode != 90 && evt.keyCode != 89 && evt.keyCode != 188 &&
 			evt.keyCode != 190 && evt.keyCode != 85)) && ((evt.keyCode != 66 && evt.keyCode != 73) ||
 			!this.isControlDown(evt) || (this.graph.cellEditor.isContentEditing() &&
-			!mxClient.IS_FF && !mxClient.IS_SF)) && isEventIgnored.apply(this, arguments));
+			!mxClient.IS_FF && !mxClient.IS_SF)) &&
+			((evt.keyCode != 109 && evt.keyCode != 107) ||
+			(!this.isControlDown(evt) && !mxEvent.isShiftDown(evt)) ||
+			(!this.graph.cellEditor.isContentEditing() &&
+			!mxClient.IS_FF && !mxClient.IS_SF)) &&
+			isEventIgnored.apply(this, arguments));
 	};
 	
 	// Ignores graph enabled state but not chromeless state
@@ -6342,6 +6435,10 @@ EditorUi.prototype.createKeyHandler = function(editor)
 		keyHandler.bindAction(80, true, 'format', true); // Ctrl+Shift+P
 		keyHandler.bindAction(85, true, 'underline'); // Ctrl+U
 		keyHandler.bindAction(85, true, 'ungroup', true); // Ctrl+Shift+U
+		keyHandler.bindAction(109, true, 'decreaseFontSize', true); // Ctrl+Shift+Minus
+		keyHandler.bindAction(107, true, 'increaseFontSize', true); // Ctrl+Shift+Plus
+		keyHandler.bindAction(219, true, 'decreaseFontSize', true); // Ctrl+{
+		keyHandler.bindAction(221, true, 'increaseFontSize', true); // Ctrl+}
 		keyHandler.bindAction(190, true, 'superscript'); // Ctrl+.
 		keyHandler.bindAction(188, true, 'subscript'); // Ctrl+,
 		keyHandler.bindAction(13, false, 'keyPressEnter'); // Enter

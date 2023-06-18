@@ -423,7 +423,7 @@ namespace Phabrico.Plugin
                                     // rename file object in referencing phriction document
                                     if (phrictionDocument != null)
                                     {
-                                        remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+                                        remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
                                         List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
                                                                                                             .OfType<RuleReferenceFile>()
                                                                                                             .ToList();
@@ -464,7 +464,7 @@ namespace Phabrico.Plugin
                                     // rename file object in referencing maniphest task
                                     if (maniphestTask != null)
                                     {
-                                        remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false);
+                                        remarkupEngine.ToHTML(null, database, browser, "/", maniphestTask.Description, out remarkupParserOutput, false, maniphestTask.Token);
                                         List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
                                                                                                             .OfType<RuleReferenceFile>()
                                                                                                             .ToList();

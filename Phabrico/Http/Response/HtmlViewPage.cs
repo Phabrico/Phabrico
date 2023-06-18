@@ -1,4 +1,5 @@
 ﻿using Phabrico.Miscellaneous;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -280,6 +281,7 @@ namespace Phabrico.Http.Response
             bool hideManiphest = HttpServer.Customization.HideManiphest;
             bool hideNavigatorTooltips = HttpServer.Customization.HideNavigatorTooltips;
             bool hideOfflineChanges = HttpServer.Customization.HideOfflineChanges;
+            bool hideInaccessibleFiles = HttpServer.Customization.HideInaccessibleFiles;
             bool hidePhame = HttpServer.Customization.HidePhame;
             bool hidePhriction = HttpServer.Customization.HidePhriction;
             bool hidePhrictionChanges = HttpServer.Customization.HidePhrictionChanges;
@@ -297,6 +299,7 @@ namespace Phabrico.Http.Response
             SetText("ACCESS-HIDE-MANIPHEST", hideManiphest.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-NAVIGATOR-TOOLTIPS", hideNavigatorTooltips.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-OFFLINE-CHANGES", hideOfflineChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-INACCESSIBLE-FILES", hideInaccessibleFiles.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PHAME", hidePhame.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PHRICTION", hidePhriction.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PHRICTION-CHANGES", hidePhrictionChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
@@ -577,6 +580,11 @@ namespace Phabrico.Http.Response
                         {
                             // set private encryption key
                             database.PrivateEncryptionKey = token?.PrivateEncryptionKey;
+
+                            int nbrMarkedFileObjects = database.GetAllMarkedFileIDs().Count();
+                            Http.Server.SendNotificationError("/errorinaccessiblefiles/notification", nbrMarkedFileObjects.ToString());
+
+                            htmlPartialViewPage.SetText("ANY-INACCESSIBLE-FILES", nbrMarkedFileObjects > 0 ? "True" : "False", ArgumentOptions.NoHtmlEncoding);
 
                             foreach (Plugin.PluginBase plugin in Http.Server.Plugins)
                             {

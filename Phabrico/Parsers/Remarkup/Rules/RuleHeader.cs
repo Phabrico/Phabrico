@@ -236,7 +236,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -269,7 +269,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -302,7 +302,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -335,7 +335,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -368,7 +368,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -401,7 +401,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -434,7 +434,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -467,7 +467,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -500,7 +500,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -533,7 +533,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -566,7 +566,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -599,7 +599,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 

@@ -123,6 +123,15 @@ msgstr "Das Kennwort muss mindestens 1 Großbuchstaben enthalten"
 msgid "Password should be at least 12 characters long"
 msgstr "Das Kennwort muss mindestens 12 Zeichen lang sein."
 
+msgid "User name should be at least 1 character long"
+msgstr "Der Benutzername sollte mindestens 1 Zeichen lang sein"
+
+msgid "Only HTTP or HTTPS urls are supported"
+msgstr "Es werden nur HTTP- oder HTTPS-URLs unterstützt"
+
+msgid "Invalid API token"
+msgstr "Ungültiges API-Token"
+
 msgid "Log out"
 msgstr "Abmelden"
 
@@ -1107,6 +1116,22 @@ msgstr "Ein interner Fehler ist aufgetreten"
 msgid "A document already exists with this slug path"
 msgstr "Es existiert bereits ein Dokument mit diesem Slug-Pfad"
 
+# Inaccessible files
+msgid "Inaccessible files"
+msgstr "Unsichtbare Dateien"
+
+msgid "View references to inaccessible files"
+msgstr "Verweise auf unzugängliche Dateien anzeigen"
+
+msgid "Reference"
+msgstr "Referenz"
+
+msgid "File ID"
+msgstr "Datei-ID"
+
+msgid "Type some text to filter the references of inaccessible file objects..."
+msgstr "Geben Sie einen Text ein, um die Verweise auf nicht zugängliche Dateiobjekte zu filtern..."
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Fett"
@@ -1173,6 +1198,9 @@ msgstr "WARNUNG"
 
 msgid "FileReference.Download"
 msgstr "Herunterladen"
+
+msgid "File inaccessible"
+msgstr "Datei nicht vorhanden"
 
 # Browser not supported
 msgid "Browser not supported"

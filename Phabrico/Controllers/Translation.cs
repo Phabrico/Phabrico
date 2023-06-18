@@ -84,7 +84,7 @@ namespace Phabrico.Controllers
                         RemarkupParserOutput remarkupParserOutput;
                         RemarkupEngine remarkupEngine = new RemarkupEngine();
                         Dictionary<int, int> translationReferencedFileObjectIDs = new Dictionary<int, int>();
-                        remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+                        remarkupEngine.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
                         List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
                                                                                             .Flat
                                                                                             .OfType<RuleReferenceFile>()
@@ -185,7 +185,7 @@ namespace Phabrico.Controllers
                 if (wikiDocument != null)
                 {
                     RemarkupParserOutput remarkupParserOutput;
-                    remarkupEngine.ToHTML(null, database, browser, "/", wikiDocument.Content, out remarkupParserOutput, false);
+                    remarkupEngine.ToHTML(null, database, browser, "/", wikiDocument.Content, out remarkupParserOutput, false, wikiDocument.Token);
                     List<RuleReferenceFile> referencedFileObjects = remarkupParserOutput.TokenList
                                                                                         .OfType<RuleReferenceFile>()
                                                                                         .ToList();

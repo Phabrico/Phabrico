@@ -522,7 +522,7 @@ namespace Phabrico.Plugin
                 if (string.IsNullOrWhiteSpace(translatedContent) == false)
                 {
                     // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
-                    remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
+                    remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false, phrictionDocument.Token);
                     database.ClearAssignedTokens(phrictionToken, targetLanguage);
                     foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                     {
@@ -560,7 +560,7 @@ namespace Phabrico.Plugin
                         if (string.IsNullOrWhiteSpace(translatedContent) == false)
                         {
                             // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
-                            remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
+                            remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false, phrictionDocument.Token);
                             database.ClearAssignedTokens(phrictionToken, targetLanguage);
                             foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                             {
@@ -714,12 +714,12 @@ namespace Phabrico.Plugin
                     string previouslyTranslatedContent = translatedPhrictionDocument?.Content ?? "";
                     if (string.IsNullOrWhiteSpace(previouslyTranslatedContent) == false)
                     {
-                        remarkup.ToHTML(null, database, browser, phrictionDocument.Path, previouslyTranslatedContent + "\n", out remarkupParserOutput, false);
-                        previouslyTranslatedContent = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
+                        remarkup.ToHTML(null, database, browser, phrictionDocument.Path, previouslyTranslatedContent + "\n", out remarkupParserOutput, false, phrictionDocument.Token);
+                        previouslyTranslatedContent = remarkupParserOutput.TokenList.ToXML(database, browser, "/", phrictionDocument.Token);
                     }
 
-                    remarkup.ToHTML(null, database, browser, phrictionDocument.Path, phrictionDocument.Content + "\n", out remarkupParserOutput, false);
-                    string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
+                    remarkup.ToHTML(null, database, browser, phrictionDocument.Path, phrictionDocument.Content + "\n", out remarkupParserOutput, false, phrictionDocument.Token);
+                    string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/", phrictionDocument.Token);
 
                     string translatedXmlContent = translator.TranslateXML(sourceLanguage, targetLanguage, xmlData, previouslyTranslatedContent, phrictionDocument.Token);
                     string correctedTranslatedXmlContent = CorrectTranslatedXmlContent(translatedXmlContent);
@@ -752,7 +752,7 @@ namespace Phabrico.Plugin
                     if (string.IsNullOrWhiteSpace(translatedContent) == false)
                     {
                         // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
-                        remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false);
+                        remarkup.ToHTML(null, database, browser, "/", translatedContent, out remarkupParserOutput, false, phrictionDocument.Token);
                         database.ClearAssignedTokens(phrictionToken, targetLanguage);
                         foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                         {

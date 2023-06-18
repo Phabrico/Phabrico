@@ -192,7 +192,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     foreach (Match cell in RegexSafe.Matches(row.Value, @"\<(t[dh])\>(.+?(?<!\</t[dh]\>))\</t[dh]\>", RegexOptions.Singleline).OfType<Match>())
                     {
                         string cellTag = cell.Groups[1].Value;
-                        string cellContent = RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, cell.Groups[2].Value);
+                        string cellContent = RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, cell.Groups[2].Value, PhabricatorObjectToken);
 
                         result += string.Format("        <{0}>{1}</{0}>\n", cellTag, cellContent);
                     }
@@ -211,7 +211,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 {
                     foreach (Match cell in RegexSafe.Matches(row.Value, @"\<td\>(.+?(?<!\</td\>))\</td\>", RegexOptions.Singleline).OfType<Match>())
                     {
-                        string cellContent = RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, cell.Groups[1].Value);
+                        string cellContent = RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, cell.Groups[1].Value, PhabricatorObjectToken);
 
                         result += "|" + cellContent;
                     }
@@ -306,7 +306,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                     foreach (Match cell in rowCells.OfType<Match>())
                     {
                         string cellType = HttpUtility.HtmlEncode(cell.Groups[2].Value);
-                        string cellValue = Engine.ToHTML(this, database, browser, url, cell.Groups[3].Value.Trim(' ', '\r'), out remarkupParserOutput, false);
+                        string cellValue = Engine.ToHTML(this, database, browser, url, cell.Groups[3].Value.Trim(' ', '\r'), out remarkupParserOutput, false, PhabricatorObjectToken);
                         string cellConcealed = cellType.Equals("td") && concealedHeaderIndices.Contains(cellIndex) ? " class='concealed'" : "";
 
                         if (generateTokenPositions)

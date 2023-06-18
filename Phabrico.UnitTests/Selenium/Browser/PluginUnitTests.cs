@@ -2443,7 +2443,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // validate document content
             string documentContent = WebBrowser.FindElement(By.Id("remarkupContent"))
                                                .Text;
-            Assert.AreEqual("Once upon a time, I was reading this story over and over again inexistant", documentContent);
+            Assert.AreEqual("Once upon a time, I was reading this story over and over again\r\n{F31415927}\r\ninexistant", documentContent);
 
              // navigate to "Story of my grandfather's life" document
             IWebElement linkStoryGrandfathersLife = WebBrowser.FindElement(By.XPath("//*[contains(text(), \"Story of my grandfather's life\")]"));
@@ -2491,7 +2491,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // validate document content
             documentContent = WebBrowser.FindElement(By.Id("remarkupContent"))
                                         .Text;
-            Assert.AreEqual("Once upon a time, I was reading my grandfather's story over and over again inexistant2", documentContent);
+            Assert.AreEqual("Once upon a time, I was reading my grandfather's story over and over again\r\n{F27182818}\r\ninexistant2", documentContent);
 
             // go to Phriction root page
             IWebElement rootPhriction = WebBrowser.FindElements(By.XPath("//a"))

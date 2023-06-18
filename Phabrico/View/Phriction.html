@@ -574,6 +574,27 @@ dateModified won't change when a subscription is added or removed
                     });
                 });
 
+                var searchInput = document.createElement('input');
+                searchInput.type = 'text';
+                searchInput.id = 'searchInput';
+                searchInput.style.margin = '1px 0px 3px 0px';
+                searchInput.onkeyup = function() {
+                    var trs = document.querySelectorAll('#pluginTableData tbody tr');
+                    var filter = document.querySelector('#searchInput').value;
+                    var regex = new RegExp(filter, 'i');
+                    var isFoundInTds = td => regex.test(td.innerHTML);
+                    var isFound = childrenArr => childrenArr.some(isFoundInTds);
+                    var setTrStyleDisplay = ({ style, children }) => {
+                      style.display = isFound([
+                        ...children // <-- All columns
+                      ]) ? '' : 'none'
+                    }
+
+                    trs.forEach(setTrStyleDisplay);
+                };
+                searchInput.placeholder = Locale.Translate("Search");
+
+                pluginTableData.appendChild(searchInput);
                 pluginTableData.appendChild(table);
 
                 actionNewDocument.style.display = 'none';

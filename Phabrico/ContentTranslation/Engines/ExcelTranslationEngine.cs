@@ -238,10 +238,10 @@ namespace Phabrico.ContentTranslation.Engines
 
             RemarkupEngine remarkup = new RemarkupEngine();
             RemarkupParserOutput remarkupParserOutput;
-            remarkup.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false);
+            remarkup.ToHTML(null, database, browser, "/", phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
 
 
-            string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/");
+            string xmlData = remarkupParserOutput.TokenList.ToXML(database, browser, "/", phrictionDocument.Token);
 
             string unformattedContent = DecodeBrokenXmlFormatting(xmlData);
 

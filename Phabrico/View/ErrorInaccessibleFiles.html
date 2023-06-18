@@ -1,0 +1,104 @@
+<div class="app-window">
+    <form id="frmFileSelection" action="" method="POST">
+        <input type="hidden" id="item" name="item">
+        <div class="aphront-form-input">
+            <input id="filter" type="text" class="full-width" placeholder="Type some text to filter the references of inaccessible file objects..." oninput="populateTable(this.value)">
+        </div>
+        <div class="scrollableTable" style="height:calc(100vh - 140px);">
+            <table id="tblFiles" class="aphront-table-view" style="table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th id="tblFiles#Name" class="sortableColumn sortedColumn ascending wide fileName">Reference</th>
+                        <th id="tblFiles#ID" class="sortableColumn action">File ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script>
+    var sortedColumn = "Name";
+
+    initializeTable();
+
+    populateTable("");
+
+    // set page title
+    document.title = fromHTML("@@CUSTOM-APPLICATION-NAME@@") + " - " + Locale.Translate("Inaccessible files");
+
+    function initializeTable() {
+        var sortableColumns = document.querySelectorAll('#tblFiles thead tr th.sortableColumn');
+        sortableColumns.forEach(function (sortableColumn) {
+            sortableColumn.onclick = function (clickedColumnHeader) {
+                var newSortedColumn = clickedColumnHeader.target.id.split('#')[1];
+
+                var previouslySortedColumn = document.querySelector('#tblFiles thead tr th.sortedColumn');
+                if (previouslySortedColumn != null) {
+                    previouslySortedColumn.classList.remove('sortedColumn');
+                    previouslySortedColumn.classList.remove('ascending');
+                    previouslySortedColumn.classList.remove('descending');
+                }
+
+                if (sortedColumn == newSortedColumn) {
+                    sortedColumn = sortedColumn + "-";
+                    clickedColumnHeader.target.classList.add('sortedColumn');
+                    clickedColumnHeader.target.classList.remove('ascending');
+                    clickedColumnHeader.target.classList.add('descending');
+                } else {
+                    sortedColumn = newSortedColumn;
+                    clickedColumnHeader.target.classList.add('sortedColumn');
+                    clickedColumnHeader.target.classList.add('ascending');
+                    clickedColumnHeader.target.classList.remove('descending');
+                }
+
+                populateTable(filter.value)
+            };
+        });
+    }
+
+    function populateTable(firstCharacters) {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.overrideMimeType("application/json");
+        xmlhttp.open('GET', "file/error/inaccessible/" + sortedColumn + "/" + firstCharacters, true);
+        xmlhttp.onload = function () {
+            document.querySelector('#tblFiles tbody').innerHTML = "";
+
+            try {
+                var jsonResponse = JSON.parse(xmlhttp.responseText);
+                jsonResponse.forEach(function (record) {
+                    var tbody = document.querySelector('#tblFiles tbody');
+                    var row = tbody.insertRow();
+                    row.classList.add('alternate');
+                    if (record.Selected) {
+                        row.classList.add('selected');
+                    }
+
+                    var cell = row.insertCell();
+                    cell.classList.add('action');
+                    var anchorSelect = document.createElement('a');
+                    anchorSelect.href = record.URL + "/";
+                    anchorSelect.style.minWidth = "70px";
+                    anchorSelect.target = "_blank";
+
+                    var text = document.createTextNode(record.Name);
+                    anchorSelect.appendChild(text);
+                    cell.appendChild(anchorSelect);
+
+                    var cell = row.insertCell();
+                    cell.classList.add('wide');
+                    cell.classList.add('fileName');
+                    var text = document.createTextNode("F" + record.ID);
+                    cell.appendChild(text);
+            });
+            }
+            catch (exc) {
+                // show logon dialog
+                document.location.reload();
+            }
+        };
+        xmlhttp.send(null);
+    }
+</script>

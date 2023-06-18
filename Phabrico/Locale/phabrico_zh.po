@@ -123,6 +123,15 @@ msgstr "密码应至少包含一个大写字母"
 msgid "Password should be at least 12 characters long"
 msgstr "密码至少要有12个字符"
 
+msgid "User name should be at least 1 character long"
+msgstr "用户名应至少有1个字符长"
+
+msgid "Only HTTP or HTTPS urls are supported"
+msgstr "只支持HTTP或HTTPS尿液"
+
+msgid "Invalid API token"
+msgstr "无效的API令牌"
+
 msgid "Log out"
 msgstr "注销"
 
@@ -1107,6 +1116,22 @@ msgstr "发生了一个内部错误"
 msgid "A document already exists with this slug path"
 msgstr "一个使用此路径的文件已经存在"
 
+# Inaccessible files
+msgid "Inaccessible files"
+msgstr "无效的文件"
+
+msgid "View references to inaccessible files"
+msgstr "查看对无法访问的文件的引用"
+
+msgid "Reference"
+msgstr "参考资料"
+
+msgid "File ID"
+msgstr "文件名称"
+
+msgid "Type some text to filter the references of inaccessible file objects..."
+msgstr "输入一些文字来过滤不可访问的文件对象的引用..."
+
 # Remarkup editor
 msgid "Bold"
 msgstr "粗体"
@@ -1173,6 +1198,9 @@ msgstr "警告"
 
 msgid "FileReference.Download"
 msgstr "下载"
+
+msgid "File inaccessible"
+msgstr "文件不可用"
 
 # Browser not supported
 msgid "Browser not supported"

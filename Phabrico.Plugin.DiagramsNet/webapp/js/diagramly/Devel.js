@@ -17,6 +17,10 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			//----------------------------------------------------------//
 			//------------- Bootstrap script in index.html -------------//
 			//----------------------------------------------------------//
+			// Version 21.5.0
+			'\'sha256-6zAB96lsBZREqf0sT44BhH1T69sm7HrN34rpMOcWbNo=\' ' +
+			// Version 21.4.1
+			'\'sha256-3SkDBaLE+ouvAOfTmG2TGwmQ2EE9AT0F2YcHvZmEMeo=\' ' +
 			// Version 20.8.14
 			'\'sha256-vrEVJkYyBW9H4tt1lYZtK5fDowIeRwUgYZfFTT36YpE=\' ' +
 			// Version 20.8.12
@@ -98,6 +102,9 @@ if (!mxIsElectron && location.protocol !== 'http:')
 				'worker-src https://viewer.diagrams.net/service-worker.js;'
 			console.log('viewer.diagrams.net:', viewer_diagrams_net);
 
+			var teams_diagrams_net = app_diagrams_net.replace(/ 'sha256-[^']+'/g, '') + 'worker-src https://app.diagrams.net/service-worker.js;';
+			console.log('teams.diagrams.net:', teams_diagrams_net);
+
 			var ac_draw_io = csp.replace(/%script-src%/g, 'https://aui-cdn.atlassian.com https://connect-cdn.atl-paas.net').
 					replace(/%frame-src%/g, 'https://www.lucidchart.com https://app.lucidchart.com https://lucid.app blob:').
 					replace(/%style-src%/g, 'https://aui-cdn.atlassian.com https://*.atlassian.net').
@@ -117,29 +124,8 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			console.log('import.diagrams.net:', 'default-src \'self\'; worker-src blob:; img-src \'self\' blob: data: https://www.lucidchart.com ' +
 					'https://app.lucidchart.com https://lucid.app; style-src \'self\' \'unsafe-inline\'; frame-src https://www.lucidchart.com https://app.lucidchart.com https://lucid.app;');
 			console.log('Development:', devCsp);
-			
-			console.log('Header Worker:', 'let securityHeaders =', JSON.stringify({
-				online: {
-					"Content-Security-Policy" : app_diagrams_net,
-					"Permissions-Policy" : "microphone=()"
-				},
-				viewer: {
-					"Content-Security-Policy" : viewer_diagrams_net,
-					"Permissions-Policy" : "microphone=()",
-				},
-				teams: {
-					"Content-Security-Policy" : app_diagrams_net.replace(/ 'sha256-[^']+'/g, '') + 'worker-src https://app.diagrams.net/service-worker.js;',
-					"Permissions-Policy" : "microphone=()"
-				},
-				jira: {
-					"Content-Security-Policy" : aj_draw_io,
-					"Permissions-Policy" : "microphone=()"
-				},
-				conf: {
-					"Content-Security-Policy" : ac_draw_io,
-					"Permissions-Policy" : "microphone=()"
-				}
-			}, null, 4));
+
+			console.log('Remember to add index.html new hashes to Desktop app (electron.js). In desktop, only newest hashes are needed.');
 		}
 	})();
 }

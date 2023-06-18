@@ -173,6 +173,7 @@
     <Compile Include="Interpreters\Figlet.cs" />
     <Compile Include="Interpreters\Interpreter.cs" />
     <Compile Include="Interpreters\UnitTestInterpreter.cs" />
+    <Compile Include="Miscellaneous\FileReference.cs" />
     <Compile Include="Miscellaneous\Language.cs" />
     <Compile Include="Miscellaneous\TransientDictionary.cs" />
     <Compile Include="Miscellaneous\DictionarySafe.cs" />
@@ -679,6 +680,7 @@
   <ItemGroup>
     <Content Include="Fonts\icomoon.svg" />
     <Content Include="Fonts\SIL Open Font License.txt" />
+    <EmbeddedResource Include="View\ErrorInaccessibleFiles.html" />
     <EmbeddedResource Include="View\InternalHtml.html" />
     <EmbeddedResource Include="View\Translations.Unreviewed.html">
       <SubType>Designer</SubType>

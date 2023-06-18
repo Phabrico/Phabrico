@@ -111,7 +111,6 @@ Editor.smallScreenWidth = 800;
 /**
  * 
  */
-Editor.rowMoveImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAEBAMAAACw6DhOAAAAGFBMVEUzMzP///9tbW1QUFCKiopBQUF8fHxfX1/IXlmXAAAAFElEQVQImWNgNVdzYBAUFBRggLMAEzYBy29kEPgAAAAASUVORK5CYII=';
 Editor.lightCheckmarkImage = 'data:image/gif;base64,R0lGODlhFQAVAMQfAGxsbHx8fIqKioaGhvb29nJycvr6+sDAwJqamltbW5OTk+np6YGBgeTk5Ly8vJiYmP39/fLy8qWlpa6ursjIyOLi4vj4+N/f3+3t7fT09LCwsHZ2dubm5r6+vmZmZv///yH/C1hNUCBEYXRhWE1QPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS4wLWMwNjAgNjEuMTM0Nzc3LCAyMDEwLzAyLzEyLTE3OjMyOjAwICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OEY4NTZERTQ5QUFBMTFFMUE5MTVDOTM5MUZGMTE3M0QiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OEY4NTZERTU5QUFBMTFFMUE5MTVDOTM5MUZGMTE3M0QiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo4Rjg1NkRFMjlBQUExMUUxQTkxNUM5MzkxRkYxMTczRCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo4Rjg1NkRFMzlBQUExMUUxQTkxNUM5MzkxRkYxMTczRCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PgH//v38+/r5+Pf29fTz8vHw7+7t7Ovq6ejn5uXk4+Lh4N/e3dzb2tnY19bV1NPS0dDPzs3My8rJyMfGxcTDwsHAv769vLu6ubi3trW0s7KxsK+urayrqqmop6alpKOioaCfnp2cm5qZmJeWlZSTkpGQj46NjIuKiYiHhoWEg4KBgH9+fXx7enl4d3Z1dHNycXBvbm1sa2ppaGdmZWRjYmFgX15dXFtaWVhXVlVUU1JRUE9OTUxLSklIR0ZFRENCQUA/Pj08Ozo5ODc2NTQzMjEwLy4tLCsqKSgnJiUkIyIhIB8eHRwbGhkYFxYVFBMSERAPDg0MCwoJCAcGBQQDAgEAACH5BAEAAB8ALAAAAAAVABUAAAVI4CeOZGmeaKqubKtylktSgCOLRyLd3+QJEJnh4VHcMoOfYQXQLBcBD4PA6ngGlIInEHEhPOANRkaIFhq8SuHCE1Hb8Lh8LgsBADs=';
 Editor.darkCheckmarkImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAMAAACeyVWkAAAARVBMVEUAAACZmZkICAgEBASNjY2Dg4MYGBiTk5N5eXl1dXVmZmZQUFBCQkI3NzceHh4MDAykpKSJiYl+fn5sbGxaWlo/Pz8SEhK96uPlAAAAAXRSTlMAQObYZgAAAE5JREFUGNPFzTcSgDAQQ1HJGUfy/Y9K7V1qeOUfzQifCQZai1XHaz11LFysbDbzgDSSWMZiETz3+b8yNUc/MMsktxuC8XQBSncdLwz+8gCCggGXzBcozAAAAABJRU5ErkJggg==';
 Editor.darkHelpImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAP1BMVEUAAAD///////////////////////////////////////////////////////////////////////////////9Du/pqAAAAFXRSTlMAT30qCJRBboyDZyCgRzUUdF46MJlgXETgAAAAeklEQVQY022O2w4DIQhEQUURda/9/28tUO2+7CQS5sgQ4F1RapX78YUwRqQjTU8ILqQfKerTKTvACJ4nLX3krt+8aS82oI8aQC4KavRgtvEW/mDvsICgA03PSGRr79MqX1YPNIxzjyqtw8ZnnRo4t5a5undtJYRywau+ds4Cyza3E6YAAAAASUVORK5CYII=';
@@ -274,10 +273,17 @@ Editor.isPngData = function(data)
  */
 Editor.convertHtmlToText = function(label)
 {
-	var temp = document.createElement('div');
-	temp.innerHTML = Graph.sanitizeHtml(label);
+	if (label != null)
+	{
+		var temp = document.createElement('div');
+		temp.innerHTML = Graph.sanitizeHtml(label);
 
-	return mxUtils.extractTextWithWhitespace(temp.childNodes);
+		return mxUtils.extractTextWithWhitespace(temp.childNodes)
+	}
+	else
+	{
+		return null;
+	}
 };
 
 /**
@@ -351,6 +357,116 @@ Editor.extractGraphModelFromPng = function(data)
 	}
 	
 	return result;
+};
+
+/**
+ * Soundex algorithm for strings.
+ * See https://www.codedrome.com/the-soundex-algorithm-in-javascript/
+ */
+Editor.soundex = function(name)
+{
+	if (name == null || name.length == 0)
+	{
+		return '';
+	}
+	else
+	{
+		var s = [];
+		var si = 1;
+		var c;
+
+		// Changed: s maps to 0 not 2 to ignore plurals
+		//              ABCDEFGHIJKLMNOPQRSTUVWXYZ
+		var mappings = '01230120022455012603010202';
+
+		s[0] = name[0].toUpperCase();
+
+		for(var i = 1, l = name.length; i < l; i++)
+		{
+			c = (name[i].toUpperCase()).charCodeAt(0) - 65;
+
+			if(c >= 0 && c <= 25)
+			{
+				if(mappings[c] != '0')
+				{
+					if(mappings[c] != s[si-1])
+					{
+						s[si] = mappings[c];
+						si++;
+					}
+
+					if(si > 3)
+					{
+						break;
+					}
+				}
+			}
+		}
+
+		if(si <= 3)
+		{
+			while(si <= 3)
+			{
+				s[si] = '0';
+				si++;
+			}
+		}
+
+		return s.join('');
+	}
+};
+
+/**
+ * Selects the given part of the input element.
+ */
+Editor.selectFilename = function(input)
+{
+	var end = input.value.lastIndexOf('.');
+
+	if (end > 0)
+	{
+		var ext = input.value.substring(end + 1);
+
+		if (ext != 'drawio')
+		{
+			if (mxUtils.indexOf(['png', 'svg', 'html', 'xml', 'pdf'], ext) >= 0)
+			{
+				var temp = input.value.lastIndexOf('.drawio.', end);
+
+				if (temp > 0)
+				{
+					end = temp;
+				}
+			}
+		}
+	}
+	
+	end = (end > 0) ? end : input.value.length;
+	Editor.selectSubstring(input, 0, end);
+};
+
+/**
+ * Selects the given part of the input element.
+ */
+Editor.selectSubstring = function(input, startPos, endPos)
+{
+	input.focus();
+
+	if (typeof input.selectionStart != 'undefined')
+	{
+		input.selectionStart = startPos;
+		input.selectionEnd = endPos;
+	}
+	else if (document.selection && document.selection.createRange)
+	{
+		// IE branch
+		input.select();
+		var range = document.selection.createRange();
+		range.collapse(true);
+		range.moveEnd('character', endPos);
+		range.moveStart('character', startPos);
+		range.select();
+	}
 };
 
 /**
@@ -2128,6 +2244,7 @@ var FilenameDialog = function(editorUi, filename, buttonText, fn, label, validat
 	
 	td = document.createElement('td');
 	td.style.textOverflow = 'ellipsis';
+	td.style.whiteSpace = 'nowrap';
 	td.style.textAlign = 'right';
 	td.style.maxWidth = (lblW? lblW + 15 : 100) + 'px';
 	td.style.fontSize = '10pt';
@@ -2161,16 +2278,23 @@ var FilenameDialog = function(editorUi, filename, buttonText, fn, label, validat
 		{
 			return;
 		}
-		
-		nameInput.focus();
-		
-		if (mxClient.IS_GC || mxClient.IS_FF || document.documentMode >= 5)
+
+		if (hints != null)
 		{
-			nameInput.select();
+			Editor.selectFilename(nameInput);
 		}
 		else
 		{
-			document.execCommand('selectAll', false, null);
+			nameInput.focus();
+			
+			if (mxClient.IS_GC || mxClient.IS_FF || document.documentMode >= 5)
+			{
+				nameInput.select();
+			}
+			else
+			{
+				document.execCommand('selectAll', false, null);
+			}
 		}
 		
 		// Installs drag and drop handler for links

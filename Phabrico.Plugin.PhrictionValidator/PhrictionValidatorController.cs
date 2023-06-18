@@ -101,14 +101,14 @@ namespace Phabrico.Plugin
                     {
                         // generate row data
                         object[] tableData = invalidFiles.Select(kvp => new object[] {
-                                                                    Locale.TranslateJavascript("Invalid file reference @@FILE-REFERENCE-ID@@", browser.Session.Locale)
+                                                                    Locale.TranslateText("Invalid file reference @@FILE-REFERENCE-ID@@", browser.Session.Locale)
                                                                           .Replace("@@FILE-REFERENCE-ID@@", "<span style='color:var(--a-color)'>" + kvp.Key + "</span>"),
                                                                     kvp.Value
                                                                 })
                                                                 .Distinct()
                                                                 .Concat(
                                                 invalidHyperlinks.Select(kvp => new object[] {
-                                                                    Locale.TranslateJavascript("Invalid hyperlink @@URL@@", browser.Session.Locale)
+                                                                    Locale.TranslateText("Invalid hyperlink @@URL@@", browser.Session.Locale)
                                                                           .Replace("@@URL@@", "<span style='color:var(--a-color)'>" + kvp.Key + "</span>"),
                                                                     kvp.Value
                                                                  })
@@ -157,9 +157,9 @@ namespace Phabrico.Plugin
                             TableData = new
                             {
                                 Header = new string[] {
-                                "Source",
-                                "Error"
-                            },
+                                    "Source",
+                                    "Error"
+                                },
                                 Data = result.OrderBy(data => data.FirstOrDefault())
                             }
                         });
@@ -198,7 +198,7 @@ namespace Phabrico.Plugin
                 if (string.IsNullOrWhiteSpace(phrictionDocument.Content)) return;
 
                 Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
-                ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+                ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false, phrictionDocument.Token);
 
                 foreach (Parsers.Remarkup.Rules.RemarkupRule remarkupToken in GetAllRemarkupTokens(remarkupPerserOutput.TokenList))
                 {
@@ -266,7 +266,7 @@ namespace Phabrico.Plugin
                                     {
                                         if (string.IsNullOrWhiteSpace(referencedPhrictionDocument.Content) == false)
                                         {
-                                            ConvertRemarkupToHTML(database, referencedPhrictionDocument.Path, referencedPhrictionDocument.Content, out referencedRemarkupPerserOutput, false);
+                                            ConvertRemarkupToHTML(database, referencedPhrictionDocument.Path, referencedPhrictionDocument.Content, out referencedRemarkupPerserOutput, false, referencedPhrictionDocument.Token);
                                         }
                                     }
                                 }

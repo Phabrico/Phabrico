@@ -369,7 +369,7 @@ namespace Phabrico.Controllers
                     {
                         case "undo":
                             documentState = "";
-                            formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                            formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
                             break;
 
                         case "edit":
@@ -383,11 +383,11 @@ namespace Phabrico.Controllers
                             viewPage.SetText("OPERATION", action);
                             if (translation == null)
                             {
-                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, true);
+                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, true, phrictionDocument.Token);
                             }
                             else
                             {
-                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, true);
+                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, true, phrictionDocument.Token);
                             }
                             break;
 
@@ -420,17 +420,17 @@ namespace Phabrico.Controllers
 
                         case "subscribe":
                             documentState = "";
-                            formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                            formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
                             break;
 
                         default:
                             if (translation == null)
                             {
-                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
                             }
                             else
                             {
-                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false);
+                                formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false, phrictionDocument.Token);
                             }
                             break;
                     }
@@ -439,11 +439,11 @@ namespace Phabrico.Controllers
                 {
                     if (translation == null)
                     {
-                        formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false);
+                        formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
                     }
                     else
                     {
-                        formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false);
+                        formattedDocumentContent = ConvertRemarkupToHTML(database, phrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false, phrictionDocument.Token);
 
                         documentState = "translated";
                         if (translation.IsReviewed == false)
@@ -684,6 +684,8 @@ namespace Phabrico.Controllers
                                                                       .OfType<Plugin.PluginTypeAttribute>()
                                                                       .FirstOrDefault(pluginTypeAttribute => pluginTypeAttribute.Usage == Plugin.PluginTypeAttribute.UsageType.PhrictionDocument);
                         if (pluginType == null) continue;
+
+                        plugin.CurrentUsageType = Plugin.PluginTypeAttribute.UsageType.PhrictionDocument;
 
                         if (plugin.IsVisibleInApplication(database, browser, phrictionDocument.Token)
                             && (httpServer.Customization.HidePlugins.ContainsKey(plugin.GetType().Name) == false
@@ -1214,6 +1216,24 @@ namespace Phabrico.Controllers
                                 if (parentPhrictionDocument != null)
                                 {
                                     database.DescendTokenFrom(parentPhrictionDocument.Token, newPhrictionDocument.Token);
+
+                                    // start uncaching parent and grandparent (otherwise, the document hierarchy at the bottom is not updated)
+                                    // uncache parent
+                                    InvalidatePhrictionDocumentFromCache(httpServer, database, parentPhrictionDocument.Token, browser.Session.Locale);
+
+                                    string grandparentPath = string.Join("/", newPhrictionDocument.Path
+                                                                                                  .Split('#')[0]
+                                                                                                  .Split('/')
+                                                                                                  .Reverse()
+                                                                                                  .SkipWhile(p => string.IsNullOrWhiteSpace(p))
+                                                                                                  .Skip(2)
+                                                                                                  .Reverse());
+                                    Phabricator.Data.Phriction grandparentPhrictionDocument = phrictionStorage.Get(database, grandparentPath, browser.Session.Locale, false);
+                                    if (grandparentPhrictionDocument != null)
+                                    {
+                                        // uncache grandparent
+                                        InvalidatePhrictionDocumentFromCache(httpServer, database, grandparentPhrictionDocument.Token, browser.Session.Locale);
+                                    }
                                 }
                             }
 
@@ -1223,7 +1243,7 @@ namespace Phabrico.Controllers
                             // (re)assign dependent Phabricator objects
                             database.ClearAssignedTokens(newPhrictionDocument.Token, Language.NotApplicable);
                             RemarkupParserOutput remarkupParserOutput;
-                            ConvertRemarkupToHTML(database, newPhrictionDocument.Path, newPhrictionDocument.Content, out remarkupParserOutput, false);
+                            ConvertRemarkupToHTML(database, newPhrictionDocument.Path, newPhrictionDocument.Content, out remarkupParserOutput, false, newPhrictionDocument.Token);
                             foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                             {
                                 database.AssignToken(newPhrictionDocument.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
@@ -1293,7 +1313,7 @@ namespace Phabrico.Controllers
                                                                       .ToArray();
                             RemarkupParserOutput remarkupParserOutput;
                             List<Phabricator.Data.PhabricatorObject> linkedPhabricatorObjects;
-                            ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, modifiedPhrictionDocument.Content, out remarkupParserOutput, false);
+                            ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, modifiedPhrictionDocument.Content, out remarkupParserOutput, false, modifiedPhrictionDocument.Token);
                             linkedPhabricatorObjects = remarkupParserOutput.LinkedPhabricatorObjects;
                             referencedObjects.AddRange(unassignedStagedTokens.Select(unassignedStagedToken =>
                             {
@@ -1307,11 +1327,11 @@ namespace Phabrico.Controllers
                             {
                                 if (isTranslation)
                                 {
-                                    ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false);  // remember also references in original content, so we can always undo our modifications
+                                    ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, translation.TranslatedRemarkup, out remarkupParserOutput, false, modifiedPhrictionDocument.Token);  // remember also references in original content, so we can always undo our modifications
                                 }
                                 else
                                 {
-                                    ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, originalPhrictionDocument.Content, out remarkupParserOutput, false);  // remember also references in original content, so we can always undo our modifications
+                                    ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, originalPhrictionDocument.Content, out remarkupParserOutput, false, modifiedPhrictionDocument.Token);  // remember also references in original content, so we can always undo our modifications
                                 }
                                 linkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                             }

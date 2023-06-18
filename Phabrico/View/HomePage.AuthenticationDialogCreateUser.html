@@ -16,6 +16,7 @@
             </div>
             <div class="aphront-form-control aphront-form-control-text" style="padding-top: 10px;">
                 <label class="aphront-form-label" for="username">Username</label>
+                <label id="invalidUserNameReason" class="aphront-form-label" style="position: absolute;right: 30px;width: unset;color: red;"></label>
                 <div class="aphront-form-input">
                     <input type="text" name="username" id="username" value="@@USERNAME@@" autofocus>
                 </div>
@@ -36,12 +37,14 @@
             </div>
             <div id="phabricatorUrlInputField" class="aphront-form-control aphront-form-control-text">
                 <label class="aphront-form-label" for="phabricatorUrl">Phabricator URL</label>
+                <label id="invalidPhabricatorUrlReason" class="aphront-form-label" style="position: absolute;right: 30px;width: unset;color: red;"></label>
                 <div class="aphront-form-input">
                     <input type="text" name="phabricatorUrl" id="phabricatorUrl" value="@@PHABRICATORURL@@">
                 </div>
             </div>
             <div id="conduitInputField" class="aphront-form-control aphront-form-control-text">
                 <label class="aphront-form-label" for="conduitApiToken">Conduit API Token</label>
+                <label id="invalidConduitApiTokenReason" class="aphront-form-label" style="position: absolute;right: 30px;width: unset;color: red;"></label>
                 <div class="aphront-form-input">
                     <input type="text" name="conduitApiToken" id="conduitApiToken" value="@@CONDUITAPITOKEN@@">
                 </div>
@@ -63,7 +66,10 @@ const inputChanged = function(e) {
         invalidPasswordReason.innerText = invalidPassword.reason;
     }
 
+    invalidUserNameReason.innerText = "";
     passwordVerificationReason.innerText = "";
+    invalidPhabricatorUrlReason.innerText = "";
+    invalidConduitApiTokenReason.innerText = "";
 
     if (paswwordIsValid) {
         if (password.value != password2.value) {
@@ -71,7 +77,7 @@ const inputChanged = function(e) {
         }
     }
 
-    if (username.value != '' && 
+    if (username.value.trim() != '' && 
         paswwordIsValid && 
         phabricatorUrl.value.match(/^https?:\/\/.+/) != null && 
         conduitApiToken.value.match(/^api-[a-zA-Z0-9]{28}$/) != null &&
@@ -82,6 +88,20 @@ const inputChanged = function(e) {
     }
     else
     {
+        if (paswwordIsValid && password.value == password2.value) {
+            if (phabricatorUrl.value != "" && phabricatorUrl.value.indexOf("://") >= 0 && phabricatorUrl.value.match(/^https?:\/\//) == null) {
+                invalidPhabricatorUrlReason.innerText = Locale.Translate("Only HTTP or HTTPS urls are supported");
+            }
+            else
+                if (conduitApiToken.value != "" && conduitApiToken.value.match(/^api-[a-zA-Z0-9]{28}$/) == null) {
+                    invalidConduitApiTokenReason.innerText = Locale.Translate("Invalid API token");
+                }
+                else
+                    if (username.value.trim() == '') {
+                        invalidUserNameReason.innerText = Locale.Translate("User name should be at least 1 character long");
+                    }
+        }
+
         btnCreateUser.disabled = true;
         btnCreateUser.style.cursor = 'not-allowed';
     }
@@ -103,20 +123,23 @@ const newLanguageInputChanged = function (e) {
 }
 
 const urlEntered = function(e) {
-    if (phabricatorUrl.value.match("https?://") == null) 
+    if (phabricatorUrl.value != "")
     {
-        var m = phabricatorUrl.value.match("[^?&]*:/*");
-        if (!m && phabricatorUrl.value != "")
+        if (phabricatorUrl.value.match("://") == null)
         {
-            phabricatorUrl.value = "http://" + phabricatorUrl.value;
+            var m = phabricatorUrl.value.match("[^?&]*:/*");
+            if (!m)
+            {
+                phabricatorUrl.value = "http://" + phabricatorUrl.value;
+            }
+            else
+            {
+                phabricatorUrl.value = "http://" + phabricatorUrl.value.substring(m.index);
+            }
         }
-        else
-        {
-            phabricatorUrl.value = "http://" + phabricatorUrl.value.substring(m.index);
-        }
-
-        inputChanged();
     }
+
+    inputChanged();
 }
 
 username.addEventListener('input', inputChanged);

@@ -164,7 +164,7 @@ namespace Phabrico.Plugin
 
                     // overwrite content again because we need to know the linked objects
                     Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
-                    PhrictionData.Content = ConvertRemarkupToHTML(database, phrictionDocument?.Path, phrictionDocument?.Content, out remarkupPerserOutput, false);
+                    PhrictionData.Content = ConvertRemarkupToHTML(database, phrictionDocument?.Path, phrictionDocument?.Content, out remarkupPerserOutput, false, phrictionDocument?.Token);
 
                     // move headers 1 level lower
                     PhrictionData.Content = LowerHeaderLevels(PhrictionData.Content);
@@ -207,7 +207,7 @@ namespace Phabrico.Plugin
                             {
                                 if (string.IsNullOrWhiteSpace(underlyingPhrictionDocument.Content)) continue;
 
-                                string html = ConvertRemarkupToHTML(database, underlyingPhrictionDocument.Path, underlyingPhrictionDocument.Content, out remarkupPerserOutput, false);
+                                string html = ConvertRemarkupToHTML(database, underlyingPhrictionDocument.Path, underlyingPhrictionDocument.Content, out remarkupPerserOutput, false, underlyingPhrictionDocument.Token);
                                 lock (_synchronizationObject)
                                 {
                                     foreach (Phabricator.Data.File linkedFile in remarkupPerserOutput.LinkedPhabricatorObjects.OfType<Phabricator.Data.File>())
@@ -347,7 +347,7 @@ namespace Phabrico.Plugin
                 {
                     Parsers.Remarkup.RemarkupParserOutput remarkupPerserOutput;
                     phrictionDocument = phrictionStorage.Get(database, underlyingPhrictionToken, browser.Session.Locale);
-                    ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false);
+                    ConvertRemarkupToHTML(database, phrictionDocument.Path, phrictionDocument.Content, out remarkupPerserOutput, false, phrictionDocument.Token);
                 }
             }
 

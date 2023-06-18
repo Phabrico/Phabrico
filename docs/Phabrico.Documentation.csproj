@@ -38,6 +38,7 @@ RD /S /Q bin
     <None Include="13-Customization\README.md" />
     <None Include="14-CommandLineInterfacing\README.md" />
     <None Include="15-ContentTranslation\README.md" />
+    <None Include="16-InaccessibleFiles\README.md" />
     <None Include="assets\css\style.scss" />
     <None Include="README.md" />
   </ItemGroup>
@@ -130,6 +131,7 @@ RD /S /Q bin
     <Content Include="15-ContentTranslation\ContentTranslation-18.png" />
     <Content Include="15-ContentTranslation\ContentTranslation-19.png" />
     <Content Include="15-ContentTranslation\ContentTranslation-20.png" />
+    <Content Include="16-InaccessibleFiles\InaccessibleFiles-01.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

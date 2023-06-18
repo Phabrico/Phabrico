@@ -123,6 +123,15 @@ msgstr "Adgangskoden skal indeholde mindst 1 stort bogstav"
 msgid "Password should be at least 12 characters long"
 msgstr "Adgangskoden skal være mindst 12 tegn lang"
 
+msgid "User name should be at least 1 character long"
+msgstr "Brugernavnet skal være mindst 1 tegn langt"
+
+msgid "Only HTTP or HTTPS urls are supported"
+msgstr "Kun HTTP- eller HTTPS-URL'er understøttes"
+
+msgid "Invalid API token"
+msgstr "Ugyldigt API-token"
+
 msgid "Log out"
 msgstr "Log ud"
 
@@ -1107,6 +1116,22 @@ msgstr "Der er opstået en intern fejl"
 msgid "A document already exists with this slug path"
 msgstr "Der findes allerede et dokument med denne slug-sti"
 
+# Inaccessible files
+msgid "Inaccessible files"
+msgstr "Utilgængelige filer"
+
+msgid "View references to inaccessible files"
+msgstr "Se referencer til utilgængelige filer"
+
+msgid "Reference"
+msgstr "Reference"
+
+msgid "File ID"
+msgstr "Fil-ID"
+
+msgid "Type some text to filter the references of inaccessible file objects..."
+msgstr "Skriv noget tekst for at filtrere referencerne til utilgængelige filobjekter..."
+
 # Remarkup editor
 msgid "Bold"
 msgstr "Fed"
@@ -1173,6 +1198,9 @@ msgstr "ADVARSEL"
 
 msgid "FileReference.Download"
 msgstr "Download"
+
+msgid "File inaccessible"
+msgstr "Filen er ikke tilgængelig"
 
 # Browser not supported
 msgid "Browser not supported"

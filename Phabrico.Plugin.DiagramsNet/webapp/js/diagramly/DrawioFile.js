@@ -214,51 +214,79 @@ DrawioFile.prototype.synchronizeFile = function(success, error)
 	}
 	else
 	{
-		if (this.sync != null)
+		var acceptResponse = true;
+
+		var timeoutThread = window.setTimeout(mxUtils.bind(this, function()
 		{
-			var acceptResponse = true;
-
-			var timeoutThread = window.setTimeout(mxUtils.bind(this, function()
+			acceptResponse = false;
+			
+			if (error != null)
 			{
-				acceptResponse = false;
-				
-				if (error != null)
+				error({code: App.ERROR_TIMEOUT, message: mxResources.get('timeout'), retry: mxUtils.bind(this, function()
 				{
-					error({code: App.ERROR_TIMEOUT, message: mxResources.get('timeout'), retry: mxUtils.bind(this, function()
-					{
-						this.synchronizeFile(success, error);
-					})});
-				}
-			}), this.ui.timeout);
+					this.synchronizeFile(success, error);
+				})});
+			}
+		}), this.ui.timeout);
 
+		var errorWrapper = mxUtils.bind(this, function(e)
+		{
 			if (acceptResponse)
 			{
-				this.sync.fileChanged(mxUtils.bind(this, function(patched)
+				window.clearTimeout(timeoutThread);
+			
+				if (error != null)
+				{
+					error(e);
+				}
+			}
+		});
+
+		var abort = mxUtils.bind(this, function()
+		{
+			return !acceptResponse;
+		});
+
+		if (this.sync != null)
+		{
+			this.sync.fileChanged(mxUtils.bind(this, function(patched)
+			{
+				if (acceptResponse)
 				{
 					window.clearTimeout(timeoutThread);
 					this.sync.cleanup(success, error, patched);
-				}), error, function()
-				{
-					return !acceptResponse;
-				});
-			}
+				}
+			}), errorWrapper, abort);
 		}
 		else
 		{
-			this.updateFile(success, error);
+			this.updateFile(mxUtils.bind(this, function()
+			{
+				if (acceptResponse)
+				{
+					window.clearTimeout(timeoutThread);
+				
+					if (success != null)
+					{
+						success();
+					}
+				}
+			}), errorWrapper, abort);
 		}
 	}
 };
 
 /**
 * Adds the listener for automatically saving the diagram for local changes.
+* Immediate is passed through to scheduleCleanup.
 */
-DrawioFile.prototype.updateFile = function(success, error, abort, shadow)
+DrawioFile.prototype.updateFile = function(success, error, abort, shadow, immediate)
 {
 	if (abort == null || !abort())
 	{
 		EditorUi.debug('DrawioFile.updateFile', [this],
-			'invalidChecksum', this.invalidChecksum);
+			'immediate', immediate, 'invalidChecksum',
+			this.invalidChecksum);
 
 		if (this.ui.getCurrentFile() != this || this.invalidChecksum)
 		{
@@ -290,7 +318,8 @@ DrawioFile.prototype.updateFile = function(success, error, abort, shadow)
 						{
 							if (latestFile != null)
 							{
-								this.mergeFile(latestFile, success, error, shadow);
+								this.mergeFile(latestFile, success, error,
+									shadow, immediate);
 							}
 							else
 							{
@@ -313,8 +342,9 @@ DrawioFile.prototype.updateFile = function(success, error, abort, shadow)
 
 /**
  * Adds the listener for automatically saving the diagram for local changes.
+ * Immediate is passed through to scheduleCleanup.
  */
-DrawioFile.prototype.mergeFile = function(file, success, error, diffShadow)
+DrawioFile.prototype.mergeFile = function(file, success, error, diffShadow, immediate)
 {
 	var reportError = true;
 	
@@ -359,7 +389,7 @@ DrawioFile.prototype.mergeFile = function(file, success, error, diffShadow)
 						'pages', this.ui.pages, 'patches', patches, 'backup', this.backupPatch,
 						'checksum', checksum, 'current', current, 'valid', checksum == current,
 						'from', this.getCurrentRevisionId(), 'to', file.getCurrentRevisionId(),
-						'modified', this.isModified());
+						'modified', this.isModified(), 'immediate', immediate);
 					
 					if (checksum != null && checksum != current)
 					{
@@ -385,7 +415,8 @@ DrawioFile.prototype.mergeFile = function(file, success, error, diffShadow)
 						{
 							var pending = this.sync.patchRealtime(
 								patches, (DrawioFile.LAST_WRITE_WINS) ?
-									this.backupPatch : null);
+									this.backupPatch : null, null,
+									immediate);
 							
 							if (pending != null && !mxUtils.isEmptyObject(pending))
 							{
@@ -449,6 +480,11 @@ DrawioFile.prototype.mergeFile = function(file, success, error, diffShadow)
 			{
 				EditorUi.debug('File.mergeFile', [this],
 					'file', [file], 'ignored', ignored);
+			
+				if (success != null)
+				{
+					success();
+				}
 			}
 		}
 		else
@@ -893,8 +929,47 @@ DrawioFile.prototype.patch = function(patches, resolver, undoable, sendChanges)
 		graph.model.beginUpdate();
 		try
 		{
-			this.ui.pages = this.ui.applyPatches(this.ui.pages,
-				patches, true, resolver, this.isModified())
+			if (undoable)
+			{
+				var oldPages = this.ui.pages.slice();
+				var currentPage = this.ui.currentPage;
+				var pages = this.ui.applyPatches(this.ui.pages,
+					patches, true, resolver, this.isModified());
+				
+				for (var i = 0; i < pages.length; i++)
+				{
+					var index = mxUtils.indexOf(this.ui.pages, pages[i]);
+
+					if (index < 0)
+					{
+						this.ui.insertPage(pages[i], Math.min(
+							i, this.ui.pages.length));
+					}
+					else
+					{
+						this.ui.movePage(index, i);
+					}
+				}
+
+				for (var i = 0; i < oldPages.length; i++)
+				{
+					if (mxUtils.indexOf(pages, oldPages[i]) < 0)
+					{
+						this.ui.removePage(oldPages[i]);
+					}
+				}
+
+				// Reselects the current page
+				if (mxUtils.indexOf(this.ui.pages, currentPage) >= 0)
+				{
+					this.ui.selectPage(currentPage, true);
+				}
+			}
+			else
+			{
+				this.ui.pages = this.ui.applyPatches(this.ui.pages,
+					patches, true, resolver, this.isModified());
+			}
 			
 			// Always needs at least one page
 			if (this.ui.pages.length == 0)
@@ -1724,6 +1799,16 @@ DrawioFile.prototype.getDescriptorSecret = function(desc)
 };
 
 /**
+ * Returns the checksum from the given descriptor. This must be stored
+ * in a custom property and generated by the saving client so that
+ * the current state of the editor can be compared with the state.
+ */
+DrawioFile.prototype.getDescriptorChecksum = function(desc)
+{
+	return null;
+};
+
+/**
  * Installs the change listener.
  */
 DrawioFile.prototype.installListeners = function()
@@ -1935,7 +2020,7 @@ DrawioFile.prototype.setConflictStatus = function(message, fn)
 {
 	this.ui.editor.setStatus('<div title="'+ message + '" ' + ((fn != null) ?
 		'data-action="statusFunction"' : '') + ' class="geStatusAlert">' + message +
-		'<img data-link="https://www.diagrams.net/doc/faq/synchronize" src="' +
+		'<img data-link="https://www.drawio.com/doc/faq/synchronize" src="' +
 		Editor.helpImage + '" style="cursor:help;"/></div>', fn);
 };
 
@@ -2101,7 +2186,9 @@ DrawioFile.prototype.handleFileSuccess = function(saved)
 	if (this.ui.getCurrentFile() == this)
 	{
 		EditorUi.debug('DrawioFile.handleFileSuccess', [this],
-			'saved', saved, 'modified', this.isModified());
+			'saved', saved, 'modified', this.isModified(),
+			'remoteFileChanged', (this.sync == null) ?
+			'n/a' : this.sync.remoteFileChanged);
 
 		if (this.isModified())
 		{
@@ -2344,15 +2431,20 @@ DrawioFile.prototype.createSecret = function(success)
 {
 	var secret = Editor.guid(32);
 	
-	if (this.sync != null && !this.isOptimisticSync())
+	if (Editor.enableRealtimeCache && this.sync != null &&
+		!this.isOptimisticSync())
 	{
-		this.sync.createToken(secret, mxUtils.bind(this, function(token)
-		{
-			success(secret, token);
-		}), mxUtils.bind(this, function()
-		{
-			success(secret);
-		}));
+		this.sync.createToken(secret,
+			mxUtils.bind(this, function(token)
+			{
+				EditorUi.debug('DrawioFile.createSecret', [this],
+					'secret', secret, 'token', token);
+
+				success(secret, token);
+			}), mxUtils.bind(this, function()
+			{
+				success(secret);
+			}));
 	}
 	else
 	{
@@ -2374,7 +2466,7 @@ DrawioFile.prototype.fileSaving = function()
 /**
  * Invokes sync and updates shadow document.
  */
-DrawioFile.prototype.fileSaved = function(savedData, lastDesc, success, error, token)
+DrawioFile.prototype.fileSaved = function(savedData, lastDesc, success, error, token, pages, checksum)
 {
 	this.lastSaved = new Date();
 	this.ageStart = null;
@@ -2384,11 +2476,10 @@ DrawioFile.prototype.fileSaved = function(savedData, lastDesc, success, error, t
 	{
 		this.inConflictState = false;
 		this.invalidChecksum = false;
-		var pages = this.ui.getPagesForXml(savedData)
+		pages = (pages != null) ? pages : this.ui.getPagesForXml(savedData);
 
 		try
 		{
-
 			if (this.sync == null || this.isOptimisticSync())
 			{
 				this.setShadowPages(pages);
@@ -2412,7 +2503,7 @@ DrawioFile.prototype.fileSaved = function(savedData, lastDesc, success, error, t
 			else
 			{
 				this.sync.fileSaved(pages, lastDesc,
-					success, error, token);
+					success, error, token, checksum);
 			}
 		}
 		catch (e)
@@ -2448,8 +2539,8 @@ DrawioFile.prototype.fileSaved = function(savedData, lastDesc, success, error, t
 			}
 		}
 		
-		EditorUi.debug('DrawioFile.fileSaved',
-			[this], 'savedData', [savedData],
+		EditorUi.debug('DrawioFile.fileSaved', [this],
+			'savedData', [savedData], 'desc', [lastDesc],
 			'inConflictState', this.inConflictState,
 			'invalidChecksum', this.invalidChecksum);
 	}

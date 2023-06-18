@@ -26,7 +26,7 @@ namespace Phabrico.Storage
         private static string _datasource = null;
         internal static int _dbVersionInDataFile = 0;
 
-        private static readonly int _dbVersionInApplication = 6;
+        private static readonly int _dbVersionInApplication = 7;
         private static DateTime _utcNextTimeToVacuum = DateTime.MinValue;
 
         private string encryptionKey;
@@ -1003,10 +1003,10 @@ namespace Phabrico.Storage
         /// Returns all file ID's which were referenced by some remarkup content, but for which the file content was not downloaded.
         /// </summary>
         /// <returns></returns>
-        internal IEnumerable<int> GetAllMarkedFileIDs()
+        internal IEnumerable<FileReference> GetAllMarkedFileIDs()
         {
             using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                       SELECT fileID
+                       SELECT fileID, linkedToken
                        FROM unreferencedFileObjects
                    ", Connection))
             {
@@ -1014,7 +1014,10 @@ namespace Phabrico.Storage
                 {
                     while (reader.Read())
                     {
-                        yield return (int)reader["fileID"];
+                        yield return new FileReference{
+                            FileID = (int)reader["fileID"],
+                            LinkedToken = (string)reader["linkedToken"]
+                        };
                     }
                 }
             }
@@ -1609,27 +1612,47 @@ namespace Phabrico.Storage
         /// </summary>
         /// <param name="fileID"></param>
         /// <param name="isUnreferenced"></param>
-        public void MarkFileObject(int fileID, bool isUnreferenced)
+        /// <param name="linkedToken"></param>
+        public void MarkFileObject(int? fileID, bool isUnreferenced, string linkedToken = "")
         {
             if (isUnreferenced)
             {
+                if (fileID.HasValue && string.IsNullOrWhiteSpace(linkedToken) == false)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                        INSERT OR REPLACE INTO unreferencedFileObjects(fileID, linkedToken)
+                        VALUES (@fileID, @linkedToken);
+                    ", Connection))
+                    {
+                        dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID.Value));
+                        dbCommand.Parameters.Add(new SQLiteParameter("linkedToken", linkedToken));
+                        dbCommand.ExecuteNonQuery();
+                    }
+                }
+            }
+            else
+            if (fileID.HasValue)
+            {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                        INSERT OR REPLACE INTO unreferencedFileObjects(fileID)
-                        VALUES (@fileID);
+                        DELETE FROM unreferencedFileObjects
+                        WHERE fileID = @fileID
+                          AND (@linkedToken = '' OR @linkedToken = linkedToken);
                     ", Connection))
                 {
-                    dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID));
+                    dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID.Value));
+                    dbCommand.Parameters.Add(new SQLiteParameter("linkedToken", linkedToken));
                     dbCommand.ExecuteNonQuery();
                 }
             }
             else
+            if (string.IsNullOrWhiteSpace(linkedToken) == false)
             {
                 using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                         DELETE FROM unreferencedFileObjects
-                        WHERE fileID = @fileID;
+                        WHERE @linkedToken = linkedToken;
                     ", Connection))
                 {
-                    dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID));
+                    dbCommand.Parameters.Add(new SQLiteParameter("linkedToken", linkedToken));
                     dbCommand.ExecuteNonQuery();
                 }
             }
@@ -1736,7 +1759,7 @@ namespace Phabrico.Storage
                 }
 
                 // start parsing remarkup content of referencing object
-                remarkupEngine.ToHTML(null, this, browser, "/", remarkupContent, out remarkupParserOutput, false);
+                remarkupEngine.ToHTML(null, this, browser, "/", remarkupContent, out remarkupParserOutput, false, referencer.Token);
 
                 // check if referenced object is a maniphest task
                 Phabricator.Data.Maniphest referencedManiphestTask = referencedPhabricatorObject as Phabricator.Data.Maniphest;
@@ -2051,6 +2074,22 @@ namespace Phabrico.Storage
                        ", Connection))
                 {
                     AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
+
+            if (dbVersion == 7)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       DROP TABLE unreferencedFileObjects;
+
+                       CREATE TABLE unreferencedFileObjects (
+                           fileID INT PRIMARY KEY,
+                           linkedToken VARCHAR(30)
+                       );
+
+                    ", Connection))
+                {
                     dbCommand.ExecuteNonQuery();
                 }
             }

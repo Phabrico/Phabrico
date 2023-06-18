@@ -31,3 +31,4 @@ You can also edit your offline copies and synchronize them later to Phabricator.
 <a href="13-Customization/">13 Customization (IIS HTTP Module)</a><br />
 <a href="14-CommandLineInterfacing/">14 Command Line Interfacing</a><br />
 <a href="15-ContentTranslation/">15 Content Translation</a><br />
+<a href="16-InaccessibleFiles/">16 Inaccessible Files</a><br />

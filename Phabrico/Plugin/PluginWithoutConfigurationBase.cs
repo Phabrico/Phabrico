@@ -41,6 +41,12 @@ namespace Phabrico.Plugin
         internal PluginState State = PluginState.NotLoaded;
 
         /// <summary>
+        /// A plugin can be executed from several places.
+        /// This property holds the origin from where the plugin was executed.
+        /// </summary>
+        public PluginTypeAttribute.UsageType CurrentUsageType { get; internal set; }
+
+        /// <summary>
         /// internal link to the Phabrico database
         /// </summary>
         private Storage.Database database = null;

@@ -252,7 +252,7 @@ DriveClient.prototype.getUsersList = function()
 DriveClient.prototype.logout = function()
 {
 	//Send to server to clear refresh token cookie
-	this.ui.editor.loadUrl(this.redirectUri + '?doLogout=1&userId=' + this.userId + '&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname));
+	this.ui.editor.loadUrl(this.redirectUri + '?doLogout=1&userId=' + this.userId + '&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.host));
 	this.clearPersistentToken();
 	this.setUser(null);
 	_token = null;
@@ -299,7 +299,7 @@ DriveClient.prototype.execute = function(fn)
 				
 				this.ui.showError(mxResources.get('error'), msg, mxResources.get('help'), mxUtils.bind(this, function()
 				{
-					this.ui.openLink('https://www.diagrams.net/doc/faq/gsuite-authorisation-troubleshoot');
+					this.ui.openLink('https://www.drawio.com/doc/faq/gsuite-authorisation-troubleshoot');
 				}), null, mxResources.get('ok'));
 			}), remember);
 		}));
@@ -654,7 +654,7 @@ DriveClient.prototype.authorizeStep2 = function(state, immediate, success, error
 			{
 				//state is used to identify which app/domain is used
 				var req = new mxXmlRequest(this.redirectUri + '?state=' + encodeURIComponent('cId=' + this.clientId +
-					'&domain=' + window.location.hostname + '&token=' + state) + '&userId=' + this.userId, null, 'GET');
+					'&domain=' + window.location.host + '&token=' + state) + '&userId=' + this.userId, null, 'GET');
 				
 				req.send(mxUtils.bind(this, function(req)
 				{
@@ -704,7 +704,7 @@ DriveClient.prototype.authorizeStep2 = function(state, immediate, success, error
 						'&response_type=code&include_granted_scopes=true' +
 						(remember? '&access_type=offline&prompt=consent%20select_account' : '') + //Ask for consent again to get a new refresh token
 						'&scope=' + encodeURIComponent(this.scopes.join(' ')) +
-						'&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname + '&token=' + state + //To identify which app/domain is used
+						'&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.host + '&token=' + state + //To identify which app/domain is used
 						(this.sameWinRedirectUrl? '&redirect=' + this.sameWinRedirectUrl : '')); 
 				
 				if (this.sameWinAuthMode)
@@ -1432,6 +1432,10 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 				{
 					file.saveLevel = 3;
 
+					var savedData = file.getData();
+					var checksum = null;
+					var pages = null;
+					
 					if (file.constructor == DriveFile)
 					{
 						if (properties == null)
@@ -1452,7 +1456,16 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 						}
 						
 						// Pass to access cache for each etag
-						properties.push({'key': 'secret', 'value': (secret != null) ? secret : Editor.guid(32)});
+						secret = (secret != null) ? secret : Editor.guid(32);
+						properties.push({'key': 'secret', 'value': secret});
+
+						pages = this.ui.getPagesForXml(savedData)
+						checksum = this.ui.getHashValueForPages(pages);
+
+						// Writes checksum with secret to file properties
+						// The secret is required to check if the checksum is updated
+						// with the last write as old clients keep existing entries
+						properties.push({'key': 'checksum', 'value': secret + ':' + checksum});
 					}
 					
 					// Specifies that no thumbnail should be uploaded in which case the existing thumbnail is used
@@ -1477,8 +1490,6 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 							};
 						}
 					}
-		
-					var savedData = file.getData();
 					
 					// Updates saveDelay on drive file
 					var wrapper = mxUtils.bind(this, function(resp)
@@ -1487,7 +1498,7 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 						{
 							file.saveDelay = new Date().getTime() - t0;
 							file.saveLevel = null;
-							success(resp, savedData);
+							success(resp, savedData, pages, checksum);
 	
 							if (prevDesc != null)
 							{

@@ -60,7 +60,7 @@ namespace Phabrico.Controllers
                 }
 
                 RemarkupParserOutput remarkupParserOutput;
-                string htmlData = ConvertRemarkupToHTML(database, relativeUrl, remarkupData, out remarkupParserOutput, true);
+                string htmlData = ConvertRemarkupToHTML(database, relativeUrl, remarkupData, out remarkupParserOutput, true, "");
 
                 string result = JsonConvert.SerializeObject(new { html = htmlData });
 
@@ -1762,7 +1762,7 @@ namespace Phabrico.Controllers
                 }
 
                 HtmlViewPage remarkupViewPage = new HtmlViewPage(httpServer, browser, false, remarkupSyntaxLocalizedViewName, null);
-                string htmlData = ConvertRemarkupToHTML(database, remarkupViewPage.Url, remarkupViewPage.Content, out remarkupParserOutput, false);
+                string htmlData = ConvertRemarkupToHTML(database, remarkupViewPage.Url, remarkupViewPage.Content, out remarkupParserOutput, false, "");
 
                 htmlViewPage = new HtmlViewPage(browser);
                 htmlViewPage.SetContent(browser, htmlData);

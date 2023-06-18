@@ -35,7 +35,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html)
         {
             html = "";
-            Match match = RegexSafe.Match(remarkup, @"^//(.+?(?<!//))?//", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, @"^//((?<=^//)[\s\S]*?(?=[^:]//).)//", RegexOptions.Singleline);
             if (match.Success == false) return false;
             if (match.Value.Split('\n')
                            .Skip(1)
@@ -50,7 +50,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
             RemarkupParserOutput remarkupParserOutput;
             remarkup = remarkup.Substring(match.Length);
-            UnformattedText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false);
+            UnformattedText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
             html = string.Format("<em>{0}</em>", UnformattedText);
             LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
             ChildTokenList.AddRange(remarkupParserOutput.TokenList);

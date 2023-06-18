@@ -159,6 +159,12 @@ cd c:\inetpub\wwwroot
 mklink /D MyPhabrico "C:\Program Files\PhabricoIIS"
 ```
 
+You can also install your Phabrico IIS module in a subdirectory in c:\inetpub\wwwroot directory, for example c:\inetpub\wwwroot\holiday.
+Important in this case is that the name of the subdirectory must be the same as the 3rd parameter in your constructor:
+```
+httpServer = new Phabrico.Http.Server(true, -1, "holiday", true);
+```
+
 ## app.config
 You can set the following configuration parameters in the app.config file of the custom IIS HTTP module:
 

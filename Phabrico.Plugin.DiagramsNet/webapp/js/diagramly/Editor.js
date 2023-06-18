@@ -37,7 +37,7 @@
 	Editor.thinUndoImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTE0LjQgMzcuNXYtMi4yNWgxMy45cTMuNiAwIDYuMjI1LTIuMzc1UTM3LjE1IDMwLjUgMzcuMTUgMjYuOXEwLTMuNTUtMi42MjUtNS45LTIuNjI1LTIuMzUtNi4yMjUtMi4zNUgxMi45NUwxOSAyNC43bC0xLjYgMS42LTguOC04LjggOC44LTguOCAxLjYgMS42LTYuMDUgNi4wNWgxNS4zcTQuNTUgMCA3Ljg1IDMuMDV0My4zIDcuNXEwIDQuNS0zLjMgNy41NXQtNy44NSAzLjA1WiIvPjwvc3ZnPg==';
 	Editor.thinRedoImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTE5Ljc1IDM3LjVxLTQuNTUgMC03Ljg1LTMuMDVUOC42IDI2LjlxMC00LjQ1IDMuMy03LjV0Ny44NS0zLjA1aDE1LjNMMjkgMTAuM2wxLjYtMS42IDguOCA4LjgtOC44IDguOC0xLjYtMS42IDYuMDUtNi4wNUgxOS43cS0zLjYgMC02LjIyNSAyLjM1LTIuNjI1IDIuMzUtMi42MjUgNS45IDAgMy42IDIuNjI1IDUuOTc1UTE2LjEgMzUuMjUgMTkuNyAzNS4yNWgxMy45djIuMjVaIi8+PC9zdmc+';
 	Editor.thinDoubleArrowRightImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0ibTEzIDM1LjMtMS42LTEuNiA5Ljc1LTkuNzUtOS43NS05LjcgMS42LTEuNiAxMS4zNSAxMS4zWm0xMi4zIDAtMS42LTEuNiA5Ljc1LTkuNzUtOS43NS05LjcgMS42LTEuNiAxMS4zIDExLjNaIi8+PC9zdmc+';
-	Editor.thinNoteAddImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTIyLjg1IDM1LjdoMi4zdi02LjNoNi4zNXYtMi4zaC02LjM1di02LjM1aC0yLjN2Ni4zNUgxNi41djIuM2g2LjM1Wk0xMS45IDQzcS0xLjIgMC0yLjA1LS44NVE5IDQxLjMgOSA0MC4xVjcuOXEwLTEuMi44NS0yLjA1UTEwLjcgNSAxMS45IDVoMTcuMzVMMzkgMTQuNzVWNDAuMXEwIDEuMi0uODUgMi4wNS0uODUuODUtMi4wNS44NVptMTYuMjUtMjcuMjV2LTguNUgxMS45cS0uMjUgMC0uNDUuMnQtLjIuNDV2MzIuMnEwIC4yNS4yLjQ1dC40NS4yaDI0LjJxLjI1IDAgLjQ1LS4ydC4yLS40NVYxNS43NVptLTE2LjktOC41djguNS04LjVWNDAuNzUgNy4yNVoiLz48L3N2Zz4=';
+	Editor.thinNoteImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgOTYgOTYwIDk2MCIgd2lkdGg9IjQ4Ij48cGF0aCBkPSJNMjM3LjY5NCA5NTUuOTk5cS0yMy41MjkgMC00MC42MTEtMTcuMDgyLTE3LjA4Mi0xNy4wODItMTcuMDgyLTQwLjYxMVYyNTMuNjk0cTAtMjMuNTI5IDE3LjA4Mi00MC42MTEgMTcuMDgyLTE3LjA4MiA0MC42MTEtMTcuMDgyaDM0Ny41MzdsMTk0Ljc2OCAxOTQuNzY4djUwNy41MzdxMCAyMy41MjktMTcuMDgyIDQwLjYxMS0xNy4wODIgMTcuMDgyLTQwLjYxMSAxNy4wODJIMjM3LjY5NFpNNTYyLjUzOSA0MTEuMjNWMjQxLjM4NUgyMzcuNjk0cS00LjYxNiAwLTguNDYzIDMuODQ2LTMuODQ2IDMuODQ3LTMuODQ2IDguNDYzdjY0NC42MTJxMCA0LjYxNiAzLjg0NiA4LjQ2MyAzLjg0NyAzLjg0NiA4LjQ2MyAzLjg0Nmg0ODQuNjEycTQuNjE2IDAgOC40NjMtMy44NDYgMy44NDYtMy44NDcgMy44NDYtOC40NjNWNDExLjIzSDU2Mi41MzlaTTIyNS4zODUgMjQxLjM4NVY0MTEuMjMgMjQxLjM4NXY2NjkuMjNWMjQxLjM4NVoiLz48L3N2Zz4=';
 	Editor.thinTableImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTcgNDFWN2gzNHYzNFptMi4yNS0yMy42aDI5LjVWOS4yNUg5LjI1Wm0xMC42IDEwLjdoOC4zdi04LjRoLTguM1ptMCAxMC42NWg4LjN2LTguNGgtOC4zWk05LjI1IDI4LjFoOC4zNXYtOC40SDkuMjVabTIxLjE1IDBoOC4zNXYtOC40SDMwLjRaTTkuMjUgMzguNzVoOC4zNXYtOC40SDkuMjVabTIxLjE1IDBoOC4zNXYtOC40SDMwLjRaIi8+PC9zdmc+';
 	Editor.thinAddCircleImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTIzIDMzLjVoMi4yNXYtOC4yaDguMjVWMjNoLTguMjV2LTguNUgyM1YyM2gtOC41djIuM0gyM1ptMSA5LjVxLTMuOTUgMC03LjQtMS41dC02LjAyNS00LjA3NVE4IDM0Ljg1IDYuNSAzMS40VDUgMjRxMC0zLjk1IDEuNS03LjQyNVE4IDEzLjEgMTAuNTc1IDEwLjU1IDEzLjE1IDggMTYuNiA2LjVUMjQgNXEzLjk1IDAgNy40MjUgMS41UTM0LjkgOCAzNy40NSAxMC41NSA0MCAxMy4xIDQxLjUgMTYuNTc1IDQzIDIwLjA1IDQzIDI0cTAgMy45NS0xLjUgNy40dC00LjA1IDYuMDI1UTM0LjkgNDAgMzEuNDI1IDQxLjUgMjcuOTUgNDMgMjQgNDNabS4wNS0yLjI1cTYuOTUgMCAxMS44MjUtNC45IDQuODc1LTQuOSA0Ljg3NS0xMS45IDAtNi45NS00Ljg3NS0xMS44MjVRMzEgNy4yNSAyNCA3LjI1cS02Ljk1IDAtMTEuODUgNC44NzVRNy4yNSAxNyA3LjI1IDI0cTAgNi45NSA0LjkgMTEuODUgNC45IDQuOSAxMS45IDQuOVpNMjQgMjRaIi8+PC9zdmc+';
 	Editor.thinArrowLeftImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTI4LjA1IDM1LjMgMTYuNyAyMy45NSAyOC4wNSAxMi42bDEuNiAxLjY1LTkuNyA5LjcgOS43IDkuNzVaIi8+PC9zdmc+';
@@ -178,6 +178,13 @@
 	 * at runtime in the kennedy theme.
 	 */
 	Editor.enableSimpleTheme = true;
+			
+	/**
+	 * Specifies if the URL should be rewritten to contain the selected page.
+	 * Default is true for online app without embed.
+	 */
+	Editor.enableHashObjects = !mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
+		urlParams['embed'] != '1' && window.top == window.self;
 	
 	/**
 	 * Sets the default value for including a copy of the diagram.
@@ -213,6 +220,17 @@
 	 */
 	Editor.enableRealtime = true;
 
+	/**
+	 * Enables cache for patches and Pusher for messages. Default is true.
+	 */
+	Editor.enableRealtimeCache = true;
+	
+	/**
+	 * Enables P2P instead of Pusher for messages. (Ignored if enableRealtimeCache is false.)
+	 * Default is false.
+	 */
+	Editor.p2pSyncNotify = false;
+	
 	/**
 	 * Specifies if XML files should be compressed. Default is true.
 	 */
@@ -1777,7 +1795,7 @@
     
 	/**
 	 * Global configuration of the Editor
-	 * see https://www.diagrams.net/doc/faq/configure-diagram-editor
+	 * see https://www.drawio.com/doc/faq/configure-diagram-editor
 	 * 
 	 * For defaultVertexStyle, defaultEdgeStyle and defaultLibraries, this must be called before
 	 * mxSettings.load via global config variable window.mxLoadSettings = false.
@@ -2135,23 +2153,13 @@
 	};
 	
 	/**
-	 * Returns the current state of the dark mode.
+	 * 
 	 */
-	Editor.isAutoDarkMode = function(ignoreUrl)
-	{
-		return (!ignoreUrl && urlParams['dark'] == 'auto') ||
-			(Editor.isSettingsEnabled() &&
-			mxSettings.settings.darkMode == 'auto');
-	};
-		 
-	 /**
-	  * 
-	  */
 	Editor.isSettingsEnabled = function()
 	{
 		return typeof window.mxSettings !== 'undefined' && (isLocalStorage || mxClient.IS_CHROMEAPP);
 	};
- 
+	
 	/**
 	 * Adds the global fontCss configuration.
 	 */
@@ -2236,7 +2244,7 @@
 	/**
 	 * Specifies the app name. Default is document.title.
 	 */
-	Editor.prototype.appName = 'diagrams.net';
+	Editor.prototype.appName = 'draw.io';
 		
 	 /**
 	  * Known file types.
@@ -2613,12 +2621,6 @@
 					Editor.mathJaxQueue.push(container);
 				}
 			};
-
-			// Adds global clear queue method
-			Editor.MathJaxClear = function()
-			{
-				Editor.mathJaxQueue = [];
-			};
 			
 			// Adds global MathJax render callback
 			Editor.onMathJaxDone = function()
@@ -2635,8 +2637,8 @@
 
 				var renderMath = mxUtils.bind(this, function(sender, evt)
 				{
-					if (this.graph.container != null && this.graph.mathEnabled &&
-						!this.graph.blockMathRender)
+					if (this.graph.container != null &&
+						this.graph.mathEnabled)
 					{
 						Editor.MathJaxRender(this.graph.container);
 					}
@@ -3083,11 +3085,12 @@
 						}
 						else if (req.getStatus() == 404)
 						{
-							error({code: req.getStatus()}, req);
+							error({message: mxResources.get('fileNotFound'),
+								code: req.getStatus()}, req);
 						}
 						else
 						{
-							error({message: mxResources.get('error') + ' ' + req.getStatus()}, req);
+							error({message: this.getErrorMessage(req)}, req);
 						}
 			    	}
 				}), function(req)
@@ -3114,6 +3117,32 @@
 				error(e);
 			}
 		}
+	};
+
+	/**
+	 * Adds the listener for automatically saving the diagram for local changes.
+	 */
+	Editor.prototype.getErrorMessage = function(req)
+	{
+		var msg = mxResources.get('error') + ' ' + req.getStatus();
+
+		try
+		{
+			var data = req.getText();
+			var obj = JSON.parse(data);
+
+			if (obj != null && obj.error != null &&
+				obj.error.message != null)
+			{
+				msg = obj.error.message + ' (' + msg + ')';
+			}
+		}
+		catch (e)
+		{
+			// ignore
+		}
+
+		return msg;
 	};
 
 	/**
@@ -3899,7 +3928,7 @@
 	 */
 	if (window.ColorDialog)
 	{
-		FilenameDialog.filenameHelpLink = 'https://www.diagrams.net/doc/faq/save-file-formats'; 
+		FilenameDialog.filenameHelpLink = 'https://www.drawio.com/doc/faq/save-file-formats'; 
 		
 		var colorDialogAddRecentColor = ColorDialog.addRecentColor;
 		
@@ -4261,7 +4290,7 @@
 					
 					div.appendChild(option);
 					
-					var help = ui.menus.createHelpLink('https://www.diagrams.net/doc/faq/math-typesetting');
+					var help = ui.menus.createHelpLink('https://www.drawio.com/doc/faq/math-typesetting');
 					help.style.position = 'relative';
 					help.style.marginLeft = '6px';
 					option.appendChild(help);
@@ -5964,7 +5993,7 @@
 	/**
 	 * Creates the tags dialog.
 	 */
-	Graph.prototype.createTagsDialog = function(isEnabled, invert, addFn)
+	Graph.prototype.createTagsDialog = function(isEnabled, invert, addFn, helpButton)
 	{
 		var graph = this;
 		var allTags = graph.hiddenTags.slice();
@@ -6322,11 +6351,13 @@
 		graph.addListener(mxEvent.REFRESH, refreshUi);
 	
 		var footer = document.createElement('div');
+		footer.style.display = 'flex';
+		footer.style.alignItems = 'center';
 		footer.style.boxSizing = 'border-box';
 		footer.style.whiteSpace = 'nowrap';
 		footer.style.position = 'absolute';
 		footer.style.overflow = 'hidden';
-		footer.style.bottom = '0px';
+		footer.style.bottom = '6px';
 		footer.style.height = '42px';
 		footer.style.right = '10px';
 		footer.style.left = '10px';
@@ -6336,6 +6367,11 @@
 			footer.appendChild(resetBtn);
 			footer.appendChild(addBtn);
 			div.appendChild(footer);
+		}
+
+		if (helpButton != null)
+		{
+			footer.appendChild(helpButton);
 		}
 
 		return {div: div, refresh: refreshUi};
@@ -6981,8 +7017,23 @@
 
 					if (action.tags != null)
 					{
-						var hidden = [];
+						if (action.tags.toggle != null)
+						{
+							var tags = action.tags.toggle;
+
+							if (tags.length == 0)
+							{
+								tags = this.getAllTags();
+							}
+
+							for (var i = 0; i < tags.length; i++)
+							{
+								this.toggleHiddenTag(tags[i]);
+							}
+						}
 						
+						var hidden = null;
+
 						if (action.tags.hidden != null)
 						{
 							hidden = hidden.concat(action.tags.hidden);
@@ -6990,6 +7041,11 @@
 
 						if (action.tags.visible != null)
 						{
+							if (hidden == null)
+							{
+								hidden = [];
+							}
+
 							var all = this.getAllTags();
 
 							for (var i = 0; i < all.length; i++)
@@ -7002,7 +7058,11 @@
 							}
 						}
 
-						this.setHiddenTags(hidden);
+						if (hidden != null)
+						{
+							this.setHiddenTags(hidden);
+						}
+
 						this.refresh();
 					}
 
@@ -7371,6 +7431,7 @@
 		
 		return result;
 	};
+
 	/**
 	 * Returns all tags in the diagram.
 	 */
@@ -8633,7 +8694,7 @@
 				pv = printGraph(graph);
 			}
 			
-			if (pv == null)
+			if (pv == null || pv.wnd == null)
 			{
 				editorUi.handleError({message: mxResources.get('errorUpdatingPreview')});
 			}
@@ -8690,7 +8751,7 @@
 		{
 			var helpBtn = mxUtils.button(mxResources.get('help'), function()
 			{
-				graph.openLink('https://www.diagrams.net/doc/faq/print-diagram');
+				graph.openLink('https://www.drawio.com/doc/faq/print-diagram');
 			});
 			
 			helpBtn.className = 'geBtn';

@@ -75,8 +75,9 @@ namespace Phabrico.Parsers.Remarkup
         /// <param name="database">Phabrico database</param>
         /// <param name="browser">Link to browser</param>
         /// <param name="url">URL of the wiki page from where the export should start</param>
+        /// <param name="phabricatorObjectToken"></param>
         /// <returns>Pseudo XML generated from the Remarkup content</returns>
-        internal string PrepareForXmlExport(Storage.Database database, Http.Browser browser, string url)
+        internal string PrepareForXmlExport(Storage.Database database, Http.Browser browser, string url, string phabricatorObjectToken)
         {
             string result = "";
 
@@ -151,7 +152,7 @@ namespace Phabrico.Parsers.Remarkup
                     if (ruleNotification.Style == Rules.RuleNotification.NotificationStyle.Important) notificationType = " t=\"i\"";
 
                     result += string.Format(BGN + "{0}{1} p=\"{2}\"" + END, xmlTag, notificationType, ruleNotification.HideNotificationPrefix ? 0 : 1);
-                    result += rule.ChildTokenList.PrepareForXmlExport(database, browser, url);
+                    result += rule.ChildTokenList.PrepareForXmlExport(database, browser, url, phabricatorObjectToken);
                     result += BGN + "/" + xmlTag + END;
                 }
                 else
@@ -172,7 +173,7 @@ namespace Phabrico.Parsers.Remarkup
                             foreach (Match cell in rowCells.OfType<Match>())
                             {
                                 string tdth = cell.Groups[1].Value;
-                                string cellRemarkupContent = RemarkupToXML(database, browser, url, cell.Groups[3].Value);
+                                string cellRemarkupContent = RemarkupToXML(database, browser, url, cell.Groups[3].Value, phabricatorObjectToken);
                                 result += tdth + cellRemarkupContent + tdth.Replace("<", "</");
                             }
                             result += "</tr>\n";
@@ -234,7 +235,7 @@ namespace Phabrico.Parsers.Remarkup
                                              + cell.Substring(subRuleReplacement.Index + subRuleReplacement.Length);
                                     }
 
-                                    cellRemarkupContent = RemarkupToXML(database, browser, url, cell);
+                                    cellRemarkupContent = RemarkupToXML(database, browser, url, cell, phabricatorObjectToken);
                                 }
                                 result += "<td>" + cellRemarkupContent + "</td>";
                             }
@@ -248,7 +249,7 @@ namespace Phabrico.Parsers.Remarkup
                 if (rule.ChildTokenList.Any())
                 {
                     result += BGN + xmlTag + (rule.Attributes == null ? "" : " " + rule.Attributes) + END;
-                    result += rule.ChildTokenList.PrepareForXmlExport(database, browser, url);
+                    result += rule.ChildTokenList.PrepareForXmlExport(database, browser, url, phabricatorObjectToken);
                     result += BGN + "/" + xmlTag + END;
 
                     if (result.Any() && (
@@ -298,15 +299,16 @@ namespace Phabrico.Parsers.Remarkup
         /// <param name="browser">Link to browser</param>
         /// <param name="url">URL of the wiki page from where the export should start</param>
         /// <param name="xml"></param>
+        /// <param name="phabricatorObjectToken"></param>
         /// <returns></returns>
-        public static string XMLToRemarkup(Storage.Database database, Http.Browser browser, string url, string xml)
+        public static string XMLToRemarkup(Storage.Database database, Http.Browser browser, string url, string xml, string phabricatorObjectToken)
         {
             Controllers.Remarkup remarkupController = new Controllers.Remarkup();
             remarkupController.browser = browser;
             remarkupController.EncryptionKey = database.EncryptionKey;
 
             RemarkupParserOutput remarkupParserOutput;
-            remarkupController.ConvertRemarkupToHTML(database, url, xml, out remarkupParserOutput, false);
+            remarkupController.ConvertRemarkupToHTML(database, url, xml, out remarkupParserOutput, false, phabricatorObjectToken);
             string result = remarkupParserOutput.TokenList.FromXML(database, browser, url, xml, true);
 
             return result;
@@ -319,16 +321,17 @@ namespace Phabrico.Parsers.Remarkup
         /// <param name="browser">Link to browser</param>
         /// <param name="url">URL of the wiki page from where the export should start</param>
         /// <param name="remarkup"></param>
+        /// <param name="phabricatorObjectToken"></param>
         /// <returns></returns>
-        public static string RemarkupToXML(Storage.Database database, Http.Browser browser, string url, string remarkup)
+        public static string RemarkupToXML(Storage.Database database, Http.Browser browser, string url, string remarkup, string phabricatorObjectToken)
         {
             Controllers.Remarkup remarkupController = new Controllers.Remarkup();
             remarkupController.browser = browser;
             remarkupController.EncryptionKey = database.EncryptionKey;
 
             RemarkupParserOutput remarkupParserOutput;
-            remarkupController.ConvertRemarkupToHTML(database, url, remarkup, out remarkupParserOutput, false);
-            string result = remarkupParserOutput.TokenList.ToXML(database, browser, "");
+            remarkupController.ConvertRemarkupToHTML(database, url, remarkup, out remarkupParserOutput, false, phabricatorObjectToken);
+            string result = remarkupParserOutput.TokenList.ToXML(database, browser, "", phabricatorObjectToken);
 
             return result;
         }
@@ -438,10 +441,11 @@ namespace Phabrico.Parsers.Remarkup
         /// <param name="database">Phabrico database</param>
         /// <param name="browser">Link to browser</param>
         /// <param name="url">URL of the wiki page from where the export should start</param>
+        /// <param name="phabricatorObjectToken"></param>
         /// <returns>XML generated from the Remarkup content</returns>
-        public string ToXML(Storage.Database database, Http.Browser browser, string url)
+        public string ToXML(Storage.Database database, Http.Browser browser, string url, string phabricatorObjectToken)
         {
-            string result = PrepareForXmlExport(database, browser, url);
+            string result = PrepareForXmlExport(database, browser, url, phabricatorObjectToken);
             while (true)
             {
                 Match newlineEnding = RegexSafe.Match(result, "<N>[[][0-9]+[]]</N>$", RegexOptions.None);

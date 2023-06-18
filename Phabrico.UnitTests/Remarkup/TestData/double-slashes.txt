@@ -5,6 +5,9 @@ some text //
 <tr><th>ABC</th></tr>
 <tr><td>abc//def</td></tr>
 </table>
+
+// an italicized URL: https://www.timeanddate.com //
+// another italicized URL: [[https://www.timeanddate.com | What's the time]] //
 ~~~~~~~~~~
 <div class='codeblock'><button class='codeblock copy'>Copy</button><pre><code class='plaintext '>some code</code></pre></div>
 some text //<br>
@@ -20,4 +23,8 @@ some text //<br>
   </tr>
 </tbody>
 </table>
+
+
+<em>an italicized URL: <a class='phriction-link' href='https://www.timeanddate.com'>https://www.timeanddate.com</a></em><br>
+<em>another italicized URL: <a class='phriction-link' href='https://www.timeanddate.com'>What&#39;s the time</a></em>
 ~~~~~~~~~~
