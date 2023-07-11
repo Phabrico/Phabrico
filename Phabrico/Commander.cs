@@ -120,7 +120,7 @@ namespace Phabrico
                                 throw new ArgumentException("Invalid JSON content in " + arguments[arg] + ": " + exception.Message);
                             }
 
-                            if (Configuration.source == null || RegexSafe.IsMatch(Configuration.source, "^http?://", RegexOptions.None) == false) throw new ArgumentException("source is invalid or missing in JSON file");
+                            if (Configuration.source == null || RegexSafe.IsMatch(Configuration.source, "^https?://", RegexOptions.None) == false) throw new ArgumentException("source is invalid or missing in JSON file");
                             if (Configuration.destination == null || FilePathIsValid(Configuration.destination) == false) throw new ArgumentException("destination is invalid or missing in JSON file");
                             if (Configuration.username == null) throw new ArgumentException("username is missing in JSON file");
                             if (Configuration.password == null) throw new ArgumentException("password is missing in JSON file");
