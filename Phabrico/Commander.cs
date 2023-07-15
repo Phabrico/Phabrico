@@ -533,6 +533,9 @@ namespace Phabrico
 
                         downloadedPhrictionDocuments.Remove(downloadedInvalidPhrictionDocument);
                     }
+
+                    // delete old data again (and recreate cover page if needed)
+                    synchronizationController.ProgressMethod_DeleteOldData(synchronizationParameters, 0, 0);
                 }
 
                 if (downloadedManiphestTasks.Any() == false && downloadedPhrictionDocuments.Any() == true)

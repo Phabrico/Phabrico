@@ -2020,6 +2020,20 @@ class TextAreaDropZone {
                         return true;
                     }
 
+                    var clipboardTabbedTextData = event.clipboardData.getData('text/plain');
+                    if (clipboardTabbedTextData.indexOf('\t') >= 0) {
+                        // replace TAB characters with 2 SPACE characters
+                        clipboardTabbedTextData = clipboardTabbedTextData.replace(/\t/g, '  ');
+
+                        var textarea = event.target;
+                        var newCursorStart = 1 + clipboardTabbedTextData.length - textarea.selectionEnd + 2 * textarea.selectionStart;
+                        textarea.value = textarea.value.substr(0, textarea.selectionStart) + clipboardTabbedTextData + textarea.value.substr(textarea.selectionEnd);
+                        event.preventDefault();
+                        remarkup.Decode(textarea.value, right);
+                        textarea.selectionStart = textarea.selectionEnd = newCursorStart;
+                        return true;
+                    }
+
                     // paste plain text
                     return true;
                 }

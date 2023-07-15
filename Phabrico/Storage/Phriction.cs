@@ -662,6 +662,16 @@ namespace Phabrico.Storage
                     }
 
                     using (SQLiteCommand cmdDeleteContentTranslations = new SQLiteCommand(@"
+                               DELETE FROM objectHierarchyInfo
+                               WHERE token = @token
+                                  OR parentToken = @token;
+                           ", database.Connection))
+                    {
+                        database.AddParameter(cmdDeleteContentTranslations, "token", phrictionDocument.Token, Database.EncryptionMode.None);
+                        cmdDeleteContentTranslations.ExecuteNonQuery();
+                    }
+
+                    using (SQLiteCommand cmdDeleteContentTranslations = new SQLiteCommand(@"
                                DELETE FROM Translation.contentTranslation
                                WHERE token = @token;
                            ", database.Connection))
