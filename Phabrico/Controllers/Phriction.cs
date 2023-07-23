@@ -1313,8 +1313,10 @@ namespace Phabrico.Controllers
                                                                       .ToArray();
                             RemarkupParserOutput remarkupParserOutput;
                             List<Phabricator.Data.PhabricatorObject> linkedPhabricatorObjects;
+                            List<int> originalInvalidLinkedFileIDs = new List<int>();
                             ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, modifiedPhrictionDocument.Content, out remarkupParserOutput, false, modifiedPhrictionDocument.Token);
                             linkedPhabricatorObjects = remarkupParserOutput.LinkedPhabricatorObjects;
+                            List<int> newInvalidLinkedFileIDs = remarkupParserOutput.InvalidLinkedFileObjectIDs;
                             referencedObjects.AddRange(unassignedStagedTokens.Select(unassignedStagedToken =>
                             {
                                 return stageStorage.Get<Phabricator.Data.File>(database, unassignedStagedToken, browser.Session.Locale);
@@ -1334,6 +1336,7 @@ namespace Phabrico.Controllers
                                     ConvertRemarkupToHTML(database, modifiedPhrictionDocument.Path, originalPhrictionDocument.Content, out remarkupParserOutput, false, modifiedPhrictionDocument.Token);  // remember also references in original content, so we can always undo our modifications
                                 }
                                 linkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
+                                originalInvalidLinkedFileIDs = remarkupParserOutput.InvalidLinkedFileObjectIDs;
                             }
                             foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in linkedPhabricatorObjects.Distinct())
                             {
@@ -1357,6 +1360,12 @@ namespace Phabrico.Controllers
                                 {
                                     stageStorage.Remove(database, browser, oldReferencedObject, language);
                                 }
+                            }
+
+                            // unmark previously marked invalid fileobjects which do not appear anymore in new content
+                            foreach (int unreferencedFileID in originalInvalidLinkedFileIDs.Except(newInvalidLinkedFileIDs))
+                            {
+                                database.MarkFileObject(unreferencedFileID, false, "");
                             }
                         }
                     }

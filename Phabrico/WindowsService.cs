@@ -101,52 +101,52 @@ namespace Phabrico
         {
             Program program = new Program();
 
+            // check if we have any command line arguments
+            string[] arguments = Environment.GetCommandLineArgs().Skip(1).ToArray();
+            if (arguments.Any())
+            {
+                Commander commander = new Commander(program, arguments);
+                if (commander.Action != Commander.CommanderAction.Nothing)
+                {
+                    try
+                    {
+                        commander.Execute();
+                    }
+                    catch (System.Exception e)
+                    {
+                        Console.WriteLine("ERROR: " + e.Message);
+                    }
+                }
+
+                return;
+            }
+
             if (Environment.UserInteractive)
             {
                 // program is running as process (i.e. non-service)
 
-                // check if we have any command line arguments
-                string[] arguments = Environment.GetCommandLineArgs().Skip(1).ToArray();
-                if (arguments.Any())
+                singleInstanceMutex = new Mutex(false, MutexName);
+
+                Logging.WriteInfo(null, "*** Startup ***");
+
+                // only 1 instance of Phabrico is allowed 
+                if (singleInstanceMutex.WaitOne(TimeSpan.Zero, false) == false)
                 {
-                    Commander commander = new Commander(program, arguments);
-                    if (commander.Action != Commander.CommanderAction.Nothing)
-                    {
-                        try
-                        {
-                            commander.Execute();
-                        }
-                        catch (System.Exception e)
-                        {
-                            Console.WriteLine("ERROR: " + e.Message);
-                        }
-                    }
+                    Logging.WriteInfo(null, "ERROR: Phabrico is already running");
+                    Environment.Exit(-1);
                 }
-                else
+
+                Logging.WriteInfo(null, "press <Esc> to stop, <Ctrl+C> to abort.");
+                try
                 {
-                    singleInstanceMutex = new Mutex(false, MutexName);
+                    program.ServiceMain();
 
-                    Logging.WriteInfo(null, "*** Startup ***");
-
-                    // only 1 instance of Phabrico is allowed 
-                    if (singleInstanceMutex.WaitOne(TimeSpan.Zero, false) == false)
-                    {
-                        Logging.WriteInfo(null, "ERROR: Phabrico is already running");
-                        Environment.Exit(-1);
-                    }
-
-                    Logging.WriteInfo(null, "press <Esc> to stop, <Ctrl+C> to abort.");
-                    try
-                    {
-                        program.ServiceMain();
-
-                        Logging.WriteInfo(null, "*** Shutdown ***");
-                    }
-                    catch (System.Exception e)
-                    {
-                        Logging.WriteInfo(null, "*** Shutdown by {0} ***", e.ToString());
-                        Logging.WriteException(null, e);
-                    }
+                    Logging.WriteInfo(null, "*** Shutdown ***");
+                }
+                catch (System.Exception e)
+                {
+                    Logging.WriteInfo(null, "*** Shutdown by {0} ***", e.ToString());
+                    Logging.WriteException(null, e);
                 }
             }
             else

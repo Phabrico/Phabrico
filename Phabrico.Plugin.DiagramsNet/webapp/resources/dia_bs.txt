@@ -428,7 +428,7 @@ insertRowAfter=Umetni red nakon
 insertText=Umetni tekst
 inserting=Umetanje
 installApp=Install App
-invalidFilename=Imena dijagrama ne smiju sadržavati sljedeće znakove: \ / | : ; { < & + ? = "
+invalidFilename=Imena dijagrama ne smiju sadržavati sljedeće znakove: \ / | : ; { &lt; & + ? = "
 invalidLicenseSeeThisPage=Vaša licenca nije validna, molimo pogledajte ovo <a target="_blank" href="https://www.drawio.com/doc/faq/license-drawio-confluence-jira-cloud">page</a>.
 invalidInput=Invalid input
 invalidName=Netačan naziv
@@ -747,6 +747,7 @@ subscript=Pretplata
 summary=Sažetak
 superscript=Superskript
 support=Podrška
+swap=Swap
 swimlaneDiagram=Swimlane Diagram
 sysml=SysML
 tags=Oznake
@@ -1193,7 +1194,7 @@ selectDB=Select Database
 noDBs=No Databases
 diagramEdited={1} diagram "{2}" edited
 confDraftPermissionErr=Draft cannot be written. Do you have attachment write/read permission on this page?
-confDraftTooBigErr=Draft size is too large. Pease check "Attachment Maximum Size" of "Attachment Settings" in Confluence Configuration?
+confDraftTooBigErr=Draft size is too large. Pease check "Attachment Maximum Size" of "Attachment Settings" in Confluence Configuration.
 owner=Owner
 repository=Repository
 branch=Branch

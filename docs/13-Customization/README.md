@@ -88,6 +88,7 @@ namespace My.Wiki
 | ApplicationName                             | The name of the application that should be shown in the top left corner                                                                                                 | Phabrico
 | ApplicationNameStyle                        | CSS styles for formatting the ApplicationName                                                                                                                           | 
 | AuthenticationFactor                        | If Knowledge, one should authenticate with username and password to access Phabrico; If Public, no authentication is needed                                             | Knowledge
+| CustomRemarkupRules                         | Dictionary of regexes for executing custom parser rules (**)                                                                                                            | 
 | FavIcon                                     | If set to a PNG image, the PNG image will be used as icon in the browser tab; if not set, the default Phabrico icon will be used                                        | Phabrico icon
 | HideConfig                                  | If true (*), Config screen will not be accessible                                                                                                                       | false
 | HideFiles                                   | If true (*), Files screen will not be accessible                                                                                                                        | false
@@ -114,6 +115,12 @@ The example below will hide the Action menu in Phriction in case you're using Fi
 httpServer.Customization.HidePhrictionActionMenu = new Phabrico.Miscellaneous.BooleanVector<Phabrico.Http.Browser>(browser => browser.UserAgent.ToLower().Contains("firefox") == false);
 ```
 The following browser specifics are avaiable: IPAddress, (Phabrico) Language, URL and UserAgent
+
+(**) CustomRemarkupRules is a `Dictionary<string,string>` from which the key represents a regex to match a token, the value is the replacement. You can also use backreferences in the replacement string.
+The example below will change the colors of highlighted texts in to black/yellow:
+```
+httpServer.Customization.CustomRemarkupRules[@"^!!([^\n]*?!*)!!"] = "<span style='background:black; color:yellow;'>$1</span>";
+```
 
 ### HidePlugins
 Some Phabrico plugins can be specifically hidden by means of the HidePlugins parameter.

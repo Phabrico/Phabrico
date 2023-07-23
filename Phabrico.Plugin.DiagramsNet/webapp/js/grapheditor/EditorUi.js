@@ -1552,6 +1552,81 @@ EditorUi.prototype.tryAndHandle = function(fn, error)
 /**
  * Returns information about the current selection.
  */
+EditorUi.prototype.convertDarkModeColors = function(cells, keys)
+{
+	var graph = this.editor.graph;
+	cells = (cells != null) ? cells : graph.getSelectionCells();
+	keys = (keys != null) ? keys : [mxConstants.STYLE_FONTCOLOR,
+		mxConstants.STYLE_FILLCOLOR, mxConstants.STYLE_GRADIENTCOLOR,
+		mxConstants.STYLE_STROKECOLOR, mxConstants.STYLE_IMAGE_BORDER,
+		mxConstants.STYLE_IMAGE_BACKGROUND, mxConstants.STYLE_LABEL_BORDERCOLOR,
+		mxConstants.STYLE_SWIMLANE_FILLCOLOR, mxConstants.STYLE_LABEL_BACKGROUNDCOLOR];
+	
+	var colorCache = {};
+	var canvas = document.createElement('canvas');
+	canvas.width = 1;
+	canvas.height = 1;
+
+	var ctx = canvas.getContext('2d', {willReadFrequently: true});
+	ctx.filter = 'invert(100%) hue-rotate(180deg) saturate(1.3)';
+	
+	graph.model.beginUpdate();
+	try
+	{
+		for (var i = 0; i < cells.length; i++)
+		{
+			if (graph.model.isEdge(cells[i]) || graph.model.isVertex(cells[i]))
+			{
+				var style = graph.getCurrentCellStyle(cells[i]);
+
+				if (style != null)
+				{
+					for (var j = 0; j < keys.length; j++)
+					{
+						try
+						{
+							var value = style[keys[j]];
+
+							if (value != null && value.charAt(0) == '#')
+							{
+								var result = colorCache[value];
+
+								if (result == null)
+								{
+									ctx.fillStyle = value;
+									ctx.fillRect(0, 0, 1, 1);
+									var imgData = ctx.getImageData(0, 0, 1, 1);
+
+									var r = imgData.data[0];
+									var g = imgData.data[1];
+									var b = imgData.data[2];
+
+									var rgb = b | (g << 8) | (r << 16);
+									result = '#' + (0x1000000 | rgb).toString(16).substring(1);
+									colorCache[value] = result;
+								}
+
+								graph.setCellStyles(keys[j], result, [cells[i]]);
+							}
+						}
+						catch (e)
+						{
+							// ignore
+						}
+					}
+				}
+			}
+		}
+	}
+	finally
+	{
+		graph.model.endUpdate();
+	}
+};
+
+/**
+ * Returns information about the current selection.
+ */
 EditorUi.prototype.updateSelectionStateForCell = function(result, cell, cells, initial)
 {
 	var graph = this.editor.graph;
@@ -4091,6 +4166,22 @@ EditorUi.prototype.canUndo = function()
 /**
  * 
  */
+EditorUi.prototype.replaceDiagramData = function(data)
+{
+	this.editor.graph.model.beginUpdate();
+	try
+	{
+		this.editor.setGraphXml(mxUtils.parseXml(data).documentElement);
+	}
+	finally
+	{
+		this.editor.graph.model.endUpdate();				
+	}
+};
+
+/**
+ * 
+ */
 EditorUi.prototype.getEditBlankXml = function()
 {
 	return mxUtils.getXml(this.editor.getGraphXml());
@@ -4664,6 +4755,7 @@ EditorUi.prototype.updateActionStates = function()
 	this.actions.get('grid').setEnabled(editable);
 	this.actions.get('undo').setEnabled(this.canUndo() && editable);
 	this.actions.get('redo').setEnabled(this.canRedo() && editable);
+	this.actions.get('swap').setEnabled(ss.cells.length == 2 && ss.vertices.length == 2);
 	this.actions.get('pasteSize').setEnabled(this.copiedSize != null && ss.vertices.length > 0);
 	this.actions.get('pasteData').setEnabled(this.copiedValue != null && ss.cells.length > 0);
 	this.actions.get('setAsDefaultStyle').setEnabled(graph.getSelectionCount() == 1);
@@ -4677,9 +4769,8 @@ EditorUi.prototype.updateActionStates = function()
 	this.actions.get('clearWaypoints').setEnabled(ss.connections);
 	this.actions.get('curved').setEnabled(ss.edges.length > 0);
 	this.actions.get('turn').setEnabled(ss.cells.length > 0);
-	this.actions.get('group').setEnabled(!ss.row && !ss.cell &&
-		(ss.cells.length > 1 || (ss.vertices.length == 1 &&
-		graph.model.getChildCount(ss.cells[0]) == 0 &&
+	this.actions.get('group').setEnabled((ss.cells.length > 1 ||
+		(ss.vertices.length == 1 && graph.model.getChildCount(ss.cells[0]) == 0 &&
 		!graph.isContainer(ss.vertices[0]))));
 	this.actions.get('ungroup').setEnabled(!ss.row && !ss.cell && !ss.table &&
 		ss.vertices.length > 0 && (graph.isContainer(ss.vertices[0]) ||
@@ -4994,6 +5085,14 @@ EditorUi.prototype.createStatusContainer = function()
 	mxEvent.addListener(container, 'click', mxUtils.bind(this, function(evt)
 	{
 		var elt = mxEvent.getSource(evt);
+
+		if (elt != container)
+		{
+			while (elt.parentNode != container)
+			{
+				elt = elt.parentNode;
+			}
+		}
 		
 		if (elt.nodeName != 'A')
 		{
@@ -6422,6 +6521,8 @@ EditorUi.prototype.createKeyHandler = function(editor)
 		keyHandler.bindAction(68, true, 'duplicate'); // Ctrl+D
 		keyHandler.bindAction(68, true, 'setAsDefaultStyle', true); // Ctrl+Shift+D   
 		keyHandler.bindAction(90, true, 'undo'); // Ctrl+Z
+		keyHandler.bindAction(90, true, 'redo', true); // Ctrl+Shift+Z
+		keyHandler.bindAction(89, true, 'redo'); // Ctrl+Y
 		keyHandler.bindAction(89, true, 'autosize', true); // Ctrl+Shift+Y
 		keyHandler.bindAction(88, true, 'cut'); // Ctrl+X
 		keyHandler.bindAction(67, true, 'copy'); // Ctrl+C
@@ -6443,15 +6544,6 @@ EditorUi.prototype.createKeyHandler = function(editor)
 		keyHandler.bindAction(188, true, 'subscript'); // Ctrl+,
 		keyHandler.bindAction(13, false, 'keyPressEnter'); // Enter
 		keyHandler.bindKey(113, function() { if (graph.isEnabled()) { graph.startEditingAtCell(); }}); // F2
-	}
-	
-	if (!mxClient.IS_WIN)
-	{
-		keyHandler.bindAction(90, true, 'redo', true); // Ctrl+Shift+Z
-	}
-	else
-	{
-		keyHandler.bindAction(89, true, 'redo'); // Ctrl+Y
 	}
 	
 	return keyHandler;

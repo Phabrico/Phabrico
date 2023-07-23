@@ -2369,13 +2369,11 @@
     <EmbeddedResource Include="webapp\plugins\svgdata.js" />
     <EmbeddedResource Include="webapp\plugins\tags.js" />
     <EmbeddedResource Include="webapp\plugins\text.js" />
-    <EmbeddedResource Include="webapp\plugins\tickets.js" />
     <EmbeddedResource Include="webapp\plugins\tooltips.js" />
     <EmbeddedResource Include="webapp\plugins\trees\handle-move.gif" />
     <EmbeddedResource Include="webapp\plugins\trees\trees.js" />
     <EmbeddedResource Include="webapp\plugins\trello.js" />
     <EmbeddedResource Include="webapp\plugins\update.js" />
-    <EmbeddedResource Include="webapp\plugins\voice.js" />
     <EmbeddedResource Include="webapp\plugins\webcola\cola.min.js" />
     <EmbeddedResource Include="webapp\plugins\webcola\mxWebColaAdaptor.js" />
     <EmbeddedResource Include="webapp\plugins\webcola\mxWebColaLayout.js" />

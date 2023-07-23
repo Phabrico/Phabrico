@@ -107,6 +107,7 @@ namespace Phabrico.Parsers.Remarkup
                             remarkupRule.RuleStartAfterPunctuation = ruleStartsAfterPunctuation;
                             remarkupRule.ChildTokenList.Clear();
                             remarkupRule.LinkedPhabricatorObjects.Clear();
+                            remarkupRule.InvalidLinkedFileObjectIDs.Clear();
                             remarkupRule.ParentRemarkupRule = currentRemarkupRule;
                             remarkupRule.PhabricatorObjectToken = phabricatorObjectToken;
                             remarkupRule.TokenList = remarkupParserOutput.TokenList;
@@ -132,6 +133,7 @@ namespace Phabrico.Parsers.Remarkup
                                 RemarkupRule clonedRemarkupRule = remarkupRule.Clone();
                                 remarkupParserOutput.TokenList.Add(clonedRemarkupRule);
                                 remarkupParserOutput.LinkedPhabricatorObjects.AddRange(clonedRemarkupRule.LinkedPhabricatorObjects);
+                                remarkupParserOutput.InvalidLinkedFileObjectIDs.AddRange(clonedRemarkupRule.InvalidLinkedFileObjectIDs);
 
                                 ruleStartsOnNewLine = remarkupRule is RuleHorizontalRule ||
                                                       remarkupRule is RuleNewline ||

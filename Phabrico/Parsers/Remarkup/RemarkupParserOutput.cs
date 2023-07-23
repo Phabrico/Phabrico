@@ -11,6 +11,12 @@ namespace Phabrico.Parsers.Remarkup
     public class RemarkupParserOutput
     {
         /// <summary>
+        /// Collection of all referenced file ID's for which no content can be found
+        /// These are ID's of inaccessible files
+        /// </summary>
+        public List<int> InvalidLinkedFileObjectIDs = new List<int>();
+
+        /// <summary>
         /// Contains all the Phabricator objects (e.g. phriction documents, maniphest tasks) which
         /// are referenced in the given remarkup content
         /// </summary>

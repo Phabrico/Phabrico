@@ -1549,6 +1549,7 @@ namespace Phabrico.Controllers
                     }
                 }
 
+                synchronizationParameters.database.MarkFileObject(null, false, phabricatorManiphestTask.Token);
                 maniphestStorage.Add(synchronizationParameters.database, phabricatorManiphestTask);
 
                 // collect all file object references used in the maniphest task content
@@ -1913,6 +1914,7 @@ namespace Phabrico.Controllers
                     }
                 }
 
+                synchronizationParameters.database.MarkFileObject(null, false, phabricatorPhrictionDocument.Token);
                 phrictionStorage.Add(synchronizationParameters.database, phabricatorPhrictionDocument);
 
                 if (phabricatorPhrictionDocument.DateModified >= synchronizationParameters.lastDownloadTimestamp)

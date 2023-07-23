@@ -516,28 +516,42 @@ namespace Phabrico.Storage
         /// <param name="database"></param>
         public static void SynchronizeReviewStatesWithMasterObjects(Database database)
         {
-            // load all reviewed translations into a list
             List<Translation> contentTranslationRecords = new List<Translation>();
-            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+            
+            try
+            {
+                // load all reviewed translations into a list
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                         SELECT * FROM Translation.contentTranslation
                         WHERE reviewed = 1
                    ", database.Connection))
-            {
-                using (var reader = dbCommand.ExecuteReader())
                 {
-                    while (reader.Read())
+                    using (var reader = dbCommand.ExecuteReader())
                     {
-                        Translation record = new Translation();
-                        record.Token = (string)reader["token"];
-                        record.TranslatedTitle = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["title"]);
-                        record.TranslatedRemarkup = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["translation"]);
-                        record.IsReviewed = true;
-                        record.Language = (string)reader["language"];
-                        record.DateModified = DateTimeOffset.FromUnixTimeSeconds(long.Parse(reader["dateModified"].ToString()));
+                        while (reader.Read())
+                        {
+                            Translation record = new Translation();
+                            record.Token = (string)reader["token"];
+                            record.TranslatedTitle = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["title"]);
+                            record.TranslatedRemarkup = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["translation"]);
+                            record.IsReviewed = true;
+                            record.Language = (string)reader["language"];
+                            record.DateModified = DateTimeOffset.FromUnixTimeSeconds(long.Parse(reader["dateModified"].ToString()));
 
-                        contentTranslationRecords.Add(record);
+                            contentTranslationRecords.Add(record);
+                        }
                     }
                 }
+            }
+            catch
+            {
+                string translationDbPath = string.Format("{0}\\Phabrico.translation", System.IO.Path.GetDirectoryName(database.Connection.FileName));
+                if (System.IO.File.Exists(translationDbPath) == false)
+                {
+                    throw new System.Exception(string.Format("{0} is missing", translationDbPath));
+                }
+
+                throw;
             }
 
             // compare collected translations with phriction documents

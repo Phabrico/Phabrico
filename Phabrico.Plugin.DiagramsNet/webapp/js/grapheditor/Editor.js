@@ -225,6 +225,16 @@ Editor.sketchMode = false;
 /**
  * Dynamic change of dark mode for minimal and sketch theme.
  */
+Editor.enableCssDarkMode = window.mxIsElectron? false : true; // Desktop app defaults to classic darkmode
+
+/**
+ * Dynamic change of dark mode for minimal and sketch theme.
+ */
+Editor.cssDarkMode = false;
+
+/**
+ * Dynamic change of dark mode for minimal and sketch theme.
+ */
 Editor.darkMode = false;
 
 /**
@@ -235,13 +245,13 @@ Editor.currentTheme = uiTheme;
 /**
  * Dynamic change of dark mode for minimal and sketch theme.
  */
-Editor.darkColor = '#18141D';
+Editor.darkColor = (Editor.enableCssDarkMode) ? '#121212' : '#18141D';
 
 /**
  * Dynamic change of dark mode for minimal and sketch theme.
  */
 Editor.lightColor = '#f0f0f0';
-  
+
 /**
  * Returns the current state of the dark mode.
  */
@@ -2232,17 +2242,13 @@ PageSetupDialog.getFormats = function()
 var FilenameDialog = function(editorUi, filename, buttonText, fn, label, validateFn, content, helpLink, closeOnBtn, cancelFn, hints, w, lblW)
 {
 	closeOnBtn = (closeOnBtn != null) ? closeOnBtn : true;
-	var row, td;
-	
+
 	var table = document.createElement('table');
 	var tbody = document.createElement('tbody');
-	table.style.position = 'absolute';
-	table.style.top = '30px';
-	table.style.left = '20px';
-	
-	row = document.createElement('tr');
-	
-	td = document.createElement('td');
+	var row = document.createElement('tr');
+	var td = document.createElement('td');
+	table.style.margin = '0 auto';
+
 	td.style.textOverflow = 'ellipsis';
 	td.style.whiteSpace = 'nowrap';
 	td.style.textAlign = 'right';
@@ -2426,11 +2432,6 @@ var FilenameDialog = function(editorUi, filename, buttonText, fn, label, validat
 	});
 	cancelBtn.className = 'geBtn';
 	
-	if (editorUi.editor.cancelFirst)
-	{
-		td.appendChild(cancelBtn);
-	}
-	
 	if (helpLink != null)
 	{
 		var helpBtn = mxUtils.button(mxResources.get('help'), function()
@@ -2442,6 +2443,11 @@ var FilenameDialog = function(editorUi, filename, buttonText, fn, label, validat
 		td.appendChild(helpBtn);
 	}
 
+	if (editorUi.editor.cancelFirst)
+	{
+		td.appendChild(cancelBtn);
+	}
+	
 	mxEvent.addListener(nameInput, 'keypress', function(e)
 	{
 		if (e.keyCode == 13)
@@ -2804,7 +2810,7 @@ var WrapperWindow = function(editorUi, title, x, y, w, h, fn)
 			graph.view.backgroundPageShape.node.style.backgroundImage = image;
 			graph.view.backgroundPageShape.node.style.backgroundColor = color;
 			graph.view.backgroundPageShape.node.style.borderColor = graph.defaultPageBorderColor;
-			graph.container.className = 'geDiagramContainer geDiagramBackdrop';
+			graph.container.classList.add('geDiagramBackdrop');
 			canvas.style.backgroundImage = 'none';
 			canvas.style.backgroundColor = '';
 
@@ -2819,7 +2825,7 @@ var WrapperWindow = function(editorUi, title, x, y, w, h, fn)
 		}
 		else
 		{
-			graph.container.className = 'geDiagramContainer';
+			graph.container.classList.remove('geDiagramBackdrop');
 			canvas.style.backgroundPosition = position;
 			canvas.style.backgroundImage = image;
 			

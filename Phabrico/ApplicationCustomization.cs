@@ -62,6 +62,15 @@ namespace Phabrico
         internal string CustomFavIconBase64 { get; private set; } = null;
 
         /// <summary>
+        /// Dictionary for custom Remarkup Rules.
+        /// It works with regexes: if a regex is found during the remarkup parsing, the regex match
+        /// will be replaced by something else.
+        /// The key is a regex, the value is the replacement
+        /// </summary>
+        public Dictionary<string, string> CustomRemarkupRules = new Dictionary<string, string>();
+        internal static object lockCustomRemarkupRules = new object();
+
+        /// <summary>
         /// Global cascading style sheets which are injected in each page
         /// </summary>
         public string ApplicationCSS { get; set; }

@@ -182,7 +182,7 @@ Format.prototype.immediateRefresh = function()
 	
 	var div = document.createElement('div');
 	div.style.whiteSpace = 'nowrap';
-	div.style.color = 'rgb(112, 112, 112)';
+	div.style.color = Editor.isDarkMode() ? '#8D8D8D' : '#616161';
 	div.style.textAlign = 'left';
 	div.style.cursor = 'default';
 	
@@ -1817,18 +1817,17 @@ ArrangePanel.prototype.addLayerOps = function(div)
 ArrangePanel.prototype.addGroupOps = function(div)
 {
 	var ui = this.editorUi;
-	var graph = ui.editor.graph;
 	var ss = ui.getSelectionState();
 	
 	div.style.paddingTop = '8px';
 	div.style.paddingBottom = '6px';
 
-	var count = 0;
-	
+	var count = this.addActions(div, ['group', 'ungroup']) +
+		this.addActions(div, ['removeFromGroup']);
+
 	if (!ss.cell && !ss.row)
 	{
-		count += this.addActions(div, ['group', 'ungroup', 'copySize', 'pasteSize']) +
-			this.addActions(div, ['removeFromGroup']);
+		count += this.addActions(div, ['copySize', 'pasteSize', 'swap']);
 	}
 
 	var clearWaypoints = this.addAction(div, 'clearWaypoints');
@@ -4495,7 +4494,8 @@ StyleFormatPanel.prototype.addSvgStyles = function(container)
 			var regex = new RegExp(exp);
 			
 			var data = ss.style.image.substring(ss.style.image.indexOf(',') + 1);
-			var xml = (window.atob) ? atob(data) : Base64.decode(data, true);
+			var xml = (window.atob) ? decodeURIComponent(escape(atob((data)))) :
+				Base64.decode(data, true);
 			var svg = mxUtils.parseXml(xml);
 			
 			if (svg != null)
@@ -4565,7 +4565,8 @@ StyleFormatPanel.prototype.addSvgRule = function(container, rule, svg, styleElem
 					var xml = mxUtils.getXml(svg.documentElement);
 					
 					graph.setCellStyles(mxConstants.STYLE_IMAGE, 'data:image/svg+xml,' +
-						((window.btoa) ? btoa(xml) : Base64.encode(xml, true)),
+						((window.btoa) ? btoa(unescape(encodeURIComponent(xml))) :
+							Base64.encode(xml, true)),
 						ui.getSelectionState().cells);
 				}), '#ffffff',
 				{

@@ -428,7 +428,7 @@ insertRowAfter=Insereix una fila a sota
 insertText=Insereix text
 inserting=S'està inserint
 installApp=Instal·la l'aplicació
-invalidFilename=Els noms dels diagrames no poden contenir els següents caràcters: \ / | : ; { < & + ? = "
+invalidFilename=Els noms dels diagrames no poden contenir els següents caràcters: \ / | : ; { &lt; & + ? = "
 invalidLicenseSeeThisPage=La llicència no és vàlida, consulteu aquesta <a target="_blank" href="https://www.drawio.com/doc/faq/license-drawio-confluence-jira-cloud">pàgina</a>.
 invalidInput=L'entrada no és vàlida
 invalidName=El nom no és vàlid
@@ -747,6 +747,7 @@ subscript=Subíndex
 summary=Resum
 superscript=Superíndex
 support=Ajuda
+swap=Swap
 swimlaneDiagram=Diagrama de Carril de natació
 sysml=SysML
 tags=Etiquetes
@@ -1193,7 +1194,7 @@ selectDB=Seleccioneu Base de Dades
 noDBs=Sense Bases de Dades
 diagramEdited={1} diagrama "{2}" editat
 confDraftPermissionErr=L'esborrany no es pot escriure. Tens permís d'escriptura/lectura d'arxius adjunts sobre aquesta pàgina?
-confDraftTooBigErr=La mida de l'esborrany és massa gran. Comproveu "Mida màxima de l'arxiu adjunt" de "Configuració dels fitxers adjunts" a la configuració de Confluence?
+confDraftTooBigErr=La mida de l'esborrany és massa gran. Comproveu "Mida màxima de l'arxiu adjunt" de "Configuració dels fitxers adjunts" a la configuració de Confluence.
 owner=Propietari
 repository=Repositori
 branch=Branca

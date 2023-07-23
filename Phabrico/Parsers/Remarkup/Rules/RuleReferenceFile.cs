@@ -177,6 +177,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 // ERROR: file object not found!
                 // file object was not downloaded from Phabricator (or file object was not granted on Phabricator to be viewed by everybody)
                 database.MarkFileObject(FileID, true, PhabricatorObjectToken);
+                InvalidLinkedFileObjectIDs.Add(FileID);
 
                 // show replacement for missing file
                 html = string.Format("<div class=\"inaccessible-file\" title=\"{1}\"><div><div>{{F{0}}}</div></div></div>",

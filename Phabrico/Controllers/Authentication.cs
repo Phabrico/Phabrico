@@ -179,7 +179,14 @@ namespace Phabrico.Controllers
             // save new language into the database
             using (Storage.Database database = new Storage.Database(EncryptionKey))
             {
-                database.SetSessionVariable(browser, "language", newLanguage);
+                try
+                {
+                    database.SetSessionVariable(browser, "language", newLanguage);
+                }
+                catch
+                {
+                    // can throw an exception if user is a readonly public user: ignore exception
+                }
             }
             
             string jsonData = JsonConvert.SerializeObject(new

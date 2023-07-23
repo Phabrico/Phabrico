@@ -30,6 +30,11 @@
 		icon.setAttribute('valign', 'bottom');
 		icon.setAttribute('src', Editor.helpImage);
 		link.appendChild(icon);
+
+		if (Editor.enableCssDarkMode)
+		{
+			icon.className = 'geAdaptiveAsset';
+		}
 		
 		mxEvent.addGestureListeners(link, mxUtils.bind(this, function(evt)
 		{
@@ -310,7 +315,7 @@
 		lightModeAction.setToggleAction(true);
 		lightModeAction.setSelectedCallback(function()
 		{
-			return !editorUi.isAutoDarkMode(true) && !Editor.isDarkMode();
+			return !editorUi.isAutoDarkMode(true) && !Editor.isDarkMode() && !Editor.cssDarkMode;
 		});
 		
         var darkModeAction = editorUi.actions.put('darkMode', new Action(mxResources.get('dark'), function(e)
@@ -321,7 +326,7 @@
 		darkModeAction.setToggleAction(true);
 		darkModeAction.setSelectedCallback(function()
 		{
-			return !editorUi.isAutoDarkMode(true) && Editor.isDarkMode();
+			return !editorUi.isAutoDarkMode(true) && (Editor.isDarkMode() || Editor.cssDarkMode);
 		});
 		
         var autoModeAction = editorUi.actions.put('autoMode', new Action(mxResources.get('automatic'), function(e)
@@ -808,22 +813,20 @@
 				dlg.init();
 			}
 		}, null, null, Editor.ctrlKey + '+Shift+M');
-
-		var currentStyle = null;
 		
 		editorUi.actions.addAction('copyStyle', function()
 		{
 			if (graph.isEnabled() && !graph.isSelectionEmpty())
 			{
-				currentStyle = graph.copyStyle(graph.getSelectionCell())
+				editorUi.copiedStyle = graph.copyStyle(graph.getSelectionCell())
 			}
 		}, null, null, 'Alt+Shift+Q');
 
 		editorUi.actions.addAction('pasteStyle', function()
 		{
-			if (graph.isEnabled() && !graph.isSelectionEmpty() && currentStyle != null)
+			if (graph.isEnabled() && !graph.isSelectionEmpty() && editorUi.copiedStyle != null)
 			{
-				graph.pasteStyle(currentStyle, graph.getSelectionCells())
+				graph.pasteStyle(editorUi.copiedStyle, graph.getSelectionCells())
 			}
 		}, null, null, 'Alt+Shift+W');
 		
@@ -833,7 +836,7 @@
 				'https://www.drawio.com/doc/faq/export-diagram',
 				mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection,
 					addShadow, editable, embedImages, border, cropImage, currentPage,
-					linkTarget, grid, keepTheme, exportType, embedFonts, lblToSvg)
+					linkTarget, grid, theme, exportType, embedFonts, lblToSvg)
 				{
 					var val = parseInt(scale);
 					
@@ -848,7 +851,7 @@
 						{
 							editorUi.exportSvg(val / 100, transparentBackground, ignoreSelection,
 								addShadow, editable, embedImages, border, !cropImage, false,
-								linkTarget, keepTheme, exportType, embedFonts);
+								linkTarget, theme, exportType, embedFonts);
 						}
 					}
 				}), true, null, 'svg', true);
@@ -861,7 +864,7 @@
 				editorUi.showExportDialog(mxResources.get('image'), false, mxResources.get('export'),
 					'https://www.drawio.com/doc/faq/export-diagram',
 					mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow, editable,
-						embedImages, border, cropImage, currentPage, dummy, grid, keepTheme, exportType)
+						embedImages, border, cropImage, currentPage, dummy, grid, theme, exportType)
 					{
 						var val = parseInt(scale);
 						
@@ -869,7 +872,7 @@
 						{
 							editorUi.exportImage(val / 100, transparentBackground, ignoreSelection,
 								addShadow, editable, border, !cropImage, false, null, grid, null,
-								keepTheme, exportType);
+								theme, exportType);
 						}
 					}), true, Editor.defaultIncludeDiagram, 'png', true);
 			}
@@ -889,7 +892,7 @@
 				editorUi.showExportDialog(mxResources.get('image'), false, mxResources.get('export'),
 					'https://www.drawio.com/doc/faq/export-diagram',
 					mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow, editable,
-						embedImages, border, cropImage, currentPage, dummy, grid, keepTheme, exportType)
+						embedImages, border, cropImage, currentPage, dummy, grid, theme, exportType)
 					{
 						var val = parseInt(scale);
 						
@@ -897,7 +900,7 @@
 						{
 							editorUi.exportImage(val / 100, false, ignoreSelection,
 								addShadow, false, border, !cropImage, false, 'jpeg',
-								grid, null, keepTheme, exportType);
+								grid, null, theme, exportType);
 						}
 					}), true, false, 'jpeg', true);
 			}
@@ -927,25 +930,9 @@
 		action.setToggleAction(true);
 		action.setSelectedCallback(function() { return graph.shadowVisible; });
 
-		editorUi.actions.put('about', new Action(mxResources.get('about') + ' ' + EditorUi.VERSION + '...', function(arg1, evt)
+		editorUi.actions.put('about', new Action('v' + EditorUi.VERSION, function(arg1, evt)
 		{
-			if (evt != null && mxEvent.isShiftDown(evt))
-			{
-				mxLog.show();
-
-				if (window.console != null)
-				{
-					console.log(editorUi, window);
-				}
-			}
-			else if (editorUi.isOffline() || mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
-			{
-				editorUi.alert(editorUi.editor.appName + ' ' + EditorUi.VERSION);
-			}
-			else
-			{
-				editorUi.openLink('https://www.drawio.com/');
-			}
+			// do nothing
 		}));
 		
 		editorUi.actions.addAction('support...', function()
@@ -1270,7 +1257,7 @@
 					menubar != null && Editor.enableSimpleTheme &&
 					editorUi.getServiceName() != 'atlassian')
 				{
-					var themeMenu = this.get('appearance');
+					var themeMenu = this.get('dynamicAppearance');
 					
 					if (themeMenu != null)
 					{
@@ -1319,7 +1306,7 @@
 								}
 								else
 								{
-									elt.style.backgroundImage = 'url(' + ((Editor.isDarkMode()) ?
+									elt.style.backgroundImage = 'url(' + ((Editor.isDarkMode() || Editor.cssDarkMode) ?
 										Editor.thinDarkImage : Editor.thinLightImage) + ')';
 								}
 							}
@@ -1349,12 +1336,27 @@
 			'interHierarchySpacing': 60,
 			'parallelEdgeSpacing': 10}}];
 		
-		// Adds action
+		// Adds action for running layouts
 		editorUi.actions.addAction('runLayout', function()
 		{
 	    	editorUi.showCustomLayoutDialog(JSON.stringify(
 				editorUi.customLayoutConfig, null, 2));
 		});
+
+		// Adds action for converting dark mode colors
+		if (Editor.enableCssDarkMode)
+		{
+			editorUi.actions.put('convertDarkModeColors', new Action('Dark Mode Colors...', function(evt)
+			{
+				if (editorUi.darkModeColorsWindow == null)
+				{
+					editorUi.darkModeColorsWindow = new DarkModeColorsWindow(
+						editorUi, document.body.offsetWidth - 520, 80, 200, 100);
+				}
+
+				editorUi.darkModeColorsWindow.window.setVisible(true);
+			}));
+		}
 
 		// Adds fullscreen toggle to zoom menu in sketch and min
         var viewZoomMenu = this.get('viewZoom');
@@ -2652,7 +2654,15 @@
 			link.style.cursor = 'pointer';
 			mxUtils.write(link, mxResources.get('getNotionChromeExtension'));
 			footer.appendChild(link);
+			
+			mxUtils.setPrefixedStyle(link.style, 'transition', 'all 1s ease');
+			mxUtils.setOpacity(link, 0);
 
+			window.setTimeout(function()
+			{
+				mxUtils.setOpacity(link, 100);
+			}, 300);
+			
 			mxEvent.addListener(link, 'click', function(evt)
 			{
 				editorUi.openLink('https://chrome.google.com/webstore/detail/drawio-for-notion/plhaalebpkihaccllnkdaokdoeaokmle');
@@ -2675,7 +2685,7 @@
 						}
 
 						var dlg = new EmbedDialog(editorUi, editorUi.createLink(linkTarget, linkColor,
-							allPages, lightbox, editLink, layers, url, null, params, true));
+							allPages, lightbox, editLink, layers, url, null, params));
 						editorUi.showDialog(dlg.container, 450, 240, true, true);
 						dlg.init();
 					});
@@ -3185,8 +3195,8 @@
 				}, parent);
 			}
 		}))).isEnabled = isGraphEnabled;
-		
-		this.put('appearance', new Menu(mxUtils.bind(this, function(menu, parent)
+
+		this.put('dynamicAppearance', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
 			var iw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 
@@ -3235,7 +3245,7 @@
 				if (item != null)
 				{
 					item.setAttribute('title', mxResources.get('automatic') +
-						' (' + mxResources.get(Editor.isDarkMode() ?
+						' (' + mxResources.get(Editor.cssDarkMode || Editor.isDarkMode() ?
 							'dark' : 'light') + ')');
 				}
 			}
@@ -3243,6 +3253,23 @@
 			if (urlParams['embed'] != '1')
 			{
 				this.addMenuItems(menu, ['-', 'toggleSimpleMode'], parent);
+			}
+		})));
+		
+		this.put('appearance', new Menu(mxUtils.bind(this, function(menu, parent)
+		{
+			this.addMenuItems(menu, ['-', 'lightMode', 'darkMode'], parent);
+
+			if (editorUi.isAutoDarkModeSupported())
+			{
+				var item = editorUi.menus.addMenuItem(menu, 'autoMode', parent);
+
+				if (item != null)
+				{
+					item.setAttribute('title', mxResources.get('automatic') +
+						' (' + mxResources.get(Editor.cssDarkMode || Editor.isDarkMode() ?
+							'dark' : 'light') + ')');
+				}
 			}
 		})));
 

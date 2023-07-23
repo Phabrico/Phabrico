@@ -151,6 +151,12 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public RemarkupEngine Engine { get; set; } = null;
 
         /// <summary>
+        /// Collection of all referenced file ID's for which no content can be found
+        /// These are ID's of inaccessible files
+        /// </summary>
+        public List<int> InvalidLinkedFileObjectIDs = new List<int>();
+
+        /// <summary>
         /// Collection of all phabricator objects (e.g phriction, maniphest, ...) that are referenced in the current remarkup rule
         /// </summary>
         public List<Phabricator.Data.PhabricatorObject> LinkedPhabricatorObjects = new List<Phabricator.Data.PhabricatorObject>();
@@ -201,6 +207,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 clonedRemarkupRule.Text = Text;
                 clonedRemarkupRule.Clone(this);
                 clonedRemarkupRule.LinkedPhabricatorObjects.AddRange(LinkedPhabricatorObjects);
+                clonedRemarkupRule.InvalidLinkedFileObjectIDs.AddRange(InvalidLinkedFileObjectIDs);
                 clonedRemarkupRule.ChildTokenList.AddRange(ChildTokenList);
             }
 

@@ -323,7 +323,6 @@ App.pluginRegistry = {'4xAKTrabTpTzahoLthkwPNUn': 'plugins/explore.js',
 	'ac148': 'plugins/cConf-1-4-8.js', 'ac148cmnt': 'plugins/cConf-comments.js', 
 	'nxtcld': 'plugins/nextcloud.js',
 	'monday': 'plugins/monday.js',
-	'voice': 'plugins/voice.js',
 	'tips': 'plugins/tooltips.js', 'svgdata': 'plugins/svgdata.js',
 	'number': 'plugins/number.js', 'sql': 'plugins/sql.js',
 	'props': 'plugins/props.js', 'text': 'plugins/text.js',
@@ -331,14 +330,12 @@ App.pluginRegistry = {'4xAKTrabTpTzahoLthkwPNUn': 'plugins/explore.js',
 	'trees': 'plugins/trees/trees.js', 'import': 'plugins/import.js',
 	'replay': 'plugins/replay.js', 'anon': 'plugins/anonymize.js',
 	'tr': 'plugins/trello.js', 'f5': 'plugins/rackF5.js',
-	'tickets': 'plugins/tickets.js', 'flow': 'plugins/flow.js',
 	'webcola': 'plugins/webcola/webcola.js', 'rnd': 'plugins/random.js',
 	'page': 'plugins/page.js', 'gd': 'plugins/googledrive.js',
 	'tags': 'plugins/tags.js'};
 
 App.publicPlugin = [
 	'ex',
-	'voice',
 	'tips',
 	'svgdata',
 	'number',
@@ -351,7 +348,6 @@ App.publicPlugin = [
 //	'import',
 	'replay',
 	'anon',
-	'tickets',
 	'flow',
 	'webcola',
 //	'rnd', 'page', 'gd',
@@ -1749,74 +1745,18 @@ App.prototype.init = function()
 			}));
 		}
 		
-		// if (this.isOwnDomain() && new Date().getFullYear() < 2023 &&
-		// 	Editor.currentTheme != 'sketch' && Editor.currentTheme != 'atlas' &&
-		// 	Editor.currentTheme != 'min' && Editor.currentTheme != 'simple')
-		// {
-		// 	this.editor.addListener('fileLoaded', mxUtils.bind(this, function()
-		// 	{
-		// 		if (Editor.currentTheme != 'sketch' && Editor.currentTheme != 'atlas' &&
-		// 			Editor.currentTheme != 'min' && Editor.currentTheme != 'simple')
-		// 		{
-		// 			window.setTimeout(mxUtils.bind(this, function()
-		// 			{
-		// 				var elt = this.menubar.langIcon;
-
-		// 				if (Editor.currentTheme != 'sketch' && Editor.currentTheme != 'atlas' &&
-		// 					Editor.currentTheme != 'min' && Editor.currentTheme != 'simple' &&
-		// 					elt != null)
-		// 				{
-		// 					this.showBanner('TryNewStyles', 'Try our new styles! →', mxUtils.bind(this, function()
-		// 					{
-		// 						if (elt != null)
-		// 						{
-		// 							elt.click();
-		// 						}
-		// 					}), true, true, 'top:2px;right:30px;', 'scale(0,1)', 'scale(1,1)', '100% 0');
-
-		// 					window.setTimeout(mxUtils.bind(this, function()
-		// 					{
-		// 						if (elt != null)
-		// 						{
-		// 							mxUtils.setPrefixedStyle(elt.style, 'transition', 'all 1s ease-in-out');
-		// 							mxUtils.setPrefixedStyle(elt.style, 'transform', 'rotate(360deg)');
-
-		// 							window.setTimeout(mxUtils.bind(this, function()
-		// 							{
-		// 								if (elt != null)
-		// 								{
-		// 									mxUtils.setPrefixedStyle(elt.style, 'transition', null);
-		// 									mxUtils.setPrefixedStyle(elt.style, 'transform', null);
-		// 								}
-		// 							}), 1000);
-		// 						}
-		// 					}), 1500);
-		// 				}
-		// 			}), 2000);
-		// 		}
-		// 	}));
-		// }
-		
-		if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp && !this.isOffline() &&
-			!mxClient.IS_ANDROID && !mxClient.IS_IOS && urlParams['open'] == null &&
-			(!this.editor.chromeless || this.editor.editable))
+		if (this.isOwnDomain() && (!this.editor.chromeless || this.editor.editable))
 		{
 			this.editor.addListener('fileLoaded', mxUtils.bind(this, function()
 			{
 				var file = this.getCurrentFile();
 				var mode = (file != null) ? file.getMode() : null;
 				
-				if (urlParams['extAuth'] != '1' && (mode == App.MODE_DEVICE || mode == App.MODE_BROWSER))
+				if (!mxClient.IS_CHROMEAPP && !mxClient.IS_ANDROID && !mxClient.IS_IOS &&
+					!EditorUi.isElectronApp && !this.isOffline() && urlParams['open'] == null &&
+					urlParams['extAuth'] != '1' && (mode == App.MODE_DEVICE || mode == App.MODE_BROWSER))
 				{
-					if (this.isOwnDomain())
-					{
-						this.showDownloadDesktopBanner();
-					}
-				}
-				else if (urlParams['embed'] != '1' && this.getServiceName() == 'draw.io')
-				{
-					// just app.diagrams.net users
-					// this.showNameConfBanner();
+					this.showDownloadDesktopBanner();
 				}
 			}));
 		}
@@ -2011,7 +1951,7 @@ App.prototype.sanityCheck = function()
 				this.stopSanityCheck();
 				this.actions.get((this.mode == null || !file.isEditable()) ?
 					'saveAs' : 'save').funct();
-			}), null, null, 360, 120, null, mxUtils.bind(this, function()
+			}), null, null, 360, 140, null, mxUtils.bind(this, function()
 			{
 				this.scheduleSanityCheck();
 			}));
@@ -7054,13 +6994,20 @@ App.prototype.updateHeader = function()
 			this.appIconClicked(evt);
 		}));
 		
-		var updateBackground = mxUtils.bind(this, function()
+		if (!Editor.enableCssDarkMode)
 		{
-			this.appIcon.style.backgroundColor = (!Editor.isDarkMode()) ? '#f08705' : '';
-		});
+			var updateBackground = mxUtils.bind(this, function()
+			{
+				this.appIcon.style.backgroundColor = (!Editor.isDarkMode()) ? '#f08705' : '';
+			});
 
-		this.addListener('darkModeChanged', updateBackground);
-		updateBackground();
+			this.addListener('darkModeChanged', updateBackground);
+			updateBackground();
+		}
+		else
+		{
+			this.appIcon.style.backgroundColor = '#f08705';
+		}
 
 		mxUtils.setPrefixedStyle(this.appIcon.style, 'transition', 'all 125ms linear');
 
@@ -7506,6 +7453,11 @@ App.prototype.updateUserElementIcon = function()
 				icon.style.left = '16px';
 				icon.style.width = '12px';
 				icon.style.height = '12px';
+
+				if (Editor.enableCssDarkMode)
+				{
+					icon.className = 'geAdaptiveAsset';
+				}
 
 				var err = file.getRealtimeError();
 				var state = file.getRealtimeState();
