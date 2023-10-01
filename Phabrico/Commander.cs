@@ -334,18 +334,18 @@ namespace Phabrico
                 synchronizationParameters.existingAccount.UserName = Configuration.username;
                 synchronizationParameters.existingAccount.Parameters.Synchronization = (Configuration.maniphest != null && Configuration.maniphest.projectTags != null && Configuration.maniphest.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.ManiphestSelectedProjectsOnly
                                                                                      : (Configuration.maniphest != null && Configuration.maniphest.userTags != null && Configuration.maniphest.userTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.ManiphestSelectedUsersOnly
-                                                                                     : Phabricator.Data.Account.SynchronizationMethod.None;
+                                                                                     : Phabricator.Data.Account.SynchronizationMethod.PhrictionAllProjects;
                 synchronizationParameters.existingAccount.Parameters.Synchronization |= (Configuration.phriction != null && Configuration.phriction.combined && Configuration.phriction.projectTags != null && Configuration.phriction.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly
                                                                                       : (Configuration.phriction != null && Configuration.phriction.combined == false && Configuration.phriction.projectTags != null && Configuration.phriction.projectTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnly
                                                                                       : (Configuration.phriction != null && Configuration.phriction.userTags != null && Configuration.phriction.userTags.Any()) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedUsersOnly
                                                                                       : Phabricator.Data.Account.SynchronizationMethod.None;
-                synchronizationParameters.existingAccount.Parameters.Synchronization |= (Configuration.phriction != null && Configuration.phriction.tree && Configuration.phriction.combined) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnlyIncludingDocumentTree
-                                                                                      : (Configuration.phriction != null && Configuration.phriction.tree && Configuration.phriction.combined == false) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree
+                synchronizationParameters.existingAccount.Parameters.Synchronization |= (Configuration.phriction != null && Configuration.phriction.tree) ? Phabricator.Data.Account.SynchronizationMethod.PhrictionOnlyIncludingDocumentTree
                                                                                       : Phabricator.Data.Account.SynchronizationMethod.None;
                 synchronizationParameters.existingAccount.Parameters.ColumnHeadersToHide = new string[0];
                 synchronizationParameters.existingAccount.PhabricatorUrl = Configuration.source;
 
                 synchronizationParameters.incrementalDownload = false;
+                synchronizationParameters.initialPhrictionPath = Configuration.phriction.initialPath ?? "";
                 synchronizationParameters.lastDownloadTimestamp = new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan());
                 synchronizationParameters.remotelyModifiedObjects = new List<Phabricator.Data.PhabricatorObject>();
 
@@ -441,6 +441,7 @@ namespace Phabrico
                     }
                 }
                 else
+                if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnly))
                 {
                     // filter by users
 
@@ -449,8 +450,8 @@ namespace Phabrico
                     user.Selected = false;
                     userStorage.Add(database, user);
 
-                    string[] maniphestUserTags = Configuration.maniphest.userTags ?? new string[0];
-                    string[] phrictionUserTags = Configuration.phriction.userTags ?? new string[0];
+                    string[] maniphestUserTags = Configuration.maniphest?.userTags ?? new string[0];
+                    string[] phrictionUserTags = Configuration.phriction?.userTags ?? new string[0];
 
                     // select all users from json config
                     foreach (string userTag in maniphestUserTags.Concat(phrictionUserTags).Distinct())
@@ -467,22 +468,14 @@ namespace Phabrico
                 }
 
                 // continue download process - phase 3
-                if ((Configuration.maniphest?.projectTags != null && Configuration.maniphest.projectTags.Any()) || 
-                    (Configuration.maniphest?.userTags != null && Configuration.maniphest.userTags.Any()))
-                {
-                    ConsoleWriteStatus("Downloading Maniphest priorities and states...");
-                    synchronizationController.ProgressMethod_DownloadManiphestPrioritiesAndStates(synchronizationParameters, 0, 0);
-                    ConsoleWriteStatus("Downloading Maniphest tasks...");
-                    synchronizationController.ProgressMethod_DownloadManiphestTasks(synchronizationParameters, 0, 0);
+                ConsoleWriteStatus("Downloading Maniphest priorities and states...");
+                synchronizationController.ProgressMethod_DownloadManiphestPrioritiesAndStates(synchronizationParameters, 0, 0);
+                ConsoleWriteStatus("Downloading Maniphest tasks...");
+                synchronizationController.ProgressMethod_DownloadManiphestTasks(synchronizationParameters, 0, 0);
 
-                }
+                ConsoleWriteStatus("Downloading Phriction wiki documents...");
+                synchronizationController.ProgressMethod_DownloadPhrictionDocuments(synchronizationParameters, 0, 0);
 
-                if ((Configuration.phriction?.projectTags != null && Configuration.phriction.projectTags.Any()) || 
-                    (Configuration.phriction?.userTags != null && Configuration.phriction.userTags.Any()))
-                {
-                    ConsoleWriteStatus("Downloading Phriction wiki documents...");
-                    synchronizationController.ProgressMethod_DownloadPhrictionDocuments(synchronizationParameters, 0, 0);
-                }
                 ConsoleWriteStatus("Downloading referenced files...");
                 synchronizationController.ProgressMethod_DownloadFileObjects(synchronizationParameters, 0, 0);
                 ConsoleWriteStatus("Downloading macro objects...");

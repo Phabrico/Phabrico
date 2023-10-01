@@ -161,6 +161,15 @@ namespace Phabrico.Controllers
             public bool incrementalDownload = true;
 
             /// <summary>
+            /// This variable can be set by the Commander.
+            /// Before Phabrico will download all the content of wiki pages, it will first download all URL's.
+            /// Afterwards it starts downloading the content of all those downloaded URL's.
+            /// If this variable is set, the list of downloaded URL's will be filtered by its initialPath.
+            /// In other words, any wiki URL that does not start with this initialPhrictionPath will not be downloaded.
+            /// </summary>
+            public string initialPhrictionPath = "";
+
+            /// <summary>
             /// Timestamp when the latest download process was finished.
             /// This timestamp represents the last time that new/modified Phriction documents and/or Maniphest tasks were downloaded from Phabricator
             /// The difference between lastDownloadTimestamp and lastSynchronizationTimestamp, is that lastDownloadTimestamp is specifically used for filtering the
@@ -1871,6 +1880,12 @@ namespace Phabrico.Controllers
                                                                                                           .Select(kvp => kvp.Key)
                                                                                                           .ToArray();
                 phabricatorPhrictionDocumentsInCorrectOrder.RemoveAll(document => documentsWithCombinedProjects.All(d => document.Path.StartsWith(d.Path) == false));
+            }
+
+            if (string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPath) == false)
+            {
+                if (synchronizationParameters.initialPhrictionPath.StartsWith("w/")) synchronizationParameters.initialPhrictionPath = synchronizationParameters.initialPhrictionPath.Substring("w/".Length);
+                phabricatorPhrictionDocumentsInCorrectOrder.RemoveAll(document => document.Path.StartsWith(synchronizationParameters.initialPhrictionPath) == false);
             }
 
             int index = 0;

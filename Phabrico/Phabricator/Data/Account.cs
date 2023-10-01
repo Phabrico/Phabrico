@@ -147,6 +147,11 @@ namespace Phabrico.Phabricator.Data
             ManiphestSelectedProjectsOnly = 0x000081,
 
             /// <summary>
+            /// Phriction document tree selection
+            /// </summary>
+            PhrictionOnlyIncludingDocumentTree = 0x000004,
+
+            /// <summary>
             /// Phriction synchronization based on per-user-selection
             /// </summary>
             PhrictionSelectedUsersOnly = 0x008200,
