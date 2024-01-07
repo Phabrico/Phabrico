@@ -848,30 +848,40 @@ DriveClient.prototype.updateUser = function(success, error)
 		
 		this.ui.editor.loadUrl(url, mxUtils.bind(this, function(data)
 		{
-	    	var info = JSON.parse(data);
-	    	
-	    	// Requests more information about the user (email address is sometimes not in info)
-	    	this.executeRequest({url: '/about'}, mxUtils.bind(this, function(resp)
-	    	{
-	    		var email = mxResources.get('notAvailable');
-	    		var name = email;
-	    		var pic = null;
-	    		
-	    		if (resp != null && resp.user != null)
-	    		{
-	    			email = resp.user.emailAddress;
-	    			name = resp.user.displayName;
-	    			pic = (resp.user.picture != null) ? resp.user.picture.url : null;
-	    		}
-	    		
-	    		this.setUser(new DrawioUser(info.id, email, name, pic, info.locale));
-	    		this.userId = info.id;
-	
-	    		if (success != null)
+			try
+			{
+				var info = JSON.parse(data);
+				
+				// Requests more information about the user (email address is sometimes not in info)
+				this.executeRequest({url: '/about'}, mxUtils.bind(this, function(resp)
 				{
-					success();
+					var email = mxResources.get('notAvailable');
+					var name = email;
+					var pic = null;
+					
+					if (resp != null && resp.user != null)
+					{
+						email = resp.user.emailAddress;
+						name = resp.user.displayName;
+						pic = (resp.user.picture != null) ? resp.user.picture.url : null;
+					}
+					
+					this.setUser(new DrawioUser(info.id, email, name, pic, info.locale));
+					this.userId = info.id;
+		
+					if (success != null)
+					{
+						success();
+					}
+				}), error);
+			}
+			catch (e)
+			{
+				if (error != null)
+				{
+					error(e);
 				}
-	    	}), error);
+			}
 		}), error, null, null, null, null, headers);
 	}
 	catch (e)
@@ -2565,15 +2575,16 @@ DriveClient.prototype.pickLibrary = function(fn)
  * @param {number} dx X-coordinate of the translation.
  * @param {number} dy Y-coordinate of the translation.
  */
-DriveClient.prototype.showPermissions = function(id)
+DriveClient.prototype.showPermissions = function(id, file)
 {
 	var fallback = mxUtils.bind(this, function()
 	{
 		var dlg = new ConfirmDialog(this.ui, mxResources.get('googleSharingNotAvailable'), mxUtils.bind(this, function()
 		{
-			this.ui.editor.graph.openLink('https://drive.google.com/open?id=' + id);
+			var url = (file != null) ? file.getFolderUrl() : 'https://drive.google.com/open?id=' + id;
+			this.ui.editor.graph.openLink(url);
 		}), null, mxResources.get('open'), null, null, null, null, IMAGE_PATH + '/google-share.png');
-		this.ui.showDialog(dlg.container, 360, 190, true, true);
+		this.ui.showDialog(dlg.container, 400, 150, true, true);
 		dlg.init();
 	});
 	

@@ -108,7 +108,7 @@ Actions.prototype.init = function()
 		var dlg = new EditDiagramDialog(ui);
 		ui.showDialog(dlg.container, 620, 420, true, false);
 		dlg.init();
-	});
+	}).isEnabled = isGraphEnabled;
 	this.addAction('pageSetup...', function() { ui.showDialog(new PageSetupDialog(ui).container, 320, 240, true, true); }).isEnabled = isGraphEnabled;
 	this.addAction('print...', function() { ui.showDialog(new PrintDialog(ui).container, 300, 180, true, true); }, null, 'sprite-print', Editor.ctrlKey + '+P');
 	this.addAction('preview', function() { mxUtils.show(graph, null, 10, 10); });
@@ -310,30 +310,10 @@ Actions.prototype.init = function()
 	this.addAction('swap', function()
 	{
 		var cells = graph.getSelectionCells();
-		var model = graph.getModel();
 
-		if (cells.length == 2 && model.isVertex(cells[0]) && model.isVertex(cells[1]) &&
-			graph.getMovableCells(cells).length == 2)
+		if (cells.length == 2)
 		{
-			var geo1 = graph.getCellGeometry(cells[0]);
-			var geo2 = graph.getCellGeometry(cells[1]);
-
-			if (geo1 != null && geo2 != null)
-			{
-				geo1 = geo1.clone();
-				geo2 = geo2.clone();
-				
-				model.beginUpdate();
-				try
-				{
-					model.setGeometry(cells[0], geo2);
-					model.setGeometry(cells[1], geo1);
-				}
-				finally
-				{
-					model.endUpdate();
-				}
-			}
+			graph.swapShapes(cells[0], cells[1]);
 		}
 	});
 
@@ -710,6 +690,11 @@ Actions.prototype.init = function()
 		    	}
 				
 				graph.removeCellsFromParent(temp);
+
+				if (temp.length > 0)
+				{
+					graph.scrollCellToVisible(temp[0]);
+				}
 			}
 		}
 	});
@@ -780,7 +765,7 @@ Actions.prototype.init = function()
 		{
 			var value = graph.getLinkForCell(cell) || '';
 			
-			ui.showLinkDialog(value, mxResources.get('apply'), function(link, docs, linkTarget)
+			ui.showLinkDialog(value, mxResources.get('ok'), function(link, docs, linkTarget)
 			{
 				link = mxUtils.trim(link);
     			graph.setLinkForCell(cell, (link.length > 0) ? link : null);
@@ -804,7 +789,7 @@ Actions.prototype.init = function()
 	{
 		if (graph.isEnabled() && !graph.isCellLocked(graph.getDefaultParent()))
 		{
-			ui.showLinkDialog('', mxResources.get('insert'), function(link, docs, linkTarget)
+			ui.showLinkDialog('', mxResources.get('ok'), function(link, docs, linkTarget)
 			{
 				link = mxUtils.trim(link);
 				
@@ -891,7 +876,7 @@ Actions.prototype.init = function()
 				
 				var selState = graph.cellEditor.saveSelection();
 				
-				ui.showLinkDialog(oldValue, mxResources.get('apply'), mxUtils.bind(this, function(value)
+				ui.showLinkDialog(oldValue, mxResources.get('ok'), mxUtils.bind(this, function(value)
 				{
 		    		graph.cellEditor.restoreSelection(selState);
 
@@ -1322,12 +1307,37 @@ Actions.prototype.init = function()
 	toggleFontStyle('underline', mxConstants.FONT_UNDERLINE, function() { document.execCommand('underline', false, null); }, Editor.ctrlKey + '+U');
 	
 	// Color actions
-	this.addAction('fontColor...', function() { ui.menus.pickColor(mxConstants.STYLE_FONTCOLOR, 'forecolor', '000000'); });
-	this.addAction('strokeColor...', function() { ui.menus.pickColor(mxConstants.STYLE_STROKECOLOR); });
-	this.addAction('fillColor...', function() { ui.menus.pickColor(mxConstants.STYLE_FILLCOLOR); });
-	this.addAction('gradientColor...', function() { ui.menus.pickColor(mxConstants.STYLE_GRADIENTCOLOR); });
-	this.addAction('backgroundColor...', function() { ui.menus.pickColor(mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, 'backcolor'); });
-	this.addAction('borderColor...', function() { ui.menus.pickColor(mxConstants.STYLE_LABEL_BORDERCOLOR); });
+	this.addAction('fontColor...', function()
+	{
+		ui.menus.pickColor(mxConstants.STYLE_FONTCOLOR,
+			'forecolor', '000000', 'default',
+			graph.shapeForegroundColor);
+	});
+	this.addAction('strokeColor...', function()
+	{
+		ui.menus.pickColor(mxConstants.STYLE_STROKECOLOR, null,
+			null, 'default', graph.shapeForegroundColor);
+	});
+	this.addAction('fillColor...', function()
+	{
+		ui.menus.pickColor(mxConstants.STYLE_FILLCOLOR, null,
+			null, 'default', graph.shapeBackgroundColor);
+	});
+	this.addAction('gradientColor...', function()
+	{
+		ui.menus.pickColor(mxConstants.STYLE_GRADIENTCOLOR, null,
+			null, 'default', graph.shapeForegroundColor);
+	});
+	this.addAction('backgroundColor...', function()
+	{
+		ui.menus.pickColor(mxConstants.STYLE_LABEL_BACKGROUNDCOLOR,
+			'backcolor', null, 'default', graph.shapeBackgroundColor);
+	});
+	this.addAction('borderColor...', function()
+	{
+		ui.menus.pickColor(mxConstants.STYLE_LABEL_BORDERCOLOR,
+			null, null, 'default', graph.shapeForegroundColor);
+	});
 	
 	// Format actions
 	this.addAction('removeFormat', function()

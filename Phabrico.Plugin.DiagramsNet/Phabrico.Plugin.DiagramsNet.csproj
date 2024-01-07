@@ -74,6 +74,10 @@
     <EmbeddedResource Include="webapp\workbox-7a2a8380.js.map" />
     <EmbeddedResource Include="webapp\WEB-INF\pusher_properties" />
     <EmbeddedResource Include="webapp\workbox-99ba3a23.js.map" />
+    <EmbeddedResource Include="webapp\resources\README.md" />
+    <EmbeddedResource Include="webapp\workbox-72a83b64.js.map" />
+    <EmbeddedResource Include="webapp\stencils\LICENSE" />
+    <EmbeddedResource Include="webapp\templates\LICENSE" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -85,6 +89,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\workbox-72a83b64.js" />
+    <EmbeddedResource Include="webapp\WEB-INF\lib\pusher-http-java-1.1.0.jar" />
+    <EmbeddedResource Include="webapp\stencils\kubernetes2.xml" />
+    <EmbeddedResource Include="webapp\stencils\salesforce.xml" />
+    <EmbeddedResource Include="webapp\shapes\emoji\mxEmoji.js" />
+    <EmbeddedResource Include="webapp\js\diagramly\sidebar\Sidebar-Salesforce.js" />
+    <EmbeddedResource Include="webapp\images\defaultcolor.png" />
+    <EmbeddedResource Include="webapp\images\sidebar-salesforce.png" />
     <EmbeddedResource Include="webapp\js\vsdxImporter.js" />
     <EmbeddedResource Include="webapp\plugins\nextcloud.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\commons-text-1.10.0.jar" />
@@ -585,7 +597,6 @@
     <EmbeddedResource Include="webapp\images\safari-pinned-tab.svg" />
     <EmbeddedResource Include="webapp\images\samepage-icon-color.svg" />
     <EmbeddedResource Include="webapp\images\save.png" />
-    <EmbeddedResource Include="webapp\images\search.png" />
     <EmbeddedResource Include="webapp\images\sidebar-active_directory.png" />
     <EmbeddedResource Include="webapp\images\sidebar-allied_telesis.png" />
     <EmbeddedResource Include="webapp\images\sidebar-android.png" />
@@ -2927,12 +2938,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <EmbeddedResource Include="webapp\CITATION.cff" />
-    <None Include="webapp\img\LICENSE" />
-    <None Include="webapp\js\deflate\README.md" />
+    <EmbeddedResource Include="webapp\img\LICENSE" />
+    <EmbeddedResource Include="webapp\js\cryptojs\README.md" />
+    <EmbeddedResource Include="webapp\js\deflate\README.md" />
     <EmbeddedResource Include="webapp\js\freehand\README.md" />
-    <None Include="webapp\js\rough\README.md" />
-    <None Include="webapp\js\rough\rough.js.modified" />
-    <None Include="webapp\js\rough\rough.js.orig" />
+    <EmbeddedResource Include="webapp\js\rough\README.md" />
+    <EmbeddedResource Include="webapp\js\rough\rough.js.modified" />
+    <EmbeddedResource Include="webapp\js\rough\rough.js.orig" />
     <EmbeddedResource Include="webapp\math\es5\input\mml\extensions\mml3.sef.json" />
     <EmbeddedResource Include="webapp\math\es5\output\chtml\fonts\woff-v2\MathJax_AMS-Regular.woff" />
     <EmbeddedResource Include="webapp\math\es5\output\chtml\fonts\woff-v2\MathJax_Calligraphic-Bold.woff" />

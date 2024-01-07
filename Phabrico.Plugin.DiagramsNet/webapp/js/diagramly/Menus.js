@@ -31,11 +31,11 @@
 		icon.setAttribute('src', Editor.helpImage);
 		link.appendChild(icon);
 
-		if (Editor.enableCssDarkMode)
+		if (Editor.cssDarkMode)
 		{
 			icon.className = 'geAdaptiveAsset';
 		}
-		
+
 		mxEvent.addGestureListeners(link, mxUtils.bind(this, function(evt)
 		{
 			this.editorUi.hideCurrentMenu();
@@ -51,6 +51,71 @@
 		if (item != null)
 		{
 			item.firstChild.nextSibling.appendChild(this.createHelpLink(href));
+		}
+	};
+
+	/**
+	 * Removes the given font from the list of custom fonts.
+	 */
+	Menus.prototype.removeCustomFont = function(name, url)
+	{
+		for (var i = 0; i < this.customFonts.length; i++)
+		{
+			if (this.customFonts[i].name == name &&
+				this.customFonts[i].url == url)
+			{
+				this.customFonts.splice(i, 1);
+				this.editorUi.fireEvent(
+					new mxEventObject('customFontsChanged',
+					'customFonts', this.customFonts));
+				
+				break;
+			}
+		}
+	};
+
+	/**
+	 * Returns true if the given font is in the list of custom fonts.
+	 */
+	Menus.prototype.containsFont = function(name, url)
+	{
+		for (var i = 0; i < this.customFonts.length; i++)
+		{
+			if (this.customFonts[i].name == name &&
+				this.customFonts[i].url == url)
+			{
+				return true;
+			}
+		}
+
+		for (var i = 0; i < this.defaultFonts.length; i++)
+		{
+			var value = this.defaultFonts[i];
+			
+			if ((typeof value !== 'string' &&
+				value.fontFamily == name &&
+				value.fontUrl == url) ||
+				(typeof value === 'string' &&
+				value == name && url == null))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	/**
+	 * Adds the given font to the list of custom fonts.
+	 */
+	Menus.prototype.addCustomFont = function(name, url)
+	{
+		if (name != null && !this.containsFont(name, url))
+		{
+			this.customFonts.push({name: name, url: url});
+			this.editorUi.fireEvent(
+				new mxEventObject('customFontsChanged',
+				'customFonts', this.customFonts));
 		}
 	};
 
@@ -340,16 +405,19 @@
 			return editorUi.isAutoDarkMode(true);
 		});
 
-        var toggleSimpleModeAction = editorUi.actions.put('toggleSimpleMode', new Action(mxResources.get('simple'), function(e)
-        {
-			editorUi.setCurrentTheme((Editor.currentTheme == 'simple') ?
-				((!Editor.isDarkMode()) ? 'kennedy' : 'dark') : 'simple');
-        }));
+		if (mxUtils.indexOf(Editor.themes, 'simple') >= 0)
+		{
+			var toggleSimpleModeAction = editorUi.actions.put('toggleSimpleMode', new Action(mxResources.get('simple'), function(e)
+			{
+				editorUi.setCurrentTheme((Editor.currentTheme == 'simple') ?
+					((!Editor.isDarkMode()) ? 'kennedy' : 'dark') : 'simple');
+			}));
 
-		toggleSimpleModeAction.setToggleAction(true);
-		toggleSimpleModeAction.visible = Editor.currentTheme != 'min' && Editor.currentTheme != 'sketch' &&
-			Editor.currentTheme != 'atlas';
-		toggleSimpleModeAction.setSelectedCallback(function() { return Editor.currentTheme == 'simple'; });
+			toggleSimpleModeAction.setToggleAction(true);
+			toggleSimpleModeAction.visible = Editor.currentTheme != 'min' && Editor.currentTheme != 'sketch' &&
+				Editor.currentTheme != 'atlas';
+			toggleSimpleModeAction.setSelectedCallback(function() { return Editor.currentTheme == 'simple'; });
+		}
 
         var toggleSketchModeAction = editorUi.actions.put('toggleSketchMode', new Action(mxResources.get('sketch'), function(e)
         {
@@ -362,7 +430,7 @@
 		editorUi.actions.addAction('properties...', function()
 		{
 			var dlg = new FilePropertiesDialog(editorUi);
-			editorUi.showDialog(dlg.container, 340, 160, true, true);
+			editorUi.showDialog(dlg.container, 340, 180, true, true);
 			dlg.init();
 		}).isEnabled = isGraphEnabled;
 	
@@ -377,7 +445,7 @@
 						var withBrush = !mxClient.IS_IE && !mxClient.IS_IE11;
 						editorUi.freehandWindow = new FreehandWindow(
 							editorUi, document.body.offsetWidth - 420, 102, 176,
-							withBrush? 120 : 84, withBrush);
+							withBrush? 126 : 90, withBrush);
 					}
 					
 					if (graph.freehand.isDrawing())
@@ -820,7 +888,7 @@
 			{
 				editorUi.copiedStyle = graph.copyStyle(graph.getSelectionCell())
 			}
-		}, null, null, 'Alt+Shift+Q');
+		}, null, null, 'Alt+C');
 
 		editorUi.actions.addAction('pasteStyle', function()
 		{
@@ -828,7 +896,7 @@
 			{
 				graph.pasteStyle(editorUi.copiedStyle, graph.getSelectionCells())
 			}
-		}, null, null, 'Alt+Shift+W');
+		}, null, null, 'Alt+V');
 		
 		editorUi.actions.put('exportSvg', new Action(mxResources.get('formatSvg') + '...', function()
 		{
@@ -839,13 +907,14 @@
 					linkTarget, grid, theme, exportType, embedFonts, lblToSvg)
 				{
 					var val = parseInt(scale);
+					editorUi.lastExportSvgEditable = editable;
 					
 					if (!isNaN(val) && val > 0)
 					{
 						if (lblToSvg)
 						{
 							editorUi.downloadFile('remoteSvg', null, null, ignoreSelection, null, cropImage,
-										 transparentBackground, scale, border, null, editable);
+								transparentBackground, scale, border, null, editable);
 						}
 						else
 						{
@@ -854,10 +923,10 @@
 								linkTarget, theme, exportType, embedFonts);
 						}
 					}
-				}), true, null, 'svg', true);
+				}), true, editorUi.lastExportSvgEditable, 'svg', true);
 		}));
-		
-		editorUi.actions.put('exportPng', new Action(mxResources.get('formatPng') + '...', function()
+
+		function exportImage(format, defaultEditable, done)
 		{
 			if (editorUi.isExportToCanvas())
 			{
@@ -867,50 +936,49 @@
 						embedImages, border, cropImage, currentPage, dummy, grid, theme, exportType)
 					{
 						var val = parseInt(scale);
-						
+
 						if (!isNaN(val) && val > 0)
 						{
-							editorUi.exportImage(val / 100, transparentBackground, ignoreSelection,
-								addShadow, editable, border, !cropImage, false, null, grid, null,
-								theme, exportType);
+							editorUi.exportImage(val / 100, transparentBackground && format == 'png',
+								ignoreSelection, addShadow, editable && format == 'png', border,
+								!cropImage, false, format, grid, null, theme, exportType);
+
+							if (done != null)
+							{
+								done(scale, transparentBackground, ignoreSelection, addShadow, editable, embedImages,
+									border, cropImage, currentPage, dummy, grid, theme, exportType);
+							}
 						}
-					}), true, Editor.defaultIncludeDiagram, 'png', true);
+					}), true, defaultEditable, format, true);
 			}
 			else if (!editorUi.isOffline() && (!mxClient.IS_IOS || !navigator.standalone))
 			{
-				editorUi.showRemoteExportDialog(mxResources.get('export'), null, mxUtils.bind(this, function(ignoreSelection, editable, transparent, scale, border)
+				editorUi.showRemoteExportDialog(mxResources.get('export'), null, mxUtils.bind(this,
+					function(ignoreSelection, editable, transparent, scale, border)
 				{
-					editorUi.downloadFile((editable) ? 'xmlpng' : 'png', null, null, ignoreSelection, null, null, transparent, scale, border);
+					editorUi.downloadFile((editable && format == 'png') ? 'xmlpng' : format,
+						null, null, ignoreSelection, null, null, transparent, scale, border);
 				}), false, true);
 			}
+		};
+		
+		editorUi.actions.put('exportPng', new Action(mxResources.get('formatPng') + '...', function()
+		{
+			exportImage('png', editorUi.lastExportPngEditable, function(scale,
+				transparentBackground, ignoreSelection, addShadow, editable)
+			{
+				editorUi.lastExportPngEditable = editable;
+			});
 		}));
 		
 		editorUi.actions.put('exportJpg', new Action(mxResources.get('formatJpg') + '...', function()
 		{
-			if (editorUi.isExportToCanvas())
-			{
-				editorUi.showExportDialog(mxResources.get('image'), false, mxResources.get('export'),
-					'https://www.drawio.com/doc/faq/export-diagram',
-					mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow, editable,
-						embedImages, border, cropImage, currentPage, dummy, grid, theme, exportType)
-					{
-						var val = parseInt(scale);
-						
-						if (!isNaN(val) && val > 0)
-						{
-							editorUi.exportImage(val / 100, false, ignoreSelection,
-								addShadow, false, border, !cropImage, false, 'jpeg',
-								grid, null, theme, exportType);
-						}
-					}), true, false, 'jpeg', true);
-			}
-			else if (!editorUi.isOffline() && (!mxClient.IS_IOS || !navigator.standalone))
-			{
-				editorUi.showRemoteExportDialog(mxResources.get('export'), null, mxUtils.bind(this, function(ignoreSelection, editable, tranaparent, scale, border)
-				{
-					editorUi.downloadFile('jpeg', null, null, ignoreSelection, null, null, null, scale, border);
-				}), true, true);
-			}
+			exportImage('jpeg');
+		}));
+		
+		editorUi.actions.put('exportWebp', new Action(mxResources.get('formatWebp') + '...', function()
+		{
+			exportImage('webp');
 		}));
 
 		action = editorUi.actions.addAction('copyAsImage', mxUtils.bind(this, function()
@@ -918,7 +986,7 @@
 			var cells = mxUtils.sortCells(graph.model.getTopmostCells(graph.getSelectionCells()));
 			var xml = mxUtils.getXml((cells.length == 0) ? editorUi.editor.getGraphXml() : graph.encodeCells(cells));
 			editorUi.copyImage(cells, xml);
-		}));
+		}), null, null, 'Ctrl+Alt+X');
 
 		// Disabled in Safari as operation is not allowed
 		action.visible = Editor.enableNativeCipboard && editorUi.isExportToCanvas() && !mxClient.IS_SF;
@@ -1007,6 +1075,34 @@
 		}), null, null, Editor.ctrlKey + '+K');
 		action.setToggleAction(true);
 		action.setSelectedCallback(mxUtils.bind(this, function() { return this.tagsWindow != null && this.tagsWindow.window.isVisible(); }));
+
+		if (Editor.gptApiKey != null && Editor.gptModel != null && Editor.gptUrl != null &&
+			!editorUi.isOffline() && !EditorUi.isElectronApp)
+		{
+			action = editorUi.actions.addAction('chatWindowTitle', mxUtils.bind(this, function()
+			{
+				if (this.chatWindow == null)
+				{
+					this.chatWindow = new ChatWindow(editorUi, 220, document.body.offsetHeight - 380, 250, 320);
+					this.chatWindow.window.addListener('show', mxUtils.bind(this, function()
+					{
+						editorUi.fireEvent(new mxEventObject('chat'));
+					}));
+					this.chatWindow.window.addListener('hide', function()
+					{
+						editorUi.fireEvent(new mxEventObject('chat'));
+					});
+					this.chatWindow.window.setVisible(true);
+					editorUi.fireEvent(new mxEventObject('chat'));
+				}
+				else
+				{
+					this.chatWindow.window.setVisible(!this.chatWindow.window.isVisible());
+				}
+			}));
+			action.setToggleAction(true);
+			action.setSelectedCallback(mxUtils.bind(this, function() { return this.chatWindow != null && this.chatWindow.window.isVisible(); }));
+		}
 
 		action = editorUi.actions.addAction('findReplace', mxUtils.bind(this, function(arg1, evt)
 		{
@@ -1344,9 +1440,9 @@
 		});
 
 		// Adds action for converting dark mode colors
-		if (Editor.enableCssDarkMode)
+		editorUi.actions.put('convertDarkModeColors', new Action('Dark Mode Colors...', function(evt)
 		{
-			editorUi.actions.put('convertDarkModeColors', new Action('Dark Mode Colors...', function(evt)
+			if (Editor.enableCssDarkMode)
 			{
 				if (editorUi.darkModeColorsWindow == null)
 				{
@@ -1355,8 +1451,8 @@
 				}
 
 				editorUi.darkModeColorsWindow.window.setVisible(true);
-			}));
-		}
+			}
+		}));
 
 		// Adds fullscreen toggle to zoom menu in sketch and min
         var viewZoomMenu = this.get('viewZoom');
@@ -1410,13 +1506,13 @@
 				var title = document.createElement('div');
 				title.style.marginTop = '6px';
 				title.style.display = 'inline-block';
-				title.style.width = '140px';
+				title.style.width = '180px';
 				mxUtils.write(title, mxResources.get('orgChartType') + ': ');
 				
 				div.appendChild(title);
 				
 				var typeSelect = document.createElement('select');
-				typeSelect.style.width = '200px';
+				typeSelect.style.width = '160px';
 				typeSelect.style.boxSizing = 'border-box';
 				
 				//Types are hardcoded here since the code is not loaded yet
@@ -1454,14 +1550,14 @@
 				title = document.createElement('div');
 				title.style.marginTop = '6px';
 				title.style.display = 'inline-block';
-				title.style.width = '140px';
+				title.style.width = '180px';
 				mxUtils.write(title, mxResources.get('parentChildSpacing') + ': ');
 				div.appendChild(title);
 				
 				var parentChildSpacing = document.createElement('input');
 				parentChildSpacing.type = 'number';
 				parentChildSpacing.value = parentChildSpacingVal;
-				parentChildSpacing.style.width = '200px';
+				parentChildSpacing.style.width = '160px';
 				parentChildSpacing.style.boxSizing = 'border-box';
 				div.appendChild(parentChildSpacing);
 				
@@ -1473,14 +1569,14 @@
 				title = document.createElement('div');
 				title.style.marginTop = '6px';
 				title.style.display = 'inline-block';
-				title.style.width = '140px';
+				title.style.width = '180px';
 				mxUtils.write(title, mxResources.get('siblingSpacing') + ': ');
 				div.appendChild(title);
 				
 				var siblingSpacing = document.createElement('input');
 				siblingSpacing.type = 'number';
 				siblingSpacing.value = siblingSpacingVal;
-				siblingSpacing.style.width = '200px';
+				siblingSpacing.style.width = '160px';
 				siblingSpacing.style.boxSizing = 'border-box';
 				div.appendChild(siblingSpacing);
 				
@@ -2776,6 +2872,17 @@
 				});
 			}
 		}
+
+		var action = editorUi.actions.addAction('improveContrast', function()
+		{
+			editorUi.setCssDarkModeEnabled(!Editor.enableCssDarkMode);
+		});
+		
+		action.setToggleAction(true);
+		action.setSelectedCallback(function()
+		{
+			return Editor.enableCssDarkMode;
+		});
 		
 		var action = editorUi.actions.addAction('search', function()
 		{
@@ -2903,6 +3010,11 @@
 				if (editorUi.jpgSupported)
 				{
 					this.addMenuItems(menu, ['exportJpg'], parent);
+				}
+
+				if (editorUi.webpSupported)
+				{
+					this.addMenuItems(menu, ['exportWebp'], parent);
 				}
 			}
 			
@@ -3249,7 +3361,7 @@
 							'dark' : 'light') + ')');
 				}
 			}
-			
+
 			if (urlParams['embed'] != '1')
 			{
 				this.addMenuItems(menu, ['-', 'toggleSimpleMode'], parent);
@@ -3271,6 +3383,14 @@
 							'dark' : 'light') + ')');
 				}
 			}
+			
+			menu.addSeparator(parent);
+			var item = editorUi.menus.addMenuItem(menu, 'improveContrast', parent);
+			
+			if (!editorUi.isOffline() || mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
+			{
+				editorUi.menus.addLinkToItem(item, 'https://github.com/jgraph/drawio/discussions/3701');
+			}
 		})));
 
 		editorUi.actions.addAction('addToScratchpad', function(evt)
@@ -3287,7 +3407,7 @@
 			editorUi.userPanel.style.right = '10px';
 			editorUi.userPanel.style.top = '10px';
 		});
-		
+
 		this.put('theme', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
 			var theme = (urlParams['sketch'] == '1') ? 'sketch' : mxSettings.getUi();
@@ -3314,44 +3434,22 @@
 				menu.addCheckmark(item, Editor.checkmarkImage);
 			}
 
-			item = menu.addItem(mxResources.get('simple'), null, function()
+			for (var i = 0; i < Editor.themes.length; i++)
 			{
-				editorUi.setCurrentTheme('simple');
-			}, parent);
+				(mxUtils.bind(this, function(key)
+				{
+					item = menu.addItem(mxResources.get((key == 'min') ?
+						'minimal' : key), null, function()
+					{
+						editorUi.setCurrentTheme(key);
+					}, parent);
+	
+					if (theme == key)
+					{
+						menu.addCheckmark(item, Editor.checkmarkImage);
+					}
 
-			if (theme == 'simple')
-			{
-				menu.addCheckmark(item, Editor.checkmarkImage);
-			}
-
-			item = menu.addItem(mxResources.get('sketch'), null, function()
-			{
-				editorUi.setCurrentTheme('sketch');
-			}, parent);
-			
-			if (theme == 'sketch')
-			{
-				menu.addCheckmark(item, Editor.checkmarkImage);
-			}
-
-			item = menu.addItem(mxResources.get('minimal'), null, function()
-			{
-				editorUi.setCurrentTheme('min');
-			}, parent);
-			
-			if (theme == 'min')
-			{
-				menu.addCheckmark(item, Editor.checkmarkImage);
-			}
-			
-			item = menu.addItem(mxResources.get('atlas'), null, function()
-			{
-				editorUi.setCurrentTheme('atlas');
-			}, parent);
-			
-			if (theme == 'atlas')
-			{
-				menu.addCheckmark(item, Editor.checkmarkImage);
+				})(Editor.themes[i]));
 			}
 		})));
 
@@ -3614,7 +3712,30 @@
 					else
 					{
 						var dlg = new CreateGraphDialog(editorUi, title, method);
-						editorUi.showDialog(dlg.container, 620, 420, true, false);
+						editorUi.showDialog(dlg.container, 620, 420, true, false, function(cancel, isEsc)
+						{
+							if (isEsc)
+							{
+								editorUi.confirm(mxResources.get('areYouSure'), function()
+								{
+									editorUi.hideDialog();
+								});
+
+								return false;
+							}
+							else if (dlg.graph != null)
+							{
+								if (dlg.graph.container.parentNode != null)
+								{
+									dlg.graph.container.parentNode.
+										removeChild(dlg.graph.container);
+								}
+
+								dlg.graph.destroy();
+								dlg.graph = null;
+							}
+						});
+
 						// Executed after dialog is added to dom
 						dlg.init();
 					}
@@ -4263,7 +4384,9 @@
 										
 										try
 										{
-											editorUi.loadLibrary(new UrlLibrary(this, req.getText(), fileUrl));
+											editorUi.loadLibrary(new UrlLibrary(
+												this, req.getText(), fileUrl));
+											editorUi.showSidebar();
 										}
 										catch (e)
 										{
@@ -4358,8 +4481,8 @@
 		viewPanelsMenu.funct = function(menu, parent)
 		{
 			var file = editorUi.getCurrentFile();
-			editorUi.menus.addMenuItems(menu, ['toggleShapes', 'format', 'ruler',
-				'-', 'findReplace', 'layers', 'tags', 'outline', '-'], parent);
+			editorUi.menus.addMenuItems(menu, ['toggleShapes', 'format', 'ruler', '-',
+				'findReplace', 'layers', 'tags', 'chatWindowTitle', 'outline', '-'], parent);
 
 			if (editorUi.commentsSupported())
 			{
@@ -4400,7 +4523,7 @@
 				}
 				
 				editorUi.menus.addMenuItems(menu, ['-', 'findReplace',
-					'layers', 'tags', 'outline', '-'], parent);
+					'layers', 'tags', 'chatWindowTitle', 'outline', '-'], parent);
 				
 				if (editorUi.commentsSupported())
 				{
@@ -4416,7 +4539,7 @@
 			}
 			else
 			{
-				this.addMenuItems(menu, (['format', 'outline', 'layers', 'tags']).
+				this.addMenuItems(menu, (['format', 'outline', 'layers', 'tags', 'chatWindowTitle']).
 					concat((editorUi.commentsSupported()) ?
 					['comments', '-'] : ['-']));
 				
@@ -4520,13 +4643,16 @@
 		this.put('pages', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
 			var page = editorUi.currentPage;
-			
-			menu.addItem(mxResources.get('insertPage'), null, mxUtils.bind(this, function()
-			{
-				editorUi.insertPage();
-			}), parent);
 
-			menu.addSeparator(parent);
+			if (!editorUi.editor.graph.isLightboxView())
+			{
+				menu.addItem(mxResources.get('insertPage'), null, mxUtils.bind(this, function()
+				{
+					editorUi.insertPage();
+				}), parent);
+
+				menu.addSeparator(parent);
+			}
 			
 			if (editorUi.pages != null)
 			{
@@ -4536,7 +4662,7 @@
 					{
 						var item = null;
 
-						if (editorUi.pages[index] == page)
+						if (editorUi.pages[index] == page && !editorUi.editor.graph.isLightboxView())
 						{
 							item = editorUi.menus.addSubmenu('currentPage', menu, parent,
 								editorUi.getShortPageName(page));
@@ -4589,6 +4715,18 @@
 			
 			storeBkpAction.setToggleAction(true);
 			storeBkpAction.setSelectedCallback(function() { return enableStoreBkp; });
+
+			var enableGoogleFonts = urlParams['isGoogleFontsEnabled'] == '1';
+			
+			var googleFontsAction = editorUi.actions.addAction('googleFonts', function()
+			{
+				editorUi.toggleGoogleFonts();
+				enableGoogleFonts = !enableGoogleFonts;
+				editorUi.alert(mxResources.get('restartForChangeRequired'));
+			});
+
+			googleFontsAction.setToggleAction(true);
+			googleFontsAction.setSelectedCallback(function() { return enableGoogleFonts; });
 
 			editorUi.actions.addAction('openDevTools', function()
 			{
@@ -4662,7 +4800,7 @@
 
 				if (EditorUi.isElectronApp)
 				{
-					editorUi.menus.addMenuItems(menu, ['-', 'spellCheck', 'autoBkp', 'drafts', '-'], parent);
+					editorUi.menus.addMenuItems(menu, ['-', 'googleFonts', 'spellCheck', 'autoBkp', 'drafts', '-'], parent);
 				}
 
 				this.addSubmenu('diagramLanguage', menu, parent);
@@ -4710,7 +4848,7 @@
 				
 				if (EditorUi.isElectronApp)
 				{
-					this.addMenuItems(menu, ['spellCheck', 'autoBkp', 'drafts', '-'], parent);
+					this.addMenuItems(menu, ['googleFonts', 'spellCheck', 'autoBkp', 'drafts', '-'], parent);
 				}
 
 				this.addMenuItems(menu, ['copyConnect', 'collapseExpand', '-'], parent);
@@ -4908,7 +5046,8 @@
 				if (Editor.currentTheme == 'min')
 				{
 					editorUi.menus.addMenuItems(menu, ['toggleShapes', 'format',
-						'layers', 'tags', '-', 'findReplace'], parent);
+						'layers', 'tags', 'chatWindowTitle', '-',
+						'findReplace'], parent);
 			
 					if (editorUi.commentsSupported())
 					{
@@ -4921,7 +5060,7 @@
 			
 			editorUi.menus.addSubmenu('exportAs', menu, parent);
 			
-			if (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
+			if (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp || editorUi.getServiceName() == 'atlassian')
 			{
 				editorUi.menus.addMenuItems(menu, ['import'], parent);
 			}
@@ -4939,7 +5078,8 @@
 					editorUi.menus.addMenuItems(menu, ['comments', '-'], parent);
 				}
 
-				editorUi.menus.addMenuItems(menu, ['toggleShapes', 'format', 'layers', 'tags', '-'], parent);	
+				editorUi.menus.addMenuItems(menu, ['toggleShapes', 'format',
+					'layers', 'tags', 'chatWindowTitle', '-'], parent);	
 				editorUi.menus.addMenuItems(menu, ['pageSetup'], parent);
 			}
 			else if (Editor.currentTheme != 'min')
@@ -5396,7 +5536,7 @@
 			{
 				var graph = editorUi.editor.graph;
 
-				var tr = this.styleChange(menu, fontLabel || fontName,
+				var tr = this.styleChange(menu, (fontLabel != null) ? fontLabel : fontName,
 					(urlParams['ext-fonts'] != '1') ?
 						[mxConstants.STYLE_FONTFAMILY, 'fontSource', 'FType'] : [mxConstants.STYLE_FONTFAMILY],
 					(urlParams['ext-fonts'] != '1') ?
@@ -5442,29 +5582,24 @@
 				
 				if (deletable)
 				{
-					var img = document.createElement('span');
-					img.className = 'geSprite geSprite-delete';
-					img.style.cursor = 'pointer';
-					img.style.display = 'inline-block';
+					var img = document.createElement('img');
+					img.className = 'geAdaptiveAsset';
+					img.setAttribute('src', Editor.crossImage);
+					img.setAttribute('title', mxResources.get('delete'));
+					img.setAttribute('valign', 'absmiddle');
+					img.setAttribute('border', '0');
+					img.style.position = 'relative';
+					img.style.top = '2px';
+					img.style.width = '14px';
+					img.style.cursor = 'default';
+					img.style.margin = '0 3px';
 					tr.firstChild.nextSibling.nextSibling.appendChild(img);
 					
 					mxEvent.addListener(img, (mxClient.IS_POINTER) ? 'pointerup' : 'mouseup', mxUtils.bind(this, function(evt)
 					{
 						if (urlParams['ext-fonts'] != '1')
 						{
-							delete Graph.recentCustomFonts[fontName.toLowerCase()];
-							
-							for (var i = 0; i < this.customFonts.length; i++)
-							{
-								if (this.customFonts[i].name == fontName &&
-									this.customFonts[i].url == fontUrl)
-								{
-									this.customFonts.splice(i, 1);
-									editorUi.fireEvent(new mxEventObject('customFontsChanged'));
-									
-									break;
-								}
-							}
+							this.removeCustomFont(fontName, fontUrl);
 						}
 						else
 						{
@@ -5505,10 +5640,14 @@
 				Graph.addFont(fontName, fontUrl);
 				tr.firstChild.nextSibling.style.fontFamily = fontName;
 				
-				if (tooltip != null)
+				var tooltip = (fontLabel != null) ? fontLabel : fontName;
+						
+				if (fontUrl != null)
 				{
-					tr.setAttribute('title', tooltip);
+					tooltip += ' (' + fontUrl + ')';
 				}
+
+				tr.setAttribute('title', tooltip);
 			});
 			
 			var reserved = {};
@@ -5565,16 +5704,10 @@
 					}
 				};
 				
-				// Adds custom user defined fonts from local storage
+				// Adds custom user-defined fonts from local storage
 				for (var i = 0; i < this.customFonts.length; i++)
 				{
 					addEntry(this.customFonts[i]);
-				}
-				
-				// Adds fonts that were recently used in the editor
-				for (var key in Graph.recentCustomFonts)
-				{
-					addEntry(Graph.recentCustomFonts[key]);
 				}
 				
 				// Sorts by label
@@ -5598,8 +5731,8 @@
 				{
 					for (var i = 0; i < entries.length; i++)
 					{
-						addItem(entries[i].name, entries[i].url, true,
-							entries[i].label, entries[i].url);
+						addItem(entries[i].name, entries[i].url,
+							true, entries[i].label);
 					}
 	
 					menu.addSeparator(parent);
@@ -5607,7 +5740,6 @@
 				
 				menu.addItem(mxResources.get('reset'), null, mxUtils.bind(this, function()
 				{
-					Graph.recentCustomFonts = {};
 					this.customFonts = [];
 					editorUi.fireEvent(new mxEventObject('customFontsChanged'));
 				}), parent);
@@ -5687,19 +5819,50 @@
 						if (css != null)
 						{
 							curFontName = Graph.stripQuotes(css.fontFamily);
-							curUrl = Graph.getFontUrl(curFontName, null);
+
+							// Finds the URL for the current font by finding the nearest parent element
+							// with a data-font-src attribute or the fontSource attribute from the cell
+							var state = graph.getView().getState(graph.cellEditor.getEditingCell());
+							var curUrl = (state != null) ? state.style['fontSource'] : null;
+			    			
+			    			if (curUrl != null)
+			    			{
+				    			curUrl = decodeURIComponent(curUrl);
+							}
+
+							var temp = node;
+
+							while (temp != null && temp != graph.cellEditor.textarea)
+							{
+								if (temp.nodeType == mxConstants.NODETYPE_ELEMENT)
+								{
+									if (temp.getAttribute('data-font-src') != null)
+									{
+										curUrl = temp.getAttribute('data-font-src');
+										break;
+									}
+									else if (temp.getAttribute('face') == curFontName)
+									{
+										// Means that a system font is used for the element
+										curUrl = null;
+										break;
+									}
+								}
+
+								temp = temp.parentNode;
+							}
 							
 							if (curUrl != null)
 							{
-			    				if (Graph.isGoogleFontUrl(curUrl))
-			    				{
-			    					curUrl = null;
-			    					curType = 'g';
-			    				}
-			    				else
-			    				{
-			    					curType = 'w';
-			    				}
+								if (Graph.isGoogleFontUrl(curUrl))
+								{
+									curUrl = null;
+									curType = 'g';
+								}
+								else
+								{
+									curType = 'w';
+								}
 							}
 						}
 					}
@@ -5779,6 +5942,8 @@
 					
 					if (fontName != null && fontName.length > 0)
 					{
+						this.addCustomFont(fontName, fontUrl);
+
 						if (urlParams['ext-fonts'] != '1' && graph.isEditing())
 						{
 							graph.setFont(fontName, fontUrl);
@@ -5814,23 +5979,6 @@
 										this.editorUi.editor.graph.addExtFont(fontName, fontUrl);
 									}
 								}
-								
-								var addToCustom = true;
-								
-								for (var i = 0; i < this.customFonts.length; i++)
-								{
-									if (this.customFonts[i].name == fontName)
-									{
-										addToCustom = false;
-										break;
-									}
-								}
-								
-								if (addToCustom)
-								{
-									this.customFonts.push({name: fontName, url: fontUrl});
-									this.editorUi.fireEvent(new mxEventObject('customFontsChanged', 'customFonts', this.customFonts));
-								}
 							}
 							finally
 							{
@@ -5839,7 +5987,8 @@
 						}
 					}
 				}));
-				this.editorUi.showDialog(dlg.container, 380, Editor.enableWebFonts ? 250 : 180, true, true);
+				this.editorUi.showDialog(dlg.container, 380, 
+					130 + (Editor.enableWebFonts ? 70 : 0) + (urlParams['isGoogleFontsEnabled'] != '0'? 50 : 0), true, true);
 				dlg.init();
 			}), parent, null, true);
 		})));

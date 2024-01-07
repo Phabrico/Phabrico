@@ -7,7 +7,7 @@
 	filter: invert(93%) hue-rotate(180deg);
 	background:#151515;
 }
-.geDarkMode image, .geDarkMode img:not(.geAdaptiveAsset) {
+.geDarkMode image, .geDarkMode img:not(.geAdaptiveAsset), .geDarkMode iframe {
 	filter: invert(100%) hue-rotate(180deg) saturate(1.25);
 }
 .geDarkMode div.mxWindow {
@@ -16,6 +16,12 @@
 .geDarkMode div.mxRubberband {
 	border:1px dashed #202020 !important;
 	background:#a0a0a0 !important;
+}
+.geDarkMode .geAdaptiveAsset {
+	filter:none !important
+}
+.geDarkMode .geColorBtn > div {
+	border-color: #ffffff !important;
 }
 .geEditor {
 	position:absolute;
@@ -266,6 +272,10 @@ a.geStatus .geStatusMessage {
 .geEditor button:hover:not([disabled], .geBigButton, .geShareBtn),
 .geEditor select:hover:not([disabled]), .geColorBtn:hover:not([disabled]) {
 	background:#e5e5e5;
+}
+.geEditor button:active:not([disabled], .geBigButton, .geShareBtn),
+.geColorBtn:active:not([disabled]) {
+	opacity:0.7;
 }
 .geColorDropper {
 	cursor:pointer;
@@ -562,6 +572,7 @@ html body div.geActivePage, .geRuler {
 	font-weight: 600;
 	display: inline-flex;
 	align-items: center;
+	cursor: move;
 }
 .gePageTab {
 	padding: 0px 12px 0px 12px;

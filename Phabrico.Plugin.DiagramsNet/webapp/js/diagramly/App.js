@@ -47,7 +47,7 @@ App = function(editor, container, lightbox)
 						'-mime_' + file.desc.mimeType;
 				}
 
-				EditorUi.logEvent(evt);
+				// EditorUi.logEvent(evt);
 			}
 		});
 	}
@@ -257,7 +257,7 @@ App.DROPBOX_APPKEY = window.DRAWIO_DROPBOX_ID;
 /**
  * Sets URL to load the Dropbox SDK from
  */
-App.DROPBOX_URL = window.DRAWIO_BASE_URL + '/js/dropbox/Dropbox-sdk.min.js';
+App.DROPBOX_URL = 'js/dropbox/Dropbox-sdk.min.js';
 
 /**
  * Sets URL to load the Dropbox dropins JS from.
@@ -268,7 +268,7 @@ App.DROPINS_URL = 'https://www.dropbox.com/static/api/2/dropins.js';
  * OneDrive Client JS (file/folder picker). This is a slightly modified version to allow using accessTokens
  * But it doesn't work for IE11, so we fallback to the original one
  */
-App.ONEDRIVE_URL = mxClient.IS_IE11? 'https://js.live.net/v7.2/OneDrive.js' : window.DRAWIO_BASE_URL + '/js/onedrive/OneDrive.js';
+App.ONEDRIVE_URL = mxClient.IS_IE11? 'https://js.live.net/v7.2/OneDrive.js' : 'js/onedrive/OneDrive.js';
 
 /**
  * Trello URL
@@ -278,7 +278,7 @@ App.TRELLO_URL = 'https://api.trello.com/1/client.js';
 /**
  * Trello JQuery dependency
  */
-App.TRELLO_JQUERY_URL = window.DRAWIO_BASE_URL + '/js/jquery/jquery-3.6.0.min.js';
+App.TRELLO_JQUERY_URL = 'js/jquery/jquery-3.6.0.min.js';
 
 /**
  * Specifies the key for the pusher project.
@@ -298,7 +298,7 @@ App.PUSHER_URL = 'https://js.pusher.com/7.0.3/pusher.min.js';
 /**
  * SimplePeer library 
  */
- App.SIMPLE_PEER_URL = window.DRAWIO_BASE_URL + '/js/simplepeer/simplepeer9.10.0.min.js';
+App.SIMPLE_PEER_URL = 'js/simplepeer/simplepeer9.10.0.min.js';
 
 /**
  * Google APIs to load. The realtime API is needed to notify collaborators of conversion
@@ -348,7 +348,6 @@ App.publicPlugin = [
 //	'import',
 	'replay',
 	'anon',
-	'flow',
 	'webcola',
 //	'rnd', 'page', 'gd',
 	'tags'
@@ -710,7 +709,7 @@ App.main = function(callback, createUi)
 				{
 					var content = mxUtils.getTextContent(scripts[0]);
 					
-					if (CryptoJS.MD5(content).toString() != '3428184eed5811f9c1458f703cb2806b')
+					if (CryptoJS.MD5(content).toString() != '97d48990b1ef6de28697d2cc7083ca53')
 					{
 						console.log('Change bootstrap script MD5 in the previous line:', CryptoJS.MD5(content).toString());
 						alert('[Dev] Bootstrap script change requires update of CSP');
@@ -961,6 +960,14 @@ App.main = function(callback, createUi)
 				{
 					try
 					{
+						// Checks theme support
+						if (Editor.currentTheme != '' && Editor.currentTheme != 'kennedy' &&
+							Editor.currentTheme != 'dark' && mxUtils.indexOf(
+								Editor.themes, Editor.currentTheme) < 0)
+						{
+							Editor.currentTheme = 'kennedy';
+						}
+						
 						var ui = (createUi != null) ? createUi() : new App(new Editor(
 								urlParams['chrome'] == '0' || uiTheme == 'min',
 								null, null, null, urlParams['chrome'] != '0'));
@@ -1038,7 +1045,7 @@ App.main = function(callback, createUi)
 						 */
 						if (urlParams['chrome'] != '0' && urlParams['test'] == '1')
 						{
-							EditorUi.debug('App.start', [ui, (new Date().getTime() - t0.getTime()) + 'ms']);
+							EditorUi.debug('App.start', ['v' + EditorUi.VERSION, ui, (new Date().getTime() - t0.getTime()) + 'ms']);
 							
 							if (urlParams['export'] != null)
 							{
@@ -1633,7 +1640,7 @@ App.prototype.init = function()
 					{
 						this.updateUserElement();
 						this.restoreLibraries();
-						this.checkLicense();
+						// this.checkLicense();
 					}))
 					
 					// Notifies listeners of new client
@@ -1832,6 +1839,8 @@ App.prototype.init = function()
 
 App.logAncestorFrames = function()
 {
+	return;
+
 	try
 	{
 		if (window.location.ancestorOrigins && window.location.hostname &&
@@ -1923,7 +1932,7 @@ App.prototype.sanityCheck = function()
 				'-mime_' + file.desc.mimeType;
 		}
 			
-		EditorUi.logEvent(evt);
+		// EditorUi.logEvent(evt);
 
 		var msg = mxResources.get('ensureDataSaved');
 		
@@ -1993,17 +2002,6 @@ App.prototype.getPusher = function()
 	}
 	
 	return this.pusher;
-};
-
-/**
- * Shows a footer to download the desktop version once per session.
- */
-App.prototype.showNameChangeBanner = function()
-{
-	this.showBanner('DiagramsFooter', 'draw.io is now diagrams.net', mxUtils.bind(this, function()
-	{
-		this.openLink('https://www.drawio.com/blog/move-diagrams-net');
-	}));
 };
 
 /**
@@ -2253,7 +2251,7 @@ App.prototype.updateActionStates = function()
 /**
  * Adds the specified entry to the recent file list in local storage
  */
-App.prototype.addRecent = function(entry, type)
+App.prototype.addRecent = function(entry, type, max)
 {
 	if (isLocalStorage && localStorage != null)
 	{
@@ -2278,8 +2276,9 @@ App.prototype.addRecent = function(entry, type)
 		
 		if (recent != null)
 		{
+			max = (max != null) ? max : 10;
 			recent.unshift(entry);
-			recent = recent.slice(0, 10);
+			recent = recent.slice(0, max);
 			localStorage.setItem('.recent' + type, JSON.stringify(recent));
 		}
 	}
@@ -2356,6 +2355,8 @@ App.prototype.onBeforeUnload = function()
 			}
 			else if (file.isModified())
 			{
+				this.logIfModified(file);
+
 				return mxResources.get('allChangesLost');
 			}
 			else
@@ -2374,31 +2375,29 @@ App.prototype.onBeforeUnload = function()
  */
 App.prototype.updateDocumentTitle = function()
 {
-	if (!this.editor.graph.isLightboxView())
-	{
-		var title = this.editor.appName;
-		var file = this.getCurrentFile();
+	var title = this.editor.appName;
+	var file = this.getCurrentFile();
 
-		if (file != null && Editor.currentTheme == 'simple' &&
-			this.pages != null && this.currentPage != null)
-		{
-			title = this.getShortPageName(this.currentPage);
-		}
-		else if (this.isOfflineApp())
-		{
-			title += ' app';
-		}
-		
-		if (file != null)
-		{
-			var filename = (file.getTitle() != null) ? file.getTitle() : this.defaultFilename;
-			title = filename + ' - ' + title;
-		}
-		
-		if (document.title != title)
-		{
-			document.title = title;
-		}
+	if (file != null && (this.editor.graph.isLightboxView() ||
+		Editor.currentTheme == 'simple') &&
+		this.pages != null && this.currentPage != null)
+	{
+		title = this.getShortPageName(this.currentPage);
+	}
+	else if (this.isOfflineApp())
+	{
+		title += ' app';
+	}
+	
+	if (file != null)
+	{
+		var filename = (file.getTitle() != null) ? file.getTitle() : this.defaultFilename;
+		title = filename + ' - ' + title;
+	}
+	
+	if (document.title != title)
+	{
+		document.title = title;
 	}
 };
 
@@ -3125,13 +3124,6 @@ App.prototype.start = function()
 						}
 					}));
 				}
-
-				if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp && !this.isOfflineApp() &&
-					urlParams['open'] == null && /www\.draw\.io$/.test(window.location.hostname) &&
-					(!this.editor.chromeless || this.editor.editable))
-				{
-					this.showNameChangeBanner();
-				}
 			}
 			catch (e)
 			{
@@ -3155,6 +3147,21 @@ App.prototype.start = function()
 						if (file == null || file.getHash() != id)
 						{
 							this.loadFile(id, true);
+						}
+					}
+					else
+					{
+						var obj = this.getHashObject();
+
+						if (obj != null && obj.pageId != null && this.currentPage != null &&
+							obj.pageId != this.currentPage.getId())
+						{
+							var page = this.getPageById(obj.pageId);
+
+							if (page != null)
+							{
+								this.selectPage(page);
+							}
 						}
 					}
 				}
@@ -3312,7 +3319,6 @@ App.prototype.start = function()
 								this.getServiceName() == 'draw.io' && (id == null || id.length == 0) &&
 								!this.editor.isChromelessView())
 							{
-								
 								this.checkDrafts();
 							}
 							else if (id != null && id.length > 0)
@@ -4124,6 +4130,29 @@ App.prototype.pickFile = function(mode)
 App.prototype.pickLibrary = function(mode)
 {
 	mode = (mode != null) ? mode : this.mode;
+
+	var doLoadLibary = mxUtils.bind(this, function(file)
+	{
+		try
+		{
+			this.loadLibrary(file);
+			this.showSidebar();
+
+			try
+			{
+				this.sidebar.palettes[file.getHash()][0].
+					scrollIntoView({behavior: 'smooth'});
+			}
+			catch (e)
+			{
+				// ignore
+			}
+		}
+		catch (e)
+		{
+			this.handleError(e, mxResources.get('errorLoadingFile'));
+		}
+	});
 	
 	if (mode == App.MODE_GOOGLE || mode == App.MODE_DROPBOX || mode == App.MODE_ONEDRIVE ||
 		mode == App.MODE_GITHUB || mode == App.MODE_GITLAB || mode == App.MODE_TRELLO)
@@ -4141,14 +4170,7 @@ App.prototype.pickLibrary = function(mode)
 			{
 				if (optionalFile != null)
 				{
-					try
-					{
-						this.loadLibrary(optionalFile);
-					}
-					catch (e)
-					{
-						this.handleError(e, mxResources.get('errorLoadingFile'));
-					}
+					doLoadLibary(optionalFile);
 				}
 				else
 				{
@@ -4157,15 +4179,7 @@ App.prototype.pickLibrary = function(mode)
 						peer.getLibrary(id, mxUtils.bind(this, function(file)
 						{
 							this.spinner.stop();
-							
-							try
-							{
-								this.loadLibrary(file);
-							}
-							catch (e)
-							{
-								this.handleError(e, mxResources.get('errorLoadingFile'));
-							}
+							doLoadLibary(file);
 						}), mxUtils.bind(this, function(resp)
 						{
 							this.handleError(resp, (resp != null) ? mxResources.get('errorLoadingFile') : null);
@@ -4194,14 +4208,8 @@ App.prototype.pickLibrary = function(mode)
 						
 							reader.onload = mxUtils.bind(this, function(e)
 							{
-								try
-								{
-									this.loadLibrary(new LocalLibrary(this, e.target.result, file.name));
-								}
-								catch (e)
-								{
-									this.handleError(e, mxResources.get('errorLoadingFile'));
-								}
+								doLoadLibary(new LocalLibrary(this,
+									e.target.result, file.name));
 							});
 	
 							reader.readAsText(file);
@@ -4253,15 +4261,9 @@ App.prototype.pickLibrary = function(mode)
 		
 		window.openFile.setConsumer(mxUtils.bind(this, function(xml, filename)
 		{
-			try
-			{
-				this.loadLibrary((mode == App.MODE_BROWSER) ? new StorageLibrary(this, xml, filename) :
-					new LocalLibrary(this, xml, filename));
-			}
-			catch (e)
-			{
-				this.handleError(e, mxResources.get('errorLoadingFile'));
-			}
+			doLoadLibary((mode == App.MODE_BROWSER) ?
+				new StorageLibrary(this, xml, filename) :
+				new LocalLibrary(this, xml, filename));
 		}));
 
 		// Removes openFile if dialog is closed
@@ -4617,7 +4619,7 @@ App.prototype.saveFile = function(forceDialog, success)
 
 			var allowTab = !mxClient.IS_IOS || !navigator.standalone;
 
-			if (urlParams['save-dialog'] == '1')
+			if (urlParams['save-dialog'] != '0')
 			{
 				var dlg = new SaveDialog(this, filename, mxUtils.bind(this, function(input, mode, folderId)
 				{
@@ -4625,7 +4627,7 @@ App.prototype.saveFile = function(forceDialog, success)
 					this.hideDialog();
 				}), (allowTab) ? null : ['_blank']);
 
-				this.showDialog(dlg.container, 420, 136, true, false, mxUtils.bind(this, function()
+				this.showDialog(dlg.container, 420, 150, true, false, mxUtils.bind(this, function()
 				{
 					this.hideDialog();
 				}));
@@ -4666,9 +4668,8 @@ App.prototype.loadTemplate = function(url, onload, onerror, templateFilename, as
 	var base64 = false;
 	var realUrl = url;
 	var filterFn = (templateFilename != null) ? templateFilename : url;
-	var isVisioFilename = /(\.v(dx|sdx?))($|\?)/i.test(filterFn) ||
-		/(\.vs(x|sx?))($|\?)/i.test(filterFn);
 	var binary = /\.png$/i.test(filterFn) || /\.pdf$/i.test(filterFn);
+	var isVisioFilename = EditorUi.isVisioFilename(filterFn);
 	
 	if (!this.editor.isCorsEnabledForUrl(realUrl))
 	{
@@ -4748,8 +4749,7 @@ App.prototype.loadTemplate = function(url, onload, onerror, templateFilename, as
 		{
 			onerror(e);
 		}
-	}), onerror, /(\.png)($|\?)/i.test(filterFn) || /(\.v(dx|sdx?))($|\?)/i.test(filterFn) ||
-		/(\.vs(x|sx?))($|\?)/i.test(filterFn), null, null, base64);
+	}), onerror, /(\.png)($|\?)/i.test(filterFn) || isVisioFilename, null, null, base64);
 };
 
 /**
@@ -5740,6 +5740,10 @@ App.prototype.loadLibraries = function(libs, done)
 									onerror();
 								}, null, true);
 							}
+							else
+							{
+								onerror(true);
+							}
 						}
 						else if (service == 'R')
 						{
@@ -6557,30 +6561,6 @@ App.prototype.exportFile = function(data, filename, mimeType, base64Encoded, mod
 		{
 			this.drive.insertFile(filename, data, folderId, mxUtils.bind(this, function(resp)
 			{
-				// TODO: Add callback with url param for clickable status message
-				// "File exported. Click here to open folder."
-//				this.editor.setStatus('<div class="geStatusMessage">' +
-//					mxResources.get('saved') + '</div>');
-//				
-//				// Installs click handler for opening
-//				if (this.statusContainer != null)
-//				{
-//					var links = this.statusContainer.getElementsByTagName('div');
-//					
-//					if (links.length > 0)
-//					{
-//						links[0].style.cursor = 'pointer';
-//
-//						mxEvent.addListener(links[0], 'click', mxUtils.bind(this, function()
-//						{
-//							if (resp != null && resp.id != null)
-//							{
-//								window.open('https://drive.google.com/open?id=' + resp.id);
-//							}
-//						}));
-//					}
-//				}
-				
 				this.spinner.stop();
 			}), mxUtils.bind(this, function(resp)
 			{
@@ -6652,18 +6632,38 @@ App.prototype.exportFile = function(data, filename, mimeType, base64Encoded, mod
 	}
 	else if (mode == App.MODE_BROWSER)
 	{
-		var fn = mxUtils.bind(this, function()
+		if (window.StorageFile != null && !base64Encoded &&
+			this.spinner.spin(document.body, mxResources.get('saving')))
 		{
-			localStorage.setItem(filename, data);
-		});
-		
-		if (localStorage.getItem(filename) == null)
-		{
-			fn();
+			var file = data.substring(0, 10) == '<mxlibrary' ?
+				new StorageLibrary(this, data, filename) :
+				new StorageFile(this, data, filename)
+
+			StorageFile.doInsertFile(file,
+				mxUtils.bind(this, function()
+				{
+					this.spinner.stop();
+				}), mxUtils.bind(this, function(resp)
+				{
+					this.spinner.stop();
+					this.handleError(resp);
+				}));
 		}
 		else
 		{
-			this.confirm(mxResources.get('replaceIt', [filename]), fn);
+			var fn = mxUtils.bind(this, function()
+			{
+				localStorage.setItem(filename, data);
+			});
+			
+			if (localStorage.getItem(filename) == null)
+			{
+				fn();
+			}
+			else
+			{
+				this.confirm(mxResources.get('replaceIt', [filename]), fn);
+			}
 		}
 	}
 };
@@ -6994,20 +6994,20 @@ App.prototype.updateHeader = function()
 			this.appIconClicked(evt);
 		}));
 		
-		if (!Editor.enableCssDarkMode)
+		var updateBackground = mxUtils.bind(this, function()
 		{
-			var updateBackground = mxUtils.bind(this, function()
+			if (Editor.enableCssDarkMode)
+			{
+				this.appIcon.style.backgroundColor = '#f08705';
+			}
+			else
 			{
 				this.appIcon.style.backgroundColor = (!Editor.isDarkMode()) ? '#f08705' : '';
-			});
+			}
+		});
 
-			this.addListener('darkModeChanged', updateBackground);
-			updateBackground();
-		}
-		else
-		{
-			this.appIcon.style.backgroundColor = '#f08705';
-		}
+		this.addListener('darkModeChanged', updateBackground);
+		updateBackground();
 
 		mxUtils.setPrefixedStyle(this.appIcon.style, 'transition', 'all 125ms linear');
 
@@ -7148,9 +7148,6 @@ App.prototype.updateHeader = function()
 		
 		mxEvent.addListener(this.toggleFormatElement, 'click', mxUtils.bind(this, function(evt)
 		{
-			EditorUi.logEvent({category: 'TOOLBAR-ACTION-',
-				action: 'format'});
-		
 			this.actions.get('format').funct();
 			mxEvent.consume(evt);
 		}));
@@ -7188,9 +7185,6 @@ App.prototype.updateHeader = function()
 		{
 			var visible = this.fullscreenMode;
 
-			EditorUi.logEvent({category: 'TOOLBAR-ACTION-',
-				action: 'fullscreen' , currentstate: visible});
-			
 			if (Editor.currentTheme != 'atlas' && urlParams['embed'] != '1')
 			{
 				this.toggleCompactMode(visible);
@@ -7246,8 +7240,6 @@ App.prototype.updateHeader = function()
 			// Toggles compact mode
 			mxEvent.addListener(this.toggleElement, 'click', mxUtils.bind(this, function(evt)
 			{
-				EditorUi.logEvent({category: 'TOOLBAR-ACTION-',
-					action: 'toggleUI'});
 				this.toggleCompactMode();
 				mxEvent.consume(evt);
 			}));
@@ -7453,11 +7445,7 @@ App.prototype.updateUserElementIcon = function()
 				icon.style.left = '16px';
 				icon.style.width = '12px';
 				icon.style.height = '12px';
-
-				if (Editor.enableCssDarkMode)
-				{
-					icon.className = 'geAdaptiveAsset';
-				}
+				icon.className = 'geAdaptiveAsset';
 
 				var err = file.getRealtimeError();
 				var state = file.getRealtimeState();
@@ -7509,6 +7497,17 @@ App.prototype.updateUserElementIcon = function()
 /**
  * Adds the listener for automatically saving the diagram for local changes.
  */
+App.prototype.hideUserPanel = function()
+{
+	if (this.userPanel != null && this.userPanel.parentNode != null)
+	{
+		this.userPanel.parentNode.removeChild(this.userPanel);
+	}
+};
+
+/**
+ * Adds the listener for automatically saving the diagram for local changes.
+ */
 App.prototype.toggleUserPanel = function()
 {
 	if (this.userPanel == null)
@@ -7525,9 +7524,9 @@ App.prototype.toggleUserPanel = function()
 
 		mxEvent.addListener(document.body, 'click', mxUtils.bind(this, function(evt)
 		{
-			if (!mxEvent.isConsumed(evt) && this.userPanel != null && this.userPanel.parentNode != null)
+			if (!mxEvent.isConsumed(evt))
 			{
-				this.userPanel.parentNode.removeChild(this.userPanel);
+				this.hideUserPanel();
 			}
 		}));
 	}
@@ -7551,10 +7550,7 @@ App.prototype.toggleUserPanel = function()
 		
 		mxEvent.addListener(img, 'click', mxUtils.bind(this, function()
 		{
-			if (this.userPanel.parentNode != null)
-			{
-				this.userPanel.parentNode.removeChild(this.userPanel);
-			}
+			this.hideUserPanel();
 		}));
 		
 		this.userPanel.appendChild(img);
@@ -7574,8 +7570,6 @@ App.prototype.toggleUserPanel = function()
 					if (file != null && file.constructor == DriveFile)
 					{
 						this.spinner.spin(document.body, spinnerMsg);
-							
-//									file.close();
 						this.fileLoaded(null);
 
 						// LATER: Use callback to wait for thumbnail update
@@ -7594,8 +7588,6 @@ App.prototype.toggleUserPanel = function()
 				var createUserRow = mxUtils.bind(this, function (user)
 				{
 					var tr = document.createElement('tr');
-					tr.setAttribute('title', 'User ID: ' + user.id);
-
 					var td = document.createElement('td');
 					td.setAttribute('valig', 'middle');
 					td.style.height = '59px';
@@ -7641,13 +7633,31 @@ App.prototype.toggleUserPanel = function()
 					td.appendChild(div);
 					tr.appendChild(td);
 
-					if (!user.isCurrent)
+					if (user.isCurrent)
 					{
+						tr.setAttribute('title', 'User ID: ' + user.id);
+					}
+					else
+					{
+						tr.setAttribute('title', mxResources.get('login') +
+							' (' + 'User ID: ' + user.id + ')');
 						tr.style.cursor = 'pointer';
 						tr.style.opacity = '0.3';
 
+						mxEvent.addListener(tr, 'mouseenter', mxUtils.bind(this, function()
+						{
+							tr.style.opacity = '1';
+						}));
+
+						mxEvent.addListener(tr, 'mouseleave', mxUtils.bind(this, function()
+						{
+							tr.style.opacity = '0.3';
+						}));
+
 						mxEvent.addListener(tr, 'click', mxUtils.bind(this, function(evt)
 						{
+							this.hideUserPanel();
+
 							closeFile(mxUtils.bind(this, function()
 							{
 								this.stateArg = null;
@@ -7662,7 +7672,7 @@ App.prototype.toggleUserPanel = function()
 								{
 									this.handleError(resp);
 								}), true); //Remember is true since add account imply keeping that account
-							}), mxResources.get('closingFile') + '...');
+							}), mxResources.get('changeUser') + '...');
 							
 							mxEvent.consume(evt);
 						}));

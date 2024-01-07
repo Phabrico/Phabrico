@@ -535,7 +535,7 @@ namespace Phabrico.Http.Response
                                            )
                    )
                 {
-                    HttpRedirect httpRedirect = new HttpRedirect(HttpServer, Browser, Http.Server.RootPath + "w");
+                    HttpRedirect httpRedirect = new HttpRedirect(HttpServer, Browser, Http.Server.RootPath + "w", true);
                     httpRedirect.Send(Browser);
                     return;
                 }
@@ -555,7 +555,7 @@ namespace Phabrico.Http.Response
                                            )
                    )
                 {
-                    HttpRedirect httpRedirect = new HttpRedirect(HttpServer, Browser, Http.Server.RootPath + "maniphest");
+                    HttpRedirect httpRedirect = new HttpRedirect(HttpServer, Browser, Http.Server.RootPath + "maniphest", true);
                     httpRedirect.Send(Browser);
                     return;
                 }

@@ -288,6 +288,89 @@ var com;
 	                    	}
                     };
                     
+                    var emfChunkSize = window.EMF_CHUNK_SIZE || 10;
+                    
+                    function handleEmfEntriesPartition(emfEntries, index, mediaData)
+                    {
+                        var limit = Math.min(index + emfChunkSize, emfEntries.length);
+
+                        function done()
+                        {
+                            processedFiles++;
+                            doneCheck();
+                            index++;
+
+                            if (index == limit)
+                            {
+                                handleEmfEntriesPartition(emfEntries, index, mediaData);
+                            }
+                        }
+
+                        for (var i = index; i < limit; i++)
+                        {
+                            (function (zipEntry)
+                            {
+                                var retries = 0;
+
+                                function convertEmf(emfBlob)
+                                {
+                                    //send to emf conversion service
+                                    var formData = new FormData();
+                                    formData.append('img', emfBlob, zipEntry.name);
+                                    formData.append('inputformat', 'emf');
+                                    formData.append('outputformat', 'png');
+                                    var xhr = new XMLHttpRequest();
+                                    xhr.open('POST', EMF_CONVERT_URL);
+                                    xhr.responseType = 'blob';
+                                    _this.editorUi.addRemoteServiceSecurityCheck(xhr);
+                                    
+                                    xhr.onreadystatechange = mxUtils.bind(this, function()
+                                    {
+                                        if (xhr.readyState == 4)
+                                        {	
+                                            if (xhr.status >= 200 && xhr.status <= 299)
+                                            {
+                                                try
+                                                {
+                                                    var reader = new FileReader();
+                                                    reader.readAsDataURL(xhr.response); 
+                                                    reader.onloadend = function() 
+                                                    {
+                                                        var dataPos = reader.result.indexOf(',') + 1;
+                                                        mediaData[zipEntry.name] = reader.result.substr(dataPos);
+                                                        done();
+                                                    }
+                                                }
+                                                catch (e)
+                                                {
+                                                    console.log(e);
+                                                    done();
+                                                }
+                                            }
+                                            else
+                                            {
+                                                retries++;
+
+                                                if (retries < 3)
+                                                {
+                                                    convertEmf(emfBlob);
+                                                }
+                                                else
+                                                {
+                                                    done();
+                                                }
+                                            }
+                                        }
+                                    });
+                                    
+                                    xhr.send(formData);
+                                };
+
+                                zipEntry.async("blob").then(convertEmf);
+                            })(emfEntries[i]);
+                        }
+                    };
+
                     JSZip.loadAsync(file)                                   
                     .then(function(zip) 
                     {
@@ -302,6 +385,7 @@ var com;
                     	{
 	                        var dateAfter = new Date();
 	                       	//console.log(" (loaded in " + (dateAfter - dateBefore) + "ms)");
+                            var emfEntries = [];
 	                       	
 	                        zip.forEach(function (relativePath, zipEntry) 
 	                        {  
@@ -360,64 +444,14 @@ var com;
 	                            	filesCount++;
 	                            	if ((function (str, searchString) { var pos = str.length - searchString.length; var lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(name, ".emf")) 
 	                            	{
-                            			var emfDone = function()
-                            			{
-                            				processedFiles++;
-                            				
-		        	                    	doneCheck();
-                            			}
-                            			
 	                            		if (JSZip.support.blob && window.EMF_CONVERT_URL) 
 	                            		{
-	                            			zipEntry.async("blob").then(function (emfBlob)
-			           	                  	{
-	                            				//send to emf conversion service
-	                        					var formData = new FormData();
-	                        					formData.append('img', emfBlob, name);
-	                        					formData.append('inputformat', 'emf');
-	                        					formData.append('outputformat', 'png');
-	                        					
-	                        					var xhr = new XMLHttpRequest();
-	                        					xhr.open('POST', EMF_CONVERT_URL);
-	                        					xhr.responseType = 'blob';
-	                        					_this.editorUi.addRemoteServiceSecurityCheck(xhr);
-	                        					
-	                        					xhr.onreadystatechange = mxUtils.bind(this, function()
-	                        					{
-	                        						if (xhr.readyState == 4)
-	                        						{	
-	                        							if (xhr.status >= 200 && xhr.status <= 299)
-	                        							{
-	                        								try
-	                        								{
-	                        									var reader = new FileReader();
-	                        									reader.readAsDataURL(xhr.response); 
-	                        									reader.onloadend = function() 
-	                        									{
-	                        										var dataPos = reader.result.indexOf(',') + 1;
-	                        									    mediaData[filename] = reader.result.substr(dataPos);
-		                        									emfDone();
-	                        									}
-	                        								}
-	                        								catch (e)
-	                        								{
-	                        									console.log(e);
-	                        									emfDone();
-	                        								}
-	                        							}
-	                        							else
-	                        							{
-	                        								emfDone();
-	                        							}
-	                        						}
-	                        					});
-	                        					
-	                        					xhr.send(formData);
-			           	                  	});
+                                            emfEntries.push(zipEntry);
 	                            		}
 	                            		else
                             			{
-	                            			emfDone();
+	                            			processedFiles++;
+			        	                    doneCheck();
                             			}
 	                            	}
 	                            	else if ((function (str, searchString) { var pos = str.length - searchString.length; var lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(name, ".bmp")) {
@@ -479,6 +513,8 @@ var com;
 	                            	}
 	                           	}
 	                        });
+
+                            handleEmfEntriesPartition(emfEntries, 0, mediaData);
                     	}
                     }, function (e) {
                     		//console.log("Error!" + e.message);
@@ -10037,7 +10073,12 @@ var com;
                                 return m.entries[i].value;
                             } return null; })(model.getThemes(), themeIndex);
                         if (theme == null) {
-                            theme = model.getDefaultTheme();
+                            if (urlParams['dev'] == '1')
+                            {
+                                console.log('No theme found for index ' + themeIndex);
+                            }
+                            // Using a default theme doesn't work well with all cases. Maybe give users an option to choose a default theme?
+                            // theme = model.getDefaultTheme();
                         }
                         var variant = page.getCellIntValue("VariationColorIndex", 0);
                         _this.setThemeAndVariant(theme, variant);

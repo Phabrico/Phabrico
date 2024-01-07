@@ -201,7 +201,6 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 				if (this.responsive && this.graph.dialect == mxConstants.DIALECT_SVG)
 				{
 					var root = this.graph.view.getDrawPane().ownerSVGElement;
-					var canvas = this.graph.view.getCanvas();
 						
 					if (this.graphConfig.border != null)
 					{
@@ -265,18 +264,24 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 					this.editor.defaultGraphOverflow = 'visible';
 				}
 				
-				//Extract graph model from html & svg formats
-				this.xmlNode = this.editor.extractGraphModel(this.xmlNode, true);
+				// Extract graph model from html & svg formats
+				var temp = this.editor.extractGraphModel(this.xmlNode, true);
 				
-				if (this.xmlNode != xmlNode)
+				if (temp != null && temp != xmlNode)
 				{
-					this.xml = mxUtils.getXml(this.xmlNode);
-					this.xmlDocument = this.xmlNode.ownerDocument;
+					try
+					{
+						this.xml = mxUtils.getXml(temp);
+						this.xmlNode = temp;
+						this.xmlDocument = temp.ownerDocument;
+					}
+					catch (e)
+					{
+						// ignore
+					}
 				}
 				
 				// Handles relative images
-				var self = this;
-				
 				this.graph.getImageFromBundles = function(key)
 				{
 					return self.getImageUrl(key);
@@ -295,7 +300,7 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 					
 					if (diagrams.length > 0)
 					{
-						//Find the page index if the pageId is provided
+						// Finds index for given page ID
 						if (this.pageId != null)
 						{
 							for (var i = 0; i < diagrams.length; i++)
@@ -309,8 +314,7 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 						}
 						
 						var graphGetGlobalVariable = this.graph.getGlobalVariable;
-						var self = this;
-						
+
 						this.graph.getGlobalVariable = function(name)
 						{
 							var diagram = diagrams[self.currentPage];
@@ -474,7 +478,7 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 				}
 				else if (this.graphConfig.title != null && this.showTitleAsTooltip)
 				{
-					container.setAttribute('title', this.graphConfig.title);
+					container.setAttribute('title', this.graphConfig.titleTooltip || this.graphConfig.title);
 				}
 				
 				if (!this.responsive)
@@ -500,7 +504,7 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 					this.setLayersVisible(visible);
 				}
 				
-				this.graph.customLinkClicked = function(href)
+				this.graph.customLinkClicked = function(href, associatedCell)
 				{
 					try
 					{
@@ -515,7 +519,13 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 						}
 						else
 						{
-							this.handleCustomLink(href);
+							var bounds = this.getGraphBounds();
+							this.handleCustomLink(href, associatedCell);
+							
+							if (!bounds.equals(this.getGraphBounds()))
+							{
+								self.crop();
+							}
 						}
 					}
 					catch (e)
@@ -543,7 +553,9 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 				window.WebKitMutationObserver ||
 				window.MozMutationObserver;
 			
-			if (this.checkVisibleState && container.offsetWidth == 0 && typeof MutObs !== 'undefined')
+			if (this.checkVisibleState && container.offsetWidth == 0 &&
+				this.getAncestorDetails(container) == null &&
+				typeof MutObs !== 'undefined')
 			{
 				// Delayed rendering if inside hidden container and event available
 				var par = this.getObservableParent(container);
@@ -566,6 +578,24 @@ GraphViewer.prototype.init = function(container, xmlNode, graphConfig)
 			}
 		}
 	}
+};
+
+/**
+ * 
+ */
+GraphViewer.prototype.getAncestorDetails = function(container)
+{
+	while (container != null)
+	{
+		if (container.nodeName == 'DETAILS')
+		{
+			return container;
+		}
+		
+		container = container.parentNode;
+	}
+
+	return null;
 };
 
 /**
@@ -1331,6 +1361,7 @@ GraphViewer.prototype.addToolbar = function()
 		return a;
 	});
 
+	var model = this.graph.getModel();
 	var layersDialog = null;
 	var tagsComponent = null;
 	var tagsDialog = null;
@@ -1364,8 +1395,6 @@ GraphViewer.prototype.addToolbar = function()
 			
 			nextButton.style.paddingLeft = '0px';
 			nextButton.style.paddingRight = '0px';
-			
-			var lastXmlNode = null;
 			
 			var update = mxUtils.bind(this, function()
 			{
@@ -1406,8 +1435,6 @@ GraphViewer.prototype.addToolbar = function()
 		{
 			if (this.layersEnabled)
 			{
-				var model = this.graph.getModel();
-
 				var layersButton = addButton(mxUtils.bind(this, function(evt)
 				{
 					if (layersDialog != null)
@@ -1570,7 +1597,14 @@ GraphViewer.prototype.addToolbar = function()
 			{
 				addButton(mxUtils.bind(this, function()
 				{
-					this.showLightbox();
+					try
+					{
+						this.showLightbox();
+					}
+					catch (e)
+					{
+						alert(e.message);
+					}
 				}), Editor.fullscreenImage, (mxResources.get('fullscreen') || 'Fullscreen'));
 			}
 		}
@@ -1596,7 +1630,7 @@ GraphViewer.prototype.addToolbar = function()
 		var filename = container.ownerDocument.createElement('div');
 		filename.style.cssText = 'display:inline-block;position:relative;padding:3px 6px 0 6px;' +
 			'vertical-align:top;font-family:Helvetica,Arial;font-size:12px;top:4px;cursor:default;color:#000;';
-		filename.setAttribute('title', this.graphConfig.title);
+		filename.setAttribute('title', this.graphConfig.titleTooltip || this.graphConfig.title);
 		mxUtils.write(filename, this.graphConfig.title);
 		mxUtils.setOpacity(filename, 70);
 		
@@ -1738,12 +1772,8 @@ GraphViewer.prototype.createToolbarButton = function(fn, imgSrc, tip, enabled)
 	img.setAttribute('border', '0');
 	img.setAttribute('src', imgSrc);
 	img.style.width = '18px';
-
-	if (Editor.enableCssDarkMode)
-	{
-		img.className = 'geAdaptiveAsset';
-	}
-
+	img.className = 'geAdaptiveAsset';
+	
 	if (enabled == null || enabled)
 	{
 		mxEvent.addListener(a, 'mouseenter', function()
@@ -1792,7 +1822,7 @@ GraphViewer.prototype.addClickHandler = function(graph, ui)
 {
 	graph.linkPolicy = this.graphConfig.target || graph.linkPolicy;
 
-	graph.addClickHandler(this.graphConfig.highlight, mxUtils.bind(this, function(evt, href)
+	graph.addClickHandler(this.graphConfig.highlight, mxUtils.bind(this, function(evt, href, associatedCell)
 	{
 		if (href == null)
 		{
@@ -1828,7 +1858,7 @@ GraphViewer.prototype.addClickHandler = function(graph, ui)
 		}
 		else if (href != null && ui == null && graph.isCustomLink(href) &&
 			(mxEvent.isTouchEvent(evt) || !mxEvent.isPopupTrigger(evt)) &&
-			graph.customLinkClicked(href))
+			graph.customLinkClicked(href, associatedCell))
 		{
 			// Workaround for text selection in Firefox on Windows
 			mxUtils.clearSelection();
@@ -1840,7 +1870,14 @@ GraphViewer.prototype.addClickHandler = function(graph, ui)
 			(!mxEvent.isTouchEvent(evt) ||
 			this.toolbarItems.length == 0))
 		{
-			this.showLightbox();
+			try
+			{
+				this.showLightbox();
+			}
+			catch (e)
+			{
+				alert(e.message);
+			}
 		}
 	}));
 };
@@ -1955,18 +1992,7 @@ GraphViewer.prototype.showLocalLightbox = function(container)
 	closeImg.setAttribute('src', Editor.closeBlackImage);
 	closeImg.style.cssText = 'position:fixed;top:32px;right:32px;';
 	closeImg.style.cursor = 'pointer';
-
-	if (this.darkMode)
-	{
-		if (Editor.enableCssDarkMode)
-		{
-			closeImg.className = 'geAdaptiveAsset';
-		}
-		else
-		{
-			closeImg.style.filter = 'invert(1)';
-		}
-	}
+	closeImg.className = 'geAdaptiveAsset';
 	
 	mxEvent.addListener(closeImg, 'click', function()
 	{
@@ -2157,9 +2183,9 @@ GraphViewer.prototype.showLocalLightbox = function(container)
 				return this.xml;
 			});
 		
+			this.showLayers(graph, this.graph);
 			ui.lightboxFit();
 			ui.chromelessResize();
-			this.showLayers(graph, this.graph);
 		}
 		catch (e)
 		{
@@ -2187,20 +2213,20 @@ Dialog.prototype.getDocumentSize = function()
 /**
  * 
  */
-GraphViewer.prototype.updateTitle = function(title)
+GraphViewer.prototype.updateTitle = function(title, titleTooltip)
 {
 	title = title || '';
 	
 	if (this.showTitleAsTooltip && this.graph != null && this.graph.container != null)
 	{
-		this.graph.container.setAttribute('title', title);
+		this.graph.container.setAttribute('title', titleTooltip || title);
     }
 	
 	if (this.filename != null)
 	{
 		this.filename.innerText = '';
 		mxUtils.write(this.filename, title);
-		this.filename.setAttribute('title', title);
+		this.filename.setAttribute('title', titleTooltip || title);
 	}
 };
 
@@ -2309,6 +2335,8 @@ GraphViewer.createViewerForElement = function(element, callback)
 
 GraphViewer.logAncestorFrames = function()
 {
+	return;
+
 	try
 	{
 		if (window.location.ancestorOrigins && window.location.hostname &&
