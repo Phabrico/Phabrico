@@ -102,6 +102,10 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // click on save button
             IWebElement save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Save')]"));
             save.Click();
+            Thread.Sleep(1000);
+            
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
 
             // verify if the page is reloaded with the new file name
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'F-1')]")).Any());
@@ -118,6 +122,10 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // click on exit button
             IWebElement exit = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Exit')]"));
             exit.Click();
+            Thread.Sleep(1000);
+            
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
 
              // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -230,6 +238,10 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // click on save button
             IWebElement save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Save')]"));
             save.Click();
+            Thread.Sleep(1000);
+            
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
 
             // verify if the page is reloaded with the new file name
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'F-1')]")).Any());
@@ -246,6 +258,10 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // click on exit button
             IWebElement exit = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Exit')]"));
             exit.Click();
+            Thread.Sleep(1000);
+            
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
 
              // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));

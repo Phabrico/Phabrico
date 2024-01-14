@@ -357,6 +357,11 @@ namespace Phabrico.Controllers
                     throw new Phabrico.Exception.HttpNotFound(phrictionDocument.Path);
                 }
 
+                if (phrictionDocument?.Path != null && rootDocumentPath != null && phrictionDocument.Path.StartsWith(rootDocumentPath))
+                {
+                    phrictionDocument.Path = phrictionDocument.Path.Substring(rootDocumentPath.Length);
+                }
+
                 RemarkupParserOutput remarkupParserOutput;
                 string formattedDocumentContent;
 

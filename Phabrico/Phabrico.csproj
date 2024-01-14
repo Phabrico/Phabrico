@@ -199,6 +199,7 @@
     <Compile Include="Parsers\Remarkup\Rules\RuleCodeBlockBy2WhiteSpaces.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleCustomRule.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleFormatting.cs" />
+    <Compile Include="Parsers\Remarkup\Rules\RuleAnchor.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleMeme.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleNavigation.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleKey.cs" />

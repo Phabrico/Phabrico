@@ -797,6 +797,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // wait a while , so image can be loaded
             Thread.Sleep(1500);
 
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
+
             AssertNoJavascriptErrors();
 
             // verify if image content has been changed
@@ -923,6 +926,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Save')]"));
             save.Click();
 
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
+
             // verify if the page is reloaded with the new file name
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'F-2')]")).Any());
             
@@ -940,6 +946,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // click on exit button
             exit = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Exit')]"));
             exit.Click();
+
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
 
              // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
@@ -980,6 +989,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement btnSave = WebBrowser.FindElement(By.Id("btnSave"));
             btnSave.Click();
             Thread.Sleep(500);
+
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
 
             AssertNoJavascriptErrors();
 
@@ -1180,6 +1192,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // wait a while , so image can be loaded
             Thread.Sleep(1500);
+
+            // switch iframe
+            WebBrowser.SwitchTo().DefaultContent();
 
             AssertNoJavascriptErrors();
 

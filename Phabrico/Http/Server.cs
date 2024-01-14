@@ -2030,14 +2030,17 @@ namespace Phabrico.Http
                             Customization.HideSearch.Data = browser.Properties;
                             Customization.HideUsers.Data = browser.Properties;
                             Customization.IsReadonly.Data = browser.Properties;
-                            foreach (string pluginName in Plugins.Select(plugin => plugin.GetType().Name))
+                            lock (Customization.HidePlugins)
                             {
-                                if (Customization.HidePlugins.ContainsKey(pluginName) == false)
+                                foreach (string pluginName in Plugins.Select(plugin => plugin.GetType().Name))
                                 {
-                                    Customization.HidePlugins[pluginName] = false;
-                                }
+                                    if (Customization.HidePlugins.ContainsKey(pluginName) == false)
+                                    {
+                                        Customization.HidePlugins[pluginName] = false;
+                                    }
 
-                                Customization.HidePlugins[pluginName].Data = browser.Properties;
+                                    Customization.HidePlugins[pluginName].Data = browser.Properties;
+                                }
                             }
 
                             // === Process GET commando ==================================================================================================================================

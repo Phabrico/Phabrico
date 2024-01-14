@@ -232,11 +232,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "=" formatted header was found</returns>
         private bool ProcessDoubleLinedHeaderLevel1(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^= *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^= *(.+?) *({anchor +#([^ }]+)})?=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -265,11 +265,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "==" formatted header was found</returns>
         private bool ProcessDoubleLinedHeaderLevel2(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^== *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^== *(.+?) *({anchor +#([^ }]+)})?=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -298,11 +298,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "===" formatted header was found</returns>
         private bool ProcessDoubleLinedHeaderLevel3(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^=== *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^=== *(.+?) *({anchor +#([^ }]+)})?=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -331,11 +331,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "====" formatted header was found</returns>
         private bool ProcessDoubleLinedHeaderLevel4(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^==== *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^==== *(.+?) *({anchor +#([^ }]+)})?=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -364,11 +364,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "=====" formatted header was found</returns>
         private bool ProcessDoubleLinedHeaderLevel5(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^=====+ *(.+?) *=* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^=====+ *(.+?) *({anchor +#([^ }]+)})?=* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -397,11 +397,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "#" formatted header was found</returns>
         private bool ProcessHashLinedHeaderLevel1(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^# +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^# +(.+?) *({anchor +#([^ }]+)})?#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -430,11 +430,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "##" formatted header was found</returns>
         private bool ProcessHashLinedHeaderLevel2(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^## +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^## +(.+?) *({anchor +#([^ }]+)})?#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -463,11 +463,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "###" formatted header was found</returns>
         private bool ProcessHashLinedHeaderLevel3(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^### +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^### +(.+?) *({anchor +#([^ }]+)})?#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -496,11 +496,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "####" formatted header was found</returns>
         private bool ProcessHashLinedHeaderLevel4(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^#### +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^#### +(.+?) *({anchor +#([^ }]+)})?#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 
@@ -529,11 +529,11 @@ namespace Phabrico.Parsers.Remarkup.Rules
         /// <returns>True if a "#####" formatted header was found</returns>
         private bool ProcessHashLinedHeaderLevel5(Storage.Database database, Browser browser, string url, ref string remarkup, ref string html)
         {
-            Match match = RegexSafe.Match(remarkup, "^#####+ +(.+?) *#* *($|[\r\n]+)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, "^#####+ +(.+?) *({anchor +#([^ }]+)})?#* *($|[\r\n]+)", RegexOptions.Singleline);
             if (match.Success)
             {
                 string headerName = GenerateHeaderName(match.Groups[1].Value);
-                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value, out remarkupParserOutput, false, PhabricatorObjectToken);
+                string headerText = Engine.ToHTML(this, database, browser, url, match.Groups[1].Value + match.Groups[2]?.Value ?? "", out remarkupParserOutput, false, PhabricatorObjectToken);
                 LinkedPhabricatorObjects.AddRange(remarkupParserOutput.LinkedPhabricatorObjects);
                 ChildTokenList.AddRange(remarkupParserOutput.TokenList);
 

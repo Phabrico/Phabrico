@@ -2355,12 +2355,6 @@
     <EmbeddedResource Include="webapp\mxgraph\images\window-title.gif" />
     <EmbeddedResource Include="webapp\mxgraph\images\window.gif" />
     <EmbeddedResource Include="webapp\mxgraph\mxClient.js" />
-    <EmbeddedResource Include="webapp\newDiagramCats\images\icon-flowchart.svg" />
-    <EmbeddedResource Include="webapp\newDiagramCats\images\icon-mind-map.svg" />
-    <EmbeddedResource Include="webapp\newDiagramCats\images\icon-network.svg" />
-    <EmbeddedResource Include="webapp\newDiagramCats\images\icon-plus.svg" />
-    <EmbeddedResource Include="webapp\newDiagramCats\images\icon-uml-erd.svg" />
-    <EmbeddedResource Include="webapp\newDiagramCats\index.xml" />
     <EmbeddedResource Include="webapp\onedrive3.html" />
     <EmbeddedResource Include="webapp\open.html" />
     <EmbeddedResource Include="webapp\plugins\animation.js" />

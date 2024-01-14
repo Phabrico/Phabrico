@@ -109,6 +109,11 @@ a.phriction-link-missing {
     color: var(--phriction-link-missing-color);
 }
 
+a.anchor {
+    display: inline-block;
+    height: 80px;
+}
+
 .phriction .review-translation .phui-list-item-icon:before {
     font-family: 'icomoon';
     content: "\e9ae";
