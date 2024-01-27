@@ -1,0 +1,9 @@
+This is an //image//:
+{F1234, size=full}
+~~~~~~~~~~
+This is an <em>image</em>:<br>
+<div class='image-locator allow-full-screen full-size' style='width: 24px;'>
+  <div class='image-container'>
+     <img rel='small.png' src='file/data/1234/' class='' style='' onload='imageLoaded(this)'>
+  </div></div>
+~~~~~~~~~~

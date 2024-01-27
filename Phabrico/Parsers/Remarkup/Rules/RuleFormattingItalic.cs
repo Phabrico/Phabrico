@@ -35,7 +35,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html)
         {
             html = "";
-            Match match = RegexSafe.Match(remarkup, @"^\/\/(.*?)\/\/(?=\s|$|,|\.)", RegexOptions.Singleline);
+            Match match = RegexSafe.Match(remarkup, @"^\/\/(.*?)\/\/(?=\s|$|,|\.|:|;)", RegexOptions.Singleline);
             if (match.Success == false) return false;
             if (match.Value.Split('\n')
                            .Skip(1)

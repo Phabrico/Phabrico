@@ -132,6 +132,17 @@
             remarkup.Decode(value, right);
         }
 
+        function invalidTitle(value) {
+            // value should not be null
+            if (value === null) return true;
+
+            // value should contain at least 1 non-punctuation character
+            if (value.replace(/[^\p{L}\p{N}]/gu, "") === "") return true;
+
+            // first character should be non-punctuation character
+            return (value[0].match(/[^\p{L}\p{N}]/u) !== null);
+        }
+
         function revertTranslation() {
             showHideConfirmationMessage( true, Locale.Translate("Approve translation"), Locale.Translate("Are you sure you want to completely undo your translation ?"),
                                             function() {
@@ -181,7 +192,7 @@
         }
 
         function verifyTitle() {
-            if (title.value == "") return;
+            if (invalidTitle(title.value)) return;
             if (operation.value !== "new") return;
 
             var url = "";
@@ -319,8 +330,8 @@
 
         }, null, 'horizontal');
 
-        // disable btnSave in case there's no task title
-        if (title.value == "") {
+        // disable btnSave in case there's no valid task title
+        if (invalidTitle(title.value)) {
             btnSave.disabled = true;
         } else {
             if ("@@DOCUMENT-PATH@@" == "") {

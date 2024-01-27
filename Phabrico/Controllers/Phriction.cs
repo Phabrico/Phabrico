@@ -1171,6 +1171,18 @@ namespace Phabrico.Controllers
                                     newPhrictionDocument.Path = FormatPhabricatorSlug(parentPhrictionDocument.Path, newPhrictionDocument.Path);
                                 }
 
+                                string[] slugParts = newPhrictionDocument.Path.TrimEnd('/').Split('/');
+                                if (slugParts.LastOrDefault().Equals(Locale.TranslateText("(New)", browser.Session.Locale)))
+                                {
+                                    // invalid slug "(New)" -> convert title to slug
+                                    string newLastSlugPart = newPhrictionDocument.Name;
+                                    newLastSlugPart = RegexSafe.Replace(newLastSlugPart, "[ <>&#%+={}\\[\\]\"'?/\\\\:]", "_");  // replace all invalid characters by _
+                                    newLastSlugPart = newLastSlugPart.Replace("__", "_");  // no duplicated _ allowed
+                                    newLastSlugPart = newLastSlugPart.ToLowerInvariant();  // all characters in lowercase
+
+                                    newPhrictionDocument.Path = string.Join("/", slugParts.Take(slugParts.Length - 1)) + "/" + newLastSlugPart + "/";
+                                }
+
                                 // remove Url encoding
                                 newPhrictionDocument.Path = HttpUtility.UrlDecode(newPhrictionDocument.Path);
 
