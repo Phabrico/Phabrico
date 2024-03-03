@@ -664,6 +664,12 @@ msgstr "Käännöstä ei tarvita"
 msgid "The original content of this document has changed. You must update the translation before you can approve it."
 msgstr "Tämän asiakirjan alkuperäinen sisältö on muuttunut. Sinun on päivitettävä käännös ennen kuin voit hyväksyä sen."
 
+msgid "Show in search results"
+msgstr "Näytä hakutuloksissa"
+
+msgid "Hide in search results"
+msgstr "Piilota hakutuloksissa"
+
 # Phame
 msgid "Phame"
 msgstr "Phame"

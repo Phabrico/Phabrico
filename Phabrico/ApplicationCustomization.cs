@@ -284,6 +284,11 @@ namespace Phabrico
         public BooleanVector<Browser.PublishedProperties> HidePhrictionFavorites { get; set; } = false;
 
         /// <summary>
+        /// If true, Phriction/wiki documents can be marked to be hidden from search results
+        /// </summary>
+        public BooleanVector<Browser.PublishedProperties> HidePhrictionSearchResults { get; set; } = true;
+
+        /// <summary>
         /// List of plugins which may or may not be visible
         /// Key = name of plugin, value = visibility state
         /// </summary>

@@ -286,6 +286,7 @@ namespace Phabrico.Http.Response
             bool hidePhriction = HttpServer.Customization.HidePhriction;
             bool hidePhrictionChanges = HttpServer.Customization.HidePhrictionChanges;
             bool hidePhrictionFavorites = HttpServer.Customization.HidePhrictionFavorites;
+            bool hidePhrictionSearchResults = HttpServer.Customization.HidePhrictionSearchResults;
             bool hideProjects = HttpServer.Customization.HideProjects || browser.Token.AuthenticationFactor == AuthenticationFactor.Experience || browser.Token.AuthenticationFactor == AuthenticationFactor.Public;
             bool hideSearch = HttpServer.Customization.HideSearch;
             bool hideUsers = HttpServer.Customization.HideUsers || browser.Token.AuthenticationFactor == AuthenticationFactor.Experience || browser.Token.AuthenticationFactor == AuthenticationFactor.Public;
@@ -304,6 +305,7 @@ namespace Phabrico.Http.Response
             SetText("ACCESS-HIDE-PHRICTION", hidePhriction.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PHRICTION-CHANGES", hidePhrictionChanges.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PHRICTION-FAVORITES", hidePhrictionFavorites.ToString(), ArgumentOptions.AllowEmptyParameterValue);
+            SetText("ACCESS-HIDE-PHRICTION-SEARCH-FILTER", hidePhrictionSearchResults.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-PROJECTS", hideProjects.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-SEARCH", hideSearch.ToString(), ArgumentOptions.AllowEmptyParameterValue);
             SetText("ACCESS-HIDE-USERS", hideUsers.ToString(), ArgumentOptions.AllowEmptyParameterValue);

@@ -53,14 +53,14 @@ if (!mxIsElectron && location.protocol !== 'http:')
 			'https://*.googleapis.com wss://app.diagrams.net wss://*.pusher.com https://*.pusher.com ' +
 			'https://api.github.com https://raw.githubusercontent.com https://gitlab.com ' +
 			'https://graph.microsoft.com https://*.sharepoint.com  https://*.1drv.com https://api.onedrive.com ' +
-			'https://dl.dropboxusercontent.com https://api.openai.com ' +
+			'https://dl.dropboxusercontent.com https://api.openai.com https://drawio.dev ' +
 			'https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; ' +
 			// font-src about: is required for MathJax HTML-CSS output with STIX
 			'img-src * data: blob:; media-src * data:; font-src * about:; ' +
 			// www.draw.io required for browser data migration to app.diagrams.net and
 			// viewer.diagrams.net required for iframe embed preview
 			'frame-src %frame-src% \'self\' https://viewer.diagrams.net https://www.draw.io https://*.google.com; ' +
-			'style-src %style-src% \'self\'  https://fonts.googleapis.com ' +
+			'style-src %style-src% \'self\' https://fonts.googleapis.com ' +
 			// Replaces unsafe-inline style-src with hashes with safe-style-src URL parameter
 			((urlParams['safe-style-src'] == '1') ? styleHashes : '\'unsafe-inline\'; ') +
 			'base-uri \'none\';' +

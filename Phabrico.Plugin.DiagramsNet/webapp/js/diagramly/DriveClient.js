@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2006-2020, JGraph Ltd
- * Copyright (c) 2006-2020, draw.io AG
+ * Copyright (c) 2006-2024, JGraph Ltd
+ * Copyright (c) 2006-2024, draw.io AG
  */
 
 //Add a closure to hide the class private variables without changing the code a lot
@@ -68,7 +68,7 @@ mxUtils.extend(DriveClient, mxEventSource);
 // Extends DrawioClient
 mxUtils.extend(DriveClient, DrawioClient);
 
-DriveClient.prototype.redirectUri = window.location.protocol + '//' + window.location.host + '/google';
+DriveClient.prototype.redirectUri = window.DRAWIO_SERVER_URL + 'google';
 DriveClient.prototype.GDriveBaseUrl = 'https://www.googleapis.com/drive/v2';
 
 /**
@@ -1330,34 +1330,34 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 			}
 			
 			// Logs failed save
-			try
-			{
-				if (!file.isConflict(e))
-				{
-					var err = 'sl_' + file.saveLevel + '-error_' +
-						(file.getErrorMessage(e) || 'unknown');
+			// try
+			// {
+			// 	if (!file.isConflict(e))
+			// 	{
+			// 		var err = 'sl_' + file.saveLevel + '-error_' +
+			// 			(file.getErrorMessage(e) || 'unknown');
 	
-					if (e != null && e.error != null && e.error.code != null)
-					{
-						err += '-code_' + e.error.code;
-					}
+			// 		if (e != null && e.error != null && e.error.code != null)
+			// 		{
+			// 			err += '-code_' + e.error.code;
+			// 		}
 					
-					EditorUi.logEvent({category: 'ERROR-SAVE-FILE-' + file.getHash() + '-rev_' +
-						file.desc.headRevisionId + '-mod_' + file.desc.modifiedDate +
-							'-size_' + file.getSize() + '-mime_' + file.desc.mimeType +
-						((this.ui.editor.autosave) ? '' : '-nosave') +
-						((file.isAutosave()) ? '' : '-noauto') +
-						((file.changeListenerEnabled) ? '' : '-nolisten') +
-						((file.inConflictState) ? '-conflict' : '') +
-						((file.invalidChecksum) ? '-invalid' : ''),
-						action: err, label: ((this.user != null) ? ('user_' + this.user.id) : 'nouser') +
-						((file.sync != null) ? ('-client_' + file.sync.clientId) : '-nosync')});
-				}
-			}
-			catch (ex)
-			{
-				// ignore
-			}
+			// 		EditorUi.logEvent({category: 'ERROR-SAVE-FILE-' + file.getHash() + '-rev_' +
+			// 			file.desc.headRevisionId + '-mod_' + file.desc.modifiedDate +
+			// 				'-size_' + file.getSize() + '-mime_' + file.desc.mimeType +
+			// 			((this.ui.editor.autosave) ? '' : '-nosave') +
+			// 			((file.isAutosave()) ? '' : '-noauto') +
+			// 			((file.changeListenerEnabled) ? '' : '-nolisten') +
+			// 			((file.inConflictState) ? '-conflict' : '') +
+			// 			((file.invalidChecksum) ? '-invalid' : ''),
+			// 			action: err, label: ((this.user != null) ? ('user_' + this.user.id) : 'nouser') +
+			// 			((file.sync != null) ? ('-client_' + file.sync.clientId) : '-nosync')});
+			// 	}
+			// }
+			// catch (ex)
+			// {
+			// 	// ignore
+			// }
 		});
 		
 		var criticalError = mxUtils.bind(this, function(e)

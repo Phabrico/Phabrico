@@ -113,21 +113,6 @@ EditorUi = function(editor, container, lightbox)
 	
 	if (!graph.standalone)
 	{
-		// Stores the current style and assigns it to new cells
-		var styles = ['rounded', 'shadow', 'glass', 'dashed', 'dashPattern', 'labelBackgroundColor',
-			'labelBorderColor', 'comic', 'sketch', 'fillWeight', 'hachureGap', 'hachureAngle', 'jiggle',
-			'disableMultiStroke', 'disableMultiStrokeFill', 'fillStyle', 'curveFitting',
-			'simplification', 'sketchStyle', 'pointerEvents', 'strokeColor', 'strokeWidth',
-			'align', 'verticalAlign', 'spacingLeft', 'spacingRight', 'spacingTop',
-			'spacingBottom', 'spacing'
-		];
-		var connectStyles = ['shape', 'edgeStyle', 'curved', 'rounded', 'elbow', 'jumpStyle', 'jumpSize',
-			'comic', 'sketch', 'fillWeight', 'hachureGap', 'hachureAngle', 'jiggle',
-			'disableMultiStroke', 'disableMultiStrokeFill', 'fillStyle', 'curveFitting',
-			'simplification', 'sketchStyle'];
-		// Styles to be ignored if applyAll is false
-		var ignoredEdgeStyles = ['curved', 'sourcePerimeterSpacing', 'targetPerimeterSpacing',
-			'startArrow', 'startFill', 'startSize', 'endArrow', 'endFill', 'endSize'];
 		var vertexStyleIgnored = false;
 		var edgeStyleIgnored = false;
 		
@@ -138,6 +123,7 @@ EditorUi = function(editor, container, lightbox)
 			{
 				if (graph.getModel().isEdge(cell))
 				{
+					graph.pasteEdgeStyle = false;
 					edgeStyleIgnored = false;
 				}
 				else
@@ -174,6 +160,7 @@ EditorUi = function(editor, container, lightbox)
 				// was changed using this function via app UI
 				if (graph.getModel().isEdge(cell))
 				{
+					graph.pasteEdgeStyle = true;
 					edgeStyleIgnored = true;
 				}
 				else
@@ -191,192 +178,23 @@ EditorUi = function(editor, container, lightbox)
 		{
 			graph.currentEdgeStyle = mxUtils.clone(graph.defaultEdgeStyle);
 			graph.currentVertexStyle = mxUtils.clone(graph.defaultVertexStyle);
+			graph.pasteEdgeStyle = false;
 			edgeStyleIgnored = false;
 			vertexStyleIgnored = false;
 			
 			// Updates UI
 			this.fireEvent(new mxEventObject('styleChanged', 'keys', [], 'values', [], 'cells', []));
 		};
-	
-		// Keys that should be ignored if the cell has a value (known: new default for all cells is html=1 so
-	    // for the html key this effecticely only works for edges inserted via the connection handler)
-		var valueStyles = ['fontFamily', 'fontSource', 'fontSize', 'fontColor'];
-				
-		for (var i = 0; i < valueStyles.length; i++)
-		{
-			if (mxUtils.indexOf(styles, valueStyles[i]) < 0)
-			{
-				styles.push(valueStyles[i]);
-			}
-		}
 		
-		// Keys that always update the current edge style regardless of selection
-		var alwaysEdgeStyles = ['edgeStyle', 'startArrow', 'startFill', 'startSize', 'endArrow',
-			'endFill', 'endSize'];
-		
-		// Keys that are ignored together (if one appears all are ignored)
-		var keyGroups = [['startArrow', 'startFill', 'endArrow', 'endFill'],
-						['startSize', 'endSize'],
-						['sourcePerimeterSpacing', 'targetPerimeterSpacing'],
-						['fillColor', 'gradientColor', 'gradientDirection'],
-						['opacity'],
-						['html']];
-		
-		// Adds all keys used above to the styles array
-		for (var i = 0; i < keyGroups.length; i++)
-		{
-			for (var j = 0; j < keyGroups[i].length; j++)
-			{
-				styles.push(keyGroups[i][j]);
-			}
-		}
-		
-		for (var i = 0; i < connectStyles.length; i++)
-		{
-			if (mxUtils.indexOf(styles, connectStyles[i]) < 0)
-			{
-				styles.push(connectStyles[i]);
-			}
-		}
-		
-		// Implements a global current style for edges and vertices that is applied to new cells
-		var insertHandler = function(cells, asText, model, vertexStyle, edgeStyle, applyAll, recurse)
-		{
-			vertexStyle = (vertexStyle != null) ? vertexStyle : graph.currentVertexStyle;
-			edgeStyle = (edgeStyle != null) ? edgeStyle : graph.currentEdgeStyle;
-			applyAll = (applyAll != null) ? applyAll : true;
-			
-			model = (model != null) ? model : graph.getModel();
-			
-			if (recurse)
-			{
-				var temp = [];
-				
-				for (var i = 0; i < cells.length; i++)
-				{
-					temp = temp.concat(model.getDescendants(cells[i]));
-				}
-				
-				cells = temp;				
-			}
-			
-			model.beginUpdate();
-			try
-			{
-				for (var i = 0; i < cells.length; i++)
-				{
-					var cell = cells[i];
-					var isText = asText;
-					var appliedStyles;
-
-					// Applies basic text styles for cells with text class
-					if (cell.style != null && !isText)
-					{
-						pairs = cell.style.split(';');
-						isText = isText || mxUtils.indexOf(pairs, 'text') >= 0;
-					}
-					
-					if (isText)
-					{
-						// Applies only basic text styles
-						appliedStyles = ['fontSize', 'fontFamily', 'fontColor'];
-					}
-					else
-					{
-						// Removes styles defined in the cell style from the styles to be applied
-						var cellStyle = model.getStyle(cell);
-						var tokens = (cellStyle != null) ? cellStyle.split(';') : [];
-						appliedStyles = styles.slice();
-						
-						for (var j = 0; j < tokens.length; j++)
-						{
-							var tmp = tokens[j];
-					 		var pos = tmp.indexOf('=');
-					 					 		
-					 		if (pos >= 0)
-					 		{
-					 			var key = tmp.substring(0, pos);
-					 			var index = mxUtils.indexOf(appliedStyles, key);
-					 			
-					 			if (index >= 0)
-					 			{
-					 				appliedStyles.splice(index, 1);
-					 			}
-					 			
-					 			// Handles special cases where one defined style ignores other styles
-					 			for (var k = 0; k < keyGroups.length; k++)
-					 			{
-					 				var group = keyGroups[k];
-					 				
-					 				if (mxUtils.indexOf(group, key) >= 0)
-					 				{
-					 					for (var l = 0; l < group.length; l++)
-					 					{
-								 			var index2 = mxUtils.indexOf(appliedStyles, group[l]);
-								 			
-								 			if (index2 >= 0)
-								 			{
-								 				appliedStyles.splice(index2, 1);
-								 			}
-					 					}
-					 				}
-					 			}
-					 		}
-						}
-					}
-					
-					// Applies the current style to the cell
-					var edge = model.isEdge(cell);
-					var current = (edge) ? edgeStyle : vertexStyle;
-					var newStyle = model.getStyle(cell);
-
-					for (var j = 0; j < appliedStyles.length; j++)
-					{
-						var key = appliedStyles[j];
-						var styleValue = current[key];
-	
-						// Edge style is only applied if user assigned a
-						// default style using the respective button but
-						// not if the edge style is globally configured
-						if (styleValue != null && (key != 'edgeStyle' ||
-							edgeStyleIgnored) && (key != 'shape' || edge))
-						{
-							// Special case: Some styles are not applied here but in the connection handler
-							if (!edge || applyAll || mxUtils.indexOf(ignoredEdgeStyles, key) < 0)
-							{
-								newStyle = mxUtils.setStyle(newStyle, key, styleValue);
-							}
-						}
-					}
-
-					if (Editor.simpleLabels)
-					{
-						newStyle = mxUtils.setStyle(mxUtils.setStyle(
-							newStyle, 'html', null), 'whiteSpace', null);
-					}
-					
-					model.setStyle(cell, newStyle);
-				}
-			}
-			finally
-			{
-				model.endUpdate();
-			}
-
-			return cells;
-		};
-	
 		graph.addListener('cellsInserted', function(sender, evt)
 		{
-			insertHandler(evt.getProperty('cells'), null, null, null, null, true, true);
+			graph.pasteCellStyles(graph.includeDescendants(evt.getProperty('cells')));
 		});
 		
 		graph.addListener('textInserted', function(sender, evt)
 		{
-			insertHandler(evt.getProperty('cells'), true);
+			graph.pasteCellStyles(evt.getProperty('cells'));
 		});
-		
-		this.insertHandler = insertHandler;
 		
 		this.createDivs();
 		this.createUi();
@@ -833,7 +651,7 @@ EditorUi = function(editor, container, lightbox)
 				}, 0);
 			}
 			
-			insertHandler(cells);
+			graph.pasteCellStyles(cells);
 		});
 
 		this.addListener('styleChanged', mxUtils.bind(this, function(sender, evt)
@@ -843,97 +661,10 @@ EditorUi = function(editor, container, lightbox)
 			// Checks if edges and/or vertices were modified
 			if (this.updateDefaultStyle || force)
 			{
-				var cells = evt.getProperty('cells');
-				var vertex = false;
-				var edge = false;
-				
-				if (cells.length > 0)
-				{
-					for (var i = 0; i < cells.length; i++)
-					{
-						vertex = graph.getModel().isVertex(cells[i]) || vertex;
-						edge = graph.getModel().isEdge(cells[i]) || edge;
-						
-						if (edge && vertex)
-						{
-							break;
-						}
-					}
-				}
-				else
-				{
-					vertex = true;
-					edge = true;
-				}
-
-				vertex = vertex && !vertexStyleIgnored;
-				edge = edge && !edgeStyleIgnored;
-				
-				var keys = evt.getProperty('keys');
-				var values = evt.getProperty('values');
-		
-				for (var i = 0; i < keys.length; i++)
-				{
-					var common = mxUtils.indexOf(valueStyles, keys[i]) >= 0;
-
-					// Ignores transparent stroke colors
-					if (keys[i] != 'strokeColor' || (values[i] != null && values[i] != 'none'))
-					{
-						// Special case: Edge style and shape
-						if (mxUtils.indexOf(connectStyles, keys[i]) >= 0)
-						{
-							if (edge || mxUtils.indexOf(alwaysEdgeStyles, keys[i]) >= 0)
-							{
-								if (values[i] == null)
-								{
-									delete graph.currentEdgeStyle[keys[i]];
-								}
-								else
-								{
-									graph.currentEdgeStyle[keys[i]] = values[i];
-								}
-							}
-							// Uses style for vertex if defined in styles
-							else if (vertex && mxUtils.indexOf(styles, keys[i]) >= 0)
-							{
-								if (values[i] == null)
-								{
-									delete graph.currentVertexStyle[keys[i]];
-								}
-								else
-								{
-									graph.currentVertexStyle[keys[i]] = values[i];
-								}
-							}
-						}
-						else if (mxUtils.indexOf(styles, keys[i]) >= 0)
-						{
-							if (vertex || common)
-							{
-								if (values[i] == null)
-								{
-									delete graph.currentVertexStyle[keys[i]];
-								}
-								else
-								{
-									graph.currentVertexStyle[keys[i]] = values[i];
-								}
-							}
-							
-							if (edge || common || mxUtils.indexOf(alwaysEdgeStyles, keys[i]) >= 0)
-							{
-								if (values[i] == null)
-								{
-									delete graph.currentEdgeStyle[keys[i]];
-								}
-								else
-								{
-									graph.currentEdgeStyle[keys[i]] = values[i];
-								}
-							}
-						}
-					}
-				}
+				graph.copyCellStyles(evt.getProperty('cells'),
+					evt.getProperty('keys'), evt.getProperty('values'),
+					graph.currentVertexStyle, graph.currentEdgeStyle,
+					vertexStyleIgnored, edgeStyleIgnored);
 			}
 
 			if (this.toolbar != null)
@@ -1660,16 +1391,7 @@ EditorUi.prototype.convertDarkModeColors = function(cells, keys)
 
 								if (result == null)
 								{
-									ctx.fillStyle = value;
-									ctx.fillRect(0, 0, 1, 1);
-									var imgData = ctx.getImageData(0, 0, 1, 1);
-
-									var r = imgData.data[0];
-									var g = imgData.data[1];
-									var b = imgData.data[2];
-
-									var rgb = b | (g << 8) | (r << 16);
-									result = '#' + (0x1000000 | rgb).toString(16).substring(1);
+									result = Graph.invertColor(value, ctx);
 									colorCache[value] = result;
 								}
 
@@ -2143,7 +1865,9 @@ EditorUi.prototype.createShapePicker = function(x, y, source, callback, directio
 			}
 			else
 			{
-				ui.insertHandler([cell], cell.value != '' && urlParams['sketch'] != '1', this.sidebar.graph.model);
+				this.sidebar.graph.pasteCellStyles([cell],
+					graph.currentVertexStyle,
+					graph.currentEdgeStyle);
 			}
 
 			var geo = cell.geometry;
@@ -2300,8 +2024,8 @@ EditorUi.prototype.getCellsForShapePicker = function(cell, hovering, showEdges)
 	
 	if (cell == null)
 	{
-		cell = createVertex('text;html=1;align=center;verticalAlign=middle;resizable=0;' +
-			'points=[];autosize=1;strokeColor=none;fillColor=none;', 40, 20, 'Text');
+		cell = createVertex(graph.appendFontSize('text;html=1;align=center;verticalAlign=middle;resizable=0;' +
+			'points=[];autosize=1;strokeColor=none;fillColor=none;', graph.vertexFontSize), 40, 20, 'Text');
 		
 		if (graph.model.isVertex(cell) && graph.isAutoSizeCell(cell))
 		{
@@ -2463,26 +2187,7 @@ EditorUi.prototype.onKeyPress = function(evt)
 		evt.which !== 27 && !mxEvent.isAltDown(evt) && !mxEvent.isControlDown(evt) && !mxEvent.isMetaDown(evt))
 	{
 		graph.escape();
-		graph.startEditing();
-
-		// Workaround for FF where char is lost if cursor is placed before char
-		if (mxClient.IS_FF)
-		{
-			var ce = graph.cellEditor;
-			
-			if (ce.textarea != null)
-			{
-				ce.textarea.innerHTML = String.fromCharCode(evt.which);
-	
-				// Moves cursor to end of textarea
-				var range = document.createRange();
-				range.selectNodeContents(ce.textarea);
-				range.collapse(false);
-				var sel = window.getSelection();
-				sel.removeAllRanges();
-				sel.addRange(range);
-			}
-		}
+		graph.startEditing(null, String.fromCharCode(evt.which));
 	}
 };
 
@@ -6798,6 +6503,38 @@ EditorUi.prototype.createKeyHandler = function(editor)
 	}
 	
 	return keyHandler;
+};
+
+/**
+ * Creates the keyboard event handler for the current graph and history.
+ */
+EditorUi.prototype.createHelpIcon = function(href)
+{
+	var link = document.createElement('div');
+	link.setAttribute('title', mxResources.get('help'));
+	link.style.display = 'inline';
+	link.style.marginLeft = '8px';
+	link.style.cursor = 'help';
+
+	var icon = document.createElement('img');
+	icon.setAttribute('src', Editor.helpImage);
+	icon.setAttribute('valign', 'middle');
+	icon.setAttribute('border', '0');
+	icon.className = 'geAdaptiveAsset';
+	mxUtils.setOpacity(icon, 60);
+	icon.style.marginTop = '-4px';
+	icon.style.height = '16px';
+	icon.style.width = '16px';
+	link.appendChild(icon);
+
+	mxEvent.addListener(link, 'click', mxUtils.bind(this, function(evt)
+	{
+		this.hideCurrentMenu();
+		this.openLink(href);
+		mxEvent.consume(evt);
+	}));
+
+	return link;
 };
 
 /**

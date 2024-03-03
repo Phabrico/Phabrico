@@ -153,6 +153,26 @@
                 </li>
     }@
 }@
+@{IF @@ACCESS-HIDE-PHRICTION-SEARCH-FILTER@@=True@
+    @{IF @@IS-HIDDEN-BY-SEARCH-FILTER@@=no@
+                <li class="list-item-view">
+                    <a href="#" class="list-item-href" onclick="hideInSearchResults();">
+                        <span class="phui-font-fa fa-user-secret phui-list-item-icon">
+                            <span class="phui-list-item-name">Hide in search results</span>
+                        </span>
+                    </a>
+                </li>
+    }@
+    @{IF @@IS-HIDDEN-BY-SEARCH-FILTER@@=yes@
+                <li class="list-item-view" style="height:20px; margin: 2px 0.5px;">
+                    <a href="#" class="list-item-href" onclick="showInSearchResults();">
+                        <span class="phui-font-fa fa-user-secret fa-stack-2x phui-list-item-icon" style="font-size: 100%;"></span>
+                        <span class="phui-font-fa fa-flash fa-stack-1x phui-list-item-icon" style="color:var(--aphront-dialog-view-background-color);"></span>
+                        <span class="phui-list-item-name" style="font-size: 1em; margin: -2px 13px;">Show in search results</span>
+                    </a>
+                </li>
+    }@
+}@
 @{IF @@HAS-REFERENCES@@=yes@
                 <li class="list-item-view">
                     <a href="#" class="list-item-href" onclick="showReferences();">
@@ -316,6 +336,16 @@ dateModified won't change when a subscription is added or removed
             doAddToFavorites(false);
         }
 
+        function hideInSearchResults()
+        {
+            doHideFromSearchResults(true);
+        }
+
+        function showInSearchResults()
+        {
+            doHideFromSearchResults(false);
+        }
+
         function doAddToFavorites(yes)
         {
             var data = new FormData();
@@ -338,6 +368,30 @@ dateModified won't change when a subscription is added or removed
             }
             addToFavoritesRequest.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
             addToFavoritesRequest.send(data);
+        }
+
+        function doHideFromSearchResults(yes)
+        {
+            var data = new FormData();
+            data.append('token', '@@DOCUMENT-TOKEN@@');
+
+            var hideFromSearchResults = new XMLHttpRequest();
+            hideFromSearchResults.onreadystatechange = function() {
+                if (hideFromSearchResults.readyState == 4 && hideFromSearchResults.status == 200) {
+                    document.location.reload();
+                }
+            };
+
+            if (yes)
+            {
+               hideFromSearchResults.open('POST', 'phriction/hideInSearchResults', true);
+            }
+            else
+            {
+                hideFromSearchResults.open('POST', 'phriction/showInSearchResults', true);
+            }
+            hideFromSearchResults.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+            hideFromSearchResults.send(data);
         }
 
         function approveTranslation() {

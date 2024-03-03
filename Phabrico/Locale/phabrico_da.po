@@ -664,6 +664,12 @@ msgstr "Ingen oversættelse er nødvendig"
 msgid "The original content of this document has changed. You must update the translation before you can approve it."
 msgstr "Det oprindelige indhold af dette dokument er ændret. Du skal opdatere oversættelsen, før du kan godkende den."
 
+msgid "Show in search results"
+msgstr "Vis i søgeresultater"
+
+msgid "Hide in search results"
+msgstr "Skjul i søgeresultater"
+
 # Phame
 msgid "Phame"
 msgstr "Phame"

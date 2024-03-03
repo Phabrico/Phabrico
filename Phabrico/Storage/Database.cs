@@ -26,7 +26,7 @@ namespace Phabrico.Storage
         private static string _datasource = null;
         internal static int _dbVersionInDataFile = 0;
 
-        private static readonly int _dbVersionInApplication = 7;
+        private static readonly int _dbVersionInApplication = 8;
         private static DateTime _utcNextTimeToVacuum = DateTime.MinValue;
 
         private string encryptionKey;
@@ -2088,6 +2088,21 @@ namespace Phabrico.Storage
                            linkedToken VARCHAR(30)
                        );
 
+                    ", Connection))
+                {
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
+
+            if (dbVersion == 8)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       CREATE TABLE IF NOT EXISTS keywordHiddenTokens (
+                           url VARCHAR(30),
+                           accountUserName BLOB,
+
+                           PRIMARY KEY (accountUserName, url)
+                       );
                     ", Connection))
                 {
                     dbCommand.ExecuteNonQuery();

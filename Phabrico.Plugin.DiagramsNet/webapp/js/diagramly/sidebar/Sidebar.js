@@ -119,7 +119,7 @@
 	 */
 	Sidebar.prototype.configuration = [{id: 'general', libs: ['general', 'misc', 'advanced']},
 									   {id: 'uml'}, {id: 'uml25'}, {id: 'search'}, {id: 'er'},
-									   {id: 'azure2', prefix: 'azure2', libs: ['AI Machine Learning', 'Analytics', 'App Services', 'Azure Ecosystem', 'Azure Stack', 'Azure VMware Solution', 'Blockchain', 'Compute', 'Containers', 'CXP', 'Databases', 'DevOps', 'General', 'Identity', 'Integration', 'Internet of Things', 'Intune', 'IoT', 'Management Governance', 'Menu', 'Migrate', 'Mixed Reality', 'Monitor', 'Networking', 'Other', 'Preview', 'Security', 'Storage', 'Web']},
+									   {id: 'azure2', prefix: 'azure2', libs: ['AI Machine Learning', 'Analytics', 'App Services', 'Azure Ecosystem', 'Azure Stack', 'Azure VMware Solution', 'Blockchain', 'Compute', 'Containers', 'CXP', 'Databases', 'DevOps', 'General', 'Identity', 'Integration', 'Internet of Things', 'Intune', 'IoT', 'Management Governance', 'Menu', 'Migrate', 'Mixed Reality', 'Mobile', 'Monitor', 'Networking', 'Other', 'Preview', 'Security', 'Storage', 'Web']},
 	                                   {id: 'ios', prefix: 'ios', libs: [''/*prefix is library*/, '7icons', '7ui']}, 
 	                                   {id: 'android', prefix: 'android', libs: [''/*prefix is library*/]}, {id: 'aws3d'},
 	                                   {id: 'flowchart'}, {id: 'basic'}, {id: 'infographic'}, {id: 'arrows'}, {id: 'arrows2'}, {id: 'lean_mapping'}, {id: 'citrix'}, {id: 'azure'}, {id: 'network'}, {id: 'vvd'}, 
@@ -136,7 +136,6 @@
 	                                   {id: 'pid2', prefix: 'pid2', libs: ['Agitators', 'Apparatus Elements', 'Centrifuges', 'Compressors', 'Compressors ISO', 'Crushers Grinding', 
 	                                          	                          'Driers', 'Engines', 'Feeders', 'Filters', 'Fittings', 'Flow Sensors', 'Heat Exchangers', 'Instruments', 'Misc',
 	                                        	                          'Mixers', 'Piping', 'Pumps', 'Pumps DIN', 'Pumps ISO', 'Separators', 'Shaping Machines', 'Valves', 'Vessels']},
-//           	                           {id: 'salesforce'},
            	                           {id: 'salesforce', prefix: 'salesforce', libs: ['Components', 'Product', 'Platform', 'Industry']},
            	                           {id: 'signs', prefix: 'signs', libs: Sidebar.prototype.signs},
            	                           {id: 'gcp', prefix: 'gcp', libs: Sidebar.prototype.gcp},
@@ -559,8 +558,8 @@
 				if (mxEvent.getSource(evt).nodeName == 'BUTTON')
 				{
 					var svgs = content.getElementsByTagName('svg');
-					var w = 456;
-					var h = (Math.ceil(svgs.length / 6) + 1) * this.thumbHeight;
+					var w = 6 * 68 + 2 * 12;
+					var h = Math.ceil(svgs.length / 6) * 68 + 24 + 12;
 					var root = Graph.createSvgNode(0, 0, w, h, '#ffffff');
 					
 					// Adds title

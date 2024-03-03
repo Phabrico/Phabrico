@@ -469,6 +469,8 @@ namespace Phabrico.Controllers
                                                                                               .ToArray();
                     accountStorage.Set(database, existingAccount);
                 }
+
+                Http.Server.InvalidateNonStaticCache(database, DateTime.MaxValue);
             }
         }
 

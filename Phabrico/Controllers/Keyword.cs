@@ -60,6 +60,7 @@ namespace Phabrico.Controllers
 
             if (parameters.Any())
             {
+                Storage.Account accountStorage = new Storage.Account();
                 Storage.Keyword keywordStorage = new Storage.Keyword();
                 Storage.Maniphest maniphestStorage = new Storage.Maniphest();
                 Storage.PhamePost phamePostStorage = new Storage.PhamePost();
@@ -68,6 +69,8 @@ namespace Phabrico.Controllers
                 using (Storage.Database database = new Storage.Database(EncryptionKey))
                 {
                     List<SearchResult> searchResults = new List<SearchResult>();
+
+                    Phabricator.Data.Account currentAccount = accountStorage.WhoAmI(database, browser);
 
                     // in case the search-filter contains a '/', we have a parameters array with more than 1 element -> combine all elements
                     parameters = new string[] { string.Join("/", parameters) };
@@ -87,7 +90,7 @@ namespace Phabrico.Controllers
                                 break;
 
                             case string newPhabricatorObject when newPhabricatorObject.StartsWith("PHID-NEWTOKEN-"):
-                                searchResult = ProcessPhrictionDocument(httpServer, database, phrictionStorage, token, parameters);
+                                searchResult = ProcessPhrictionDocument(httpServer, database, phrictionStorage, currentAccount, token, parameters);
                                 if (searchResult == null)
                                 {
                                     searchResult = ProcessManiphestTask(httpServer, database, maniphestStorage, token, parameters);
@@ -95,7 +98,7 @@ namespace Phabrico.Controllers
                                 break;
 
                             case string phrictionDocument when phrictionDocument.StartsWith(Phabricator.Data.Phriction.Prefix):
-                                searchResult = ProcessPhrictionDocument(httpServer, database, phrictionStorage, token, parameters);
+                                searchResult = ProcessPhrictionDocument(httpServer, database, phrictionStorage, currentAccount, token, parameters);
                                 break;
 
                             case string blogPost when blogPost.StartsWith(Phabricator.Data.PhamePost.Prefix):
@@ -228,7 +231,7 @@ namespace Phabrico.Controllers
         /// <param name="token">Phriction document token</param>
         /// <param name="parameters">Extra parameters found in Remarkup code</param>
         /// <returns>SearchResult object or null</returns>
-        private SearchResult ProcessPhrictionDocument(Http.Server httpServer, Database database, Storage.Phriction phrictionStorage, string token, string[] parameters)
+        private SearchResult ProcessPhrictionDocument(Http.Server httpServer, Database database, Storage.Phriction phrictionStorage, Phabricator.Data.Account currentAccount, string token, string[] parameters)
         {
             SearchResult searchResult = null;
 
@@ -238,6 +241,11 @@ namespace Phabrico.Controllers
                 if (phrictionDocument != null)
                 {
                     if (httpServer.ValidUserRoles(database, browser, phrictionDocument) == false)
+                    {
+                        return null;
+                    }
+
+                    if (phrictionStorage.IsHiddenFromSearchResults(database, browser, phrictionDocument.Path, currentAccount.UserName))
                     {
                         return null;
                     }

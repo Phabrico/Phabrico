@@ -664,6 +664,12 @@ msgstr "不需要翻译"
 msgid "The original content of this document has changed. You must update the translation before you can approve it."
 msgstr "本文件的原始内容已经改变。你必须在批准前更新翻译。"
 
+msgid "Show in search results"
+msgstr "在搜索中显示"
+
+msgid "Hide in search results"
+msgstr "在搜索中隐藏"
+
 # Phame
 msgid "Phame"
 msgstr "博客"

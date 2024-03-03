@@ -664,6 +664,12 @@ msgstr "Geen vertaling nodig"
 msgid "The original content of this document has changed. You must update the translation before you can approve it."
 msgstr "De oorspronkelijke inhoud van dit document is gewijzigd. U moet de vertaling bijwerken voordat u deze kunt goedkeuren."
 
+msgid "Show in search results"
+msgstr "Toon bij zoeken"
+
+msgid "Hide in search results"
+msgstr "Verberg bij zoeken"
+
 # Phame
 msgid "Phame"
 msgstr "Phame"

@@ -38,12 +38,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.117.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.117.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    <Reference Include="System.Data.SQLite, Version=1.0.118.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\lib\net46\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
@@ -89,6 +89,109 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="webapp\img\lib\mscae\VM_Non_Azure.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\web\SignalR.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\security\Azure_AD_Risky_Signins.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\security\Azure_AD_Risky_Users.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\security\Identity_Secure_Score.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\security\MS_Defender_EASM.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\security\Multifactor_Authentication.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\App_Compliance_Automation.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Arc_Data_services.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Arc_Kubernetes.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Arc_PostgreSQL.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Arc_SQL_Managed_Instance.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Arc_SQL_Server.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Azure_A.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Azure_Center_for_SAP.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Azure_Deployment_Environments.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Azure_Network_Function_Manager_Functions.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Azure_Storage_Mover.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Azure_Video_Indexer.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Backup_Vault.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Central_Service_Instance_for_SAP.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Cost_Export.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Database_Instance_For_SAP.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Data_Collection_Rules.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_CM_Local_Manager.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_DCS_Controller.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Distributer_Control_System.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Engineering_Station.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_External_Management.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Freezer_Monitor.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Historian.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_HMI.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Industrial_Packaging_System.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Industrial_Printer.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Industrial_Robot.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Industrial_Scale_System.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Marquee.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Meter.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_PLC.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Pneumatic_Device.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Programable_Board.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Relay.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Robot_Controller.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_RTU.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Sensor.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Slot.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Defender_Web_Guiding_System.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Elastic_SAN.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Entra_Identity.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Express_Route_Traffic_Collector.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\FHIR_Service.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Kubernetes_Fleet_Manager.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Log_Analytics_Query_Pack.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\MedTech_Service.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\MS_Dev_Box.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Network_Security_Perimeters.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Peerings.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Private_Endpoints.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Resource_Guard.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\SCVMM_Management_Servers.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Targets_Management.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Video_Analyzers.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\other\Virtual_Instance_for_SAP.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\networking\Azure_Firewall_Policy.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\networking\Subnet.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\networking\Virtual_WAN_Hub.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\management_governance\Arc_Machines.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\identity\Administrative_Units.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\identity\External_Identities.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\identity\Security.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\identity\User_Settings.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\general\Dashboard2.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\devops\API_Connections.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\devops\Change_Analysis.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\devops\DevOps_Starter.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\devops\Lab_Accounts.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\containers\Azure_Red_Hat_OpenShift.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\compute\Application_Group.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\compute\Host_Pools.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\compute\Workspaces2.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\analytics\Power_BI_Embedded.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\analytics\Power_Platform.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Anomaly_Detector.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Bonsai.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Computer_Vision.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Content_Moderators.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Custom_Vision.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Face_APIs.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Form_Recognizers.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Immersive_Readers.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Language_Understanding.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Personalizers.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\QnA_Makers.svg" />
+    <EmbeddedResource Include="webapp\img\lib\azure2\ai_machine_learning\Speech_Services.svg" />
+    <EmbeddedResource Include="webapp\img\google-app\edit.png" />
+    <EmbeddedResource Include="webapp\img\google-app\insert.png" />
+    <EmbeddedResource Include="webapp\img\google-app\new.png" />
+    <EmbeddedResource Include="webapp\img\google-app\update-all.png" />
+    <EmbeddedResource Include="webapp\img\google-app\update-selected.png" />
+    <EmbeddedResource Include="webapp\images\icon-192-maskable.png" />
+    <EmbeddedResource Include="webapp\images\icon-192.png" />
+    <EmbeddedResource Include="webapp\images\icon-512-maskable.png" />
+    <EmbeddedResource Include="webapp\images\icon-512.png" />
     <EmbeddedResource Include="webapp\workbox-72a83b64.js" />
     <EmbeddedResource Include="webapp\WEB-INF\lib\pusher-http-java-1.1.0.jar" />
     <EmbeddedResource Include="webapp\stencils\kubernetes2.xml" />
@@ -490,8 +593,6 @@
     <EmbeddedResource Include="webapp\images\ajax-loader.gif" />
     <EmbeddedResource Include="webapp\images\all-diagrams-sel.svg" />
     <EmbeddedResource Include="webapp\images\all-diagrams.svg" />
-    <EmbeddedResource Include="webapp\images\android-chrome-192x192.png" />
-    <EmbeddedResource Include="webapp\images\android-chrome-196x196.png" />
     <EmbeddedResource Include="webapp\images\android-chrome-512x512.png" />
     <EmbeddedResource Include="webapp\images\apple-touch-icon.png" />
     <EmbeddedResource Include="webapp\images\aui-wait.gif" />
@@ -580,7 +681,6 @@
     <EmbeddedResource Include="webapp\images\logo-white.png" />
     <EmbeddedResource Include="webapp\images\logo.png" />
     <EmbeddedResource Include="webapp\images\move.png" />
-    <EmbeddedResource Include="webapp\images\mstile-150x150.png" />
     <EmbeddedResource Include="webapp\images\my-diagrams-sel.svg" />
     <EmbeddedResource Include="webapp\images\my-diagrams.svg" />
     <EmbeddedResource Include="webapp\images\nocolor.png" />
@@ -594,7 +694,6 @@
     <EmbeddedResource Include="webapp\images\plus.png" />
     <EmbeddedResource Include="webapp\images\refresh.png" />
     <EmbeddedResource Include="webapp\images\round-drop.png" />
-    <EmbeddedResource Include="webapp\images\safari-pinned-tab.svg" />
     <EmbeddedResource Include="webapp\images\samepage-icon-color.svg" />
     <EmbeddedResource Include="webapp\images\save.png" />
     <EmbeddedResource Include="webapp\images\sidebar-active_directory.png" />
@@ -3039,11 +3138,11 @@ echo %25CSC%25
 if exist BuildVersion.exe del BuildVersion.exe
 if exist BuildVersion.pdb del BuildVersion.pdb</PreBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.117.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.117.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.117.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.117.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
   </Target>
 </Project>

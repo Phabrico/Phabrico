@@ -559,6 +559,15 @@ namespace Phabrico.Controllers
                         viewPage.SetText("IS-MEMBER-OF-FAVORITES", "no");
                     }
 
+                    if (phrictionStorage.IsHiddenFromSearchResults(database, browser, phrictionDocument.Path, currentAccount.UserName))
+                    {
+                        viewPage.SetText("IS-HIDDEN-BY-SEARCH-FILTER", "yes");
+                    }
+                    else
+                    {
+                        viewPage.SetText("IS-HIDDEN-BY-SEARCH-FILTER", "no");
+                    }
+
                     if (phrictionDocument.Token != null && database.GetDependentObjects(phrictionDocument.Token, browser.Session.Locale).Any())
                     {
                         viewPage.SetText("HAS-REFERENCES", "yes");
@@ -1033,6 +1042,66 @@ namespace Phabrico.Controllers
                     favoriteObjectStorage.Remove(database, favoriteObject);
 
                     InvalidatePhrictionDocumentFromCache(httpServer, database, phrictionToken, browser.Session.Locale);
+                }
+            }
+
+            return null;
+        }
+
+        [UrlController(URL = "/phriction/hideInSearchResults")]
+        public Http.Response.HttpMessage HttpPostHideInSearchResults(Http.Server httpServer, string[] parameters)
+        {
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/hideInSearchResults");
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+
+            Storage.Account accountStorage = new Storage.Account();
+
+            Storage.Phriction phrictionStorage = new Storage.Phriction();
+            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
+                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
+
+                string phrictionToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
+                Phabricator.Data.Phriction phrictionDocument =  phrictionStorage.Get(database, phrictionToken, Language.NotApplicable, false);
+                if (phrictionDocument != null)
+                {
+                    phrictionStorage.HideFromSearchResults(database, phrictionDocument, accountData.UserName, true);
+                    Http.Server.InvalidateNonStaticCache(database, DateTime.UtcNow);
+                }
+            }
+
+            return null;
+        }
+        
+        [UrlController(URL = "/phriction/showInSearchResults")]
+        public Http.Response.HttpMessage HttpPostShowInSearchResults(Http.Server httpServer, string[] parameters)
+        {
+            if (httpServer.Customization.HidePhriction) throw new Phabrico.Exception.HttpNotFound("/phriction/hideInSearchResults");
+
+            SessionManager.Token token = SessionManager.GetToken(browser);
+            if (token == null) throw new Phabrico.Exception.AccessDeniedException(browser.Request.RawUrl, "session expired");
+
+            Storage.Account accountStorage = new Storage.Account();
+
+            Storage.Phriction phrictionStorage = new Storage.Phriction();
+            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            {
+                // set private encryption key
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+
+                Phabricator.Data.Account accountData = accountStorage.WhoAmI(database, browser);
+
+                string phrictionToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
+                Phabricator.Data.Phriction phrictionDocument =  phrictionStorage.Get(database, phrictionToken, Language.NotApplicable, false);
+                if (phrictionDocument != null)
+                {
+                    phrictionStorage.HideFromSearchResults(database, phrictionDocument, accountData.UserName, false);
+                    Http.Server.InvalidateNonStaticCache(database, DateTime.UtcNow);
                 }
             }
 

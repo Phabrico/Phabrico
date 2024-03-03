@@ -664,6 +664,12 @@ msgstr "Nu este necesară nicio traducere"
 msgid "The original content of this document has changed. You must update the translation before you can approve it."
 msgstr "Conținutul original al acestui document a fost modificat. Trebuie să actualizați traducerea înainte de a o aproba."
 
+msgid "Show in search results"
+msgstr "Arată în căutare"
+
+msgid "Hide in search results"
+msgstr "Ascunde în căutare"
+
 # Phame
 msgid "Phame"
 msgstr "Phame"

@@ -601,6 +601,53 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
+        /// Hides or Shows a wiki page (and all underlying documents) from the global search results
+        /// </summary>
+        /// <param name="database">Phabrico database</param>
+        /// <param name="phriction">Phriction document to hide/show</param>
+        /// <param name="accountUserName">User account for which the wiki document should be hidden/shown</param>
+        /// <param name="doHide">True: hide document in search results; False: show document in search results</param>
+        public void HideFromSearchResults(Database database, Phabricator.Data.Phriction phriction, string accountUserName, bool doHide)
+        {
+            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            {
+                if (doHide)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                           INSERT OR REPLACE INTO keywordHiddenTokens(accountUserName, url) 
+                           VALUES (@accountUserName, @url);
+                       ", database.Connection, transaction))
+                    {
+                        database.AddParameter(dbCommand, "accountUserName", accountUserName, Database.EncryptionMode.Default);
+                        database.AddParameter(dbCommand, "url", phriction.Path, Database.EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
+                    }
+                }
+                else
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                           DELETE FROM keywordHiddenTokens
+                           WHERE accountUserName = @accountUserName
+                             AND url = @url;
+                       ", database.Connection, transaction))
+                    {
+                        database.AddParameter(dbCommand, "accountUserName", accountUserName, Database.EncryptionMode.Default);
+                        database.AddParameter(dbCommand, "url", phriction.Path, Database.EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
+                    }
+                }
+
+                transaction.Commit();
+            }
+        }
+
+        /// <summary>
         /// Validates if a given Phriction document is a favorite document for the given account
         /// </summary>
         /// <param name="database"></param>
@@ -627,6 +674,33 @@ namespace Phabrico.Storage
         }
 
         /// <summary>
+        /// Validates if a given Phriction document is hidden from the search results for the given account
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="browser"></param>
+        /// <param name="url"></param>
+        /// <param name="accountUserName"></param>
+        /// <returns></returns>
+        public bool IsHiddenFromSearchResults(Database database, Http.Browser browser, string url, string accountUserName)
+        {
+            // return favorite unstaged phriction documents
+            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       SELECT 1
+                       FROM keywordHiddenTokens
+                       WHERE accountUserName = @accountUserName
+                         AND LOWER(SUBSTR(@url, 1, LENGTH(url))) || '/' = LOWER(url) || '/'
+                   ", database.Connection))
+            {
+                database.AddParameter(dbCommand, "accountUserName", accountUserName, Database.EncryptionMode.Default);
+                database.AddParameter(dbCommand, "url", url, Database.EncryptionMode.None);
+                using (var reader = dbCommand.ExecuteReader())
+                {
+                    return reader.Read();
+                }
+            }
+        }
+        
+        /// <summary>
         /// Removes a Phriction document from the database
         /// </summary>
         /// <param name="database"></param>
@@ -650,6 +724,15 @@ namespace Phabrico.Storage
                     {
                         database.AddParameter(cmdDeleteKeywordInfo, "token", phrictionDocument.Token, Database.EncryptionMode.None);
                         cmdDeleteKeywordInfo.ExecuteNonQuery();
+                    }
+
+                    using (SQLiteCommand cmdDeleteHiddenKeywordTokens = new SQLiteCommand(@"
+                               DELETE FROM keywordHiddenTokens
+                               WHERE url = @url;
+                           ", database.Connection))
+                    {
+                        database.AddParameter(cmdDeleteHiddenKeywordTokens, "url", phrictionDocument.Path, Database.EncryptionMode.None);
+                        cmdDeleteHiddenKeywordTokens.ExecuteNonQuery();
                     }
 
                     using (SQLiteCommand cmdDeleteFavorites = new SQLiteCommand(@"
