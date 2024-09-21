@@ -71,6 +71,11 @@ namespace Phabrico.Phabricator.API
         }
 
         /// <summary>
+        /// Array of Conduit API names which can be executed
+        /// </summary>
+        private static string[] availableConduitAPIs { get; set; } = null;
+
+        /// <summary>
         /// The URL where the Phabricator server is located
         /// </summary>
         public string PhabricatorUrl { get; set; }
@@ -306,6 +311,37 @@ namespace Phabrico.Phabricator.API
 
             // unable to retrieve datetime from HTTP headers: return current datetime
             return DateTime.Now;
+        }
+
+        /// <summary>
+        /// Verifies if some give Conduit API method exists on the Phabricator/Phorge instance
+        /// </summary>
+        /// <param name="conduitAPIName"></param>
+        /// <returns></returns>
+        public bool APIExists(string conduitAPIName)
+        {
+            if (availableConduitAPIs == null)
+            {
+                try
+                {
+                    string json = Query("conduit.query");
+                    JObject accessibleAPIMethods = JsonConvert.DeserializeObject(json) as JObject;
+                    availableConduitAPIs = accessibleAPIMethods["result"]
+                        .OfType<JProperty>()
+                        .Select(token => token.Name)
+                        .ToArray();
+                }
+                catch
+                {
+                }
+            }
+
+            if (availableConduitAPIs == null)
+            {
+                return false;
+            }
+
+            return availableConduitAPIs.Contains(conduitAPIName);
         }
 
         /// <summary>

@@ -314,6 +314,9 @@ msgstr "正在下载用户名"
 msgid "Synchronization.Status.LoadingAccountInfo"
 msgstr "正在下载账户信息"
 
+msgid "Synchronization.Status.LoadingDiagramObjects"
+msgstr "正在下载流程图数据"
+
 msgid "Synchronization.Status.LoadingMacroData"
 msgstr "正在下载宏观数据"
 

@@ -6,6 +6,8 @@ using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using WebDriverManager;
@@ -26,6 +28,49 @@ namespace Phabrico.UnitTests.Selenium
             {
                 return System.IO.Path.GetTempPath() + "PhabricoUnitTests";
             }
+        }
+
+        public bool AreImagesSimilar(byte[] imageData1, byte[] imageData2, double tolerance = 0.01)
+        {
+            using (MemoryStream ms1 = new MemoryStream(imageData1))
+            using (MemoryStream ms2 = new MemoryStream(imageData2))
+            {
+                using (Bitmap bmp1 = new Bitmap(ms1))
+                using (Bitmap bmp2 = new Bitmap(ms2))
+                {
+                    if (bmp1.Width != bmp2.Width || bmp1.Height != bmp2.Height)
+                        return false; // different dimensions => cannot be identical.
+
+                    int totalPixels = bmp1.Width * bmp1.Height;
+                    int differingPixels = 0;
+
+                    for (int y = 0; y < bmp1.Height; y++)
+                    {
+                        for (int x = 0; x < bmp1.Width; x++)
+                        {
+                            Color pixel1 = bmp1.GetPixel(x, y);
+                            Color pixel2 = bmp2.GetPixel(x, y);
+
+                            if (!AreColorsSimilar(pixel1, pixel2))
+                            {
+                                differingPixels++;
+                            }
+                        }
+                    }
+
+                    double differenceRatio = (double)differingPixels / totalPixels;
+                    return differenceRatio <= tolerance; // True if within tolerance, false if images differ too much.
+                }
+            }
+        }
+
+        public bool AreColorsSimilar(Color color1, Color color2, int tolerance = 10)
+        {
+            int rDiff = Math.Abs(color1.R - color2.R);
+            int gDiff = Math.Abs(color1.G - color2.G);
+            int bDiff = Math.Abs(color1.B - color2.B);
+
+            return rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance;
         }
 
         /// <summary>
@@ -131,7 +176,12 @@ namespace Phabrico.UnitTests.Selenium
                 ChromeOptions options = new ChromeOptions();
                 options.AddUserProfilePreference("download.default_directory", DownloadDirectory);
                 options.AddUserProfilePreference("download.prompt_for_download", false);
+                options.AddUserProfilePreference("download.directory_upgrade", true);
+                options.AddUserProfilePreference("safebrowsing.enabled", true);
                 options.AddUserProfilePreference("disable-popup-blocking", "true");
+
+                options.AddArgument("--allow-running-insecure-content");
+                options.AddArgument("--unsafely-treat-insecure-origin-as-secure=" + HttpServer.Address);
 
                 WebBrowser = new OpenQA.Selenium.Chrome.ChromeDriver(options);
                 return;

@@ -225,8 +225,37 @@ namespace Phabrico.Storage
                     }
                     else
                     {
-                        stageData.Token = string.Format("PHID-NEWTOKEN-{0:D16}", newTokenID);
-                        newPhabricatorObject.Token = stageData.Token;
+                        Phabricator.Data.Diagram stagedDiagramData = newPhabricatorObject as Phabricator.Data.Diagram;
+                        if (stagedDiagramData != null)
+                        {
+                            if (stagedDiagramData.ID < 0 && lastExistingTokenId < (ulong)(-stagedDiagramData.ID))
+                            {
+                                newTokenID = (ulong)(-stagedDiagramData.ID);
+                            }
+
+                            if (lastExistingTokenId == 0)
+                            {
+                                newTokenID = 1;
+                            }
+
+                            stageData.Token = string.Format("PHID-NEWTOKEN-{0:D16}", newTokenID);
+                            newPhabricatorObject.Token = stageData.Token;
+
+                            stageData.ObjectID = -(int)newTokenID;
+                            stagedDiagramData.ID = stageData.ObjectID;
+
+                            byte[] decryptedData = stagedDiagramData.Data;
+                            string encryptedData = System.Convert.ToBase64String(decryptedData);
+                            stageData.ContentDataStream = new Base64EIDOStream(encryptedData);
+
+                            // invalidate cached data
+                            Server.InvalidateNonStaticCache(database, DateTime.MaxValue);
+                        }
+                        else
+                        {
+                            stageData.Token = string.Format("PHID-NEWTOKEN-{0:D16}", newTokenID);
+                            newPhabricatorObject.Token = stageData.Token;
+                        }
                     }
 
                     stageData.DateModified = DateTimeOffset.UtcNow;
@@ -250,6 +279,26 @@ namespace Phabrico.Storage
 
                     return stageData.Token;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing staged object
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="diagramObject"></param>
+        /// <returns></returns>
+        public string Edit(Database database, Phabricator.Data.Diagram diagramObject, Browser browser)
+        {
+            if (diagramObject.ID > 0)
+            {
+                // diagramObject is not staged yet
+                return Create(database, browser, diagramObject);
+            }
+            else
+            {
+                Modify(database, diagramObject, browser);
+                return diagramObject.Token;
             }
         }
 
@@ -404,6 +453,13 @@ namespace Phabrico.Storage
                             {
                                 string decryptedBase64Data = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["contentData"]);
                                 stagedFile.DataStream = new Base64EIDOStream(decryptedBase64Data);
+                            }
+
+                            Phabricator.Data.Diagram stagedDiagram = result as Phabricator.Data.Diagram;
+                            if (stagedDiagram != null)
+                            {
+                                string decryptedBase64Data = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["contentData"]);
+                                stagedDiagram.DataStream = new Base64EIDOStream(decryptedBase64Data);
                             }
                         }
 
@@ -874,6 +930,13 @@ namespace Phabrico.Storage
             {
                 stageData.ContentDataStream = modifiedFileObject.DataStream;
                 modifiedFileObject.DateModified = stageData.DateModified;
+            }
+            
+            Phabricator.Data.Diagram modifiedDiagramObject = modifiedPhabricatorObject as Phabricator.Data.Diagram;
+            if (modifiedDiagramObject != null)
+            {
+                stageData.ContentDataStream = modifiedDiagramObject.DataStream;
+                modifiedDiagramObject.DateModified = stageData.DateModified;
             }
 
             stageData.HeaderData = JsonConvert.SerializeObject(modifiedPhabricatorObject);

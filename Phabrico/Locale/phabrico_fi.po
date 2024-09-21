@@ -314,6 +314,9 @@ msgstr "Käyttäjien lataaminen..."
 msgid "Synchronization.Status.LoadingAccountInfo"
 msgstr "Tilin tietojen lataaminen..."
 
+msgid "Synchronization.Status.LoadingDiagramObjects"
+msgstr "Kaavioiden lataaminen..."
+
 msgid "Synchronization.Status.LoadingMacroData"
 msgstr "Makrotietojen lataaminen..."
 

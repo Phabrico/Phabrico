@@ -147,6 +147,15 @@ namespace Phabrico.Controllers
             public Phabricator.Data.Account existingAccount;
 
             /// <summary>
+            /// List of diagram id's per token
+            /// In case a new or modified document or task contains a reference to a diagram, the diagram needs also to be downloaded.
+            /// This dictionary is filled by the ProgressMethod_DownloadManiphestTasks and ProgressMethod_DownloadPhrictionDocuments methods and
+            /// is read and cleared by the ProgressMethod_DownloadDiagramObjects method
+            /// Key is the token of the owner (e.g. maniphest task or phriction document); Value is a list of all referenced diagram-id's
+            /// </summary>
+            public Dictionary<string, List<int>> diagramObjectsPerToken = new Dictionary<string, List<int>>();
+
+            /// <summary>
             /// List of file id's per token
             /// In case a new or modified document or task contains a reference to a file (e.g. an image), the file needs also to be downloaded.
             /// This dictionary is filled by the ProgressMethod_DownloadManiphestTasks and ProgressMethod_DownloadPhrictionDocuments methods and
@@ -291,6 +300,32 @@ namespace Phabrico.Controllers
                 }
 
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Searches for diagram references in the given remarkup content
+        /// </summary>
+        /// <param name="tokenOwner">Token of Phabricator object to which the content belongs to</param>
+        /// <param name="content">The remarkup content</param>
+        /// <param name="diagramObjectsPerToken">Resulting list of referenced diagram-objects</param>
+        private void CollectDiagramObjectsFromContent(string tokenOwner, string content, ref Dictionary<string, List<int>> diagramObjectsPerToken)
+        {
+            List<Match> diagramObjectReferences = RegexSafe.Matches(content, "{DIAG([0-9]+)([^}]*)}").OfType<Match>().OrderByDescending(match => match.Index).ToList();
+            if (diagramObjectReferences.Any())
+            {
+                List<int> diagramTokenList;
+
+                if (diagramObjectsPerToken.TryGetValue(tokenOwner, out diagramTokenList) == false)
+                {
+                    diagramTokenList = new List<int>();
+                    diagramObjectsPerToken[tokenOwner] = diagramTokenList;
+                }
+
+                foreach (Match diagramObjectReference in diagramObjectReferences)
+                {
+                    diagramTokenList.Add(Int32.Parse(diagramObjectReference.Groups[1].Value));
+                }
             }
         }
 
@@ -722,6 +757,7 @@ namespace Phabrico.Controllers
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 20, Method = ProgressMethod_DownloadPhrictionDocuments });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadPhamePosts });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 40, Method = ProgressMethod_DownloadFileObjects });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 20, Method = ProgressMethod_DownloadDiagramObjects });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadMacros });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_UploadTransactions });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_SaveLastDownloadTimeStamp });
@@ -730,6 +766,7 @@ namespace Phabrico.Controllers
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadPhrictionDocuments });  // download uploaded phriction documents again from server so we get the correct tokens
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 5, Method = ProgressMethod_DownloadManiphestTasks });      // download uploaded maniphest tasks again from server so we get the correct tokens
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 10, Method = ProgressMethod_DownloadFileObjects });
+                    synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 10, Method = ProgressMethod_DownloadDiagramObjects });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadUnreferencedFileObjects });
                     synchronizationMethods.Add( new MethodProgress { DurationCoefficient = 1, Method = ProgressMethod_DownloadMacros });
 
@@ -1163,6 +1200,107 @@ namespace Phabrico.Controllers
             SharedResource.Instance.ProgressDescription = Miscellaneous.Locale.TranslateText("Synchronization.Status.CleaningUp.UnreferencedFiles", browser.Session.Locale);
             Storage.Stage.DeleteUnreferencedFiles(synchronizationParameters.database, synchronizationParameters.browser);
         }
+        
+        /// <summary>
+        /// Downloads referenced diagrams from Phabricator
+        /// </summary>
+        /// <param name="synchronizationParameters"></param>
+        /// <param name="processedDuration"></param>
+        /// <param name="totalDuration"></param>
+        public void ProgressMethod_DownloadDiagramObjects(SynchronizationParameters synchronizationParameters, int processedDuration, int totalDuration)
+        {
+            Phabricator.API.Diagram phabricatorDiagramAPI = new Phabricator.API.Diagram();
+            Storage.Diagram diagramStorage = new Storage.Diagram();
+
+            // load all diagrams from phabricator which were referenced in the downloaded phriction and maniphest objects
+            string messageLoadingDiagramObjects = Miscellaneous.Locale.TranslateText("Synchronization.Status.LoadingDiagramObjects", browser.Session.Locale);
+            SharedResource.Instance.ProgressDescription = messageLoadingDiagramObjects;
+            List<int> diagramIDsToDownload = synchronizationParameters.diagramObjectsPerToken
+                                                                          .Values
+                                                                          .SelectMany(diagramObjectId => diagramObjectId)
+                                                                          .Distinct()
+                                                                          .Where(diagramID => diagramStorage.GetByID(synchronizationParameters.database, diagramID, true) == null)
+                                                                          .ToList();
+
+            // include modified diagrams for which the wiki document or maniphest task was not modified
+            List<int> lastModifiedDiagramIDs = phabricatorDiagramAPI.GetModifiedDiagramIDs(
+                                                                            synchronizationParameters.browser.Conduit,
+                                                                            synchronizationParameters.lastDownloadTimestamp
+                                                                    )
+                                                                    .ToList();
+
+            foreach (int modifiedDiagramID in lastModifiedDiagramIDs.ToArray())
+            {
+                if (diagramStorage.GetByID(synchronizationParameters.database, modifiedDiagramID, true) != null)
+                {
+                    if (diagramIDsToDownload.Contains(modifiedDiagramID) == false)
+                    {
+                        diagramIDsToDownload.Add(modifiedDiagramID);
+                    }
+                }
+            }
+
+            List<Phabricator.Data.Diagram> phabricatorDiagramReferences = phabricatorDiagramAPI.GetReferences(synchronizationParameters.database,
+                                                                                                              synchronizationParameters.browser.Conduit,
+                                                                                                              diagramIDsToDownload
+                                                                                                             )
+                                                                                               .ToList();
+
+            int index = 0;
+            int count = phabricatorDiagramReferences.Count();
+            double stepsize = (synchronizationParameters.stepSize * 100.00) / ((double)count * (double)totalDuration);
+            foreach (Phabricator.Data.Diagram phabricatorDiagramReference in phabricatorDiagramReferences)
+            {
+                string size;
+                if (phabricatorDiagramReference.Size > 1024 * 1024)
+                {
+                    size = string.Format("{0} MB", phabricatorDiagramReference.Size / (1024*1024));
+                }
+                else
+                if (phabricatorDiagramReference.Size > 1024)
+                {
+                    size = string.Format("{0} KB", phabricatorDiagramReference.Size / 1024);
+                }
+                else
+                {
+                    size = string.Format("{0} bytes", phabricatorDiagramReference.Size);
+                }
+
+                SharedResource.Instance.ProgressDescription = string.Format("{0} [{1}/{2}] ({3})", messageLoadingDiagramObjects, index++, count, size);
+                SharedResource.Instance.ProgressPercentage += stepsize;
+
+                // sleep a bit, so the progress-bar is shown a little more animated...
+                if ((index % 100) == 0) Thread.Sleep(100);
+
+                Phabricator.Data.Diagram phabricatorDiagram = new Phabricator.Data.Diagram(phabricatorDiagramReference);
+                Base64EIDOStream base64EIDOStream = phabricatorDiagramAPI.DownloadData(synchronizationParameters.browser.Conduit, phabricatorDiagramReference.Token);
+                base64EIDOStream.Seek(0, System.IO.SeekOrigin.Begin);
+                phabricatorDiagram.DataStream = base64EIDOStream;
+                diagramStorage.Add(synchronizationParameters.database, phabricatorDiagram);
+
+                // link diagram-references to their owners (e.g. Phriction document or Maniphest task)
+                foreach (string owner in synchronizationParameters.diagramObjectsPerToken.Where(kvp => kvp.Value.Contains(phabricatorDiagram.ID)).Select(kvp => kvp.Key))
+                {
+                    synchronizationParameters.database.AssignToken(owner, phabricatorDiagram.Token, Language.NotApplicable);
+                }
+
+                // add sync logging
+                if (synchronizationParameters.previousSyncMode == SyncMode.Full)
+                {
+                    Storage.SynchronizationLogging synchronizationLoggingStorage = new Storage.SynchronizationLogging();
+                    Phabricator.Data.SynchronizationLogging synchronizationLogging = new Phabricator.Data.SynchronizationLogging();
+                    synchronizationLogging.Token = phabricatorDiagram.Token;
+                    synchronizationLogging.DateModified = phabricatorDiagram.DateModified;
+                    synchronizationLogging.LastModifiedBy = "";
+                    synchronizationLogging.Title = "DIAG" + phabricatorDiagram.ID;
+                    synchronizationLogging.URL = "diagrams.net/DIAG" + phabricatorDiagram.ID;
+                    synchronizationLogging.PreviousContent = null;
+                    synchronizationLoggingStorage.Add(synchronizationParameters.database, synchronizationLogging);
+                }
+            }
+
+            synchronizationParameters.diagramObjectsPerToken.Clear();
+        }
 
         /// <summary>
         /// Downloads referenced files from Phabricator
@@ -1564,6 +1702,9 @@ namespace Phabrico.Controllers
                 // collect all file object references used in the maniphest task content
                 CollectFileObjectsFromContent(phabricatorManiphestTask.Token, phabricatorManiphestTask.Description, ref synchronizationParameters.fileObjectsPerToken);
 
+                // collect all diagram object references used in the maniphest task content
+                CollectDiagramObjectsFromContent(phabricatorManiphestTask.Token, phabricatorManiphestTask.Description, ref synchronizationParameters.diagramObjectsPerToken);
+
                 // collect all transactions/comments for current maniphest task
                 foreach (Phabricator.Data.Transaction transaction in phabricatorManiphestTask.Transactions)
                 {
@@ -1637,6 +1778,9 @@ namespace Phabrico.Controllers
 
                 // collect all file object references used in the maniphest task content
                 CollectFileObjectsFromContent(newPhamePost.Token, newPhamePost.Content, ref synchronizationParameters.fileObjectsPerToken);
+
+                // collect all diagram object references used in the maniphest task content
+                CollectDiagramObjectsFromContent(newPhamePost.Token, newPhamePost.Content, ref synchronizationParameters.diagramObjectsPerToken);
 
                 // parse task content
                 RemarkupParserOutput remarkupParserOutput;
@@ -1738,9 +1882,6 @@ namespace Phabrico.Controllers
                 foreach (string selectedProject in synchronizationParameters.projectSelected.Where(project => project.Value == Phabricator.Data.Project.Selection.Selected)
                                                                                             .Select(project => project.Key))
                 {
-                    Phabricator.API.Constraint constraintActivatedProject = new Phabricator.API.Constraint("projects", new string[] { selectedProject });
-                    phabricatorPhrictionDocumentConstraints = new Phabricator.API.Constraint[] { constraintActivatedProject };
-
                     if (synchronizationParameters.incrementalDownload)
                     {
                         phabricatorPhrictionDocuments.AddRange(phabricatorPhrictionAPI.GetModifiedPhrictionDocuments(synchronizationParameters.database,
@@ -1751,10 +1892,56 @@ namespace Phabrico.Controllers
                     }
                     else
                     {
-                        phabricatorPhrictionDocuments.AddRange(phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
-                                                                                                             synchronizationParameters.browser.Conduit,
-                                                                                                             phabricatorPhrictionDocumentConstraints)
-                                                              );
+                        if (string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPath) == false)
+                        {
+                            string constraintInitialPath = synchronizationParameters.initialPhrictionPath;
+                            if (constraintInitialPath.StartsWith("w/", StringComparison.OrdinalIgnoreCase))
+                            {
+                                constraintInitialPath = constraintInitialPath.Substring("w/".Length);
+                            }
+
+                            Phabricator.API.Constraint[] rootPageConstraints = new Phabricator.API.Constraint[] {
+                                phabricatorPhrictionDocumentConstraints.FirstOrDefault(),
+                                new Phabricator.API.Constraint("paths", new string[] { constraintInitialPath })
+                            };
+
+                            rootPageConstraints = rootPageConstraints.Where(c => c != null).ToArray();
+
+                            phabricatorPhrictionDocuments.AddRange(
+                                phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
+                                                                              synchronizationParameters.browser.Conduit,
+                                                                              rootPageConstraints));
+
+                            if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree))
+                            {
+                                string[] selectedProjectPHIDs = synchronizationParameters.projectSelected
+                                                                                         .Where(sel => sel.Value == Phabricator.Data.Project.Selection.Selected)
+                                                                                         .Select(sel => sel.Key)
+                                                                                         .ToArray();
+                                string[] rootPageProjectPHIDs = phabricatorPhrictionDocuments.FirstOrDefault()?.Projects.Split(',');
+                                if (rootPageProjectPHIDs != null && Array.TrueForAll(selectedProjectPHIDs, phid => rootPageProjectPHIDs.Contains(phid)) == false)
+                                {
+                                    Phabricator.API.Constraint[] childPageConstraints = new Phabricator.API.Constraint[] {
+                                        phabricatorPhrictionDocumentConstraints.FirstOrDefault(),
+                                        new Phabricator.API.Constraint("parentPaths", new string[] { constraintInitialPath })
+                                    };
+
+                                    childPageConstraints = childPageConstraints.Where(c => c != null).ToArray();
+
+                                    phabricatorPhrictionDocuments.AddRange(phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
+                                                                                                                         synchronizationParameters.browser.Conduit,
+                                                                                                                         childPageConstraints)
+                                                                          );
+                                }
+                            }
+                        }
+                        else
+                        {
+                            phabricatorPhrictionDocuments.AddRange(phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
+                                                                                                                 synchronizationParameters.browser.Conduit,
+                                                                                                                 phabricatorPhrictionDocumentConstraints)
+                                                                  );
+                        }
                     }
                 }
             }
@@ -1770,6 +1957,19 @@ namespace Phabrico.Controllers
                 }
                 else
                 {
+                    if (phabricatorPhrictionDocumentConstraints.Any() == false && string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPath) == false)
+                    {
+                        string constraintInitialPath = synchronizationParameters.initialPhrictionPath;
+                        if (constraintInitialPath.StartsWith("w/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            constraintInitialPath = constraintInitialPath.Substring("w/".Length);
+                        }
+
+                        phabricatorPhrictionDocumentConstraints = new Phabricator.API.Constraint[] {
+                            new Phabricator.API.Constraint("parentPaths", new string[] { constraintInitialPath })
+                        };
+                    }
+
                     phabricatorPhrictionDocuments = phabricatorPhrictionAPI.GetPhrictionDocuments(synchronizationParameters.database,
                                                                                    synchronizationParameters.browser.Conduit,
                                                                                    phabricatorPhrictionDocumentConstraints)
@@ -1788,7 +1988,9 @@ namespace Phabrico.Controllers
             if (phabricatorPhrictionDocuments.Any())
             {
                 // load child documents also if necessary
-                if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree))
+                if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionSelectedProjectsOnlyIncludingDocumentTree)
+                    || synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionOnlyIncludingDocumentTree)
+                   )
                 {
                     List<string> ancestorPages = phabricatorPhrictionDocuments.Select(document => document.Path).OrderBy(path => path).ToList();
                     if (ancestorPages.Contains("/")) ancestorPages = new List<string>(new string[] { "/" });
@@ -1929,6 +2131,16 @@ namespace Phabrico.Controllers
                     }
                 }
 
+                int initialPhrictionPathLength = synchronizationParameters.initialPhrictionPath?.Length ?? 0;
+                if (initialPhrictionPathLength > 0)
+                {
+                    phabricatorPhrictionDocument.Path = phabricatorPhrictionDocument.Path.Substring(initialPhrictionPathLength);
+                    if (string.IsNullOrEmpty(phabricatorPhrictionDocument.Path))
+                    {
+                        phabricatorPhrictionDocument.Path = "/";
+                    }
+                }
+
                 synchronizationParameters.database.MarkFileObject(null, false, phabricatorPhrictionDocument.Token);
                 phrictionStorage.Add(synchronizationParameters.database, phabricatorPhrictionDocument);
 
@@ -1936,6 +2148,9 @@ namespace Phabrico.Controllers
                 {
                     // collect all file object references used in the phriction document content
                     CollectFileObjectsFromContent(phabricatorPhrictionDocument.Token, phabricatorPhrictionDocument.Content, ref synchronizationParameters.fileObjectsPerToken);
+
+                    // collect all diagram object references used in the maniphest task content
+                    CollectDiagramObjectsFromContent(phabricatorPhrictionDocument.Token, phabricatorPhrictionDocument.Content, ref synchronizationParameters.diagramObjectsPerToken);
 
                     // identify parent document
                     string[] urlParts = phabricatorPhrictionDocument.Path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);

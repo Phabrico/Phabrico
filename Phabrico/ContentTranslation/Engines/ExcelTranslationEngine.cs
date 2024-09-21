@@ -274,6 +274,7 @@ namespace Phabrico.ContentTranslation.Engines
                 Parsers.BrokenXML.BrokenXmlText brokenXmlTextToken = brokenXmlToken as Parsers.BrokenXML.BrokenXmlText;
                 if (brokenXmlTextToken != null
                     && RegexSafe.IsMatch(brokenXmlTextToken.Value, @"^{[FTM][^}]*}$", RegexOptions.Singleline) == false
+                    && RegexSafe.IsMatch(brokenXmlTextToken.Value, @"^{DIAG[^}]*}$", RegexOptions.Singleline) == false
                     && (RegexSafe.IsMatch(brokenXmlTextToken.Value, @"[a-zA-Z]", RegexOptions.Singleline)
                         || RegexSafe.IsMatch(brokenXmlTextToken.Value, @"[\p{IsCJKUnifiedIdeographs}\p{IsThai}]", RegexOptions.Singleline)
                        )
@@ -526,9 +527,10 @@ namespace Phabrico.ContentTranslation.Engines
             }
 
             List<Parsers.BrokenXML.BrokenXmlText> brokenXmlTextTokens = brokenXmlTokens.OfType<Parsers.BrokenXML.BrokenXmlText>()
-                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"^{[FTM][^}]*}$", RegexOptions.Singleline) == false)
-                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"[a-zA-Z]", RegexOptions.Singleline)
-                                                                                                || RegexSafe.IsMatch(token.Value, @"[\p{IsCJKUnifiedIdeographs}\p{IsThai}]", RegexOptions.Singleline)
+                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"^{[FTM][^}]*}$", RegexOptions.Singleline) == false)  // token should not be a File, Maniphest task or Macro reference
+                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"^{DIAG[^}]*}$", RegexOptions.Singleline) == false)  // token should not be a Diagram reference
+                                                                                   .Where(token => RegexSafe.IsMatch(token.Value, @"[a-zA-Z]", RegexOptions.Singleline)  // Token should at least contain latin alphabetic characters ...
+                                                                                                || RegexSafe.IsMatch(token.Value, @"[\p{IsCJKUnifiedIdeographs}\p{IsThai}]", RegexOptions.Singleline)  // ... or CJK-related characters
                                                                                          )
                                                                                    .ToList();
 

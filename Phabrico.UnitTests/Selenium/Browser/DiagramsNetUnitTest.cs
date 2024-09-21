@@ -68,8 +68,14 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement diagramsButton = WebBrowser.FindElement(By.ClassName("fa-sitemap"));
             diagramsButton.Click();
 
-            // confirm "Leave site?" dialog
-            WebBrowser.SwitchTo().Alert().Accept(); 
+            try
+            {
+                // confirm "Leave site?" dialog
+                WebBrowser.SwitchTo().Alert().Accept();
+            }
+            catch
+            {
+            }
 
             // wait until DiagramsNet IFrame content is fully loaded
             wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
@@ -199,8 +205,14 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement diagramsButton = WebBrowser.FindElement(By.ClassName("fa-sitemap"));
             diagramsButton.Click();
 
-            // confirm "Leave site?" dialog
-            WebBrowser.SwitchTo().Alert().Accept();
+            try
+            {
+                // confirm "Leave site?" dialog
+                WebBrowser.SwitchTo().Alert().Accept();
+            }
+            catch
+            {
+            }
 
             // wait until DiagramsNet IFrame content is fully loaded
             wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());

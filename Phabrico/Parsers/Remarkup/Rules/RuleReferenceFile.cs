@@ -206,6 +206,8 @@ namespace Phabrico.Parsers.Remarkup.Rules
         internal override string ConvertXmlToRemarkup(Storage.Database database, Browser browser, string innerText, Dictionary<string, string> attributes)
         {
             Match match = RegexSafe.Match(innerText, @"^{F(TRAN)?(-?[0-9]+)([^}]*)}", RegexOptions.Singleline);
+            if (match.Success == false) return innerText;
+
             FileID = Int32.Parse(match.Groups[2].Value);
 
             Storage.Stage stageStorage = new Storage.Stage();
@@ -244,7 +246,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
                     // mark file object as 'unreviewed'
                     Storage.Content content = new Storage.Content(database);
-                    string clonedFileObjectTitle = string.Format("F(TRAN)?{0} ({1})", fileObject.ID, browser.Session.Locale);
+                    string clonedFileObjectTitle = string.Format("F{0} ({1})", fileObject.ID, browser.Session.Locale);
                     content.AddTranslation(clonedFileObject.Token, browser.Session.Locale, clonedFileObjectTitle, "");
 
                     // modify innerText

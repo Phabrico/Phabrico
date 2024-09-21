@@ -1,0 +1,1837 @@
+{
+  "result": {
+    "almanac.binding.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.binding.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.device.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.device.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.interface.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.interface.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.namespace.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.namespace.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.network.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.network.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.service.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "almanac.service.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "audit.query": {
+      "description": "Query audit requests.",
+      "params": {
+        "auditorPHIDs": "optional list<phid>",
+        "commitPHIDs": "optional list<phid>",
+        "status": "optional string-constant<\"audit-status-any\", \"audit-status-open\", \"audit-status-concern\", \"audit-status-accepted\", \"audit-status-partial\"> (default = \"audit-status-any\")",
+        "offset": "optional int",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "list<dict>"
+    },
+    "auth.logout": {
+      "description": "Terminate all web login sessions. If called via OAuth, also terminate the current OAuth token.\n\nWARNING: This method does what it claims on the label. If you call this method via the test console in the web UI, it will log you out!",
+      "params": [],
+      "return": "void"
+    },
+    "auth.querypublickeys": {
+      "description": "Query public keys.",
+      "params": {
+        "ids": "optional list<id>",
+        "phids": "optional list<phid>",
+        "objectPHIDs": "optional list<phid>",
+        "keys": "optional list<string>",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "result-set"
+    },
+    "badge.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "badge.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "conduit.connect": {
+      "description": "Connect a session-based client.",
+      "params": {
+        "client": "required string",
+        "clientVersion": "required int",
+        "clientDescription": "optional string",
+        "user": "optional string",
+        "authToken": "optional int",
+        "authSignature": "optional string",
+        "host": "deprecated"
+      },
+      "return": "dict<string, any>"
+    },
+    "conduit.getcapabilities": {
+      "description": "List capabilities, wire formats, and authentication protocols available on this server.",
+      "params": [],
+      "return": "dict<string, any>"
+    },
+    "conduit.getcertificate": {
+      "description": "Retrieve certificate information for a user.",
+      "params": {
+        "token": "required string",
+        "host": "required string"
+      },
+      "return": "dict<string, any>"
+    },
+    "conduit.ping": {
+      "description": "Basic ping for monitoring or a health-check.",
+      "params": [],
+      "return": "string"
+    },
+    "conduit.query": {
+      "description": "Returns the parameters of the Conduit methods.",
+      "params": [],
+      "return": "dict<dict>"
+    },
+    "conpherence.createthread": {
+      "description": "Create a new conpherence thread.",
+      "params": {
+        "title": "required string",
+        "topic": "optional string",
+        "message": "optional string",
+        "participantPHIDs": "required list<phids>"
+      },
+      "return": "nonempty dict"
+    },
+    "conpherence.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "conpherence.querythread": {
+      "description": "Query for Conpherence threads for the logged in user. You can query by IDs or PHIDs for specific Conpherence threads. Otherwise, specify limit and offset to query the most recently updated Conpherences for the logged in user.",
+      "params": {
+        "ids": "optional array<int>",
+        "phids": "optional array<phids>",
+        "limit": "optional int",
+        "offset": "optional int"
+      },
+      "return": "nonempty dict"
+    },
+    "conpherence.querytransaction": {
+      "description": "Query for transactions for the logged in user within a specific Conpherence room. You can specify the room by ID or PHID. Otherwise, specify limit and offset to query the most recent transactions within the Conpherence room for the logged in user.",
+      "params": {
+        "roomID": "optional int",
+        "roomPHID": "optional phid",
+        "limit": "optional int",
+        "offset": "optional int"
+      },
+      "return": "nonempty dict"
+    },
+    "conpherence.updatethread": {
+      "description": "Update an existing conpherence room.",
+      "params": {
+        "id": "optional int",
+        "phid": "optional phid",
+        "title": "optional string",
+        "message": "optional string",
+        "addParticipantPHIDs": "optional list<phids>",
+        "removeParticipantPHID": "optional phid"
+      },
+      "return": "bool"
+    },
+    "countdown.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "countdown.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "dashboard.panel.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "differential.changeset.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "differential.close": {
+      "description": "Close a Differential revision.",
+      "params": {
+        "revisionID": "required int"
+      },
+      "return": "void"
+    },
+    "differential.createcomment": {
+      "description": "Add a comment to a Differential revision.",
+      "params": {
+        "revision_id": "required revisionid",
+        "message": "optional string",
+        "action": "optional string",
+        "silent": "optional bool",
+        "attach_inlines": "optional bool"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.creatediff": {
+      "description": "Create a new Differential diff.",
+      "params": {
+        "changes": "required list<dict>",
+        "sourceMachine": "required string",
+        "sourcePath": "required string",
+        "branch": "required string",
+        "bookmark": "optional string",
+        "sourceControlSystem": "required string-constant<\"svn\", \"git\", \"hg\">",
+        "sourceControlPath": "required string",
+        "sourceControlBaseRevision": "required string",
+        "creationMethod": "optional string",
+        "lintStatus": "required string-constant<\"none\", \"skip\", \"okay\", \"warn\", \"fail\">",
+        "unitStatus": "required string-constant<\"none\", \"skip\", \"okay\", \"warn\", \"fail\">",
+        "repositoryPHID": "optional phid",
+        "parentRevisionID": "deprecated",
+        "authorPHID": "deprecated",
+        "repositoryUUID": "deprecated"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.createinline": {
+      "description": "Add an inline comment to a Differential revision.",
+      "params": {
+        "revisionID": "optional revisionid",
+        "diffID": "optional diffid",
+        "filePath": "required string",
+        "isNewFile": "required bool",
+        "lineNumber": "required int",
+        "lineLength": "optional int",
+        "content": "required string"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.createrawdiff": {
+      "description": "Create a new Differential diff from a raw diff source.",
+      "params": {
+        "diff": "required string",
+        "repositoryPHID": "optional string",
+        "viewPolicy": "optional string"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.createrevision": {
+      "description": "Create a new Differential revision.",
+      "params": {
+        "user": "ignored",
+        "diffid": "required diffid",
+        "fields": "required dict"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.diff.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "differential.getcommitmessage": {
+      "description": "Retrieve Differential commit messages or message templates.",
+      "params": {
+        "revision_id": "optional revision_id",
+        "fields": "optional dict<string, wild>",
+        "edit": "optional string-constant<\"edit\", \"create\">"
+      },
+      "return": "nonempty string"
+    },
+    "differential.getcommitpaths": {
+      "description": "Query which paths should be included when committing a Differential revision.",
+      "params": {
+        "revision_id": "required int"
+      },
+      "return": "nonempty list<string>"
+    },
+    "differential.getrawdiff": {
+      "description": "Retrieve a raw diff",
+      "params": {
+        "diffID": "required diffID"
+      },
+      "return": "nonempty string"
+    },
+    "differential.parsecommitmessage": {
+      "description": "Parse commit messages for Differential fields.",
+      "params": {
+        "corpus": "required string",
+        "partial": "optional bool"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.query": {
+      "description": "Query Differential revisions which match certain criteria.",
+      "params": {
+        "authors": "optional list<phid>",
+        "ccs": "optional list<phid>",
+        "reviewers": "optional list<phid>",
+        "paths": "unsupported",
+        "commitHashes": "optional list<pair<string-constant<\"gtcm\", \"gttr\", \"hgcm\">, string>>",
+        "status": "optional string-constant<\"status-any\", \"status-open\", \"status-accepted\", \"status-needs-review\", \"status-needs-revision\", \"status-closed\", \"status-abandoned\">",
+        "order": "optional string-constant<\"order-modified\", \"order-created\">",
+        "limit": "optional uint",
+        "offset": "optional uint",
+        "ids": "optional list<uint>",
+        "phids": "optional list<phid>",
+        "subscribers": "optional list<phid>",
+        "responsibleUsers": "optional list<phid>",
+        "branches": "optional list<string>"
+      },
+      "return": "list<dict>"
+    },
+    "differential.querydiffs": {
+      "description": "Query differential diffs which match certain criteria.",
+      "params": {
+        "ids": "optional list<uint>",
+        "revisionIDs": "optional list<uint>"
+      },
+      "return": "list<dict>"
+    },
+    "differential.revision.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "differential.revision.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "differential.setdiffproperty": {
+      "description": "Attach properties to Differential diffs.",
+      "params": {
+        "diff_id": "required diff_id",
+        "name": "required string",
+        "data": "required string"
+      },
+      "return": "void"
+    },
+    "differential.updaterevision": {
+      "description": "Update a Differential revision.",
+      "params": {
+        "id": "required revisionid",
+        "diffid": "required diffid",
+        "fields": "required dict",
+        "message": "required string"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.getalldiffs": {
+      "description": "Load all diffs for given revisions from Differential.",
+      "params": {
+        "revision_ids": "required list<int>"
+      },
+      "return": "dict"
+    },
+    "differential.getdiff": {
+      "description": "Load the content of a diff from Differential by revision ID or diff ID.",
+      "params": {
+        "revision_id": "optional id",
+        "diff_id": "optional id"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.getrevision": {
+      "description": "Load the content of a revision from Differential.",
+      "params": {
+        "revision_id": "required id"
+      },
+      "return": "nonempty dict"
+    },
+    "differential.getrevisioncomments": {
+      "description": "Retrieve Differential Revision Comments.",
+      "params": {
+        "ids": "required list<int>",
+        "inlines": "optional bool (deprecated)"
+      },
+      "return": "nonempty list<dict<string, wild>>"
+    },
+    "diffusion.blame": {
+      "description": "Get blame information for a list of paths.",
+      "params": {
+        "paths": "required list<string>",
+        "commit": "required string",
+        "timeout": "optional int",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "map<string, wild>"
+    },
+    "diffusion.branchquery": {
+      "description": "Determine what branches exist for a repository.",
+      "params": {
+        "closed": "optional bool",
+        "limit": "optional int",
+        "offset": "optional int",
+        "contains": "optional string",
+        "patterns": "optional list<string>",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "list<dict>"
+    },
+    "diffusion.browsequery": {
+      "description": "File(s) information for a repository at an (optional) path and (optional) commit.",
+      "params": {
+        "path": "optional string",
+        "commit": "optional string",
+        "needValidityOnly": "optional bool",
+        "limit": "optional int",
+        "offset": "optional int",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "array"
+    },
+    "diffusion.commit.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "diffusion.commit.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "diffusion.commitparentsquery": {
+      "description": "Get the commit identifiers for a commit's parent or parents.",
+      "params": {
+        "commit": "required string",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "list<string>"
+    },
+    "diffusion.diffquery": {
+      "description": "Get diff information from a repository for a specific path at an (optional) commit.",
+      "params": {
+        "path": "required string",
+        "commit": "optional string",
+        "encoding": "optional string",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "array"
+    },
+    "diffusion.existsquery": {
+      "description": "Determine if code exists in a version control system.",
+      "params": {
+        "commit": "required string",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "bool"
+    },
+    "diffusion.filecontentquery": {
+      "description": "Retrieve file content from a repository.",
+      "params": {
+        "path": "required string",
+        "commit": "required string",
+        "timeout": "optional int",
+        "byteLimit": "optional int",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "array"
+    },
+    "diffusion.findsymbols": {
+      "description": "Retrieve Diffusion symbol information.",
+      "params": {
+        "name": "optional string",
+        "namePrefix": "optional string",
+        "context": "optional string",
+        "language": "optional string",
+        "type": "optional string",
+        "repositoryPHID": "optional string"
+      },
+      "return": "nonempty list<dict>"
+    },
+    "diffusion.historyquery": {
+      "description": "Returns history information for a repository at a specific commit and path.",
+      "params": {
+        "commit": "required string",
+        "against": "optional string",
+        "path": "required string",
+        "offset": "required int",
+        "limit": "required int",
+        "needDirectChanges": "optional bool",
+        "needChildChanges": "optional bool",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "array"
+    },
+    "diffusion.internal.ancestors": {
+      "description": "Internal method for filtering ref ancestors.",
+      "params": {
+        "ref": "required string",
+        "commits": "required list<string>",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "list<string>"
+    },
+    "diffusion.internal.gitrawdiffquery": {
+      "description": "Internal method for getting raw diff information.",
+      "params": {
+        "commit": "required string",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "string"
+    },
+    "diffusion.lastmodifiedquery": {
+      "description": "Get the commits at which paths were last modified.",
+      "params": {
+        "paths": "required map<string, string>",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "map<string, string>"
+    },
+    "diffusion.mergedcommitsquery": {
+      "description": "Merged commit information for a specific commit in a repository.",
+      "params": {
+        "commit": "required string",
+        "limit": "optional int",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "array"
+    },
+    "diffusion.querycommits": {
+      "description": "Retrieve information about commits.",
+      "params": {
+        "ids": "optional list<int>",
+        "phids": "optional list<phid>",
+        "names": "optional list<string>",
+        "repositoryPHID": "optional phid",
+        "needMessages": "optional bool",
+        "bypassCache": "optional bool",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, dict>"
+    },
+    "diffusion.querypaths": {
+      "description": "Filename search on a repository.",
+      "params": {
+        "path": "required string",
+        "commit": "required string",
+        "pattern": "optional string",
+        "limit": "optional int",
+        "offset": "optional int",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "list<string>"
+    },
+    "diffusion.rawdiffquery": {
+      "description": "Get raw diff information from a repository for a specific commit at an (optional) path.",
+      "params": {
+        "commit": "required string",
+        "path": "optional string",
+        "linesOfContext": "optional int",
+        "againstCommit": "optional string",
+        "timeout": "optional int",
+        "byteLimit": "optional int",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "string"
+    },
+    "diffusion.refsquery": {
+      "description": "Query a git repository for ref information at a specific commit.",
+      "params": {
+        "commit": "required string",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "array"
+    },
+    "diffusion.repository.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "diffusion.repository.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "diffusion.resolverefs": {
+      "description": "Resolve references into stable, canonical identifiers.",
+      "params": {
+        "refs": "required list<string>",
+        "types": "optional list<string>",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "dict<string, list<dict<string, wild>>>"
+    },
+    "diffusion.searchquery": {
+      "description": "Search (grep) a repository at a specific path and commit.",
+      "params": {
+        "path": "required string",
+        "commit": "optional string",
+        "grep": "required string",
+        "limit": "optional int",
+        "offset": "optional int",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "array"
+    },
+    "diffusion.tagsquery": {
+      "description": "Retrieve information about tags in a repository.",
+      "params": {
+        "names": "optional list<string>",
+        "commit": "optional string",
+        "needMessages": "optional bool",
+        "offset": "optional int",
+        "limit": "optional int",
+        "callsign": "optional string (deprecated)",
+        "repository": "optional string",
+        "branch": "optional string"
+      },
+      "return": "array"
+    },
+    "diffusion.uri.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "diffusion.getlintmessages": {
+      "description": "Get lint messages for existing code.",
+      "params": {
+        "repositoryPHID": "required phid",
+        "branch": "required string",
+        "commit": "optional string",
+        "files": "required list<string>"
+      },
+      "return": "list<dict>"
+    },
+    "diffusion.looksoon": {
+      "description": "Advises this server to look for new commits in a repository as soon as possible. This advice is most useful if you have just pushed new commits to that repository.",
+      "params": {
+        "callsigns": "optional list<string> (deprecated)",
+        "repositories": "optional list<string>",
+        "urgency": "optional string"
+      },
+      "return": "void"
+    },
+    "diffusion.updatecoverage": {
+      "description": "Publish coverage information for a repository.",
+      "params": {
+        "repositoryPHID": "required phid",
+        "branch": "required string",
+        "commit": "required string",
+        "coverage": "required map<string, string>",
+        "mode": "optional string-constant<\"overwrite\", \"update\">"
+      },
+      "return": "void"
+    },
+    "diffusion.getrecentcommitsbypath": {
+      "description": "Get commit identifiers for recent commits affecting a given path.",
+      "params": {
+        "callsign": "required string",
+        "path": "required string",
+        "branch": "optional string",
+        "limit": "optional int"
+      },
+      "return": "nonempty list<string>"
+    },
+    "drydock.authorization.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "drydock.blueprint.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "drydock.blueprint.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "drydock.lease.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "drydock.resource.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "edge.search": {
+      "description": "Read edge relationships between objects.",
+      "params": {
+        "sourcePHIDs": "list<phid>",
+        "types": "list<const>",
+        "destinationPHIDs": "optional list<phid>",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "list<dict>"
+    },
+    "feed.query": {
+      "description": "Query the feed for stories",
+      "params": {
+        "filterPHIDs": "optional list <phid>",
+        "limit": "optional int (default 100)",
+        "after": "optional int",
+        "before": "optional int",
+        "view": "optional string (data, html, html-summary, text)"
+      },
+      "return": "nonempty dict"
+    },
+    "file.allocate": {
+      "description": "Prepare to upload a file.",
+      "params": {
+        "name": "string",
+        "contentLength": "int",
+        "contentHash": "optional string",
+        "viewPolicy": "optional string",
+        "deleteAfterEpoch": "optional int"
+      },
+      "return": "map<string, wild>"
+    },
+    "file.download": {
+      "description": "Download a file from the server.",
+      "params": {
+        "phid": "required phid"
+      },
+      "return": "nonempty base64-bytes"
+    },
+    "file.info": {
+      "description": "Get information about a file.",
+      "params": {
+        "phid": "optional phid",
+        "id": "optional id"
+      },
+      "return": "nonempty dict"
+    },
+    "file.querychunks": {
+      "description": "Get information about file chunks.",
+      "params": {
+        "filePHID": "phid"
+      },
+      "return": "list<wild>"
+    },
+    "file.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "file.upload": {
+      "description": "Upload a file to the server.",
+      "params": {
+        "data_base64": "required nonempty base64-bytes",
+        "name": "optional string",
+        "viewPolicy": "optional valid policy string or <phid>",
+        "canCDN": "optional bool"
+      },
+      "return": "nonempty guid"
+    },
+    "file.uploadchunk": {
+      "description": "Upload a chunk of file data to the server.",
+      "params": {
+        "filePHID": "phid",
+        "byteStart": "int",
+        "data": "string",
+        "dataEncoding": "string"
+      },
+      "return": "void"
+    },
+    "file.uploadhash": {
+      "description": "Obsolete. Has no effect.",
+      "params": {
+        "hash": "required nonempty string",
+        "name": "required nonempty string"
+      },
+      "return": "null"
+    },
+    "flag.delete": {
+      "description": "Clear a flag.",
+      "params": {
+        "id": "optional id",
+        "objectPHID": "optional phid"
+      },
+      "return": "dict | null"
+    },
+    "flag.edit": {
+      "description": "Create or modify a flag.",
+      "params": {
+        "objectPHID": "required phid",
+        "color": "optional int",
+        "note": "optional string"
+      },
+      "return": "dict"
+    },
+    "flag.query": {
+      "description": "Query flag markers.",
+      "params": {
+        "ownerPHIDs": "optional list<phid>",
+        "types": "optional list<type>",
+        "objectPHIDs": "optional list<phid>",
+        "offset": "optional int",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "list<dict>"
+    },
+    "harbormaster.artifact.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.build.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.build.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.buildable.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.buildable.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.buildplan.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.buildplan.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.createartifact": {
+      "description": "Use this method to attach artifacts to build targets while running builds. Artifacts can be used to carry data through a complex build workflow, provide extra information to users, or store build results.\n\nWhen creating an artifact, you will choose an `artifactType` from this table. These types of artifacts are supported:\n| Artifact Type | Name | Summary |\n|-------------|--------------|--------------|\n| `host` | **Drydock Host** | References a host lease from Drydock. |\n| `working-copy` | **Drydock Working Copy** | References a working copy lease from Drydock. |\n| `file` | **File** | Stores a reference to file data. |\n| `uri` | **URI** | Stores a URI. |\n\nEach artifact also needs an `artifactKey`, which names the artifact. Finally, you will provide some `artifactData` to fill in the content of the artifact. The data you provide depends on what type of artifact you are creating.\nDrydock Host\n--------------------------\n\nReferences a host lease from Drydock.\n\nCreate an artifact of this type by passing `host` as the `artifactType`. When creating an artifact of this type, provide these parameters as a dictionary to `artifactData`:\n| Key | Type | Description |\n|-------------|--------------|--------------|\n| `drydockLeasePHID` | //string// | Drydock working copy lease to create an artifact from. |\nFor example:\n```lang=json\n{\n  \"drydockLeasePHID\": \"PHID-DRYL-abcdefghijklmnopqrst\"\n}\n\n```\nDrydock Working Copy\n--------------------------\n\nReferences a working copy lease from Drydock.\n\nCreate an artifact of this type by passing `working-copy` as the `artifactType`. When creating an artifact of this type, provide these parameters as a dictionary to `artifactData`:\n| Key | Type | Description |\n|-------------|--------------|--------------|\n| `drydockLeasePHID` | //string// | Drydock working copy lease to create an artifact from. |\nFor example:\n```lang=json\n{\n  \"drydockLeasePHID\": \"PHID-DRYL-abcdefghijklmnopqrst\"\n}\n\n```\nFile\n--------------------------\n\nStores a reference to file data.\n\nCreate an artifact of this type by passing `file` as the `artifactType`. When creating an artifact of this type, provide these parameters as a dictionary to `artifactData`:\n| Key | Type | Description |\n|-------------|--------------|--------------|\n| `filePHID` | //string// | File to create an artifact from. |\nFor example:\n```lang=json\n{\n  \"filePHID\": \"PHID-FILE-abcdefghijklmnopqrst\"\n}\n\n```\nURI\n--------------------------\n\nStores a URI.\n\nWith `ui.external`, you can use this artifact type to add links to build results in an external build system.\n\nCreate an artifact of this type by passing `uri` as the `artifactType`. When creating an artifact of this type, provide these parameters as a dictionary to `artifactData`:\n| Key | Type | Description |\n|-------------|--------------|--------------|\n| `uri` | //string// | The URI to store. |\n| `name` | //optional string// | Optional label for this URI. |\n| `ui.external` | //optional bool// | If true, display this URI in the UI as an link to additional build details in an external build system. |\nFor example:\n```lang=json\n{\n  \"uri\": \"https://buildserver.mycompany.com/build/123/\",\n  \"name\": \"View External Build Results\",\n  \"ui.external\": true\n}\n\n```",
+      "params": {
+        "buildTargetPHID": "phid",
+        "artifactKey": "string",
+        "artifactType": "string",
+        "artifactData": "map<string, wild>"
+      },
+      "return": "wild"
+    },
+    "harbormaster.log.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.queryautotargets": {
+      "description": "Load or create build autotargets.",
+      "params": {
+        "objectPHID": "phid",
+        "targetKeys": "list<string>"
+      },
+      "return": "map<string, phid>"
+    },
+    "harbormaster.querybuildables": {
+      "description": "Query Harbormaster buildables.",
+      "params": {
+        "ids": "optional list<id>",
+        "phids": "optional list<phid>",
+        "buildablePHIDs": "optional list<phid>",
+        "containerPHIDs": "optional list<phid>",
+        "manualBuildables": "optional bool",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "wild"
+    },
+    "harbormaster.sendmessage": {
+      "description": "Pause, abort, restart, and report results for builds.",
+      "params": {
+        "receiver": "required string|phid",
+        "type": "required string-constant<\"abort\", \"fail\", \"pass\", \"pause\", \"restart\", \"resume\", \"work\">",
+        "unit": "optional list<wild>",
+        "lint": "optional list<wild>",
+        "buildTargetPHID": "deprecated optional phid"
+      },
+      "return": "void"
+    },
+    "harbormaster.step.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.step.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.target.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "harbormaster.querybuilds": {
+      "description": "Query Harbormaster builds.",
+      "params": {
+        "ids": "optional list<id>",
+        "phids": "optional list<phid>",
+        "buildStatuses": "optional list<string>",
+        "buildablePHIDs": "optional list<phid>",
+        "buildPlanPHIDs": "optional list<phid>",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "wild"
+    },
+    "internal.commit.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "legalpad.document.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "legalpad.signature.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "macro.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "macro.query": {
+      "description": "Retrieve image macro information.",
+      "params": {
+        "authorPHIDs": "optional list<phid>",
+        "phids": "optional list<phid>",
+        "ids": "optional list<id>",
+        "names": "optional list<string>",
+        "nameLike": "optional string"
+      },
+      "return": "list<dict>"
+    },
+    "macro.creatememe": {
+      "description": "Generate a meme.",
+      "params": {
+        "macroName": "string",
+        "upperText": "optional string",
+        "lowerText": "optional string"
+      },
+      "return": "string"
+    },
+    "maniphest.createtask": {
+      "description": "Create a new Maniphest task.",
+      "params": {
+        "title": "required string",
+        "description": "optional string",
+        "ownerPHID": "optional phid",
+        "viewPolicy": "optional phid or policy string",
+        "editPolicy": "optional phid or policy string",
+        "ccPHIDs": "optional list<phid>",
+        "priority": "optional int",
+        "projectPHIDs": "optional list<phid>",
+        "auxiliary": "optional dict"
+      },
+      "return": "nonempty dict"
+    },
+    "maniphest.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "maniphest.gettasktransactions": {
+      "description": "Retrieve Maniphest task transactions.",
+      "params": {
+        "ids": "required list<int>"
+      },
+      "return": "nonempty list<dict<string, wild>>"
+    },
+    "maniphest.info": {
+      "description": "Retrieve information about a Maniphest task, given its ID.",
+      "params": {
+        "task_id": "required id"
+      },
+      "return": "nonempty dict"
+    },
+    "maniphest.priority.search": {
+      "description": "Returns information about the possible priorities for Maniphest tasks.",
+      "params": [],
+      "return": "map<string, wild>"
+    },
+    "maniphest.query": {
+      "description": "Execute complex searches for Maniphest tasks.",
+      "params": {
+        "ids": "optional list<uint>",
+        "phids": "optional list<phid>",
+        "ownerPHIDs": "optional list<phid>",
+        "authorPHIDs": "optional list<phid>",
+        "projectPHIDs": "optional list<phid>",
+        "ccPHIDs": "optional list<phid>",
+        "fullText": "optional string",
+        "status": "optional string-constant<\"status-any\", \"status-open\", \"status-closed\", \"status-resolved\", \"status-wontfix\", \"status-invalid\", \"status-spite\", \"status-duplicate\">",
+        "order": "optional string-constant<\"order-priority\", \"order-created\", \"order-modified\">",
+        "limit": "optional int",
+        "offset": "optional int"
+      },
+      "return": "list"
+    },
+    "maniphest.querystatuses": {
+      "description": "Retrieve information about possible Maniphest task status values.",
+      "params": [],
+      "return": "nonempty dict<string, wild>"
+    },
+    "maniphest.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "maniphest.status.search": {
+      "description": "Returns information about the possible statuses for Maniphest tasks.",
+      "params": [],
+      "return": "map<string, wild>"
+    },
+    "maniphest.update": {
+      "description": "Update an existing Maniphest task.",
+      "params": {
+        "id": "optional int",
+        "phid": "optional int",
+        "title": "optional string",
+        "description": "optional string",
+        "ownerPHID": "optional phid",
+        "viewPolicy": "optional phid or policy string",
+        "editPolicy": "optional phid or policy string",
+        "ccPHIDs": "optional list<phid>",
+        "priority": "optional int",
+        "projectPHIDs": "optional list<phid>",
+        "auxiliary": "optional dict",
+        "status": "optional string",
+        "comments": "optional string"
+      },
+      "return": "nonempty dict"
+    },
+    "owners.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "owners.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "passphrase.query": {
+      "description": "Query credentials.",
+      "params": {
+        "ids": "optional list<int>",
+        "phids": "optional list<phid>",
+        "needSecrets": "optional bool",
+        "needPublicKeys": "optional bool",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "list<dict>"
+    },
+    "paste.create": {
+      "description": "Create a new paste.",
+      "params": {
+        "content": "required string",
+        "title": "optional string",
+        "language": "optional string"
+      },
+      "return": "nonempty dict"
+    },
+    "paste.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "paste.query": {
+      "description": "Query Pastes.",
+      "params": {
+        "ids": "optional list<int>",
+        "phids": "optional list<phid>",
+        "authorPHIDs": "optional list<phid>",
+        "after": "optional int",
+        "limit": "optional int, default = 100"
+      },
+      "return": "list<dict>"
+    },
+    "paste.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "paste.info": {
+      "description": "Retrieve an array of information about a paste.",
+      "params": {
+        "paste_id": "required id"
+      },
+      "return": "nonempty dict"
+    },
+    "phame.blog.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "phame.blog.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "phame.post.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "phame.post.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "phid.lookup": {
+      "description": "Look up objects by name.",
+      "params": {
+        "names": "required list<string>"
+      },
+      "return": "nonempty dict<string, wild>"
+    },
+    "phid.query": {
+      "description": "Retrieve information about arbitrary PHIDs.",
+      "params": {
+        "phids": "required list<phid>"
+      },
+      "return": "nonempty dict<string, wild>"
+    },
+    "phid.info": {
+      "description": "Retrieve information about an arbitrary PHID.",
+      "params": {
+        "phid": "required phid"
+      },
+      "return": "nonempty dict<string, wild>"
+    },
+    "phriction.content.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "phriction.create": {
+      "description": "Create a Phriction document.",
+      "params": {
+        "slug": "required string",
+        "title": "required string",
+        "content": "required string",
+        "description": "optional string"
+      },
+      "return": "nonempty dict"
+    },
+    "phriction.document.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "phriction.document.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "phriction.edit": {
+      "description": "Update a Phriction document.",
+      "params": {
+        "slug": "required string",
+        "title": "optional string",
+        "content": "optional string",
+        "description": "optional string",
+        "editPolicy": "optional string"
+      },
+      "return": "nonempty dict"
+    },
+    "phriction.history": {
+      "description": "Retrieve history about a Phriction document.",
+      "params": {
+        "slug": "required string"
+      },
+      "return": "nonempty list"
+    },
+    "phriction.info": {
+      "description": "Retrieve information about a Phriction document.",
+      "params": {
+        "slug": "required string"
+      },
+      "return": "nonempty dict"
+    },
+    "portal.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "portal.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "project.column.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "project.create": {
+      "description": "Create a project.",
+      "params": {
+        "name": "required string",
+        "members": "optional list<phid>",
+        "icon": "optional string",
+        "color": "optional string",
+        "tags": "optional list<string>"
+      },
+      "return": "dict"
+    },
+    "project.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "project.query": {
+      "description": "Execute searches for Projects.",
+      "params": {
+        "ids": "optional list<int>",
+        "names": "optional list<string>",
+        "phids": "optional list<phid>",
+        "slugs": "optional list<string>",
+        "icons": "optional list<string>",
+        "colors": "optional list<string>",
+        "status": "optional string-constant<\"status-any\", \"status-open\", \"status-closed\", \"status-active\", \"status-archived\">",
+        "members": "optional list<phid>",
+        "limit": "optional int",
+        "offset": "optional int"
+      },
+      "return": "list"
+    },
+    "project.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "remarkup.process": {
+      "description": "Process text through remarkup.",
+      "params": {
+        "context": "required string-constant<\"phriction\", \"maniphest\", \"differential\", \"phame\", \"feed\", \"diffusion\">",
+        "contents": "required list<string>"
+      },
+      "return": "nonempty dict"
+    },
+    "repository.query": {
+      "description": "Query repositories.",
+      "params": {
+        "ids": "optional list<int>",
+        "phids": "optional list<phid>",
+        "callsigns": "optional list<string>",
+        "vcsTypes": "optional list<string>",
+        "remoteURIs": "optional list<string>",
+        "uuids": "optional list<string>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "list<dict>"
+    },
+    "slowvote.poll.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "slowvote.info": {
+      "description": "Retrieve an array of information about a poll.",
+      "params": {
+        "poll_id": "required id"
+      },
+      "return": "nonempty dict"
+    },
+    "token.give": {
+      "description": "Give or change a token.",
+      "params": {
+        "tokenPHID": "phid|null",
+        "objectPHID": "phid"
+      },
+      "return": "void"
+    },
+    "token.given": {
+      "description": "Query tokens given to objects.",
+      "params": {
+        "authorPHIDs": "list<phid>",
+        "objectPHIDs": "list<phid>",
+        "tokenPHIDs": "list<phid>"
+      },
+      "return": "list<dict>"
+    },
+    "token.query": {
+      "description": "Query tokens.",
+      "params": [],
+      "return": "list<dict>"
+    },
+    "transaction.search": {
+      "description": "Read transactions and comments for a particular object or an entire object type.",
+      "params": {
+        "objectIdentifier": "optional phid|string",
+        "objectType": "optional string",
+        "constraints": "optional map<string, wild>",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "list<dict>"
+    },
+    "user.bot.create": {
+      "description": "Create a new bot user and assign one or more projects to it.",
+      "params": {
+        "username": "required string",
+        "fullName": "required string",
+        "projectPHIDs": "optional array of project PHIDs"
+      },
+      "return": "dict"
+    },
+    "user.edit": {
+      "description": "This is a standard **ApplicationEditor** method which allows you to create and modify objects by applying transactions. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Edit%20Endpoints&type=article&jump=1 | Conduit API: Using Edit Endpoints ]]**.",
+      "params": {
+        "transactions": "list<map<string, wild>>",
+        "objectIdentifier": "optional id|phid|string"
+      },
+      "return": "map<string, wild>"
+    },
+    "user.query": {
+      "description": "Query users.",
+      "params": {
+        "usernames": "optional list<string>",
+        "emails": "optional list<string>",
+        "realnames": "optional list<string>",
+        "phids": "optional list<phid>",
+        "ids": "optional list<uint>",
+        "offset": "optional int",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "list<dict>"
+    },
+    "user.search": {
+      "description": "This is a standard **ApplicationSearch** method which will let you list, query, or search for objects. For documentation on these endpoints, see **[[ https://we.phorge.it/diviner/find/?name=Conduit%20API%3A%20Using%20Search%20Endpoints&type=article&jump=1 | Conduit API: Using Search Endpoints ]]**.",
+      "params": {
+        "queryKey": "optional string",
+        "constraints": "optional map<string, wild>",
+        "attachments": "optional map<string, bool>",
+        "order": "optional order",
+        "before": "optional string",
+        "after": "optional string",
+        "limit": "optional int (default = 100)"
+      },
+      "return": "map<string, wild>"
+    },
+    "user.whoami": {
+      "description": "Retrieve information about the logged-in user.",
+      "params": [],
+      "return": "nonempty dict<string, wild>"
+    },
+    "user.disable": {
+      "description": "Permanently disable specified users (admin only).",
+      "params": {
+        "phids": "required list<phid>"
+      },
+      "return": "void"
+    },
+    "user.enable": {
+      "description": "Re-enable specified users (admin only).",
+      "params": {
+        "phids": "required list<phid>"
+      },
+      "return": "void"
+    },
+    "user.find": {
+      "description": "Lookup PHIDs by username. Obsoleted by \"user.query\".",
+      "params": {
+        "aliases": "required list<string>"
+      },
+      "return": "nonempty dict<string, phid>"
+    }
+  },
+  "error_code": null,
+  "error_info": null
+}

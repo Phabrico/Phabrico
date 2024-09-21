@@ -350,6 +350,27 @@ namespace Phabrico.Controllers
                                 record.URL = "file/data/" + file.ID + "/";
                             }
                         }
+                        if (unknownToken.StartsWith(Phabricator.Data.Diagram.Prefix))
+                        {
+                            Phabricator.Data.Diagram diagram = JsonConvert.DeserializeObject<Phabricator.Data.Diagram>(stageData.HeaderData);
+                            record.IsTranslation = diagram.Language.Equals(Language.NotApplicable) == false;
+                            if (record.IsTranslation)
+                            {
+                                record.Issue = JsonRecordData.IssueType.Translation;
+                            }
+
+                            record.Title = diagram.FileName;
+                            record.Type = "fa-sitemap";
+
+                            if (Http.Server.Plugins.Any(plugin => plugin.GetType().FullName.Equals("Phabrico.Plugin.DiagramsNet")))
+                            {
+                                record.URL = "diagrams.net/DIAG" + diagram.ID + "/";
+                            }
+                            else
+                            {
+                                record.URL = "diagram/data/" + diagram.ID + "/";
+                            }
+                        }
 
                         record.MergeConflict = stageData.MergeConflict;
                         record.Frozen = stageData.Frozen;

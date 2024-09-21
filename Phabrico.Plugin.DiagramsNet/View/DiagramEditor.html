@@ -201,28 +201,41 @@
 	function saveFlowchart(name, flowchartData, iframe)
 	{
 		var isTranslation = false;
-        var fileID = parseInt(
-                        document.location.pathname.split("/diagrams.net/")
-                                                  .reverse()[0]
-                                                  .substring("F".length)
-                     );
-		if (isNaN(fileID)) {
-            fileID = parseInt(
-                document.location.pathname.split("/diagrams.net/")
-                    .reverse()[0]
-                    .substring("FTRAN".length)
-			);
+		var docIdentifier = document.location.pathname.split("/diagrams.net/").reverse()[0];
+		var fileID = null;
+		if (docIdentifier.startsWith("F")) {
+			fileID = parseInt(docIdentifier.substring("F".length));
+			if (isNaN(fileID)) {
+				fileID = parseInt(
+					document.location.pathname.split("/diagrams.net/")
+						.reverse()[0]
+						.substring("FTRAN".length)
+				);
 
-			if (isNaN(fileID) == false) {
-				isTranslation = true;
+				if (isNaN(fileID) == false) {
+					isTranslation = true;
+				}
+			}
+        } else if (docIdentifier.startsWith("DIAG")) {
+            fileID = parseInt(docIdentifier.substring("DIAG".length));
+            if (isNaN(fileID)) {
+                fileID = parseInt(
+                    document.location.pathname.split("/diagrams.net/")
+                        .reverse()[0]
+                        .substring("DIAGTRAN".length)
+                );
+
+                if (isNaN(fileID) == false) {
+                    isTranslation = true;
+                }
             }
-		}
-
+        }
 	    var isStaged = fileID < 0;
 
 	    var data = new FormData();
 	    data.append('data', flowchartData);
 		data.append('fileID', fileID);
+		data.append('docIdentifier', docIdentifier);
 		data.append('isTranslation', isTranslation);
 
 	    var xmlhttp = new XMLHttpRequest();

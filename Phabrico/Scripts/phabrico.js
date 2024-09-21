@@ -3069,7 +3069,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // finalize all plugin-buttons in images
-    Array.prototype.slice.call(document.querySelectorAll('a[href*="JSPaintImageEditor/F"], a[href*="diagrams.net/F"]'), 0)
+    Array.prototype.slice.call(document.querySelectorAll('a[href*="JSPaintImageEditor/F"], a[href*="diagrams.net/F"], a[href*="diagrams.net/DIAG"]'), 0)
         .forEach(a => {
             var isTranslation = false;
             if (document.querySelector('.edit-container') != null) {

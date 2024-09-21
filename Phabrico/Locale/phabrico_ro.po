@@ -314,6 +314,9 @@ msgstr "Descărcarea utilizatorilor..."
 msgid "Synchronization.Status.LoadingAccountInfo"
 msgstr "Încărcarea informațiilor despre conturi..."
 
+msgid "Synchronization.Status.LoadingDiagramObjects"
+msgstr "Încărcarea diagramelor..."
+
 msgid "Synchronization.Status.LoadingMacroData"
 msgstr "Încărcarea datelor macro..."
 

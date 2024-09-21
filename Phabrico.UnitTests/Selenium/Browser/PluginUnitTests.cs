@@ -11,7 +11,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using WebDriverManager.DriverConfigs.Impl;
@@ -822,10 +821,13 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 }
             }
 
-            Assert.IsFalse(Enumerable.SequenceEqual(imageData, originalImageData), "Diagram image is still the same");
+            Assert.IsFalse(AreImagesSimilar(imageData, originalImageData), "Diagram image is still the same");
 
             // change to english
             ChangeLanguageFromDutchToEnglish();
+
+            // wait a while , so image can be loaded
+            Thread.Sleep(1500);
 
             // verify if image content has been changed
             image = WebBrowser.FindElement(By.ClassName("diagram"));
@@ -846,7 +848,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 }
             }
 
-            Assert.IsTrue(Enumerable.SequenceEqual(imageData, originalImageData), "Diagram image is still the same");
+            Assert.IsTrue(AreImagesSimilar(imageData, originalImageData), "Diagram image is still the same");
 
             // go to Phriction root page
             IWebElement rootPhriction = WebBrowser.FindElements(By.XPath("//a"))
@@ -887,8 +889,14 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement diagramsButton = WebBrowser.FindElement(By.ClassName("fa-sitemap"));
             diagramsButton.Click();
 
-            // confirm "Leave site?" dialog
-            WebBrowser.SwitchTo().Alert().Accept();
+            try
+            {
+                // confirm "Leave site?" dialog
+                WebBrowser.SwitchTo().Alert().Accept();
+            }
+            catch
+            {
+            }
 
             // wait until DiagramsNet IFrame content is fully loaded
             wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
@@ -1069,6 +1077,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             AssertNoJavascriptErrors();
 
             ChangeLanguageFromEnglishToDutch();
+            
+            // wait a while , so image can be loaded
+            Thread.Sleep(1500);
 
             // validate if document is translated
             phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
@@ -1099,7 +1110,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 }
             }
 
-            Assert.IsTrue(Enumerable.SequenceEqual(imageData, originalImageData), "Diagram image is different");
+            Assert.IsTrue(AreImagesSimilar(imageData, originalImageData), "Diagram image is different");
 
             // if action pane is collapsed -> expand it
             actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
@@ -1217,7 +1228,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 }
             }
 
-            Assert.IsFalse(Enumerable.SequenceEqual(imageData, originalImageData), "Diagram image is still the same");
+            Assert.IsFalse(AreImagesSimilar(imageData, originalImageData), "Diagram image is still the same");
 
             // if action pane is collapsed -> expand it
             actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))

@@ -143,7 +143,7 @@ When the translator has finished the translation, the Excel file can be imported
 
 ## Some remarks
 * Not all content is automatically translated. Codeblocks, usernames and project names, for example, will not be translated.
-* The titles of Notification blocks are only translated if configured under *UI Controls*: 
+* The titles of Notification blocks are only translated if configured under *UI Controls*: <br />
  ![ContentTranslation-08](ContentTranslation-08.png) <br />
 * Diagrams are not automatically translated, but a copy is made for each of them so that you can translate them manually. These diagram copies are also marked as 'unreviewed' and can also be approved in the *Diagrams* screen by means of the green button: ![ContentTranslation-20](ContentTranslation-20.png) <br /> 
 The copies of these translated diagrams can be undone via the *Offline Changes* screen.

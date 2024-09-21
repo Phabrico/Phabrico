@@ -314,6 +314,9 @@ msgstr "Bezig met gebruikers te downloaden..."
 msgid "Synchronization.Status.LoadingAccountInfo"
 msgstr "Bezig met account-info te downloaden..."
 
+msgid "Synchronization.Status.LoadingDiagramObjects"
+msgstr "Bezig met diagrams te downloaden..."
+
 msgid "Synchronization.Status.LoadingMacroData"
 msgstr "Bezig met macro-data te downloaden..."
 

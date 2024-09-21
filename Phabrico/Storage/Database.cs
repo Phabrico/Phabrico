@@ -26,7 +26,7 @@ namespace Phabrico.Storage
         private static string _datasource = null;
         internal static int _dbVersionInDataFile = 0;
 
-        private static readonly int _dbVersionInApplication = 8;
+        private static readonly int _dbVersionInApplication = 9;
         private static DateTime _utcNextTimeToVacuum = DateTime.MinValue;
 
         private string encryptionKey;
@@ -2103,6 +2103,31 @@ namespace Phabrico.Storage
 
                            PRIMARY KEY (accountUserName, url)
                        );
+                    ", Connection))
+                {
+                    dbCommand.ExecuteNonQuery();
+                }
+            }
+
+            if (dbVersion == 9)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                       CREATE TABLE IF NOT EXISTS diagramInfo(
+                           token VARCHAR(30),
+                           id INT,
+                           fileName BLOB,
+                           data BLOB,
+                           size BLOB,
+                           dateModified BLOB,
+                           properties BLOB,
+
+                           PRIMARY KEY (token)
+                       );
+
+                       CREATE UNIQUE INDEX
+                         IF NOT EXISTS idxDiagramInfoId
+                         ON diagramInfo (id);
+
                     ", Connection))
                 {
                     dbCommand.ExecuteNonQuery();

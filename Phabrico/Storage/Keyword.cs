@@ -167,8 +167,8 @@ namespace Phabrico.Storage
                     controller.ConvertRemarkupToHTML(database, "", phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
 
                     blobContent = phrictionDocument.Name + " ";         // phriction document title
-                    blobContent += urlCrumbs;                           // crumbs from phriction document url
-                    blobContent += remarkupParserOutput.Text;           // phriction document content
+                    blobContent += urlCrumbs + " ";                     // crumbs from phriction document url
+                    blobContent += remarkupParserOutput.Text + " ";           // phriction document content
                     foreach (var header in remarkupParserOutput.TokenList.OfType<Parsers.Remarkup.Rules.RuleHeader>().Where(h => h.Depth < 3)) // insert duplicates for header
                     {                                                                                                                          // content, so the word count
                         for (int depth = 0; depth < 3 - header.Depth; depth++)                                                                 // will be larger for words found

@@ -57,9 +57,12 @@ namespace Phabrico.Plugin
         [UrlController(URL = "/diagrams.net", ServerCache = false, HtmlViewPageOptions = HtmlViewPage.ContentOptions.HideGlobalTreeView)]
         public void HttpGetDiagramsScreen(Http.Server httpServer, ref HttpFound httpFound, string[] parameters, string parameterActions)
         {
+            Phabricator.Data.Diagram diagramObject = null;
             Phabricator.Data.File fileObject = null;
             Storage.Account accountStorage = new Storage.Account();
             Storage.File fileStorage = new Storage.File();
+            Storage.Diagram diagramStorage = new Storage.Diagram();
+            Storage.Stage stageStorage = new Storage.Stage();
             string diagramName;
             string theme;
             bool openedFromRemarkupEditor = false;
@@ -80,29 +83,28 @@ namespace Phabrico.Plugin
                         // parameter is file object to be edited
                         string fileObjectName = parameters.FirstOrDefault();
 
-                        // check if parameter is really a file object
-                        Match matchFileObjectName = RegexSafe.Match(fileObjectName, "F(TRAN)?(-?[0-9]+)", RegexOptions.None);
-                        if (matchFileObjectName.Success)
+                        // check if parameter is a file object
+                        Match matchDiagramObjectName = RegexSafe.Match(fileObjectName, "DIAG(TRAN)?(-?[0-9]+)", RegexOptions.None);
+                        if (matchDiagramObjectName.Success)
                         {
-                            // open given file object
-                            bool isTranslatedObject = matchFileObjectName.Groups[1].Success;
-                            int fileObjectId = Int32.Parse(matchFileObjectName.Groups[2].Value);
+                            bool isTranslatedObject = matchDiagramObjectName.Groups[1].Success;
+                            int diagramObjectId = Int32.Parse(matchDiagramObjectName.Groups[2].Value);
 
                             if (isTranslatedObject)
                             {
-                                string token = string.Format("PHID-OBJECT-{0}", fileObjectId.ToString().PadLeft(18, '0'));
+                                string token = string.Format("PHID-OBJECT-{0}", diagramObjectId.ToString().PadLeft(18, '0'));
                                 Storage.Content content = new Content(database);
                                 Storage.Content.Translation translation = content.GetTranslation(token, browser.Session.Locale);
                                 if (translation != null)
                                 {
-                                    Newtonsoft.Json.Linq.JObject fileObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
-                                    if (fileObjectInfo != null)
+                                    Newtonsoft.Json.Linq.JObject diagramObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
+                                    if (diagramObjectInfo != null)
                                     {
-                                        fileObject = new Phabricator.Data.File();
-                                        fileObject.ID = fileObjectId;
-                                        fileObject.Token = token;
+                                        diagramObject = new Phabricator.Data.Diagram();
+                                        diagramObject.ID = diagramObjectId;
+                                        diagramObject.Token = token;
 
-                                        string base64EncodedData = (string)fileObjectInfo["Data"];
+                                        string base64EncodedData = (string)diagramObjectInfo["Data"];
                                         byte[] buffer = new byte[(int)(base64EncodedData.Length * 0.8)];
                                         using (MemoryStream ms = new MemoryStream(buffer))
                                         using (Phabrico.Parsers.Base64.Base64EIDOStream base64EIDOStream = new Parsers.Base64.Base64EIDOStream(base64EncodedData))
@@ -111,49 +113,99 @@ namespace Phabrico.Plugin
                                             Array.Resize(ref buffer, (int)base64EIDOStream.Length);
                                         }
 
-                                        fileObject.Data = buffer;
-                                        fileObject.Size = buffer.Length;
-                                        fileObject.Properties = (string)fileObjectInfo["Properties"];
-                                        fileObject.FileName = (string)fileObjectInfo["FileName"];
+                                        diagramObject.Data = buffer;
+                                        diagramObject.Size = buffer.Length;
+                                        diagramObject.FileName = (string)diagramObjectInfo["FileName"];
                                     }
                                 }
                             }
                             else
-                            if (fileObjectName.StartsWith("F-"))
                             {
-                                Storage.Stage stageStorage = new Storage.Stage();
-                                fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileObjectId, true);
-                            }
-                            else
-                            {
-                                fileObject = fileStorage.GetByID(database, fileObjectId, false);
+                                diagramObject = stageStorage.Get<Phabricator.Data.Diagram>(database, browser.Session.Locale, Phabricator.Data.Diagram.Prefix, diagramObjectId, true);
+                                if (diagramObject == null)
+                                {
+                                    diagramObject = diagramStorage.GetByID(database, diagramObjectId, false);
+                                }
                             }
 
-                            diagramName = string.Format("F{0}{1}", 
-                                isTranslatedObject ? "TRAN" : "",
-                                fileObjectId);
+                            diagramName = string.Format("DIAG{0}", diagramObjectId);
                         }
                         else
                         {
-                            // load plugin static data
-                            string url = string.Join("/", parameters);
-                            string resourceName = string.Format("Phabrico.Plugin.{0}", string.Join(".", parameters))
-                                                        .Split('?')
-                                                        .FirstOrDefault()
-                                                        .TrimEnd('.');
-
-                            Assembly assembly = Assembly.GetExecutingAssembly();
-                            resourceName = assembly.GetManifestResourceNames()
-                                                   .FirstOrDefault(name => name.Equals(resourceName, System.StringComparison.OrdinalIgnoreCase));
-                            if (resourceName == null)
+                            // check if parameter is a file object
+                            Match matchFileObjectName = RegexSafe.Match(fileObjectName, "F(TRAN)?(-?[0-9]+)", RegexOptions.None);
+                            if (matchFileObjectName.Success)
                             {
-                                httpFound = new HttpNotFound(httpServer, browser, url);
+                                // open given file object
+                                bool isTranslatedObject = matchFileObjectName.Groups[1].Success;
+                                int fileObjectId = Int32.Parse(matchFileObjectName.Groups[2].Value);
+
+                                if (isTranslatedObject)
+                                {
+                                    string token = string.Format("PHID-OBJECT-{0}", fileObjectId.ToString().PadLeft(18, '0'));
+                                    Storage.Content content = new Content(database);
+                                    Storage.Content.Translation translation = content.GetTranslation(token, browser.Session.Locale);
+                                    if (translation != null)
+                                    {
+                                        Newtonsoft.Json.Linq.JObject fileObjectInfo = Newtonsoft.Json.JsonConvert.DeserializeObject(translation.TranslatedRemarkup) as Newtonsoft.Json.Linq.JObject;
+                                        if (fileObjectInfo != null)
+                                        {
+                                            fileObject = new Phabricator.Data.File();
+                                            fileObject.ID = fileObjectId;
+                                            fileObject.Token = token;
+
+                                            string base64EncodedData = (string)fileObjectInfo["Data"];
+                                            byte[] buffer = new byte[(int)(base64EncodedData.Length * 0.8)];
+                                            using (MemoryStream ms = new MemoryStream(buffer))
+                                            using (Phabrico.Parsers.Base64.Base64EIDOStream base64EIDOStream = new Parsers.Base64.Base64EIDOStream(base64EncodedData))
+                                            {
+                                                base64EIDOStream.CopyTo(ms);
+                                                Array.Resize(ref buffer, (int)base64EIDOStream.Length);
+                                            }
+
+                                            fileObject.Data = buffer;
+                                            fileObject.Size = buffer.Length;
+                                            fileObject.Properties = (string)fileObjectInfo["Properties"];
+                                            fileObject.FileName = (string)fileObjectInfo["FileName"];
+                                        }
+                                    }
+                                }
+                                else
+                                if (fileObjectName.StartsWith("F-"))
+                                {
+                                    fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, fileObjectId, true);
+                                }
+                                else
+                                {
+                                    fileObject = fileStorage.GetByID(database, fileObjectId, false);
+                                }
+
+                                diagramName = string.Format("F{0}{1}",
+                                    isTranslatedObject ? "TRAN" : "",
+                                    fileObjectId);
                             }
                             else
                             {
-                                httpFound = ReadResourceContent(assembly, httpServer, "", url, resourceName);
+                                // load plugin static data
+                                string url = string.Join("/", parameters);
+                                string resourceName = string.Format("Phabrico.Plugin.{0}", string.Join(".", parameters))
+                                                            .Split('?')
+                                                            .FirstOrDefault()
+                                                            .TrimEnd('.');
+
+                                Assembly assembly = Assembly.GetExecutingAssembly();
+                                resourceName = assembly.GetManifestResourceNames()
+                                                       .FirstOrDefault(name => name.Equals(resourceName, System.StringComparison.OrdinalIgnoreCase));
+                                if (resourceName == null)
+                                {
+                                    httpFound = new HttpNotFound(httpServer, browser, url);
+                                }
+                                else
+                                {
+                                    httpFound = ReadResourceContent(assembly, httpServer, "", url, resourceName);
+                                }
+                                return;
                             }
-                            return;
                         }
                     }
                 }
@@ -168,16 +220,22 @@ namespace Phabrico.Plugin
 
                 HtmlViewPage htmlViewPage = new HtmlViewPage(httpServer, browser, true, "DiagramEditor", parameters);
 
-                if (fileObject == null)
-                {
-                    // use "empty" XML/PNG as initial template for IFrame content
-                    htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAACyHRFWHRteGZpbGUAJTNDbXhmaWxlJTIwaG9zdCUzRCUyMkVsZWN0cm9uJTIyJTIwbW9kaWZpZWQlM0QlMjIyMDIxLTAzLTA4VDE1JTNBNDElM0ExNy45NzZaJTIyJTIwYWdlbnQlM0QlMjI1LjAlMjAoV2luZG93cyUyME5UJTIwMTAuMCUzQiUyMFdpbjY0JTNCJTIweDY0KSUyMEFwcGxlV2ViS2l0JTJGNTM3LjM2JTIwKEtIVE1MJTJDJTIwbGlrZSUyMEdlY2tvKSUyMGRyYXcuaW8lMkYxMy42LjIlMjBDaHJvbWUlMkY4My4wLjQxMDMuMTIyJTIwRWxlY3Ryb24lMkY5LjIuMCUyMFNhZmFyaSUyRjUzNy4zNiUyMiUyMGV0YWclM0QlMjJWNng2Y0xyd2FEalRTZmphWnV6WCUyMiUyMHZlcnNpb24lM0QlMjIxMy42LjIlMjIlMjB0eXBlJTNEJTIyZGV2aWNlJTIyJTNFJTNDZGlhZ3JhbSUyMGlkJTNEJTIyWmh6TlJTbUxhbVhLdzB6enhJc0klMjIlMjBuYW1lJTNEJTIyUGFnZS0xJTIyJTNFZFpGQkU0SWdFSVYlMkZEWGVWY3V4c1ZwZE9Iam96c2drejZESklvJTJGWHIwd0V5eGpxeGZPODlGaFpDeTI0Nkc2YkZGVGtva2lWOEl2UklzaXhOaW54ZUZ2SjBwRWc5YUkzazNyU0NXcjRnSkQxOVNBNURaTFNJeWtvZHd3YjdIaG9iTVdZTWpySHRqaXJ1cWxrTEcxQTNURzNwVFhJclBNMzN1MVc0Z0d4RmFKM21CNmQwTExqOVV3YkJPSTVmaUZhRWxnYlJ1cXFiU2xETDlNSmdYTzcwUiUyRjNjekVCdmZ3VG1ZajE3M2tSZlJLczMlM0MlMkZkaWFncmFtJTNFJTNDJTJGbXhmaWxlJTNFZhx3AwAAAA1JREFUGFdj+P///38ACfsD/QVDRcoAAAAASUVORK5CYII=", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
-                }
-                else
+                if (fileObject != null)
                 {
                     // use loaded XML/PNG content from fileobject as initial template for IFrame content
                     string base64Data = fileObject.DataStream.ReadEncodedBlock(0, (int)fileObject.DataStream.LengthEncodedData);
                     htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64," + base64Data, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                }
+                else if (diagramObject != null)
+                {
+                    // use loaded XML/PNG content from fileobject as initial template for IFrame content
+                    string base64Data = diagramObject.DataStream.ReadEncodedBlock(0, (int)diagramObject.DataStream.LengthEncodedData);
+                    htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64," + base64Data, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+                }
+                else
+                {
+                    // use "empty" XML/PNG as initial template for IFrame content
+                    htmlViewPage.SetText("IMG-SRC-BASE64", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAACyHRFWHRteGZpbGUAJTNDbXhmaWxlJTIwaG9zdCUzRCUyMkVsZWN0cm9uJTIyJTIwbW9kaWZpZWQlM0QlMjIyMDIxLTAzLTA4VDE1JTNBNDElM0ExNy45NzZaJTIyJTIwYWdlbnQlM0QlMjI1LjAlMjAoV2luZG93cyUyME5UJTIwMTAuMCUzQiUyMFdpbjY0JTNCJTIweDY0KSUyMEFwcGxlV2ViS2l0JTJGNTM3LjM2JTIwKEtIVE1MJTJDJTIwbGlrZSUyMEdlY2tvKSUyMGRyYXcuaW8lMkYxMy42LjIlMjBDaHJvbWUlMkY4My4wLjQxMDMuMTIyJTIwRWxlY3Ryb24lMkY5LjIuMCUyMFNhZmFyaSUyRjUzNy4zNiUyMiUyMGV0YWclM0QlMjJWNng2Y0xyd2FEalRTZmphWnV6WCUyMiUyMHZlcnNpb24lM0QlMjIxMy42LjIlMjIlMjB0eXBlJTNEJTIyZGV2aWNlJTIyJTNFJTNDZGlhZ3JhbSUyMGlkJTNEJTIyWmh6TlJTbUxhbVhLdzB6enhJc0klMjIlMjBuYW1lJTNEJTIyUGFnZS0xJTIyJTNFZFpGQkU0SWdFSVYlMkZEWGVWY3V4c1ZwZE9Iam96c2drejZESklvJTJGWHIwd0V5eGpxeGZPODlGaFpDeTI0Nkc2YkZGVGtva2lWOEl2UklzaXhOaW54ZUZ2SjBwRWc5YUkzazNyU0NXcjRnSkQxOVNBNURaTFNJeWtvZHd3YjdIaG9iTVdZTWpySHRqaXJ1cWxrTEcxQTNURzNwVFhJclBNMzN1MVc0Z0d4RmFKM21CNmQwTExqOVV3YkJPSTVmaUZhRWxnYlJ1cXFiU2xETDlNSmdYTzcwUiUyRjNjekVCdmZ3VG1ZajE3M2tSZlJLczMlM0MlMkZkaWFncmFtJTNFJTNDJTJGbXhmaWxlJTNFZhx3AwAAAA1JREFUGFdj+P///38ACfsD/QVDRcoAAAAASUVORK5CYII=", HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                 }
 
                 if (parameters.Any() || openedFromRemarkupEditor)
@@ -323,6 +381,7 @@ namespace Phabrico.Plugin
                 
                 string saveData = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
                 string fileID = browser.Session.FormVariables[browser.Request.RawUrl]["fileID"];
+                string docIdentifier = browser.Session.FormVariables[browser.Request.RawUrl]["docIdentifier"];
                 bool isTranslation = false;
                 bool.TryParse(browser.Session.FormVariables[browser.Request.RawUrl]["isTranslation"], out isTranslation);
 
@@ -337,22 +396,36 @@ namespace Phabrico.Plugin
                         Array.Resize(ref buffer, (int)base64EIDOStream.Length);
                     }
 
-                    Phabricator.Data.File file;
+                    Phabricator.Data.File file = null;
+                    Phabricator.Data.Diagram diagram = null;
                     using (Storage.Database database = new Storage.Database(EncryptionKey))
                     {
                         Storage.Stage stageStorage = new Storage.Stage();
                         if (fileID.StartsWith("-"))
                         {
                             // negative fileID -> file is aleady staged
-                            file = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, Int32.Parse(fileID), true);
-
-                            if (file == null)
+                            if (docIdentifier.StartsWith("DIAG"))
                             {
-                                throw new FileNotFoundException("File not found", string.Format("F{0}", fileID));
-                            }
+                                diagram = stageStorage.Get<Phabricator.Data.Diagram>(database, browser.Session.Locale, Phabricator.Data.Diagram.Prefix, Int32.Parse(fileID), true);
+                                if (diagram == null)
+                                {
+                                    throw new FileNotFoundException("Diagram not found", string.Format("DIAG{0}", fileID));
+                                }
 
-                            file.Data = buffer;
-                            stageStorage.Edit(database, file, browser);
+                                diagram.Data = buffer;
+                                stageStorage.Edit(database, diagram, browser);
+                            }
+                            else
+                            {
+                                file = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, Int32.Parse(fileID), true);
+                                if (diagram == null && file == null)
+                                {
+                                    throw new FileNotFoundException("File not found", string.Format("F{0}", fileID));
+                                }
+
+                                file.Data = buffer;
+                                stageStorage.Edit(database, file, browser);
+                            }
                         }
                         else
                         {
@@ -485,7 +558,7 @@ namespace Phabrico.Plugin
                     string jsonData = JsonConvert.SerializeObject(new
                     {
                         Status = "OK",
-                        FileToken = file.ID
+                        FileToken = file?.ID ?? diagram?.ID
                     });
 
                     return new JsonMessage(jsonData);

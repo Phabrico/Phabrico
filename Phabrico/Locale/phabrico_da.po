@@ -314,6 +314,9 @@ msgstr "Download af brugere..."
 msgid "Synchronization.Status.LoadingAccountInfo"
 msgstr "Indlæsning af kontooplysninger..."
 
+msgid "Synchronization.Status.LoadingDiagramObjects"
+msgstr "Indlæsning af diagrammer..."
+
 msgid "Synchronization.Status.LoadingMacroData"
 msgstr "Indlæsning af makrodata..."
 

@@ -125,6 +125,7 @@
     <Compile Include="Controllers\Configuration.cs" />
     <Compile Include="Controllers\Controller.cs" />
     <Compile Include="Controllers\Exception.cs" />
+    <Compile Include="Controllers\Diagram.cs" />
     <Compile Include="Controllers\File.cs" />
     <Compile Include="Controllers\Phame.cs" />
     <Compile Include="Controllers\Tag.cs" />
@@ -205,6 +206,7 @@
     <Compile Include="Parsers\Remarkup\Rules\RuleKey.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleIcon.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleMacro.cs" />
+    <Compile Include="Parsers\Remarkup\Rules\RuleReferenceDiagram.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleReferencePhameBlogPost.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleReferenceProject.cs" />
     <Compile Include="Parsers\Remarkup\Rules\RuleReferenceUser.cs" />
@@ -233,6 +235,7 @@
     <Compile Include="Phabricator\API\Conduit.cs" />
     <Compile Include="Phabricator\API\Constraint.cs" />
     <Compile Include="Phabricator\API\Attachment.cs" />
+    <Compile Include="Phabricator\API\Diagram.cs" />
     <Compile Include="Phabricator\API\ManiphestStatus.cs" />
     <Compile Include="Phabricator\API\PhamePost.cs" />
     <Compile Include="Phabricator\API\Phriction.cs" />
@@ -243,6 +246,7 @@
     <Compile Include="Phabricator\API\Maniphest.cs" />
     <Compile Include="Phabricator\API\Project.cs" />
     <Compile Include="Phabricator\Data\FavoriteObject.cs" />
+    <Compile Include="Phabricator\Data\Diagram.cs" />
     <Compile Include="Phabricator\Data\Keyword.cs" />
     <Compile Include="Phabricator\Data\ManiphestStatus.cs" />
     <Compile Include="Phabricator\Data\PhamePost.cs" />
@@ -276,6 +280,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Http\SessionManager.cs" />
     <Compile Include="Storage\FavoriteObject.cs" />
+    <Compile Include="Storage\Diagram.cs" />
     <Compile Include="Storage\Keyword.cs" />
     <Compile Include="Storage\BannedObject.cs" />
     <Compile Include="Storage\PhamePost.cs" />

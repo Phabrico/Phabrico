@@ -478,6 +478,8 @@ namespace Phabrico
 
                 ConsoleWriteStatus("Downloading referenced files...");
                 synchronizationController.ProgressMethod_DownloadFileObjects(synchronizationParameters, 0, 0);
+                ConsoleWriteStatus("Downloading referenced diagrams...");
+                synchronizationController.ProgressMethod_DownloadDiagramObjects(synchronizationParameters, 0, 0);
                 ConsoleWriteStatus("Downloading macro objects...");
                 synchronizationController.ProgressMethod_DownloadMacros(synchronizationParameters, 0, 0);
                 ConsoleWriteStatus("Cleaning up data...");
@@ -495,41 +497,6 @@ namespace Phabrico
 
                 synchronizationParameters.existingAccount.PhabricatorUrl = "";
                 accountStorage.Add(database, synchronizationParameters.existingAccount);
-
-                if (string.IsNullOrWhiteSpace(Configuration.phriction?.initialPath) == false)
-                {
-                    // delete all phriction document whose path does not start with c
-                    string initialPath = Configuration.phriction.initialPath;
-                    if (initialPath.StartsWith("http://") || initialPath.StartsWith("https://"))
-                    {
-                        Match absoluteInitialPath = RegexSafe.Match(initialPath, "/w/", RegexOptions.IgnoreCase);
-                        if (absoluteInitialPath.Success)
-                        {
-                            initialPath = initialPath.Substring(absoluteInitialPath.Index);
-                        }
-                        else
-                        {
-                            initialPath = "";
-                        }
-                    }
-                    initialPath = initialPath.TrimStart('/');
-                    if (initialPath.StartsWith("w/"))
-                    {
-                        initialPath = initialPath.Substring("w/".Length);
-                    }
-
-                    foreach (Phabricator.Data.Phriction downloadedInvalidPhrictionDocument in downloadedPhrictionDocuments.Where(wiki => wiki.Path.StartsWith(initialPath) == false)
-                                                                                                                          .OrderByDescending(wiki => wiki.Path.Length)
-                                                                                                                          .ToArray())
-                    {
-                        phrictionStorage.Remove(database, downloadedInvalidPhrictionDocument);
-
-                        downloadedPhrictionDocuments.Remove(downloadedInvalidPhrictionDocument);
-                    }
-
-                    // delete old data again (and recreate cover page if needed)
-                    synchronizationController.ProgressMethod_DeleteOldData(synchronizationParameters, 0, 0);
-                }
 
                 if (downloadedManiphestTasks.Any() == false && downloadedPhrictionDocuments.Any() == true)
                 {

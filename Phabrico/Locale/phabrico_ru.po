@@ -314,6 +314,9 @@ msgstr "Загрузка пользователей..."
 msgid "Synchronization.Status.LoadingAccountInfo"
 msgstr "Загрузка информации об учетной записи..."
 
+msgid "Synchronization.Status.LoadingDiagramObjects"
+msgstr "Загрузка диаграмм..."
+
 msgid "Synchronization.Status.LoadingMacroData"
 msgstr "Загрузка данных макросов..."
 

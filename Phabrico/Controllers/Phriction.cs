@@ -76,14 +76,20 @@ namespace Phabrico.Controllers
             Content content = new Content(database);
             Tuple<Phabricator.Data.Phriction, Content.Translation> crumbTranslation = null;
 
-            if (rootDocumentPath == null)
-            {
-                rootDocumentPath = phrictionStorage.Get(database, language)
-                                                   .OrderBy(document => document.Path.Length)
-                                                   .FirstOrDefault()
-                                                   ?.Path
-                                                   ?.TrimEnd('/');
-            }
+                if (rootDocumentPath == null)
+                {
+                    rootDocumentPath = phrictionStorage.Get(database, "/", language)
+                                                       ?.Path
+                                                       ?.TrimEnd('/');
+                    if (rootDocumentPath == null)
+                    {
+                        rootDocumentPath = phrictionStorage.Get(database, language)
+                                                           .OrderBy(document => document.Path.Length)
+                                                           .FirstOrDefault()
+                                                           ?.Path
+                                                           ?.TrimEnd('/');
+                    }
+                }
 
             foreach (string slug in url.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -192,11 +198,17 @@ namespace Phabrico.Controllers
 
                 if (rootDocumentPath == null)
                 {
-                    rootDocumentPath = phrictionStorage.Get(database, browser.Session.Locale)
-                                                       .OrderBy(document => document.Path.Length)
-                                                       .FirstOrDefault()
+                    rootDocumentPath = phrictionStorage.Get(database, "/", browser.Session.Locale)
                                                        ?.Path
                                                        ?.TrimEnd('/');
+                    if (rootDocumentPath == null)
+                    {
+                        rootDocumentPath = phrictionStorage.Get(database, browser.Session.Locale)
+                                                           .OrderBy(document => document.Path.Length)
+                                                           .FirstOrDefault()
+                                                           ?.Path
+                                                           ?.TrimEnd('/');
+                    }
                 }
                 string unaliasedUrl = (rootDocumentPath + "/" + string.Join("/", url.Split('/').Skip(1))).Replace("//", "/");
 

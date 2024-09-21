@@ -314,6 +314,9 @@ msgstr "Nedladdning av användare..."
 msgid "Synchronization.Status.LoadingAccountInfo"
 msgstr "Laddning av kontoinformation..."
 
+msgid "Synchronization.Status.LoadingDiagramObjects"
+msgstr "Laddning av diagram..."
+
 msgid "Synchronization.Status.LoadingMacroData"
 msgstr "Laddning av makrodata..."
 
