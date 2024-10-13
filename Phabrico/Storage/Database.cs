@@ -226,7 +226,7 @@ namespace Phabrico.Storage
                     Initialize();
                 }
 
-                if (_dbVersionInDataFile == 0)
+                if (_dbVersionInDataFile != _dbVersionInApplication)
                 {
                     UpgradeIfNeeded();
                 }

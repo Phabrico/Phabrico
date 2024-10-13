@@ -30,13 +30,15 @@ namespace Phabrico.Parsers.Remarkup.Rules
 
             if (RuleStartOnNewLine)
             {
-                Match match = RegexSafe.Match(remarkup, @"^ *%%%(.+?(?<!%%% *(\r?\n|$)))%%% *(\r\n|$)", RegexOptions.Singleline);
+                Match match = RegexSafe.Match(remarkup, @"^ *%%%(.+?(?<!%%% *(\r?\n|$)))%%% *(\r\n)?", RegexOptions.Singleline);
                 if (match.Success)
                 {
                     remarkup = remarkup.Substring(match.Length);
                     html = string.Format("<p class='remarkup-literal'>{0}</p>", HttpUtility.HtmlEncode(match.Groups[1].Value).Replace("\r", "").Replace("\n", "<br>\n"));
 
                     Length = match.Length;
+
+
 
                     return true;
                 }
