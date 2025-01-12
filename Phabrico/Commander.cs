@@ -30,7 +30,24 @@ namespace Phabrico
                 public string[] projectTags { get; set; }
                 public string[] userTags { get; set; }
                 public bool combined { get; set; } = true;
-                public string initialPath { get; set; } = "";
+                public string[] initialPaths { get; set; } = new string[] { "" };
+                public string initialPath
+                {
+                    get
+                    {
+                        if (initialPaths.Length > 0)
+                            return initialPaths[0];
+                        return "";
+                    }
+                    set
+                    {
+                        if (initialPaths.Length == 0)
+                            initialPaths = new string[] { value };
+                        else
+                            initialPaths[0] = value;
+                    }
+                }
+                public string[] initialPathAliases { get; set; } = new string[] { "" };
                 public bool showDocuments { get; set; }
                 public bool tree { get; set; } = true;
                 public string translation { get; set; }
@@ -345,7 +362,11 @@ namespace Phabrico
                 synchronizationParameters.existingAccount.PhabricatorUrl = Configuration.source;
 
                 synchronizationParameters.incrementalDownload = false;
-                synchronizationParameters.initialPhrictionPath = Configuration.phriction.initialPath ?? "";
+                synchronizationParameters.initialPhrictionPaths = Configuration.phriction.initialPaths;
+                if (Configuration.phriction.initialPaths.Length == Configuration.phriction.initialPathAliases.Length)
+                {
+                    synchronizationParameters.initialPhrictionPathAliases = Configuration.phriction.initialPathAliases.Select(p => p.TrimEnd('/', ' ', '\t')).ToArray();
+                }
                 synchronizationParameters.lastDownloadTimestamp = new DateTimeOffset(1970, 1, 1, 0, 0, 1, new TimeSpan());
                 synchronizationParameters.remotelyModifiedObjects = new List<Phabricator.Data.PhabricatorObject>();
 

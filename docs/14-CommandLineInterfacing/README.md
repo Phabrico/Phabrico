@@ -69,25 +69,53 @@ An example of such JSON config file:
 }
 ```
 
-| Parameter                  | Value                                                                                                                                                                |
-|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `source`                   | address of Phabricator server                                                                                                                                        |
-| `destination`              | file which will contain the Phabrico database. You need to use regular slashes instead of backslashes (!)                                                            |
-| `username`                 | username to be used in Phabrico                                                                                                                                      |
-| `password`                 | password to be used in Phabrico                                                                                                                                      |
-| `maniphest/projectTags`    | array of project tags to which the maniphest tasks to be downloaded have to belong to (can be null)<br />Where to find these tags, see further below                 |
-| `maniphest/userTags`       | array of users which are subscribed to the maniphest tasks to be downloaded (can be null)                                                                            |
-| `phriction/showTasks`      | if true, the ID and title of each downloaded maniphest task will be shown at the end                                                                                 |
-| `phriction/projectTags`    | array of project tags to which the phriction documents to be downloaded have to belong to (can be null)<br />Where to find these tags, see further below             |
-| `phriction/userTags`       | array of users which are subscribed to the phriction documents to be downloaded (can be null)                                                                        |
-| `phriction/combined`       | if true, only phriction documents will be downloaded where ALL given projects/users are subscribed to                                                                |
-| `phriction/tree`           | if true, underlying phriction documents will also be downloaded                                                                                                      |
-| `phriction/showDocuments`  | if true, the path and title of each downloaded phriction document will be shown at the end                                                                           |
-| `phriction/initialPath`    | if set, only phriction documents will be downloaded whose path start with `initialPath` value                                                                        |
-| `phriction/translation`    | file which will contain the translation content. This file will be copied to the configured destination. You need to use regular slashes instead of backslashes (!)  |
-| `users/name`               | name of secondary user                                                                                                                                               |
-| `users/password`           | password of secondary user. The minimum password requirements are not validated here, but this will happen when you change the password in Phabrico.                 |
-| `users/tags`               | array of user role tags. Currently, only 1 user role tag per user is supported.<br />Where to find these user role tags, see further below                           |
+Another example of such JSON config file which has multiple root Phriction pages:
+``` json
+{
+    "source": "https://xanadu.newton.org",
+    "destination": "c:/temp/custom-phabrico.data",
+    "username": "john",
+    "password": "VerySecr3t!",
+
+    "phriction": {
+        "projectTags": [ "public" ],
+        "userTags": null,
+        "combined": false,
+        "tree": true,
+        "initialPaths": [
+            "w/manual/",
+            "w/custom/manual/"
+        ],
+        "initialPathAliases": [
+            "default",
+            "custom"
+        ],
+        "showDocuments": true
+    },
+}
+```
+
+| Parameter                      | Value                                                                                                                                                                |
+|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `source`                       | address of Phabricator server                                                                                                                                        |
+| `destination`                  | file which will contain the Phabrico database. You need to use regular slashes instead of backslashes (!)                                                            |
+| `username`                     | username to be used in Phabrico                                                                                                                                      |
+| `password`                     | password to be used in Phabrico                                                                                                                                      |
+| `maniphest/projectTags`        | array of project tags to which the maniphest tasks to be downloaded have to belong to (can be null)<br />Where to find these tags, see further below                 |
+| `maniphest/userTags`           | array of users which are subscribed to the maniphest tasks to be downloaded (can be null)                                                                            |
+| `phriction/showTasks`          | if true, the ID and title of each downloaded maniphest task will be shown at the end                                                                                 |
+| `phriction/projectTags`        | array of project tags to which the phriction documents to be downloaded have to belong to (can be null)<br />Where to find these tags, see further below             |
+| `phriction/userTags`           | array of users which are subscribed to the phriction documents to be downloaded (can be null)                                                                        |
+| `phriction/combined`           | if true, only phriction documents will be downloaded where ALL given projects/users are subscribed to                                                                |
+| `phriction/tree`               | if true, underlying phriction documents will also be downloaded                                                                                                      |
+| `phriction/showDocuments`      | if true, the path and title of each downloaded phriction document will be shown at the end                                                                           |
+| `phriction/initialPath`        | if set, only phriction documents will be downloaded whose path start with `initialPath` value                                                                        |
+| `phriction/initialPaths`       | Similar as `ìnitialPath`, except this is an array of initialPath's: only documents whose path start with any of these initialPaths will be downloaded                |
+| `phriction/initialPathAliases` | When `ìnitialPaths` is used, by default the paths of the root pages will be used as URL's. `initialPathAliases` allows you to "rename" this URL's                    |
+| `phriction/translation`        | file which will contain the translation content. This file will be copied to the configured destination. You need to use regular slashes instead of backslashes (!)  |
+| `users/name`                   | name of secondary user                                                                                                                                               |
+| `users/password`               | password of secondary user. The minimum password requirements are not validated here, but this will happen when you change the password in Phabrico.                 |
+| `users/tags`                   | array of user role tags. Currently, only 1 user role tag per user is supported.<br />Where to find these user role tags, see further below                           |
 
 
 If the JSON data above is stored in a file `c:\temp\phabrico.json` and the command below is executed:

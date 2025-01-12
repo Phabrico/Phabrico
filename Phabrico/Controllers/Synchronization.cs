@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using Newtonsoft.Json;
 using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
@@ -176,7 +177,15 @@ namespace Phabrico.Controllers
             /// If this variable is set, the list of downloaded URL's will be filtered by its initialPath.
             /// In other words, any wiki URL that does not start with this initialPhrictionPath will not be downloaded.
             /// </summary>
-            public string initialPhrictionPath = "";
+            public string[] initialPhrictionPaths { get; set; } = new string[] { "" };
+
+            /// <summary>
+            /// This variable is internally used together with initialPhrictionPaths.
+            /// In case you have more than 1 initialPhrictionPath configured, you will have more than 1 root page.
+            /// This variable will contain the shortened root URLs for each each root page.
+            /// Based on this content, a correct coverpage will be created
+            /// </summary>
+            public string[] initialPhrictionPathAliases = new string[] { "" };
 
             /// <summary>
             /// Timestamp when the latest download process was finished.
@@ -1049,15 +1058,40 @@ namespace Phabrico.Controllers
             if (noRootDocument)
             {
                 // no root document found -> search for documents which are the closest to the 'virtual' root
-                List<string[]> urlPartsCollection = phrictionStorage.Get(synchronizationParameters.database, browser.Session.Locale)
-                                                                    .Where(document => documentsToRemove.Contains(document) == false)
-                                                                    .Select(document => document.Path.Split('/'))
-                                                                    .ToList();
+                string[] initialPhrictionPathAliases = synchronizationParameters.initialPhrictionPathAliases.OrderByDescending(p => p.Length).ToArray();
+                Dictionary<string, string[][]> urlPartsCollection = phrictionStorage.Get(synchronizationParameters.database, browser.Session.Locale)
+                                                                    .Where(document => !documentsToRemove.Contains(document))
+                                                                    .Select(document =>
+                                                                    {
+                                                                        var matchingPath = initialPhrictionPathAliases.FirstOrDefault(p => document.Path.StartsWith(p));
+                                                                        return new
+                                                                        {
+                                                                            Key = matchingPath ?? "",
+                                                                            Value = document.Path.Split('/')
+                                                                        };
+                                                                    })
+                                                                    .GroupBy(item => item.Key)
+                                                                    .ToDictionary(
+                                                                        g => g.Key,
+                                                                        g => g.Select(item => item.Value).ToArray()
+                                                                    );
                 if (urlPartsCollection.Any())  // check if any documents found
                 {
-                    int minimumLength = urlPartsCollection.Min(urlParts => urlParts.Length);
-                    IEnumerable<Phabricator.Data.Phriction> rootDocuments = phrictionStorage.Get(synchronizationParameters.database, browser.Session.Locale)
-                                                                                            .Where(document => document.Path.Split('/').Length == minimumLength);
+                    Phabricator.Data.Phriction[] rootDocuments = urlPartsCollection.SelectMany(kv =>
+                        {
+                            if (kv.Key != "")
+                            {
+                                int initialPathPartsCount = kv.Key.Split('/').Length;
+                                int minimumRelativeLength = kv.Value.Min(urlParts => urlParts.Length - initialPathPartsCount);
+
+                                return phrictionStorage.Get(synchronizationParameters.database, browser.Session.Locale)
+                                                       .Where(document => document.Path.StartsWith(kv.Key)
+                                                                       && document.Path.Split('/').Length - initialPathPartsCount == minimumRelativeLength
+                                                                       && documentsToRemove.Contains(document) == false);
+                            }
+                            return Enumerable.Empty<Phabricator.Data.Phriction>();
+                        }).ToArray();
+
                     if (rootDocuments.Count() == 1)
                     {
                         Phabricator.Data.Phriction linkedDocument = rootDocuments.FirstOrDefault();
@@ -1822,6 +1856,29 @@ namespace Phabrico.Controllers
                 phrictionStorage.Remove(synchronizationParameters.database, rootAlias);
             }
 
+            // initialize root page urls
+            if (synchronizationParameters.initialPhrictionPaths.Length != synchronizationParameters.initialPhrictionPathAliases.Length)
+            {
+                List<List<string>> pathElements = synchronizationParameters.initialPhrictionPaths.Select(path => path.Split('/').ToList()).ToList();
+                int i = 0;
+                while (true)
+                {
+                    if (pathElements.Any(segments => segments[0] != pathElements[0][0])) break;
+                    pathElements = pathElements.Select(segments => segments.Skip(1).ToList()).ToList();
+
+                    if (pathElements.Any(segments => segments.Any() == false)) break;
+                    i++;
+                }
+                string commonParentPath = string.Join("/", synchronizationParameters.initialPhrictionPaths.First().Split('/').Take(i)) + "/";
+
+                // set root page urls
+                synchronizationParameters.initialPhrictionPathAliases = new string[synchronizationParameters.initialPhrictionPaths.Length];
+                for (i = 0; i < synchronizationParameters.initialPhrictionPaths.Length; i++)
+                {
+                    synchronizationParameters.initialPhrictionPathAliases[i] = synchronizationParameters.initialPhrictionPaths[i].Substring(commonParentPath.Length);
+                }
+            }
+
             // prepare loading phriction documents: check if project filter (constraint) should be applied
             Phabricator.API.Constraint[] phabricatorPhrictionDocumentConstraints = new Phabricator.API.Constraint[0];
             if (synchronizationParameters.existingAccount.Parameters.Synchronization.HasFlag(Phabricator.Data.Account.SynchronizationMethod.PhrictionAllSelectedProjectsOnly) &&
@@ -1892,17 +1949,17 @@ namespace Phabrico.Controllers
                     }
                     else
                     {
-                        if (string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPath) == false)
+                        if (string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPaths?.FirstOrDefault()) == false)
                         {
-                            string constraintInitialPath = synchronizationParameters.initialPhrictionPath;
-                            if (constraintInitialPath.StartsWith("w/", StringComparison.OrdinalIgnoreCase))
-                            {
-                                constraintInitialPath = constraintInitialPath.Substring("w/".Length);
-                            }
+                            string[] constraintInitialPaths = synchronizationParameters.initialPhrictionPaths
+                                .Select(constraintInitialPath => constraintInitialPath.StartsWith("w/", StringComparison.OrdinalIgnoreCase)
+                                            ? constraintInitialPath.Substring("w/".Length)
+                                            : constraintInitialPath
+                                ).ToArray();
 
                             Phabricator.API.Constraint[] rootPageConstraints = new Phabricator.API.Constraint[] {
                                 phabricatorPhrictionDocumentConstraints.FirstOrDefault(),
-                                new Phabricator.API.Constraint("paths", new string[] { constraintInitialPath })
+                                new Phabricator.API.Constraint("paths", constraintInitialPaths)
                             };
 
                             rootPageConstraints = rootPageConstraints.Where(c => c != null).ToArray();
@@ -1923,7 +1980,7 @@ namespace Phabrico.Controllers
                                 {
                                     Phabricator.API.Constraint[] childPageConstraints = new Phabricator.API.Constraint[] {
                                         phabricatorPhrictionDocumentConstraints.FirstOrDefault(),
-                                        new Phabricator.API.Constraint("parentPaths", new string[] { constraintInitialPath })
+                                        new Phabricator.API.Constraint("parentPaths", constraintInitialPaths)
                                     };
 
                                     childPageConstraints = childPageConstraints.Where(c => c != null).ToArray();
@@ -1957,16 +2014,16 @@ namespace Phabrico.Controllers
                 }
                 else
                 {
-                    if (phabricatorPhrictionDocumentConstraints.Any() == false && string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPath) == false)
+                    if (phabricatorPhrictionDocumentConstraints.Any() == false && string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPaths?.FirstOrDefault()) == false)
                     {
-                        string constraintInitialPath = synchronizationParameters.initialPhrictionPath;
-                        if (constraintInitialPath.StartsWith("w/", StringComparison.OrdinalIgnoreCase))
-                        {
-                            constraintInitialPath = constraintInitialPath.Substring("w/".Length);
-                        }
+                        string[] constraintInitialPaths = synchronizationParameters.initialPhrictionPaths
+                            .Select(constraintInitialPath => constraintInitialPath.StartsWith("w/", StringComparison.OrdinalIgnoreCase)
+                                        ? constraintInitialPath.Substring("w/".Length)
+                                        : constraintInitialPath
+                            ).ToArray();
 
                         phabricatorPhrictionDocumentConstraints = new Phabricator.API.Constraint[] {
-                            new Phabricator.API.Constraint("parentPaths", new string[] { constraintInitialPath })
+                            new Phabricator.API.Constraint("parentPaths", constraintInitialPaths)
                         };
                     }
 
@@ -2084,10 +2141,15 @@ namespace Phabrico.Controllers
                 phabricatorPhrictionDocumentsInCorrectOrder.RemoveAll(document => documentsWithCombinedProjects.All(d => document.Path.StartsWith(d.Path) == false));
             }
 
-            if (string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPath) == false)
+            if (string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPaths?.FirstOrDefault()) == false)
             {
-                if (synchronizationParameters.initialPhrictionPath.StartsWith("w/")) synchronizationParameters.initialPhrictionPath = synchronizationParameters.initialPhrictionPath.Substring("w/".Length);
-                phabricatorPhrictionDocumentsInCorrectOrder.RemoveAll(document => document.Path.StartsWith(synchronizationParameters.initialPhrictionPath) == false);
+                for (int i = 0; i < synchronizationParameters.initialPhrictionPaths.Length; i++)
+                {
+                    if (synchronizationParameters.initialPhrictionPaths[i].StartsWith("w/"))
+                        synchronizationParameters.initialPhrictionPaths[i] = synchronizationParameters.initialPhrictionPaths[i].Substring("w/".Length);
+                }
+
+                phabricatorPhrictionDocumentsInCorrectOrder.RemoveAll(document => synchronizationParameters.initialPhrictionPaths.Any(path => document.Path.StartsWith(path)) == false);
             }
 
             int index = 0;
@@ -2131,13 +2193,20 @@ namespace Phabrico.Controllers
                     }
                 }
 
-                int initialPhrictionPathLength = synchronizationParameters.initialPhrictionPath?.Length ?? 0;
-                if (initialPhrictionPathLength > 0)
+                if (string.IsNullOrWhiteSpace(synchronizationParameters.initialPhrictionPaths?.FirstOrDefault()) == false)
                 {
-                    phabricatorPhrictionDocument.Path = phabricatorPhrictionDocument.Path.Substring(initialPhrictionPathLength);
+                    string initialPath = synchronizationParameters.initialPhrictionPaths.OrderByDescending(path => path.Length).FirstOrDefault(path => phabricatorPhrictionDocument.Path.StartsWith(path));
+                    int initialPathIndex = Array.IndexOf(synchronizationParameters.initialPhrictionPaths, initialPath);
+                    string initialPathAlias = synchronizationParameters.initialPhrictionPathAliases[initialPathIndex];
+
+                    phabricatorPhrictionDocument.Path = phabricatorPhrictionDocument.Path.Substring(initialPath.Length);
                     if (string.IsNullOrEmpty(phabricatorPhrictionDocument.Path))
                     {
-                        phabricatorPhrictionDocument.Path = "/";
+                        phabricatorPhrictionDocument.Path = initialPathAlias.TrimEnd('/') + "/";
+                    }
+                    else
+                    {
+                        phabricatorPhrictionDocument.Path = initialPathAlias.TrimEnd('/') + "/" + phabricatorPhrictionDocument.Path;
                     }
                 }
 
