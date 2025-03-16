@@ -878,6 +878,15 @@ msgstr "Automatisches Schließen des Menüs"
 msgid "Closes the menu automatically when hovering the mouse pointer away"
 msgstr "Schließt das Menü automatisch, wenn der Mauszeiger wegfährt"
 
+msgid "Versioned Document Roots"
+msgstr "Versionsgebundene Dokumentwurzeln"
+
+msgid "Add versioned root"
+msgstr "Versionsgebundene Wurzel hinzufügen"
+
+msgid "Enter the URL paths for wiki pages which have underlying versioned pages:"
+msgstr "Geben Sie die URL-Pfade für Wiki-Seiten ein, die untergeordnete versionsgebundene Seiten haben:"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Eingefroren: lokale Änderungen werden während der Synchronisierung nicht hochgeladen"
 

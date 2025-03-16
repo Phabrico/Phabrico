@@ -780,6 +780,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Opslaan')]"));
             save.Click();
 
+            Thread.Sleep(500);
+            
             AssertNoJavascriptErrors();
 
             // wait until green 'Approve Translation' button is enabled
@@ -1187,6 +1189,8 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // click on save button
             save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Opslaan')]"));
             save.Click();
+
+            Thread.Sleep(500);
 
             AssertNoJavascriptErrors();
 

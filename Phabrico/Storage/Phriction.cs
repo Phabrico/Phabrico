@@ -91,7 +91,7 @@ namespace Phabrico.Storage
         /// <param name="destinationUsername">Username to use for authenticating the destination Phabrico database</param>
         /// <param name="destinationPassword">Username to use for authenticating the destination Phabrico database</param>
         /// <param name="filter">LINQ method for filtering the records to be copied</param>
-        public static List<Phabricator.Data.Phriction> Copy(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword, Func<Phabricator.Data.Phriction,bool> filter = null)
+        public static List<Phabricator.Data.Phriction> Copy(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword, Func<Phabricator.Data.Phriction, bool> filter = null)
         {
             string sourceTokenHash = Encryption.GenerateTokenKey(sourceUsername, sourcePassword);  // tokenHash is stored in the database
             string sourcePublicEncryptionKey = Encryption.GenerateEncryptionKey(sourceUsername, sourcePassword);  // encryptionKey is not stored in database (except when security is disabled)
@@ -490,14 +490,14 @@ namespace Phabrico.Storage
             // return favorite staged phriction documents
             FavoriteObject favoriteObjectStorage = new FavoriteObject();
             Stage stageStorage = new Stage();
-            result.AddRange( stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale)
+            result.AddRange(stageStorage.Get<Phabricator.Data.Phriction>(database, browser.Session.Locale)
                                          .Where(document => document.Token.StartsWith("PHID-NEWTOKEN-")
                                                          && favoriteObjectStorage.Get(database, accountUserName, document.Token) != null
                                                )
                                          .Select(stagedDocument => new Phabricator.Data.Phriction(stagedDocument)
-                                                                    {
-                                                                        DisplayOrderInFavorites = favoriteObjectStorage.Get(database, accountUserName, stagedDocument.Token).DisplayOrder
-                                                                    }
+                                         {
+                                             DisplayOrderInFavorites = favoriteObjectStorage.Get(database, accountUserName, stagedDocument.Token).DisplayOrder
+                                         }
                                                 )
                            );
 
@@ -699,7 +699,7 @@ namespace Phabrico.Storage
                 }
             }
         }
-        
+
         /// <summary>
         /// Removes a Phriction document from the database
         /// </summary>
@@ -722,7 +722,7 @@ namespace Phabrico.Storage
                                WHERE token = @token;
                            ", database.Connection))
                     {
-                        database.AddParameter(cmdDeleteKeywordInfo, "token", phrictionDocument.Token, Database.EncryptionMode.None);
+                        database.AddParameter(cmdDeleteKeywordInfo, "token", phrictionDocument.Token, Database.EncryptionMode.Default);
                         cmdDeleteKeywordInfo.ExecuteNonQuery();
                     }
 
@@ -768,6 +768,122 @@ namespace Phabrico.Storage
                     database.CleanupUnusedObjectRelations();
                 }
             }
+        }
+
+        /// <summary>
+        /// Removes old child document trees from a versioned document trees
+        /// </summary>
+        /// <param name="database">Phabrico database</param>
+        /// <param name="browser">Browser</param>
+        public void CleanupOldVersions(Database database, Browser browser)
+        {
+            Storage.Account accountStorage = new Storage.Account();
+            Phabricator.Data.Account account = accountStorage.WhoAmI(database, browser);
+            if (account == null) return;
+
+            List<string> versionedRoots = account.Parameters.VersionedDocumentRoots;
+            if (versionedRoots == null || versionedRoots.Count == 0) return;
+
+            foreach (string root in versionedRoots)
+            {
+                string normalizedRoot = root.ToLower().Replace(' ', '_').Trim();
+                if (!normalizedRoot.EndsWith("/")) normalizedRoot += "/";
+                if (normalizedRoot.StartsWith("/")) normalizedRoot = normalizedRoot.Substring(1);
+                if (normalizedRoot.StartsWith("w/")) normalizedRoot = normalizedRoot.Substring(2);
+                if (string.IsNullOrEmpty(normalizedRoot)) continue;
+
+                // Get all documents under this root
+                var documentsUnderRoot = Get(database, Language.NotApplicable)
+                    .Where(doc => doc.Path.ToLower().Replace(' ', '_').StartsWith(normalizedRoot))
+                    .ToList();
+
+                // Identify direct child documents (one level below root)
+                var childDocuments = documentsUnderRoot
+                    .Where(doc =>
+                    {
+                        string normalizedPath = doc.Path.ToLower().Replace(' ', '_');
+                        int nextSlash = normalizedPath.IndexOf('/', normalizedRoot.Length);
+                        return nextSlash == normalizedPath.Length - 1;
+                    })
+                    .ToList();
+
+                // Filter to versioned child documents
+                var versionedChildDocuments = childDocuments
+                    .Where(doc =>
+                    {
+                        string childPath = doc.Path.Substring(normalizedRoot.Length).TrimEnd('/');
+                        return IsVersionSegment(childPath);
+                    })
+                    .ToList();
+
+                if (versionedChildDocuments.Count > 1)
+                {
+                    // Map documents to their parsed versions
+                    var versionDocMap = versionedChildDocuments
+                        .Select(doc =>
+                        {
+                            string versionSegment = doc.Path.Substring(normalizedRoot.Length).TrimEnd('/');
+                            string versionPart = ExtractNumericVersionPart(versionSegment);
+                            return new { Doc = doc, Version = ParseVersion(versionPart) };
+                        })
+                        .Where(x => x.Version != null)
+                        .ToList();
+
+                    if (versionDocMap.Any())
+                    {
+                        // Find the document with the highest version
+                        var latestDoc = versionDocMap
+                            .OrderByDescending(x => x.Version)
+                            .First().Doc;
+
+                        // Delete all other versioned documents and their subtrees
+                        foreach (var oldDoc in versionDocMap.Where(x => x.Doc != latestDoc).Select(x => x.Doc))
+                        {
+                            string oldVersionPath = oldDoc.Path.ToLower().Replace(' ', '_');
+                            var documentsToDelete = documentsUnderRoot
+                                .Where(doc => doc.Path.ToLower().Replace(' ', '_').StartsWith(oldVersionPath))
+                                .ToList();
+
+                            foreach (var docToDelete in documentsToDelete)
+                            {
+                                Remove(database, docToDelete);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Extract numeric version part of version strings (e.g. "v1.0" -> "1.0")
+        /// </summary>
+        /// <param name="versionString"></param>
+        /// <returns></returns>
+        private string ExtractNumericVersionPart(string versionString)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(versionString, @"^(.*?)(\d+(\.\d+)*)$");
+            return match.Success ? match.Groups[2].Value : null;
+        }
+
+        /// <summary>
+        /// Converts a version string into a Version object
+        /// </summary>
+        /// <param name="versionString"></param>
+        /// <returns></returns>
+        private Version ParseVersion(string versionString)
+        {
+            return Version.TryParse(versionString, out Version version) ? version : null;
+        }
+
+        /// <summary>
+        /// Validates if a string is a version string
+        /// </summary>
+        /// <param name="data">String to be validated</param>
+        /// <returns>True if data is valid version string</returns>
+        private bool IsVersionSegment(string data)
+        {
+            string versionPart = ExtractNumericVersionPart(data);
+            return versionPart != null && ParseVersion(versionPart) != null;
         }
     }
 }

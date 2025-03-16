@@ -19,6 +19,9 @@ namespace Phabrico.UnitTests.Nuget
         [TestMethod]
         public void TestVersionNumberOfDependencies()
         {
+            // Collect all errors in a list
+            List<string> errors = new List<string>();
+
             string[] nuspecFiles = Directory.EnumerateFiles(Path.GetFullPath(@"..\..\.."), "*.nuspec", SearchOption.AllDirectories)
                                             .Where(path => path.IndexOf("\\bin\\", StringComparison.OrdinalIgnoreCase) < 0)
                                             .ToArray();
@@ -41,33 +44,39 @@ namespace Phabrico.UnitTests.Nuget
                 }
 
                 string packagesConfigFile = Directory.EnumerateFiles(Path.GetDirectoryName(nuspecFile), "packages.config", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (packagesConfigFile == null)
+                {
+                    errors.Add($"{Path.GetFileName(nuspecFile)}: No corresponding packages.config found");
+                    continue;
+                }
+
                 XDocument projDefinition = XDocument.Load(packagesConfigFile);
-                Dictionary<string,string> packagesConfigVersionsPerDependency = projDefinition
+                Dictionary<string, string> packagesConfigVersionsPerDependency = projDefinition
                     .Element("packages")
-                    .Elements("package")
+                    ?.Elements("package")
                     .ToDictionary(key => key.Attribute("id").Value.ToUpper(),
-                                value => value.Attribute("version").Value
-                                );
+                                  value => value.Attribute("version").Value
+                                 ) ?? new Dictionary<string, string>();
 
                 foreach (string packagesConfigReference in packagesConfigVersionsPerDependency.Keys)
                 {
                     string nuspecVersion;
-                    if (nugetVersionsPerDependency.TryGetValue(packagesConfigReference, out nuspecVersion) == false)
+                    if (!nugetVersionsPerDependency.TryGetValue(packagesConfigReference, out nuspecVersion))
                     {
-                        Assert.Fail("{0} has a reference to {1} which is missing in {2}",
-                            Path.GetFileName(packagesConfigFile),
-                            packagesConfigReference,
-                            Path.GetFileName(nuspecFile));
+                        errors.Add($"{nuspecFile}: Reference to {packagesConfigReference} (version {packagesConfigVersionsPerDependency[packagesConfigReference]}) is missing");
                     }
-                    
-                    Assert.AreEqual(packagesConfigVersionsPerDependency[packagesConfigReference],
-                                    nuspecVersion,
-                                    string.Format("Mismatch version numbers for {0} in {1} and {2}",
-                                        packagesConfigReference,
-                                        Path.GetFileName(packagesConfigFile),
-                                        Path.GetFileName(nuspecFile))
-                                    );
+                    else if (packagesConfigVersionsPerDependency[packagesConfigReference] != nuspecVersion)
+                    {
+                        errors.Add($"{nuspecFile}: Mismatch for {packagesConfigReference} - Old version: {nuspecVersion}, Expected version: {packagesConfigVersionsPerDependency[packagesConfigReference]}");
+                    }
                 }
+            }
+
+            // Assert all errors at once
+            if (errors.Any())
+            {
+                string errorMessage = "Found version mismatches or missing dependencies:\n" + string.Join("\n", errors);
+                Assert.Fail(errorMessage);
             }
         }
     }

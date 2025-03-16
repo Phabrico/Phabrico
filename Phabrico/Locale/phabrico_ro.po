@@ -878,6 +878,15 @@ msgstr "Meniu de oprire automată"
 msgid "Closes the menu automatically when hovering the mouse pointer away"
 msgstr "Închide automat meniul atunci când indicatorul mouse-ului se îndepărtează"
 
+msgid "Versioned Document Roots"
+msgstr "Rădăcini de Documente Versionate"
+
+msgid "Add versioned root"
+msgstr "Adaugă rădăcină versionată"
+
+msgid "Enter the URL paths for wiki pages which have underlying versioned pages:"
+msgstr "Introduceți căile URL pentru paginile wiki care au pagini versionate subiacente:"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Blocat: modificările locale nu vor fi încărcate în timpul sincronizării"
 

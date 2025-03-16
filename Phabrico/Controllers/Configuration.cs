@@ -4,6 +4,7 @@ using Phabrico.Http;
 using Phabrico.Http.Response;
 using Phabrico.Miscellaneous;
 using Phabrico.Phabricator.Data;
+using Phabrico.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +45,7 @@ namespace Phabrico.Controllers
                     // set private encryption key
                     database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
-                    Account existingAccount = accountStorage.Get(database, token);
+                    Phabricator.Data.Account existingAccount = accountStorage.Get(database, token);
                     if (existingAccount != null)
                     {
                         string syncMethodManiphestValue = "ManiphestSelectedUsersOnly";
@@ -120,6 +121,9 @@ namespace Phabrico.Controllers
                         }
                         secondaryUserAccounts = secondaryUserAccounts.TrimStart(',', ' ');
                         viewPage.SetText("CONFIG-SECONDARY-USERS", secondaryUserAccounts, HtmlViewPage.ArgumentOptions.AllowEmptyParameterValue | HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
+
+                        string versionedRootsJson = JsonConvert.SerializeObject(existingAccount.Parameters.VersionedDocumentRoots ?? new List<string>());
+                        viewPage.SetText("CONFIG-VERSIONED-DOCUMENT-ROOTS", versionedRootsJson, HtmlViewPage.ArgumentOptions.NoHtmlEncoding);
                     }
                     else
                     {
@@ -141,7 +145,7 @@ namespace Phabrico.Controllers
                     viewPage.Customize(browser);
 
                     Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
-                    ManiphestStatus[] openManiphestStates = maniphestStatusStorage.Get(database, Language.NotApplicable).Where(status => status.Closed == false).OrderBy(status => status.Name).ToArray();
+                    Phabricator.Data.ManiphestStatus[] openManiphestStates = maniphestStatusStorage.Get(database, Language.NotApplicable).Where(status => status.Closed == false).OrderBy(status => status.Name).ToArray();
 
                     if (openManiphestStates.Length > 1)
                     {
@@ -153,7 +157,7 @@ namespace Phabrico.Controllers
                             visibleManiphestStates = openManiphestStates.Select(state => state.Value);
                         }
 
-                        foreach (ManiphestStatus maniphestStatus in openManiphestStates)
+                        foreach (Phabricator.Data.ManiphestStatus maniphestStatus in openManiphestStates)
                         {
                             HtmlPartialViewPage htmlVisibleManiphestStatus = viewPage.GetPartialView("VISIBILE-MANIPHEST-STATES");
                             htmlVisibleManiphestStatus.SetText("VISIBILE-MANIPHEST-STATE-NAME", maniphestStatus.Value);
@@ -269,7 +273,7 @@ namespace Phabrico.Controllers
                     // set private encryption key
                     database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
-                    Account existingAccount = accountStorage.Get(database, token);
+                    Phabricator.Data.Account existingAccount = accountStorage.Get(database, token);
                     if (existingAccount != null)
                     {
                         existingAccount.ConduitAPIToken = browser.Session.FormVariables[browser.Request.RawUrl]["conduitApiToken"];
@@ -416,7 +420,7 @@ namespace Phabrico.Controllers
 
 
                         Storage.ManiphestStatus maniphestStatusStorage = new Storage.ManiphestStatus();
-                        ManiphestStatus[] openManiphestStates = maniphestStatusStorage.Get(database, Language.NotApplicable).Where(status => status.Closed == false).OrderBy(status => status.Name).ToArray();
+                        Phabricator.Data.ManiphestStatus[] openManiphestStates = maniphestStatusStorage.Get(database, Language.NotApplicable).Where(status => status.Closed == false).OrderBy(status => status.Name).ToArray();
                         if (openManiphestStates.Length > 1)
                         {
                             string[] visibleManiphestStates = browser.Session.FormVariables[browser.Request.RawUrl].Keys.Where(key => key.StartsWith("visible-manipheststate-")).ToArray();
@@ -459,7 +463,7 @@ namespace Phabrico.Controllers
                 // set private encryption key
                 database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
-                Account existingAccount = accountStorage.Get(database, token);
+                Phabricator.Data.Account existingAccount = accountStorage.Get(database, token);
                 if (existingAccount != null)
                 {
                     string jsonArrayConfidentialTableHeaders = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
@@ -496,7 +500,7 @@ namespace Phabrico.Controllers
                 // set private encryption key
                 database.PrivateEncryptionKey = token.PrivateEncryptionKey;
 
-                Account existingAccount = accountStorage.Get(database, token);
+                Phabricator.Data.Account existingAccount = accountStorage.Get(database, token);
                 if (existingAccount != null)
                 {
                     string jsonArrayConfidentialTableHeaders = browser.Session.FormVariables[browser.Request.RawUrl]["data"];
@@ -518,7 +522,7 @@ namespace Phabrico.Controllers
                             string newTokenHash = Encryption.GenerateTokenKey(user.Name, "");
                             string newPublicEncryptionKey = Encryption.GenerateEncryptionKey(user.Name, "");
 
-                            Account newUserAccount = new Account();
+                            Phabricator.Data.Account newUserAccount = new Phabricator.Data.Account();
                             newUserAccount.UserName = user.Name;
                             newUserAccount.Token = newTokenHash;
                             newUserAccount.PublicXorCipher = Encryption.GetXorValue(EncryptionKey, newPublicEncryptionKey);
@@ -528,7 +532,7 @@ namespace Phabrico.Controllers
                             newUserAccount.ConduitAPIToken = "";
                             newUserAccount.PhabricatorUrl = "";
                             newUserAccount.Theme = "light";
-                            newUserAccount.Parameters = new Account.Configuration();
+                            newUserAccount.Parameters = new Phabricator.Data.Account.Configuration();
                             newUserAccount.Parameters.AccountType = AccountTypes.SecondaryUser;
                             newUserAccount.Parameters.DefaultUserRoleTag = user.Role;
                             accountStorage.Add(database, newUserAccount);
@@ -546,7 +550,7 @@ namespace Phabrico.Controllers
 
                     foreach (string userNameToRemove in accountsToRemove.Where(kvp => kvp.Value == true).Select(kvp => kvp.Key))
                     {
-                        Account oldUserAccount = accountStorage.Get(database, Language.NotApplicable).FirstOrDefault(user => user.UserName.Equals(userNameToRemove, StringComparison.OrdinalIgnoreCase));
+                        Phabricator.Data.Account oldUserAccount = accountStorage.Get(database, Language.NotApplicable).FirstOrDefault(user => user.UserName.Equals(userNameToRemove, StringComparison.OrdinalIgnoreCase));
                         if (oldUserAccount != null)
                         {
                             accountStorage.Remove(database, oldUserAccount);
@@ -556,6 +560,29 @@ namespace Phabrico.Controllers
 
                 // keep user role configuration up to date in memory
                 httpServer.UpdateUserRoleConfiguration(database);
+            }
+        }
+
+        [UrlController(URL = "/configure/versioned-roots")]
+        public void HttpPostSaveVersionedRoots(Http.Server httpServer, string[] parameters)
+        {
+            Storage.Account accountStorage = new Storage.Account();
+            using (Storage.Database database = new Storage.Database(EncryptionKey))
+            {
+                database.PrivateEncryptionKey = browser.Token.PrivateEncryptionKey;
+                Phabricator.Data.Account account = accountStorage.WhoAmI(database, browser);
+                if (account == null) throw new Phabrico.Exception.AccessDeniedException("/configure/versioned-root", "No authenticated user found");
+
+                string jsonRoots = browser.Session.FormVariables[browser.Request.RawUrl]["versionedRoots"];
+                List<string> roots = JsonConvert.DeserializeObject<List<string>>(jsonRoots);
+                // normalize roots to lowercase and replace spaces with underscores
+                roots = roots.Select(r => System.Web.HttpUtility.UrlDecode(r).ToLower().Replace(' ', '_')).ToList();
+
+                account.Parameters.VersionedDocumentRoots = roots;
+                accountStorage.Set(database, account);
+
+                Storage.Phriction phrictionStorage = new Storage.Phriction();
+                phrictionStorage.CleanupOldVersions(database, browser);
             }
         }
 

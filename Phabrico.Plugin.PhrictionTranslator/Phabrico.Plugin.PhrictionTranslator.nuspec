@@ -17,7 +17,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionTranslator.dll" target="lib\net461" />
-    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionTranslator.pdb" target="lib\net461" />
+    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionTranslator.dll" target="lib\net481" />
+    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionTranslator.pdb" target="lib\net481" />
   </files>
 </package>

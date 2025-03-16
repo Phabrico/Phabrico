@@ -77,6 +77,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 inputProjectTags.SendKeys("classic");
                 Thread.Sleep(500);  // wait some milliseconds to make sure the AJAX call for the projects-menu has been finished
                 inputProjectTags.SendKeys(OpenQA.Selenium.Keys.Enter);
+                Thread.Sleep(500);  // wait some milliseconds
 
                 AssertNoJavascriptErrors();
 
@@ -461,6 +462,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // save
             IWebElement btnSetSailForAdventure = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Set Sail for Adventure')]"));
             btnSetSailForAdventure.Click();
+            
+            Thread.Sleep(500);  // wait some milliseconds
+
 
             // if action pane is collapsed -> expand it
             bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
@@ -607,6 +611,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // save
             IWebElement btnSetSailForAdventure = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Set Sail for Adventure')]"));
             btnSetSailForAdventure.Click();
+
+            Thread.Sleep(500);  // wait some milliseconds
+
 
             // if action pane is collapsed -> expand it
             actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))

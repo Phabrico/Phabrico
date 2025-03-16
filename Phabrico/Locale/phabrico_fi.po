@@ -878,6 +878,15 @@ msgstr "Automaattinen sammutusvalikko"
 msgid "Closes the menu automatically when hovering the mouse pointer away"
 msgstr "Sulkee valikon automaattisesti, kun hiiren osoitin siirtyy pois"
 
+msgid "Versioned Document Roots"
+msgstr "Versioidut Dokumenttijuuret"
+
+msgid "Add versioned root"
+msgstr "Lisää versioitu juuri"
+
+msgid "Enter the URL paths for wiki pages which have underlying versioned pages:"
+msgstr "Syötä URL-osoitteet wikisivuille, joilla on alla olevia versioituja sivuja:"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Jäädytetty: paikallisia muutoksia ei ladata synkronoinnin aikana"
 

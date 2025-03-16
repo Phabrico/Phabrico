@@ -65,6 +65,7 @@ namespace Phabrico.Phabricator.API
                     newDiagram.DataStream = null;
                     newDiagram.Size = Int32.Parse(diagram["fields"]["byteSize"].ToString());
                     newDiagram.DateModified = DateTimeOffset.FromUnixTimeSeconds(long.Parse(diagram["fields"]["dateModified"].ToString()));
+                    newDiagram.DataURI = diagram["fields"]["dataURI"].ToString();
                     result.Add(newDiagram);
                 }
 
@@ -118,55 +119,46 @@ namespace Phabrico.Phabricator.API
         /// <param name="conduit"></param>
         /// <param name="diagramToken"></param>
         /// <returns></returns>
-        public Base64EIDOStream DownloadData(Conduit conduit, string diagramToken)
+        public Base64EIDOStream DownloadData(Conduit conduit, Phabricator.Data.Diagram diagram)
         {
-            if (conduit.APIExists("diagram.search") == false)
+            if (conduit.APIExists("diagram.search") == false || diagram.DataURI == null)
             {
                 // Diagram extension is not installed on Phorge instance
                 return null;
             }
 
             Base64EIDOStream base64EIDOStream = new Base64EIDOStream();
-            string json = conduit.Query("diagram.search",
-                                        new Constraint[] {
-                                            new Constraint("phids", new string[] { diagramToken })
-                                        });
-            JObject diagramData = JsonConvert.DeserializeObject(json) as JObject;
-            if (diagramData != null)
+            System.Exception exception = null;
+            HttpWebResponse response = null;
+            for (int retry = 0; retry < 10; retry++)
             {
-                System.Exception exception = null;
-                HttpWebResponse response = null;
-                string downloadURL = diagramData["result"]["data"][0]["fields"]["dataURI"].ToString();
-                for (int retry = 0; retry < 10; retry++)
+                try
                 {
-                    try
-                    {
-                        HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(downloadURL);
-                        webRequest.Method = "GET";
-                        response = (HttpWebResponse)webRequest.GetResponse();
-                        break;
-                    }
-                    catch (System.Exception e)
-                    {
-                        response = null;
-                        exception = e;
-                        Thread.Sleep(1000);
-                    }
+                    HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(diagram.DataURI);
+                    webRequest.Method = "GET";
+                    response = (HttpWebResponse)webRequest.GetResponse();
+                    break;
                 }
-
-                if (response == null && exception != null)
+                catch (System.Exception e)
                 {
-                    throw exception;
+                    response = null;
+                    exception = e;
+                    Thread.Sleep(1000);
                 }
+            }
 
-                using (BinaryReader binaryReader = new BinaryReader(response.GetResponseStream()))
+            if (response == null && exception != null)
+            {
+                throw exception;
+            }
+
+            using (BinaryReader binaryReader = new BinaryReader(response.GetResponseStream()))
+            {
+                byte[] buffer = binaryReader.ReadBytes(0x400000);
+                while (buffer.Length > 0)
                 {
-                    byte[] buffer = binaryReader.ReadBytes(0x400000);
-                    while (buffer.Length > 0)
-                    {
-                        base64EIDOStream.WriteDecodedData(buffer);
-                        buffer = binaryReader.ReadBytes(buffer.Length);
-                    }
+                    base64EIDOStream.WriteDecodedData(buffer);
+                    buffer = binaryReader.ReadBytes(buffer.Length);
                 }
             }
 

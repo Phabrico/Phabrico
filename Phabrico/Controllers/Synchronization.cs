@@ -1230,6 +1230,9 @@ namespace Phabrico.Controllers
                 bannedObjectStorage.Add(synchronizationParameters.database, taskToRemove.ID, taskToRemove.Name);
             }
 
+            // == Clean up children of version document roots ===========================================================================================================================
+            phrictionStorage.CleanupOldVersions(synchronizationParameters.database, synchronizationParameters.browser);
+
             // == Delete unreferenced files in staging area (and shrinks the database) ==================================================================================================
             SharedResource.Instance.ProgressDescription = Miscellaneous.Locale.TranslateText("Synchronization.Status.CleaningUp.UnreferencedFiles", browser.Session.Locale);
             Storage.Stage.DeleteUnreferencedFiles(synchronizationParameters.database, synchronizationParameters.browser);
@@ -1307,7 +1310,7 @@ namespace Phabrico.Controllers
                 if ((index % 100) == 0) Thread.Sleep(100);
 
                 Phabricator.Data.Diagram phabricatorDiagram = new Phabricator.Data.Diagram(phabricatorDiagramReference);
-                Base64EIDOStream base64EIDOStream = phabricatorDiagramAPI.DownloadData(synchronizationParameters.browser.Conduit, phabricatorDiagramReference.Token);
+                Base64EIDOStream base64EIDOStream = phabricatorDiagramAPI.DownloadData(synchronizationParameters.browser.Conduit, phabricatorDiagramReference);
                 base64EIDOStream.Seek(0, System.IO.SeekOrigin.Begin);
                 phabricatorDiagram.DataStream = base64EIDOStream;
                 diagramStorage.Add(synchronizationParameters.database, phabricatorDiagram);
@@ -2206,7 +2209,7 @@ namespace Phabrico.Controllers
                     }
                     else
                     {
-                        phabricatorPhrictionDocument.Path = initialPathAlias.TrimEnd('/') + "/" + phabricatorPhrictionDocument.Path;
+                        phabricatorPhrictionDocument.Path = (initialPathAlias.TrimEnd('/') + "/" + phabricatorPhrictionDocument.Path).TrimStart('/');
                     }
                 }
 

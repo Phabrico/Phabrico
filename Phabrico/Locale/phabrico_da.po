@@ -878,6 +878,15 @@ msgstr "Automatisk nedlukningsmenu"
 msgid "Closes the menu automatically when hovering the mouse pointer away"
 msgstr "Automatisk lukning af menuen, når musemarkøren svæver væk"
 
+msgid "Versioned Document Roots"
+msgstr "Versionsstyrede Dokumentrødder"
+
+msgid "Add versioned root"
+msgstr "Tilføj versionsstyret rod"
+
+msgid "Enter the URL paths for wiki pages which have underlying versioned pages:"
+msgstr "Indtast URL-stierne til wiki-sider, der har underliggende versionsstyrede sider:"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Frosset: lokale ændringer vil ikke blive uploadet under synkroniseringen"
 

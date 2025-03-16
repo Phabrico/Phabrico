@@ -878,6 +878,15 @@ msgstr "Meny för automatisk avstängning"
 msgid "Closes the menu automatically when hovering the mouse pointer away"
 msgstr "Automatisk stängning av menyn när muspekaren svävar bort"
 
+msgid "Versioned Document Roots"
+msgstr "Versionshanterade Dokumentrötter"
+
+msgid "Add versioned root"
+msgstr "Lägg till versionshanterad rot"
+
+msgid "Enter the URL paths for wiki pages which have underlying versioned pages:"
+msgstr "Ange URL-sökvägarna för wikisidor som har underliggande versionshanterade sidor:"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Fryst: lokala ändringar kommer inte att laddas upp under synkroniseringen."
 

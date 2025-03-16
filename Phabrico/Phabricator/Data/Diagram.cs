@@ -71,6 +71,11 @@ namespace Phabrico.Phabricator.Data
         }
 
         /// <summary>
+        /// Temporary variable for Download API
+        /// </summary>
+        public string DataURI { get; set; }
+
+        /// <summary>
         /// Timestamp when diagram was modified/created
         /// </summary>
         public DateTimeOffset DateModified { get; set; }

@@ -114,16 +114,6 @@
                   KeyPath="yes"
                   ProcessorArchitecture="x64" />
         </Component>
-        <Component Id="System_IO_FileSystem_Primitives_dll" Guid="4fd6c894-20a1-4e67-a6e2-04b7ac29c86d"
-                   Win64="yes">
-            <RemoveFile Id="removefile_System_IO_FileSystem_Primitives_dll"
-                        Name="System.IO.FileSystem.Primitives.dll"
-                        On="install" />
-            <File Id="file_System.IO_FileSystem_Primitives_dll"
-                  Source="$(var.Phabrico.TargetDir)System.IO.FileSystem.Primitives.dll"
-                  KeyPath="yes"
-                  ProcessorArchitecture="x64" />
-        </Component>
         <Component Id="System_IO_Packaging_dll" Guid="a79704bd-ae26-4ac1-9560-53cc2bafd706"
                    Win64="yes">
             <RemoveFile Id="removefile_System_IO_Packaging_dll"

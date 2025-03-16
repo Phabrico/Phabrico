@@ -518,14 +518,13 @@ namespace Phabrico.Plugin
                     Directory.CreateDirectory(workingDirectory);
 
                     // clone
-                    LibGit2Sharp.Repository.Clone(repository.URI, workingDirectory, new CloneOptions
+                    var cloneOptions = new LibGit2Sharp.CloneOptions();
+                    cloneOptions.FetchOptions.CredentialsProvider = (url, usernameFromUrl, types) => new LibGit2Sharp.UsernamePasswordCredentials
                     {
-                        CredentialsProvider = (url, usernameFromUrl, types) => new LibGit2Sharp.UsernamePasswordCredentials
-                        {
-                            Username = username,
-                            Password = password
-                        }
-                    });
+                        Username = username,
+                        Password = password
+                    };
+                    LibGit2Sharp.Repository.Clone(repository.URI, workingDirectory, cloneOptions);
 
                     string jsonData = JsonConvert.SerializeObject(new
                     {

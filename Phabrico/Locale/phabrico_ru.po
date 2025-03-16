@@ -878,6 +878,15 @@ msgstr "Автоматическое закрытие меню"
 msgid "Closes the menu automatically when hovering the mouse pointer away"
 msgstr "Автоматическое закрытие меню при наведении указателя мыши"
 
+msgid "Versioned Document Roots"
+msgstr "Версионные корни документов"
+
+msgid "Add versioned root"
+msgstr "Добавить версионный корень"
+
+msgid "Enter the URL paths for wiki pages which have underlying versioned pages:"
+msgstr "Введите пути URL для вики-страниц, у которых есть подчинённые версионные страницы:"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Заморозить: локальные модификации не будут загружены во время синхронизации"
 

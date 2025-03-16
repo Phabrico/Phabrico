@@ -878,6 +878,15 @@ msgstr "自动关闭动作菜单"
 msgid "Closes the menu automatically when hovering the mouse pointer away"
 msgstr "当鼠标指针悬停在远处时自动关闭菜单"
 
+msgid "Versioned Document Roots"
+msgstr "版本化的文档根目录"
+
+msgid "Add versioned root"
+msgstr "添加版本化的根目录"
+
+msgid "Enter the URL paths for wiki pages which have underlying versioned pages:"
+msgstr "输入具有下层版本化页面的wiki页面的URL路径："
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "冻结：在同步过程中，本地修改将不会被上传"
 

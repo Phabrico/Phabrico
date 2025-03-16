@@ -265,6 +265,30 @@
                         </label>
                     </td>
                 </tr>
+                <tr class="setting VersionedDocumentRoots">
+                    <td class="aphront-form-label">
+                        <label class="aphront-form-label">Versioned Document Roots</label>
+                    </td>
+                    <td>
+                        <p class="instructions">Enter the URL paths for wiki pages which have underlying versioned pages:</p>
+                        <div class="config-tables-header" style="width:auto; min-width: 100ch; margin-bottom: 25px;">
+                            <div class="config-tables-body">
+                                <a id="btnAddVersionedRoot" class="button button-gray" style="float:right; padding: 4px 30px 4px 10px;margin-right: 4px;">
+                                    <span class="phui-list-item-icon phui-font-fa fa-plus" style="float:left; margin-top:2px;"></span>
+                                    <div>Add versioned root</div>
+                                </a>
+                            </div>
+                            <table id="tblVersionedRoots" class="aphront-table-view">
+                                <tbody>
+                                    <tr>
+                                        <th class="wide">Versioned Document Roots</th>
+                                        <th class="action">Remove</th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
             </table>
         </div>
         }@
@@ -877,6 +901,87 @@
         }
     }
 
+    function addVersionedRootToTable(root) {
+        if (Array.isArray(root)) {
+            root.forEach(function (singleRoot) {
+                addVersionedRootToTable(singleRoot);
+            });
+            return;
+        }
+
+        var newrow = document.createElement('tr');
+        var tdRoot = document.createElement('td');
+        var tdAction = document.createElement('td');
+        var aAction = document.createElement('a');
+        newrow.appendChild(tdRoot);
+        newrow.appendChild(tdAction);
+        tdAction.appendChild(aAction);
+        newrow.classList.add('alternate');
+        tdRoot.classList.add('wide');
+        if (typeof root.tagName === "undefined") {
+            tdRoot.innerText = root;
+        } else {
+            root.style.width = "100%";
+            tdRoot.appendChild(root);
+            tdRoot.colSpan = 2;
+            tdAction.style.display = 'none';
+            setTimeout(function () { root.focus(); }, 250);
+            root.onblur = function (item) {
+                let inputText = item.target.value.trim();
+                inputText = inputText.replace(/\/+/g, "/");
+
+                if (inputText.startsWith("/")) inputText = inputText.substring(1);
+                if (!inputText.endsWith("/")) inputText = inputText + "/";
+                if (inputText.startsWith("w/")) inputText = inputText.substring(2);
+
+                let invalidInputText = (inputText === "" || inputText === "/");
+                invalidInputText |= /[:?#& @[\]!$&'()*+,;=]/.test(inputText);
+
+                if (invalidInputText) {
+                    var tr = item.target.closest('tr');
+                    tr.parentElement.removeChild(tr);
+                } else {
+
+                    tdRoot = item.target.parentElement;
+                    tdAction = tdRoot.nextSibling;
+                    tdRoot.removeChild(item.target);
+                    tdRoot.innerText = inputText;
+                    tdRoot.colSpan = 1;
+                    tdAction.style.display = 'table-cell';
+                    sendVersionedRootsToServer();
+                }
+            };
+        }
+        tdAction.classList.add('action');
+        aAction.classList.add('button');
+        aAction.classList.add('small');
+        aAction.classList.add('button-gray');
+        aAction.href = '/';
+        aAction.style.minWidth = '50px';
+        aAction.style.position = 'relative';
+        aAction.style.top = '-2px';
+        aAction.innerText = 'Remove';
+        aAction.onclick = function (item) {
+            var button = item.target;
+            var tr = button.closest('tr');
+            tblVersionedRoots.removeChild(tr);
+            sendVersionedRootsToServer();
+            return false;
+        };
+        tblVersionedRoots.appendChild(newrow);
+    }
+
+    function sendVersionedRootsToServer() {
+        var allRoots = Array.from(document.querySelectorAll('#tblVersionedRoots td.wide'))
+            .map(function (td) { return td.innerText; });
+        var xmlhttp = new XMLHttpRequest();
+        var data = new FormData();
+        data.append('versionedRoots', JSON.stringify(allRoots));
+        xmlhttp.open('POST', "configure/versioned-roots/", true);
+        xmlhttp.setRequestHeader('Content-type', 'multipart/form-data; charset=utf-8');
+        xmlhttp.send(data);
+    }
+
     @{IF @@ACCESS-HIDE-THEME-CONFIG@@=False@
         function initializeThemeSpecificComponents() {
             if (document.body.dataset.theme === 'dark') {
@@ -1019,6 +1124,25 @@
         });
 
         addPhabricoAccountToTable(textInputField);
+    }
+
+    btnAddVersionedRoot.onclick = function (e) {
+        e.preventDefault();
+        var textInputField = document.createElement('input');
+        textInputField.addEventListener("keypress", function (e) {
+            var ch = (e.which) ? e.which : event.keyCode;
+            if (ch == 13) {
+                e.preventDefault();
+                e.target.blur();
+            }
+        });
+        addVersionedRootToTable(textInputField);
+    };
+
+    // Load existing versioned roots
+    var versionedRoots = [@@CONFIG-VERSIONED-DOCUMENT-ROOTS@@];
+    for (var r in versionedRoots) {
+        addVersionedRootToTable(versionedRoots[r]);
     }
 
     window.addEventListener('load', function () {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Phabrico.Phabricator.Data
 {
@@ -334,6 +335,8 @@ namespace Phabrico.Phabricator.Data
             /// The Phabricator token of the user whose Conduit API token is used
             /// </summary>
             public string UserToken { get; set; }
+
+            public List<string> VersionedDocumentRoots { get; set; } = new List<string>();
         }
     }
 }

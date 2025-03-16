@@ -382,12 +382,11 @@ namespace Phabrico.Storage
         /// <returns></returns>
         public IEnumerable<string> GetTokensByWords(Database database, string[] words, string tokenPrefix, Language language)
         {
-            string sqlStatement;
-            SQLiteCommand dbCommand;
             Dictionary<string, WordsArraySearchResult> wordsArraySearchResults = new Dictionary<string, WordsArraySearchResult>();
             List<string> invalidTokens = new List<string>();
+            int maxResultsPerWord = 100;
 
-            // collect all words in a double dictionary
+            // Collect tokens for each word
             for (int wordIndex = 0; wordIndex < words.Length && wordIndex < 63; wordIndex++)
             {
                 string word = words[wordIndex];
@@ -406,100 +405,64 @@ namespace Phabrico.Storage
                 }
 
                 string encryptedWord = database.PolyCharacterCipherEncrypt(word.ToUpper());
-                string encryptedQuotedWord = database.PolyCharacterCipherEncrypt("\"" + word.ToUpper());
-
-                sqlStatement = string.Format(@"
-                    SELECT keywordInfo.name,
-                           keywordInfo.token,
-                           keywordInfo.nbrocc,
-                           keywordInfo.description,
-                           keywordInfo.language
+                string sqlStatement = @"
+                    SELECT name, token, nbrocc, description, language
                     FROM keywordInfo
-                    INNER JOIN (
-                        SELECT MIN(level) level, token
-                        FROM (
-                            SELECT 1 level, token
-                            FROM keywordInfo
-                            WHERE (name LIKE '{0}%'  OR  name LIKE '{1}%')
-                              AND language = @language
+                    WHERE name LIKE @encryptedWord || '%'
+                      AND (language = @language OR language = @notApplicable)
+                    ORDER BY language = @language DESC, nbrocc DESC
+                    LIMIT @maxResultsPerWord
+                ";
 
-                            UNION
-
-                            SELECT 2 level, token
-                            FROM keywordInfo
-                            WHERE (name LIKE '{0}%'  OR  name LIKE '{1}%')
-                              AND language = @notApplicable
-                        ) drv
-                        GROUP BY token
-                    ) selection
-                    ON keywordInfo.token = selection.token
-                    AND (keywordInfo.name LIKE '{0}%'  OR  keywordInfo.name LIKE '{1}%')
-                    AND ((selection.level = 1 AND keywordInfo.language = @language)         -- translation available
-                      OR (selection.level = 2 AND keywordInfo.language = @notApplicable)    -- no translation available
-                        ) 
-                ", encryptedWord,
-                   encryptedQuotedWord);
-
-                using (dbCommand = new SQLiteCommand(sqlStatement, database.Connection))
+                using (SQLiteCommand dbCommand = new SQLiteCommand(sqlStatement, database.Connection))
                 {
+                    database.AddParameter(dbCommand, "encryptedWord", encryptedWord, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
                     database.AddParameter(dbCommand, "notApplicable", Language.NotApplicable, Database.EncryptionMode.None);
+                    dbCommand.Parameters.Add(new SQLiteParameter("@maxResultsPerWord", maxResultsPerWord));
+
                     using (var reader = dbCommand.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            WordsArraySearchResult wordSearchResult;
-                            bool exactWord;
                             string token = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["token"]);
-                            if (token.StartsWith(tokenPrefix) == false) continue;
+                            if (!token.StartsWith(tokenPrefix)) continue;
 
+                            string keywordName = (string)reader["name"];
                             int numberOccurrences = Int32.Parse(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["nbrocc"]));
-                            word = (string)reader["name"];
+                            string description = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["description"]);
 
-                            if (searchInTitleOnly)
-                            {
-                                string description = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["description"]);
-                                string decryptedWord = database.PolyCharacterCipherDecrypt(word);
-                                if (description.ToUpper().Contains(decryptedWord) == false) continue;
-                            }
+                            if (searchInTitleOnly && !description.ToUpper().Contains(database.PolyCharacterCipherDecrypt(keywordName))) continue;
 
-                            // determine which searchResults dictionary should be used
                             if (negation)
                             {
-                                string decryptedWord = database.PolyCharacterCipherDecrypt(word);
-                                invalidTokens.AddRange( GetTokensByExactWord(database, decryptedWord, language) );
+                                invalidTokens.Add(token);
                             }
                             else
                             {
-                                string firstWord;
+                                WordsArraySearchResult wordSearchResult;
+                                bool exactWord = database.PolyCharacterCipherDecrypt(keywordName).Equals(word, StringComparison.OrdinalIgnoreCase);
+                                string firstWord = database.PolyCharacterCipherDecrypt(keywordName);
 
-                                // complete searchResults dictionary
-                                if (wordsArraySearchResults.TryGetValue(token, out wordSearchResult) == false)
+                                if (!wordsArraySearchResults.TryGetValue(token, out wordSearchResult))
                                 {
-                                    string decryptedWord = database.PolyCharacterCipherDecrypt(word);
-                                    exactWord = decryptedWord.Equals(words[wordIndex], StringComparison.OrdinalIgnoreCase);
-                                    firstWord = decryptedWord;
-
                                     wordsArraySearchResults[token] = new WordsArraySearchResult(0, exactWord, 0, firstWord);
                                 }
-                                else
-                                {
-                                    exactWord = wordsArraySearchResults[token].ExactWord;
-                                    firstWord = wordsArraySearchResults[token].FirstWord;
-                                }
 
-                                wordsArraySearchResults[token] = new WordsArraySearchResult(wordsArraySearchResults[token].Bitmask | (Int64)Math.Pow(2, wordIndex),
-                                                                                            exactWord,
-                                                                                            wordsArraySearchResults[token].NumberOccurrences + numberOccurrences,
-                                                                                            firstWord);
+                                wordsArraySearchResults[token] = new WordsArraySearchResult(
+                                    wordsArraySearchResults[token].Bitmask | (1L << wordIndex),
+                                    wordsArraySearchResults[token].ExactWord || exactWord,
+                                    wordsArraySearchResults[token].NumberOccurrences + numberOccurrences,
+                                    wordsArraySearchResults[token].FirstWord
+                                );
                             }
                         }
                     }
                 }
             }
 
-            // remove items from dictionary where one of the words was not found
-            Int64 allWordsBitMask = (Int64)Math.Pow(2, words.Length) - 1;
+            // Filter results
+            long allWordsBitMask = (1L << words.Length) - 1;
             int bitValue = 1;
             foreach (string word in words)
             {
@@ -507,32 +470,20 @@ namespace Phabrico.Storage
                 {
                     allWordsBitMask ^= bitValue;
                 }
-
                 bitValue <<= 1;
             }
 
-            foreach (KeyValuePair<string, WordsArraySearchResult> kvp in wordsArraySearchResults.Where(item => item.Value.Bitmask != allWordsBitMask).ToList())
-            {
-                wordsArraySearchResults.Remove(kvp.Key);
-            }
+            var filteredResults = wordsArraySearchResults
+                .Where(kvp => kvp.Value.Bitmask == allWordsBitMask && !invalidTokens.Contains(kvp.Key))
+                .OrderByDescending(kvp => kvp.Value.ExactWord ? 1 : 0)
+                .ThenByDescending(kvp => kvp.Value.NumberOccurrences)
+                .ThenBy(kvp => RegexSafe.IsMatch(kvp.Value.FirstWord, "T-?[0-9]+", RegexOptions.None)
+                    ? int.Parse(RegexSafe.Match(kvp.Value.FirstWord, "T-?([0-9]+)", RegexOptions.None).Groups[1].Value).ToString("D10")
+                    : kvp.Value.FirstWord)
+                .Select(kvp => kvp.Key)
+                .Take(10);
 
-            // remove items from dictionary which are found in the invalidTokens array
-            foreach (string invalidToken in invalidTokens)
-            {
-                wordsArraySearchResults.Remove(invalidToken);
-            }
-
-            foreach (string token in wordsArraySearchResults.OrderByDescending(item => item.Value.ExactWord ? 1 : 0)
-                                                            .ThenByDescending(item => item.Value.NumberOccurrences)
-                                                            .ThenBy(item => RegexSafe.IsMatch(item.Value.FirstWord, "T-?[0-9]+", RegexOptions.None)
-                                                                          ? string.Format("{0:D10}", Int32.Parse(RegexSafe.Match(item.Value.FirstWord, "T-?([0-9]+)", RegexOptions.None).Groups[1].Value))
-                                                                          : item.Value.FirstWord
-                                                                   )
-                                                            .Select(item => item.Key)
-                                                            .Distinct())
-            {
-                yield return token;
-            }
+            return filteredResults;
         }
     }
 }

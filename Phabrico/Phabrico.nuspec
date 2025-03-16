@@ -13,24 +13,29 @@
     <license type="expression">Apache-2.0</license>
     <tags></tags>
     <dependencies>
-      <dependency id="ClosedXML" version="0.96.0" />
-      <dependency id="DocumentFormat.OpenXml" version="2.16.0" />
+      <dependency id="ClosedXML" version="0.104.2" />
+      <dependency id="ClosedXML.Parser" version="1.3.0" />
+      <dependency id="DocumentFormat.OpenXml" version="3.3.0" />
+      <dependency id="DocumentFormat.OpenXml.Framework" version="3.3.0" />
       <dependency id="ExcelNumberFormat" version="1.1.0" />
+      <dependency id="Microsoft.BCL.HashCode" version="6.0.0" />
       <dependency id="Microsoft.CSharp" version="4.7.0" />
       <dependency id="Newtonsoft.Json" version="13.0.3" />
-      <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.118.0" />
-      <dependency id="System.Buffers" version="4.5.1" />
-      <dependency id="System.Data.SQLite.Core" version="1.0.118.0" />
+      <dependency id="RBush" version="4.0.0" />
+      <dependency id="SixLabors.Fonts" version="1.0.1" />
+      <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.119.0" />
+      <dependency id="System.Buffers" version="4.6.0" />
+      <dependency id="System.Data.SQLite.Core" version="1.0.119.0" />
       <dependency id="System.IO.FileSystem.Primitives" version="4.3.0" />
-      <dependency id="System.IO.Packaging" version="7.0.0" />
-      <dependency id="System.Memory" version="4.5.5" />
-      <dependency id="System.Numerics.Vectors" version="4.5.0" />
-      <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.0" />
+      <dependency id="System.IO.Packaging" version="9.0.3" />
+      <dependency id="System.Memory" version="4.6.0" />
+      <dependency id="System.Numerics.Vectors" version="4.6.0" />
+      <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.1.0" />
     </dependencies>
   </metadata>
   <files>
-    <file src="..\nugetPackage\Phabrico.dll" target="lib\net461" />
-    <file src="..\nugetPackage\Phabrico.exe.config" target="lib\net461" />
-    <file src="..\nugetPackage\Phabrico.pdb" target="lib\net461" />
+    <file src="..\nugetPackage\Phabrico.dll" target="lib\net481" />
+    <file src="..\nugetPackage\Phabrico.exe.config" target="lib\net481" />
+    <file src="..\nugetPackage\Phabrico.pdb" target="lib\net481" />
   </files>
 </package>

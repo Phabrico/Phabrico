@@ -17,8 +17,8 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionToPDF.dll" target="lib\net461" />
-    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionToPDF.pdb" target="lib\net461" />
-    <file src="..\nugetPackage\NReco.PdfGenerator.dll" target="lib\net461" />
+    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionToPDF.dll" target="lib\net481" />
+    <file src="..\nugetPackage\Phabrico.Plugin.PhrictionToPDF.pdb" target="lib\net481" />
+    <file src="..\nugetPackage\NReco.PdfGenerator.dll" target="lib\net481" />
   </files>
 </package>

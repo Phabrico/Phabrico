@@ -878,6 +878,15 @@ msgstr "Automatisch afsluiten menu"
 msgid "Closes the menu automatically when hovering the mouse pointer away"
 msgstr "Sluit automatisch het menu wanneer de muiswijzer weg gaat"
 
+msgid "Versioned Document Roots"
+msgstr "Versiegebonden Documenthoofdmappen"
+
+msgid "Add versioned root"
+msgstr "Versiegebonden hoofdmap toevoegen"
+
+msgid "Enter the URL paths for wiki pages which have underlying versioned pages:"
+msgstr "Voer de URL-paden in voor wikipagina's die onderliggende versiegebonden pagina's hebben:"
+
 msgid "Frozen: local modifications will not be uploaded during synchronization"
 msgstr "Bevroren: lokale wijzigingen worden niet geüpload tijdens de synchronisatie"
 
