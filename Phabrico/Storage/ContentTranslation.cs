@@ -55,7 +55,10 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommandUpdate, "translation", translation, EncryptionMode.Default);
                 database.AddParameter(dbCommandUpdate, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
 
-                dbCommandUpdate.ExecuteNonQuery();
+                lock (Database.dbLock)
+                {
+                    dbCommandUpdate.ExecuteNonQuery();
+                }
 
                 Database.IsModified = true;
             }
@@ -114,7 +117,10 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommandUpdate, "translation", jsonSerializedObject, EncryptionMode.Default);
                 database.AddParameter(dbCommandUpdate, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
 
-                dbCommandUpdate.ExecuteNonQuery();
+                lock (Database.dbLock)
+                {
+                    dbCommandUpdate.ExecuteNonQuery();
+                }
 
                 Database.IsModified = true;
             }
@@ -144,9 +150,12 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "language", language, EncryptionMode.None);
                 database.AddParameter(dbCommand, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
 
-                if (dbCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -260,13 +269,16 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "language", language, EncryptionMode.None);
                 database.AddParameter(dbCommand, "dateModified", DateTimeOffset.UtcNow, EncryptionMode.None);
 
-                if (dbCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
-        
+
         /// <summary>
         /// A previously approved translation for a given token has been disapproved.
         /// This can happen in case the original document has been changed.
@@ -283,9 +295,12 @@ namespace Phabrico.Storage
             {
                 database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
 
-                if (dbCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -309,9 +324,12 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
                 database.AddParameter(dbCommand, "dateModified", utcSince, EncryptionMode.None);
 
-                if (dbCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -334,9 +352,12 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "token", token, EncryptionMode.None);
                 database.AddParameter(dbCommand, "language", language, EncryptionMode.None);
 
-                if (dbCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -365,13 +386,16 @@ namespace Phabrico.Storage
                           AND token LIKE 'PHID-NEWTOKEN%'
                    ", database.Connection))
             {
-                int nbrRowsAffected = dbCommand.ExecuteNonQuery();
-                if (nbrRowsAffected > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
-                }
+                    int nbrRowsAffected = dbCommand.ExecuteNonQuery();
+                    if (nbrRowsAffected > 0)
+                    {
+                        Database.IsModified = true;
+                    }
 
-                return nbrRowsAffected;
+                    return nbrRowsAffected;
+                }
             }
         }
 
@@ -508,7 +532,7 @@ namespace Phabrico.Storage
                 }
             }
         }
-        
+
         /// <summary>
         /// This method will set reviewed translations back to 'unreviewed' in case the master content has been updated.
         /// This method is fired after authentication and after synchronization
@@ -517,7 +541,7 @@ namespace Phabrico.Storage
         public static void SynchronizeReviewStatesWithMasterObjects(Database database)
         {
             List<Translation> contentTranslationRecords = new List<Translation>();
-            
+
             try
             {
                 // load all reviewed translations into a list
@@ -582,9 +606,12 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "token", translation.Token, EncryptionMode.None);
                     database.AddParameter(dbCommand, "language", translation.Language, EncryptionMode.None);
 
-                    if (dbCommand.ExecuteNonQuery() > 0)
+                    lock (Database.dbLock)
                     {
-                        Database.IsModified = true;
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
                     }
                 }
             }

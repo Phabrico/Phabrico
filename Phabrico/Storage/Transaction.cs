@@ -19,25 +19,28 @@ namespace Phabrico.Storage
         /// <param name="transaction"></param>
         public override void Add(Database database, Phabricator.Data.Transaction transaction)
         {
-            using (SQLiteTransaction sqlTransaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction sqlTransaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO transactionInfo(parentToken, id, type, author, oldValue, newValue, dateModified) 
                            VALUES (@parentToken, @id, @type, @author, @oldValue, @newValue, @dateModified);
                        ", database.Connection, sqlTransaction))
-                {
-                    database.AddParameter(dbCommand, "parentToken", transaction.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "id", transaction.ID, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "type", transaction.Type);
-                    database.AddParameter(dbCommand, "author", transaction.Author);
-                    database.AddParameter(dbCommand, "oldValue", transaction.OldValue);
-                    database.AddParameter(dbCommand, "newValue", transaction.NewValue);
-                    database.AddParameter(dbCommand, "dateModified", transaction.DateModified);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        database.AddParameter(dbCommand, "parentToken", transaction.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "id", transaction.ID, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "type", transaction.Type);
+                        database.AddParameter(dbCommand, "author", transaction.Author);
+                        database.AddParameter(dbCommand, "oldValue", transaction.OldValue);
+                        database.AddParameter(dbCommand, "newValue", transaction.NewValue);
+                        database.AddParameter(dbCommand, "dateModified", transaction.DateModified);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    sqlTransaction.Commit();
+                        sqlTransaction.Commit();
+                    }
                 }
             }
         }

@@ -216,7 +216,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
             if (fileObject == null)
             {
                 fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, FileID, false);
-                if (fileObject.ContentType.Equals("image/drawio"))
+                if (fileObject != null && fileObject.ContentType.Equals("image/drawio"))
                 {
                     fileObject = stageStorage.Get<Phabricator.Data.File>(database, browser.Session.Locale, Phabricator.Data.File.Prefix, FileID, true);
                 }

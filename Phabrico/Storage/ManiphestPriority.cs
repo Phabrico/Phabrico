@@ -20,27 +20,30 @@ namespace Phabrico.Storage
         /// <param name="maniphestPriority"></param>
         public override void Add(Database database, Phabricator.Data.ManiphestPriority maniphestPriority)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
-            {
-                string info = JsonConvert.SerializeObject(new
+            lock (Database.dbLock)
+                    {
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
                 {
-                    Name = maniphestPriority.Name,
-                    Identifier = maniphestPriority.Identifier,
-                    Color = maniphestPriority.Color
-                });
+                    string info = JsonConvert.SerializeObject(new
+                    {
+                        Name = maniphestPriority.Name,
+                        Identifier = maniphestPriority.Identifier,
+                        Color = maniphestPriority.Color
+                    });
 
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO maniphestPriorityInfo(priority, info) 
                            VALUES (@priority, @info);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "priority", maniphestPriority.Priority.ToString(), Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "info", info);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        database.AddParameter(dbCommand, "priority", maniphestPriority.Priority.ToString(), Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "info", info);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }

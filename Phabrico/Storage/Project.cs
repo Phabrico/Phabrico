@@ -19,25 +19,28 @@ namespace Phabrico.Storage
         /// <param name="project"></param>
         public override void Add(Database database, Phabricator.Data.Project project)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO projectInfo(token, name, slug, description, color, selected, dateSynchronized) 
                            VALUES (@projectToken, @projectName, @slug, @description, @color, @selected, @dateSynchronized);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "projectToken", project.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "projectName", project.Name);
-                    database.AddParameter(dbCommand, "slug", project.InternalName);
-                    database.AddParameter(dbCommand, "description", project.Description);
-                    database.AddParameter(dbCommand, "color", project.Color);
-                    database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, project.Selected.ToString()));
-                    database.AddParameter(dbCommand, "dateSynchronized", project.DateSynchronized);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        database.AddParameter(dbCommand, "projectToken", project.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "projectName", project.Name);
+                        database.AddParameter(dbCommand, "slug", project.InternalName);
+                        database.AddParameter(dbCommand, "description", project.Description);
+                        database.AddParameter(dbCommand, "color", project.Color);
+                        database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, project.Selected.ToString()));
+                        database.AddParameter(dbCommand, "dateSynchronized", project.DateSynchronized);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -82,7 +85,7 @@ namespace Phabrico.Storage
                         {
                             sourceProjects.Where(filter);
                         }
-                        
+
                         projects = sourceProjects.ToList();
                     }
                 }
@@ -160,7 +163,7 @@ namespace Phabrico.Storage
                         record.Selected = (Phabricator.Data.Project.Selection)Enum.Parse(typeof(Phabricator.Data.Project.Selection), Encryption.Decrypt(database.EncryptionKey, (byte[])reader["selected"]));
                         record.DateSynchronized = DateTimeOffset.ParseExact(Encryption.Decrypt(database.EncryptionKey, (byte[])reader["dateSynchronized"]), "yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture);
                         record.Color = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["color"]);
-                        
+
                         yield return record;
                     }
                 }
@@ -239,15 +242,18 @@ namespace Phabrico.Storage
         /// <param name="project"></param>
         public void Remove(Database database, Phabricator.Data.Project project)
         {
-            using (SQLiteCommand cmdDeleteProjectInfo = new SQLiteCommand(@"
+            lock (Database.dbLock)
+            {
+                using (SQLiteCommand cmdDeleteProjectInfo = new SQLiteCommand(@"
                        DELETE FROM projectInfo
                        WHERE token = @token;
                    ", database.Connection))
-            {
-                database.AddParameter(cmdDeleteProjectInfo, "token", project.Token, Database.EncryptionMode.None);
-                if (cmdDeleteProjectInfo.ExecuteNonQuery() > 0)
                 {
-                    Database.IsModified = true;
+                    database.AddParameter(cmdDeleteProjectInfo, "token", project.Token, Database.EncryptionMode.None);
+                    if (cmdDeleteProjectInfo.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -261,38 +267,41 @@ namespace Phabrico.Storage
         /// <param name="projectSelection"></param>
         public void SelectProject(Database database, Language language, string projectToken, Phabricator.Data.Project.Selection projectSelection)
         {
-            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+            lock (Database.dbLock)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        UPDATE projectInfo 
                            SET selected = @selected
                        WHERE token LIKE @projectToken;
                    ", database.Connection))
-            {
-                database.AddParameter(dbCommand, "projectToken", projectToken, Database.EncryptionMode.None);
-                database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, projectSelection.ToString()));
-                if (dbCommand.ExecuteNonQuery() > 0)
                 {
-                    Database.IsModified = true;
+                    database.AddParameter(dbCommand, "projectToken", projectToken, Database.EncryptionMode.None);
+                    database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, projectSelection.ToString()));
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
-            }
 
-            if (projectSelection == Phabricator.Data.Project.Selection.Selected)
-            {
-                Phabricator.Data.Project currentProject = Get(database, projectToken, language);
-                if (currentProject != null)
+                if (projectSelection == Phabricator.Data.Project.Selection.Selected)
                 {
-                    currentProject.DateSynchronized = DateTimeOffset.MinValue;  // download all when sync'ing
+                    Phabricator.Data.Project currentProject = Get(database, projectToken, language);
+                    if (currentProject != null)
+                    {
+                        currentProject.DateSynchronized = DateTimeOffset.MinValue;  // download all when sync'ing
 
-                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                                UPDATE projectInfo 
                                    SET dateSynchronized = @dateSynchronized
                                WHERE token LIKE @projectToken;
                            ", database.Connection))
-                    {
-                        database.AddParameter(dbCommand, "projectToken", projectToken, Database.EncryptionMode.None);
-                        database.AddParameter(dbCommand, "dateSynchronized", currentProject.DateSynchronized);
-                        if (dbCommand.ExecuteNonQuery() > 0)
                         {
-                            Database.IsModified = true;
+                            database.AddParameter(dbCommand, "projectToken", projectToken, Database.EncryptionMode.None);
+                            database.AddParameter(dbCommand, "dateSynchronized", currentProject.DateSynchronized);
+                            if (dbCommand.ExecuteNonQuery() > 0)
+                            {
+                                Database.IsModified = true;
+                            }
                         }
                     }
                 }

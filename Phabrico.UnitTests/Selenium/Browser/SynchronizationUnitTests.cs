@@ -329,7 +329,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 btnSave.Click();
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any(elem => elem.Displayed && string.IsNullOrWhiteSpace(elem.Text) == false && elem.Text.Split('\r', '\n')[0].Equals("Child")));
-            
+
                 // click on logo to go back to the homepage
                 IWebElement logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
                 logo.Click();
@@ -377,7 +377,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 builder = new Actions(WebBrowser);
                 builder.SendKeys(Keys.Tab);
                 builder.SendKeys("This is a very difficult task");
-            
+
                 // save data
                 builder.SendKeys(Keys.Tab);
                 builder.SendKeys(Keys.Enter);
@@ -426,7 +426,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 builder = new Actions(WebBrowser);
                 builder.SendKeys(Keys.Tab);
                 builder.SendKeys("This is an easier task");
-            
+
                 // save data
                 builder.SendKeys(Keys.Tab);
                 builder.SendKeys(Keys.Enter);
@@ -435,7 +435,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // wait a while
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.Until(condition => condition.FindElements(By.ClassName("maniphest-list-item-title")).Any(taskTitle => taskTitle.Text.Equals("T-2 My second new task")));
-            
+
                 // click on logo to go back to the homepage
                 logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
                 logo.Click();

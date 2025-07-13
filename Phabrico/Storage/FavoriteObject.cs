@@ -17,22 +17,25 @@ namespace Phabrico.Storage
         /// <param name="favoriteObject"></param>
         public override void Add(Database database, Phabricator.Data.FavoriteObject favoriteObject)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO favoriteObject(accountUserName, token, displayOrder) 
                            VALUES (@accountUserName, @token, @displayOrder);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "accountUserName", favoriteObject.AccountUserName, Database.EncryptionMode.Default);
-                    database.AddParameter(dbCommand, "token", favoriteObject.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "displayOrder", (int)favoriteObject.DisplayOrder, Database.EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        Database.IsModified = true;
-                    }
+                        database.AddParameter(dbCommand, "accountUserName", favoriteObject.AccountUserName, Database.EncryptionMode.Default);
+                        database.AddParameter(dbCommand, "token", favoriteObject.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "displayOrder", (int)favoriteObject.DisplayOrder, Database.EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -106,7 +109,7 @@ namespace Phabrico.Storage
         {
             throw new NotImplementedException("Use Phabricator.Data.FavoriteObject.Get(Database,string,string) instead");
         }
-        #pragma warning restore 0809
+#pragma warning restore 0809
 
         /// <summary>
         /// Removes a FavoriteObject record from the database
@@ -115,9 +118,11 @@ namespace Phabrico.Storage
         /// <param name="favoriteObject"></param>
         public void Remove(Database database, Phabricator.Data.FavoriteObject favoriteObject)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            UPDATE favoriteObject
                               SET displayOrder = displayOrder - 1
                             WHERE accountUserName = @accountUserName
@@ -131,15 +136,16 @@ namespace Phabrico.Storage
                            WHERE accountUserName = @accountUserName
                              AND token = @token;
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "accountUserName", favoriteObject.AccountUserName, Database.EncryptionMode.Default);
-                    database.AddParameter(dbCommand, "token", favoriteObject.Token, Database.EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        Database.IsModified = true;
-                    }
+                        database.AddParameter(dbCommand, "accountUserName", favoriteObject.AccountUserName, Database.EncryptionMode.Default);
+                        database.AddParameter(dbCommand, "token", favoriteObject.Token, Database.EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }

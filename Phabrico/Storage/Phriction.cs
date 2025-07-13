@@ -23,32 +23,35 @@ namespace Phabrico.Storage
         /// <param name="phriction"></param>
         public override void Add(Database database, Phabricator.Data.Phriction phriction)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
-            {
-                string info = JsonConvert.SerializeObject(new
+            lock (Database.dbLock)
+                    {
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
                 {
-                    Content = phriction.Content,
-                    Author = phriction.Author,
-                    LastModifiedBy = phriction.LastModifiedBy,
-                    Name = phriction.Name,
-                    Projects = phriction.Projects,
-                    Subscribers = phriction.Subscribers,
-                    DateModified = phriction.DateModified.ToString("yyyy-MM-dd HH:mm:ss zzzz")
-                });
+                    string info = JsonConvert.SerializeObject(new
+                    {
+                        Content = phriction.Content,
+                        Author = phriction.Author,
+                        LastModifiedBy = phriction.LastModifiedBy,
+                        Name = phriction.Name,
+                        Projects = phriction.Projects,
+                        Subscribers = phriction.Subscribers,
+                        DateModified = phriction.DateModified.ToString("yyyy-MM-dd HH:mm:ss zzzz")
+                    });
 
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO phrictionInfo(token, path, info) 
                            VALUES (@token, @path, @info);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "token", phriction.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "path", phriction.Path);
-                    database.AddParameter(dbCommand, "info", info);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        database.AddParameter(dbCommand, "token", phriction.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "path", phriction.Path);
+                        database.AddParameter(dbCommand, "info", info);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -61,21 +64,24 @@ namespace Phabrico.Storage
         /// <param name="linkedDocument"></param>
         public void AddAlias(Database database, string url, Phabricator.Data.Phriction linkedDocument)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO phrictionInfo(token, path, info) 
                            VALUES (@token, @path, @info);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "token", linkedDocument.Token.Replace(Phabricator.Data.Phriction.Prefix, Phabricator.Data.Phriction.PrefixAlias), Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "path", url);
-                    database.AddParameter(dbCommand, "info", linkedDocument.Token);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        database.AddParameter(dbCommand, "token", linkedDocument.Token.Replace(Phabricator.Data.Phriction.Prefix, Phabricator.Data.Phriction.PrefixAlias), Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "path", url);
+                        database.AddParameter(dbCommand, "info", linkedDocument.Token);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -609,41 +615,44 @@ namespace Phabrico.Storage
         /// <param name="doHide">True: hide document in search results; False: show document in search results</param>
         public void HideFromSearchResults(Database database, Phabricator.Data.Phriction phriction, string accountUserName, bool doHide)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                if (doHide)
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
                 {
-                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    if (doHide)
+                    {
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO keywordHiddenTokens(accountUserName, url) 
                            VALUES (@accountUserName, @url);
                        ", database.Connection, transaction))
-                    {
-                        database.AddParameter(dbCommand, "accountUserName", accountUserName, Database.EncryptionMode.Default);
-                        database.AddParameter(dbCommand, "url", phriction.Path, Database.EncryptionMode.None);
-                        if (dbCommand.ExecuteNonQuery() > 0)
                         {
-                            Database.IsModified = true;
+                            database.AddParameter(dbCommand, "accountUserName", accountUserName, Database.EncryptionMode.Default);
+                            database.AddParameter(dbCommand, "url", phriction.Path, Database.EncryptionMode.None);
+                            if (dbCommand.ExecuteNonQuery() > 0)
+                            {
+                                Database.IsModified = true;
+                            }
                         }
                     }
-                }
-                else
-                {
-                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    else
+                    {
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            DELETE FROM keywordHiddenTokens
                            WHERE accountUserName = @accountUserName
                              AND url = @url;
                        ", database.Connection, transaction))
-                    {
-                        database.AddParameter(dbCommand, "accountUserName", accountUserName, Database.EncryptionMode.Default);
-                        database.AddParameter(dbCommand, "url", phriction.Path, Database.EncryptionMode.None);
-                        if (dbCommand.ExecuteNonQuery() > 0)
                         {
-                            Database.IsModified = true;
+                            database.AddParameter(dbCommand, "accountUserName", accountUserName, Database.EncryptionMode.Default);
+                            database.AddParameter(dbCommand, "url", phriction.Path, Database.EncryptionMode.None);
+                            if (dbCommand.ExecuteNonQuery() > 0)
+                            {
+                                Database.IsModified = true;
+                            }
                         }
                     }
-                }
 
-                transaction.Commit();
+                    transaction.Commit();
+                }
             }
         }
 
@@ -707,65 +716,68 @@ namespace Phabrico.Storage
         /// <param name="phrictionDocument"></param>
         public void Remove(Database database, Phabricator.Data.Phriction phrictionDocument)
         {
-            using (SQLiteCommand cmdDeletePhrictionInfo = new SQLiteCommand(@"
+            lock (Database.dbLock)
+            {
+                using (SQLiteCommand cmdDeletePhrictionInfo = new SQLiteCommand(@"
                        DELETE FROM phrictionInfo
                        WHERE token = @token;
                    ", database.Connection))
-            {
-                database.AddParameter(cmdDeletePhrictionInfo, "token", phrictionDocument.Token, Database.EncryptionMode.None);
-                if (cmdDeletePhrictionInfo.ExecuteNonQuery() > 0)
                 {
-                    Database.IsModified = true;
+                    database.AddParameter(cmdDeletePhrictionInfo, "token", phrictionDocument.Token, Database.EncryptionMode.None);
+                    if (cmdDeletePhrictionInfo.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
 
-                    using (SQLiteCommand cmdDeleteKeywordInfo = new SQLiteCommand(@"
+                        using (SQLiteCommand cmdDeleteKeywordInfo = new SQLiteCommand(@"
                                DELETE FROM keywordInfo
                                WHERE token = @token;
                            ", database.Connection))
-                    {
-                        database.AddParameter(cmdDeleteKeywordInfo, "token", phrictionDocument.Token, Database.EncryptionMode.Default);
-                        cmdDeleteKeywordInfo.ExecuteNonQuery();
-                    }
+                        {
+                            database.AddParameter(cmdDeleteKeywordInfo, "token", phrictionDocument.Token, Database.EncryptionMode.Default);
+                            cmdDeleteKeywordInfo.ExecuteNonQuery();
+                        }
 
-                    using (SQLiteCommand cmdDeleteHiddenKeywordTokens = new SQLiteCommand(@"
+                        using (SQLiteCommand cmdDeleteHiddenKeywordTokens = new SQLiteCommand(@"
                                DELETE FROM keywordHiddenTokens
                                WHERE url = @url;
                            ", database.Connection))
-                    {
-                        database.AddParameter(cmdDeleteHiddenKeywordTokens, "url", phrictionDocument.Path, Database.EncryptionMode.None);
-                        cmdDeleteHiddenKeywordTokens.ExecuteNonQuery();
-                    }
+                        {
+                            database.AddParameter(cmdDeleteHiddenKeywordTokens, "url", phrictionDocument.Path, Database.EncryptionMode.None);
+                            cmdDeleteHiddenKeywordTokens.ExecuteNonQuery();
+                        }
 
-                    using (SQLiteCommand cmdDeleteFavorites = new SQLiteCommand(@"
+                        using (SQLiteCommand cmdDeleteFavorites = new SQLiteCommand(@"
                                DELETE FROM favoriteObject
                                WHERE token = @token;
                            ", database.Connection))
-                    {
-                        database.AddParameter(cmdDeleteFavorites, "token", phrictionDocument.Token, Database.EncryptionMode.None);
-                        cmdDeleteFavorites.ExecuteNonQuery();
-                    }
+                        {
+                            database.AddParameter(cmdDeleteFavorites, "token", phrictionDocument.Token, Database.EncryptionMode.None);
+                            cmdDeleteFavorites.ExecuteNonQuery();
+                        }
 
-                    using (SQLiteCommand cmdDeleteContentTranslations = new SQLiteCommand(@"
+                        using (SQLiteCommand cmdDeleteContentTranslations = new SQLiteCommand(@"
                                DELETE FROM objectHierarchyInfo
                                WHERE token = @token
                                   OR parentToken = @token;
                            ", database.Connection))
-                    {
-                        database.AddParameter(cmdDeleteContentTranslations, "token", phrictionDocument.Token, Database.EncryptionMode.None);
-                        cmdDeleteContentTranslations.ExecuteNonQuery();
-                    }
+                        {
+                            database.AddParameter(cmdDeleteContentTranslations, "token", phrictionDocument.Token, Database.EncryptionMode.None);
+                            cmdDeleteContentTranslations.ExecuteNonQuery();
+                        }
 
-                    using (SQLiteCommand cmdDeleteContentTranslations = new SQLiteCommand(@"
+                        using (SQLiteCommand cmdDeleteContentTranslations = new SQLiteCommand(@"
                                DELETE FROM Translation.contentTranslation
                                WHERE token = @token;
                            ", database.Connection))
-                    {
-                        database.AddParameter(cmdDeleteContentTranslations, "token", phrictionDocument.Token, Database.EncryptionMode.None);
-                        cmdDeleteContentTranslations.ExecuteNonQuery();
+                        {
+                            database.AddParameter(cmdDeleteContentTranslations, "token", phrictionDocument.Token, Database.EncryptionMode.None);
+                            cmdDeleteContentTranslations.ExecuteNonQuery();
+                        }
+
+                        database.ClearAssignedTokens(phrictionDocument.Token, null);  // language=null => all languages
+
+                        database.CleanupUnusedObjectRelations();
                     }
-
-                    database.ClearAssignedTokens(phrictionDocument.Token, null);  // language=null => all languages
-
-                    database.CleanupUnusedObjectRelations();
                 }
             }
         }

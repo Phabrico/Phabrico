@@ -38,48 +38,51 @@ namespace Phabrico.Storage
         /// <param name="file"></param>
         public override void Add(Database database, Phabricator.Data.File file)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                if (file.ContentType.StartsWith("image", StringComparison.OrdinalIgnoreCase))
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
                 {
-                    try
+                    if (file.ContentType.StartsWith("image", StringComparison.OrdinalIgnoreCase))
                     {
-                        using (System.Drawing.Image image = System.Drawing.Image.FromStream(file.DataStream))
+                        try
                         {
-                            file.ImagePropertyPixelWidth = image.Width;
-                            file.ImagePropertyPixelHeight = image.Height;
+                            using (System.Drawing.Image image = System.Drawing.Image.FromStream(file.DataStream))
+                            {
+                                file.ImagePropertyPixelWidth = image.Width;
+                                file.ImagePropertyPixelHeight = image.Height;
+                            }
+                        }
+                        catch
+                        {
+                            file.ImagePropertyPixelWidth = 0;
+                            file.ImagePropertyPixelHeight = 0;
                         }
                     }
-                    catch
-                    {
-                        file.ImagePropertyPixelWidth = 0;
-                        file.ImagePropertyPixelHeight = 0;
-                    }
-                }
 
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO fileInfo(token, id, fileName, macroName, data, size, dateModified, contentType, properties)
                            VALUES (@token, @id, @fileName, @macroName, @data, @size, @dateModified, @contentType, @properties);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "token", file.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "id", file.ID.ToString(), Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "fileName", file.FileName);
-                    database.AddParameter(dbCommand, "macroName", file.MacroName);
-                    database.AddParameter(dbCommand, "data", file.DataStream);
-                    database.AddParameter(dbCommand, "size", file.Size.ToString());
-                    database.AddParameter(dbCommand, "dateModified", file.DateModified);
-                    database.AddParameter(dbCommand, "contentType", file.ContentType);
-                    database.AddParameter(dbCommand, "properties", file.Properties);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        Database.IsModified = true;
+                        database.AddParameter(dbCommand, "token", file.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "id", file.ID.ToString(), Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "fileName", file.FileName);
+                        database.AddParameter(dbCommand, "macroName", file.MacroName);
+                        database.AddParameter(dbCommand, "data", file.DataStream);
+                        database.AddParameter(dbCommand, "size", file.Size.ToString());
+                        database.AddParameter(dbCommand, "dateModified", file.DateModified);
+                        database.AddParameter(dbCommand, "contentType", file.ContentType);
+                        database.AddParameter(dbCommand, "properties", file.Properties);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
+                        transaction.Commit();
                     }
-                    transaction.Commit();
-                }
 
-                // in case file was marked as 'Unreferenced', unmark it.
-                database.MarkFileObject(file.ID, false);
+                    // in case file was marked as 'Unreferenced', unmark it.
+                    database.MarkFileObject(file.ID, false);
+                }
             }
         }
 
@@ -94,24 +97,28 @@ namespace Phabrico.Storage
         public void AddChunk(Database database, Browser browser, string fileName, Phabricator.Data.File.Chunk fileChunk, Language language)
         {
             SQLiteCommand dbCommand;
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+
+            lock (Database.dbLock)
             {
-                using (dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO fileChunkInfo(id, chunk, nbrChunks, dateModified, data) 
                            VALUES (@id, @chunk, @nbrChunks, @dateModified, @data);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "id", fileChunk.FileID, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "chunk", fileChunk.ChunkID, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "nbrChunks", fileChunk.NbrChunks, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "dateModified", fileChunk.DateModified, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "data", System.Convert.ToBase64String(fileChunk.Data), Database.EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        Database.IsModified = true;
-                    }
+                        database.AddParameter(dbCommand, "id", fileChunk.FileID, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "chunk", fileChunk.ChunkID, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "nbrChunks", fileChunk.NbrChunks, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "dateModified", fileChunk.DateModified, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "data", System.Convert.ToBase64String(fileChunk.Data), Database.EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
 
@@ -211,14 +218,18 @@ namespace Phabrico.Storage
                        ", database.Connection))
                 {
                     database.AddParameter(dbCommand, "id", fileChunk.FileID, Database.EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() > 0)
+
+                    lock (Database.dbLock)
                     {
-                        Database.IsModified = true;
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
                     }
                 }
             }
         }
-        
+
         /// <summary>
         /// Returns the number of FileInfo records
         /// </summary>
@@ -521,7 +532,7 @@ namespace Phabrico.Storage
                 }
             }
         }
-        
+
         /// <summary>
         /// Returns a bunch of FileInfo records, including the number of times these files are referenced to
         /// </summary>

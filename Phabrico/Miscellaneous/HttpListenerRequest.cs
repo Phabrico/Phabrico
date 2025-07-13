@@ -321,7 +321,7 @@ namespace Phabrico.Miscellaneous
 
                 if (internalHttpRequest != null)
                 {
-                    return internalHttpRequest.UserLanguages;
+                    return internalHttpRequest.UserLanguages ?? new string[] { "en-US" };;
                 }
                 else
                 {

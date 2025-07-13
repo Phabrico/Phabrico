@@ -72,7 +72,10 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "conduitAPiToken", account.ConduitAPIToken, Database.EncryptionMode.Private);
                 database.AddParameter(dbCommand, "theme", account.Theme, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "parameters", JsonConvert.SerializeObject(account.Parameters));
-                dbCommand.ExecuteNonQuery();
+                lock (Database.dbLock)
+                {
+                    dbCommand.ExecuteNonQuery();
+                }
 
                 Database.IsModified = true;
             }
@@ -393,9 +396,12 @@ namespace Phabrico.Storage
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "tokenHash", account.Token, Database.EncryptionMode.None);
-                if (dbCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -407,33 +413,35 @@ namespace Phabrico.Storage
         /// <param name="existingAccount"></param>
         public void Set(Database database, Phabricator.Data.Account existingAccount)
         {
-            if (database.PrivateEncryptionKey == null)
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (database.PrivateEncryptionKey == null)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        UPDATE accountInfo
                          SET url = @url, 
                              parameters = @parameters,
                              theme = @theme
                        WHERE token = @token;
                    ", database.Connection))
-                {
-                    database.AddParameter(dbCommand, "url", existingAccount.PhabricatorUrl);
-                    database.AddParameter(dbCommand, "parameters", JsonConvert.SerializeObject(existingAccount.Parameters));
-                    database.AddParameter(dbCommand, "token", existingAccount.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "theme", existingAccount.Theme, Database.EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() == 0)
                     {
-                        Add(database, existingAccount);
-                    }
-                    else
-                    {
-                        Database.IsModified = true;
+                        database.AddParameter(dbCommand, "url", existingAccount.PhabricatorUrl);
+                        database.AddParameter(dbCommand, "parameters", JsonConvert.SerializeObject(existingAccount.Parameters));
+                        database.AddParameter(dbCommand, "token", existingAccount.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "theme", existingAccount.Theme, Database.EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() == 0)
+                        {
+                            Add(database, existingAccount);
+                        }
+                        else
+                        {
+                            Database.IsModified = true;
+                        }
                     }
                 }
-            }
-            else
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                else
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        UPDATE accountInfo
                          SET url = @url, 
                              api = @api,
@@ -441,19 +449,20 @@ namespace Phabrico.Storage
                              theme = @theme
                        WHERE token = @token;
                    ", database.Connection))
-                {
-                    database.AddParameter(dbCommand, "url", existingAccount.PhabricatorUrl);
-                    database.AddParameter(dbCommand, "api", existingAccount.ConduitAPIToken, Database.EncryptionMode.Private);
-                    database.AddParameter(dbCommand, "parameters", JsonConvert.SerializeObject(existingAccount.Parameters));
-                    database.AddParameter(dbCommand, "token", existingAccount.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "theme", existingAccount.Theme ?? "light", Database.EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() == 0)
                     {
-                        Add(database, existingAccount);
-                    }
-                    else
-                    {
-                        Database.IsModified = true;
+                        database.AddParameter(dbCommand, "url", existingAccount.PhabricatorUrl);
+                        database.AddParameter(dbCommand, "api", existingAccount.ConduitAPIToken, Database.EncryptionMode.Private);
+                        database.AddParameter(dbCommand, "parameters", JsonConvert.SerializeObject(existingAccount.Parameters));
+                        database.AddParameter(dbCommand, "token", existingAccount.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "theme", existingAccount.Theme ?? "light", Database.EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() == 0)
+                        {
+                            Add(database, existingAccount);
+                        }
+                        else
+                        {
+                            Database.IsModified = true;
+                        }
                     }
                 }
             }
@@ -494,12 +503,14 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "newToken", newToken, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "oldToken", oldToken, Database.EncryptionMode.None);
 
-                if (dbCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
-                    return true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                        return true;
+                    }
                 }
-
                 return false;
             }
         }
@@ -527,10 +538,13 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "newPublicDpapiXorValue", dpapiPublicXorCipherBytes, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "newPrivateDpapiXorValue", dpapiPrivateXorCipherBytes, Database.EncryptionMode.None);
 
-                if (dbCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
-                    return true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                        return true;
+                    }
                 }
 
                 return false;

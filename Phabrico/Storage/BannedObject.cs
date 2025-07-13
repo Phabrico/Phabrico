@@ -16,23 +16,26 @@ namespace Phabrico.Storage
         /// <param name="title"></param>
         public void Add(Database database, string reference, string title)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            DELETE FROM bannedObjectInfo WHERE key = @key;
 
                            INSERT INTO bannedObjectInfo(key, title) 
                            VALUES (@key, @title);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "key", reference);
-                    database.AddParameter(dbCommand, "title", title);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        Database.IsModified = true;
-                    }
+                        database.AddParameter(dbCommand, "key", reference);
+                        database.AddParameter(dbCommand, "title", title);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -47,9 +50,12 @@ namespace Phabrico.Storage
                        DELETE FROM bannedObjectInfo;
                    ", database.Connection))
             {
-                if (sqlCommand.ExecuteNonQuery() > 0)
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (sqlCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -77,7 +83,7 @@ namespace Phabrico.Storage
                         title = Encryption.Decrypt(database.EncryptionKey, (byte[])reader["title"]);
                         return true;
                     }
-                    
+
                     return false;
                 }
             }

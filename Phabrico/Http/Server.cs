@@ -55,6 +55,11 @@ namespace Phabrico.Http
         private readonly HttpListener httpListener;
 
         /// <summary>
+        /// Date and time when the database was last modified before starting the webserver
+        /// </summary>
+        private readonly DateTime timestampDatabase;
+
+        /// <summary>
         /// Controllers cached per url
         /// </summary>
         private readonly Dictionary<string, CachedControllerInfo> cachedControllerInfo = new Dictionary<string, CachedControllerInfo>();
@@ -287,6 +292,8 @@ namespace Phabrico.Http
             }
 
             Address = string.Format("http://{0}:{1}{2}", Environment.MachineName, listenTcpPortNr, RootPath);
+
+            timestampDatabase = Database.Timestamp;
 
             if (isHttpModule)
             {
@@ -2376,13 +2383,18 @@ namespace Phabrico.Http
 
             currentNotifications[webSocketMessageIdentifier] = jsonData;
 
-            WebSocketContext[] webSocketContexts = WebSockets.Where(websocket => websocket != null
-                                                                              && websocket.RequestUri
-                                                                                          .LocalPath
-                                                                                          .TrimEnd('/')
-                                                                                          .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
-                                                                     )
-                                                             .ToArray();
+            WebSocketContext[] webSocketContexts;
+
+            lock (lockWebSockets)
+            {
+                webSocketContexts = WebSockets.Where(websocket => websocket != null
+                                                               && websocket.RequestUri
+                                                                           .LocalPath
+                                                                           .TrimEnd('/')
+                                                                           .Equals(webSocketMessageIdentifier.TrimEnd('/'), StringComparison.OrdinalIgnoreCase)
+                                                    )
+                                              .ToArray();
+            }
 
             foreach (WebSocketContext webSocketContext in webSocketContexts)
             {
@@ -2556,10 +2568,15 @@ namespace Phabrico.Http
 
             if (IsHttpModule == false)  // do not shrink when using IIS, as it can take too long to execute this command
             {
-                // shrinks the database
-                using (Database database = new Storage.Database(null))
+                // if database has been modified: vacuum it 
+                DateTime currentTimestampDatabaseFile = Database.Timestamp;
+                if (currentTimestampDatabaseFile != timestampDatabase)
                 {
-                    database.Shrink();
+                    // shrinks the database
+                    using (Database database = new Storage.Database(null))
+                    {
+                        database.Shrink();  // vacuum
+                    }
                 }
             }
         }

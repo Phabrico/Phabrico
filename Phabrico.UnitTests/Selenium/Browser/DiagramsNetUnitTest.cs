@@ -22,7 +22,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
         public void OpenPhrictionAndAddDiagram(Type browser, string httpRootPath)
         {
             Initialize(browser, httpRootPath);
-            
+
             WebBrowser.Manage().Window.Maximize();  // maximize window, otherwise some toolbar-buttons are not accessible
 
             Logon();
@@ -109,13 +109,13 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Save')]"));
             save.Click();
             Thread.Sleep(1000);
-            
+
             // switch iframe
             WebBrowser.SwitchTo().DefaultContent();
 
             // verify if the page is reloaded with the new file name
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'F-1')]")).Any());
-            
+
             // wait until DiagramsNet IFrame content is fully loaded
             wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
             diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
@@ -129,7 +129,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement exit = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Exit')]"));
             exit.Click();
             Thread.Sleep(1000);
-            
+
             // switch iframe
             WebBrowser.SwitchTo().DefaultContent();
 
@@ -242,7 +242,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement annotations = shapes.FindElement(By.XPath("//*[contains(text(), '1-20')]"));
             annotations.Click();
             Thread.Sleep(500); // wait until tab is opened
- 
+
             // click on first annotation in Shapes toolbox
             IWebElement annotation = annotations.FindElement(By.XPath("./following-sibling::div[1]//a[@class='geItem']"));
             annotation.Click();
@@ -251,13 +251,13 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement save = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Save')]"));
             save.Click();
             Thread.Sleep(1000);
-            
+
             // switch iframe
             WebBrowser.SwitchTo().DefaultContent();
 
             // verify if the page is reloaded with the new file name
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'F-1')]")).Any());
-            
+
             // wait until DiagramsNet IFrame content is fully loaded
             wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
             diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
@@ -271,11 +271,11 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement exit = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Exit')]"));
             exit.Click();
             Thread.Sleep(1000);
-            
+
             // switch iframe
             WebBrowser.SwitchTo().DefaultContent();
 
-             // wait a while
+            // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
 

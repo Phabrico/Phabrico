@@ -75,25 +75,28 @@ namespace Phabrico.Storage
         /// <param name="language"></param>
         public override void Add(Database database, Phabricator.Data.Keyword keyword)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO keywordInfo(name, token, language, description, nbrocc) 
                            VALUES (@name, @token, @language, @description, @numberOccurrences);
                        ", database.Connection, transaction))
-                {
+                    {
 
-                    string encodedKeyword = database.PolyCharacterCipherEncrypt(keyword.Name.ToUpper());
-                    database.AddParameter(dbCommand, "name", encodedKeyword, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "token", keyword.Token);
-                    database.AddParameter(dbCommand, "language", keyword.Language, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "description", keyword.Description);
-                    database.AddParameter(dbCommand, "numberOccurrences", keyword.NumberOccurrences.ToString());
-                    dbCommand.ExecuteNonQuery();
+                        string encodedKeyword = database.PolyCharacterCipherEncrypt(keyword.Name.ToUpper());
+                        database.AddParameter(dbCommand, "name", encodedKeyword, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "token", keyword.Token);
+                        database.AddParameter(dbCommand, "language", keyword.Language, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "description", keyword.Description);
+                        database.AddParameter(dbCommand, "numberOccurrences", keyword.NumberOccurrences.ToString());
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -162,7 +165,7 @@ namespace Phabrico.Storage
                     urlCrumbs = string.Join(" ", crumbs.Where(t => ((JValue)t["inexistant"]).Value.Equals(false))
                                                        .Select(t => ((JValue)t["name"]).Value).ToArray()
                                            );
-                    
+
                     RemarkupParserOutput remarkupParserOutput;
                     controller.ConvertRemarkupToHTML(database, "", phrictionDocument.Content, out remarkupParserOutput, false, phrictionDocument.Token);
 
@@ -294,9 +297,13 @@ namespace Phabrico.Storage
                    ", database.Connection))
             {
                 database.AddParameter(dbCommand, "token", phabricatorObject.Token);
-                if (dbCommand.ExecuteNonQuery() > 0)
+
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }

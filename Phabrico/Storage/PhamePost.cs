@@ -37,7 +37,11 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "token", phamePost.Token, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "id", phamePost.ID, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "info", info);
-                dbCommand.ExecuteNonQuery();
+
+                lock (Database.dbLock)
+                {
+                    dbCommand.ExecuteNonQuery();
+                }
 
                 Database.IsModified = true;
             }

@@ -1761,11 +1761,26 @@ namespace Phabrico.Controllers
                 keywordStorage.DeletePhabricatorObject(synchronizationParameters.database, phabricatorManiphestTask);
                 keywordStorage.AddPhabricatorObject(this, synchronizationParameters.database, phabricatorManiphestTask);
 
+                // remember comments before clearing transactions
+                Phabricator.Data.Transaction[] linkedComments = transactionStorage.GetAll(synchronizationParameters.database, phabricatorManiphestTask.Token, Language.NotApplicable)
+                                                                                  .Where(transaction => transaction.Type.Equals("comment"))
+                                                                                  .ToArray();
+
                 // (re)assign dependent Phabricator objects
                 synchronizationParameters.database.ClearAssignedTokens(phabricatorManiphestTask.Token, Language.NotApplicable);
                 foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
                 {
                     synchronizationParameters.database.AssignToken(phabricatorManiphestTask.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
+                }
+
+                // (re)assign dependent Phabricator objects found in comments
+                foreach (Phabricator.Data.Transaction linkedComment in linkedComments)
+                {
+                    ConvertRemarkupToHTML(synchronizationParameters.database, "/", linkedComment.NewValue, out remarkupParserOutput, false, phabricatorManiphestTask.Token);
+                    foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                    {
+                        synchronizationParameters.database.AssignToken(phabricatorManiphestTask.Token, linkedPhabricatorObject.Token, Language.NotApplicable);
+                    }
                 }
             }
         }

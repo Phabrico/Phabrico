@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using ClosedXML.Excel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
@@ -169,6 +170,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 // Open 'Gitanos' screen again
                 navigatorGitanos = WebBrowser.FindElement(By.PartialLinkText("Gitanos"));
                 navigatorGitanos.Click();
+                Thread.Sleep(1000);
 
 
                 // click on 'dummy.txt'
@@ -647,7 +649,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             bool actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
                                                  .GetAttribute("class")
                                                  .Contains("right-collapsed");
-                
+
             if (actionPaneCollapsed)
             {
                 IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
@@ -692,7 +694,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // wait until "one moment please" is gone
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(10));
             wait.Until(condition => condition.FindElements(By.ClassName("wait")).Any(message => message.Displayed == false));
-            
+
             AssertNoJavascriptErrors();
 
             // Document is translated: click OK
@@ -758,15 +760,19 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement btnApproveTranslation = WebBrowser.FindElement(By.XPath("//a[text()=\"Vertaling goedkeuren\"]"));
             Assert.AreEqual(btnApproveTranslation.GetCssValue("pointer-events"), "none");
 
-            // double click on 'English'
+            // double click on 'This is a rectangle'
             IWebElement diagramRectangle = WebBrowser.FindElement(By.XPath("//div[text()=\"This is a rectangle\"]"));
             builder = new Actions(WebBrowser);
             builder.DoubleClick(diagramRectangle).Build().Perform();
 
-            // change 'English' to 'Nederlands'
+            Thread.Sleep(500);
+
+            // change 'This is a rectangle' to 'Dit is een rechthoek'
             IWebElement rectangleText = WebBrowser.SwitchTo().ActiveElement();
             rectangleText.SendKeys(Keys.Control + "A");
             rectangleText.SendKeys("Dit is een rechthoek");
+
+            Thread.Sleep(500);
 
             // click on background, so rectangle is not focused anymore
             IWebElement background = WebBrowser.FindElement(By.ClassName("geDiagramContainer"));
@@ -781,7 +787,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             save.Click();
 
             Thread.Sleep(500);
-            
+
             AssertNoJavascriptErrors();
 
             // wait until green 'Approve Translation' button is enabled
@@ -941,7 +947,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // verify if the page is reloaded with the new file name
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(text(), 'F-2')]")).Any());
-            
+
             // wait until DiagramsNet IFrame content is fully loaded
             wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
             diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
@@ -1079,7 +1085,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             AssertNoJavascriptErrors();
 
             ChangeLanguageFromEnglishToDutch();
-            
+
             // wait a while , so image can be loaded
             Thread.Sleep(1500);
 
@@ -1167,16 +1173,21 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // verify if 'Approve Translation' button is disabled
             btnApproveTranslation = WebBrowser.FindElement(By.XPath("//a[text()=\"Vertaling goedkeuren\"]"));
             Assert.AreEqual(btnApproveTranslation.GetCssValue("pointer-events"), "none");
+            Thread.Sleep(500);
 
             // double click on 'English'
             IWebElement englishRectangle = WebBrowser.FindElement(By.XPath("//div[text()=\"English\"]"));
             builder = new Actions(WebBrowser);
             builder.DoubleClick(englishRectangle).Build().Perform();
 
+            Thread.Sleep(500);
+
             // change 'English' to 'Nederlands'
             rectangleText = WebBrowser.SwitchTo().ActiveElement();
             rectangleText.SendKeys(Keys.Control + "A");
             rectangleText.SendKeys("Nederlands");
+
+            Thread.Sleep(500);
 
             // click on background, so rectangle is not focused anymore
             background = WebBrowser.FindElement(By.ClassName("geDiagramContainer"));
@@ -1284,7 +1295,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
 
             // wait a while
             Thread.Sleep(1000);
-            
+
             // wait until DiagramsNet IFrame content is fully loaded
             wait.Until(condition => condition.FindElements(By.TagName("IFrame")).Any());
             diagramsIFrame = WebBrowser.FindElement(By.TagName("IFrame"));
@@ -2242,6 +2253,46 @@ namespace Phabrico.UnitTests.Selenium.Browser
                     expandActionPane.Click();
                 }
 
+
+
+                // click on Edit Document
+                IWebElement editDocument = WebBrowser.FindElement(By.LinkText("Bewerk document"));
+                editDocument.Click();
+
+                // wait a while
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.Until(condition => condition.FindElements(By.ClassName("phriction-edit")).Any());
+
+                // edit content
+                IWebElement textarea = WebBrowser.FindElement(By.Id("textarea"));
+                textarea.SendKeys(OpenQA.Selenium.Keys.Control + OpenQA.Selenium.Keys.End);
+                textarea.SendKeys("\n| Name | Value\n| --- | ---\n| John | 23\n| Jeff | \n| Donna");
+                Thread.Sleep(1000);
+
+                // click Save button
+                IWebElement btnSave = WebBrowser.FindElement(By.Id("btnSave"));
+                btnSave.Click();
+
+                // wait a while
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.Until(condition => condition.FindElements(By.ClassName("phui-document")).Any());
+
+                // validate document content
+                string documentContent = WebBrowser.FindElement(By.Id("remarkupContent"))
+                                                   .Text;
+                Assert.AreEqual("Once upon a time, I was reading this story over and over again\r\nName Value\r\nJohn 23\r\nJeff\r\nDonna", documentContent);
+
+                // if action pane is collapsed -> expand it
+                actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                     .GetAttribute("class")
+                                                     .Contains("right-collapsed");
+
+                if (actionPaneCollapsed)
+                {
+                    IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                    expandActionPane.Click();
+                }
+
                 // click on Translate Document
                 IWebElement translateDocument = WebBrowser.FindElement(By.LinkText("Document vertalen"));
                 translateDocument.Click();
@@ -2250,7 +2301,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
                 wait.Until(condition => condition.FindElements(By.Name("translationEngine")).Any());
 
-                // select Dummy translation engine
+                // select Excel translation engine
                 IWebElement translationEngine = WebBrowser.FindElement(By.Name("translationEngine"));
                 translationEngine.Click();
                 translationEngine.FindElements(By.TagName("option"))
@@ -2319,6 +2370,95 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 {
                     Assert.Fail("Empty Excel file generated");
                 }
+
+
+
+                // Edit Excel file
+                try
+                {
+                    using (var workbook = new XLWorkbook(expectedExcelFilePath))
+                    {
+                        // Open sheet with name "Translation"
+                        var worksheet = workbook.Worksheet("Translation");
+                        if (worksheet == null)
+                        {
+                            Assert.Fail("Worksheet 'Translation' not found in XLSX file.");
+                        }
+
+                        // change content of cell C2 and C3
+                        worksheet.Cell("C2").Value = "Verhaal van mijn leven";
+                        worksheet.Cell("C3").Value = "Het was een interessant verhaal";
+
+                        workbook.Save();
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Assert.Fail($"Error editing Excel file: {ex.Message}");
+                }
+
+
+
+                // if action pane is collapsed -> expand it
+                actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
+                                                     .GetAttribute("class")
+                                                     .Contains("right-collapsed");
+
+                if (actionPaneCollapsed)
+                {
+                    IWebElement expandActionPane = WebBrowser.FindElement(By.ClassName("fa-chevron-left"));
+                    expandActionPane.Click();
+                }
+
+                // click on Translate Document
+                translateDocument = WebBrowser.FindElement(By.LinkText("Document vertalen"));
+                translateDocument.Click();
+
+                // wait a while
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                wait.Until(condition => condition.FindElements(By.Name("translationEngine")).Any());
+
+                // select Excel translation engine
+                translationEngine = WebBrowser.FindElement(By.Name("translationEngine"));
+                translationEngine.Click();
+                translationEngine.FindElements(By.TagName("option"))
+                        .Single(option => option.Text == "Excel")
+                        .Click();
+                translationEngine.Click();
+
+                // select target language
+                targetLanguage = WebBrowser.FindElement(By.Name("targetLanguage"));
+                targetLanguage.Click();
+                targetLanguage.FindElements(By.TagName("option"))
+                        .Single(option => option.Text == "Nederlands")
+                        .Click();
+                targetLanguage.Click();
+
+                // wait until input[type=file] is available
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                var preparationParameters = wait.Until(drv => drv.FindElement(By.ClassName("preparationParameters")));
+                var inputImportFile = wait.Until(drv => drv.FindElement(By.Id("inputImportFile")));
+
+                // send xlsx filepath to client side
+                inputImportFile.SendKeys(expectedExcelFilePath);
+
+                // Verify if success dialog is visible
+                wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
+                var dlgOK = wait.Until(drv => drv.FindElements(By.Id("dlgOK")).FirstOrDefault(dlg => dlg.Displayed));
+                if (dlgOK == null)
+                {
+                    Assert.Fail("Success dialog not shown");
+                }
+                btnOK = dlgOK.FindElements(By.XPath("//a[text()=\"OK\"]")).FirstOrDefault(button => button.Displayed);
+                btnOK.Click();
+
+                AssertNoJavascriptErrors();
+
+
+                // validate if document is translated
+                phrictionDocument = WebBrowser.FindElement(By.ClassName("phui-document"));
+                documentContent = phrictionDocument.Text.Replace("\r", "");
+                Assert.IsTrue(documentContent.StartsWith("Verhaal van mijn leven\nHet was een interessant verhaal"), "Document not translated");
             }
             finally
             {

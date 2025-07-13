@@ -209,7 +209,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
                 string result = "";
                 foreach (Match row in RegexSafe.Matches(innerText, @"\<tr\>(.+?(?<!\</tr\>))\</tr\>", RegexOptions.Singleline).OfType<Match>())
                 {
-                    foreach (Match cell in RegexSafe.Matches(row.Value, @"\<td\>(.+?(?<!\</td\>))\</td\>", RegexOptions.Singleline).OfType<Match>())
+                    foreach (Match cell in RegexSafe.Matches(row.Value, @"<td>(.*?)</td>", RegexOptions.Singleline).OfType<Match>())
                     {
                         string cellContent = RemarkupTokenList.XMLToRemarkup(Database, Browser, DocumentURL, cell.Groups[1].Value, PhabricatorObjectToken);
 

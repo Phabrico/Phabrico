@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static Phabrico.Controllers.Synchronization;
 
 namespace Phabrico.Controllers
 {
@@ -57,6 +58,7 @@ namespace Phabrico.Controllers
             Storage.Account accountStorage = new Storage.Account();
             Storage.Maniphest maniphestStorage = new Storage.Maniphest();
             Storage.Stage stageStorage = new Storage.Stage();
+            Storage.Transaction transactionStorage = new Storage.Transaction();
 
             string maniphestTaskToken = browser.Session.FormVariables[browser.Request.RawUrl]["token"];
             bool stagedManiphestTask = true;
@@ -118,6 +120,9 @@ namespace Phabrico.Controllers
                         }
                     }
                 }
+
+                RemarkupParserOutput remarkupParserOutput;
+                RemarkupEngine remarkup = new RemarkupEngine();
 
                 foreach (string transactionType in new string[] { "owner", "priority", "status", "comment" })
                 {
@@ -190,6 +195,29 @@ namespace Phabrico.Controllers
                             {
                                 // add new transaction only if old value and new value are different
                                 stageStorage.Modify(database, newTransaction, browser);
+                            }
+
+                            // remember comments before clearing transactions
+                            Phabricator.Data.Transaction[] linkedComments = transactionStorage.GetAll(database, maniphestTaskToken, Language.NotApplicable)
+                                                                                              .Where(transaction => transaction.Type.Equals("comment"))
+                                                                                              .ToArray();
+
+                            // retrieve new referenced fileobjects and relink them to the translated phrictionDocument
+                            remarkup.ToHTML(null, database, browser, "/", newValue, out remarkupParserOutput, false, maniphestTaskToken);
+                            database.ClearAssignedTokens(maniphestTaskToken, Language.NotApplicable);
+                            foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                            {
+                                database.AssignToken(maniphestTaskToken, linkedPhabricatorObject.Token, Language.NotApplicable);
+                            }
+
+                            // (re)assign dependent Phabricator objects found in comments
+                            foreach (Phabricator.Data.Transaction linkedComment in linkedComments)
+                            {
+                                ConvertRemarkupToHTML(database, "/", linkedComment.NewValue, out remarkupParserOutput, false, maniphestTaskToken);
+                                foreach (Phabricator.Data.PhabricatorObject linkedPhabricatorObject in remarkupParserOutput.LinkedPhabricatorObjects)
+                                {
+                                    database.AssignToken(maniphestTaskToken, linkedPhabricatorObject.Token, Language.NotApplicable);
+                                }
                             }
                         }
                     }

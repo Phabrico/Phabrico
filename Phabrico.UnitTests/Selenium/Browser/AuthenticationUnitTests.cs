@@ -84,6 +84,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             btnLogIn.Click();
 
             // wait a while to make sure the logon has been processed
+            Thread.Sleep(1000);
             IWebElement errorMessage;
             WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.ClassName("phui-info-severity-error")).Any(message => message.Displayed));
@@ -93,7 +94,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             Assert.IsTrue(errorMessage.Displayed);
             Assert.AreEqual(errorMessage.Text, "Username or password are incorrect.");
         }
-        
+
         [TestMethod]
         [DataRow(typeof(ChromeConfig), "")]
         [DataRow(typeof(ChromeConfig), "phabrico")]
@@ -127,7 +128,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             string generalOverviewTitle = generalOverview.Text.Split('\r', '\n')[0];
             Assert.IsTrue(generalOverviewTitle.Equals("General Overview"));
         }
-        
+
         [TestMethod]
         [DataRow(typeof(ChromeConfig), "")]
         [DataRow(typeof(ChromeConfig), "phabrico")]
@@ -174,13 +175,13 @@ namespace Phabrico.UnitTests.Selenium.Browser
                                          .FindElement(By.TagName("span"));  // otherwise firefox webdriver won't work;
             logOff.Click();
             Thread.Sleep(5);  // wait a while to make sure the redirect call is finished
-            
+
             // wait until logon dialog is shown again
             WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));
             wait.Until(condition => condition.FindElements(By.ClassName("aphront-dialog-head")).Any(title => title.Text.Equals("Log In")));
         }
-        
+
         [TestMethod]
         [DataRow(typeof(ChromeConfig), "phabrico")]
         [DataRow(typeof(ChromeConfig), "")]
@@ -220,7 +221,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement btnChangePassword = WebBrowser.FindElement(By.XPath("//button[contains(text(), 'Change password')]"));
             btnChangePassword.Click();
             Thread.Sleep(500);  // wait a while to make sure the redirect call is finished
-            
+
             // wait until logon dialog is shown again
             WebDriverWait wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.IgnoreExceptionTypes(typeof(StaleElementReferenceException));

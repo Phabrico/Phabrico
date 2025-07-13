@@ -214,7 +214,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement addToFavorites = WebBrowser.FindElement(By.LinkText("Add to favorites"));
             addToFavorites.Click();
             Thread.Sleep(500);  // wait a while to make sure the javascript code has been finished
-            
+
             // click on logo to go back to the homepage
             IWebElement logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
             logo.Click();
@@ -288,7 +288,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement confirmDismissLocalChanges = WebBrowser.FindElement(By.XPath("//button[text()='Yes']"));
             confirmDismissLocalChanges.Click();
             Thread.Sleep(500);  // wait a while to make sure the javascript code has been finished
-            
+
             // if action pane is collapsed -> expand it
             actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
                                             .GetAttribute("class")
@@ -309,7 +309,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             IWebElement removeFromFavorites = WebBrowser.FindElement(By.LinkText("Remove from favorites"));
             removeFromFavorites.Click();
             Thread.Sleep(500);  // wait a while to make sure the javascript code has been finished
-            
+
             // click on logo to go back to the homepage
             logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
             logo.Click();
@@ -599,7 +599,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.CssSelector("#tblUnreviewedTranslations tbody tr")).Any());
-            
+
             // validate if we have 2 unreviewed translations left
             IWebElement[] unreviewedTranslations = WebBrowser.FindElements(By.CssSelector("#tblUnreviewedTranslations tbody tr")).ToArray();
             Assert.IsTrue(unreviewedTranslations.Length == 3);
@@ -708,7 +708,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // wait a while
             wait = new WebDriverWait(WebBrowser, TimeSpan.FromSeconds(5));
             wait.Until(condition => condition.FindElements(By.CssSelector("#tblUnreviewedTranslations tbody tr")).Any());
-            
+
             // validate if we have 2 unreviewed translations left
             unreviewedTranslations = WebBrowser.FindElements(By.CssSelector("#tblUnreviewedTranslations tbody tr")).ToArray();
             Assert.IsTrue(unreviewedTranslations.Length == 2);
@@ -1080,7 +1080,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // clear search field
             searchPhabrico.Clear();
 
-            
+
             // if action pane is collapsed -> expand it
             actionPaneCollapsed = WebBrowser.FindElement(By.ClassName("phabrico-page-content"))
                                             .GetAttribute("class")

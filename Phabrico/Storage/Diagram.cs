@@ -34,24 +34,27 @@ namespace Phabrico.Storage
         /// <param name="diagram"></param>
         public override void Add(Database database, Phabricator.Data.Diagram diagram)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+            lock (Database.dbLock)
+                {
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO diagramInfo(token, id, fileName, data, size, dateModified)
                            VALUES (@token, @id, @fileName, @data, @size, @dateModified);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "token", diagram.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "id", diagram.ID.ToString(), Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "fileName", diagram.FileName);
-                    database.AddParameter(dbCommand, "data", diagram.DataStream);
-                    database.AddParameter(dbCommand, "size", diagram.Size.ToString());
-                    database.AddParameter(dbCommand, "dateModified", diagram.DateModified);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        Database.IsModified = true;
+                        database.AddParameter(dbCommand, "token", diagram.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "id", diagram.ID.ToString(), Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "fileName", diagram.FileName);
+                        database.AddParameter(dbCommand, "data", diagram.DataStream);
+                        database.AddParameter(dbCommand, "size", diagram.Size.ToString());
+                        database.AddParameter(dbCommand, "dateModified", diagram.DateModified);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
+                        transaction.Commit();
                     }
-                    transaction.Commit();
                 }
             }
         }

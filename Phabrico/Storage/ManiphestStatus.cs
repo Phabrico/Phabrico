@@ -20,27 +20,30 @@ namespace Phabrico.Storage
         /// <param name="maniphestStatus"></param>
         public override void Add(Database database, Phabricator.Data.ManiphestStatus maniphestStatus)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                string info = JsonConvert.SerializeObject(new
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
                 {
-                    Icon = maniphestStatus.Icon
-                });
+                    string info = JsonConvert.SerializeObject(new
+                    {
+                        Icon = maniphestStatus.Icon
+                    });
 
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO maniphestStatusInfo(name, value, closed, info) 
                            VALUES (@name, @value, @closed, @info);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "name", maniphestStatus.Name);
-                    database.AddParameter(dbCommand, "value", maniphestStatus.Value);
-                    database.AddParameter(dbCommand, "closed", maniphestStatus.Closed);
-                    database.AddParameter(dbCommand, "info", info);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        database.AddParameter(dbCommand, "name", maniphestStatus.Name);
+                        database.AddParameter(dbCommand, "value", maniphestStatus.Value);
+                        database.AddParameter(dbCommand, "closed", maniphestStatus.Closed);
+                        database.AddParameter(dbCommand, "info", info);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }

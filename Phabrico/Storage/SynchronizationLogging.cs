@@ -18,26 +18,29 @@ namespace Phabrico.Storage
         /// <param name="synchronizationLogging"></param>
         public override void Add(Database database, Phabricator.Data.SynchronizationLogging synchronizationLogging)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+            lock (Database.dbLock)
+                    {
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO synchronizationLogging(token, title, url, previousContent, metadataModified, dateModified, lastModifiedBy) 
                            VALUES (@token, @title, @url, @previousContent, @metadataModified, @dateModified, @lastModifiedBy);
                        ", database.Connection, transaction))
-                {
+                    {
 
-                    database.AddParameter(dbCommand, "token", synchronizationLogging.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "title", synchronizationLogging.Title);
-                    database.AddParameter(dbCommand, "url", synchronizationLogging.URL);
-                    database.AddParameter(dbCommand, "previousContent", synchronizationLogging.PreviousContent);
-                    database.AddParameter(dbCommand, "metadataModified", synchronizationLogging.MetadataIsModified ? 1 : 0, Database.EncryptionMode.None);  // no encryption because there are only 2 possible values
-                    database.AddParameter(dbCommand, "dateModified", synchronizationLogging.DateModified);
-                    database.AddParameter(dbCommand, "lastModifiedBy", synchronizationLogging.LastModifiedBy);
-                    dbCommand.ExecuteNonQuery();
+                        database.AddParameter(dbCommand, "token", synchronizationLogging.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "title", synchronizationLogging.Title);
+                        database.AddParameter(dbCommand, "url", synchronizationLogging.URL);
+                        database.AddParameter(dbCommand, "previousContent", synchronizationLogging.PreviousContent);
+                        database.AddParameter(dbCommand, "metadataModified", synchronizationLogging.MetadataIsModified ? 1 : 0, Database.EncryptionMode.None);  // no encryption because there are only 2 possible values
+                        database.AddParameter(dbCommand, "dateModified", synchronizationLogging.DateModified);
+                        database.AddParameter(dbCommand, "lastModifiedBy", synchronizationLogging.LastModifiedBy);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -48,18 +51,21 @@ namespace Phabrico.Storage
         /// <param name="database"></param>
         public void Clear(Database database)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            DELETE FROM synchronizationLogging;
                        ", database.Connection, transaction))
-                {
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        Database.IsModified = true;
-                    }
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -71,20 +77,23 @@ namespace Phabrico.Storage
         /// <param name="token"></param>
         public static void Delete(Database database, string token)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            DELETE FROM synchronizationLogging
                            WHERE token = @token;
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        Database.IsModified = true;
-                    }
+                        database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }

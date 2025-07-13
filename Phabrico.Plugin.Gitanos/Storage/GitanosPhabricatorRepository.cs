@@ -22,7 +22,11 @@ namespace Phabrico.Plugin.Storage
                 database.AddParameter(dbCommand, "shortname", diffusion.ShortName, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "description", diffusion.Description, Database.EncryptionMode.None);
                 database.AddParameter(dbCommand, "datemodified", diffusion.DateModified, Database.EncryptionMode.None);
-                dbCommand.ExecuteNonQuery();
+
+                lock (Database.dbLock)
+                {
+                    dbCommand.ExecuteNonQuery();
+                }
             }
         }
 

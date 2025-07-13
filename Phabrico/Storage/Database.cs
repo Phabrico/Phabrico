@@ -23,6 +23,7 @@ namespace Phabrico.Storage
     /// </summary>
     public class Database : IDisposable
     {
+        public static object dbLock = new object();
         private static string _datasource = null;
         internal static int _dbVersionInDataFile = 0;
 
@@ -175,6 +176,11 @@ namespace Phabrico.Storage
         public string PrivateEncryptionKey { get; set; }
 
         /// <summary>
+        /// Date and time when the database was last modified
+        /// </summary>
+        public static DateTime Timestamp { get; internal set; }
+
+        /// <summary>
         /// Initializes an instance of Storage.Database
         /// </summary>
         /// <param name="encryptionKey">Key to encrypt/decrypt the database. This can be null in case no encrypted data is to be retrieved</param>
@@ -184,6 +190,10 @@ namespace Phabrico.Storage
 
             SQLiteConnectionStringBuilder sqliteConnectionString = new SQLiteConnectionStringBuilder();
             sqliteConnectionString.DataSource = DataSource;
+
+            // store timestamp of sqlite file: we'll use this to find out if the database file has been modified in order to vacuum or not
+            Timestamp = System.IO.File.GetLastWriteTime(sqliteConnectionString.DataSource);
+
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 sqliteConnectionString.DefaultTimeout = 600000;
@@ -212,9 +222,12 @@ namespace Phabrico.Storage
                             ", System.IO.Path.GetDirectoryName(Connection.FileName))
                        , Connection))
                 {
-                    dbCommand.ExecuteNonQuery();
+                    lock (dbLock)
+                    {
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
-            
+
                 if (_dbVersionInDataFile == 0)
                 {
                     string version = GetConfigurationParameter("version");
@@ -307,9 +320,12 @@ namespace Phabrico.Storage
                 {
                     cmdObjectRelationInfo.Parameters.Clear();
                     AddParameter(cmdObjectRelationInfo, "token", token, EncryptionMode.None);
-                    if (cmdObjectRelationInfo.ExecuteNonQuery() > 0)
+                    lock (dbLock)
                     {
-                        IsModified = true;
+                        if (cmdObjectRelationInfo.ExecuteNonQuery() > 0)
+                        {
+                            IsModified = true;
+                        }
                     }
                 }
             }
@@ -323,9 +339,12 @@ namespace Phabrico.Storage
                 {
                     cmdObjectRelationInfo.Parameters.Clear();
                     AddParameter(cmdObjectRelationInfo, "token", token, EncryptionMode.None);
-                    if (cmdObjectRelationInfo.ExecuteNonQuery() > 0)
+                    lock (dbLock)
                     {
-                        IsModified = true;
+                        if (cmdObjectRelationInfo.ExecuteNonQuery() > 0)
+                        {
+                            IsModified = true;
+                        }
                     }
                 }
             }
@@ -344,7 +363,10 @@ namespace Phabrico.Storage
                    ", Connection))
             {
                 dbCommand.Parameters.Add(new SQLiteParameter("dateModified", DateTimeOffset.UtcNow.AddMonths(-6).Ticks));
-                dbCommand.ExecuteNonQuery();
+                lock (dbLock)
+                {
+                    dbCommand.ExecuteNonQuery();
+                }
             }
         }
 
@@ -410,19 +432,22 @@ namespace Phabrico.Storage
                 AddParameter(dbCommandUpdate, "sessionVariableName", Encryption.Encrypt(browser.Fingerprint, sessionVariableName), EncryptionMode.None);
                 AddParameter(dbCommandUpdate, "fingerprint", Encryption.Encrypt(browser.Fingerprint, browser.Fingerprint), EncryptionMode.None);
 
-                if (dbCommandUpdate.ExecuteNonQuery() == 0)
+                lock (dbLock)
                 {
-                    using (SQLiteCommand dbCommandInsert = new SQLiteCommand(@"
+                    if (dbCommandUpdate.ExecuteNonQuery() == 0)
+                    {
+                        using (SQLiteCommand dbCommandInsert = new SQLiteCommand(@"
                                INSERT INTO sessionVariables(name, fingerprint, value, dateModified)
                                VALUES (@sessionVariableName, @fingerprint, @sessionVariableValue, @dateModified)
                            ", Connection))
-                    {
-                        AddParameter(dbCommandInsert, "sessionVariableValue", Encryption.Encrypt(browser.Fingerprint, sessionVariableValue), EncryptionMode.None);
-                        dbCommandInsert.Parameters.Add(new SQLiteParameter("dateModified", DateTimeOffset.UtcNow.Ticks));
-                        AddParameter(dbCommandInsert, "sessionVariableName", Encryption.Encrypt(browser.Fingerprint, sessionVariableName), EncryptionMode.None);
-                        AddParameter(dbCommandInsert, "fingerprint", Encryption.Encrypt(browser.Fingerprint, browser.Fingerprint), EncryptionMode.None);
+                        {
+                            AddParameter(dbCommandInsert, "sessionVariableValue", Encryption.Encrypt(browser.Fingerprint, sessionVariableValue), EncryptionMode.None);
+                            dbCommandInsert.Parameters.Add(new SQLiteParameter("dateModified", DateTimeOffset.UtcNow.Ticks));
+                            AddParameter(dbCommandInsert, "sessionVariableName", Encryption.Encrypt(browser.Fingerprint, sessionVariableName), EncryptionMode.None);
+                            AddParameter(dbCommandInsert, "fingerprint", Encryption.Encrypt(browser.Fingerprint, browser.Fingerprint), EncryptionMode.None);
 
-                        dbCommandInsert.ExecuteNonQuery();
+                            dbCommandInsert.ExecuteNonQuery();
+                        }
                     }
                 }
             }
@@ -620,21 +645,24 @@ namespace Phabrico.Storage
         {
             if (tokenToBeAssigned.Equals(parentToken)) return;
 
-            using (SQLiteTransaction transaction = Connection.BeginTransaction())
+            lock (dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO objectHierarchyInfo(token, parentToken) 
                            VALUES (@token, @parentToken);
                        ", Connection, transaction))
-                {
-                    AddParameter(dbCommand, "token", tokenToBeAssigned, EncryptionMode.None);
-                    AddParameter(dbCommand, "parentToken", parentToken, EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        IsModified = true;
-                    }
+                        AddParameter(dbCommand, "token", tokenToBeAssigned, EncryptionMode.None);
+                        AddParameter(dbCommand, "parentToken", parentToken, EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -649,22 +677,25 @@ namespace Phabrico.Storage
         {
             if (mainToken.Equals(dependentToken)) return;
 
-            using (SQLiteTransaction transaction = Connection.BeginTransaction())
+            lock (dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO objectRelationInfo(token, linkedToken, language) 
                            VALUES (@token, @linkedToken, @language);
                        ", Connection, transaction))
-                {
-                    AddParameter(dbCommand, "token", mainToken, EncryptionMode.None);
-                    AddParameter(dbCommand, "linkedToken", dependentToken, EncryptionMode.None);
-                    AddParameter(dbCommand, "language", language, EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        IsModified = true;
-                    }
+                        AddParameter(dbCommand, "token", mainToken, EncryptionMode.None);
+                        AddParameter(dbCommand, "linkedToken", dependentToken, EncryptionMode.None);
+                        AddParameter(dbCommand, "language", language, EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -847,10 +878,12 @@ namespace Phabrico.Storage
         /// </summary>
         internal void CleanupUnusedObjectRelations()
         {
-            using (SQLiteTransaction transaction = Connection.BeginTransaction())
+            lock (dbLock)
             {
-                List<string> tokensToRemove = new List<string>();
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = Connection.BeginTransaction())
+                {
+                    List<string> tokensToRemove = new List<string>();
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                             SELECT * FROM fileinfo 
                             WHERE token NOT IN (
                                       SELECT linkedToken 
@@ -858,37 +891,38 @@ namespace Phabrico.Storage
                                   )
                             ;
                        ", Connection, transaction))
-                {
-                    using (var reader = dbCommand.ExecuteReader())
                     {
-                        while (reader.Read())
+                        using (var reader = dbCommand.ExecuteReader())
                         {
-                            string macroName = Encryption.Decrypt(EncryptionKey, (byte[])reader["macroName"]);
-                            if (string.IsNullOrWhiteSpace(macroName) == false) continue;
+                            while (reader.Read())
+                            {
+                                string macroName = Encryption.Decrypt(EncryptionKey, (byte[])reader["macroName"]);
+                                if (string.IsNullOrWhiteSpace(macroName) == false) continue;
 
-                            string token = (string)reader["token"];
-                            tokensToRemove.Add(token);
+                                string token = (string)reader["token"];
+                                tokensToRemove.Add(token);
+                            }
                         }
+
                     }
 
-                }
-
-                foreach (string tokenToRemove in tokensToRemove)
-                {
-                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    foreach (string tokenToRemove in tokensToRemove)
+                    {
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                                  DELETE FROM fileinfo 
                                  WHERE token = @token;
                             ", Connection, transaction))
-                    {
-                        AddParameter(dbCommand, "token", tokenToRemove, EncryptionMode.None);
-                        if (dbCommand.ExecuteNonQuery() > 0)
                         {
-                            IsModified = true;
+                            AddParameter(dbCommand, "token", tokenToRemove, EncryptionMode.None);
+                            if (dbCommand.ExecuteNonQuery() > 0)
+                            {
+                                IsModified = true;
+                            }
                         }
                     }
-                }
 
-                transaction.Commit();
+                    transaction.Commit();
+                }
             }
         }
 
@@ -900,63 +934,66 @@ namespace Phabrico.Storage
         {
             List<string> result = new List<string>();
 
-            using (SQLiteTransaction transaction = Connection.BeginTransaction())
+            lock (dbLock)
             {
-                using (SQLiteCommand cmdSelectObjectRelationInfo = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand cmdSelectObjectRelationInfo = new SQLiteCommand(@"
                            SELECT linkedToken FROM objectRelationInfo
                            WHERE token = @token
                              AND (@language IS NULL
                                   OR language = @language
                                  );
                        ", Connection, transaction))
-                {
-                    AddParameter(cmdSelectObjectRelationInfo, "token", mainToken, EncryptionMode.None);
-                    if (language == null)
                     {
-                        cmdSelectObjectRelationInfo.Parameters.Add(new SQLiteParameter("language", DBNull.Value));
-                    }
-                    else
-                    {
-                        AddParameter(cmdSelectObjectRelationInfo, "language", language, EncryptionMode.None);
-                    }
-
-                    using (var reader = cmdSelectObjectRelationInfo.ExecuteReader())
-                    {
-                        while (reader.Read())
+                        AddParameter(cmdSelectObjectRelationInfo, "token", mainToken, EncryptionMode.None);
+                        if (language == null)
                         {
-                            result.Add((string)reader["linkedToken"]);
+                            cmdSelectObjectRelationInfo.Parameters.Add(new SQLiteParameter("language", DBNull.Value));
+                        }
+                        else
+                        {
+                            AddParameter(cmdSelectObjectRelationInfo, "language", language, EncryptionMode.None);
+                        }
+
+                        using (var reader = cmdSelectObjectRelationInfo.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                result.Add((string)reader["linkedToken"]);
+                            }
                         }
                     }
-                }
-             
 
-                using (SQLiteCommand cmdDeleteObjectRelationInfo = new SQLiteCommand(@"
+
+                    using (SQLiteCommand cmdDeleteObjectRelationInfo = new SQLiteCommand(@"
                            DELETE FROM objectRelationInfo
                            WHERE token = @token
                              AND (@language IS NULL
                                   OR language = @language
                                  );
                        ", Connection, transaction))
-                {
-                    AddParameter(cmdDeleteObjectRelationInfo, "token", mainToken, EncryptionMode.None);
-                    if (language == null)
                     {
-                        cmdDeleteObjectRelationInfo.Parameters.Add(new SQLiteParameter("language", DBNull.Value));
+                        AddParameter(cmdDeleteObjectRelationInfo, "token", mainToken, EncryptionMode.None);
+                        if (language == null)
+                        {
+                            cmdDeleteObjectRelationInfo.Parameters.Add(new SQLiteParameter("language", DBNull.Value));
+                        }
+                        else
+                        {
+                            AddParameter(cmdDeleteObjectRelationInfo, "language", language, EncryptionMode.None);
+                        }
+                        if (cmdDeleteObjectRelationInfo.ExecuteNonQuery() > 0)
+                        {
+                            IsModified = true;
+                        }
                     }
-                    else
-                    {
-                        AddParameter(cmdDeleteObjectRelationInfo, "language", language, EncryptionMode.None);
-                    }
-                    if (cmdDeleteObjectRelationInfo.ExecuteNonQuery() > 0)
-                    {
-                        IsModified = true;
-                    }
-                }
-                
-                transaction.Commit();
-            }
 
-            return result;
+                    transaction.Commit();
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -1151,19 +1188,19 @@ namespace Phabrico.Storage
                     Maniphest maniphestStorage = new Maniphest();
                     yield return maniphestStorage.Get(this, dependeeToken, language);
                 }
-                
+
                 if (dependeeToken.StartsWith(Phabricator.Data.File.Prefix))
                 {
                     File fileStorage = new File();
                     yield return fileStorage.Get(this, dependeeToken, language);
                 }
-                
+
                 if (dependeeToken.StartsWith(Phabricator.Data.User.Prefix))
                 {
                     User userStorage = new User();
                     yield return userStorage.Get(this, dependeeToken, language);
                 }
-                
+
                 if (dependeeToken.StartsWith(Phabricator.Data.Project.Prefix))
                 {
                     Project projectStorage = new Project();
@@ -1559,7 +1596,10 @@ namespace Phabrico.Storage
                        );
                    ", Connection))
             {
-                dbCommand.ExecuteNonQuery();
+                lock (dbLock)
+                {
+                    dbCommand.ExecuteNonQuery();
+                }
             }
 
             if (_utcNextTimeToVacuum < DateTime.UtcNow)
@@ -1576,7 +1616,10 @@ namespace Phabrico.Storage
                         DateTimeOffset yesterday = DateTimeOffset.UtcNow.AddDays(-1);
                         AddParameter(dbCommand, "dateModified", yesterday, EncryptionMode.None);
                         dbCommand.CommandTimeout = 0;
-                        oldDataWasRemoved = (dbCommand.ExecuteNonQuery() > 0);
+                        lock (dbLock)
+                        {
+                            oldDataWasRemoved = (dbCommand.ExecuteNonQuery() > 0);
+                        }
                     }
 
                     if (oldDataWasRemoved)
@@ -1615,13 +1658,30 @@ namespace Phabrico.Storage
         /// <param name="linkedToken"></param>
         public void MarkFileObject(int? fileID, bool isUnreferenced, string linkedToken = "")
         {
-            if (isUnreferenced)
+            lock (dbLock)
             {
-                if (fileID.HasValue && string.IsNullOrWhiteSpace(linkedToken) == false)
+                if (isUnreferenced)
                 {
-                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    if (fileID.HasValue && string.IsNullOrWhiteSpace(linkedToken) == false)
+                    {
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                         INSERT OR REPLACE INTO unreferencedFileObjects(fileID, linkedToken)
                         VALUES (@fileID, @linkedToken);
+                    ", Connection))
+                        {
+                            dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID.Value));
+                            dbCommand.Parameters.Add(new SQLiteParameter("linkedToken", linkedToken));
+                            dbCommand.ExecuteNonQuery();
+                        }
+                    }
+                }
+                else
+                if (fileID.HasValue)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                        DELETE FROM unreferencedFileObjects
+                        WHERE fileID = @fileID
+                          AND (@linkedToken = '' OR @linkedToken = linkedToken);
                     ", Connection))
                     {
                         dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID.Value));
@@ -1629,31 +1689,17 @@ namespace Phabrico.Storage
                         dbCommand.ExecuteNonQuery();
                     }
                 }
-            }
-            else
-            if (fileID.HasValue)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                        DELETE FROM unreferencedFileObjects
-                        WHERE fileID = @fileID
-                          AND (@linkedToken = '' OR @linkedToken = linkedToken);
-                    ", Connection))
+                else
+                if (string.IsNullOrWhiteSpace(linkedToken) == false)
                 {
-                    dbCommand.Parameters.Add(new SQLiteParameter("fileID", fileID.Value));
-                    dbCommand.Parameters.Add(new SQLiteParameter("linkedToken", linkedToken));
-                    dbCommand.ExecuteNonQuery();
-                }
-            }
-            else
-            if (string.IsNullOrWhiteSpace(linkedToken) == false)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                         DELETE FROM unreferencedFileObjects
                         WHERE @linkedToken = linkedToken;
                     ", Connection))
-                {
-                    dbCommand.Parameters.Add(new SQLiteParameter("linkedToken", linkedToken));
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        dbCommand.Parameters.Add(new SQLiteParameter("linkedToken", linkedToken));
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
             }
         }
@@ -1835,16 +1881,19 @@ namespace Phabrico.Storage
         /// <param name="value"></param>
         public void SetConfigurationParameter(string name, string value)
         {
-            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+            lock (dbLock)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                         INSERT OR REPLACE INTO dbInfo(name, value)
                         VALUES (@name, @value);
                     ", Connection))
-            {
-                dbCommand.Parameters.Add(new SQLiteParameter("name", name));
-                dbCommand.Parameters.Add(new SQLiteParameter("value", value));
-                if (dbCommand.ExecuteNonQuery() > 0)
                 {
-                    IsModified = true;
+                    dbCommand.Parameters.Add(new SQLiteParameter("name", name));
+                    dbCommand.Parameters.Add(new SQLiteParameter("value", value));
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        IsModified = true;
+                    }
                 }
             }
         }
@@ -1862,7 +1911,10 @@ namespace Phabrico.Storage
                                 VACUUM
                             ", Connection))
                     {
-                        dbCommand.ExecuteNonQuery();
+                        lock (dbLock)
+                        {
+                            dbCommand.ExecuteNonQuery();
+                        }
 
                         IsModified = false;
                     }
@@ -1892,22 +1944,25 @@ namespace Phabrico.Storage
         /// <param name="parentToken"></param>
         public void UndescendTokenFrom(string tokenToBeUnassigned, string parentToken = "")
         {
-            using (SQLiteTransaction transaction = Connection.BeginTransaction())
+            lock (dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            DELETE FROM objectHierarchyInfo
                            WHERE token = @token
                              AND (parentToken = @parentToken OR '' = CAST(@parentToken AS VARCHAR));
                        ", Connection, transaction))
-                {
-                    AddParameter(dbCommand, "token", tokenToBeUnassigned, EncryptionMode.None);
-                    AddParameter(dbCommand, "parentToken", parentToken, EncryptionMode.None);
-                    if (dbCommand.ExecuteNonQuery() > 0)
                     {
-                        IsModified = true;
-                    }
+                        AddParameter(dbCommand, "token", tokenToBeUnassigned, EncryptionMode.None);
+                        AddParameter(dbCommand, "parentToken", parentToken, EncryptionMode.None);
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            IsModified = true;
+                        }
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -1949,9 +2004,11 @@ namespace Phabrico.Storage
         {
             _dbVersionInDataFile = dbVersion;
 
-            if (dbVersion == 2)
+            lock (dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (dbVersion == 2)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            ALTER TABLE accountInfo
                              ADD dpapiXorCipher1 BLOB;
 
@@ -1962,44 +2019,44 @@ namespace Phabrico.Storage
                               SET dpapiXorCipher1 = @dpapiXorCipher1,
                                   dpapiXorCipher2 = @dpapiXorCipher2;
                        ", Connection))
-                {
-                    AddParameter(dbCommand, "dpapiXorCipher1", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
-                    AddParameter(dbCommand, "dpapiXorCipher2", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        AddParameter(dbCommand, "dpapiXorCipher1", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                        AddParameter(dbCommand, "dpapiXorCipher2", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            if (dbVersion == 3)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (dbVersion == 3)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            UPDATE accountInfo
                              SET publicXorCipher  = @publicXorCipher,
                                  privateXorCipher = @privateXorCipher;
                        ", Connection))
-                {
-                    AddParameter(dbCommand, "publicXorCipher", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
-                    AddParameter(dbCommand, "privateXorCipher", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        AddParameter(dbCommand, "publicXorCipher", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                        AddParameter(dbCommand, "privateXorCipher", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, EncryptionMode.None);
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            if (dbVersion == 4)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (dbVersion == 4)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            ALTER TABLE userInfo
                              ADD isBot BLOB;
 
                            ALTER TABLE userInfo
                              ADD isDisabled BLOB;
                        ", Connection))
-                {
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            if (dbVersion == 5)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (dbVersion == 5)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        CREATE TABLE IF NOT EXISTS stageInfoCopy(
                            token VARCHAR(30),
                            tokenPrefix BLOB,
@@ -2022,13 +2079,13 @@ namespace Phabrico.Storage
 
                        ALTER TABLE stageInfoCopy RENAME TO stageInfo;
                     ", Connection))
-                {
-                    AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
-                }
+                    {
+                        AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
+                        dbCommand.ExecuteNonQuery();
+                    }
 
 
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        CREATE TABLE IF NOT EXISTS objectRelationInfoCopy(
                            token VARCHAR(30),
                            linkedToken VARCHAR(30),
@@ -2045,15 +2102,15 @@ namespace Phabrico.Storage
 
                        ALTER TABLE objectRelationInfoCopy RENAME TO objectRelationInfo;
                     ", Connection))
-                {
-                    AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            if (dbVersion == 6)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (dbVersion == 6)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        CREATE TABLE IF NOT EXISTS keywordInfoCopy(
                            name VARCHAR,
                            token BLOB,
@@ -2072,15 +2129,15 @@ namespace Phabrico.Storage
 
                        ALTER TABLE keywordInfoCopy RENAME TO keywordInfo;
                        ", Connection))
-                {
-                    AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        AddParameter(dbCommand, "language", Language.NotApplicable, EncryptionMode.None);
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            if (dbVersion == 7)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (dbVersion == 7)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        DROP TABLE unreferencedFileObjects;
 
                        CREATE TABLE unreferencedFileObjects (
@@ -2089,14 +2146,14 @@ namespace Phabrico.Storage
                        );
 
                     ", Connection))
-                {
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            if (dbVersion == 8)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (dbVersion == 8)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        CREATE TABLE IF NOT EXISTS keywordHiddenTokens (
                            url VARCHAR(30),
                            accountUserName BLOB,
@@ -2104,14 +2161,14 @@ namespace Phabrico.Storage
                            PRIMARY KEY (accountUserName, url)
                        );
                     ", Connection))
-                {
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
-            }
 
-            if (dbVersion == 9)
-            {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                if (dbVersion == 9)
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        CREATE TABLE IF NOT EXISTS diagramInfo(
                            token VARCHAR(30),
                            id INT,
@@ -2129,15 +2186,16 @@ namespace Phabrico.Storage
                          ON diagramInfo (id);
 
                     ", Connection))
-                {
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        dbCommand.ExecuteNonQuery();
+                    }
                 }
+
+                // store version number in database
+                SetConfigurationParameter("version", dbVersion.ToString());
+
+                return true;
             }
-
-            // store version number in database
-            SetConfigurationParameter("version", dbVersion.ToString());
-
-            return true;
         }
 
         /// <summary>
@@ -2170,12 +2228,12 @@ namespace Phabrico.Storage
                        SELECT 1 AS priority, token, publicXorCipher
                        FROM accountinfo 
                        WHERE token = @tokenHash
-                       
+
                        UNION 
-                   
+
                        SELECT 2 AS priority, token, publicXorCipher 
                        FROM accountinfo
-                   
+
                        ORDER BY priority LIMIT 1;
                    ", Connection))
                 {

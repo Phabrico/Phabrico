@@ -205,6 +205,9 @@ namespace Phabrico.UnitTests
             maniphestPriority.Name = "High";
             maniphestPriority.Priority = 80;
             maniphestPriorityStorage.Add(Database, maniphestPriority);
+            maniphestPriority.Name = "Unbreak Now";
+            maniphestPriority.Priority = 100;
+            maniphestPriorityStorage.Add(Database, maniphestPriority);
 
             Phabricator.Data.ManiphestStatus maniphestStatus = new Phabricator.Data.ManiphestStatus();
             maniphestStatus.Name = "Open";

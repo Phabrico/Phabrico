@@ -838,9 +838,13 @@ namespace Phabrico.Storage
                 database.AddParameter(dbCommand, "frozen", Encryption.Encrypt(database.EncryptionKey, doFreeze.ToString()));
                 dbCommand.Parameters.Add(new SQLiteParameter("language", browser.Session.Locale));
                 dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
-                if (dbCommand.ExecuteNonQuery() > 0)
+
+                lock (Database.dbLock)
                 {
-                    Database.IsModified = true;
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -931,7 +935,7 @@ namespace Phabrico.Storage
                 stageData.ContentDataStream = modifiedFileObject.DataStream;
                 modifiedFileObject.DateModified = stageData.DateModified;
             }
-            
+
             Phabricator.Data.Diagram modifiedDiagramObject = modifiedPhabricatorObject as Phabricator.Data.Diagram;
             if (modifiedDiagramObject != null)
             {
@@ -1065,9 +1069,13 @@ namespace Phabrico.Storage
                         {
                             database.AddParameter(dbCommand, "token", newerStagedTransaction.Token, Database.EncryptionMode.None);
                             database.AddParameter(dbCommand, "operation", newerStagedTransaction.Type, Database.EncryptionMode.None);
-                            if (dbCommand.ExecuteNonQuery() > 0)
+
+                            lock (Database.dbLock)
                             {
-                                Database.IsModified = true;
+                                if (dbCommand.ExecuteNonQuery() > 0)
+                                {
+                                    Database.IsModified = true;
+                                }
                             }
                         }
 
@@ -1102,9 +1110,13 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "token", stagedFile.Token, Database.EncryptionMode.None);
                     dbCommand.Parameters.Add(new SQLiteParameter("language", language ?? browser.Session.Locale));
                     dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
-                    if (dbCommand.ExecuteNonQuery() > 0)
+
+                    lock (Database.dbLock)
                     {
-                        Database.IsModified = true;
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
                     }
                 }
             }
@@ -1141,9 +1153,13 @@ namespace Phabrico.Storage
                     database.AddParameter(dbCommand, "token", existingPhabricatorObject.Token, Database.EncryptionMode.None);
                     dbCommand.Parameters.Add(new SQLiteParameter("language", language ?? browser.Session.Locale));
                     dbCommand.Parameters.Add(new SQLiteParameter("notApplicable", Language.NotApplicable));
-                    if (dbCommand.ExecuteNonQuery() > 0)
+
+                    lock (Database.dbLock)
                     {
-                        Database.IsModified = true;
+                        if (dbCommand.ExecuteNonQuery() > 0)
+                        {
+                            Database.IsModified = true;
+                        }
                     }
                 }
 
@@ -1251,27 +1267,30 @@ namespace Phabrico.Storage
                 }
             }
 
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO stageInfo(token, tokenPrefix, objectID, operation, dateModified, headerData, contentData, frozen, language)
                            VALUES (@token, @tokenPrefix, @objectID, @operation, @dateModified, @headerData, @contentData, @frozen, @language);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "token", stageData.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "tokenPrefix", Encryption.Encrypt(stageData.Token, stageData.TokenPrefix));  // Token is used as encryption "seed"
-                    database.AddParameter(dbCommand, "objectID", Encryption.Encrypt(database.EncryptionKey, stageData.ObjectID.ToString()));
-                    database.AddParameter(dbCommand, "operation", stageData.Operation, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "dateModified", Encryption.Encrypt(database.EncryptionKey, stageData.DateModified.ToString("yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture)));
-                    database.AddParameter(dbCommand, "headerData", Encryption.Encrypt(database.EncryptionKey, stageData.HeaderData));
-                    database.AddParameter(dbCommand, "contentData", stageData.ContentDataStream);
-                    database.AddParameter(dbCommand, "frozen", Encryption.Encrypt(database.EncryptionKey, stageData.Frozen.ToString()));
-                    database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        database.AddParameter(dbCommand, "token", stageData.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "tokenPrefix", Encryption.Encrypt(stageData.Token, stageData.TokenPrefix));  // Token is used as encryption "seed"
+                        database.AddParameter(dbCommand, "objectID", Encryption.Encrypt(database.EncryptionKey, stageData.ObjectID.ToString()));
+                        database.AddParameter(dbCommand, "operation", stageData.Operation, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "dateModified", Encryption.Encrypt(database.EncryptionKey, stageData.DateModified.ToString("yyyy-MM-dd HH:mm:ss zzzz", CultureInfo.InvariantCulture)));
+                        database.AddParameter(dbCommand, "headerData", Encryption.Encrypt(database.EncryptionKey, stageData.HeaderData));
+                        database.AddParameter(dbCommand, "contentData", stageData.ContentDataStream);
+                        database.AddParameter(dbCommand, "frozen", Encryption.Encrypt(database.EncryptionKey, stageData.Frozen.ToString()));
+                        database.AddParameter(dbCommand, "language", language, Database.EncryptionMode.None);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }

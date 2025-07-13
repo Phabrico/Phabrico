@@ -184,9 +184,9 @@ namespace Phabrico.ContentTranslation.Engines
                     while (true)
                     {
                         rowIndex++;
-                        string key = (string)worksheet.Cell("A" + rowIndex).Value;
-                        string originalText = System.Convert.ToString(worksheet.Cell("B" + rowIndex).Value);
-                        string translatedText = System.Convert.ToString(worksheet.Cell("C" + rowIndex).Value);
+                        string key = worksheet.Cell("A" + rowIndex).GetString();
+                        string originalText = worksheet.Cell("B" + rowIndex).GetFormattedString();
+                        string translatedText = worksheet.Cell("C" + rowIndex).GetFormattedString();
 
                         if (string.IsNullOrWhiteSpace(key)) break;
                         if (string.IsNullOrWhiteSpace(originalText) || string.IsNullOrWhiteSpace(translatedText)) continue;

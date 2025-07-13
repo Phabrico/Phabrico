@@ -294,7 +294,16 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 {
                                     Storage.Account accountStorage = new Storage.Account();
                                     Phabricator.Data.Account accountData = accountStorage.Get(database, token);
-                                    urlHyperlink = accountData.PhabricatorUrl.TrimEnd('/') + "/" + urlHyperlink;  // convert to absolute path
+
+                                    // convert to absolute path
+                                    if (string.IsNullOrEmpty(accountData?.PhabricatorUrl))
+                                    {
+                                        urlHyperlink = Http.Server.RootPath.TrimEnd('/') + "/w/" + urlHyperlink;
+                                    }
+                                    else
+                                    {
+                                        urlHyperlink = accountData.PhabricatorUrl.TrimEnd('/') + "/" + urlHyperlink;
+                                    }
                                 }
                             }
 
@@ -439,7 +448,15 @@ namespace Phabrico.Parsers.Remarkup.Rules
                                 {
                                     Storage.Account accountStorage = new Storage.Account();
                                     Phabricator.Data.Account accountData = accountStorage.Get(database, token);
-                                    absolutePathToPhabricator = accountData.PhabricatorUrl.TrimEnd('/') + "/" + urlHyperlink;
+
+                                    if (string.IsNullOrEmpty(accountData?.PhabricatorUrl))
+                                    {
+                                        absolutePathToPhabricator = Http.Server.RootPath.TrimEnd('/') + "/w/" + urlHyperlink;
+                                    }
+                                    else
+                                    {
+                                        absolutePathToPhabricator = accountData.PhabricatorUrl.TrimEnd('/') + "/" + urlHyperlink;
+                                    }
                                 }
 
                                 html = string.Format("<a class='phriction-link banned' href='{0}' title=\"{1}\">{2}</a>",

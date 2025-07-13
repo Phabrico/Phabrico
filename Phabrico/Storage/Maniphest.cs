@@ -21,34 +21,37 @@ namespace Phabrico.Storage
         /// <param name="maniphest"></param>
         public override void Add(Database database, Phabricator.Data.Maniphest maniphest)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
-            {
-                string info = JsonConvert.SerializeObject(new
+            lock (Database.dbLock)
+                    {
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
                 {
-                    Type = maniphest.Type,
-                    Name = maniphest.Name,
-                    Description = maniphest.Description,
-                    Projects = maniphest.Projects,
-                    Priority = maniphest.Priority,
-                    Author = maniphest.Author,
-                    Owner = maniphest.Owner,
-                    Subscribers = maniphest.Subscribers,
-                    DateCreated = maniphest.DateCreated.ToString("yyyy-MM-dd HH:mm:ss zzzz"),
-                    DateModified = maniphest.DateModified.ToString("yyyy-MM-dd HH:mm:ss zzzz")
-                });
+                    string info = JsonConvert.SerializeObject(new
+                    {
+                        Type = maniphest.Type,
+                        Name = maniphest.Name,
+                        Description = maniphest.Description,
+                        Projects = maniphest.Projects,
+                        Priority = maniphest.Priority,
+                        Author = maniphest.Author,
+                        Owner = maniphest.Owner,
+                        Subscribers = maniphest.Subscribers,
+                        DateCreated = maniphest.DateCreated.ToString("yyyy-MM-dd HH:mm:ss zzzz"),
+                        DateModified = maniphest.DateModified.ToString("yyyy-MM-dd HH:mm:ss zzzz")
+                    });
 
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO maniphestInfo(token, id, status, info) 
                            VALUES (@token, @id, @status, @info);
                        ", database.Connection, transaction))
-                {
-                    database.AddParameter(dbCommand, "token", maniphest.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "id", maniphest.ID, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "status", maniphest.Status);
-                    database.AddParameter(dbCommand, "info", info);
-                    dbCommand.ExecuteNonQuery();
+                    {
+                        database.AddParameter(dbCommand, "token", maniphest.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "id", maniphest.ID, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "status", maniphest.Status);
+                        database.AddParameter(dbCommand, "info", info);
+                        dbCommand.ExecuteNonQuery();
 
-                    transaction.Commit();
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -322,22 +325,26 @@ namespace Phabrico.Storage
                    ", database.Connection))
             {
                 database.AddParameter(cmdDeleteManiphestInfo, "token", maniphestTask.Token, Database.EncryptionMode.None);
-                if (cmdDeleteManiphestInfo.ExecuteNonQuery() > 0)
+
+                lock (Database.dbLock)
                 {
-                    using (SQLiteCommand cmdDeleteKeywordInfo = new SQLiteCommand(@"
+                    if (cmdDeleteManiphestInfo.ExecuteNonQuery() > 0)
+                    {
+                        using (SQLiteCommand cmdDeleteKeywordInfo = new SQLiteCommand(@"
                                DELETE FROM keywordInfo
                                WHERE token = @token;
                            ", database.Connection))
-                    {
-                        database.AddParameter(cmdDeleteKeywordInfo, "token", maniphestTask.Token, Database.EncryptionMode.None);
-                        cmdDeleteKeywordInfo.ExecuteNonQuery();
+                        {
+                            database.AddParameter(cmdDeleteKeywordInfo, "token", maniphestTask.Token, Database.EncryptionMode.None);
+                            cmdDeleteKeywordInfo.ExecuteNonQuery();
+                        }
+
+                        database.ClearAssignedTokens(maniphestTask.Token, Language.NotApplicable);
+
+                        database.CleanupUnusedObjectRelations();
+
+                        Database.IsModified = true;
                     }
-
-                    database.ClearAssignedTokens(maniphestTask.Token, Language.NotApplicable);
-
-                    database.CleanupUnusedObjectRelations();
-
-                    Database.IsModified = true;
                 }
             }
         }

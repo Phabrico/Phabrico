@@ -19,27 +19,30 @@ namespace Phabrico.Storage
         /// <param name="user"></param>
         public override void Add(Database database, Phabricator.Data.User user)
         {
-            using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction transaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                            INSERT OR REPLACE INTO userInfo(token, userName, realName, selected, dateSynchronized, isBot, isDisabled)
                            VALUES (@userToken, @userName, @userRealName, @selected, @dateSynchronized, @isBot, @isDisabled);
                        ", database.Connection, transaction))
-                {
+                    {
 
-                    database.AddParameter(dbCommand, "userToken", user.Token, Database.EncryptionMode.None);
-                    database.AddParameter(dbCommand, "userName", user.UserName);
-                    database.AddParameter(dbCommand, "userRealName", user.RealName);
-                    database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, user.Selected.ToString()));
-                    database.AddParameter(dbCommand, "isBot", Encryption.Encrypt(database.EncryptionKey, user.IsBot.ToString()));
-                    database.AddParameter(dbCommand, "isDisabled", Encryption.Encrypt(database.EncryptionKey, user.IsDisabled.ToString()));
-                    database.AddParameter(dbCommand, "dateSynchronized", user.DateSynchronized);
-                    dbCommand.ExecuteNonQuery();
+                        database.AddParameter(dbCommand, "userToken", user.Token, Database.EncryptionMode.None);
+                        database.AddParameter(dbCommand, "userName", user.UserName);
+                        database.AddParameter(dbCommand, "userRealName", user.RealName);
+                        database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, user.Selected.ToString()));
+                        database.AddParameter(dbCommand, "isBot", Encryption.Encrypt(database.EncryptionKey, user.IsBot.ToString()));
+                        database.AddParameter(dbCommand, "isDisabled", Encryption.Encrypt(database.EncryptionKey, user.IsDisabled.ToString()));
+                        database.AddParameter(dbCommand, "dateSynchronized", user.DateSynchronized);
+                        dbCommand.ExecuteNonQuery();
 
-                    Database.IsModified = true;
+                        Database.IsModified = true;
+                    }
+
+                    transaction.Commit();
                 }
-
-                transaction.Commit();
             }
         }
 
@@ -53,7 +56,7 @@ namespace Phabrico.Storage
         /// <param name="destinationUsername">Username to use for authenticating the destination Phabrico database</param>
         /// <param name="destinationPassword">Username to use for authenticating the destination Phabrico database</param>
         /// <param name="filter">LINQ method for filtering the records to be copied</param>
-        public static List<Phabricator.Data.User> Copy(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword, Func<Phabricator.Data.User,bool> filter = null)
+        public static List<Phabricator.Data.User> Copy(string sourcePhabricoDatabasePath, string sourceUsername, string sourcePassword, string destinationPhabricoDatabasePath, string destinationUsername, string destinationPassword, Func<Phabricator.Data.User, bool> filter = null)
         {
             string sourceTokenHash = Encryption.GenerateTokenKey(sourceUsername, sourcePassword);  // tokenHash is stored in the database
             string sourcePublicEncryptionKey = Encryption.GenerateEncryptionKey(sourceUsername, sourcePassword);  // encryptionKey is not stored in database (except when security is disabled)
@@ -231,17 +234,20 @@ namespace Phabrico.Storage
         /// <param name="doSelectUser"></param>
         public void SelectUser(Database database, string token, bool doSelectUser)
         {
-            using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+            lock (Database.dbLock)
+            {
+                using (SQLiteCommand dbCommand = new SQLiteCommand(@"
                        UPDATE userInfo
                           SET selected = @selected
                        WHERE token = @token;
                    ", database.Connection))
-            {
-                database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
-                database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, doSelectUser.ToString()));
-                if (dbCommand.ExecuteNonQuery() > 0)
                 {
-                    Database.IsModified = true;
+                    database.AddParameter(dbCommand, "token", token, Database.EncryptionMode.None);
+                    database.AddParameter(dbCommand, "selected", Encryption.Encrypt(database.EncryptionKey, doSelectUser.ToString()));
+                    if (dbCommand.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }
@@ -253,15 +259,18 @@ namespace Phabrico.Storage
         /// <param name="user"></param>
         public void Remove(Database database, Phabricator.Data.User user)
         {
-            using (SQLiteCommand cmdDeleteUserInfo = new SQLiteCommand(@"
+            lock (Database.dbLock)
+            {
+                using (SQLiteCommand cmdDeleteUserInfo = new SQLiteCommand(@"
                        DELETE FROM userInfo
                        WHERE token = @token;
                    ", database.Connection))
-            {
-                database.AddParameter(cmdDeleteUserInfo, "token", user.Token, Database.EncryptionMode.None);
-                if (cmdDeleteUserInfo.ExecuteNonQuery() > 0)
                 {
-                    Database.IsModified = true;
+                    database.AddParameter(cmdDeleteUserInfo, "token", user.Token, Database.EncryptionMode.None);
+                    if (cmdDeleteUserInfo.ExecuteNonQuery() > 0)
+                    {
+                        Database.IsModified = true;
+                    }
                 }
             }
         }

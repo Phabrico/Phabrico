@@ -238,7 +238,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // validate if modifications were stored
             maniphestTaskContent = WebBrowser.FindElement(By.Id("remarkupContent"));
             Assert.IsTrue(maniphestTaskContent.Text.Equals("Left: G2 G2 A2\r\nRight: C5 B4 A4 G4 F4 G4 E4"), "Task content was not modified");
-            
+
             // verify if new saved task is searchable
             IWebElement searchPhabrico = WebBrowser.FindElement(By.Id("searchPhabrico"));
             searchPhabrico.SendKeys("child");
@@ -254,7 +254,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             btnSetSailForAdventure.Click();
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(@src, 'file/data/1234/')]")).Any());
         }
-        
+
         [TestMethod]
         [DataRow(typeof(ChromeConfig), "")]
         [DataRow(typeof(ChromeConfig), "phabrico")]
@@ -381,7 +381,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // validate if modifications were stored
             maniphestTaskContent = WebBrowser.FindElement(By.Id("remarkupContent"));
             Assert.IsTrue(maniphestTaskContent.Text.Equals("Left: G2 G2 A2\r\nRight: C5 B4 A4 G4 F4 G4 E4"), "Task content was not modified");
-            
+
             // verify if new saved task is searchable
             IWebElement searchPhabrico = WebBrowser.FindElement(By.Id("searchPhabrico"));
             searchPhabrico.SendKeys("child");
@@ -397,7 +397,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             btnSetSailForAdventure.Click();
             wait.Until(condition => condition.FindElements(By.XPath("//*[contains(@src, 'file/data/1234/')]")).Any());
         }
-        
+
         [TestMethod]
         [DataRow(typeof(ChromeConfig), "")]
         [DataRow(typeof(ChromeConfig), "phabrico")]
@@ -462,7 +462,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // save
             IWebElement btnSetSailForAdventure = WebBrowser.FindElement(By.XPath("//*[contains(text(), 'Set Sail for Adventure')]"));
             btnSetSailForAdventure.Click();
-            
+
             Thread.Sleep(500);  // wait some milliseconds
 
 
@@ -492,7 +492,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                           "verification if last transaction item failed"
                          );
         }
-         
+
         [TestMethod]
         [DataRow(typeof(ChromeConfig), "")]
         [DataRow(typeof(ChromeConfig), "phabrico")]
@@ -581,7 +581,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             // validate if modifications were stored
             maniphestTaskContent = WebBrowser.FindElement(By.Id("remarkupContent"));
             Assert.IsTrue(maniphestTaskContent.Text.Equals("Left: G2 G2 A2\r\nRight: C5 B4 A4 G4 F4 G4 E4"), "Task content was not modified");
-            
+
             // verify if new saved task is searchable
             IWebElement searchPhabrico = WebBrowser.FindElement(By.Id("searchPhabrico"));
             searchPhabrico.SendKeys("child");
@@ -711,7 +711,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
             builder = new Actions(WebBrowser);
             builder.SendKeys(Keys.Tab);
             builder.SendKeys("This is a very difficult task");
-            
+
             // save data
             builder.SendKeys(Keys.Tab);
             builder.SendKeys(Keys.Enter);
@@ -730,9 +730,9 @@ namespace Phabrico.UnitTests.Selenium.Browser
             wait.Until(condition => condition.FindElements(By.ClassName("maniphest-task-header")).Any());
 
             // validate task data
-            Assert.AreEqual("My new task\nOpen, High", WebBrowser.FindElement(By.ClassName("maniphest-task-header")).Text.Replace("\r", ""), "Invalid title");
+            Assert.AreEqual("My new task\nOpen, Unbreak Now", WebBrowser.FindElement(By.ClassName("maniphest-task-header")).Text.Replace("\r", ""), "Invalid title");
             Assert.AreEqual("This is a very difficult task", WebBrowser.FindElement(By.Id("remarkupContent")).Text, "Invalid task content");
- 
+
             // click on logo to go back to the homepage
             IWebElement logo = WebBrowser.FindElement(By.XPath("//a[contains(@href, '')]"));
             logo.Click();

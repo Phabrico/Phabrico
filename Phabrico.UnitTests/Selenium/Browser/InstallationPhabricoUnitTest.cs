@@ -163,7 +163,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 phabricatorUrl.SendKeys("http://127.0.0.2:46975");
                 conduitApiToken.SendKeys("api-pqi9w9qiumanoosy7e9oqb0apqiu");
                 Assert.AreEqual("Password should be at least 12 characters long", passwordError.Text);
-                
+
                 // test 4: enter lowercased passwords
                 ClearInputFields(username, password, password2, phabricatorUrl, conduitApiToken);
                 username.SendKeys("johnny");
@@ -172,7 +172,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 phabricatorUrl.SendKeys("http://127.0.0.2:46975");
                 conduitApiToken.SendKeys("api-pqi9w9qiumanoosy7e9oqb0apqiu");
                 Assert.AreEqual("Password should contain at least 1 capital letter", passwordError.Text);
-                
+
                 // test 5: enter lowercased passwords
                 ClearInputFields(username, password, password2, phabricatorUrl, conduitApiToken);
                 username.SendKeys("johnny");
@@ -181,7 +181,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 phabricatorUrl.SendKeys("http://127.0.0.2:46975");
                 conduitApiToken.SendKeys("api-pqi9w9qiumanoosy7e9oqb0apqiu");
                 Assert.AreEqual("Password should contain at least 1 lowercase letter", passwordError.Text);
-            
+
                 // test 6: enter mixed lower/uppercase passwords
                 ClearInputFields(username, password, password2, phabricatorUrl, conduitApiToken);
                 username.SendKeys("johnny");
@@ -190,7 +190,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 phabricatorUrl.SendKeys("http://127.0.0.2:46975");
                 conduitApiToken.SendKeys("api-pqi9w9qiumanoosy7e9oqb0apqiu");
                 Assert.AreEqual("Password should contain at least 1 number", passwordError.Text);
-            
+
                 // test 7: enter mixed lower/uppercase passwords with numbers
                 ClearInputFields(username, password, password2, phabricatorUrl, conduitApiToken);
                 username.SendKeys("johnny");
@@ -199,7 +199,7 @@ namespace Phabrico.UnitTests.Selenium.Browser
                 phabricatorUrl.SendKeys("http://127.0.0.2:46975");
                 conduitApiToken.SendKeys("api-pqi9w9qiumanoosy7e9oqb0apqiu");
                 Assert.AreEqual("Password should contain at least 1 punctuation character", passwordError.Text);
-            
+
                 // test 8: enter mixed lower/uppercase passwords with numbers
                 ClearInputFields(username, password, password2, phabricatorUrl, conduitApiToken);
                 username.SendKeys("johnny");

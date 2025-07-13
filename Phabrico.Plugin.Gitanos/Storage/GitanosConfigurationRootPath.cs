@@ -1,4 +1,5 @@
 ﻿using Phabrico.Miscellaneous;
+using Phabrico.Storage;
 using System.Collections.Generic;
 using System.Data.SQLite;
 
@@ -27,28 +28,31 @@ namespace Phabrico.Plugin.Storage
         /// <returns>True if all records were successfully written to the database</returns>
         public void Overwrite(Phabrico.Storage.Database database, IEnumerable<Plugin.Model.GitanosConfigurationRootPath> rootPaths)
         {
-            using (SQLiteTransaction sqlTransaction = database.Connection.BeginTransaction())
+            lock (Database.dbLock)
             {
-                using (SQLiteCommand dbDeleteCommand = new SQLiteCommand(@"
+                using (SQLiteTransaction sqlTransaction = database.Connection.BeginTransaction())
+                {
+                    using (SQLiteCommand dbDeleteCommand = new SQLiteCommand(@"
                            DELETE FROM gitanosConfigurationRootPath;
                        ", database.Connection))
-                {
-                    dbDeleteCommand.ExecuteNonQuery();
-                }
+                    {
+                        dbDeleteCommand.ExecuteNonQuery();
+                    }
 
-                foreach (Plugin.Model.GitanosConfigurationRootPath rootPath in rootPaths)
-                {
-                    using (SQLiteCommand dbInsertCommand = new SQLiteCommand(@"
+                    foreach (Plugin.Model.GitanosConfigurationRootPath rootPath in rootPaths)
+                    {
+                        using (SQLiteCommand dbInsertCommand = new SQLiteCommand(@"
                                INSERT OR REPLACE INTO gitanosConfigurationRootPath(directory) 
                                VALUES (@directory);
                            ", database.Connection))
-                    {
-                        database.AddParameter(dbInsertCommand, "directory", rootPath.Directory, Phabrico.Storage.Database.EncryptionMode.None);
-                        dbInsertCommand.ExecuteNonQuery();
+                        {
+                            database.AddParameter(dbInsertCommand, "directory", rootPath.Directory, Phabrico.Storage.Database.EncryptionMode.None);
+                            dbInsertCommand.ExecuteNonQuery();
+                        }
                     }
-                }
 
-                sqlTransaction.Commit();
+                    sqlTransaction.Commit();
+                }
             }
         }
 
