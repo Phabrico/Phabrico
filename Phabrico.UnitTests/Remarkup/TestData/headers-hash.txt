@@ -1,0 +1,14 @@
+Hashed chapter titles
+
+##like this one
+should be correctly parsed
+
+### and this one
+also
+~~~~~~~~~~
+Hashed chapter titles<br>
+<h1 class='remarkup-header'><a name='like-this-one' style='padding-top: 80px;'></a>like this one </h1>
+should be correctly parsed<br>
+<h2 class='remarkup-header'><a name='and-this-one' style='padding-top: 80px;'></a>and this one </h2>
+also
+~~~~~~~~~~

@@ -2413,6 +2413,7 @@ namespace Phabrico.Controllers
                 foreach (string owner in synchronizationParameters.fileObjectsPerToken.Where(kvp => kvp.Value.Contains(phabricatorFile.ID)).Select(kvp => kvp.Key))
                 {
                     synchronizationParameters.database.AssignToken(owner, phabricatorFile.Token, Language.NotApplicable);
+                    synchronizationParameters.database.MarkFileObject(phabricatorFile.ID, false, owner);
                 }
             }
 

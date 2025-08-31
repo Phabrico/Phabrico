@@ -1907,16 +1907,31 @@ namespace Phabrico.Storage
             {
                 try
                 {
-                    using (SQLiteCommand dbCommand = new SQLiteCommand(@"
-                                VACUUM
-                            ", Connection))
+                    string lastVacuumTimestampStr = GetConfigurationParameter("LastVacuumTimestamp");
+                    DateTime lastVacuumTimestamp = DateTime.MinValue;
+                    if (!string.IsNullOrEmpty(lastVacuumTimestampStr))
                     {
-                        lock (dbLock)
+                        if (DateTime.TryParse(lastVacuumTimestampStr, out DateTime parsed))
                         {
-                            dbCommand.ExecuteNonQuery();
+                            lastVacuumTimestamp = parsed;
+                        }
+                    }
+
+                    // do only vacuum once a week
+                    if (lastVacuumTimestamp == DateTime.MinValue || (DateTime.UtcNow - lastVacuumTimestamp).TotalDays >= 7)
+                    {
+                        using (SQLiteCommand dbCommand = new SQLiteCommand(@"
+                                    VACUUM
+                               ", Connection))
+                        {
+                            lock (dbLock)
+                            {
+                                dbCommand.ExecuteNonQuery();
+                            }
                         }
 
                         IsModified = false;
+                        SetConfigurationParameter("LastVacuumTimestamp", DateTime.UtcNow.ToString("o"));
                     }
                 }
                 catch (System.Exception e)

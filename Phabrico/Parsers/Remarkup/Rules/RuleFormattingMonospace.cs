@@ -25,7 +25,7 @@ namespace Phabrico.Parsers.Remarkup.Rules
         public override bool ToHTML(Storage.Database database, Browser browser, string url, ref string remarkup, out string html)
         {
             html = "";
-            Match matchSquare = RegexSafe.Match(remarkup, @"^##((.+?(?<![^\n]##))|#+)([^\n])##", RegexOptions.Singleline);
+            Match matchSquare = RegexSafe.Match(remarkup, @"^##([^\n]+?)##", RegexOptions.Singleline);
             if (matchSquare.Success)
             {
                 remarkup = remarkup.Substring(matchSquare.Length);

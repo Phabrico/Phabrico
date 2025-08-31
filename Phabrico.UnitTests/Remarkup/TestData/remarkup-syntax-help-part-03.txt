@@ -10,8 +10,8 @@ __underlined text__
 !!highlighted text!!
 ```
 
-Those produce **bold text**, //italic text//, `monospaced text`, ##monospaced
-text##, ~~deleted text~~, __underlined text__, and !!highlighted text!!
+Those produce **bold text**, //italic text//, `monospaced text`, ##monospaced text##,
+~~deleted text~~, __underlined text__, and !!highlighted text!!
 respectively.
 ~~~~~~~~~~
 <h1 class='remarkup-header'><a name='basic-styling' style='padding-top: 80px;'></a>Basic Styling </h1>
@@ -24,8 +24,8 @@ Format <strong>basic text styles</strong> like this:<br>
 __underlined text__
 !!highlighted text!!</code></pre></div>
 <br>
-Those produce <strong>bold text</strong>, <em>italic text</em>, <tt class='remarkup-monospaced'>monospaced text</tt>, <tt class='remarkup-monospaced'>monospaced
-text</tt>, <del>deleted text</del>, <u>underlined text</u>, and <span class='remarkup-highlight'>highlighted text</span><br>
+Those produce <strong>bold text</strong>, <em>italic text</em>, <tt class='remarkup-monospaced'>monospaced text</tt>, <tt class='remarkup-monospaced'>monospaced text</tt>,<br>
+<del>deleted text</del>, <u>underlined text</u>, and <span class='remarkup-highlight'>highlighted text</span><br>
 respectively.
 ~~~~~~~~~~
 <H d="1" t="2">Basic Styling</H>
@@ -41,7 +41,7 @@ __underlined text__
 ```
 </BT>
 <N>[12]</N>
-Those produce <B>bold text</B>, <I>italic text</I>, <M>`monospaced text`</M>, <M>##monospaced
-text##</M>, <S>deleted text</S>, <U>underlined text</U>, and <HL>highlighted text</HL><N>[38]</N>
+Those produce <B>bold text</B>, <I>italic text</I>, <M>`monospaced text`</M>, <M>##monospaced text##</M>,<N>[28]</N>
+<S>deleted text</S>, <U>underlined text</U>, and <HL>highlighted text</HL><N>[38]</N>
 respectively.
 ~~~~~~~~~~
